@@ -159,18 +159,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetCoordinatesDataCheckingType());
   jni_error::_detectError(Env);
 
-  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculation", "(Z)V");
-  //Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.GetIsPowerCalculated());
-  //jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationX", "(D)V");
-  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationX());
-  //jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationY", "(D)V");
-  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationY());
-  //jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "SetMaxSpatialSizeForType", "(IDZ)V");
   Env.CallVoidMethod(jParameters, mid, (jint)PERCENTOFPOPULATION, (jdouble)Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false), false);
   jni_error::_detectError(Env);
@@ -473,10 +461,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPrintAsciiHeaders());
   jni_error::_detectError(Env);
 
-  //mid = _getMethodId_Checked(Env, clazz, "setIndexBasedPValueCutoff", "(D)V");
-  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getIndexBasedPValueCutoff());
-  //jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setReportHierarchicalClusters", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getReportHierarchicalClusters());
   jni_error::_detectError(Env);
@@ -485,12 +469,40 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getReportGiniOptimizedClusters());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setIndexBasedReportType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getIndexBasedReportType());
+  mid = _getMethodId_Checked(Env, clazz, "setGiniIndexReportType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getGiniIndexReportType());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setReportIndexBasedCoefficents", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputIndexBasedCoefficents());
+  mid = _getMethodId_Checked(Env, clazz, "setReportGiniIndexCoefficents", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportGiniIndexCoefficents());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPerformPowerEvaluation", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformPowerEvaluation());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationCriticalValueType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationCriticalValueType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEstimationType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEstimationType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationMethod", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationMethod());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationAltHypothesisFilename", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationCaseCount", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationCaseCount());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setNumPowerEvalReplicaPowerStep", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumPowerEvalReplicaPowerStep());
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -547,18 +559,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetSpatialAdjustmentType((SpatialAdjustmentType)getEnumTypeOrdinalIndex(Env, jParameters, "GetSpatialAdjustmentType", "Lorg/satscan/app/Parameters$SpatialAdjustmentType;"));
   Parameters.SetStudyPeriodDataCheckingType((StudyPeriodDataCheckingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetStudyPeriodDataCheckingType", "Lorg/satscan/app/Parameters$StudyPeriodDataCheckingType;"));
   Parameters.SetCoordinatesDataCheckingType((CoordinatesDataCheckingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetCoordinatesDataCheckingType", "Lorg/satscan/app/Parameters$CoordinatesDataCheckingType;"));
-
-  //mid = _getMethodId_Checked(Env, clazz, "GetIsPowerCalculated", "()Z");
-  //Parameters.SetPowerCalculation(Env.CallBooleanMethod(jParameters, mid));
-  //jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationX", "()D");
-  //Parameters.SetPowerCalculationX(Env.CallDoubleMethod(jParameters, mid));
-  //jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationY", "()D");
-  //Parameters.SetPowerCalculationY(Env.CallDoubleMethod(jParameters, mid));
-  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "GetMaxSpatialSizeForType", "(IZ)D");
   Parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, Env.CallDoubleMethod(jParameters, mid, (jint)PERCENTOFPOPULATION, false), false);
@@ -946,10 +946,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setPrintAsciiHeaders(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  //mid = _getMethodId_Checked(Env, clazz, "getIndexBasedPValueCutoff", "()D");
-  //Parameters.setIndexBasedPValueCutoff(Env.CallDoubleMethod(jParameters, mid));
-  //jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "getReportHierarchicalClusters", "()Z");
   Parameters.setReportHierarchicalClusters(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
@@ -958,10 +954,35 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setReportGiniOptimizedClusters(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  Parameters.setIndexBasedReportType((IndexBasedReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getIndexBasedReportType", "Lorg/satscan/app/Parameters$IndexBasedReportType;"));
+  Parameters.setGiniIndexReportType((GiniIndexReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getGiniIndexReportType", "Lorg/satscan/app/Parameters$GiniIndexReportType;"));
 
-  mid = _getMethodId_Checked(Env, clazz, "getOutputIndexBasedCoefficents", "()Z");
-  Parameters.setReportIndexBasedCoefficents(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getReportGiniIndexCoefficents", "()Z");
+  Parameters.setReportGiniIndexCoefficents(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPerformPowerEvaluation", "()Z");
+  Parameters.setPerformPowerEvaluation(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  Parameters.setPowerEvaluationCriticalValueType((CriticalValuesType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationCriticalValueType", "Lorg/satscan/app/Parameters$CriticalValuesType;"));
+
+  Parameters.setPowerEstimationType((PowerEstimationType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEstimationType", "Lorg/satscan/app/Parameters$PowerEstimationType;"));
+
+  Parameters.setPowerEvaluationMethod((PowerEvaluationMethodType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationMethod", "Lorg/satscan/app/Parameters$PowerEvaluationMethodType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationAltHypothesisFilename", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationCaseCount", "()I");
+  Parameters.setPowerEvaluationCaseCount(static_cast<tract_t>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getNumPowerEvalReplicaPowerStep", "()I");
+  Parameters.setNumPowerEvalReplicaPowerStep(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return Parameters;

@@ -24,6 +24,7 @@ class ParametersPrint {
     void                PrintIsotonicScanParameters(FILE* fp) const;
     void                PrintMultipleDataSetParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;
+    void                PrintPowerEvaluationsParameters(FILE* fp) const;
     void                PrintPowerSimulationsParameters(FILE* fp) const;
     void                PrintPolygonParameters(FILE* fp) const;
     void                PrintRunOptionsParameters(FILE* fp) const;
@@ -42,6 +43,7 @@ class ParametersPrint {
     const char        * GetAnalysisTypeAsString() const;
     const char        * GetAreaScanRateTypeAsString() const;
     const char        * GetProbabilityModelTypeAsString() const;
+    const char        * getPowerEvaluationMethodAsString() const;
     void                Print(FILE* fp) const;
     void                PrintAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
     void                PrintAnalysisSummary(FILE* fp) const;

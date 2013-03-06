@@ -170,6 +170,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     
     //write settings as provided only through user mofication of parameter file and batch executable
     WriteEllipticScanSettings(WriteFile);
+    WritePowerEvaluationsSettings(WriteFile);
     WritePowerSimulationsSettings(WriteFile);
     WriteRunOptionSettings(WriteFile);
     WriteSystemSettings(WriteFile);
@@ -217,9 +218,9 @@ void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, REPORT_GINI_CLUSTERS, GetParameterString(REPORT_GINI_CLUSTERS, s).c_str(), GetParameterComment(REPORT_GINI_CLUSTERS));
     WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
     WriteIniParameter(WriteFile, SPATIAL_MAXIMA, GetParameterString(SPATIAL_MAXIMA, s).c_str(), GetParameterComment(SPATIAL_MAXIMA));
-    WriteIniParameter(WriteFile, INDEXBASED_REPORT_TYPE, GetParameterString(INDEXBASED_REPORT_TYPE, s).c_str(), GetParameterComment(INDEXBASED_REPORT_TYPE));
-    WriteIniParameter(WriteFile, INDEXBASED_PVALUE_CUTOFF, GetParameterString(INDEXBASED_PVALUE_CUTOFF, s).c_str(), GetParameterComment(INDEXBASED_PVALUE_CUTOFF));
-    WriteIniParameter(WriteFile, OUTPUT_INDEX_COEFFICENTS, GetParameterString(OUTPUT_INDEX_COEFFICENTS, s).c_str(), GetParameterComment(OUTPUT_INDEX_COEFFICENTS));
+    WriteIniParameter(WriteFile, GINI_INDEX_REPORT_TYPE, GetParameterString(GINI_INDEX_REPORT_TYPE, s).c_str(), GetParameterComment(GINI_INDEX_REPORT_TYPE));
+    WriteIniParameter(WriteFile, GINI_INDEX_PVALUE_CUTOFF, GetParameterString(GINI_INDEX_PVALUE_CUTOFF, s).c_str(), GetParameterComment(GINI_INDEX_PVALUE_CUTOFF));
+    WriteIniParameter(WriteFile, REPORT_GINI_COEFFICENTS, GetParameterString(REPORT_GINI_COEFFICENTS, s).c_str(), GetParameterComment(REPORT_GINI_COEFFICENTS));
     WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s).c_str(), GetParameterComment(USE_REPORTED_GEOSIZE));
     WriteIniParameter(WriteFile, MAXGEOPOPATRISK_REPORTED, GetParameterString(MAXGEOPOPATRISK_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPATRISK_REPORTED));
     WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPFILE_REPORTED));
@@ -397,19 +398,34 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
   }
 }
 
+/** Writes parameter settings grouped under '[Power Evaluations]'. */
+void IniParameterFileAccess::WritePowerEvaluationsSettings(IniFile& WriteFile) {
+  std::string s;
+  try {
+    WriteIniParameter(WriteFile, POWER_EVALUATION, GetParameterString(POWER_EVALUATION, s).c_str(), GetParameterComment(POWER_EVALUATION));
+    WriteIniParameter(WriteFile, PE_METHOD_TYPE, GetParameterString(PE_METHOD_TYPE, s).c_str(), GetParameterComment(PE_METHOD_TYPE));
+    WriteIniParameter(WriteFile, PE_COUNT, GetParameterString(PE_COUNT, s).c_str(), GetParameterComment(PE_COUNT));
+    WriteIniParameter(WriteFile, PE_CRITICAL_TYPE, GetParameterString(PE_CRITICAL_TYPE, s).c_str(), GetParameterComment(PE_CRITICAL_TYPE));
+    WriteIniParameter(WriteFile, PE_ESTIMATION_TYPE, GetParameterString(PE_ESTIMATION_TYPE, s).c_str(), GetParameterComment(PE_ESTIMATION_TYPE));
+    WriteIniParameter(WriteFile, PE_ALT_HYPOTHESIS_FILE, GetParameterString(PE_ALT_HYPOTHESIS_FILE, s).c_str(), GetParameterComment(PE_ALT_HYPOTHESIS_FILE));
+    WriteIniParameter(WriteFile, PE_POWER_REPLICAS, GetParameterString(PE_POWER_REPLICAS, s).c_str(), GetParameterComment(PE_POWER_REPLICAS));
+    WriteIniParameter(WriteFile, POWER_05, GetParameterString(POWER_05, s).c_str(), GetParameterComment(POWER_05));
+    WriteIniParameter(WriteFile, POWER_01, GetParameterString(POWER_01, s).c_str(), GetParameterComment(POWER_01));
+    WriteIniParameter(WriteFile, POWER_001, GetParameterString(POWER_001, s).c_str(), GetParameterComment(POWER_001));
+    WriteIniParameter(WriteFile, PE_SIMULATION_TYPE, GetParameterString(PE_SIMULATION_TYPE, s).c_str(), GetParameterComment(PE_SIMULATION_TYPE));
+    WriteIniParameter(WriteFile, PE_SIMULATION_SOURCEFILE, GetParameterString(PE_SIMULATION_SOURCEFILE, s).c_str(), GetParameterComment(PE_SIMULATION_SOURCEFILE));
+    WriteIniParameter(WriteFile, PE_OUTPUT_SIMUALTION_DATA, GetParameterString(PE_OUTPUT_SIMUALTION_DATA, s).c_str(), GetParameterComment(PE_OUTPUT_SIMUALTION_DATA));
+    WriteIniParameter(WriteFile, PE_SIMUALTION_OUTPUTFILE, GetParameterString(PE_SIMUALTION_OUTPUTFILE, s).c_str(), GetParameterComment(PE_SIMUALTION_OUTPUTFILE));
+  } catch (prg_exception& x) {
+    x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
 /** Writes parameter settings grouped under '[Power Simulations]'. */
 void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
   std::string s;
   try {
-    WriteIniParameter(WriteFile, POWER_EVALUATION, GetParameterString(POWER_EVALUATION, s).c_str(), GetParameterComment(POWER_EVALUATION));
-    WriteIniParameter(WriteFile, PE_COUNT, GetParameterString(PE_COUNT, s).c_str(), GetParameterComment(PE_COUNT));
-    WriteIniParameter(WriteFile, PE_CV_SPEC_TYPE, GetParameterString(PE_CV_SPEC_TYPE, s).c_str(), GetParameterComment(PE_CV_SPEC_TYPE));
-    WriteIniParameter(WriteFile, PE_CRITICAL_TYPE, GetParameterString(PE_CRITICAL_TYPE, s).c_str(), GetParameterComment(PE_CRITICAL_TYPE));
-    WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s).c_str(), GetParameterComment(POWERX));
-    WriteIniParameter(WriteFile, POWERY, GetParameterString(POWERY, s).c_str(), GetParameterComment(POWERY));
-    WriteIniParameter(WriteFile, PE_ESTIMATION_TYPE, GetParameterString(PE_ESTIMATION_TYPE, s).c_str(), GetParameterComment(PE_ESTIMATION_TYPE));
-    WriteIniParameter(WriteFile, PE_ADJUSTFILE, GetParameterString(PE_ADJUSTFILE, s).c_str(), GetParameterComment(PE_ADJUSTFILE));
-    WriteIniParameter(WriteFile, PE_POWER_REPLICAS, GetParameterString(PE_POWER_REPLICAS, s).c_str(), GetParameterComment(PE_POWER_REPLICAS));
     WriteIniParameter(WriteFile, SIMULATION_TYPE, GetParameterString(SIMULATION_TYPE, s).c_str(), GetParameterComment(SIMULATION_TYPE));
     WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s).c_str(), GetParameterComment(SIMULATION_SOURCEFILE));
     WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s).c_str(), GetParameterComment(OUTPUT_SIMULATION_DATA));

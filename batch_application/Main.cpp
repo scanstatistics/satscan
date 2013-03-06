@@ -76,11 +76,12 @@ int main(int argc, char *argv[]) {
     /* general options */
     po::options_description application("", 200);
     application.add_options()
-        ("parameter-file,f", po::value<std::string>(), "Parameter file")
-        ("display-parameters,s", "Display Parameter Options List")
-        ("version,v", "Program version")
-        ("verify-parameters,c", po::bool_switch(&verifyParameters), "Verify parameters only")
-        ("print-parameters,p", po::bool_switch(&printParameters), "Print parameters only")
+        ("parameter-file,f", po::value<std::string>(), "parameter file")
+        ("display-parameters,s", "display parameter options list")
+        ("version,v", "program version")
+        ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
+        ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
+        ("write-parameters,w", po::value<std::string>(), "write parameters to file")
         ("help,h", "Help");
 
     /* hidden options */
@@ -129,10 +130,14 @@ int main(int argc, char *argv[]) {
     /* apply parameter overrides*/
     parameterOptions.setParameterOverrides(vm);
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY); 
-    if (allOut) Parameters.RequestAllAdditionalOutputFiles();
+    if (allOut) Parameters.requestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
+    /* write parameters to file, if requested */
+    if (vm.count("write-parameters")) {
+        ParameterAccessCoordinator(Parameters).Write(vm["write-parameters"].as<std::string>().c_str(), Console);
+    }
     /* validate parameters - print errors to console */
     if (!ParametersValidate(Parameters).Validate(Console))
       throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
@@ -141,7 +146,6 @@ int main(int argc, char *argv[]) {
     if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
     //parameterOptions.listOptions();
-    //ParameterAccessCoordinator(Parameters).Write(vm["parameter-file"].as<std::string>().c_str(), Console);
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis
     AnalysisRunner(Parameters, RunTime, Console);

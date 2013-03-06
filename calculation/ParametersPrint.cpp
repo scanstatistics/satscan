@@ -107,6 +107,23 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
   return sProbabilityModel;
 }
 
+const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
+  const char * sProbabilityModel;
+
+  try {
+    switch (gParameters.getPowerEvaluationMethod()) {
+      case PE_WITH_ANALYSIS        : return "power evaluation with analysis";
+      case PE_ONLY_CASEFILE        : return "only power evaluation using case file";
+      case PE_ONLY_SPECIFIED_CASES : return "only power evaluation using specified total cases";
+      default : throw prg_error("Unknown power evaluation method '%d'.\n", "getPowerEvaluationMethodAsString()", gParameters.getPowerEvaluationMethod());
+    }
+  } catch (prg_exception& x) {
+    x.addTrace("getPowerEvaluationMethodAsString()","ParametersPrint");
+    throw;
+  }
+  return sProbabilityModel;
+}
+
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(FILE* fp) const {
   try {
@@ -141,6 +158,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintAdditionalOutputParameters(fp);
     //print 'Elliptic Scan' settings
     PrintEllipticScanParameters(fp);
+    //print 'Power Evaluations' settings
+    PrintPowerEvaluationsParameters(fp);
     //print 'Power Simulations' settings
     PrintPowerSimulationsParameters(fp);
     //print 'RunOptions' settings
@@ -157,22 +176,21 @@ void ParametersPrint::Print(FILE* fp) const {
 
 /** Print parameters of 'Additional Output' tab/section. */
 void ParametersPrint::PrintAdditionalOutputParameters(FILE* fp) const {
-  SettingContainer_t settings;
+    SettingContainer_t settings;
 
-  try {
-    if (!gParameters.getPerformPowerEvaluation()) {
-    settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
+    try {
+        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
+            settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
+        }
+        if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
+            gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
+            settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
+        WriteSettingsContainer(settings, "Additional Output", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintAdditionalOutputParameters()","ParametersPrint");
+        throw;
     }
-    if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
-        gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
-        settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
-    WriteSettingsContainer(settings, "Additional Output", fp);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintAdditionalOutputParameters()","ParametersPrint");
-    throw;
-  }
 }
 
 
@@ -230,33 +248,31 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
 
 /** Prints 'Analysis' tab parameters to file stream. */
 void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
-  AnalysisType       eAnalysisType = gParameters.GetAnalysisType();
-  SettingContainer_t settings;
-  std::string        buffer;
+    AnalysisType       eAnalysisType = gParameters.GetAnalysisType();
+    SettingContainer_t settings;
+    std::string        buffer;
 
-  try {
-    settings.push_back(std::make_pair("Type of Analysis",GetAnalysisTypeAsString()));
-    settings.push_back(std::make_pair("Probability Model",GetProbabilityModelTypeAsString()));
-    settings.push_back(std::make_pair("Scan for Areas with",GetAreaScanRateTypeAsString()));
-    if (eAnalysisType != PURELYSPATIAL) {
-      buffer = "Time Aggregation Units";
-      switch (gParameters.GetTimeAggregationUnitsType()) {
-        case YEAR  : settings.push_back(std::make_pair(buffer,"Year")); break;
-        case MONTH : settings.push_back(std::make_pair(buffer,"Month")); break;
-        case DAY   : settings.push_back(std::make_pair(buffer,"Day")); break;
-        case GENERIC : settings.push_back(std::make_pair(buffer,"Generic"));  break;
-        default : throw prg_error("Unknown date precision type '%d'.\n",
-                                  "PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
-      }
-      printString(buffer, "%i", gParameters.GetTimeAggregationLength());
-      settings.push_back(std::make_pair("Time Aggregation Length",buffer));
+    try {
+        settings.push_back(std::make_pair("Type of Analysis",GetAnalysisTypeAsString()));
+        settings.push_back(std::make_pair("Probability Model",GetProbabilityModelTypeAsString()));
+        settings.push_back(std::make_pair("Scan for Areas with",GetAreaScanRateTypeAsString()));
+        if (eAnalysisType != PURELYSPATIAL) {
+            buffer = "Time Aggregation Units";
+            switch (gParameters.GetTimeAggregationUnitsType()) {
+                case YEAR  : settings.push_back(std::make_pair(buffer,"Year")); break;
+                case MONTH : settings.push_back(std::make_pair(buffer,"Month")); break;
+                case DAY   : settings.push_back(std::make_pair(buffer,"Day")); break;
+                case GENERIC : settings.push_back(std::make_pair(buffer,"Generic"));  break;
+                default : throw prg_error("Unknown date precision type '%d'.\n","PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
+            }
+            printString(buffer, "%i", gParameters.GetTimeAggregationLength());
+            settings.push_back(std::make_pair("Time Aggregation Length",buffer));
+        }
+        WriteSettingsContainer(settings, "Analysis", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintAnalysisParameters()","ParametersPrint");
+        throw;
     }
-    WriteSettingsContainer(settings, "Analysis", fp);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintAnalysisParameters()","ParametersPrint");
-    throw;
-  }
 }
 
 /** Prints analysis type related information, in a particular format, to passed ascii file. */
@@ -269,10 +285,13 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal"); break;
-      default : throw prg_error("Unknown analysis type '%d'.\n",
-                                "PrintAnalysisSummary()", gParameters.GetAnalysisType());
+      default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }
-    fprintf(fp, gParameters.getPerformPowerEvaluation() ? " power evaluation\n" : " analysis\n");
+    if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS) {
+        fprintf(fp, " analysis and power evaluation\n");
+    } else {
+        fprintf(fp, gParameters.getPerformPowerEvaluation() ? " power evaluation\n" : " analysis\n");
+    }
     fprintf(fp, "scanning for ");
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
       fprintf(fp, "monotone ");
@@ -399,7 +418,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   SettingContainer_t settings;
   std::string        buffer, worker;
 
-  if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.getPerformPowerEvaluation()) return;
+  if (gParameters.GetIsPurelyTemporalAnalysis() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
 
   try {
     settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
@@ -424,12 +443,12 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
     settings.push_back(std::make_pair("Report Gini Optimized Clusters", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
     if (gParameters.getReportGiniOptimizedClusters()) {
         buffer = "Gini Index Based Collection Reporting";
-        switch (gParameters.getIndexBasedReportType()) {
+        switch (gParameters.getGiniIndexReportType()) {
             case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
             case ALL_VALUES    : settings.push_back(std::make_pair(buffer,"All Values")); break;
-            default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintClustersReportedParameters()", gParameters.getIndexBasedReportType());
+            default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintClustersReportedParameters()", gParameters.getGiniIndexReportType());
         }
-        settings.push_back(std::make_pair("Output Index Based Cluster Coefficents", (gParameters.getOutputIndexBasedCoefficents() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
         printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
         for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
             printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
@@ -527,7 +546,6 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
 
 /** Prints 'Inference' tab parameters to file stream. */
 void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
-   if (gParameters.getPerformPowerEvaluation()) return;
    SettingContainer_t settings;
    std::string        buffer;
 
@@ -556,7 +574,7 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
          if (gParameters.GetAdjustForEarlierAnalyses())
              settings.push_back(std::make_pair("Prospective Start Time",gParameters.GetProspectiveStartDate()));
      }
-     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON && !gParameters.getPerformPowerEvaluation()) {
         settings.push_back(std::make_pair("Adjusting for More Likely Clusters",(gParameters.GetIsIterativeScanning() ? "Yes" : "No")));
         if (gParameters.GetIsIterativeScanning()) {
           printString(buffer, "%u", gParameters.GetNumIterativeScansRequested());
@@ -584,7 +602,8 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
   std::string           buffer;
 
   try {
-    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
+        (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
         settings.push_back(std::make_pair("Case File",gParameters.GetCaseFileName(1)));
         settings.back().first += sDataSetLabel;
     }
@@ -699,32 +718,33 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
   FileName            AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
   SettingContainer_t  settings;
   std::string         buffer;
+  bool canReportClusterFiles = (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
 
   try {
     settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterLevelAscii()) {
+    if (canReportClusterFiles && gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.setExtension(".col.txt");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterLevelDBase()) {
+    if (canReportClusterFiles && gParameters.GetOutputClusterLevelDBase()) {
       AdditionalOutputFile.setExtension(".col.dbf");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     // cluster case information files
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterCaseAscii()) {
+    if (canReportClusterFiles && gParameters.GetOutputClusterCaseAscii()) {
       AdditionalOutputFile.setExtension(".sci.txt");
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterCaseDBase()) {
+    if (canReportClusterFiles && gParameters.GetOutputClusterCaseDBase()) {
       AdditionalOutputFile.setExtension(".cci.dbf");
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     // area specific files
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputAreaSpecificAscii()) {
+    if (canReportClusterFiles && gParameters.GetOutputAreaSpecificAscii()) {
       AdditionalOutputFile.setExtension(".gis.txt");
       settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputAreaSpecificDBase()) {
+    if (canReportClusterFiles && gParameters.GetOutputAreaSpecificDBase()) {
       AdditionalOutputFile.setExtension(".gis.dbf");
       settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
     }
@@ -755,42 +775,105 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 }
 
 /** Prints 'Power Simulations' parameters to file stream. */
+void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer;
+
+    try {
+        if (gParameters.getPerformPowerEvaluation()) {
+            buffer = "Power Method";
+            switch (gParameters.getPowerEvaluationMethod()) {
+                case PE_WITH_ANALYSIS: 
+                    settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
+                case PE_ONLY_CASEFILE: 
+                    settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Total Cases from Case File")); break;
+                case PE_ONLY_SPECIFIED_CASES: 
+                    settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
+                    printString(buffer, "%i", gParameters.getPowerEvaluationCaseCount());
+                    settings.push_back(std::make_pair("Power Evaluation Total Cases",buffer)); 
+                    break;
+                default: throw prg_error("Unknown power evaluation method type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEvaluationMethod());
+            }
+            buffer = "Critical Values";
+            switch (gParameters.getPowerEvaluationCriticalValueType()) {
+                case CV_MONTECARLO: 
+                    settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
+                case CV_GUMBEL: 
+                    settings.push_back(std::make_pair(buffer,"Gumbel")); break;
+                case CV_POWER_VALUES: 
+                    settings.push_back(std::make_pair(buffer,"User Defined"));
+                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue05());
+                    settings.push_back(std::make_pair("Critical Value .05",buffer));
+                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue01());
+                    settings.push_back(std::make_pair("Critical Value .01",buffer));
+                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue001());
+                    settings.push_back(std::make_pair("Critical Value .001",buffer));
+                    break;
+                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEvaluationCriticalValueType());
+            }
+            buffer = "Power Estimation";
+            switch (gParameters.getPowerEstimationType()) {
+                case CV_MONTECARLO: 
+                    settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
+                case CV_GUMBEL: 
+                    settings.push_back(std::make_pair(buffer,"Gumbel")); break;
+                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEstimationType());
+            }
+            // Since alternative randomization methods are not settable in the gui, only report if other than default (Null Randomization).
+            if (gParameters.GetPowerEvaluationSimulationType() != FILESOURCE) {
+                buffer = "Power Step Randomization Method";
+                switch (gParameters.GetPowerEvaluationSimulationType()) {
+                    case STANDARD         : 
+                        settings.push_back(std::make_pair(buffer,"Null Randomization")); break;
+                        settings.push_back(std::make_pair("Alternative Hypothesis File",gParameters.getPowerEvaluationAltHypothesisFilename()));
+                    case FILESOURCE       :
+                        settings.push_back(std::make_pair(buffer,"File Source")); break;
+                        settings.push_back(std::make_pair("Randomization Source File",gParameters.getPowerEvaluationSimulationDataSourceFilename())); break;
+                        break;
+                    case HA_RANDOMIZATION :
+                    default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.GetPowerEvaluationSimulationType());
+                };
+            }
+            // Since reporting the power evaluations' simulation data is not settable in the gui, only report if toggled on.
+            if (gParameters.getOutputPowerEvaluationSimulationData()) {
+                settings.push_back(std::make_pair("Output Power Step Simulation Data","Yes"));
+                if (gParameters.getOutputPowerEvaluationSimulationData()) {
+                    settings.push_back(std::make_pair("Power Step Simulation Data Filename", gParameters.getPowerEvaluationSimulationDataOutputFilename()));
+                }
+            }
+        }
+        WriteSettingsContainer(settings, "Power Evaluations", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintPowerEvaluationsParameters()","ParametersPrint");
+        throw;
+    }
+}
+
+/** Prints 'Power Simulations' parameters to file stream. */
 void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
-  SettingContainer_t settings;
-  std::string         buffer;
+    SettingContainer_t settings;
+    std::string         buffer;
 
-  try {
-      // TODO PE: This needs the remainder of the settings.
-
-      if (gParameters.getPerformPowerEvaluation()) {
-        settings.push_back(std::make_pair("P-values Prespecified LLRs","Yes"));
-        printString(buffer, "%lf", gParameters.GetPowerCalculationX());
-        settings.push_back(std::make_pair("LLR1",buffer));
-        printString(buffer, "%lf", gParameters.GetPowerCalculationY());
-        settings.push_back(std::make_pair("LLR2",buffer));
+    try {
+        buffer = "Simulation Method";
+        switch (gParameters.GetSimulationType()) {
+            case STANDARD         : break;
+            case FILESOURCE       :
+                settings.push_back(std::make_pair(buffer,"File Source")); break;
+                settings.push_back(std::make_pair("Randomization File",gParameters.GetSimulationDataSourceFilename())); break;
+                break;
+            case HA_RANDOMIZATION :
+            default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
+        };
+        if (gParameters.GetOutputSimulationData()) {
+            settings.push_back(std::make_pair("Output Simulation Data","Yes"));
+            settings.push_back(std::make_pair("Simulation Data Output",gParameters.GetSimulationDataOutputFilename()));
+        }
+        WriteSettingsContainer(settings, "Power Simulations", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintPowerSimulationsParameters()","ParametersPrint");
+        throw;
     }
-    buffer = "Simulation Method";
-    switch (gParameters.GetSimulationType()) {
-      case STANDARD         : break;
-      case HA_RANDOMIZATION :
-          settings.push_back(std::make_pair(buffer,"HA Randomization")); break;
-      case FILESOURCE       :
-          settings.push_back(std::make_pair(buffer,"File Source")); break;
-          settings.push_back(std::make_pair("Randomization File",gParameters.GetSimulationDataSourceFilename())); break;
-          break;
-      default : throw prg_error("Unknown simulation type '%d'.\n",
-                                "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
-    };
-    if (gParameters.GetOutputSimulationData()) {
-        settings.push_back(std::make_pair("Output Simulation Data","Yes"));
-        settings.push_back(std::make_pair("Simulation Data Output",gParameters.GetSimulationDataOutputFilename()));
-    }
-    WriteSettingsContainer(settings, "Power Simulations", fp);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintPowerSimulationsParameters()","ParametersPrint");
-    throw;
-  }
 }
 
 /** Prints polygon paramters to file stream. */
@@ -997,7 +1080,8 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
         default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
     }
-    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetAnalysisType() == PURELYSPATIAL &&
+    if (!gParameters.getPerformPowerEvaluation() && 
+        gParameters.GetAnalysisType() == PURELYSPATIAL &&
         (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))
         settings.push_back(std::make_pair("Isotonic Scan", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No")));
     WriteSettingsContainer(settings, "Spatial Window", fp);

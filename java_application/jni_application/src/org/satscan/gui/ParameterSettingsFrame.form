@@ -42,6 +42,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -58,12 +59,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="562" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="474" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="494" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -107,7 +108,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="26" max="32767" attributes="0"/>
+                      <EmptySpace pref="46" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -130,7 +131,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="_studyPeriodGroup" alignment="0" pref="513" max="32767" attributes="0"/>
+                              <Component id="_studyPeriodGroup" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_caseFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -141,8 +142,8 @@
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_controlFileTextField" pref="310" max="32767" attributes="2"/>
-                                              <Component id="_caseFileTextField" alignment="0" pref="310" max="32767" attributes="1"/>
+                                              <Component id="_controlFileTextField" max="32767" attributes="2"/>
+                                              <Component id="_caseFileTextField" alignment="0" max="32767" attributes="1"/>
                                           </Group>
                                           <EmptySpace min="-2" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -195,7 +196,7 @@
                               <Component id="_timePrecisionGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_studyPeriodGroup" pref="73" max="32767" attributes="0"/>
+                          <Component id="_studyPeriodGroup" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -227,7 +228,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Import case file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Case File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Case File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Container class="javax.swing.JPanel" name="_timePrecisionGroup">
@@ -260,7 +261,7 @@
                                       <Component id="_timePrecisionDay" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="21" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -707,7 +708,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Import control file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Control File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Control File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_bernoulliModelHintLabel">
@@ -738,7 +739,7 @@
                                   <Component id="_populationFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="164" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -786,7 +787,7 @@
                     <Property name="label" type="java.lang.String" value="..."/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Population File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Population File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_poissionModelHintLabel">
@@ -889,7 +890,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Import coordinates file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Coordinates File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;geo&quot;,&quot;Coordinates Files (*.geo)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Coordinates);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Coordinates File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;geo&quot;,&quot;Coordinates Files (*.geo)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Coordinates);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Container class="javax.swing.JPanel" name="_coordinateTypeGroup">
@@ -913,7 +914,7 @@
                                   <Component id="_latLongRadioButton" min="-2" max="-2" attributes="0"/>
                                   <Component id="_cartesianRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="59" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -943,7 +944,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();            &#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();            &#xa;            getAdvancedParameterInternalFrame().setSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="_latLongRadioButton">
@@ -959,7 +960,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            getAdvancedParameterInternalFrame().setSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
@@ -989,7 +990,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Import grid file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Grid File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;grd&quot;,&quot;Grid Files (*.grd)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Grid File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;grd&quot;,&quot;Grid Files (*.grd)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1050,7 +1051,7 @@
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="142" max="32767" attributes="0"/>
+                      <EmptySpace pref="162" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1077,25 +1078,20 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                  <Component id="_spatialVariationRadioLabel" pref="121" max="32767" attributes="0"/>
+                                  <Component id="_spatialVariationRadioLabel" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                      <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
                                               <Component id="_retrospectivePurelySpatialRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_retrospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_retrospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_spatialVariationRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="10" pref="10" max="10" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
                                               <Component id="_prospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_prospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                           </Group>
@@ -1128,7 +1124,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="31" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1270,8 +1266,9 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1280,15 +1277,13 @@
                                       <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                                          <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
-                                  <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace pref="25" max="32767" attributes="0"/>
                       </Group>
@@ -1319,7 +1314,7 @@
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="24" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1662,7 +1657,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_timeAggregationMonthRadioButton">
@@ -1678,7 +1673,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_timeAggregationDayRadioButton">
@@ -1694,7 +1689,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_timeAggregationLengthLabel">
@@ -1771,7 +1766,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="207" max="32767" attributes="0"/>
+                      <EmptySpace pref="227" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1853,21 +1848,17 @@
                                               <Component id="_relativeRiskEstimatesAreaDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_simulatedLogLikelihoodRatiosDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace pref="77" max="32767" attributes="0"/>
+                                          <EmptySpace max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_censusAreasReportedClustersLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="416" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_relativeRiskEstimatesAreaLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="361" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_simulatedLogLikelihoodRatiosLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="296" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_censusAreasReportedClustersLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_relativeRiskEstimatesAreaLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_simulatedLogLikelihoodRatiosLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>

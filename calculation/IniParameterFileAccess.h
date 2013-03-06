@@ -31,6 +31,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
     void                                WriteObservableRegionSettings(IniFile& WriteFile);
     void                                WriteOutputSettings(IniFile& WriteFile);
+    void                                WritePowerEvaluationsSettings(IniFile& WriteFile);
     void                                WritePowerSimulationsSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
     void                                WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteFile);

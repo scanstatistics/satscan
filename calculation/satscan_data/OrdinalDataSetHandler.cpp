@@ -320,7 +320,7 @@ void OrdinalDataSetHandler::SetRandomizers() {
             gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetSimulationDataSourceFilename(), gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
       default :

@@ -13,7 +13,7 @@ class ParametersValidate {
   private:
     const CParameters & gParameters;
 
-    bool                checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection) const;
+    bool                checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck=false) const;
 
     bool                ValidateClustersReportedParameters(BasePrint & PrintDirection) const;
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;

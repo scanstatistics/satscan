@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 114;
+const int CParameters::giNumParameters                = 119;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -41,8 +41,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
   if (giReplications                         != rhs.giReplications) return false;
   if (_performPowerEvaluation                != rhs._performPowerEvaluation) return false;
-  if (gdPower_X                              != rhs.gdPower_X) return false;
-  if (gdPower_Y                              != rhs.gdPower_Y) return false;
+  if (_critical_value_05                     != rhs._critical_value_05) return false;
+  if (_critical_value_01                     != rhs._critical_value_01) return false;
+  if (_critical_value_001                    != rhs._critical_value_001) return false;
   if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
   if (gsStudyPeriodEndDate                   != rhs.gsStudyPeriodEndDate) return false;
   if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
@@ -86,7 +87,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
   if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
-  if (geSimulationType                       != rhs.geSimulationType) return false;
+  if (_simulationType                        != rhs._simulationType) return false;
   if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
   if (gsAdjustmentsByRelativeRisksFileName   != rhs.gsAdjustmentsByRelativeRisksFileName) return false;
   if (gbOutputSimulationData                 != rhs.gbOutputSimulationData) return false;
@@ -132,17 +133,21 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbReportRank                           != rhs.gbReportRank) return false;
   if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
   if (gvSpatialWindowStops                   != rhs.gvSpatialWindowStops) return false;
-  if (_indexBasedPValueCutoff                != rhs._indexBasedPValueCutoff) return false;
+  if (_giniIndexPValueCutoff                 != rhs._giniIndexPValueCutoff) return false;
   if (_reportHierarchicalClusters            != rhs._reportHierarchicalClusters) return false;
   if (_reportGiniOptimizedClusters           != rhs._reportGiniOptimizedClusters) return false;
-  if (_indexBasedReportType                  != rhs._indexBasedReportType) return false;
-  if (_outputIndexCoefficients               != rhs._outputIndexCoefficients) return false;
-  if (_criticalvalues_specify_type           != rhs._criticalvalues_specify_type) return false;  
-  if (_totalPowerEvaluationCases             != rhs._totalPowerEvaluationCases) return false;
+  if (_giniIndexReportType                   != rhs._giniIndexReportType) return false;
+  if (_reportGiniIndexCoefficients           != rhs._reportGiniIndexCoefficients) return false;
+  if (_powerEvaluationTotalCases             != rhs._powerEvaluationTotalCases) return false;
   if (_critical_value_type                   != rhs._critical_value_type) return false;
   if (_power_estimation_type                 != rhs._power_estimation_type) return false;
-  if (_power_adjustments_filename            != rhs._power_adjustments_filename) return false;
-  if (_pe_power_replica                      != rhs._pe_power_replica) return false;
+  if (_power_alt_hypothesis_filename         != rhs._power_alt_hypothesis_filename) return false;
+  if (_power_replica                         != rhs._power_replica) return false;
+  if (_power_simulation_type                 != rhs._power_simulation_type) return false;
+  if (_power_simulation_source_filename      != rhs._power_simulation_source_filename) return false;
+  if (_report_power_simulation_data          != rhs._report_power_simulation_data) return false;
+  if (_power_simulation_output_filename      != rhs._power_simulation_output_filename) return false;
+  if (_power_evaluation_method               != rhs._power_evaluation_method) return false;
 
   return true;
 }
@@ -235,8 +240,9 @@ void CParameters::Copy(const CParameters &rhs) {
   geRiskFunctionType                     = rhs.geRiskFunctionType;
   giReplications                         = rhs.giReplications;
   _performPowerEvaluation                = rhs._performPowerEvaluation;
-  gdPower_X                              = rhs.gdPower_X;
-  gdPower_Y                              = rhs.gdPower_Y;
+  _critical_value_05                     = rhs._critical_value_05;
+  _critical_value_01                     = rhs._critical_value_01;
+  _critical_value_001                    = rhs._critical_value_001;
   gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
   gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
   gdMaxTemporalClusterSize               = rhs.gdMaxTemporalClusterSize;
@@ -280,7 +286,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
   gdTimeTrendConverge			         = rhs.gdTimeTrendConverge;
   gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
-  geSimulationType                       = rhs.geSimulationType;
+  _simulationType                        = rhs._simulationType;
   gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
   gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
   gbOutputSimulationData                 = rhs.gbOutputSimulationData;
@@ -326,17 +332,21 @@ void CParameters::Copy(const CParameters &rhs) {
   gbReportRank                           = rhs.gbReportRank;
   gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
   gvSpatialWindowStops                   = rhs.gvSpatialWindowStops; _executeSpatialWindowStops.clear();
-  _indexBasedPValueCutoff                = rhs._indexBasedPValueCutoff;
+  _giniIndexPValueCutoff                 = rhs._giniIndexPValueCutoff;
   _reportHierarchicalClusters            = rhs._reportHierarchicalClusters;
   _reportGiniOptimizedClusters           = rhs._reportGiniOptimizedClusters;
-  _indexBasedReportType                  = rhs._indexBasedReportType;
-  _outputIndexCoefficients               = rhs._outputIndexCoefficients;
-  _criticalvalues_specify_type           = rhs._criticalvalues_specify_type;
-  _totalPowerEvaluationCases             = rhs._totalPowerEvaluationCases;
+  _giniIndexReportType                   = rhs._giniIndexReportType;
+  _reportGiniIndexCoefficients           = rhs._reportGiniIndexCoefficients;
+  _powerEvaluationTotalCases             = rhs._powerEvaluationTotalCases;
   _critical_value_type                   = rhs._critical_value_type;
   _power_estimation_type                 = rhs._power_estimation_type;
-  _power_adjustments_filename            = rhs._power_adjustments_filename;
-  _pe_power_replica                      = rhs._pe_power_replica;
+  _power_alt_hypothesis_filename         = rhs._power_alt_hypothesis_filename;
+  _power_replica                         = rhs._power_replica;
+  _power_simulation_type                 = rhs._power_simulation_type;
+  _power_simulation_source_filename      = rhs._power_simulation_source_filename;
+  _report_power_simulation_data          = rhs._report_power_simulation_data;
+  _power_simulation_output_filename      = rhs._power_simulation_output_filename;
+  _power_evaluation_method               = rhs._power_evaluation_method;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -546,7 +556,7 @@ bool CParameters::GetTerminateSimulationsEarly() const {
 }
 
 bool CParameters::getIsReportingIndexBasedCoefficents() const {
-    return getReportGiniOptimizedClusters() && _outputIndexCoefficients;
+    return getReportGiniOptimizedClusters() && _reportGiniIndexCoefficients;
 }
 
 /** Returns indication of Gumbel value is reported. */
@@ -563,7 +573,7 @@ bool CParameters::getIsReportingStandardPValue() const {
 }
 
 /** Selects additional output file parameters - for current parameters state. */
-void CParameters::RequestAllAdditionalOutputFiles() {
+void CParameters::requestAllAdditionalOutputFiles() {
    SetOutputAreaSpecificAscii(true);
    SetOutputAreaSpecificDBase(true);
    SetOutputClusterCaseAscii(true);
@@ -574,7 +584,8 @@ void CParameters::RequestAllAdditionalOutputFiles() {
         GetProbabilityModelType() != SPACETIMEPERMUTATION &&
         GetProbabilityModelType() != HOMOGENEOUSPOISSON &&
         GetProbabilityModelType() != ORDINAL &&
-        GetProbabilityModelType() != CATEGORICAL) {
+        GetProbabilityModelType() != CATEGORICAL &&
+        !(getPerformPowerEvaluation() && getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
      SetOutputRelativeRisksAscii(true);
      SetOutputRelativeRisksDBase(true);
    } else {
@@ -638,9 +649,9 @@ void CParameters::checkEnumeration(int e, int eLow, int eHigh) const {
   if (e < eLow || e > eHigh) throw prg_error("Enumeration %d out of range [%d,%d].", "checkEnumeration()", e, eLow, eHigh);
 }
 
-void CParameters::setIndexBasedReportType(IndexBasedReportType e) {
+void CParameters::setGiniIndexReportType(GiniIndexReportType e) {
   checkEnumeration(e, OPTIMAL_ONLY, ALL_VALUES);
-  _indexBasedReportType = e;
+  _giniIndexReportType = e;
 }
 
 /** Sets control data file name.
@@ -720,8 +731,9 @@ void CParameters::SetAsDefaulted() {
   geProbabilityModelType                   = POISSON;
   geRiskFunctionType                       = STANDARDRISK;
   _performPowerEvaluation                  = false;
-  gdPower_X                                = 0.0;
-  gdPower_Y                                = 0.0;
+  _critical_value_05                       = 0.0;
+  _critical_value_01                       = 0.0;
+  _critical_value_001                      = 0.0;
   geTimeTrendAdjustType                    = NOTADJUSTED;
   gdTimeTrendAdjustPercentage              = 0;
   gbIncludePurelyTemporalClusters          = false;
@@ -752,7 +764,7 @@ void CParameters::SetAsDefaulted() {
   gsStartRangeEndDate                      = gsStudyPeriodEndDate;
   gdTimeTrendConverge			           = 0.00001; //0.0000001;
   gbRestrictReportedClusters               = false;
-  geSimulationType                         = STANDARD;
+  _simulationType                          = STANDARD;
   gsSimulationDataSourceFileName           = "";
   gsAdjustmentsByRelativeRisksFileName     = "";
   gbOutputSimulationData                   = false;
@@ -801,17 +813,21 @@ void CParameters::SetAsDefaulted() {
   gbPrintAsciiHeaders = false;
   gvSpatialWindowStops.clear();
   gvSpatialWindowStops += 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
-  _indexBasedPValueCutoff = 0.05;
+  _giniIndexPValueCutoff = 0.05;
   _reportHierarchicalClusters = true;
   _reportGiniOptimizedClusters = true;
-  _indexBasedReportType = OPTIMAL_ONLY;
-  _outputIndexCoefficients = false;
-  _criticalvalues_specify_type = PE_AUTOMATIC;
-  _totalPowerEvaluationCases = 0;
-  _critical_value_type = PE_MONTECARLO;
+  _giniIndexReportType = OPTIMAL_ONLY;
+  _reportGiniIndexCoefficients = false;
+  _powerEvaluationTotalCases = 0;
+  _critical_value_type = CV_MONTECARLO;
   _power_estimation_type = PE_MONTECARLO;
-  _power_adjustments_filename = "";
-  _pe_power_replica = giReplications + 1;
+  _power_alt_hypothesis_filename = "";
+  _power_replica = giReplications + 1;
+  _power_simulation_type = STANDARD;
+  _power_simulation_source_filename = "";
+  _report_power_simulation_data = false;
+  _power_simulation_output_filename = "";
+  _power_evaluation_method = PE_WITH_ANALYSIS;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -914,20 +930,11 @@ void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool b
     AssignMissingPath(gvPopulationFilenames[tSetIndex - 1]);
 }
 
-/** Sets X variable for power calculation. Throws exception if out of range. */
-void CParameters::SetPowerCalculationX(double dPowerX) {
-  gdPower_X = dPowerX;
+void CParameters::setPowerEvaluationAltHypothesisFilename(const char * f, bool bCorrectForRelativePath) {
+  _power_alt_hypothesis_filename = f;
+  if (bCorrectForRelativePath) AssignMissingPath(_power_alt_hypothesis_filename);
 }
 
-/** Sets Y variable for power calculation. Throws exception if out of range. */
-void CParameters::SetPowerCalculationY(double dPowerY) {
-  gdPower_Y = dPowerY;
-}
-
-void CParameters::setPowerEvaluationFilename(const char * f, bool bCorrectForRelativePath) {
-  _power_adjustments_filename = f;
-  if (bCorrectForRelativePath) AssignMissingPath(_power_adjustments_filename);
-}
 /** Sets relative risks adjustments file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -936,14 +943,10 @@ void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, 
   if (bCorrectForRelativePath)
     AssignMissingPath(gsAdjustmentsByRelativeRisksFileName);
 }
-void CParameters::setPowerEvaluationCriticalValuesSpecType(CriticalValuesSpecifyType e) {
-  if (e < PE_AUTOMATIC || e > PE_BOTH)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationCriticalValuesSpecType()", e, PE_AUTOMATIC, PE_BOTH);
-  _criticalvalues_specify_type = e;
-}
-void CParameters::setPowerEvaluationCriticalValueType(PowerEvaluationType e) {
-  if (e < PE_MONTECARLO || e > PE_GUMBEL)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationCriticalValueType()", e, PE_MONTECARLO, PE_GUMBEL);
+
+void CParameters::setPowerEvaluationCriticalValueType(CriticalValuesType e) {
+  if (e < CV_MONTECARLO || e > CV_POWER_VALUES)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationCriticalValueType()", e, PE_MONTECARLO, CV_POWER_VALUES);
   _critical_value_type = e;
 }
 
@@ -986,19 +989,42 @@ void CParameters::SetRiskType(RiskType eRiskType) {
 }
 
 /** sets simulation procedure type */
-void CParameters::SetSimulationType(SimulationType eSimulationType) {
-  if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
-  geSimulationType = eSimulationType;
+void CParameters::SetSimulationType(SimulationType e) {
+  if (e < STANDARD || e > FILESOURCE)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSimulationType()", e, STANDARD, FILESOURCE);
+  _simulationType = e;
 }
 
-/** Sets simulation data output file name.
+/** sets power evalaution simulation procedure type for power step */
+void CParameters::setPowerEvaluationSimulationType(SimulationType e) {
+  if (e < STANDARD || e > FILESOURCE)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetPowerEvaluationSimulationType()", e, STANDARD, FILESOURCE);
+  _power_simulation_type = e;
+}
+
+/** Sets method for performing the power evaluation. */
+void CParameters::setPowerEvaluationMethod(PowerEvaluationMethodType e) {
+  if (e < PE_WITH_ANALYSIS || e > PE_ONLY_SPECIFIED_CASES)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationMethod()", e, PE_WITH_ANALYSIS, PE_ONLY_SPECIFIED_CASES);
+  _power_evaluation_method = e;
+}
+
+/** Sets simulation data output filename.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
   gsSimulationDataOutputFilename = sSourceFileName;
   if (bCorrectForRelativePath)
     AssignMissingPath(gsSimulationDataOutputFilename);
+}
+
+/** Sets power evaluation simulation data output filename.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::setPowerEvaluationSimulationDataOutputFilename(const char * sSourceFileName, bool bCorrectForRelativePath) {
+  _power_simulation_output_filename = sSourceFileName;
+  if (bCorrectForRelativePath)
+    AssignMissingPath(_power_simulation_output_filename);
 }
 
 /** Sets simulation data source file name.
@@ -1008,6 +1034,15 @@ void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, 
   gsSimulationDataSourceFileName = sSourceFileName;
   if (bCorrectForRelativePath)
     AssignMissingPath(gsSimulationDataSourceFileName);
+}
+
+/** Sets power evaluation simulation data source filename for power step.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::setPowerEvaluationSimulationDataSourceFilename(const char * sSourceFileName, bool bCorrectForRelativePath) {
+  _power_simulation_source_filename = sSourceFileName;
+  if (bCorrectForRelativePath)
+    AssignMissingPath(_power_simulation_source_filename);
 }
 
 /** Set spatial adjustment type. Throws exception if out of range. */

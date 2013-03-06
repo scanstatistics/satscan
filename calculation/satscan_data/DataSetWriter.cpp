@@ -23,13 +23,12 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
 }
 
 /** Writes case data to file stream based upon analysis type. */
-void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Parameters) const {
+void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Parameters, const std::string& filename) const {
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate|std::ios::app);
-  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
-                                      Parameters.GetSimulationDataOutputFilename().c_str());
+  stream.open(filename.c_str(), std::ios::ate|std::ios::app);
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
 
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
@@ -64,13 +63,12 @@ void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
 }
 
 /** Writes category case data to file stream based upon analysis type. */
-void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Parameters) const {
+void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Parameters, const std::string& filename) const {
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate|std::ios::app);
-  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
-                                      Parameters.GetSimulationDataOutputFilename().c_str());
+  stream.open(filename.c_str(), std::ios::ate|std::ios::app);
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
      {for (CasesByCategory_t::const_iterator itr=Set.getCaseData_Cat().begin(); itr != Set.getCaseData_Cat().end(); ++itr) {
@@ -110,13 +108,12 @@ void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
 }
 
 /** Writes case and measure data to file stream based upon analysis type. */
-void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Parameters) const {
+void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Parameters, const std::string& filename) const {
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate|std::ios::app);
-  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
-                                      Parameters.GetSimulationDataOutputFilename().c_str());
+  stream.open(filename.c_str(), std::ios::ate|std::ios::app);
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
 
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :

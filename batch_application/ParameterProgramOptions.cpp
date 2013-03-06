@@ -166,9 +166,9 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(REPORT_GINI_CLUSTERS, true), po::value<std::string>(), GetParameterComment(REPORT_GINI_CLUSTERS))
         (getOption(CRITERIA_SECOND_CLUSTERS, true), po::value<std::string>(), GetParameterComment(CRITERIA_SECOND_CLUSTERS))
         (getOption(SPATIAL_MAXIMA, true), po::value<std::string>(), GetParameterComment(SPATIAL_MAXIMA))
-        (getOption(INDEXBASED_REPORT_TYPE, true), po::value<std::string>(), GetParameterComment(INDEXBASED_REPORT_TYPE))
-        (getOption(INDEXBASED_PVALUE_CUTOFF, true), po::value<std::string>(), GetParameterComment(INDEXBASED_PVALUE_CUTOFF))
-        (getOption(OUTPUT_INDEX_COEFFICENTS, true), po::value<std::string>(), GetParameterComment(OUTPUT_INDEX_COEFFICENTS))
+        (getOption(GINI_INDEX_REPORT_TYPE, true), po::value<std::string>(), GetParameterComment(GINI_INDEX_REPORT_TYPE))
+        (getOption(GINI_INDEX_PVALUE_CUTOFF, true), po::value<std::string>(), GetParameterComment(GINI_INDEX_PVALUE_CUTOFF))
+        (getOption(REPORT_GINI_COEFFICENTS, true), po::value<std::string>(), GetParameterComment(REPORT_GINI_COEFFICENTS))
         (getOption(USE_REPORTED_GEOSIZE, true), po::value<std::string>(), GetParameterComment(USE_REPORTED_GEOSIZE))
         (getOption(MAXGEOPOPATRISK_REPORTED, true), po::value<std::string>(), GetParameterComment(MAXGEOPOPATRISK_REPORTED))
         (getOption(MAXGEOPOPFILE_REPORTED, true), po::value<std::string>(), GetParameterComment(MAXGEOPOPFILE_REPORTED))
@@ -189,18 +189,25 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(ESHAPES, true), po::value<std::string>(), GetParameterComment(ESHAPES))
         (getOption(ENUMBERS, true), po::value<std::string>(), GetParameterComment(ENUMBERS));
 
+    /* Power Evaluations tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerEvaluations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(POWER_EVALUATION, true), po::value<std::string>(), GetParameterComment(POWER_EVALUATION))
+        (getOption(PE_METHOD_TYPE, true), po::value<std::string>(), GetParameterComment(PE_METHOD_TYPE))
+        (getOption(PE_COUNT, true), po::value<std::string>(), GetParameterComment(PE_COUNT))
+        (getOption(PE_CRITICAL_TYPE, true), po::value<std::string>(), GetParameterComment(PE_CRITICAL_TYPE))
+        (getOption(PE_ESTIMATION_TYPE, true), po::value<std::string>(), GetParameterComment(PE_ESTIMATION_TYPE))
+        (getOption(PE_ALT_HYPOTHESIS_FILE, true), po::value<std::string>(), GetParameterComment(PE_ALT_HYPOTHESIS_FILE))
+        (getOption(PE_POWER_REPLICAS, true), po::value<std::string>(), GetParameterComment(PE_POWER_REPLICAS))
+        (getOption(POWER_05, true), po::value<std::string>(), GetParameterComment(POWER_05))
+        (getOption(POWER_01, true), po::value<std::string>(), GetParameterComment(POWER_01))
+        (getOption(POWER_001, true), po::value<std::string>(), GetParameterComment(POWER_001))
+        (getOption(PE_OUTPUT_SIMUALTION_DATA, true), po::value<std::string>(), GetParameterComment(PE_OUTPUT_SIMUALTION_DATA))
+        (getOption(PE_SIMUALTION_OUTPUTFILE, true), po::value<std::string>(), GetParameterComment(PE_SIMUALTION_OUTPUTFILE));
+
     /* Power Simulations tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerSimulations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
-        (getOption(POWER_EVALUATION, true), po::value<std::string>(), GetParameterComment(POWER_EVALUATION))
-        (getOption(PE_COUNT, true), po::value<std::string>(), GetParameterComment(PE_COUNT))
-        (getOption(PE_CV_SPEC_TYPE, true), po::value<std::string>(), GetParameterComment(PE_CV_SPEC_TYPE))
-        (getOption(PE_CRITICAL_TYPE, true), po::value<std::string>(), GetParameterComment(PE_CRITICAL_TYPE))
-        (getOption(POWERX, true), po::value<std::string>(), GetParameterComment(POWERX))
-        (getOption(POWERY, true), po::value<std::string>(), GetParameterComment(POWERY))
-        (getOption(PE_ESTIMATION_TYPE, true), po::value<std::string>(), GetParameterComment(PE_ESTIMATION_TYPE))
-        (getOption(PE_ADJUSTFILE, true), po::value<std::string>(), GetParameterComment(PE_ADJUSTFILE))
-        (getOption(PE_POWER_REPLICAS, true), po::value<std::string>(), GetParameterComment(PE_POWER_REPLICAS))
         (getOption(SIMULATION_TYPE, true), po::value<std::string>(), GetParameterComment(SIMULATION_TYPE))
         (getOption(SIMULATION_SOURCEFILE, true), po::value<std::string>(), GetParameterComment(SIMULATION_SOURCEFILE))
         (getOption(OUTPUT_SIMULATION_DATA, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIMULATION_DATA))

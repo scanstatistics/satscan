@@ -66,10 +66,16 @@ public class Parameters implements Cloneable {
     /** time trend calculation type */
     public enum TimeTrendType                 {LINEAR,QUADRATIC};
     /** cluster reporting type */
-    public enum ClusterReportType             {HIERARCHICAL, INDEX_BASED, ALL_CLUSTER_TYPES};
-    /** index based cluster reporting type*/
-    public enum IndexBasedReportType          {OPTIMAL_ONLY, ALL_VALUES};
-
+    public enum ClusterReportType             {HIERARCHICAL, GINI_INDEX, ALL_CLUSTER_TYPES};
+    /** gini index cluster reporting type*/
+    public enum GiniIndexReportType           {OPTIMAL_ONLY, ALL_VALUES};
+    /** critical values calculation type */
+    public enum CriticalValuesType            {CV_MONTECARLO, CV_GUMBEL, CV_POWER_VALUES};
+    /** critical values calculation type */
+    public enum PowerEstimationType           {PE_MONTECARLO, PE_GUMBEL};
+    /** power evaluation method */
+    public enum PowerEvaluationMethodType     {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
+    
     private int                             giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
     private ExecutionType                   geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
     private MultipleDataSetPurposeType      geMultipleSetPurposeType=MultipleDataSetPurposeType.MULTIVARIATE; /** purpose for multiple data sets */
@@ -93,9 +99,6 @@ public class Parameters implements Cloneable {
     private PValueReportingType             gePValueReportingType=PValueReportingType.DEFAULT_PVALUE; /** PValue reporting type */
     private int                             giEarlyTermThreshold=50; /** early termination threshold */
     private boolean                         gbReportGumbelPValue=false;                   /** report Gumbel p-value */
-        /* Power Calcution variables */
-    private boolean                         gbPowerCalculation=false; /** indicator of whether to perform power calculations */
-    private double                          gdPower_X=0.0, gdPower_Y=0.0; /** power calculation variables */
 
     /* Maximum spatial cluster variables */
     private double                          gdMaxSpatialSizeInPopulationAtRisk=50.0;
@@ -179,12 +182,21 @@ public class Parameters implements Cloneable {
     private TimeTrendType                   geTimeTrendType=TimeTrendType.LINEAR;                        /** time trend type */
     private boolean                         gbReportRank=false;  /** report cluster rank */
     private boolean                         gbPrintAsciiHeaders=false;  /** print ascii column headers */
-    private double                          _indexBasedPValueCutoff=0.05; /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
+    private double                          _giniIndexPValueCutoff=0.05; /* P-Value used to limit clusters in gini index coefficients calcuation */
 
     private boolean                         _reportHierarchicalClusters=true;  /** print ascii column headers */
     private boolean                         _reportGiniOptimizedClusters=true;  /** print ascii column headers */
-    IndexBasedReportType                    _indexBasedReportType=IndexBasedReportType.OPTIMAL_ONLY; /* type for the index based cluster reporting */
-    boolean                                 _outputIndexCoefficients=false; /* output index based coefficents */
+    GiniIndexReportType                     _giniIndexReportType=GiniIndexReportType.OPTIMAL_ONLY; /* type for the gini index cluster reporting */
+    boolean                                 _outputGiniIndexCoefficients=false; /* output gini index coefficents */
+
+    /* Power Evaluation variables */
+    private boolean                         _performPowerEvaluation=false; /** indicator of whether to perform power calculations */
+    CriticalValuesType                      _critical_value_type=CriticalValuesType.CV_MONTECARLO;
+    PowerEstimationType                     _power_estimation_type=PowerEstimationType.PE_MONTECARLO;
+    PowerEvaluationMethodType               _power_evaluation_method=PowerEvaluationMethodType.PE_WITH_ANALYSIS;
+    private String                          _power_alt_hypothesis_filename=""; /** power evaluation alternative filename */
+    private int                             _powerEvaluationTotalCases; /* number cases in power evaluation, user specified */
+    private int                             _power_replica; /* number of replications in power step of power evaluations */
 
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -286,9 +298,6 @@ public class Parameters implements Cloneable {
         if (geProbabilityModelType                 != rhs.geProbabilityModelType) return false;
         if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
         if (giReplications                         != rhs.giReplications) return false;
-        if (gbPowerCalculation                     != rhs.gbPowerCalculation) return false;
-        if (gdPower_X                              != rhs.gdPower_X) return false;
-        if (gdPower_Y                              != rhs.gdPower_Y) return false;
         if (!gsStudyPeriodStartDate.equals(rhs.gsStudyPeriodStartDate)) return false;
         if (!gsStudyPeriodEndDate.equals(rhs.gsStudyPeriodEndDate)) return false;
         if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
@@ -346,9 +355,9 @@ public class Parameters implements Cloneable {
         if (gbSuppressWarnings                     != rhs.gbSuppressWarnings) return false;
         if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
         if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
-        if (geStudyPeriodDataCheckingType          != rhs.geStudyPeriodDataCheckingType) return false;
-        if (geCoordinatesDataCheckingType          != rhs.geCoordinatesDataCheckingType) return false;
-        if (gdMaxSpatialSizeInPopulationAtRisk     != rhs.gdMaxSpatialSizeInPopulationAtRisk) return false;
+        if (geStudyPeriodDataCheckingType != rhs.geStudyPeriodDataCheckingType) return false;
+        if (geCoordinatesDataCheckingType != rhs.geCoordinatesDataCheckingType) return false;
+        if (gdMaxSpatialSizeInPopulationAtRisk != rhs.gdMaxSpatialSizeInPopulationAtRisk) return false;
         if (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile != rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile) return false;
         if (gdMaxSpatialSizeInMaxCirclePopulationFile != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile) return false;
         if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter) return false;
@@ -371,26 +380,57 @@ public class Parameters implements Cloneable {
         if (geTimeTrendType != rhs.geTimeTrendType) return false;
         if (gbReportRank != rhs.gbReportRank) return false;
         if (gbPrintAsciiHeaders != rhs.gbPrintAsciiHeaders) return false;
-        if (_indexBasedPValueCutoff != rhs._indexBasedPValueCutoff) return false;
+        if (_giniIndexPValueCutoff != rhs._giniIndexPValueCutoff) return false;
         if (_reportHierarchicalClusters != rhs._reportHierarchicalClusters) return false;
         if (_reportGiniOptimizedClusters != rhs._reportGiniOptimizedClusters) return false;
-        if (_indexBasedReportType != rhs._indexBasedReportType) return false;
-        if (_outputIndexCoefficients != rhs._outputIndexCoefficients) return false;
+        if (_giniIndexReportType != rhs._giniIndexReportType) return false;
+        if (_outputGiniIndexCoefficients != rhs._outputGiniIndexCoefficients) return false;
+        if (_performPowerEvaluation != rhs._performPowerEvaluation) return false;
+        if (_critical_value_type != rhs._critical_value_type) return false;
+        if (_power_estimation_type != rhs._power_estimation_type) return false;
+        if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
+        if (_powerEvaluationTotalCases != rhs._powerEvaluationTotalCases) return false;
+        if (_power_replica != rhs._power_replica) return false;
+
         return true;
     }
-    public double getIndexBasedPValueCutoff() {return _indexBasedPValueCutoff;}
-    public void setIndexBasedPValueCutoff(double d) {_indexBasedPValueCutoff = d;}
+    public boolean getPerformPowerEvaluation() {return _performPowerEvaluation;}
+    public void setPerformPowerEvaluation(boolean b) {_performPowerEvaluation = b;}
+    public CriticalValuesType getPowerEvaluationCriticalValueType() {return _critical_value_type;}
+    public void setPowerEvaluationCriticalValueType(int iOrdinal) {
+        try { _critical_value_type = CriticalValuesType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
+    }
+    public PowerEstimationType getPowerEstimationType() {return _power_estimation_type;}
+    public void setPowerEstimationType(int iOrdinal) {
+        try { _power_estimation_type = PowerEstimationType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _power_estimation_type.values()); }
+    }
+    public PowerEvaluationMethodType getPowerEvaluationMethod() {return _power_evaluation_method;}
+    public void setPowerEvaluationMethod(int iOrdinal) {
+        try { _power_evaluation_method = PowerEvaluationMethodType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _power_evaluation_method.values()); }
+    }
+    public String getPowerEvaluationAltHypothesisFilename() {return _power_alt_hypothesis_filename;}
+    public void setPowerEvaluationAltHypothesisFilename(final String s) {_power_alt_hypothesis_filename = s;}
+    public int getPowerEvaluationCaseCount() {return _powerEvaluationTotalCases;}
+    public void setPowerEvaluationCaseCount(int i) {_powerEvaluationTotalCases = i;}
+    public int getNumPowerEvalReplicaPowerStep() {return _power_replica;}
+    public void setNumPowerEvalReplicaPowerStep(int i) {_power_replica = i;}
+
+    public double getGiniIndexPValueCutoff() {return _giniIndexPValueCutoff;}
+    public void setGiniIndexPValueCutoff(double d) {_giniIndexPValueCutoff = d;}
     public boolean getReportHierarchicalClusters() {return _reportHierarchicalClusters;}
     public void setReportHierarchicalClusters(boolean b) {_reportHierarchicalClusters = b;}
     public boolean getReportGiniOptimizedClusters() {return _reportGiniOptimizedClusters;}
     public void setReportGiniOptimizedClusters(boolean b) {_reportGiniOptimizedClusters = b;}
-    public IndexBasedReportType getIndexBasedReportType() {return _indexBasedReportType;}
-    public void setIndexBasedReportType(int iOrdinal) {
-        try { _indexBasedReportType = IndexBasedReportType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _indexBasedReportType.values()); }
+    public GiniIndexReportType getGiniIndexReportType() {return _giniIndexReportType;}
+    public void setGiniIndexReportType(int iOrdinal) {
+        try { _giniIndexReportType = GiniIndexReportType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _giniIndexReportType.values()); }
     }
-    public boolean getOutputIndexBasedCoefficents() {return _outputIndexCoefficients;}
-    public void setReportIndexBasedCoefficents(boolean b) {_outputIndexCoefficients = b;}
+    public boolean getReportGiniIndexCoefficents() {return _outputGiniIndexCoefficients;}
+    public void setReportGiniIndexCoefficents(boolean b) {_outputGiniIndexCoefficients = b;}
     public boolean getPrintAsciiHeaders() {return gbPrintAsciiHeaders;}
     public void setPrintAsciiHeaders(boolean b) {gbPrintAsciiHeaders = b;}
     public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
@@ -433,7 +473,6 @@ public class Parameters implements Cloneable {
     public boolean GetIncludePurelySpatialClusters() {return gbIncludePurelySpatialClusters;}
     public boolean GetIncludePurelyTemporalClusters() {return gbIncludePurelyTemporalClusters;}
     public boolean GetIsLoggingHistory() {return gbLogRunHistory;}
-    public boolean GetIsPowerCalculated() {return gbPowerCalculation;}
     /** Returns whether analysis is a prospective analysis. */
     public boolean GetIsProspectiveAnalysis() {
         return (geAnalysisType == AnalysisType.PROSPECTIVESPACETIME || geAnalysisType == AnalysisType.PROSPECTIVEPURELYTEMPORAL);
@@ -500,8 +539,6 @@ public class Parameters implements Cloneable {
         return gvPopulationFilenames.elementAt(iSetIndex - 1);
     }
     public final Vector<String> GetPopulationFileNames() {return gvPopulationFilenames;}
-    public double GetPowerCalculationX() {return gdPower_X;}
-    public double GetPowerCalculationY() {return gdPower_Y;}
     public DatePrecisionType GetPrecisionOfTimesType() {return gePrecisionOfTimesType;}
     public ProbabilityModelType GetProbabilityModelType() {return geProbabilityModelType;}
     public static final String GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) {
@@ -664,9 +701,6 @@ public class Parameters implements Cloneable {
         gvPopulationFilenames.setSize(iSetIndex);
         gvPopulationFilenames.setElementAt(sPopulationFileName, iSetIndex - 1);
     }
-    public void SetPowerCalculation(boolean b) {gbPowerCalculation = b;}
-    public void SetPowerCalculationX(double dPowerX) {gdPower_X = dPowerX;}
-    public void SetPowerCalculationY(double dPowerY) {gdPower_Y = dPowerY;}
     public void SetPrecisionOfTimesType(int iOrdinal) {
         try { gePrecisionOfTimesType = DatePrecisionType.values()[iOrdinal];
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }

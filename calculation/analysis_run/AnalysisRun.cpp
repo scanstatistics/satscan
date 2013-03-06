@@ -42,6 +42,7 @@
 #include "ClusterKML.h"
 #include "PoissonRandomizer.h"
 #include <boost/assign/std/vector.hpp>
+#include <algorithm>
 using namespace boost::assign;
 
 /** constructor */
@@ -154,10 +155,8 @@ void AnalysisRunner::Execute() {
         geExecutingType = (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution()) ? SUCCESSIVELY : CENTRICALLY;
     try {
         // sanity check for invalidate paramater configurations
-        if (gParameters.getPerformPowerEvaluation() && !gParameters.getPowerEvaluationCaseCount() && !gParameters.GetCaseFileName().size())
+        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_ONLY_SPECIFIED_CASES && !gParameters.GetCaseFileName().size())
             throw prg_error("Error: Power evaluation is not implemented such that both the number of power cases and the case file(s) are unspecified.\n","Execute()");
-        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount() && gParameters.GetCaseFileName().size())
-            throw prg_error("Error: Power evaluation is not implemented such you can specify the number of power cases and the case file(s).\n","Execute()");
         //calculate number of neighboring locations about each centroid
         if (geExecutingType == SUCCESSIVELY && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
             macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
@@ -168,7 +167,7 @@ void AnalysisRunner::Execute() {
         //create result file report
         CreateReport();
         // conditionally perform standard analysis based upon power evaluation settings
-        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && !gParameters.getPowerEvaluationCaseCount())) {
+        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
             switch (geExecutingType) {
                 case CENTRICALLY  : ExecuteCentricEvaluation(); break;
                 case SUCCESSIVELY :
@@ -203,89 +202,134 @@ void AnalysisRunner::Execute() {
 
 /* perform power evaluations */
 void AnalysisRunner::ExecutePowerEvaluations() {
-  try {
-    FILE * fp=0;
-    OpenReportFile(fp, true);
-    fprintf(fp, "\nPOWER EVALUATIONS\n");
-    _clusterRanker.sort(); // need to sort otherwise simulation process of ranking clusters will fail
-    boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
-    // simulations not already done is analysis, perform them now
-    if (!gSimVars.get_sim_count()) {
-        //Do standard replications
-        gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-        gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
-        runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested());        
-    } else 
-        AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
-    unsigned int numReplicaStep1 = gSimVars.get_sim_count();
+    try {
+        FILE * fp=0;
+        OpenReportFile(fp, true);
+        fprintf(fp, "\nPOWER EVALUATIONS\n");
+        _clusterRanker.sort(); // need to sort otherwise simulation process of ranking clusters will fail
+        boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+        // if simulations not already done is analysis stage, perform them now
+        if (!gSimVars.get_sim_count()) {
+            // Do standard replications
+            gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
+            gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
+            // if writing simulation data to file, delete file now
+            std::string simulation_out;
+            if (gParameters.GetOutputSimulationData()) {
+                simulation_out = gParameters.GetSimulationDataOutputFilename();
+                remove(simulation_out.c_str());
+            }
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out);
+        } else 
+            AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
+        unsigned int numReplicaStep1 = gSimVars.get_sim_count();
 
-    // report critical values gathered from simulations and/or user specified
-    fprintf(fp,"\nAlpha\t\t\t\t\t0.05\t\t\t\t0.01\t\t\t\t0.001\n");
-    double critical05, critical01, critical001;
-    switch (gParameters.getPowerEvaluationCriticalValueType()) {
-        case PE_MONTECARLO:
+        // report critical values gathered from simulations and/or user specified
+        fprintf(fp,"\nAlpha\t\t\t\t\t0.05\t\t\t\t0.01\t\t\t\t0.001\n-----\t\t\t\t\t----\t\t\t\t----\t\t\t\t-----\n");
+        double critical05, critical01, critical001;
+        switch (gParameters.getPowerEvaluationCriticalValueType()) {
+            case CV_MONTECARLO:
                 critical05 = gpSignificantRatios->getAlpha05().second;
                 critical01 = gpSignificantRatios->getAlpha01().second;
                 critical001 = gpSignificantRatios->getAlpha001().second;
                 break;
-        case PE_GUMBEL:
+            case CV_GUMBEL:
                 critical05 = calculateGumbelCriticalValue(gSimVars, 0.05).first;
                 critical01 = calculateGumbelCriticalValue(gSimVars, 0.01).first;
                 critical001 = calculateGumbelCriticalValue(gSimVars, 0.001).first;
                 break;
-        default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
-    };
-    fprintf(fp,"Critical Value\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", critical05, critical01, critical001);
-    // if power estimation is monte carlo, then set sim vars to track those LLRs
-    if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
-        gSimVars.reset(critical05);
-        gSimVars.add_additional_mlc(critical01);
-        gSimVars.add_additional_mlc(critical001);
-    }
-
-    // Do power replications
-    if (gPrintDirection.GetIsCanceled()) return;
-    // read power evaluations adjustments
-    SaTScanDataReader reader(*gpDataHub);
-    SaTScanDataReader::RiskAdjustmentsContainer_t riskAdjustments;
-    if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationFilename(), riskAdjustments, false))
-        throw resolvable_error("There were problems reading the power evaluation adjustments file.", "ExecutePowerEvaluations()");
-    if (!riskAdjustments.size())
-        throw resolvable_error("Power evaluations can not be performed. No adjustments found in power evaluation file.", "ExecutePowerEvaluations()");
-    for (size_t t=0; t < riskAdjustments.size(); ++t) {
-        ++giAnalysisCount;
-        // create adjusted randomizers
-        randomizers->killAll();
-        randomizers->resize(gParameters.GetNumDataSets(), 0);
-        randomizers->at(0) = new AlternateHypothesisRandomizer(*gpDataHub, riskAdjustments.at(t), gParameters.GetRandomizationSeed());
-        //create more if needed
-        for (size_t r=1; r < gParameters.GetNumDataSets(); ++r)
-            randomizers->at(r) = randomizers->at(0)->Clone();    
-        gPrintDirection.Printf("Doing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t);
-        runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep());
-
-        double power05, power01, power001;
-        fprintf(fp,"Estimated Power\n");
-        switch (gParameters.getPowerEstimationType()) {
-            case PE_MONTECARLO:
-                power05 = static_cast<double>(gSimVars.get_llr_counters().at(0).second)/static_cast<double>(numReplicaStep1);
-                power01 = static_cast<double>(gSimVars.get_llr_counters().at(1).second)/static_cast<double>(numReplicaStep1);
-                power001 = static_cast<double>(gSimVars.get_llr_counters().at(2).second)/static_cast<double>(numReplicaStep1);
+            case CV_POWER_VALUES:
+                critical05 = gParameters.getPowerEvaluationCriticalValue05();
+                critical01 = gParameters.getPowerEvaluationCriticalValue01();
+                critical001 = gParameters.getPowerEvaluationCriticalValue001();
                 break;
-            case PE_GUMBEL:
-                power05 = calculateGumbelPValue(gSimVars, critical05).first;
-                power01 = calculateGumbelPValue(gSimVars, critical01).first;
-                power001 = calculateGumbelPValue(gSimVars, critical001).first;
-                break;
-            default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEstimationType());
+            default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
+        };
+        fprintf(fp,"Critical Value\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", critical05, critical01, critical001);
+        // if power estimation is monte carlo, then set sim vars to track those LLRs
+        if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
+            gSimVars.reset(critical05);
+            gSimVars.add_additional_mlc(critical01);
+            gSimVars.add_additional_mlc(critical001);
         }
-        fprintf(fp,"Alternative #%d\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", t+1, power05, power01, power001);
+        if (gPrintDirection.GetIsCanceled()) return;
+
+        // Do power replications
+        SaTScanDataReader::RiskAdjustmentsContainer_t riskAdjustments;
+        size_t number_randomizations=0;
+        switch (gParameters.GetPowerEvaluationSimulationType()) {
+            case STANDARD : {
+                // read power evaluations adjustments
+                SaTScanDataReader reader(*gpDataHub);
+                if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationAltHypothesisFilename(), riskAdjustments, false))
+                    throw resolvable_error("There were problems reading the power evaluation adjustments file.", "ExecutePowerEvaluations()");
+                if (!riskAdjustments.size())
+                    throw resolvable_error("Power evaluations can not be performed. No adjustments found in power evaluation file.", "ExecutePowerEvaluations()");
+                number_randomizations = riskAdjustments.size();
+            } break;
+            case FILESOURCE : {
+                // determine the number of randomization iterations by counting lines in source file
+                std::ifstream inFile(gParameters.getPowerEvaluationSimulationDataSourceFilename()); 
+                size_t count = std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n');
+                number_randomizations = count/gParameters.getNumPowerEvalReplicaPowerStep();
+            } break;
+            default: throw prg_error("Unknown power evalaution simulation type '%d'.", "ExecutePowerEvaluations()", gParameters.GetPowerEvaluationSimulationType());
+        }
+
+        std::string simulation_out;
+        if (gParameters.getOutputPowerEvaluationSimulationData()) {
+            simulation_out = gParameters.getPowerEvaluationSimulationDataOutputFilename();
+            remove(simulation_out.c_str());
+        }
+        if (number_randomizations == 0) {
+            fprintf(fp,"\nNo alternative hypothesis sets found in source files.\n");
+        } else {
+            fprintf(fp,"\nEstimated Power\n---------------\n");
+        }
+        for (size_t t=0; t < number_randomizations; ++t) {
+            ++giAnalysisCount;
+            // create adjusted randomizers
+            randomizers->killAll();
+            randomizers->resize(gParameters.GetNumDataSets(), 0);
+            switch (gParameters.GetPowerEvaluationSimulationType()) {
+                case STANDARD : 
+                    randomizers->at(0) = new AlternateHypothesisRandomizer(*gpDataHub, riskAdjustments.at(t), gParameters.GetRandomizationSeed());
+                    break;
+                case FILESOURCE : {
+                    std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(gParameters, gParameters.getPowerEvaluationSimulationDataSourceFilename(), gParameters.GetRandomizationSeed()));
+                    // set file line offset for the current iteration of power step
+                    randomizer->setLineOffset(t * gParameters.getNumPowerEvalReplicaPowerStep());
+                    randomizers->at(0) = randomizer.release();
+                } break;
+                default: throw prg_error("Unknown power evalaution simulation type '%d'.", "ExecutePowerEvaluations()", gParameters.GetPowerEvaluationSimulationType());
+            }
+            // create more if needed
+            for (size_t r=1; r < gParameters.GetNumDataSets(); ++r)
+                randomizers->at(r) = randomizers->at(0)->Clone();
+            gPrintDirection.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
+            runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep(), simulation_out);
+
+            double power05, power01, power001;
+            switch (gParameters.getPowerEstimationType()) {
+                case PE_MONTECARLO:
+                    power05 = static_cast<double>(gSimVars.get_llr_counters().at(0).second)/static_cast<double>(numReplicaStep1);
+                    power01 = static_cast<double>(gSimVars.get_llr_counters().at(1).second)/static_cast<double>(numReplicaStep1);
+                    power001 = static_cast<double>(gSimVars.get_llr_counters().at(2).second)/static_cast<double>(numReplicaStep1);
+                    break;
+                case PE_GUMBEL:
+                    power05 = calculateGumbelPValue(gSimVars, critical05).first;
+                    power01 = calculateGumbelPValue(gSimVars, critical01).first;
+                    power001 = calculateGumbelPValue(gSimVars, critical001).first;
+                    break;
+                default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEstimationType());
+            }
+            fprintf(fp,"Alternative #%d\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", t+1, power05, power01, power001);
+        }
+        fclose(fp); fp=0;
+    } catch (prg_exception& x) {
+        x.addTrace("ExecutePowerEvaluations()","AnalysisRunner");
+        throw;
     }
-    fclose(fp); fp=0;
-  } catch (prg_exception& x) {
-    x.addTrace("ExecutePowerEvaluations()","AnalysisRunner");
-    throw;
-  }
 }
 
 
@@ -636,6 +680,7 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
       std::auto_ptr<LoglikelihoodRatioWriter>      RatioWriter;
       std::auto_ptr<AbstractDataSetWriter>         DataSetWriter;
+      std::string simulation_out;
 
       //get data randomizers
       DataHandler.GetRandomizerContainer(RandomizationContainer);
@@ -644,8 +689,9 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       if (gParameters.GetNumReplicationsRequested())
         gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
       if (gParameters.GetOutputSimulationData()) {
-        remove(gParameters.GetSimulationDataOutputFilename().c_str());
         DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
+        simulation_out = gParameters.GetSimulationDataOutputFilename();
+        remove(simulation_out.c_str());
       }
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
@@ -660,9 +706,10 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
          gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
          macroRunTimeStopSerial();
          //print simulation data to file, if requested
-         if (gParameters.GetOutputSimulationData())
-           for (size_t t=0; t < thisDataCollection.size(); ++t)
-              DataSetWriter->write(*thisDataCollection[t], gParameters);
+         if (gParameters.GetOutputSimulationData()) {
+            for (size_t t=0; t < thisDataCollection.size(); ++t)
+                DataSetWriter->write(*thisDataCollection[t], gParameters, simulation_out);
+         }
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection, RandomizationContainer);
@@ -777,7 +824,7 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
     - additional output file(s)
 *****************************************************
 */
-void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica) {
+void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile) {
   try {
     {
       PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
@@ -790,7 +837,7 @@ void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContai
       unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), num_relica);
       for (unsigned u=0; u < ulParallelProcessCount; ++u) {
          try {
-            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, u==0);
+            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u==0);
             tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
          } catch (std::bad_alloc &b) {             
              if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -826,25 +873,27 @@ void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContai
 
 /** Prepares data for simulations and contracts simulation process. */
 void AnalysisRunner::ExecuteSuccessiveSimulations() {
-  try {                                                           
-    if (gParameters.GetNumReplicationsRequested() > 0) {
-      //recompute neighbors if settings indicate that smaller clusters are reported
-      gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-      gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
-      //set/reset loglikelihood ratio significance indicator
-      if (GetIsCalculatingSignificantRatios()) 
-          gpSignificantRatios->initialize();
-      //if writing simulation data to file, delete file now
-      if (gParameters.GetOutputSimulationData())
-          remove(gParameters.GetSimulationDataOutputFilename().c_str());
-      boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
-      runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested());
+     try {                                                           
+        if (gParameters.GetNumReplicationsRequested() > 0) {
+            //recompute neighbors if settings indicate that smaller clusters are reported
+            gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
+            gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
+            //set/reset loglikelihood ratio significance indicator
+            if (GetIsCalculatingSignificantRatios()) 
+                gpSignificantRatios->initialize();
+            //if writing simulation data to file, delete file now
+            std::string simulation_out;
+            if (gParameters.GetOutputSimulationData()) {
+                simulation_out = gParameters.GetSimulationDataOutputFilename();
+                remove(simulation_out.c_str());
+            }
+            boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ExecuteSuccessiveSimulations()","AnalysisRunner");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ExecuteSuccessiveSimulations()","AnalysisRunner");
-    throw;
-  }
 }
 
 /** Prints calculated critical values to report file. */
@@ -949,7 +998,7 @@ void AnalysisRunner::PrintFindClusterHeading() {
 
 /** Print GINI coefficients */
 void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
-  if (!(gParameters.getReportGiniOptimizedClusters() && gParameters.getOutputIndexBasedCoefficents())) return;
+  if (!(gParameters.getReportGiniOptimizedClusters() && gParameters.getReportGiniIndexCoefficents())) return;
   AsciiPrintFormat printFormat;
   std::string buffer;
   printFormat.SetMarginsAsClusterSection(0);
@@ -963,7 +1012,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
       printString(buffer, "%g percent", itrMLC->getMaximumWindowSize());
       printFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);  
-      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getIndexBasedPValueCutoff());
+      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getGiniIndexPValueCutoff());
       printFormat.PrintAlignedMarginsDataString(fp, getValueAsString(gini, buffer, 4));
       if (gini > maxGINI) {maximizedCollection = &(*itrMLC); maxGINI = gini;}
       minSize = std::min(minSize, itrMLC->getMaximumWindowSize()); 
@@ -976,7 +1025,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   }
   if (gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
     std::string buffer2;
-    printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(gParameters.getIndexBasedPValueCutoff(), buffer).c_str());
+    printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(gParameters.getGiniIndexPValueCutoff(), buffer).c_str());
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
 
@@ -1001,7 +1050,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   // need to determine the maximum gini coefficent
   std::stringstream lineData, pointData;
   for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getIndexBasedPValueCutoff());
+      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getGiniIndexPValueCutoff());
       pg << "'-' w p ls " << (maximizedCollection == &(*itrMLC) ? 3 : 2) << " notitle" << (itrMLC + 1 != gTopClustersContainers.end() ? "," : "");
       lineData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl;
       pointData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl << "e" << std::endl;
@@ -1386,12 +1435,12 @@ void AnalysisRunner::reportClusters() {
         gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
         if (gParameters.getReportGiniOptimizedClusters()) {
             // cluster reporting for index based cluster collections can either be only the optimal collection or all collections
-            if (gParameters.getIndexBasedReportType() == OPTIMAL_ONLY) {
+            if (gParameters.getGiniIndexReportType() == OPTIMAL_ONLY) {
                 // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
                 const MostLikelyClustersContainer* maximizedCollection = 0;
-                double maximizedGINI = gTopClustersContainers.front().getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getIndexBasedPValueCutoff());
+                double maximizedGINI = gTopClustersContainers.front().getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getGiniIndexPValueCutoff());
                 for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin() + 1; itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-                    double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getIndexBasedPValueCutoff());
+                    double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getGiniIndexPValueCutoff());
                     if (maximizedGINI < thisGini) {
                         maximizedCollection = &(*itrMLC);
                         maximizedGINI = thisGini;

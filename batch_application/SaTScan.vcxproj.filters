@@ -1145,5 +1145,8 @@
     <ClInclude Include="ParameterProgramOptions.h">
       <Filter>Header Files\batch_application</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\ParameterTypes.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

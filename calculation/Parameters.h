@@ -6,88 +6,7 @@
 #include "JulianDates.h"
 #include "UtilityFunctions.h"
 #include "FileName.h"
-
-/** parameter types
-    - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
-enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE,
-                                    PRECISION, DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
-                                    CLUSTERS, EXACTTIMES, TIME_AGGREGATION_UNITS, TIME_AGGREGATION, PURESPATIAL,
-                                    TIMESIZE, REPLICAS, MODEL, RISKFUNCTION, POWER_EVALUATION, POWERX, POWERY, TIMETREND,
-                                    TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, OUTPUT_SIM_LLR_ASCII,
-                                    ITERATIVE, ITERATIVE_NUM, ITERATIVE_PVAL, VALIDATE, OUTPUT_RR_ASCII, WINDOW_SHAPE, ESHAPES,
-                                    ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
-                                    CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
-                                    RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
-                                    OUTPUT_SIM_LLR_DBASE, NON_COMPACTNESS_PENALTY, INTERVAL_STARTRANGE, 
-                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, EARLY_SIM_TERMINATION,
-                                    REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
-                                    SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
-                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
-                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
-                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
-                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK, COORDINATES_DATACHECK,
-                                    MAXGEOPOPATRISK, MAXGEOPOPFILE, MAXGEODISTANCE,
-                                    USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
-                                    MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
-                                    USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
-                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
-                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
-                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK, PRINT_ASCII_HEADERS,
-                                    REPORT_HIERARCHICAL_CLUSTERS, REPORT_GINI_CLUSTERS, SPATIAL_MAXIMA, INDEXBASED_REPORT_TYPE, INDEXBASED_PVALUE_CUTOFF, OUTPUT_INDEX_COEFFICENTS,
-                                    PE_COUNT, PE_CV_SPEC_TYPE, PE_CRITICAL_TYPE, PE_ESTIMATION_TYPE, PE_ADJUSTFILE, PE_POWER_REPLICAS};
-/** analysis and cluster types */
-enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
-                                    SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
-/** cluster types */
-enum ClusterType                   {PURELYSPATIALCLUSTER=1, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
-                                    SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, 
-                                    PURELYSPATIALPROSPECTIVECLUSTER,PURELYSPATIALHOMOGENEOUSCLUSTER};
-/** probability model types */
-enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, 
-                                    NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK};
-enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
-enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
-/** area incidence rate types */
-enum AreaRateType                  {HIGH=1, LOW, HIGHANDLOW};
-/** time trend adjustment types */
-enum TimeTrendAdjustmentType       {NOTADJUSTED=0, NONPARAMETRIC, LOGLINEAR_PERC,
-                                    CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION, CALCULATED_QUADRATIC_PERC};
-/** spatial adjustment types */
-enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT=0, SPATIALLY_STRATIFIED_RANDOMIZATION};
-enum CoordinatesType               {CARTESIAN=0, LATLON};
-/** criteria for reporting secondary clusters types */
-enum CriteriaSecondaryClustersType {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
-                                    NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS};
-/** interperation types for maximum temporal size */
-enum TemporalSizeType              {PERCENTAGETYPE=0, TIMETYPE};
-/** interperation types for maximum spatial size */
-enum SpatialSizeType               {PERCENTOFPOPULATION=0, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
-/** defines how simulated data will be created - only pertinent for Poisson */
-enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
-/** purpose of multiple data sets */
-enum MultipleDataSetPurposeType    {MULTIVARIATE=0, ADJUSTMENT};
-/** analysis execution type */
-enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
-/** spatial window shape */
-enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
-/** non-compactness penalty type */
-enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, STRONGPENALTY};
-/** study period data checking type */
-enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
-/** geographical coordinates data checking type */
-enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
-/** multiple coordinates type */
-enum MultipleCoordinatesType       {ONEPERLOCATION=0, ATLEASTONELOCATION, ALLLOCATIONS};
-/** p-values reporting type */
-enum PValueReportingType           {DEFAULT_PVALUE=0, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
-/** time trend calculation type */
-enum TimeTrendType                 {LINEAR=0,QUADRATIC};
-/** cluster reporting type */
-enum ClusterReportType             {HIERARCHICAL=0, INDEX_BASED, ALL_CLUSTER_TYPES};
-/** index based cluster reporting type*/
-enum IndexBasedReportType          {OPTIMAL_ONLY=0, ALL_VALUES};
-enum CriticalValuesSpecifyType     {PE_AUTOMATIC=0, PE_MANUAL, PE_BOTH};
-enum PowerEvaluationType           {PE_MONTECARLO=0, PE_GUMBEL};
+#include "ParameterTypes.h"
 
 class CParameters {
   public:
@@ -106,7 +25,7 @@ class CParameters {
     unsigned int                        giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gdTimeTrendConverge;                    /** time trend convergence value for SVTT */
-    SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
+    SimulationType                      _simulationType;                       /** indicates simulation procedure */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
     bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
                                                                                     pertinent for prospective analyses */
@@ -176,7 +95,7 @@ class CParameters {
     std::string                         gsOutputFileName;                       /** results output filename */
     std::string                         gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
-    std::string                         gsSimulationDataSourceFileName;         /** simualtion data source filename */
+    std::string                         gsSimulationDataSourceFileName;         /** simulation data source filename */
     bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
     std::string                         gsAdjustmentsByRelativeRisksFileName;   /** adjustments by known relative risks filename */
     std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
@@ -208,22 +127,28 @@ class CParameters {
     bool                                gbReportRank;                           /** report cluster rank */
     bool                                gbPrintAsciiHeaders;                    /** print headers in ascii output files */
     std::vector<double>                 gvSpatialWindowStops;                   /** spatial window stops */
-    double                              _indexBasedPValueCutoff;                /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
+    double                              _giniIndexPValueCutoff;                 /* P-Value used to limit clusters in gini index calcuation */
     bool                                _reportHierarchicalClusters;
     bool                                _reportGiniOptimizedClusters;
-    IndexBasedReportType                _indexBasedReportType;                  /* type for the index based cluster reporting */
-    bool                                _outputIndexCoefficients;               /* output index based coefficents */
-    mutable std::vector<double>        _executeSpatialWindowStops;
+    GiniIndexReportType                 _giniIndexReportType;                   /* type for the gini index cluster reporting */
+    bool                                _reportGiniIndexCoefficients;           /* report gini index coefficents to results file */
+    mutable std::vector<double>         _executeSpatialWindowStops;
 
     /* Power Calcution variables */
-    double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
-    bool                               _performPowerEvaluation;
-    count_t                            _totalPowerEvaluationCases; 
-    CriticalValuesSpecifyType          _criticalvalues_specify_type;
-    PowerEvaluationType                _critical_value_type;
-    PowerEvaluationType                _power_estimation_type;
-    std::string                        _power_adjustments_filename;
-    unsigned int                       _pe_power_replica;                  /** number of replicas in power step  of power evaluation */
+    double                              _critical_value_05;                     /* user specified critical value at .05 */
+    double                              _critical_value_01;                     /* user specified critical value at .01 */
+    double                              _critical_value_001;                    /* user specified critical value at .001 */
+    bool                                _performPowerEvaluation;
+    count_t                             _powerEvaluationTotalCases; 
+    CriticalValuesType                  _critical_value_type;
+    PowerEstimationType                 _power_estimation_type;
+    std::string                         _power_alt_hypothesis_filename;
+    unsigned int                        _power_replica;                          /** number of replicas in power step  of power evaluation */
+    SimulationType                      _power_simulation_type;                  /* indicates simulation procedure for step 2 of power evaluation */
+    std::string                         _power_simulation_source_filename;       /* source filename for power evaluation's randomization - file import method */
+    bool                                _report_power_simulation_data;           /* report power simulation data to file */
+    std::string                         _power_simulation_output_filename;       /* output filename for power evaluation's randomization */
+    PowerEvaluationMethodType           _power_evaluation_method;                /* power evaluation method */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -270,11 +195,11 @@ class CParameters {
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
     unsigned int                        GetEarlyTermThreshold() const {return giEarlyTermThreshold;}
     ExecutionType                       GetExecutionType() const {return geExecutionType;}
-    double                              getIndexBasedPValueCutoff() const {return _indexBasedPValueCutoff;}
+    double                              getGiniIndexPValueCutoff() const {return _giniIndexPValueCutoff;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
-    IndexBasedReportType                getIndexBasedReportType() const {return _indexBasedReportType;}
+    GiniIndexReportType                 getGiniIndexReportType() const {return _giniIndexReportType;}
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsPurelyTemporalAnalysis() const;
@@ -297,7 +222,7 @@ class CParameters {
     unsigned int                        GetNumParallelProcessesToExecute() const;
     int                                 GetNumReadParameters() const {return giNumParameters;}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
-    unsigned int                        getNumPowerEvalReplicaPowerStep() const {return _pe_power_replica;}
+    unsigned int                        getNumPowerEvalReplicaPowerStep() const {return _power_replica;}
     int                                 GetNumRequestedEllipses() const {return (int)gvEllipseShapes.size();}
     unsigned int                        GetNumIterativeScansRequested() const {return giNumIterativeRuns;}
     long                                GetNumTotalEllipses() const {return (gbUseLocationNeighborsFile || geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
@@ -312,7 +237,7 @@ class CParameters {
     bool                                GetOutputClusterLevelDBase() const {return gbOutputClusterLevelDBase;}
     bool                                GetOutputClusterLevelFiles() const;
     const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
-    bool                                getOutputIndexBasedCoefficents() const {return _outputIndexCoefficients;}
+    bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
     bool                                GetOutputRelativeRisksAscii() const {return gbOutputRelativeRisksAscii;}
     bool                                GetOutputRelativeRisksDBase() const {return gbOutputRelativeRisksDBase;}
     bool                                GetOutputRelativeRisksFiles() const;
@@ -320,11 +245,12 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosDBase() const {return gbOutputSimLogLikeliRatiosDBase;}
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
     bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
+    bool                                getOutputPowerEvaluationSimulationData() const {return _report_power_simulation_data;}
     bool                                getPerformPowerEvaluation() const {return _performPowerEvaluation;}
-    tract_t                             getPowerEvaluationCaseCount() const {return _totalPowerEvaluationCases;}
-    CriticalValuesSpecifyType           getPowerEvaluationCriticalValuesSpecType() const {return _criticalvalues_specify_type;}
-    PowerEvaluationType                 getPowerEvaluationCriticalValueType() const {return _critical_value_type;}
-    const std::string                 & getPowerEvaluationFilename() const {return _power_adjustments_filename;}
+    tract_t                             getPowerEvaluationCaseCount() const {return _powerEvaluationTotalCases;}
+    CriticalValuesType                  getPowerEvaluationCriticalValueType() const {return _critical_value_type;}
+    const std::string                 & getPowerEvaluationAltHypothesisFilename() const {return _power_alt_hypothesis_filename;}
+    PowerEvaluationMethodType           getPowerEvaluationMethod() const {return _power_evaluation_method;}
     bool                                GetPermitsCentricExecution(bool excludePValue=false) const;
     bool                                GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const;
     bool                                GetPermitsPurelySpatialCluster() const;
@@ -332,9 +258,10 @@ class CParameters {
     bool                                GetPermitsPurelyTemporalCluster() const;
     const std::string                 & GetPopulationFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetPopulationFileNames() const {return gvPopulationFilenames;}
-    double                              GetPowerCalculationX() const {return gdPower_X;}
-    double                              GetPowerCalculationY() const {return gdPower_Y;}
-    PowerEvaluationType                 getPowerEstimationType() const {return _power_estimation_type;}
+    double                              getPowerEvaluationCriticalValue05() const {return _critical_value_05;}
+    double                              getPowerEvaluationCriticalValue01() const {return _critical_value_01;}
+    double                              getPowerEvaluationCriticalValue001() const {return _critical_value_001;}
+    PowerEstimationType                 getPowerEstimationType() const {return _power_estimation_type;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     bool                                getPrintAsciiHeaders() const {return gbPrintAsciiHeaders;}
     ProbabilityModelType                GetProbabilityModelType() const {return geProbabilityModelType;}
@@ -350,8 +277,11 @@ class CParameters {
     const std::string                 & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetIterativeCutOffPValue() const {return gbIterativeCutOffPValue;}
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}
+    const std::string                 & getPowerEvaluationSimulationDataOutputFilename() const {return _power_simulation_output_filename;}
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
-    SimulationType                      GetSimulationType() const {return geSimulationType;}
+    const std::string                 & getPowerEvaluationSimulationDataSourceFilename() const {return _power_simulation_source_filename;}
+    SimulationType                      GetSimulationType() const {return _simulationType;}
+    SimulationType                      GetPowerEvaluationSimulationType() const {return _power_simulation_type;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     SpatialAdjustmentType               GetSpatialAdjustmentType() const {return geSpatialAdjustmentType;}
     const std::vector<double>         & getSpatialWindowStops() const {return gvSpatialWindowStops;}
@@ -376,7 +306,7 @@ class CParameters {
     bool                                getIsReportingIndexBasedCoefficents() const;
     bool                                getIsReportingGumbelPValue() const;
     bool                                getIsReportingStandardPValue() const;
-    void                                RequestAllAdditionalOutputFiles();
+    void                                requestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetAnalysisType(AnalysisType eAnalysisType);
@@ -395,8 +325,8 @@ class CParameters {
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
-    void                                setIndexBasedPValueCutoff(double dPValue) {_indexBasedPValueCutoff = dPValue;}
-    void                                setIndexBasedReportType(IndexBasedReportType e);
+    void                                setGiniIndexPValueCutoff(double dPValue) {_giniIndexPValueCutoff = dPValue;}
+    void                                setGiniIndexReportType(GiniIndexReportType e);
     void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
@@ -415,7 +345,7 @@ class CParameters {
     void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);
-    void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_pe_power_replica = r;}
+    void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_power_replica = r;}
     void                                SetNumIterativeScans(int iNumIterativeScans);
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
@@ -429,15 +359,17 @@ class CParameters {
     void                                SetOutputSimLogLikeliRatiosAscii(bool b) {gbOutputSimLogLikeliRatiosAscii = b;}
     void                                SetOutputSimLogLikeliRatiosDBase(bool b) {gbOutputSimLogLikeliRatiosDBase = b;}
     void                                SetOutputSimulationData(bool b) {gbOutputSimulationData = b;}
+    void                                setOutputPowerEvaluationSimulationData(bool b) {_report_power_simulation_data = b;}
     void                                setPerformPowerEvaluation(bool b) {_performPowerEvaluation = b;}
-    void                                setPowerEvaluationCaseCount(tract_t t) {_totalPowerEvaluationCases = t;}
-    void                                setPowerEvaluationFilename(const char * f, bool bCorrectForRelativePath=false);
+    void                                setPowerEvaluationCaseCount(tract_t t) {_powerEvaluationTotalCases = t;}
+    void                                setPowerEvaluationAltHypothesisFilename(const char * f, bool bCorrectForRelativePath=false);
     void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
-    void                                SetPowerCalculationX(double dPowerX);
-    void                                SetPowerCalculationY(double dPowerY);
-    void                                setPowerEvaluationCriticalValuesSpecType(CriticalValuesSpecifyType e);
-    void                                setPowerEvaluationCriticalValueType(PowerEvaluationType e);
-    void                                setPowerEstimationType(PowerEvaluationType e) {_power_estimation_type = e;}
+    void                                SetPowerEvaluationCriticalValue05(double d) {_critical_value_05 = d;}
+    void                                SetPowerEvaluationCriticalValue01(double d) {_critical_value_01 = d;}
+    void                                SetPowerEvaluationCriticalValue001(double d) {_critical_value_001 = d;}
+    void                                setPowerEvaluationCriticalValueType(CriticalValuesType e);
+    void                                setPowerEstimationType(PowerEstimationType e) {_power_estimation_type = e;}
+    void                                setPowerEvaluationMethod(PowerEvaluationMethodType e);
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                setPrintAsciiHeaders(bool b) {gbPrintAsciiHeaders = b;}
     void                                SetProbabilityModelType(ProbabilityModelType eProbabilityModelType);
@@ -446,7 +378,7 @@ class CParameters {
     void                                SetRandomizationSeed(long lSeed);
     void                                setReportClusterRank(bool b) {gbReportRank = b;}
     void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
-    void                                setReportIndexBasedCoefficents(bool b) {_outputIndexCoefficients = b;}
+    void                                setReportGiniIndexCoefficents(bool b) {_reportGiniIndexCoefficients = b;}
     void                                SetReportGumbelPValue(bool b) {gbReportGumbelPValue = b;}    
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
@@ -454,8 +386,11 @@ class CParameters {
     void                                SetRunHistoryFilename(const std::string& sFilename) {gsRunHistoryFilename = sFilename;}
     void                                SetIterativeScanning(bool b) {gbIterativeRuns = b;}
     void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
+    void                                setPowerEvaluationSimulationDataOutputFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
+    void                                setPowerEvaluationSimulationDataSourceFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);
+    void                                setPowerEvaluationSimulationType(SimulationType eSimulationType);
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);
     void                                SetSpatialWindowType(SpatialWindowType eSpatialWindowType);

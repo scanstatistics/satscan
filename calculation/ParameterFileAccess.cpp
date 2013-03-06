@@ -87,8 +87,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MODEL                        : return "model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial)";
       case RISKFUNCTION                 : return "isotonic scan (0=Standard, 1=Monotone)";
       case POWER_EVALUATION             : return "perform power evaluation - Poisson only (y/n)";
-      case POWERX                       : return "power evaluation critical value (no. 1)";
-      case POWERY                       : return "power evaluation critical value (no. 2)";
+      case POWER_05                     : return "power evaluation critical value .05 (> 0)";
+      case POWER_01                     : return "power evaluation critical value .001 (> 0)";
       case TIMETREND                    : return "time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadraticPercentage)";
       case TIMETRENDPERC                : return "time trend adjustment percentage (>-100)";
       case PURETEMPORAL                 : return "include purely temporal clusters? (y/n)";
@@ -122,7 +122,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case EARLY_SIM_TERMINATION        : return "terminate simulations early for large p-values? (y/n)";
       case REPORTED_GEOSIZE             : return "max reported geographic size (< max geographical cluster size%)";
       case USE_REPORTED_GEOSIZE         : return "restrict reported clusters to maximum geographical cluster size? (y/n)";
-      case SIMULATION_TYPE              : return "simulation methods (0=Null Randomization, 1=HA Randomization, 2=File Import)";
+      case SIMULATION_TYPE              : return "simulation methods (0=Null Randomization, 1=N/A, 2=File Import)";
       case SIMULATION_SOURCEFILE        : return "simulation data input file name (with File Import=2)";
       case ADJ_BY_RR_FILE               : return "adjustments by known relative risks file name (with HA Randomization=1)";
       case OUTPUT_SIMULATION_DATA       : return "print simulation data to file? (y/n)";
@@ -162,26 +162,30 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OBSERVABLE_REGIONS           : return "polygon inequalities (comma separated decimal values)";
       case EARLY_TERM_THRESHOLD         : return "early termination threshold";
       case PVALUE_REPORT_TYPE           : return "p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) ";
-      case REPORT_GUMBEL                : return "report Gumbel p-values";
+      case REPORT_GUMBEL                : return "report Gumbel p-values (y/n)";
       case TIME_TREND_TYPE              : return "time trend type - SVTT only (Linear=0, Quadratic=1)";
       case REPORT_RANK                  : return "report cluster rank (y/n)";
       case PRINT_ASCII_HEADERS          : return "print ascii headers in output files (y/n)";
       case REPORT_HIERARCHICAL_CLUSTERS : return "report hierarchical clusters (y/n)";
       case REPORT_GINI_CLUSTERS         : return "report gini clusters (y/n)";
       case SPATIAL_MAXIMA               : return "spatial window maxima stops (comma separated decimal values[<=50%] )";
-      case INDEXBASED_REPORT_TYPE       : return "index based cluster reporting type (0=optimal index only, 1=all values)";
-      case OUTPUT_INDEX_COEFFICENTS     : return "output index coefficents to results file (y/n)";
-      case INDEXBASED_PVALUE_CUTOFF     : return "max p-value for clusters used in calculation of index based coefficients (0.000-1.000)";
+      case GINI_INDEX_REPORT_TYPE       : return "gini index cluster reporting type (0=optimal index only, 1=all values)";
+      case GINI_INDEX_PVALUE_CUTOFF     : return "max p-value for clusters used in calculation of index based coefficients (0.000-1.000)";
+      case REPORT_GINI_COEFFICENTS      : return "report gini index coefficents to results file (y/n)";
       case PE_COUNT                     : return "total cases in power evaluation";
-      case PE_CV_SPEC_TYPE              : return "specification of critical values type (Automatic=0, Manual=1, Both=3)";
-      case PE_CRITICAL_TYPE             : return "critical value type (0=Monte Carlo, 1=Gumbel)";
+      case PE_CRITICAL_TYPE             : return "critical value type (0=Monte Carlo, 1=Gumbel, 2=User Specified Values)";
       case PE_ESTIMATION_TYPE           : return "power estimation type (0=Monte Carlo, 1=Gumbel)";
-      case PE_ADJUSTFILE                : return "power adjustments file";
+      case PE_ALT_HYPOTHESIS_FILE       : return "power evaluation alternative hypothesis filename";
       case PE_POWER_REPLICAS            : return "number of replications in power step";
+      case PE_SIMULATION_TYPE           : return "power evaluation simulation method for power step (0=Null Randomization, 1=N/A, 2=File Import)";
+      case PE_SIMULATION_SOURCEFILE     : return "power evaluation simulation data source filename";
+      case PE_METHOD_TYPE               : return "power evaluation method (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)";
+      case POWER_001                    : return "power evaluation critical value .001 (> 0)";
+      case PE_OUTPUT_SIMUALTION_DATA    : return "report power evaluation randomization data from power step (y/n)";
+      case PE_SIMUALTION_OUTPUTFILE     : return "power evaluation simulation data output filename";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
     throw;
  }
@@ -216,8 +220,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case MODEL                        : return AsString(s, gParameters.GetProbabilityModelType());
       case RISKFUNCTION                 : return AsString(s, gParameters.GetRiskType());
       case POWER_EVALUATION             : return AsString(s, gParameters.getPerformPowerEvaluation()); 
-      case POWERX                       : return AsString(s, gParameters.GetPowerCalculationX());
-      case POWERY                       : return AsString(s, gParameters.GetPowerCalculationY());
+      case POWER_05                     : return AsString(s, gParameters.getPowerEvaluationCriticalValue05());
+      case POWER_01                     : return AsString(s, gParameters.getPowerEvaluationCriticalValue01());
       case TIMETREND                    : return AsString(s, gParameters.GetTimeTrendAdjustmentType());
       case TIMETRENDPERC                : return AsString(s, gParameters.GetTimeTrendAdjustmentPercentage());
       case PURETEMPORAL                 : return AsString(s, gParameters.GetIncludePurelyTemporalClusters());
@@ -313,22 +317,26 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
                                             s += (i == 0 ? "" : ","); s += worker;
                                           }
                                           return s; 
-      case INDEXBASED_REPORT_TYPE       : return AsString(s, gParameters.getIndexBasedReportType());
-      case INDEXBASED_PVALUE_CUTOFF     : return AsString(s, gParameters.getIndexBasedPValueCutoff());
-      case OUTPUT_INDEX_COEFFICENTS     : return AsString(s, gParameters.getOutputIndexBasedCoefficents()); 
+      case GINI_INDEX_REPORT_TYPE       : return AsString(s, gParameters.getGiniIndexReportType());
+      case GINI_INDEX_PVALUE_CUTOFF     : return AsString(s, gParameters.getGiniIndexPValueCutoff());
+      case REPORT_GINI_COEFFICENTS      : return AsString(s, gParameters.getReportGiniIndexCoefficents()); 
       case PE_COUNT                     : return AsString(s, gParameters.getPowerEvaluationCaseCount()); 
-      case PE_CV_SPEC_TYPE              : return AsString(s, gParameters.getPowerEvaluationCriticalValuesSpecType()); 
       case PE_CRITICAL_TYPE             : return AsString(s, gParameters.getPowerEvaluationCriticalValueType()); 
       case PE_ESTIMATION_TYPE           : return AsString(s, gParameters.getPowerEstimationType()); 
-      case PE_ADJUSTFILE                : s = gParameters.getPowerEvaluationFilename(); return s;
+      case PE_ALT_HYPOTHESIS_FILE       : s = gParameters.getPowerEvaluationAltHypothesisFilename(); return s;
       case PE_POWER_REPLICAS            : return AsString(s, gParameters.getNumPowerEvalReplicaPowerStep()); 
+      case PE_SIMULATION_TYPE           : return AsString(s, gParameters.GetPowerEvaluationSimulationType());
+      case PE_SIMULATION_SOURCEFILE     : s = gParameters.getPowerEvaluationSimulationDataSourceFilename().c_str(); return s;
+      case PE_METHOD_TYPE               : return AsString(s, gParameters.getPowerEvaluationMethod());
+      case POWER_001                    : return AsString(s, gParameters.getPowerEvaluationCriticalValue001());
+      case PE_OUTPUT_SIMUALTION_DATA    : return AsString(s, gParameters.getOutputPowerEvaluationSimulationData());
+      case PE_SIMUALTION_OUTPUTFILE     : s = gParameters.getPowerEvaluationSimulationDataOutputFilename().c_str(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
     throw;
- }
+  }
 }
 
 /** Attempts to interpret passed string as a boolean value. Throws parameter_error. */
@@ -557,8 +565,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                           gParameters.SetProbabilityModelType((ProbabilityModelType)iValue); break;
       case RISKFUNCTION                 : gParameters.SetRiskType((RiskType)ReadInt(sParameter, eParameterType)); break;
       case POWER_EVALUATION             : gParameters.setPerformPowerEvaluation(ReadBoolean(sParameter, eParameterType)); break;
-      case POWERX                       : gParameters.SetPowerCalculationX(ReadDouble(sParameter, eParameterType)); break;
-      case POWERY                       : gParameters.SetPowerCalculationY(ReadDouble(sParameter, eParameterType)); break;
+      case POWER_05                     : gParameters.SetPowerEvaluationCriticalValue05(ReadDouble(sParameter, eParameterType)); break;
+      case POWER_01                     : gParameters.SetPowerEvaluationCriticalValue01(ReadDouble(sParameter, eParameterType)); break;
       case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
                                           gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
       case TIMETRENDPERC                : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
@@ -684,19 +692,25 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case REPORT_HIERARCHICAL_CLUSTERS : gParameters.setReportHierarchicalClusters(ReadBoolean(sParameter, eParameterType)); break;
       case REPORT_GINI_CLUSTERS         : gParameters.setReportGiniOptimizedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SPATIAL_MAXIMA               : ReadSpatialWindowStops(sParameter); break;
-      case INDEXBASED_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
-                                          gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
-      case INDEXBASED_PVALUE_CUTOFF     : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;
-      case OUTPUT_INDEX_COEFFICENTS     : gParameters.setReportIndexBasedCoefficents(ReadBoolean(sParameter, eParameterType)); break;
+      case GINI_INDEX_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
+                                          gParameters.setGiniIndexReportType((GiniIndexReportType)ReadInt(sParameter, eParameterType)); break;
+      case GINI_INDEX_PVALUE_CUTOFF     : gParameters.setGiniIndexPValueCutoff(ReadDouble(sParameter, eParameterType)); break;
+      case REPORT_GINI_COEFFICENTS      : gParameters.setReportGiniIndexCoefficents(ReadBoolean(sParameter, eParameterType)); break;
       case PE_COUNT                     : gParameters.setPowerEvaluationCaseCount(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case PE_CV_SPEC_TYPE              : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_AUTOMATIC, PE_BOTH);
-                                          gParameters.setPowerEvaluationCriticalValuesSpecType((CriticalValuesSpecifyType)ReadInt(sParameter, eParameterType)); break;
-      case PE_CRITICAL_TYPE             : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_MONTECARLO, PE_GUMBEL);
-                                          gParameters.setPowerEvaluationCriticalValueType((PowerEvaluationType)ReadInt(sParameter, eParameterType)); break;
+      case PE_CRITICAL_TYPE             : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, CV_MONTECARLO, CV_POWER_VALUES);
+                                          gParameters.setPowerEvaluationCriticalValueType((CriticalValuesType)ReadInt(sParameter, eParameterType)); break;
       case PE_ESTIMATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_MONTECARLO, PE_GUMBEL);
-                                          gParameters.setPowerEstimationType((PowerEvaluationType)ReadInt(sParameter, eParameterType)); break;
-      case PE_ADJUSTFILE                : gParameters.setPowerEvaluationFilename(sParameter.c_str(), true); break;
+                                          gParameters.setPowerEstimationType((PowerEstimationType)ReadInt(sParameter, eParameterType)); break;
+      case PE_ALT_HYPOTHESIS_FILE       : gParameters.setPowerEvaluationAltHypothesisFilename(sParameter.c_str(), true); break;
       case PE_POWER_REPLICAS            : gParameters.setNumPowerEvalReplicaPowerStep(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case PE_SIMULATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STANDARD, FILESOURCE);
+                                          gParameters.setPowerEvaluationSimulationType((SimulationType)iValue); break;
+      case PE_SIMULATION_SOURCEFILE     : gParameters.setPowerEvaluationSimulationDataSourceFilename(sParameter.c_str(), true); break;
+      case PE_METHOD_TYPE               : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_WITH_ANALYSIS, PE_ONLY_SPECIFIED_CASES);
+                                          gParameters.setPowerEvaluationMethod((PowerEvaluationMethodType)iValue); break;
+      case POWER_001                    : gParameters.SetPowerEvaluationCriticalValue001(ReadDouble(sParameter, eParameterType)); break;
+      case PE_OUTPUT_SIMUALTION_DATA    : gParameters.setOutputPowerEvaluationSimulationData(ReadBoolean(sParameter, eParameterType)); break;
+      case PE_SIMUALTION_OUTPUTFILE     : gParameters.setPowerEvaluationSimulationDataOutputFilename(sParameter.c_str(), true); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

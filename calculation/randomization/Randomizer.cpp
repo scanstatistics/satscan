@@ -5,7 +5,7 @@
 #include "Randomizer.h"
 #include "SSException.h"
 
-const long AbstractRandomizer::glDataSetSeedOffSet        = 1000000;
+const long AbstractRandomizer::glDataSetSeedOffSet = 1000000;
 
 /** constructor */
 AbstractRandomizer::AbstractRandomizer(long lInitialSeed) : gRandomNumberGenerator(lInitialSeed) {}
@@ -23,40 +23,40 @@ AbstractRandomizer::~AbstractRandomizer() {}
           behavior has been OK'ed by Martin through reasoning that having
           identical data sets will be rare.*/
 void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex) {
-  unsigned long ulSeed;
+    unsigned long ulSeed;
 
-  try {
-    //calculate seed as unsigned long
-    ulSeed = gRandomNumberGenerator.GetInitialSeed() + iSimulationIndex +  ((iDataSetIndex - 1) * glDataSetSeedOffSet);
-    //compare to max seed(declared as positive signed long)
-    if (ulSeed >= static_cast<unsigned long>(gRandomNumberGenerator.GetMaxSeed()))
-      throw prg_error("Calculated seed for simulation %u, data set %u, exceeds defined limit of %i.",
-                      "SetSeed()", iSimulationIndex, iDataSetIndex, gRandomNumberGenerator.GetMaxSeed());
+    try {
+        //calculate seed as unsigned long
+        ulSeed = gRandomNumberGenerator.GetInitialSeed() + iSimulationIndex +  ((iDataSetIndex - 1) * glDataSetSeedOffSet);
+        //compare to max seed(declared as positive signed long)
+        if (ulSeed >= static_cast<unsigned long>(gRandomNumberGenerator.GetMaxSeed()))
+            throw prg_error("Calculated seed for simulation %u, data set %u, exceeds defined limit of %i.",
+                            "SetSeed()", iSimulationIndex, iDataSetIndex, gRandomNumberGenerator.GetMaxSeed());
 
-    gRandomNumberGenerator.SetSeed(static_cast<long>(ulSeed));
-  }
-  catch (prg_exception& x) {
-    x.addTrace("SetSeed()","AbstractRandomizer");
-    throw;
-  }
+        gRandomNumberGenerator.SetSeed(static_cast<long>(ulSeed));
+    } catch (prg_exception& x) {
+        x.addTrace("SetSeed()","AbstractRandomizer");
+        throw;
+    }
 }
 
 /** constructor */
-FileSourceRandomizer::FileSourceRandomizer(const CParameters& Parameters, long lInitialSeed)
-                     :AbstractRandomizer(lInitialSeed), gParameters(Parameters) {
-  gReader.reset(AbstractDataSetReader::getNewDataSetReader(Parameters));
+FileSourceRandomizer::FileSourceRandomizer(const CParameters& Parameters, const std::string& sourcename, long lInitialSeed)
+                     :AbstractRandomizer(lInitialSeed), gParameters(Parameters), _source_filename(sourcename), _line_offset(0) {
+    gReader.reset(AbstractDataSetReader::getNewDataSetReader(Parameters));
 }
 
 /** copy constructor */
 FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer& rhs)
-                     :AbstractRandomizer(rhs), gParameters(rhs.gParameters) {}
-
-/** destructor */
-FileSourceRandomizer::~FileSourceRandomizer() {}
+                     :AbstractRandomizer(rhs), gParameters(rhs.gParameters), _source_filename(rhs._source_filename), _line_offset(rhs._line_offset) {
+    gReader.reset(AbstractDataSetReader::getNewDataSetReader(gParameters));
+}
 
 /** returns pointer to newly cloned FileSourceRandomizer */
 FileSourceRandomizer * FileSourceRandomizer::Clone() const {
-  return new FileSourceRandomizer(gParameters, gRandomNumberGenerator.GetSeed());
+    //std::auto_ptr<FileSourceRandomizer> clone(new FileSourceRandomizer(gParameters, _source_filename, gRandomNumberGenerator.GetSeed()));
+    //clone->setLineOffset(_line_offset);
+    return new FileSourceRandomizer(*this);
 }
 
 /** Reads number of simulated cases from a text file rather than generating them randomly.
@@ -68,5 +68,5 @@ FileSourceRandomizer * FileSourceRandomizer::Clone() const {
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                           */
 void FileSourceRandomizer::RandomizeData(const RealDataSet&, DataSet& thisSimSet, unsigned int iSimulation) {
-  gReader->read(thisSimSet, gParameters, iSimulation);
+    gReader->read(thisSimSet, gParameters, _source_filename, _line_offset + iSimulation);
 }

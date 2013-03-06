@@ -475,6 +475,7 @@
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
     <ClInclude Include="..\calculation\ParametersValidate.h" />
+    <ClInclude Include="..\calculation\ParameterTypes.h" />
     <ClInclude Include="..\calculation\RunTimeComponents.h" />
     <ClInclude Include="..\calculation\SaTScan.h" />
     <ClInclude Include="..\calculation\ScanLineParameterFileAccess.h" />

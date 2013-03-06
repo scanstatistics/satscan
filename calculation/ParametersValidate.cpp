@@ -286,20 +286,19 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
 }
 
 /**/
-bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection) const {
+bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck) const {
     std::string buffer = filename;
 
     trimString(buffer);
     if (buffer.empty()) {
-        PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
+        PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
         return false;
-    }
-    else if (!ValidateFileAccess(buffer)) {
-        PrintDirection.Printf("%s:\nThe %s file '%s' could not be opened for reading. "
+    } else if (!ValidateFileAccess(buffer, writeCheck)) {
+        PrintDirection.Printf("%s:\nThe %s file '%s' could not be opened for %s. "
                               "Please confirm that the path and/or file name are valid and that you "
-                              "have permissions to read from this directory and file.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str(), buffer.c_str());
+                              "have permissions to %s from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str(), buffer.c_str(), 
+                              (writeCheck ? "writing": "reading"), (writeCheck ? "write": "read"));
         return false;
     }
     return true;
@@ -312,7 +311,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 
   try {
     // case file is ignored when using the continuous Poisson model or power evaluations with specified total cases
-    if (!(gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount()))) {
+    if (!(gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
         //validate case file
         if (!gParameters.GetCaseFileNames().size()) {
             bValid = false;
@@ -374,14 +373,10 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
     else if (gParameters.UseSpecialGrid())
         bValid &= checkFileExists(gParameters.GetSpecialGridFileName(), "grid", PrintDirection);
-    //validate adjustment for known relative risks file
-    if (gParameters.GetProbabilityModelType() == POISSON) {
-        if (gParameters.UseAdjustmentForRelativeRisksFile())
-          bValid &= checkFileExists(gParameters.GetAdjustmentsByRelativeRisksFilename(), "adjustments", PrintDirection);
-    }
-    else
-      const_cast<CParameters&>(gParameters).SetUseAdjustmentForRelativeRisksFile(false);
-
+    // validate adjustment for known relative risks file
+    if (gParameters.UseAdjustmentForRelativeRisksFile()) {
+        bValid &= checkFileExists(gParameters.GetAdjustmentsByRelativeRisksFilename(), "adjustments", PrintDirection);
+    } 
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) {
@@ -762,28 +757,28 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe power evaluation is not available for the isotonic scan statistic.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
-        // if the user has specified the total # of cases, then certain features are not valid
-        if (gParameters.getPowerEvaluationCaseCount()) {
-            // non-parametric purely spatial adjustment is not available
-            if (gParameters.GetSpatialAdjustmentType() != NO_SPATIAL_ADJUSTMENT) {
-                PrintDirection.Printf("%s:\nThe power evaluation can not perform the non-parametric, purely spatial adjustment when total case count has been specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                bValid = false;
-            }
-            // purely temporal adjustments are not available
+        // if the user is specifying the total # of cases, then certain features are not valid
+        if (gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES) {
+            // temporal adjustments are not available without case data
             if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-                PrintDirection.Printf("%s:\nThe power evaluation can not perform the purely temporal adjustments when total case count has been specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                PrintDirection.Printf("%s:\nThe power evaluation can not perform temporal adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 bValid = false;
             }
-            bValid &= checkFileExists(gParameters.getPowerEvaluationFilename(), "power evaluations adjustments", PrintDirection);
+            // spatial adjustments are not available without case data
+            if (gParameters.GetSpatialAdjustmentType() != NO_SPATIAL_ADJUSTMENT) {
+                PrintDirection.Printf("%s:\nThe power evaluation can not perform spatial adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                bValid = false;
+            }
+            if (gParameters.UseAdjustmentForRelativeRisksFile()) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe power evaluation perform adjustment for known relative risks without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
             if (gParameters.GetOutputRelativeRisksFiles()) {
                 bValid = false;
-                PrintDirection.Printf("%s:\nThe power evaluation can not report the location relative risks file when total case count has been specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                PrintDirection.Printf("%s:\nThe power evaluation can not report the location relative risks file without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
         }
-        if (gParameters.GetSimulationType() != STANDARD) {
-            PrintDirection.Printf("%s:\nThe power evaluation is only available for the standard simulation.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-            bValid = false;
-        }
+        bValid &= checkFileExists(gParameters.getPowerEvaluationAltHypothesisFilename(), "power evaluations alternative hypothesis", PrintDirection);
         if (!(gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == GUMBEL_PVALUE)) {
             PrintDirection.Printf("%s:\nThe power evaluation is only available for the standard and Gumbel p-value reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
@@ -809,22 +804,47 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
            bValid = false;
            PrintDirection.Printf("%s:\nThe power evaluation can not be performed with the iterative scan statistic.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.getPowerEvaluationCriticalValuesSpecType() == PE_MANUAL || gParameters.getPowerEvaluationCriticalValuesSpecType() == PE_BOTH) {
-            if (gParameters.GetPowerCalculationX() < 0.0) {
+        if (gParameters.getPowerEvaluationCriticalValueType() == CV_POWER_VALUES) {
+            if (gParameters.getPowerEvaluationCriticalValue05() < 0.0) {
                 bValid = false;
-                PrintDirection.Printf("%s:\nThe power evaluation critical value %lf is invalid. Please use a value greater than zero\n",
-                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetPowerCalculationX());
+                PrintDirection.Printf("%s:\nThe power evaluation critical value at .05 '%lf' is invalid. Please use a value greater than zero.\n",
+                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getPowerEvaluationCriticalValue05());
             }
-            if (gParameters.GetPowerCalculationY() < 0.0) {
+            if (gParameters.getPowerEvaluationCriticalValue01() < 0.0) {
                 bValid = false;
-                PrintDirection.Printf("%s:\nThe power evaluation critical value %lf is invalid. Please use a value greater than zero\n",
-                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetPowerCalculationY());
+                PrintDirection.Printf("%s:\nThe power evaluation critical value at .01 '%lf' is invalid. Please use a value greater than zero.\n",
+                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getPowerEvaluationCriticalValue01());
+            }
+            if (gParameters.getPowerEvaluationCriticalValue001() < 0.0) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe power evaluation critical value at .001 '%lf' is invalid. Please use a value greater than zero.\n",
+                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getPowerEvaluationCriticalValue01());
             }
         }
-        //if (gParameters.GetExecutionType() == CENTRICALLY) {
-        //   bValid = false;
-        //   PrintDirection.Printf("%s:\nThe power evaluation can not be performed with the alternative memory allocation.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        //}
+        // validate power evaluations' power step simulation options
+        if (gParameters.getOutputPowerEvaluationSimulationData()) {
+            bValid &= checkFileExists(gParameters.getPowerEvaluationSimulationDataOutputFilename(), "power evaluations simulation output", PrintDirection, true);
+        }
+        switch (gParameters.GetPowerEvaluationSimulationType()) {
+            case STANDARD         : 
+                // validate the alternative hypothesis file 
+                bValid &= checkFileExists(gParameters.getPowerEvaluationAltHypothesisFilename(), "alternative hypothesis", PrintDirection);
+                break;
+            case FILESOURCE       :
+                if (gParameters.GetNumDataSets() > 1){
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe feature to read power evaluation simulated data from a file is not implemented "
+                                          "for analyses that read data from multiple data sets.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
+                bValid &= checkFileExists(gParameters.getPowerEvaluationSimulationDataSourceFilename(), "power evaluation simulation data source", PrintDirection);
+                break;
+            case HA_RANDOMIZATION : 
+            default : throw prg_error("Unknown power evaluation simulation type '%d'.","ValidatePowerEvaluationsParameters()", gParameters.GetPowerEvaluationSimulationType());
+        };
+        if (gParameters.GetExecutionType() == CENTRICALLY) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe power evaluation can not be performed with the alternative memory allocation.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
     } return bValid;
 }
 

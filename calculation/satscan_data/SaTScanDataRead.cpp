@@ -960,29 +960,30 @@ bool SaTScanDataReader::ReadOrdinalData() {
 
 /** reads data from input files for a Poisson probability model */
 bool SaTScanDataReader::ReadPoissonData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-
-    gDataHub.gDataSets.reset(new PoissonDataSetHandler(gDataHub, gPrint));
-    if (!gDataHub.gDataSets->ReadData())
-      return false;
-    if (gParameters.UseAdjustmentForRelativeRisksFile()) {
-        RiskAdjustmentsContainer_t riskAdjustments;
-        if (!ReadAdjustmentsByRelativeRisksFile(gParameters.GetAdjustmentsByRelativeRisksFilename(), riskAdjustments, true))
+    try {
+        if (!ReadCoordinatesFile())
             return false;
-        gDataHub.gRelativeRiskAdjustments = riskAdjustments.front();
-    }
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+
+        gDataHub.gDataSets.reset(new PoissonDataSetHandler(gDataHub, gPrint));
+        if (!gDataHub.gDataSets->ReadData())
+            return false;
+        // Read the adjustments for known relative risks if requested and we're not performing power evaluation without reading the casefile.
+        // This adjustment requires that the case data structures are defined.
+        if (gParameters.UseAdjustmentForRelativeRisksFile() && !(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
+            RiskAdjustmentsContainer_t riskAdjustments;
+            if (!ReadAdjustmentsByRelativeRisksFile(gParameters.GetAdjustmentsByRelativeRisksFilename(), riskAdjustments, true))
+                return false;
+            gDataHub.gRelativeRiskAdjustments = riskAdjustments.front();
+        }
+        if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+            return false;
+        if (gParameters.UseSpecialGrid() && !ReadGridFile())
         return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadPoissonData()","SaTScanDataReader");
-    throw;
-  }
-  return true;
+    } catch (prg_exception& x) {
+        x.addTrace("ReadPoissonData()","SaTScanDataReader");
+        throw;
+    }
+    return true;
 }
 
 /** reads data from input files for a Rank probability model */

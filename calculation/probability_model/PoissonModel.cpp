@@ -182,36 +182,38 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
 
 /** Calculates the expected number of cases for dataset. */
 void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
-  try {
-    boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
-    CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
-    measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
-    for (unsigned int t=0; t < Set.getLocationDimension(); ++t) for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
-      if (ppM[i][t] < 0) throw prg_error("Negative measure = %g, location %d, interval %d.", "CalculateMeasure()", ppM[i][t], t, i);
-
-    //TODO PE: If user specified the total number of cases in parameter file, the next step should be skipped -- is that ok?
-    if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount() == 0))
-        gDataHub.ValidateObservedToExpectedCases(Set); //validate that observed and expected agree
-
-    //apply adjustments to measure
-    AdjustMeasure(Set, *pPopMeasure);
-    //When using alternative simulations or power evaulations, we need to cache adjusted non-cummulative measure data in aux structure.
-    if (gParameters.GetSimulationType() == HA_RANDOMIZATION || gParameters.getPerformPowerEvaluation()) {
-        Set.setPopulationMeasureData(*pPopMeasure);
-        Set.setMeasureData_Aux(Set.getMeasureData());
+    try {
+        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
+        CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
+        measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
+        for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
+            for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
+                if (ppM[i][t] < 0) 
+                    throw prg_error("Negative measure = %g, location %d, interval %d.", "CalculateMeasure()", ppM[i][t], t, i);
+        }
+        // validate that observed and expected agree
+        if (!gParameters.getPerformPowerEvaluation() || !(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))
+            gDataHub.ValidateObservedToExpectedCases(Set); 
+        // apply adjustments to measure
+        AdjustMeasure(Set, *pPopMeasure);
+        // When using power evaulations, we need to cache adjusted non-cummulative measure data in aux structure.
+        // The non-cummulative measure data will be used in the null randomization of power step.
+        if (gParameters.getPerformPowerEvaluation() && gParameters.GetPowerEvaluationSimulationType() == STANDARD) {
+            Set.setPopulationMeasureData(*pPopMeasure);
+            Set.setMeasureData_Aux(Set.getMeasureData());
+        }
+        // now we can make the measure data cummulative
+        Set.setMeasureDataToCumulative(); 
+        if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure
+            throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
+        if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+            gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
+            gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
+            Set.setMeasureData_PT_NC();
+    } catch (prg_exception &x) {
+        x.addTrace("CalculateMeasure()","CPoissonModel");
+        throw;
     }
-    // now we can make the measure data cummulative
-    Set.setMeasureDataToCumulative(); 
-    if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure
-      throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
-    if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
-        gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
-      Set.setMeasureData_PT_NC();
-  } catch (prg_exception &x) {
-    x.addTrace("CalculateMeasure()","CPoissonModel");
-    throw;
-  }
 }
 
 /** Returns population as defined in CCluster object. */

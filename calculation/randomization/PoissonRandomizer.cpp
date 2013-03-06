@@ -65,7 +65,7 @@ void PoissonPurelyTemporalNullHypothesisRandomizer::randomize(const RealDataSet&
   std::vector<measure_t> vMPT(RealSet.getIntervalDimension(), 0);
   measure_t ** ppMeasure = measure.GetArray();
   for (unsigned int i=0; i < RealSet.getIntervalDimension(); ++i)
-     for (unsigned int t=0; t < RealSet.getIntervalDimension(); ++t)
+      for (unsigned int t=0; t < RealSet.getLocationDimension(); ++t)
         vMPT[i] += ppMeasure[i][t];
   randomize(RealSet, &vMPT[0], SimSet);  
 }
@@ -176,14 +176,13 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSe
 //******************************************************************************
 
 /** constructor */
-AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData& DataHub, 
-                                                             long lInitialSeed)
+AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData& DataHub, long lInitialSeed)
                               :PoissonRandomizer(DataHub.GetParameters(), lInitialSeed), gDataHub(DataHub) {
 
     // read the adjustments file
     SaTScanDataReader::RiskAdjustmentsContainer_t riskAdjustments;
     SaTScanDataReader reader(const_cast<CSaTScanData&>(gDataHub));
-    if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationFilename(), riskAdjustments, true))
+    if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationAltHypothesisFilename(), riskAdjustments, true))
         throw resolvable_error("There were problems reading the power evaluation adjustments file.", "AlternateHypothesisRandomizer()");
     if (!riskAdjustments.size())
         throw resolvable_error("Power evaluations can not be performed. No adjustments found in power evaluation file.", "AlternateHypothesisRandomizer()");
@@ -231,7 +230,7 @@ void AlternateHypothesisRandomizer::randomize(const RealDataSet& RealSet, const 
 void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
   SetSeed(iSimulation, SimSet.getSetIndex());
   // make a copy of real measure data for manipulation, getMeasureData_Aux() should be contain non-cummulative measure data with any initial adjustments
-  TwoDimensionArrayHandler<measure_t> measure(RealSet.getMeasureData());
+  TwoDimensionArrayHandler<measure_t> measure(RealSet.getMeasureData_Aux());
   // adjust the measure for known relative risks
   _riskAdjustments->apply(RealSet.getPopulationMeasureData(), RealSet.getPopulationData(), RealSet.getTotalMeasure(), measure);
   //now set the measure as cummulative

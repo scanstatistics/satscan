@@ -25,6 +25,7 @@ const char * IniParameterSpecification::EllipticScan            = "Elliptic Scan
 const char * IniParameterSpecification::SequentialScan          = "Sequential Scan";
 const char * IniParameterSpecification::IsotonicScan            = "Isotonic Scan";
 const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
+const char * IniParameterSpecification::PowerEvaluations        = "Power Evaluations";
 const char * IniParameterSpecification::RunOptions              = "Run Options";
 const char * IniParameterSpecification::BatchModeFeatures       = "BatchMode Features";
 const char * IniParameterSpecification::System                  = "System";
@@ -219,9 +220,9 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"MonteCarloReps"));
   gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ModelType"));
   gvParameterInfo.push_back(std::make_pair(IsotonicScan, (const char*)"IsotonicScan"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PValues2PrespecifiedLLRs"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"LLR1"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"LLR2"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PValues2PrespecifiedLLRs"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"LLR1"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"LLR2"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendAdjustmentType"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendPercentage"));
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"IncludePurelyTemporal"));
@@ -381,18 +382,26 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportHierarchicalClusters"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportGiniClusters"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"SpatialMaxima"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClusterReportingType"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClustersPValueCutOff"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"OutputIndexBasedCoefficents"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"TotalCases"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"CriticalValuesSpecifyType"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"CriticalValueType"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PowerEstimationType"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"AdjustmentsFile"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PowerReplications"));
-  gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerSimulations, (const char*)"PerformPowerEvaluation");
-  gvParameterInfo[POWERX - 1] = std::make_pair(PowerSimulations, (const char*)"CriticalValue1");
-  gvParameterInfo[POWERY - 1] = std::make_pair(PowerSimulations, (const char*)"CriticalValue2");
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniIndexClusterReportingType"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniIndexClustersPValueCutOff"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportGiniIndexCoefficents"));
+
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationTotalCases"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"CriticalValueType"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEstimationType"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"AlternativeHypothesisFilename"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"NumberPowerReplications"));
+
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsSimulationMethod"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsSimulationSourceFilename"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsMethod"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"CriticalValue001"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"ReportPowerEvaluationSimulationData"));
+  gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsSimulationOutputFilename"));
+
+  gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerEvaluations, (const char*)"PerformPowerEvaluation");
+  gvParameterInfo[POWER_05 - 1] = std::make_pair(PowerEvaluations, (const char*)"CriticalValue05");
+  gvParameterInfo[POWER_01 - 1] = std::make_pair(PowerEvaluations, (const char*)"CriticalValue01");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

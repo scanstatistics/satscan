@@ -290,7 +290,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-                    ((ParameterSettingsFrame) _focusedInternalFrame).WriteSession("");
+                    ((ParameterSettingsFrame) _focusedInternalFrame).writeSession("");
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
@@ -313,7 +313,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-                    ((ParameterSettingsFrame) _focusedInternalFrame).SaveAs();
+                    ((ParameterSettingsFrame) _focusedInternalFrame).saveAs();
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
@@ -408,7 +408,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     protected void executeAnalysis() {
         if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-            if (((ParameterSettingsFrame) _focusedInternalFrame).ValidateParams()) {
+            if (((ParameterSettingsFrame) _focusedInternalFrame).validateParameters()) {
                 Parameters parameters = ((ParameterSettingsFrame) _focusedInternalFrame).getParameterSettings();
                 if (OutputFileRegister.getInstance().isRegistered(parameters.GetOutputFileName())) {
                     JOptionPane.showMessageDialog(SaTScanApplication.this, "The results file for this analysis is currently being written.\n" +
@@ -606,7 +606,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             if (allOpenFrames.get(i) instanceof ParameterSettingsFrame) {
                 if (!((ParameterSettingsFrame) allOpenFrames.get(i)).isAdvancedParametersWindowVisible()) {
                     ((ParameterSettingsFrame) allOpenFrames.get(i)).setAdvancedParametersWindowVisible(false);
-                    if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
+                    if (!((ParameterSettingsFrame) allOpenFrames.get(i)).queryWindowCanClose()) {
                         return false;
                     } else {
                         try {
@@ -621,7 +621,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         for (int i = allOpenFrames.size() - 1; i >= 0; i--) {
             if (allOpenFrames.get(i) instanceof ParameterSettingsFrame) {
-                if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
+                if (!((ParameterSettingsFrame) allOpenFrames.get(i)).queryWindowCanClose()) {
                     return false;
                 } else {
                     try {

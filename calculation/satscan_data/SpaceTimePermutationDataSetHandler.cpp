@@ -220,12 +220,12 @@ void SpaceTimePermutationDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-      case HA_RANDOMIZATION :
           gvDataSetRandomizers.at(0) = new SpaceTimeRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetSimulationDataSourceFilename(), gParameters.GetRandomizationSeed());
           break;
+      case HA_RANDOMIZATION :
       default :
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };

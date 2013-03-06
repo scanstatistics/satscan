@@ -78,7 +78,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _glass.addMouseMotionListener(adapter);
         // Add modal internal frame to glass pane
         _glass.add(this);
-        SetupInterface(parameters);
+        setupInterface(parameters);
     }
 
     /**
@@ -161,6 +161,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Temporal Window", null, _temporalWindowTab, null);
                 jTabbedPane1.addTab("Space and Time Adjustments", null, _spaceTimeAjustmentsTab, null);
                 jTabbedPane1.addTab("Inference", null, _inferenceTab, null);
+                jTabbedPane1.addTab("Power Evaluations", null, _powerEvaluationsTab, null);
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
@@ -188,7 +189,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Modally shows import dialog. */
-    public void LaunchImporter(String sFileName, FileImporter.InputFileType eFileType) {
+    public void launchImporter(String sFileName, FileImporter.InputFileType eFileType) {
         //try {
         ImportWizardDialog wizard = new ImportWizardDialog(SaTScanApplication.getInstance(), sFileName, eFileType, _analysisSettingsWindow.getModelControlType(), _analysisSettingsWindow.getCoordinatesType());
         wizard.setVisible(true);
@@ -326,23 +327,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _endRangeEndDayTextField.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
         }
         //enable date contained in prospective surveillance group
-        EnableProspectiveStartDate();
+        enableProspectiveStartDate();
     }
 
-    private void EnableAdditionalDataSetsGroup(boolean bEnable) {
+    private void enableAdditionalDataSetsGroup(boolean bEnable) {
         bEnable &= (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true);
         bEnable &= _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _additionalDataSetsGroup.setEnabled(bEnable);
 
-        EnableDataSetList();
-        EnableNewButton();
-        EnableRemoveButton();
-        EnableInputFileEdits();
-        EnableDataSetPurposeControls();
+        enableDataSetList();
+        enableNewButton();
+        enableRemoveButton();
+        enableInputFileEdits();
+        enableDataSetPurposeControls();
     }
 
     /** Enables neighbors file group. */
-    private void EnableNonEucludianNeighborsGroup(boolean bEnable) {
+    private void enableNonEucludianNeighborsGroup(boolean bEnable) {
         _specialNeighborFilesGroup.setEnabled(bEnable);
         _specifiyNeighborsFileCheckBox.setEnabled(bEnable);
         _neighborsFileTextField.setEnabled(bEnable && _specifiyNeighborsFileCheckBox.isSelected());
@@ -353,18 +354,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _metaLocationsFileBrowseButton.setEnabled(bEnable && _specifiyMetaLocationsFileCheckBox.isEnabled() && _specifiyMetaLocationsFileCheckBox.isSelected());
     }
 
-    private void EnableTemporalStudyPeriodCheckGroup(boolean bEnable) {
+    private void enableTemporalStudyPeriodCheckGroup(boolean bEnable) {
         _strictStudyPeriodCheckRadioButton.setEnabled(bEnable);
         _relaxedStudyPeriodCheckRadioButton.setEnabled(bEnable);
     }
 
-    private void EnableCoordinatesCheckGroup(boolean bEnable) {
+    private void enableCoordinatesCheckGroup(boolean bEnable) {
         _strictCoordinatesRadioButton.setEnabled(bEnable);
         _relaxedCoordinatesRadioButton.setEnabled(bEnable);
         _strictCoordinatesLabel.setEnabled(bEnable);
     }
 
-    private void EnableMultipleLocationsGroup(boolean bEnable) {
+    private void enableMultipleLocationsGroup(boolean bEnable) {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
         _multipleSetsSpatialCoordinatesGroup.setEnabled(bEnable);
         _onePerLocationIdRadioButton.setEnabled(bEnable);
@@ -386,7 +387,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** enables adjustment options controls */
-    private void EnableAdjustmentsGroup(boolean bEnable) {
+    private void enableAdjustmentsGroup(boolean bEnable) {
         _knownAdjustmentsGroup.setEnabled(bEnable);
         _adjustForKnownRelativeRisksCheckBox.setEnabled(bEnable);
         _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnable && _adjustForKnownRelativeRisksCheckBox.isSelected());
@@ -395,7 +396,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustmentsFileImportButton.setEnabled(bEnable && _adjustForKnownRelativeRisksCheckBox.isSelected());
     }
 
-    private void EnableIterativeScanOptionsGroup(boolean bEnable) {
+    private void enableIterativeScanOptionsGroup(boolean bEnable) {
         _iterativeScanGroup.setEnabled(bEnable);
         _performIterativeScanCheckBox.setEnabled(bEnable);
         _maxIterativeScansLabel.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
@@ -404,7 +405,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _iterativeScanCutoffTextField.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
     }
 
-    private void EnablePValueOptionsGroup() {
+    private void enablePValueOptionsGroup() {
         boolean bPoisson = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bBernoulli = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
                 bSTP = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
@@ -432,7 +433,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _earlyTerminationThreshold.setEnabled(_radioEarlyTerminationPValues.isSelected());        
     }
     
-    public void EnableSettingsForAnalysisModelCombination() {
+    public void enableSettingsForAnalysisModelCombination() {
         boolean bPoisson = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bSpaceTimePermutation = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
                 bExponential = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
@@ -441,119 +442,120 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         switch (_analysisSettingsWindow.getAnalysisControlType()) {
             case PURELYSPATIAL:
-                EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
-                EnableAdjustmentForSpatialOptionsGroup(false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+                enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(true, false);
-                EnableWindowShapeGroup(true);
-                EnableTemporalOptionsGroup(false, false, false);
-                EnableProspectiveSurveillanceGroup(false);
+                enableWindowShapeGroup(true);
+                enableTemporalOptionsGroup(false, false, false);
+                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
-                EnableCoordinatesCheckGroup(true);
-                EnableTemporalStudyPeriodCheckGroup(!bH_Poisson);
-                EnableNonEucludianNeighborsGroup(!bH_Poisson);
-                EnableMultipleLocationsGroup(!bH_Poisson);
-                EnableAdditionalDataSetsGroup(true);
-                EnableIsotonicScan(bPoisson || bBernoulli);
-                EnableIterativeScanOptionsGroup(!bH_Poisson);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(true);
+                enableTemporalStudyPeriodCheckGroup(!bH_Poisson);
+                enableNonEucludianNeighborsGroup(!bH_Poisson);
+                enableMultipleLocationsGroup(!bH_Poisson);
+                enableAdditionalDataSetsGroup(true);
+                enableIsotonicScan(bPoisson || bBernoulli);
+                enableIterativeScanOptionsGroup(!bH_Poisson);
+                enablePValueOptionsGroup();
                 break;
             case PURELYTEMPORAL:
-                EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-                EnableAdjustmentForSpatialOptionsGroup(false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(false, false);
-                EnableWindowShapeGroup(false);
-                EnableTemporalOptionsGroup(true, false, true);
-                EnableProspectiveSurveillanceGroup(false);
+                enableWindowShapeGroup(false);
+                enableTemporalOptionsGroup(true, false, true);
+                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(false);
-                EnableCoordinatesCheckGroup(false);
-                EnableTemporalStudyPeriodCheckGroup(true);
-                EnableNonEucludianNeighborsGroup(false);
-                EnableMultipleLocationsGroup(false);
-                EnableAdditionalDataSetsGroup(true);
-                EnableIsotonicScan(false);
-                EnableIterativeScanOptionsGroup(true);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(false);
+                enableTemporalStudyPeriodCheckGroup(true);
+                enableNonEucludianNeighborsGroup(false);
+                enableMultipleLocationsGroup(false);
+                enableAdditionalDataSetsGroup(true);
+                enableIsotonicScan(false);
+                enableIterativeScanOptionsGroup(true);
+                enablePValueOptionsGroup();
                 break;
             case SPACETIME:
-                EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
                         bPoisson && getAdjustmentSpatialControlType() != Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION,
                         bPoisson, bPoisson);
-                EnableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-                EnableWindowShapeGroup(true);
-                EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
-                EnableProspectiveSurveillanceGroup(false);
+                enableWindowShapeGroup(true);
+                enableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
+                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
-                EnableCoordinatesCheckGroup(true);
-                EnableTemporalStudyPeriodCheckGroup(true);
-                EnableNonEucludianNeighborsGroup(true);
-                EnableMultipleLocationsGroup(true);
-                EnableAdditionalDataSetsGroup(true);
-                EnableIsotonicScan(false);
-                EnableIterativeScanOptionsGroup(false);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(true);
+                enableTemporalStudyPeriodCheckGroup(true);
+                enableNonEucludianNeighborsGroup(true);
+                enableMultipleLocationsGroup(true);
+                enableAdditionalDataSetsGroup(true);
+                enableIsotonicScan(false);
+                enableIterativeScanOptionsGroup(false);
+                enablePValueOptionsGroup();
                 break;
             case PROSPECTIVESPACETIME:
-                EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
                         bPoisson && getAdjustmentSpatialControlType() != Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION,
                         bPoisson, bPoisson);
-                EnableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-                EnableWindowShapeGroup(true);
-                EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
-                EnableProspectiveSurveillanceGroup(true);
+                enableWindowShapeGroup(true);
+                enableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
+                enableProspectiveSurveillanceGroup(true);
                 enableClustersReportedOptions(true);
-                EnableCoordinatesCheckGroup(true);
-                EnableTemporalStudyPeriodCheckGroup(true);
-                EnableNonEucludianNeighborsGroup(true);
-                EnableMultipleLocationsGroup(true);
-                EnableAdditionalDataSetsGroup(true);
-                EnableIsotonicScan(false);
-                EnableIterativeScanOptionsGroup(false);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(true);
+                enableTemporalStudyPeriodCheckGroup(true);
+                enableNonEucludianNeighborsGroup(true);
+                enableMultipleLocationsGroup(true);
+                enableAdditionalDataSetsGroup(true);
+                enableIsotonicScan(false);
+                enableIterativeScanOptionsGroup(false);
+                enablePValueOptionsGroup();
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
-                EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-                EnableAdjustmentForSpatialOptionsGroup(false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(false, false);
-                EnableWindowShapeGroup(false);
-                EnableTemporalOptionsGroup(true, false, false);
-                EnableProspectiveSurveillanceGroup(true);
+                enableWindowShapeGroup(false);
+                enableTemporalOptionsGroup(true, false, false);
+                enableProspectiveSurveillanceGroup(true);
                 enableClustersReportedOptions(false);
-                EnableCoordinatesCheckGroup(false);
-                EnableTemporalStudyPeriodCheckGroup(true);                
-                EnableNonEucludianNeighborsGroup(false);
-                EnableMultipleLocationsGroup(false);
-                EnableAdditionalDataSetsGroup(true);
-                EnableIsotonicScan(false);
-                EnableIterativeScanOptionsGroup(true);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(false);
+                enableTemporalStudyPeriodCheckGroup(true);
+                enableNonEucludianNeighborsGroup(false);
+                enableMultipleLocationsGroup(false);
+                enableAdditionalDataSetsGroup(true);
+                enableIsotonicScan(false);
+                enableIterativeScanOptionsGroup(true);
+                enablePValueOptionsGroup();
                 break;
             case SPATIALVARTEMPTREND:
-                EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
-                EnableAdjustmentForSpatialOptionsGroup(false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+                enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(true, false);
-                EnableTemporalOptionsGroup(false, false, false);
-                EnableProspectiveSurveillanceGroup(false);
+                enableTemporalOptionsGroup(false, false, false);
+                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
-                EnableCoordinatesCheckGroup(true);
-                EnableTemporalStudyPeriodCheckGroup(true);
-                EnableNonEucludianNeighborsGroup(true);
-                EnableIterativeScanOptionsGroup(true);
-                EnableMultipleLocationsGroup(true);
-                EnableAdditionalDataSetsGroup(false);
-                EnableIsotonicScan(false);
-                EnableWindowShapeGroup(true);
-                EnablePValueOptionsGroup();
+                enableCoordinatesCheckGroup(true);
+                enableTemporalStudyPeriodCheckGroup(true);
+                enableNonEucludianNeighborsGroup(true);
+                enableIterativeScanOptionsGroup(true);
+                enableMultipleLocationsGroup(true);
+                enableAdditionalDataSetsGroup(false);
+                enableIsotonicScan(false);
+                enableWindowShapeGroup(true);
+                enablePValueOptionsGroup();
                 break;
         }
         enableClustersReportedGroup();
-        EnableAdjustmentsGroup(bPoisson);
-        UpdateMonteCarloTextCaptions();
+        enablePowerEvaluationsGroup();
+        enableAdjustmentsGroup(bPoisson);
+        updateMonteCarloTextCaptions();
     }
 
     /** Sets caption of spatial distance radio button based upon coordinates group setting. */
-    public void SetSpatialDistanceCaption() {
+    public void setSpatialDistanceCaption() {
         String sRadioCaption = "", sLabelCaption = "";
 
         sRadioCaption = String.format("is %1$s with a", (_circularRadioButton.isSelected() ? "a circle" : "an ellipse"));
@@ -576,7 +578,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxReportedRadiusLabel.setText(sLabelCaption);
     }
 
-    public void UpdateMaxiumTemporalSizeTextCaptions() {
+    public void updateMaxiumTemporalSizeTextCaptions() {
         switch (_analysisSettingsWindow.getModelControlType()) {
             case POISSON:
             case HOMOGENEOUSPOISSON:    
@@ -593,7 +595,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    public void UpdateMaxiumTemporalTextCaptions() {
+    public void updateMaxiumTemporalTextCaptions() {
         switch (_analysisSettingsWindow.getTimeAggregationControlType()) {
             case YEAR:
                 _maxTemporalTimeUnitsLabel.setText("years");
@@ -610,7 +612,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    public void UpdateMonteCarloTextCaptions() {
+    public void updateCriticalValuesTextCaptions() {
+        _criticalValuesReplicationsLabel.setText("(" + _montCarloReplicationsTextField.getText() + " replications - value defined on Inference tab)");
+    }
+    
+    public void updateMonteCarloTextCaptions() {
         switch (getPValueReportingControlType()) {
             case DEFAULT_PVALUE:
             case TERMINATION_PVALUE:    
@@ -626,7 +632,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Enables/disables TListBox that list defined data sets
      */
-    private void EnableDataSetList() {
+    private void enableDataSetList() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
         _inputDataSetsList.setEnabled(bEnable);
     }
@@ -634,7 +640,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the New button on the Input tab
      */
-    private void EnableNewButton() {
+    private void enableNewButton() {
          boolean bEnable = _additionalDataSetsGroup.isEnabled();
         _addDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() < MAXIMUM_ADDITIONAL_SETS ? bEnable : false);
     }
@@ -642,7 +648,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the New button on the Input tab
      */
-    private void EnableRemoveButton() {
+    private void enableRemoveButton() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled();
         _removeDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() > 0 ? bEnable : false);
     }
@@ -724,6 +730,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Double.parseDouble(_logLinearTextField.getText()) == 0);
         bReturn &= (_spatialAdjustmentsNoneRadioButton.isSelected() == true);
 
+        // Power Evaluations tab
+        bReturn &= (_performPowerEvalautions.isSelected() == false);
+        bReturn &= (_partOfRegularAnalysis.isSelected() == true);
+        bReturn &= _totalPowerCases.getText().equals("0");
+        bReturn &= (_criticalValuesMonteCarlo.isSelected() == true);
+        bReturn &= (_powerEstimationMonteCarlo.isSelected() == true);
+        bReturn &= _alternativeHypothesisFilename.getText().equals("");
+        
         return bReturn;
     }
     //	** Checks to determine if only default values are set in the dialog
@@ -755,9 +769,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         if (_spatialAdjustmentsNoneRadioButton.isSelected()) {
             eReturn = Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT;
-        }
-        if (_spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
+        } else if (_spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
             eReturn = Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION;
+        } else {
+            throw new IllegalArgumentException("No spatial adjustments option selected.");
         }
         return eReturn;
     }
@@ -766,32 +781,30 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.CriteriaSecondaryClustersType eReturn = null;
         if (_hierarchicalSecondaryClusters.getSelectedIndex() == 0) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOGEOOVERLAP;
-        }
-        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 1) {
+        } else if (_hierarchicalSecondaryClusters.getSelectedIndex() == 1) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINOTHER;
-        }
-        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 2) {
+        } else if (_hierarchicalSecondaryClusters.getSelectedIndex() == 2) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINMORELIKE;
-        }
-        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 3) {
+        } else if (_hierarchicalSecondaryClusters.getSelectedIndex() == 3) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINLESSLIKE;
-        }
-        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 4) {
+        } else if (_hierarchicalSecondaryClusters.getSelectedIndex() == 4) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOPAIRSINEACHOTHERS;
-        }
-        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 5) {
+        } else if (_hierarchicalSecondaryClusters.getSelectedIndex() == 5) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NORESTRICTIONS;
+        } else {
+            throw new IllegalArgumentException("No secondary clusters option selected.");
         }
         return eReturn;
     }
 
-    private Parameters.IndexBasedReportType getIndexBasedClusterReportType() {
-        Parameters.IndexBasedReportType eReturn = null;
+    private Parameters.GiniIndexReportType getIndexBasedClusterReportType() {
+        Parameters.GiniIndexReportType eReturn = null;
         if (_indexBasedClusterCriteria.getSelectedIndex() == 0) {
-            eReturn = Parameters.IndexBasedReportType.OPTIMAL_ONLY;
-        }
-        if (_indexBasedClusterCriteria.getSelectedIndex() == 1) {
-            eReturn = Parameters.IndexBasedReportType.ALL_VALUES;
+            eReturn = Parameters.GiniIndexReportType.OPTIMAL_ONLY;
+        } else if (_indexBasedClusterCriteria.getSelectedIndex() == 1) {
+            eReturn = Parameters.GiniIndexReportType.ALL_VALUES;
+        } else {
+            throw new IllegalArgumentException("No gini index cluster report option selected.");
         }
         return eReturn;
     }
@@ -801,12 +814,53 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         if (_nonCompactnessPenaltyComboBox.getSelectedIndex() == 0) {
             eReturn = Parameters.NonCompactnessPenaltyType.NOPENALTY;
-        }
-        if (_nonCompactnessPenaltyComboBox.getSelectedIndex() == 1) {
+        } else if (_nonCompactnessPenaltyComboBox.getSelectedIndex() == 1) {
             eReturn = Parameters.NonCompactnessPenaltyType.MEDIUMPENALTY;
-        }
-        if (_nonCompactnessPenaltyComboBox.getSelectedIndex() == 2) {
+        } else if (_nonCompactnessPenaltyComboBox.getSelectedIndex() == 2) {
             eReturn = Parameters.NonCompactnessPenaltyType.STRONGPENALTY;
+        } else {
+            throw new IllegalArgumentException("No non-compactness penalty option selected.");
+        }
+        return eReturn;
+    }
+
+    private Parameters.PowerEvaluationMethodType getPowerEvaluationMethodType() {
+        Parameters.PowerEvaluationMethodType eReturn = null;
+
+        if (_partOfRegularAnalysis.isSelected()) {
+            eReturn = Parameters.PowerEvaluationMethodType.PE_WITH_ANALYSIS;
+        } else if (_powerEvaluationWithCaseFile.isSelected()) {
+            eReturn = Parameters.PowerEvaluationMethodType.PE_ONLY_CASEFILE;
+        } else if (_powerEvaluationWithSpecifiedCases.isSelected()) {
+            eReturn = Parameters.PowerEvaluationMethodType.PE_ONLY_SPECIFIED_CASES;
+        } else {
+            throw new IllegalArgumentException("No power evaluation option selected.");
+        }
+        return eReturn;
+    }
+
+    private Parameters.CriticalValuesType getCriticalValuesType() {
+        Parameters.CriticalValuesType eReturn = null;
+
+        if (_criticalValuesMonteCarlo.isSelected()) {
+            eReturn = Parameters.CriticalValuesType.CV_MONTECARLO;
+        } else if (_criticalValuesGumbel.isSelected()) {
+            eReturn = Parameters.CriticalValuesType.CV_GUMBEL;
+        } else {
+            throw new IllegalArgumentException("No critical value option selected.");
+        }
+        return eReturn;
+    }
+
+    private Parameters.PowerEstimationType getPowerEstimationType() {
+        Parameters.PowerEstimationType eReturn = null;
+
+        if (_powerEstimationMonteCarlo.isSelected()) {
+            eReturn = Parameters.PowerEstimationType.PE_MONTECARLO;
+        } else if (_powerEstimationGumbel.isSelected()) {
+            eReturn = Parameters.PowerEstimationType.PE_GUMBEL;
+        } else {
+            throw new IllegalArgumentException("No power estimation option selected.");
         }
         return eReturn;
     }
@@ -819,8 +873,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             eReturn = Parameters.MultipleCoordinatesType.ONEPERLOCATION;
         } else if (_atLeastOneRadioButton.isSelected()) {
             eReturn = Parameters.MultipleCoordinatesType.ATLEASTONELOCATION;
-        } else // (_allLocationsRadioButton.isSelected())
-        {
+        } else /* (_allLocationsRadioButton.isSelected()) */ {
             eReturn = Parameters.MultipleCoordinatesType.ALLLOCATIONS;
         }
 
@@ -835,15 +888,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             eReturn = Parameters.CoordinatesDataCheckingType.STRICTCOORDINATES;
         } else if (_relaxedCoordinatesRadioButton.isSelected()) {
             eReturn = Parameters.CoordinatesDataCheckingType.RELAXEDCOORDINATES;
+        } else {
+            throw new IllegalArgumentException("No coordinates data check option selected.");
         }
-        //else
-        //    ZdGenerateException("Unknown geographical coordinates.", "GetCoordinatesDataCheckingTypeFromControl()");
-
         return eReturn;
     }
 
     /** sets CParameters class with settings in form */
-    public void SaveParameterSettings(Parameters parameters) {
+    public void saveParameterSettings(Parameters parameters) {
         String sString;
 
         parameters.SetRiskType(_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected() ? Parameters.RiskType.MONOTONERISK.ordinal() : Parameters.RiskType.STANDARDRISK.ordinal());
@@ -939,10 +991,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
         parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
         parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
-        parameters.setIndexBasedReportType(getIndexBasedClusterReportType().ordinal());
-        parameters.setReportIndexBasedCoefficents(_checkboxReportIndexCoefficients.isSelected());
+        parameters.setGiniIndexReportType(getIndexBasedClusterReportType().ordinal());
+        parameters.setReportGiniIndexCoefficents(_checkboxReportIndexCoefficients.isSelected());
         parameters.setReportHierarchicalClusters(_mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected());
         parameters.setReportGiniOptimizedClusters(_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected());
+
+        // Power Evaluations tab
+        parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
+        parameters.setPowerEvaluationMethod(getPowerEvaluationMethodType().ordinal());
+        parameters.setPowerEvaluationCaseCount(Integer.parseInt((_totalPowerCases.getText().length() > 0 ?_totalPowerCases.getText() : "0")));
+        parameters.setPowerEvaluationCriticalValueType(getCriticalValuesType().ordinal());
+        parameters.setPowerEstimationType(getPowerEstimationType().ordinal());
+        parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -952,9 +1012,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean isAdjustedRelativeRisksSelected() {
         return _adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected();
     }
-            
+
+    /** Returns boolean indication of whether user has selected power evaluation without case file data. */
+    public boolean isPowerEvaluationNoCaseFile() {
+        return _performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected();
+    }
+    
     /** returns maximum temporal cluster size type for control */
-    public Parameters.TemporalSizeType GetMaxTemporalClusterSizeControlType() {
+    public Parameters.TemporalSizeType getMaxTemporalClusterSizeControlType() {
         Parameters.TemporalSizeType eReturn = null;
 
         if (_percentageTemporalRadioButton.isSelected()) {
@@ -967,10 +1032,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** returns maximum temporal cluster size from appropriate control */
-    public double GetMaxTemporalClusterSizeFromControl() {
+    public double getMaxTemporalClusterSizeFromControl() {
         double dReturn;
 
-        switch (GetMaxTemporalClusterSizeControlType()) {
+        switch (getMaxTemporalClusterSizeControlType()) {
             case TIMETYPE:
                 dReturn = Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText());
                 break;
@@ -984,7 +1049,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      *
      */
-    private void ValidateInputFiles() {
+    private void validateInputFiles() {
         boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                 _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
         boolean bFirstDataSetHasPopulationFile = _analysisSettingsWindow.getEdtPopFileNameText().length() > 0;
@@ -1048,8 +1113,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Validate user settings of the Neighbors File tab. */
-    private void ValidateNeighborsFileSettings() {
+    /** validate user settings of the Neighbors File tab. */
+    private void validateNeighborsFileSettings() {
         if (_specialNeighborFilesGroup.isEnabled() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
             //validate the case file for this dataset
             if (_neighborsFileTextField.getText().length() == 0) {
@@ -1072,7 +1137,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void ValidateSpatialWindowSettings() {
+    private void validateSpatialWindowSettings() {
         if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected() && _maxCirclePopulationFilenameTextField.getText().length() == 0) {
             throw new AdvFeaturesExpection("Please specify a maximum circle size file.", FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
         }
@@ -1113,7 +1178,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void ValidateAdjustmentSettings() {
+    private void validateAdjustmentSettings() {
         boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                 _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
 
@@ -1143,7 +1208,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void ValidateTemporalClusterSize() {
+    private void validateTemporalClusterSize() {
         String sErrorMessage, sPrecisionString;
         double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
@@ -1152,7 +1217,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             return;
         }
 
-        if (GetMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.PERCENTAGETYPE) {
+        if (getMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.PERCENTAGETYPE) {
             if (_maxTemporalClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum temporal cluster size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
@@ -1165,15 +1230,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             dStudyPeriodLengthInUnits = _analysisSettingsWindow.CalculateTimeAggregationUnitsInStudyPeriod();
             dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
             if (dMaxTemporalLengthInUnits < 1) {
-                sPrecisionString = _analysisSettingsWindow.GetDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), false, false);
+                sPrecisionString = _analysisSettingsWindow.getDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), false, false);
                 sErrorMessage = "A maximum temporal cluster size as " + Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) + " percent of a " + Math.floor(dStudyPeriodLengthInUnits) + sPrecisionString + " study period\n" + "results in a maximum temporal cluster size that is less than one time\n" + "aggregation " + sPrecisionString + "\n";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
-        } else if (GetMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.TIMETYPE) {
+        } else if (getMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.TIMETYPE) {
             if (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum temporal cluster size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
-            sPrecisionString = _analysisSettingsWindow.GetDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), false, false);
+            sPrecisionString = _analysisSettingsWindow.getDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), false, false);
             dStudyPeriodLengthInUnits = _analysisSettingsWindow.CalculateTimeAggregationUnitsInStudyPeriod();
             dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50 : 90) / 100.0);
             if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > dMaxTemporalLengthInUnits) {
@@ -1182,11 +1247,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         }
     //    else
-    // ZdException::GenerateNotification("Unknown temporal percentage type: %d.","ValidateTemporalClusterSize()", GetMaxTemporalClusterSizeControlType());
+    // ZdException::GenerateNotification("Unknown temporal percentage type: %d.","validateTemporalClusterSize()", getMaxTemporalClusterSizeControlType());
     }
 
     /** validates scanning window range settings - throws exception */
-    private void ValidateScanningWindowRanges() {
+    private void validateScanningWindowRanges() {
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             GregorianCalendar StudyPeriodStartDate = _analysisSettingsWindow.getStudyPeriodStartDateAsCalender();
             GregorianCalendar StudyPeriodEndDate = _analysisSettingsWindow.getStudyPeriodEndDateAsCalender();
@@ -1248,7 +1313,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /** Specific prospective space-time date check
      * Must be between the start and end dates of the analysis */
-    private void ValidateProspDateRange() {
+    private void validateProspDateRange() {
         if (!(_adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected())) {
             return;
         }
@@ -1279,13 +1344,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** validates temporal window settings - throws exception */
-    private void ValidateTemporalWindowSettings() {
-        ValidateTemporalClusterSize();
-        ValidateScanningWindowRanges();
+    private void validateTemporalWindowSettings() {
+        validateTemporalClusterSize();
+        validateScanningWindowRanges();
     }
 
     /** validates reported clusters limiting control setting - throws exception */
-    private void ValidateClustersReportedSettings() {
+    private void validateClustersReportedSettings() {
         boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
         boolean bHierarchael = _mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected();
         if (bUsingNeighbors && bHierarchael && _hierarchicalSecondaryClusters.getSelectedIndex() > 0 && _hierarchicalSecondaryClusters.getSelectedIndex() < 5) {
@@ -1316,8 +1381,61 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
     
+    /**
+     * Validates the power evaluations parameters in conjunction with other selected parameters.
+     */
+    private void validatePowerEvaluations() {
+        if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
+            if (_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected()) {
+                throw new AdvFeaturesExpection("The power evaluation can not be performed with the iterative scan statistic.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+            }
+            if (_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
+                throw new AdvFeaturesExpection("A power evaluation cannot be performed with the isotonic scan.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+            }
+            Parameters.PValueReportingType pvalues = getPValueReportingControlType();
+            if (!(pvalues == Parameters.PValueReportingType.STANDARD_PVALUE || pvalues == Parameters.PValueReportingType.GUMBEL_PVALUE)) {
+                throw new AdvFeaturesExpection("The power evaluation is only available for the Standard Monte Carlo and Gumbel p-value reporting.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+            }
+            if (_powerEvaluationWithSpecifiedCases.isSelected()) {
+                if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
+                    throw new AdvFeaturesExpection("A power evaluation cannot be performed when using temporal adjustments without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+                }
+                if (_spatialAdjustmentsGroup.isEnabled() && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT) {
+                    throw new AdvFeaturesExpection("A power evaluation cannot be performed when using spatial adjustments without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+                }
+                if (_knownAdjustmentsGroup.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected()) {
+                    throw new AdvFeaturesExpection("A power evaluation cannot be performed when using adjustments for known relative\nrisks without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+                }                
+                if (Integer.parseInt(_totalPowerCases.getText()) == 0) {
+                    throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                }                
+            }
+            int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
+            int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
+            if (replica < 100) {
+                throw new AdvFeaturesExpection("The minimum number of standard replications for the power evaluation is 999.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
+            }
+            if (replicaPE < 100) {
+                throw new AdvFeaturesExpection("The minimum number of power replications in the power evaluation is 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
+            }
+            if (replica > replicaPE) {
+                throw new AdvFeaturesExpection("The number of power replications must be greater than or equal to the standard replications.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
+            }
+            if (replicaPE % 100 != 0) {
+                throw new AdvFeaturesExpection("The number of power replications in the power evaluation must be a multiple of 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
+            }
+            if (_alternativeHypothesisFilename.getText().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify an alternative hypothesis filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }
+            if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
+                throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
+                        FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }            
+        }
+    }
+
     /** validates Monte Carlo replications */
-    private void ValidateInferenceSettings() {
+    private void validateInferenceSettings() {
         //double        dNumReplications/*, dMaxReplications*/;
         int dNumReplications;
 
@@ -1340,21 +1458,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
     
     /** validates all the settings in this dialog */
-    public void Validate() {
-        ValidateInputFiles();
-        ValidateNeighborsFileSettings();
-        ValidateSpatialWindowSettings();
-        ValidateAdjustmentSettings();
-        ValidateTemporalWindowSettings();
-        ValidateProspDateRange();
-        ValidateInferenceSettings();
-        ValidateClustersReportedSettings();
+    public void validateParameters() {
+        validateInputFiles();
+        validateNeighborsFileSettings();
+        validateSpatialWindowSettings();
+        validateAdjustmentSettings();
+        validateTemporalWindowSettings();
+        validateProspDateRange();
+        validateInferenceSettings();
+        validateClustersReportedSettings();
+        validatePowerEvaluations();
     }
 
     /**
      * enables input tab case/control/pop files edit boxes
      */
-    private void EnableInputFileEdits() {
+    private void enableInputFileEdits() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 0;
 
         _caseFileTextField.setEnabled(bEnable);
@@ -1392,7 +1511,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Enables/disables controls that indicate purpose of additional data sets.
      */
-    private void EnableDataSetPurposeControls() {
+    private void enableDataSetPurposeControls() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
         _multivariateAdjustmentsRadioButton.setEnabled(bEnable);
         _adjustmentByDataSetsRadioButton.setEnabled(bEnable);
@@ -1402,22 +1521,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Sets default values for Input related tab and respective controls
      */
-    private void SetDefaultsForInputTab() {
+    private void setDefaultsForInputTab() {
         // clear all visual components
         _caseFileTextField.setText("");
         _controlFileTextField.setText("");
         _populationFileTextField.setText("");
         _dataSetsListModel.removeAllElements();
-        EnableDataSetList();
-        EnableDataSetPurposeControls();
+        enableDataSetList();
+        enableDataSetPurposeControls();
 
         // clear the non-visual components
         _caseFilenames.clear();
         _controlFilenames.clear();
         _populationFilenames.clear();
-        EnableNewButton();
-        EnableRemoveButton();
-        EnableInputFileEdits();
+        enableNewButton();
+        enableRemoveButton();
+        enableInputFileEdits();
         _multivariateAdjustmentsRadioButton.setSelected(true);
 
         //data checking
@@ -1432,7 +1551,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Sets maximum temporal cluster size control for passed type */
-    private void SetMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType eTemporalSizeType) {
+    private void setMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType eTemporalSizeType) {
         switch (eTemporalSizeType) {
             case TIMETYPE:
                 _timeTemporalRadioButton.setSelected(true);
@@ -1446,7 +1565,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** Sets default values for Analysis related tabs and their respective controls
      * pulled these default values from the CParameter class
      */
-    private void SetDefaultsForAnalysisTabs() {
+    private void setDefaultsForAnalysisTabs() {
         // Inference tab
         _adjustForEarlierAnalysesCheckBox.setSelected(false);
         _radioDefaultPValues.setSelected(true);
@@ -1471,12 +1590,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _inclPureTempClustCheckBox.setSelected(false);
         _circularRadioButton.setSelected(true);
         _nonCompactnessPenaltyComboBox.select(1);
-        SetSpatialDistanceCaption();
+        setSpatialDistanceCaption();
 
         _onePerLocationIdRadioButton.setSelected(true);
 
         // Temporal tab
-        SetMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType.PERCENTAGETYPE);
+        setMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType.PERCENTAGETYPE);
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
         _includePureSpacClustCheckBox.setSelected(false);
@@ -1489,15 +1608,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Risk tab
         _adjustForKnownRelativeRisksCheckBox.setSelected(false);
         _adjustmentsByRelativeRisksFileTextField.setText("");
-        SetTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+        setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         _spatialAdjustmentsNoneRadioButton.setSelected(true);
         _logLinearTextField.setText("0");
+
+         // Power Evaluations tab
+        _performPowerEvalautions.setSelected(false);
+        _partOfRegularAnalysis.setSelected(true);
+        _totalPowerCases.setText("0");
+        _criticalValuesMonteCarlo.setSelected(true);
+        _powerEstimationMonteCarlo.setSelected(true);
+        _alternativeHypothesisFilename.setText("");
     }
 
     /** Sets default values for Output related tab and respective controls
      *   pulled these default values from the CParameter class
      */
-    private void SetDefaultsForOutputTab() {
+    private void setDefaultsForOutputTab() {
         _mostLikelyClustersHierarchically.setSelected(true);
         _giniOptimizedClusters.setSelected(true);
         _hierarchicalSecondaryClusters.select(0);
@@ -1516,16 +1643,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Resets advanced settings to default values
      */
-    private void SetDefaultsClick() {
+    private void setDefaultsClick() {
         switch (_focusedTabSet) {
             case INPUT:
-                SetDefaultsForInputTab();
+                setDefaultsForInputTab();
                 break;
             case ANALYSIS:
-                SetDefaultsForAnalysisTabs();
+                setDefaultsForAnalysisTabs();
                 break;
             case OUTPUT:
-                SetDefaultsForOutputTab();
+                setDefaultsForOutputTab();
                 break;
         }
         enableSetDefaultsButton();
@@ -1561,7 +1688,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the window shape options group control
      */
-    private void EnableWindowShapeGroup(boolean bEnable) {
+    private void enableWindowShapeGroup(boolean bEnable) {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
         _spatialWindowShapeGroup.setEnabled(bEnable);
         _circularRadioButton.setEnabled(bEnable);
@@ -1574,7 +1701,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected() && _circularRadioButton.isEnabled()) {
             _circularRadioButton.setSelected(true);
         }
-        SetSpatialDistanceCaption();
+        setSpatialDistanceCaption();
     }
 
     /** enables or disables the spatial options group control */
@@ -1655,7 +1782,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Sets time trend adjustment control's index */
-    private void SetTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
+    private void setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
         switch (eTimeTrendAdjustmentType) {
             case NOTADJUSTED:
                 _temporalTrendAdjNoneRadioButton.setSelected(true);
@@ -1676,7 +1803,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** enables or disables the temporal time trend adjustment control group */
-    private void EnableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bTimeStratified, boolean bLogYearPercentage, boolean bCalculatedLog) {
+    private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bTimeStratified, boolean bLogYearPercentage, boolean bCalculatedLog) {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
 
         // trump control enables
@@ -1687,23 +1814,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjGroup.setEnabled(bEnable);
         _temporalTrendAdjTimeStratifiedRadioButton.setEnabled(bTimeStratified);
         if (bEnable && !bTimeStratified && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION) {
-            SetTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         }
 
         _temporalTrendAdjLogLinearRadioButton.setEnabled(bLogYearPercentage);
         _logLinearLabel.setEnabled(bLogYearPercentage);
         _logLinearTextField.setEnabled(bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC);
         if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC) {
-            SetTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         }
 
         _temporalTrendAdjLogLinearCalcRadioButton.setEnabled(bCalculatedLog);
         if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC) {
-            SetTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         }
     }
 
-    private void EnableAdjustmentForSpatialOptionsGroup(boolean bEnable, boolean bEnableStratified) {
+    private void enableAdjustmentForSpatialOptionsGroup(boolean bEnable, boolean bEnableStratified) {
         _spatialAdjustmentsGroup.setEnabled(bEnable);
         bEnableStratified &= bEnable;
         _spatialAdjustmentsSpatialStratifiedRadioButton.setEnabled(bEnableStratified);
@@ -1713,7 +1840,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** enables temporal options controls */
-    private void EnableTemporalRanges(boolean bEnable, boolean bEnableRanges) {
+    private void enableTemporalRanges(boolean bEnable, boolean bEnableRanges) {
         _flexibleTemporalWindowDefinitionGroup.setEnabled(bEnable && bEnableRanges);
         _restrictTemporalRangeCheckBox.setEnabled(bEnable && bEnableRanges);
         _startWindowRangeLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
@@ -1728,7 +1855,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** enables or disables the temporal options group control */
-    private void EnableTemporalOptionsGroup(boolean bEnable, boolean bEnableIncludePurelySpatial, boolean bEnableRanges) {
+    private void enableTemporalOptionsGroup(boolean bEnable, boolean bEnableIncludePurelySpatial, boolean bEnableRanges) {
         _temporalOptionsGroup.setEnabled(bEnable);
         _percentageTemporalRadioButton.setEnabled(bEnable);
         _maxTemporalClusterSizeTextField.setEnabled(bEnable && _percentageTemporalRadioButton.isSelected());
@@ -1737,16 +1864,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeUnitsTextField.setEnabled(bEnable && _timeTemporalRadioButton.isSelected());
         _maxTemporalTimeUnitsLabel.setEnabled(bEnable);
         _includePureSpacClustCheckBox.setEnabled(bEnable && bEnableIncludePurelySpatial);
-        EnableTemporalRanges(bEnable, bEnableRanges);
+        enableTemporalRanges(bEnable, bEnableRanges);
     }
 
     /** Enables isotonic scan feature controls. */
-    private void EnableIsotonicScan(boolean bEnable) {
+    private void enableIsotonicScan(boolean bEnable) {
         _performIsotonicScanCheckBox.setEnabled(bEnable);
     }
 
     /** enabled prospective start date controls */
-    private void EnableProspectiveStartDate() {
+    private void enableProspectiveStartDate() {
         boolean bYears = true, bMonths = true, bDays = true,
                 bEnable = _prospectiveSurveillanceGroup.isEnabled() &&
                 _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected();
@@ -1787,10 +1914,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** enables or disables the prospective start date group control */
-    private void EnableProspectiveSurveillanceGroup(boolean bEnable) {
+    private void enableProspectiveSurveillanceGroup(boolean bEnable) {
         _prospectiveSurveillanceGroup.setEnabled(bEnable);
         _adjustForEarlierAnalysesCheckBox.setEnabled(bEnable);
-        EnableProspectiveStartDate();
+        enableProspectiveStartDate();
     }
 
     /** Enables controls on the clusters reported tab. */
@@ -1804,7 +1931,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
     
     /** Set appropriate control for maximum spatial cluster size type. */
-    private void SetMaxSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
+    private void setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
         switch (eSpatialSizeType) {
             case MAXDISTANCE:
                 _maxSpatialRadiusTextField.setText(dMaxSize <= 0 ? "1" : Double.toString(dMaxSize));
@@ -1834,11 +1961,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Set appropriate control for maximum spatial cluster size type. */
-    private void SetMaxTemporalClusterSizeControl(double dMaxSize) {
+    private void setMaxTemporalClusterSizeControl(double dMaxSize) {
         Double d = new Double(dMaxSize);
         double dMaxValue = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;
 
-        switch (GetMaxTemporalClusterSizeControlType()) {
+        switch (getMaxTemporalClusterSizeControlType()) {
             case TIMETYPE:
                 _maxTemporalClusterSizeUnitsTextField.setText(dMaxSize <= 0 ? "1" : Integer.toString(d.intValue()));
                 break;
@@ -1850,7 +1977,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Sets spatial adjustment control type */
-    private void SetSpatialAdjustmentTypeControl(Parameters.SpatialAdjustmentType eSpatialAdjustmentType) {
+    private void setSpatialAdjustmentTypeControl(Parameters.SpatialAdjustmentType eSpatialAdjustmentType) {
         switch (eSpatialAdjustmentType) {
             case NO_SPATIAL_ADJUSTMENT:
                 _spatialAdjustmentsNoneRadioButton.setSelected(true);
@@ -1862,7 +1989,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Sets study period data checking control's index */
-    private void SetStudyPeriodDataCheckingControl(Parameters.StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
+    private void setStudyPeriodDataCheckingControl(Parameters.StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
         switch (eStudyPeriodDataCheckingType) {
             case RELAXEDBOUNDS:
                 _relaxedStudyPeriodCheckRadioButton.setSelected(true);
@@ -1874,7 +2001,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void SetCoordinatesDataCheckingControl(Parameters.CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
+    private void setCoordinatesDataCheckingControl(Parameters.CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
         switch (eCoordinatesDataCheckingType) {
             case STRICTCOORDINATES:
                 _strictCoordinatesRadioButton.setSelected(true);
@@ -1889,7 +2016,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** parses up a date string and places it into the given month, day, year
      * interace text control (TEdit *). Defaults prospective survallience start
      * date to months/days to like study period end date.                       */
-    private void ParseProspectiveDate(String sDateString, JTextField Year, JTextField Month, JTextField Day) {
+    private void parseProspectiveDate(String sDateString, JTextField Year, JTextField Month, JTextField Day) {
         String[] dateParts = sDateString.split("/");
         GregorianCalendar thisCalender = new GregorianCalendar();
         int iStudyPeriodDay = 0;
@@ -1952,7 +2079,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** Set appropriate control for maximum spatial cluster size type. */
-    private void SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
+    private void setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
         switch (eSpatialSizeType) {
             case MAXDISTANCE:
                 _maxReportedSpatialRadiusTextField.setText(dMaxSize <= 0 ? "1" : Double.toString(dMaxSize));
@@ -1967,11 +2094,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void SetupInterface(final Parameters parameters) {
+    private void setupInterface(final Parameters parameters) {
         // Spatial Window tab
-        SetMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFPOPULATION, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), false));
-        SetMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false));
-        SetMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), false));
+        setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFPOPULATION, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), false));
+        setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false));
+        setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), false));
         _spatialPopulationFileCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false));
         _spatialDistanceCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), false));
         
@@ -1981,15 +2108,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _circularRadioButton.setSelected(parameters.GetSpatialWindowType() == Parameters.SpatialWindowType.CIRCULAR);
         _ellipticRadioButton.setSelected(parameters.GetSpatialWindowType() == Parameters.SpatialWindowType.ELLIPTIC);
         _nonCompactnessPenaltyComboBox.select(parameters.GetNonCompactnessPenaltyType().ordinal());
-        SetSpatialDistanceCaption();
+        setSpatialDistanceCaption();
         _performIsotonicScanCheckBox.setSelected(parameters.GetRiskType() == Parameters.RiskType.MONOTONERISK);
 
         // Multiple Coordinates Tab
        setMultipleCoordinatesType(parameters.GetMultipleCoordinatesType());
  
         // Temporal tab
-        SetMaxTemporalClusterSizeTypeControl(parameters.GetMaximumTemporalClusterSizeType());
-        SetMaxTemporalClusterSizeControl(parameters.GetMaximumTemporalClusterSize());
+        setMaxTemporalClusterSizeTypeControl(parameters.GetMaximumTemporalClusterSizeType());
+        setMaxTemporalClusterSizeControl(parameters.GetMaximumTemporalClusterSize());
         _includePureSpacClustCheckBox.setSelected(parameters.GetIncludePurelySpatialClusters());
         _restrictTemporalRangeCheckBox.setSelected(parameters.GetIncludeClustersType() == Parameters.IncludeClustersType.CLUSTERSINRANGE);
         if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
@@ -2004,10 +2131,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             Utils.parseDateStringToControls(parameters.GetEndRangeEndDate(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, true);
         }
         // Risk tab
-        SetSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
+        setSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
         _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
         _adjustmentsByRelativeRisksFileTextField.setText(parameters.GetAdjustmentsByRelativeRisksFilename());
-        SetTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
+        setTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
         _logLinearTextField.setText(parameters.GetTimeTrendAdjustmentPercentage() <= -100 ? "0" : Double.toString(parameters.GetTimeTrendAdjustmentPercentage()));
 
         // Inference tab
@@ -2019,7 +2146,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
             Utils.parseDateStringToControl(parameters.GetProspectiveStartDate(), _prospectiveStartDateGenericTextField);
         } else {
-            ParseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
+            parseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
         }
         _performIterativeScanCheckBox.setSelected(parameters.GetIsIterativeScanning());
         _numIterativeScansTextField.setText(parameters.GetNumIterativeScansRequested() < 1 || parameters.GetNumIterativeScansRequested() > Parameters.MAXIMUM_ITERATIVE_ANALYSES ? "10" : Integer.toString(parameters.GetNumIterativeScansRequested()));
@@ -2031,18 +2158,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _giniOptimizedClusters.setSelected(parameters.getReportGiniOptimizedClusters());
         _restrictReportedClustersCheckBox.setSelected(parameters.GetRestrictingMaximumReportedGeoClusterSize());
         _hierarchicalSecondaryClusters.select(parameters.GetCriteriaSecondClustersType().ordinal());
-        _indexBasedClusterCriteria.select(parameters.getIndexBasedReportType().ordinal());
-        _checkboxReportIndexCoefficients.setSelected(parameters.getOutputIndexBasedCoefficents());
-        SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFPOPULATION, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), true));
-        SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
-        SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
+        _indexBasedClusterCriteria.select(parameters.getGiniIndexReportType().ordinal());
+        _checkboxReportIndexCoefficients.setSelected(parameters.getReportGiniIndexCoefficents());
+        setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFPOPULATION, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), true));
+        setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
+        setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
         _reportedSpatialPopulationFileCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
         _reportedSpatialDistanceCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
         _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
         _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
 
         // Input tab
-        EnableAdditionalDataSetsGroup(false);
+        enableAdditionalDataSetsGroup(false);
         for (int i = 1; i < parameters.GetNumDataSets(); i++) { // multiple data sets
             _dataSetsListModel.addElement("Data Set " + Integer.toString(i + 1));
             _caseFilenames.addElement(parameters.GetCaseFileName(i + 1));
@@ -2056,15 +2183,58 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustmentByDataSetsRadioButton.setSelected(parameters.GetMultipleDataSetPurposeType() == Parameters.MultipleDataSetPurposeType.ADJUSTMENT);
 
         // Data Checking Tab
-        SetStudyPeriodDataCheckingControl(parameters.GetStudyPeriodDataCheckingType());
-        SetCoordinatesDataCheckingControl(parameters.GetCoordinatesDataCheckingType());
+        setStudyPeriodDataCheckingControl(parameters.GetStudyPeriodDataCheckingType());
+        setCoordinatesDataCheckingControl(parameters.GetCoordinatesDataCheckingType());
         
         // Neighbors Tab
         _specifiyNeighborsFileCheckBox.setSelected(parameters.UseLocationNeighborsFile());
         _neighborsFileTextField.setText(parameters.GetLocationNeighborsFileName());
         _specifiyMetaLocationsFileCheckBox.setSelected(parameters.UseMetaLocationsFile());
-        _metaLocationsFileTextField.setText(parameters.GetMetaLocationsFileName());        
+        _metaLocationsFileTextField.setText(parameters.GetMetaLocationsFileName());
+
+        // Power Evaluations tab
+        _performPowerEvalautions.setSelected(parameters.getPerformPowerEvaluation());
+        _partOfRegularAnalysis.setSelected(parameters.getPowerEvaluationMethod() == Parameters.PowerEvaluationMethodType.PE_ONLY_CASEFILE);
+        _powerEvaluationWithCaseFile.setSelected(parameters.getPowerEvaluationMethod() == Parameters.PowerEvaluationMethodType.PE_ONLY_CASEFILE);
+        _powerEvaluationWithSpecifiedCases.setSelected(parameters.getPowerEvaluationMethod() == Parameters.PowerEvaluationMethodType.PE_ONLY_SPECIFIED_CASES);
+        _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationCaseCount()));
+        _criticalValuesMonteCarlo.setSelected(parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_MONTECARLO);
+        _criticalValuesGumbel.setSelected(parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_GUMBEL);
+        _powerEstimationMonteCarlo.setSelected(parameters.getPowerEstimationType() == Parameters.PowerEstimationType.PE_MONTECARLO);
+        _powerEstimationGumbel.setSelected(parameters.getPowerEstimationType() == Parameters.PowerEstimationType.PE_GUMBEL);
+        _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
+        
+        updateCriticalValuesTextCaptions();
     }
+
+    /**
+     * Enabled the power evaluations group based upon current settings.
+     */
+     private void enablePowerEvaluationsGroup() {
+        Parameters.AnalysisType eAnalysisType = _analysisSettingsWindow.getAnalysisControlType();
+        Parameters.ProbabilityModelType eModelType = _analysisSettingsWindow.getModelControlType();
+
+        boolean bEnableGroup = eModelType == Parameters.ProbabilityModelType.POISSON && eAnalysisType != Parameters.AnalysisType.SPATIALVARTEMPTREND;
+        _powerEvaluationsGroup.setEnabled(bEnableGroup);
+        _performPowerEvalautions.setEnabled(bEnableGroup);
+        _partOfRegularAnalysis.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEvaluationWithCaseFile.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _totalPowerCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected());
+        _powerEvaluationWithSpecifiedCasesLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected());
+        _criticalValuesTypeLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _criticalValuesMonteCarlo.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _criticalValuesGumbel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _criticalValuesReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEstimationMonteCarlo.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEstimationGumbel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEstimationTypeLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _alternativeHypothesisFilenameLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _alternativeHypothesisFilename.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _alternativeHypothesisFilenameButton.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _numberPowerReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _numberPowerReplications.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+     }
 
     /**
      * Enables clusters reported group based upon other primary settings, such as analysis type and probablility model.
@@ -2100,6 +2270,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialAdjustmentsButtonGroup = new javax.swing.ButtonGroup();
         _temporalTrendAdjButtonGroup = new javax.swing.ButtonGroup();
         _pValueButtonGroup = new javax.swing.ButtonGroup();
+        _powerEvaluationMethodButtonGroup = new javax.swing.ButtonGroup();
+        _criticalValuesButtonGroup = new javax.swing.ButtonGroup();
+        _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _multipleDataSetsTab = new javax.swing.JPanel();
         _additionalDataSetsGroup = new javax.swing.JPanel();
@@ -2278,6 +2451,26 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportClusterRankCheckBox = new javax.swing.JCheckBox();
         _additionalOutputFiles = new javax.swing.JPanel();
         _printAsciiColumnHeaders = new javax.swing.JCheckBox();
+        _powerEvaluationsTab = new javax.swing.JPanel();
+        _powerEvaluationsGroup = new javax.swing.JPanel();
+        _partOfRegularAnalysis = new javax.swing.JRadioButton();
+        _powerEvaluationWithCaseFile = new javax.swing.JRadioButton();
+        _powerEvaluationWithSpecifiedCases = new javax.swing.JRadioButton();
+        _totalPowerCases = new javax.swing.JTextField();
+        _powerEvaluationWithSpecifiedCasesLabel = new javax.swing.JLabel();
+        _alternativeHypothesisFilenameLabel = new javax.swing.JLabel();
+        _alternativeHypothesisFilename = new javax.swing.JTextField();
+        _alternativeHypothesisFilenameButton = new javax.swing.JButton();
+        _numberPowerReplicationsLabel = new javax.swing.JLabel();
+        _numberPowerReplications = new javax.swing.JTextField();
+        _criticalValuesTypeLabel = new javax.swing.JLabel();
+        _criticalValuesMonteCarlo = new javax.swing.JRadioButton();
+        _criticalValuesGumbel = new javax.swing.JRadioButton();
+        _criticalValuesReplicationsLabel = new javax.swing.JLabel();
+        _powerEstimationTypeLabel = new javax.swing.JLabel();
+        _powerEstimationMonteCarlo = new javax.swing.JRadioButton();
+        _powerEstimationGumbel = new javax.swing.JRadioButton();
+        _performPowerEvalautions = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -2316,7 +2509,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-                EnableInputFileEdits();
+                enableInputFileEdits();
                 if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
                     _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
                     _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
@@ -2333,9 +2526,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 1));
 
                 // enable and clear the edit boxes
-                EnableDataSetList();
-                EnableDataSetPurposeControls();
-                EnableInputFileEdits();
+                enableDataSetList();
+                enableDataSetPurposeControls();
+                enableInputFileEdits();
                 _caseFilenames.addElement("");
                 _controlFilenames.addElement("");
                 _populationFilenames.addElement("");
@@ -2345,8 +2538,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _controlFileTextField.setText("");
                 _populationFileTextField.setText("");
                 _caseFileTextField.requestFocusInWindow();
-                EnableNewButton();
-                EnableRemoveButton();
+                enableNewButton();
+                enableRemoveButton();
                 enableSetDefaultsButton();
             }
         });
@@ -2374,11 +2567,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     _inputDataSetsList.setSelectedIndex(0);
                     _inputDataSetsList.ensureIndexIsVisible(0);
                 }
-                EnableDataSetList();
-                EnableDataSetPurposeControls();
-                EnableInputFileEdits();
-                EnableNewButton();
-                EnableRemoveButton();
+                enableDataSetList();
+                enableDataSetPurposeControls();
+                enableInputFileEdits();
+                enableNewButton();
+                enableRemoveButton();
                 enableSetDefaultsButton();
             }
         });
@@ -2401,7 +2594,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_removeDataSetButton)
                     .addComponent(_addDataSetButton))
-                .addContainerGap(5, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _caseFileLabel.setText("Case File:"); // NOI18N
@@ -2450,7 +2643,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);
+                        launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
@@ -2504,7 +2697,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);
+                        launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
@@ -2558,7 +2751,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);
+                        launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
@@ -2656,7 +2849,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGroup(_multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_adjustmentByDataSetsRadioButton)
                             .addComponent(_multivariateAdjustmentsRadioButton))))
-                .addContainerGap(232, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _multipleSetPurposeGroupLayout.setVerticalGroup(
             _multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2682,13 +2875,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGap(2, 2, 2))
         );
         _additionalDataSetsGroupLayout.setVerticalGroup(
             _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
                 .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_dataSetsGroup, 0, 134, Short.MAX_VALUE)
+                    .addComponent(_dataSetsGroup, 0, 0, Short.MAX_VALUE)
                     .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2709,7 +2902,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(196, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -2745,7 +2938,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_strictStudyPeriodCheckRadioButton)
                     .addComponent(_relaxedStudyPeriodCheckRadioButton))
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addContainerGap(81, Short.MAX_VALUE))
         );
         _studyPeriodCheckGroupLayout.setVerticalGroup(
             _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2790,9 +2983,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
                         .addGap(17, 17, 17)
-                        .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
-                    .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                        .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE))
+                    .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
@@ -2825,7 +3018,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(252, Short.MAX_VALUE))
+                .addContainerGap(268, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -2838,7 +3031,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
@@ -2870,7 +3063,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _specifiyMetaLocationsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _specifiyMetaLocationsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
@@ -2904,18 +3097,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
                         .addGap(17, 17, 17)
-                        .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                        .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
+                                .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
+                                .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         _specialNeighborFilesGroupLayout.setVerticalGroup(
@@ -2974,9 +3168,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                    .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _multipleSetsSpatialCoordinatesGroupLayout.setVerticalGroup(
@@ -3009,7 +3203,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addContainerGap(203, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3105,7 +3299,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.MaxCirclePopulation);
+                        launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.MaxCirclePopulation);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
@@ -3155,7 +3349,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_percentageOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                    .addComponent(_percentageOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_spatialDistanceCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3163,7 +3357,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                        .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_spatialPopulationFileCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3178,8 +3372,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
                                 .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)))))
-                .addContainerGap())
+                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addGap(2, 2, 2))
         );
         _spatialOptionsGroupLayout.setVerticalGroup(
             _spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3228,7 +3422,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _circularRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+                    enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3240,7 +3434,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _ellipticRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+                    enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3271,7 +3465,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_nonCompactnessPenaltyLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _spatialWindowShapeGroupLayout.setVerticalGroup(
             _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3284,7 +3478,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_nonCompactnessPenaltyLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _spatialWindowShapeGroupLayout.createSequentialGroup()
-                .addContainerGap(32, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -3295,7 +3489,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _performIsotonicScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 
@@ -3308,8 +3502,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_spatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_inclPureTempClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
-                    .addComponent(_performIsotonicScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE))
+                    .addComponent(_inclPureTempClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_performIsotonicScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _spatialWindowTabLayout.setVerticalGroup(
@@ -3323,7 +3517,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3339,7 +3533,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     //cause enabling to be refreshed based upon clicked radio button
-                    EnableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                    enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3352,7 +3546,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     //cause enabling to be refreshed based upon clicked radio button
-                    EnableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                    enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3424,7 +3618,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxTemporalTimeUnitsLabel)))
-                .addContainerGap(202, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _temporalOptionsGroupLayout.setVerticalGroup(
             _temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3461,7 +3655,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
                 enableDatesByTimePrecisionUnits();
-                EnableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                 enableSetDefaultsButton();
             }
         });
@@ -3733,7 +3927,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(154, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
         _windowCompletePanelLayout.setVerticalGroup(
             _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3842,7 +4036,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endGenericRangeToLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_endRangeEndGenericTextField)))
-                .addContainerGap(162, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
         _windowGenericPanelLayout.setVerticalGroup(
             _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3871,7 +4065,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(_restrictTemporalRangeCheckBox))
                 .addContainerGap())
         );
@@ -3894,7 +4088,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_temporalOptionsGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE))
+                    .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _temporalWindowTabLayout.setVerticalGroup(
@@ -3906,7 +4100,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(196, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -3921,7 +4115,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 
@@ -3933,7 +4127,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     _spatialAdjustmentsSpatialStratifiedRadioButton.setEnabled(true);
                     enableSetDefaultsButton();
-                    EnableSettingsForAnalysisModelCombination();
+                    enableSettingsForAnalysisModelCombination();
                 }
             }
         });
@@ -3946,7 +4140,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     _logLinearTextField.setEnabled(true);
                     enableSetDefaultsButton();
-                    EnableSettingsForAnalysisModelCombination();
+                    enableSettingsForAnalysisModelCombination();
                 }
             }
         });
@@ -3957,7 +4151,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjLogLinearCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 
@@ -3990,16 +4184,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_temporalTrendAdjLogLinearCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_temporalTrendAdjNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                    .addComponent(_temporalTrendAdjLogLinearCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_temporalTrendAdjNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                         .addComponent(_temporalTrendAdjLogLinearRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
-                    .addComponent(_temporalTrendAdjTimeStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
-                .addContainerGap())
+                        .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_temporalTrendAdjTimeStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(2, 2, 2))
         );
         _temporalTrendAdjGroupLayout.setVerticalGroup(
             _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4027,7 +4221,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialAdjustmentsNoneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _spatialAdjustmentsNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
@@ -4038,7 +4232,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialAdjustmentsSpatialStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 
@@ -4049,9 +4243,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_spatialAdjustmentsNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(_spatialAdjustmentsNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(2, 2, 2))
         );
         _spatialAdjustmentsGroupLayout.setVerticalGroup(
             _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4077,6 +4271,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _adjustmentsByRelativeRisksFileTextField.setEnabled(bEnabled);
                 _adjustmentsFileBrowseButton.setEnabled(bEnabled);
                 _adjustmentsFileImportButton.setEnabled(bEnabled);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
                 enableSetDefaultsButton();
             }
         });
@@ -4112,7 +4312,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.AdjustmentsByRR);
+                        launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.AdjustmentsByRR);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
@@ -4140,8 +4340,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGap(62, 62, 62))
                     .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(2, 2, 2))
         );
         _knownAdjustmentsGroupLayout.setVerticalGroup(
             _knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4178,7 +4378,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(104, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4192,9 +4392,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioDefaultPValues.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnablePValueOptionsGroup();
+                    enablePValueOptionsGroup();
                     enableSetDefaultsButton();
-                    UpdateMonteCarloTextCaptions();
+                    updateMonteCarloTextCaptions();
                 }
             }
         });
@@ -4204,9 +4404,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnablePValueOptionsGroup();
+                    enablePValueOptionsGroup();
                     enableSetDefaultsButton();
-                    UpdateMonteCarloTextCaptions();
+                    updateMonteCarloTextCaptions();
                 }
             }
         });
@@ -4216,9 +4416,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioGumbelPValues.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnablePValueOptionsGroup();
+                    enablePValueOptionsGroup();
                     enableSetDefaultsButton();
-                    UpdateMonteCarloTextCaptions();
+                    updateMonteCarloTextCaptions();
                 }
             }
         });
@@ -4228,9 +4428,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioStandardPValues.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    EnablePValueOptionsGroup();
+                    enablePValueOptionsGroup();
                     enableSetDefaultsButton();
-                    UpdateMonteCarloTextCaptions();
+                    updateMonteCarloTextCaptions();
                 }
             }
         });
@@ -4272,7 +4472,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_radioGumbelPValues)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(_checkReportGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -4300,14 +4500,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustForEarlierAnalysesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _adjustForEarlierAnalysesCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
 
         _prospectiveStartDateCards.setLayout(new java.awt.CardLayout());
 
-        _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _prospectiveStartYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         _prospectiveStartYearLabel.setText("Year"); // NOI18N
 
@@ -4329,11 +4529,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         _prospectiveStartMonthLabel.setText("Month"); // NOI18N
 
-        _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _prospectiveStartDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         _prospectiveStartDayLabel.setText("Day"); // NOI18N
 
@@ -4390,7 +4590,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_prospectiveStartDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(175, Short.MAX_VALUE))
+                .addContainerGap(160, Short.MAX_VALUE))
         );
         _prospectiveCompleteCardLayout.setVerticalGroup(
             _prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4413,7 +4613,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _prospectiveStartDateCards.add(_prospectiveCompleteCard, "prospectiveCompleteDate");
 
-        _prospectiveStartGenericLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartGenericLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _prospectiveStartGenericLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         _prospectiveStartGenericLabel.setText("Generic Unit"); // NOI18N
 
@@ -4444,7 +4644,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_prospectiveStartGenericLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_prospectiveStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(178, Short.MAX_VALUE))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
         _prospectiveGenericDateLayout.setVerticalGroup(
             _prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4465,7 +4665,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_adjustForEarlierAnalysesCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _prospectiveSurveillanceGroupLayout.setVerticalGroup(
@@ -4484,7 +4684,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _performIterativeScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                EnableSettingsForAnalysisModelCombination();
+                enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
@@ -4552,7 +4752,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_iterativeCutoffLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_performIterativeScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                    .addComponent(_performIterativeScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _iterativeScanGroupLayout.setVerticalGroup(
@@ -4579,6 +4779,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 while (_montCarloReplicationsTextField.getText().length() == 0)
                 if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
                 enableSetDefaultsButton();
+                updateCriticalValuesTextCaptions();
             }
         });
         _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -4601,7 +4802,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_labelMonteCarloReplications)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(204, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _monteCarloGroupLayout.setVerticalGroup(
             _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4636,7 +4837,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(125, Short.MAX_VALUE))
+                .addContainerGap(115, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4707,7 +4908,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
                     .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(67, Short.MAX_VALUE))
         );
         _clustersReportedGroupLayout.setVerticalGroup(
             _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4843,11 +5044,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                                .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
                             .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
                                 .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE))
+                                .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE))
                             .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
                                 .addComponent(_reportedSpatialDistanceCheckBox)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -4900,7 +5101,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addContainerGap(148, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -4923,7 +5124,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _reportCriticalValuesGroupLayout.setVerticalGroup(
@@ -4952,7 +5153,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _reportClusterRankGroupLayout.setVerticalGroup(
@@ -4981,7 +5182,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _additionalOutputFilesLayout.setVerticalGroup(
@@ -5013,10 +5214,264 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(238, Short.MAX_VALUE))
+                .addContainerGap(254, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
+
+        _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
+        _powerEvaluationsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_powerEvaluationsGroup, "introduction_htm"));
+
+        _powerEvaluationMethodButtonGroup.add(_partOfRegularAnalysis);
+        _partOfRegularAnalysis.setSelected(true);
+        _partOfRegularAnalysis.setText("As Part of Regular Analysis");
+        _partOfRegularAnalysis.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithCaseFile);
+        _powerEvaluationWithCaseFile.setText("Power Evaluation Only, Use Total Cases From Case File");
+        _powerEvaluationWithCaseFile.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithSpecifiedCases);
+        _powerEvaluationWithSpecifiedCases.setText("Power Evaluation Only, Use ");
+        _powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _totalPowerCases.setText("1");
+        _totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_totalPowerCases.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText("1");
+                enableSetDefaultsButton();
+            }
+        });
+        _totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
+            }
+        });
+        _totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
+
+        _alternativeHypothesisFilenameLabel.setText("Alternative Hypotheses File:"); // NOI18N
+
+        _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
+        _alternativeHypothesisFilenameButton.setToolTipText("Browse for alternative hypothesis file ..."); // NOI18N
+        _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
+                fc.setDialogTitle("Select Alternative Hypothesis File");
+                fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
+                fc.addChoosableFileFilter(new InputFileFilter("adj","Adjustments Files (*.adj)"));
+                int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
+                    _alternativeHypothesisFilename.setText(fc.getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
+        _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
+
+        _numberPowerReplications.setText("1000"); // NOI18N
+        _numberPowerReplications.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_numberPowerReplications.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _numberPowerReplications.setText("1000");
+                enableSetDefaultsButton();
+            }
+        });
+        _numberPowerReplications.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_numberPowerReplications, e, 10);
+            }
+        });
+        _numberPowerReplications.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _criticalValuesTypeLabel.setText("Critical Values");
+
+        _criticalValuesButtonGroup.add(_criticalValuesMonteCarlo);
+        _criticalValuesMonteCarlo.setText("Monte Carlo");
+        _criticalValuesMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _criticalValuesButtonGroup.add(_criticalValuesGumbel);
+        _criticalValuesGumbel.setText("Gumbel");
+        _criticalValuesGumbel.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _criticalValuesReplicationsLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        _criticalValuesReplicationsLabel.setText("(999 replications - value defined on Inference tab)");
+
+        _powerEstimationTypeLabel.setText("Power Estimation");
+
+        _powerEstimationButtonGroup.add(_powerEstimationMonteCarlo);
+        _powerEstimationMonteCarlo.setText("Monte Carlo");
+        _powerEstimationMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEstimationButtonGroup.add(_powerEstimationGumbel);
+        _powerEstimationGumbel.setText("Gumbel");
+        _powerEstimationGumbel.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _performPowerEvalautions.setText("Perform Power Evaluations");
+        _performPowerEvalautions.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _powerEvaluationsGroupLayout = new javax.swing.GroupLayout(_powerEvaluationsGroup);
+        _powerEvaluationsGroup.setLayout(_powerEvaluationsGroupLayout);
+        _powerEvaluationsGroupLayout.setHorizontalGroup(
+            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_performPowerEvalautions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_alternativeHypothesisFilenameLabel)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                                .addComponent(_alternativeHypothesisFilename)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(17, 17, 17))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_partOfRegularAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(11, 11, 11))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_powerEvaluationWithSpecifiedCases)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(17, 17, 17))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(_powerEstimationMonteCarlo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(_powerEstimationTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_powerEstimationGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_numberPowerReplicationsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_criticalValuesTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(_criticalValuesMonteCarlo, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_criticalValuesGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(_criticalValuesReplicationsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                            .addComponent(_powerEvaluationWithCaseFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(11, 11, 11)))
+                .addGap(2, 2, 2))
+        );
+        _powerEvaluationsGroupLayout.setVerticalGroup(
+            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                .addComponent(_performPowerEvalautions)
+                .addGap(5, 5, 5)
+                .addComponent(_partOfRegularAnalysis)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_powerEvaluationWithCaseFile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_powerEvaluationWithSpecifiedCases)
+                    .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_powerEvaluationWithSpecifiedCasesLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_criticalValuesTypeLabel)
+                .addGap(2, 2, 2)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_criticalValuesMonteCarlo)
+                    .addComponent(_criticalValuesGumbel)
+                    .addComponent(_criticalValuesReplicationsLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_powerEstimationTypeLabel)
+                .addGap(2, 2, 2)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_powerEstimationMonteCarlo)
+                    .addComponent(_powerEstimationGumbel)
+                    .addComponent(_numberPowerReplicationsLabel)
+                    .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_alternativeHypothesisFilenameLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_alternativeHypothesisFilenameButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _powerEvaluationsTabLayout = new javax.swing.GroupLayout(_powerEvaluationsTab);
+        _powerEvaluationsTab.setLayout(_powerEvaluationsTabLayout);
+        _powerEvaluationsTabLayout.setHorizontalGroup(
+            _powerEvaluationsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _powerEvaluationsTabLayout.setVerticalGroup(
+            _powerEvaluationsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(175, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Power Evaluations", _powerEvaluationsTab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -5028,7 +5483,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _setDefaultButton.setText("Set Defaults"); // NOI18N
         _setDefaultButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                SetDefaultsClick();
+                setDefaultsClick();
             }
         });
 
@@ -5040,14 +5495,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGap(411, 411, 411)
                 .addComponent(_setDefaultButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_closeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
+                .addComponent(_closeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5071,6 +5526,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _adjustmentsFileBrowseButton;
     private javax.swing.JButton _adjustmentsFileImportButton;
     private javax.swing.JRadioButton _allLocationsRadioButton;
+    private javax.swing.JTextField _alternativeHypothesisFilename;
+    private javax.swing.JButton _alternativeHypothesisFilenameButton;
+    private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JRadioButton _atLeastOneRadioButton;
     private javax.swing.JButton _caseFileBrowseButton;
     private javax.swing.JButton _caseFileImportButton;
@@ -5086,6 +5544,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
+    private javax.swing.ButtonGroup _criticalValuesButtonGroup;
+    private javax.swing.JRadioButton _criticalValuesGumbel;
+    private javax.swing.JRadioButton _criticalValuesMonteCarlo;
+    private javax.swing.JLabel _criticalValuesReplicationsLabel;
+    private javax.swing.JLabel _criticalValuesTypeLabel;
     private javax.swing.JPanel _dataCheckingTab;
     private javax.swing.JPanel _dataSetsGroup;
     private javax.swing.JLabel _distancePrefixLabel;
@@ -5156,19 +5619,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private java.awt.Choice _nonCompactnessPenaltyComboBox;
     private javax.swing.JLabel _nonCompactnessPenaltyLabel;
     private javax.swing.JTextField _numIterativeScansTextField;
+    private javax.swing.JTextField _numberPowerReplications;
+    private javax.swing.JLabel _numberPowerReplicationsLabel;
     private javax.swing.JRadioButton _onePerLocationIdRadioButton;
     private javax.swing.ButtonGroup _pValueButtonGroup;
     private javax.swing.JPanel _pValueOptionsGroup;
+    private javax.swing.JRadioButton _partOfRegularAnalysis;
     private javax.swing.JLabel _percentageOfPopFileLabel;
     private javax.swing.JLabel _percentageOfPopulationLabel;
     private javax.swing.JLabel _percentageOfStudyPeriodLabel;
     private javax.swing.JRadioButton _percentageTemporalRadioButton;
     private javax.swing.JCheckBox _performIsotonicScanCheckBox;
     private javax.swing.JCheckBox _performIterativeScanCheckBox;
+    private javax.swing.JCheckBox _performPowerEvalautions;
     private javax.swing.JButton _populationFileBrowseButton;
     private javax.swing.JButton _populationFileImportButton;
     private javax.swing.JLabel _populationFileLabel;
     private javax.swing.JTextField _populationFileTextField;
+    private javax.swing.ButtonGroup _powerEstimationButtonGroup;
+    private javax.swing.JRadioButton _powerEstimationGumbel;
+    private javax.swing.JRadioButton _powerEstimationMonteCarlo;
+    private javax.swing.JLabel _powerEstimationTypeLabel;
+    private javax.swing.ButtonGroup _powerEvaluationMethodButtonGroup;
+    private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
+    private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
+    private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
+    private javax.swing.JPanel _powerEvaluationsGroup;
+    private javax.swing.JPanel _powerEvaluationsTab;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JPanel _prospectiveCompleteCard;
     private javax.swing.JPanel _prospectiveGenericDate;
@@ -5244,6 +5721,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _temporalTrendAdjTimeStratifiedRadioButton;
     private javax.swing.JPanel _temporalWindowTab;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
+    private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JScrollPane jScrollPane1;
