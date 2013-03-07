@@ -269,7 +269,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             } break;
             case FILESOURCE : {
                 // determine the number of randomization iterations by counting lines in source file
-                std::ifstream inFile(gParameters.getPowerEvaluationSimulationDataSourceFilename()); 
+                std::ifstream inFile(gParameters.getPowerEvaluationSimulationDataSourceFilename().c_str()); 
                 size_t count = std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n');
                 number_randomizations = count/gParameters.getNumPowerEvalReplicaPowerStep();
             } break;
@@ -1415,7 +1415,7 @@ void AnalysisRunner::Setup() {
       case SPATIALVARTEMPTREND       : gpDataHub.reset(new CSVTTData(gParameters, gPrintDirection)); break;
       default : throw prg_error("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
     };
-    if (gParameters.GetReportCriticalValues() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCriticalValueType() == PE_MONTECARLO))
+    if (gParameters.GetReportCriticalValues() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCriticalValueType() == CV_MONTECARLO))
         gpSignificantRatios.reset(new SignificantRatios(gParameters.GetNumReplicationsRequested()));
   }
   catch (prg_exception& x) {

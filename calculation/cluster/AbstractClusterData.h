@@ -6,6 +6,7 @@
 #include "DataSetGateway.h"
 #include "LikelihoodCalculation.h"
 
+
 /** Abstract class representing accumulated cluster data. */
 class AbstractClusterData {
   public:
@@ -37,6 +38,7 @@ class AbstractClusterData {
     virtual void        InitializeData() = 0;
     virtual void        InitializeData(const AbstractDataSetGateway& DataGateway) {InitializeData();}
     virtual size_t      getNumSets() const {return 1;}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Abstract class representing accumulated data of spatial clustering. */

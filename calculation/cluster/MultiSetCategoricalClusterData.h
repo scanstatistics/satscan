@@ -35,6 +35,7 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
+    const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
     virtual void        InitializeData();
     virtual size_t      getNumSets() const {return gvSetClusterData.size();}
 };
@@ -62,6 +63,7 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
                                                      unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
     virtual size_t      getNumSets() const {return gvSetClusterData.size();}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Class representing accumulated data of a temporal clustering in multiple data
@@ -96,6 +98,7 @@ class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategor
     virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Class representing accumulated data of a space-time clustering in multiple

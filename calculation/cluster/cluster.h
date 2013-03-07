@@ -95,6 +95,7 @@ class CCluster {
     virtual void                  DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
+    virtual AreaRateType          getAreaRateForCluster(const CSaTScanData& DataHub) const;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}

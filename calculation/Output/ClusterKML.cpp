@@ -12,7 +12,7 @@ const char * ClusterKML::KML_FILE_EXT = ".kml";
 
 /** constructor */
 ClusterKML::ClusterKML(const CSaTScanData& dataHub, const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) 
-           :_dataHub(dataHub), _clusters(clusters), _simVars(simVars), _visibleLocations(false), _includeLocations(false) {}
+           :_dataHub(dataHub), _clusters(clusters), _simVars(simVars), _visibleLocations(false), _includeLocations(true) {}
 
 /** Render scatter chart to html page. */
 void ClusterKML::renderKML() {
@@ -69,21 +69,21 @@ void ClusterKML::renderKML() {
 }
 
 void ClusterKML::writeCluster(std::ofstream& outKML, const CCluster& cluster, int iCluster) const {
-  std::string                                legend;
+  std::string                                legend, locations, clusterCentroidLabel;
   std::vector<double>                        vCoordinates;
   std::pair<double, double>                  prLatitudeLongitude;
-  std::string                                locations;
   TractHandler::Location::StringContainer_t  vTractIdentifiers;
   double radius = 2 * EARTH_RADIUS_km * asin(cluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
   const double GLOBE = 10018.0; //distance from equator to pole in km
-
-  // TODO: cluster.GetClusterData()->getIsHighRate(); ??
-  //       What about ordinal and multiple clusters?
-  bool isHighRate = cluster.GetObservedDivExpected(_dataHub, 0) >= 1.0;
+  bool isHighRate = cluster.getAreaRateForCluster(_dataHub) == HIGH;
 
   try {
+      if (!_dataHub.GetParameters().UseSpecialGrid()) {
+          printString(clusterCentroidLabel, "Cluster %d Centroid (%s)", (iCluster + 1), _dataHub.GetTInfo()->getIdentifier(cluster.GetMostCentralLocationIndex()));
+      } else {
+          printString(clusterCentroidLabel, "Cluster %d Centroid", (iCluster + 1));
+      }
       outKML << "<Folder>" << std::endl; 
-      //special labeling for most likely cluster
       outKML << "<name>Cluster " << (iCluster + 1) << "</name>" << std::endl;
       // set popup window text
       getClusterLegend(cluster, iCluster, legend);
@@ -102,7 +102,7 @@ void ClusterKML::writeCluster(std::ofstream& outKML, const CCluster& cluster, in
       }
       outKML << "</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>" << std::endl;
       // create centroid placemark
-      outKML << "<Placemark><name>Cluster " << (iCluster + 1) <<" Centriod</name><description></description><styleUrl>#cluster-centriod-"<< (isHighRate ? "high" : "low") << "-rate</styleUrl>"
+      outKML << "<Placemark><name>" << clusterCentroidLabel.c_str() <<"</name><description></description><styleUrl>#cluster-centriod-"<< (isHighRate ? "high" : "low") << "-rate</styleUrl>"
              << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
 
 	  if (_includeLocations) {

@@ -225,8 +225,7 @@ void AlternateHypothesisRandomizer::randomize(const RealDataSet& RealSet, const 
 }
 
 /** Creates randomized under an alternative hypothesis for Poisson model and assigning data to DataSet
-    objects structures. Random number generator seed initialized based upon 'iSimulation' index.
-    !!! This class is in the experiential stage. !!! */
+    objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
 void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
   SetSeed(iSimulation, SimSet.getSetIndex());
   // make a copy of real measure data for manipulation, getMeasureData_Aux() should be contain non-cummulative measure data with any initial adjustments

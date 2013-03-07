@@ -32,16 +32,20 @@ void MultiSetCategoricalSpatialData::Assign(const AbstractSpatialClusterData& rh
   *this = (const MultiSetCategoricalSpatialData&)rhs;
 }
 
+const AbstractLoglikelihoodRatioUnifier & MultiSetCategoricalSpatialData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    unsigned int i=0;
+    ptr_vector<CategoricalSpatialData>::const_iterator itr=gvSetClusterData.begin();
+    AbstractLoglikelihoodRatioUnifier & Unifier = Calculator.GetUnifier();
+
+    Unifier.Reset();
+    for (;itr != gvSetClusterData.end(); ++itr, ++i) Unifier.AdjoinRatio(Calculator, (*itr)->gvCasesPerCategory, i);
+    return Unifier;
+}
+
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together. */
 double MultiSetCategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  unsigned int                                        i=0;
-  ptr_vector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
-  AbstractLoglikelihoodRatioUnifier                 & Unifier = Calculator.GetUnifier();
-
- Unifier.Reset();
- for (;itr != gvSetClusterData.end(); ++itr, ++i) Unifier.AdjoinRatio(Calculator, (*itr)->gvCasesPerCategory, i);
-  return Unifier.GetLoglikelihoodRatio();
+    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
 }
 
 /** Returns newly cloned MultiSetCategoricalSpatialData object. Caller is
@@ -168,6 +172,16 @@ count_t AbstractMultiSetCategoricalTemporalData::GetCaseCount(unsigned int) cons
 /** No implemented - throws prg_error. */
 void AbstractMultiSetCategoricalTemporalData::setCaseCount(count_t t, unsigned int tSetIndex) {
   throw prg_error("'setCaseCount(count_t,unsigned int)' not implemeneted.","AbstractMultiSetCategoricalTemporalData");
+}
+
+const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetCategoricalTemporalData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    AbstractLoglikelihoodRatioUnifier & Unifier = Calculator.GetUnifier();
+
+    Unifier.Reset();
+    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
+        Unifier.AdjoinRatio(Calculator, gvSetClusterData[t]->gvCasesPerCategory, t);
+    }
+    return Unifier;
 }
 
 /** Returns number of cases in accumulated cluster data for data set and category.
@@ -318,35 +332,43 @@ MultiSetCategoricalProspectiveSpatialData * MultiSetCategoricalProspectiveSpatia
   return new MultiSetCategoricalProspectiveSpatialData(*this);
 }
 
-/** Calculates loglikelihood ratio given current accumulated cluster data in
-    each data set and adds together.*/
-double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  assert(geEvaluationAssistDataStatus == Allocated);
-  unsigned int                                         i=0, iWindowEnd, iAllocationSize;
-  double                                               dMaxLoglikelihoodRatio=0;
-  AbstractLoglikelihoodRatioUnifier                  & Unifier = Calculator.GetUnifier();
-  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+const AbstractLoglikelihoodRatioUnifier & MultiSetCategoricalProspectiveSpatialData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    assert(geEvaluationAssistDataStatus == Allocated);
+    unsigned int                                         i=0, iWindowEnd, iAllocationSize;
+    double                                               dMaxLoglikelihoodRatio=0;
+    AbstractLoglikelihoodRatioUnifier                  & Unifier = Calculator.GetUnifier();
+    ptr_vector<CategoricalTemporalData>::const_iterator   itr=gvSetClusterData.begin();
 
-  Unifier.Reset();
-  iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
-  for (;itr != gvSetClusterData.end(); ++itr, ++i) {
-     for (size_t t=0; t < (*itr)->gvCasesPerCategory.size(); ++t)
-        (*itr)->gvCasesPerCategory[t] = (*itr)->gppCategoryCases[t][0];
-    Unifier.AdjoinRatio(Calculator, (*itr)->gvCasesPerCategory, i);
-  }
-  dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
-
- for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
-     Unifier.Reset();
-     for (i=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++i) {
+    Unifier.Reset();
+    iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
+    for (;itr != gvSetClusterData.end(); ++itr, ++i) {
         for (size_t t=0; t < (*itr)->gvCasesPerCategory.size(); ++t)
-           (*itr)->gvCasesPerCategory[t] = (*itr)->gppCategoryCases[t][0] - (*itr)->gppCategoryCases[t][iWindowEnd];
+            (*itr)->gvCasesPerCategory[t] = (*itr)->gppCategoryCases[t][0];
         Unifier.AdjoinRatio(Calculator, (*itr)->gvCasesPerCategory, i);
-     }
-     dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
-  }
+    }
+    dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
-  return dMaxLoglikelihoodRatio;
+    std::auto_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
+    for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
+        prospectiveUnifier->Reset();
+        for (i=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++i) {
+            for (size_t t=0; t < (*itr)->gvCasesPerCategory.size(); ++t)
+                (*itr)->gvCasesPerCategory[t] = (*itr)->gppCategoryCases[t][0] - (*itr)->gppCategoryCases[t][iWindowEnd];
+            prospectiveUnifier->AdjoinRatio(Calculator, (*itr)->gvCasesPerCategory, i);
+        }
+        dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, prospectiveUnifier->GetLoglikelihoodRatio());
+    }
+
+    // reset calculators unifier if largest LLR came from prospective process.
+    if (dMaxLoglikelihoodRatio != Unifier.GetLoglikelihoodRatio()) {
+        Unifier = *prospectiveUnifier;
+    }
+    return Unifier;
+}
+
+/** Calculates loglikelihood ratio given current accumulated cluster data in each data set and adds together.*/
+double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
 }
 
 /** Implements interface that calculates maximizing value - for multiple data set, maximizing

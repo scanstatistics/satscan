@@ -112,7 +112,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     /**
-     * Loads shared object libray.
+     * Loads shared object library.
      * @param is64bitEnabled
      */
     public static void loadSharedLibray() {

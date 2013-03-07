@@ -22,6 +22,10 @@ count_t AbstractClusterData::GetCategoryCaseCount(unsigned int iCategoryIndex, u
   throw prg_error("GetCategoryCaseCount(unsigned int,unsigned int) not implemented.","AbstractClusterData");
 }
 
+const AbstractLoglikelihoodRatioUnifier & AbstractClusterData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+  throw prg_error("getRatioUnified(AbstractLikelihoodCalculator&) not implemented.","AbstractClusterData");
+}
+
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
     -- This base class implementation handles all cluster data objects for which there is only one
        data set analyzed. */

@@ -14,6 +14,8 @@ class AbstractLoglikelihoodRatioUnifier {
     AbstractLoglikelihoodRatioUnifier() {}
     ~AbstractLoglikelihoodRatioUnifier() {}
 
+    virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
+
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     count_t tCases,
                                     measure_t tMeasure,
@@ -47,6 +49,8 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
   public:
     MultivariateUnifier(AreaRateType eScanningArea, ProbabilityModelType eProbabilityModelType);
     ~MultivariateUnifier() {}
+
+    virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new MultivariateUnifier(*this);};
 
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     count_t tCases,
@@ -93,6 +97,8 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
     AdjustmentUnifier(AreaRateType eScanningArea);
     ~AdjustmentUnifier() {}
 
+    virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
+
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     count_t tCases,
                                     measure_t tMeasure,
@@ -105,6 +111,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
     virtual double      GetLoglikelihoodRatio() const;
+    double              GetRawLoglikelihoodRatio() const {return gdRatio;}
     virtual void        Reset();
 };
 //******************************************************************************

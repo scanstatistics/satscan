@@ -37,17 +37,21 @@ void MultiSetSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
   *this = (const MultiSetSpatialData&)rhs;
 }
 
+const AbstractLoglikelihoodRatioUnifier & MultiSetSpatialData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    unsigned int i=0;
+    ptr_vector<SpatialData>::const_iterator itr=gvSetClusterData.begin();
+    AbstractLoglikelihoodRatioUnifier    & Unifier = Calculator.GetUnifier();
+
+    Unifier.Reset();
+    for (; itr != gvSetClusterData.end(); ++itr, ++i)
+        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, i);
+    return Unifier;
+}
+
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together. */
 double MultiSetSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  unsigned int                           i=0;
-  ptr_vector<SpatialData>::iterator itr=gvSetClusterData.begin();
-  AbstractLoglikelihoodRatioUnifier    & Unifier = Calculator.GetUnifier();
-
-  Unifier.Reset();
-  for (; itr != gvSetClusterData.end(); ++itr, ++i)
-     Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, i);
-  return Unifier.GetLoglikelihoodRatio();
+    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
 }
 
 /** Returns newly cloned MultiSetSpatialData object. Caller responsible for deletion of object. */
@@ -170,6 +174,16 @@ void AbstractMultiSetTemporalData::setCaseCount(count_t t, unsigned int tSetInde
   return gvSetClusterData.at(tSetIndex)->setCaseCount(t);
 }
 
+const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetTemporalData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    AbstractLoglikelihoodRatioUnifier & Unifier = Calculator.GetUnifier();
+
+    Unifier.Reset();
+    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
+        Unifier.AdjoinRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t);
+    }
+    return Unifier;
+}
+
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
     If specified purpose for multiple data sets is multivariate, recalculates high and low
     LLR values to determine which data sets comprised target ratio; else all data sets
@@ -288,32 +302,40 @@ void MultiSetProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, con
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
+const AbstractLoglikelihoodRatioUnifier & MultiSetProspectiveSpatialData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
+    assert(geEvaluationAssistDataStatus == Allocated);
+    unsigned int t, iWindowEnd, iAllocationSize;
+    double dMaxLoglikelihoodRatio=0;
+    AbstractLoglikelihoodRatioUnifier & Unifier = Calculator.GetUnifier();
+    ptr_vector<TemporalData>::const_iterator itr=gvSetClusterData.begin();
+
+    Unifier.Reset();
+    iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
+    for (t=0;itr != gvSetClusterData.end(); ++itr, ++t)
+        Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], t);
+    dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
+
+    std::auto_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
+    for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
+        prospectiveUnifier->Reset();
+        for (t=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++t) {
+            (*itr)->gtCases = (*itr)->gpCases[0] - (*itr)->gpCases[iWindowEnd];
+            (*itr)->gtMeasure =  (*itr)->gpMeasure[0] - (*itr)->gpMeasure[iWindowEnd];
+            prospectiveUnifier->AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, t);
+        }
+        dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, prospectiveUnifier->GetLoglikelihoodRatio());
+    }
+    // reset calculators unifier if largest LLR came from prospective process.
+    if (dMaxLoglikelihoodRatio != Unifier.GetLoglikelihoodRatio()) {
+        Unifier = *prospectiveUnifier;
+    }
+    return Unifier;
+}
+
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together.*/
 double MultiSetProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  assert(geEvaluationAssistDataStatus == Allocated);
-  unsigned int                            t, iWindowEnd, iAllocationSize;
-  double                                  dMaxLoglikelihoodRatio=0;
-  AbstractLoglikelihoodRatioUnifier     & Unifier = Calculator.GetUnifier();
-  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
-
-  Unifier.Reset();
-  iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
-  for (t=0;itr != gvSetClusterData.end(); ++itr, ++t)
-     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], t);
-  dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
-
-  for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
-     Unifier.Reset();
-     for (t=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++t) {
-        (*itr)->gtCases = (*itr)->gpCases[0] - (*itr)->gpCases[iWindowEnd];
-        (*itr)->gtMeasure =  (*itr)->gpMeasure[0] - (*itr)->gpMeasure[iWindowEnd];
-        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, t);
-     }
-     dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
-  }
-
-  return dMaxLoglikelihoodRatio;
+    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
 }
 
 /** Returns newly cloned MultiSetProspectiveSpatialData object. Caller responsible

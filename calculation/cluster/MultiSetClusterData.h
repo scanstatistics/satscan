@@ -32,6 +32,7 @@ class MultiSetSpatialData : public AbstractSpatialClusterData {
     virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void             InitializeData();
     virtual size_t           getNumSets() const {return gvSetClusterData.size();}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Abstract class representing accumulated data of temporal clustering in multiple data sets. */
@@ -52,6 +53,7 @@ class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual size_t           getNumSets() const {return gvSetClusterData.size();}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Class representing accumulated data of temporal clustering in multiple data sets. */
@@ -84,6 +86,7 @@ class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData, publ
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Class representing accumulated data of space-time clustering in multiple data set. */

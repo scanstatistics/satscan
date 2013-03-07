@@ -13,6 +13,7 @@
 #include <fstream>
 #include "WeightedNormalRandomizer.h"
 #include "ClusterSupplement.h"
+#include "LoglikelihoodRatioUnifier.h"
 
 unsigned int CCluster::MIN_RANK_RPT_GUMBEL = 10;
 
@@ -64,6 +65,115 @@ void CCluster::cacheReportLine(std::string& label, std::string& value) const {
   if (!gpCachedReportLines)
       gpCachedReportLines = new ReportCache_t();
   gpCachedReportLines->push_back(std::make_pair(label,value));
+}
+
+/** returns the area rate for cluster */ 
+AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const {
+    const CParameters parameters = DataHub.GetParameters();
+
+    if (parameters.GetProbabilityModelType() == CATEGORICAL) {
+        // There is no concept of high versus low clusters with Multinomial model ... all clusters are high.
+        return HIGH; 
+    } else if (parameters.GetAreaScanRateType() != HIGHANDLOW) {
+        // If not scanning for both high and low rates simultaneously, just use the parameter settings.
+        return parameters.GetAreaScanRateType();
+    } else if (parameters.GetNumDataSets() > 1 && parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
+        // When we do the adjustments with multiple data sets, some data sets in a cluster could have O/E>1
+        // and other data sets O/E<1. The cluster is still either high or low but we need to determine 
+        // whether the intermediate ratio is positive (high) or negative (low) in the unifier object.
+        std::auto_ptr<AbstractLikelihoodCalculator> Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
+        GetClusterData()->getRatioUnified(*Calculator);
+        const AdjustmentUnifier * pUnifier = 0;
+        if ((pUnifier = dynamic_cast<const AdjustmentUnifier*>(&Calculator->GetUnifier())) == 0)
+            throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n", "getAreaRateForCluster()");
+        return pUnifier->GetRawLoglikelihoodRatio() >= 0 ? HIGH : LOW;
+    } else {
+        // For a multivariate analysis with multiple data sets, all data sets in a cluster should either
+        // have O/E>1 or all of them should have O/E<1.
+        switch (parameters.GetProbabilityModelType()) {
+            case POISSON :
+            case BERNOULLI :
+            case SPACETIMEPERMUTATION :
+            case HOMOGENEOUSPOISSON:
+            case EXPONENTIAL:
+            case RANK:
+                // Cluster is high rate if observed / expected > 1.0 and is low rate if observed / expected < 1.0.
+                return GetObservedDivExpected(DataHub) >= 1.0 ? HIGH : LOW;
+            case ORDINAL: {
+                // Several Obs/Exp values are provided in the output file. It is high if the Obs/Exp are presented in increasing order, otherwise low.
+                const DataSetHandler& handler = DataHub.GetDataSetHandler();
+                std::vector<unsigned int> setIndexes;
+                OrdinalLikelihoodCalculator Calculator(DataHub);
+                std::vector<OrdinalCombinedCategory> categories;
+                const AbstractCategoricalClusterData * pClusterData=0;
+                bool increasing = true;
+
+                GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, Calculator, setIndexes);
+                if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(GetClusterData())) == 0)
+                    throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n", "getAreaRateForCluster()");
+                GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, Calculator, setIndexes);
+                for (std::vector<unsigned int>::iterator itr_Index=setIndexes.begin(); itr_Index != setIndexes.end(); ++itr_Index) {
+                    //retrieve collection of ordinal categories in combined state
+                    pClusterData->GetOrdinalCombinedCategories(Calculator, categories, *itr_Index);
+                    //if container is empty, data set did not contribute to the loglikelihood ratio, so skip reporting it
+                    if (!categories.size()) continue;
+                    // iterate through the data sets' categories to determine if ode is increasing or decreasing
+                    measure_t ode=0;
+                    for (std::vector<OrdinalCombinedCategory>::iterator itrCategory=categories.begin(); itrCategory != categories.end(); ++itrCategory) {
+                        count_t tObserved=0;
+                        measure_t tExpected=0;
+                        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+                            tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
+                            tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
+                        }
+                        if (categories.size()  == 1) {
+                            // all categories combined into one
+                            return (measure_t)tObserved/tExpected >= 1.0 ? HIGH : LOW;
+                        } else if (itrCategory == categories.begin()) {
+                            // first time through, store ode for subsequent comparison
+                            ode = (measure_t)tObserved/tExpected; 
+                        } else {
+                            // compare previous ode with current ode, then break loop
+                            increasing = ode >= (measure_t)tObserved/tExpected; 
+                            break;
+                        }
+                    }
+                    // break loop, we found a category with relevant information in this data set
+                    break;
+                }
+                return increasing ? HIGH : LOW;
+            }
+            case NORMAL: {
+                // High if the mean inside the cluster is higher than the mean outside the cluster, otherwise low.
+                const DataSetHandler& handler = DataHub.GetDataSetHandler();
+                std::vector<unsigned int> setIndexes;
+                std::auto_ptr<AbstractLikelihoodCalculator> Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
+                GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), setIndexes);
+                unsigned int firstSetIdx = setIndexes.front();
+                double meanInside=0, meanOutside=0;
+                if (DataHub.GetParameters().getIsWeightedNormal()) {
+                    const AbstractWeightedNormalRandomizer * pRandomizer=0;
+                    std::vector<tract_t> tractIndexes;
+                    AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
+
+                    if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(handler.GetRandomizer(firstSetIdx))) == 0)
+                        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "getAreaRateForCluster()");
+                    statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, tractIndexes);
+                    meanInside = statistics.gtMeanIn;
+                    meanOutside = statistics.gtMeanOut;
+                } else {
+                    count_t tObserved = GetObservedCount(firstSetIdx);
+                    measure_t tExpected = GetExpectedCount(DataHub, firstSetIdx);
+
+                    meanInside = (tObserved ? tExpected/tObserved : 0);
+                    count_t tCasesOutside = handler.GetDataSet(firstSetIdx).getTotalCases() - tObserved;
+                    meanOutside = (tCasesOutside ? (handler.GetDataSet(firstSetIdx).getTotalMeasure() - tExpected)/tCasesOutside : 0);
+                }
+                return meanInside >= meanOutside ? HIGH : LOW;
+            }
+            default: throw prg_error("Unknown probability model type '%d'.", "getAreaRateForCluster()", parameters.GetProbabilityModelType());
+        }
+    }
 }
 
 CCluster::ReportCache_t & CCluster::getReportLinesCache() const {
