@@ -40,6 +40,7 @@
 #include "PurelySpatialBruteForceAnalysis.h"
 //#include "ClusterScatterChart.h"
 #include "ClusterKML.h"
+#include "ChartGenerator.h"
 #include "PoissonRandomizer.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
@@ -1029,42 +1030,9 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
 
-  // create Gnuplot file for Gini coeffiecents
-  std::ofstream pg;
-  //open output file
-  std::string name(gParameters.GetOutputFileName());
-  name += ".pg";
-  pg.open(name.c_str());
-  if (!pg) throw resolvable_error("Error: Could not open file '%s'.\n", name.c_str());
-
-  pg << "reset" << std::endl << "set terminal pngcairo" << std::endl << "set output '" << gParameters.GetOutputFileName().c_str() << ".png'" << std::endl << "set xtics 5" << std::endl;
-  if (maximizedCollection) 
-      pg << "set label 1 'Optimal Gini at " << maximizedCollection->getMaximumWindowSize() <<"% maxima.'" << std::endl;
-  else
-      pg << "set label 1 'No Optimal Gini Found" << std::endl;
-  pg << "set label 1 at graph 0.025, 0.95 tc lt 3" << std::endl;
-  pg << "set title 'Plot of Spatial Window Size to Gini Coefficient'" << std::endl << "set ylabel 'Gini'" << std::endl << "set yrange [" << std::max(0.0, minGINI - 0.05) << ":" << (maxGINI + 0.05) << "]" << std::endl;
-  pg << "set mxtics" << std::endl << "set xlabel 'Spatial Window Size'" << std::endl << "set xrange [" << std::max(0.0, minSize - 2) << ":" << (maxSize + 2) << "]" << std::endl << "set grid" << std::endl;
-  pg << "set style data lines" << std::endl << "set style line 1 lt 1 lc rgb '#0000A0' lw 2" << std::endl << "set style line 2 lc rgb '#0000FF' pt 7 ps 1"<< std::endl;
-  pg << "set style line 3 lc rgb '#0000A0' pt 7 ps 2" << std::endl << "plot '-' with linespoints ls 1 title 'Gini',";
-  // need to determine the maximum gini coefficent
-  std::stringstream lineData, pointData;
-  for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getGiniIndexPValueCutoff());
-      pg << "'-' w p ls " << (maximizedCollection == &(*itrMLC) ? 3 : 2) << " notitle" << (itrMLC + 1 != gTopClustersContainers.end() ? "," : "");
-      lineData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl;
-      pointData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl << "e" << std::endl;
-  }
-  pg << std::endl << lineData.str() << "e" << std::endl << pointData.str() << "#";
-  pg.close();
-
-  //change to parameter
-  std::string gnuBinary("c:/prj/gnuplot/bin/gnuplot");
-  std::stringstream command;
-  command << gnuBinary << " " << name;
-  if (system (command.str().c_str()))
-    gPrintDirection.Printf("Failed to create GINI graphic.\n", BasePrint::P_STDOUT);
-  remove(name.c_str());
+  // create gini html chart file
+  GiniChartGenerator giniGenerator(gTopClustersContainers, GetDataHub(), gSimVars);
+  giniGenerator.generateChart();
 }
 
 /** Prints indication of whether no clusters were retained nor reported. */
@@ -1480,13 +1448,23 @@ void AnalysisRunner::reportClusters() {
                 ClusterScatterChart plot(*gpDataHub, _reportClusters, gSimVars);
                 plot.renderScatterChart();
             } */
+
+            // TODO: Test UseLocationNeighborsFile() -- why can't we use this feature with KML?
+
             // Google Earth code ... 
-            if (_reportClusters.GetNumClustersRetained() && 
+            if (gParameters.getOutputKMLFile() &&
+                _reportClusters.GetNumClustersRetained() && 
                 gParameters.GetCoordinatesType() == LATLON && 
                 !gParameters.GetIsPurelyTemporalAnalysis() &&
                 !gParameters.UseLocationNeighborsFile()) {
                 ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
                 kmlOut.renderKML();
+            }
+            // create temporal graph
+            if (gParameters.GetIsPurelyTemporalAnalysis() && gParameters.getOutputTemporalGraphFile() && _reportClusters.GetNumClustersRetained()) {
+                // TODO: What about space-time, imcluding purely temporal cluster? What if one of the detected clusters is purely temporal.
+                TemporalChartGenerator generator(*gpDataHub, _reportClusters.GetTopRankedCluster());
+                generator.generateChart();
             }
         }
     } catch (prg_exception& x) {

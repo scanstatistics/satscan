@@ -393,6 +393,7 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_KML, GetParameterString(OUTPUT_KML, s).c_str(), GetParameterComment(OUTPUT_KML));
+    WriteIniParameter(WriteFile, OUTPUT_TEMPORAL_GRAPH, GetParameterString(OUTPUT_TEMPORAL_GRAPH, s).c_str(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH));
   } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;

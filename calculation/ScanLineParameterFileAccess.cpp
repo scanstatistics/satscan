@@ -140,6 +140,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case PE_OUTPUT_SIMUALTION_DATA          : return "report power evaluation randomization data from power step (line 118)";
     case PE_SIMUALTION_OUTPUTFILE           : return "power evaluation simulation data output filename (line 119)";
     case OUTPUT_KML                         : return "output Google Earth KML file (line 120)";
+    case OUTPUT_TEMPORAL_GRAPH              : return "output temporal graph HTML file (line 121)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

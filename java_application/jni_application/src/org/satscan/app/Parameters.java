@@ -144,6 +144,7 @@ public class Parameters implements Cloneable {
     private boolean                         gbOutputAreaSpecificAscii=false, /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ASCII format */
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
     private boolean                         _output_kml; /* report google earth kml file */
+    private boolean                         _output_temporal_graph; /* report temporal graph file */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -261,6 +262,8 @@ public class Parameters implements Cloneable {
 
     public boolean getOutputKMLFile() {return _output_kml;}
     public void setOutputKMLFile(boolean b) {_output_kml = b;}
+    public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
+    public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}
     public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
     public PValueReportingType GetPValueReportingType() {return gePValueReportingType;}
     public int GetEarlyTermThreshold() {return giEarlyTermThreshold;}
@@ -395,7 +398,9 @@ public class Parameters implements Cloneable {
         if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
         if (_powerEvaluationTotalCases != rhs._powerEvaluationTotalCases) return false;
         if (_power_replica != rhs._power_replica) return false;
-
+        if (_output_kml != rhs._output_kml) return false;
+        if (_output_temporal_graph != rhs._output_temporal_graph) return false;
+            
         return true;
     }
     public boolean getPerformPowerEvaluation() {return _performPowerEvaluation;}

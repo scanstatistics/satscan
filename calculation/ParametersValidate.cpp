@@ -731,6 +731,21 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING,
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
+    if (gParameters.getOutputKMLFile() &&
+        (gParameters.GetCoordinatesType() != LATLON || gParameters.GetIsPurelyTemporalAnalysis())) {
+            const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The Google Earth option is not available for purely temporal analyses or cartesian coordinates.\nThe option was disabled.\n",
+                            BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputTemporalGraphFile() &&
+        (!gParameters.GetIsPurelyTemporalAnalysis() ||
+        !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) {
+            const_cast<CParameters&>(gParameters).setOutputTemporalGraphFile(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The temporal graph option is only available for purely temporal analyses with Poisson or Bernoulli models.\nThe option was disabled.\n",
+                            BasePrint::P_WARNING);
+    }
     if (!ValidateClustersReportedParameters(PrintDirection))
         bValid = false;
   } catch (prg_exception& x) {

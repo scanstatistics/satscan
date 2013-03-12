@@ -78,6 +78,7 @@ class CParameters {
     bool                                gbOutputAreaSpecificAscii,              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
     bool                                _output_kml;                            /* generate KML output file */
+    bool                                _output_temporal_graph;                 /* generate temporal graph output file */
         /* Iterative scans variables */
     bool                                gbIterativeRuns;                        /* iterative analysis? */
     unsigned int                        giNumIterativeRuns;                     /* number of iterative scans to attempt */
@@ -240,6 +241,7 @@ class CParameters {
     const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
     bool                                getOutputKMLFile() const {return _output_kml;}
+    bool                                getOutputTemporalGraphFile() const {return _output_temporal_graph;}
     bool                                GetOutputRelativeRisksAscii() const {return gbOutputRelativeRisksAscii;}
     bool                                GetOutputRelativeRisksDBase() const {return gbOutputRelativeRisksDBase;}
     bool                                GetOutputRelativeRisksFiles() const;
@@ -350,6 +352,7 @@ class CParameters {
     void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_power_replica = r;}
     void                                SetNumIterativeScans(int iNumIterativeScans);
     void                                setOutputKMLFile(bool b) {_output_kml = b;}
+    void                                setOutputTemporalGraphFile(bool b) {_output_temporal_graph = b;}
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
     void                                SetOutputClusterCaseAscii(bool b) {gbOutputClusterCaseAscii = b;}

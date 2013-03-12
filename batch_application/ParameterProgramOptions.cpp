@@ -67,6 +67,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(OUTPUT_RR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_RR_DBASE))
         (getOption(OUTPUT_SIM_LLR_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_ASCII))
         (getOption(OUTPUT_SIM_LLR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_DBASE))
+        (getOption(OUTPUT_TEMPORAL_GRAPH, true), po::value<std::string>(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH))
         (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML));
 
     /* Polygons tab options */

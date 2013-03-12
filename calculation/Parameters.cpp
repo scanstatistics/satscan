@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 120;
+const int CParameters::giNumParameters                = 121;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -149,6 +149,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_power_simulation_output_filename != rhs._power_simulation_output_filename) return false;
   if (_power_evaluation_method != rhs._power_evaluation_method) return false;
   if (_output_kml != rhs._output_kml) return false;
+  if (_output_temporal_graph != rhs._output_temporal_graph) return false;
 
   return true;
 }
@@ -349,6 +350,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _power_simulation_output_filename      = rhs._power_simulation_output_filename;
   _power_evaluation_method               = rhs._power_evaluation_method;
   _output_kml = rhs._output_kml;
+  _output_temporal_graph = rhs._output_temporal_graph;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -831,6 +833,7 @@ void CParameters::SetAsDefaulted() {
   _power_simulation_output_filename = "";
   _power_evaluation_method = PE_WITH_ANALYSIS;
   _output_kml = false;
+  _output_temporal_graph = false;
 }
 
 /** Sets start range start date. Throws exception. */

@@ -400,6 +400,7 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsSimulationOutputFilename"));
 
   gvParameterInfo.push_back(std::make_pair(Output, (const char*)"OutputGoogleEarthKML"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"OutputTemporalGraphHTML"));
 
   gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerEvaluations, (const char*)"PerformPowerEvaluation");
   gvParameterInfo[POWER_05 - 1] = std::make_pair(PowerEvaluations, (const char*)"CriticalValue05");

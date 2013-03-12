@@ -755,6 +755,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clusterCaseInColumnFormatAsciiCheckBox.setSelected(parameters.GetOutputClusterCaseAscii());  // Output Most Likely Cluster for each Centroid
         _clusterCaseInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterCaseDBase());
         _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
+        _reportTemporalGraph.setSelected(parameters.getOutputTemporalGraphFile());
         enableSettingsForAnalysisModelCombination();
         enableAdvancedButtons();
     }
@@ -857,7 +858,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputRelativeRisksDBase(_relativeRiskEstimatesAreaDBaseCheckBox.isSelected() && _relativeRiskEstimatesAreaDBaseCheckBox.isEnabled());
         parameters.SetOutputSimLogLikeliRatiosAscii(_simulatedLogLikelihoodRatiosAsciiCheckBox.isSelected());
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
-        parameters.setOutputKMLFile(_reportGoogleEarthKML.isSelected());
+        parameters.setOutputKMLFile(_reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected());
+        parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
     }
@@ -1047,7 +1049,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaAsciiCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaDBaseCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaLabel.setEnabled(bRelativeRisks);
-        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON);
+        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL);
+        _reportTemporalGraph.setEnabled(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL &&
+                                        (getModelControlType() == Parameters.ProbabilityModelType.POISSON || 
+                                         getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI));
     }
 
     /**
@@ -1472,6 +1477,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton = new javax.swing.JButton();
         _geographicalOutputGroup = new javax.swing.JPanel();
         _reportGoogleEarthKML = new javax.swing.JCheckBox();
+        _graphOutputGroup = new javax.swing.JPanel();
+        _reportTemporalGraph = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -2317,7 +2324,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2791,7 +2798,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2998,6 +3005,27 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGap(0, 8, Short.MAX_VALUE))
         );
 
+        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Graph Output Format"));
+        _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, "create_additional_output_files_htm"));
+
+        _reportTemporalGraph.setText("Temporal Graph File");
+
+        javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
+        _graphOutputGroup.setLayout(_graphOutputGroupLayout);
+        _graphOutputGroupLayout.setHorizontalGroup(
+            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _graphOutputGroupLayout.setVerticalGroup(
+            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                .addComponent(_reportTemporalGraph)
+                .addGap(0, 8, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
         _outputTab.setLayout(_outputTabLayout);
         _outputTabLayout.setHorizontalGroup(
@@ -3010,7 +3038,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_advancedFeaturesOutputButton))
                     .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_graphOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputTabLayout.setVerticalGroup(
@@ -3022,7 +3051,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3092,6 +3123,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _exponentialModelRadioButton;
     private javax.swing.JPanel _geographicalInputPanel;
     private javax.swing.JPanel _geographicalOutputGroup;
+    private javax.swing.JPanel _graphOutputGroup;
     private javax.swing.JButton _gridFileBrowseButton;
     private javax.swing.JButton _gridFileImportButton;
     private javax.swing.JLabel _gridFileLabel;
@@ -3121,6 +3153,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaDBaseCheckBox;
     private javax.swing.JLabel _relativeRiskEstimatesAreaLabel;
     private javax.swing.JCheckBox _reportGoogleEarthKML;
+    private javax.swing.JCheckBox _reportTemporalGraph;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
     private javax.swing.JTextField _resultsFileTextField;

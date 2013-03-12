@@ -648,6 +648,9 @@
     <ClCompile Include="..\..\..\..\boost\boost_1_52_0\libs\system\src\error_code.cpp">
       <Filter>Source Files\boost\system</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ChartGenerator.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\calculation\IniParameterFileAccess.h">
@@ -1147,6 +1150,9 @@
     </ClInclude>
     <ClInclude Include="..\..\calculation\ParameterTypes.h">
       <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ChartGenerator.h">
+      <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -509,6 +509,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputKMLFile());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setOutputTemporalGraphFile", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputTemporalGraphFile());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -991,6 +995,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputKMLFile", "()Z");
   Parameters.setOutputKMLFile(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputTemporalGraphFile", "()Z");
+  Parameters.setOutputTemporalGraphFile(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

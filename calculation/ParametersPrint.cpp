@@ -6,6 +6,7 @@
 #include "DataSetHandler.h"
 #include "SSException.h"
 #include "ObservableRegion.h"
+#include "ChartGenerator.h"
 
 /** constructor*/
 ParametersPrint::ParametersPrint(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -769,6 +770,11 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
       AdditionalOutputFile.setExtension(".kml");
       settings.push_back(std::make_pair("Google Earth KML File",AdditionalOutputFile.getFullPath(buffer)));
+    }
+    if (gParameters.getOutputTemporalGraphFile() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
+      AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
+      TemporalChartGenerator::getFilename(AdditionalOutputFile);
+      settings.push_back(std::make_pair("Temporal Graph File",AdditionalOutputFile.getFullPath(buffer)));
     }
     WriteSettingsContainer(settings, "Output", fp);
   }

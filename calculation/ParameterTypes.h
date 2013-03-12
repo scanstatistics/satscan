@@ -125,7 +125,8 @@ enum ParameterType
     POWER_001,                      /* power evaluation critical value .001 (numeric) */
     PE_OUTPUT_SIMUALTION_DATA,      /* report power evaluation's step 2 randomization data (boolean) */
     PE_SIMUALTION_OUTPUTFILE,       /* power evaluation simulation data output filename (string) */
-    OUTPUT_KML                      /* generate KML output file */
+    OUTPUT_KML,                     /* generate KML output file */
+    OUTPUT_TEMPORAL_GRAPH           /* generate temporal graph output file */
 };
 /** analysis and cluster types */
 enum AnalysisType
