@@ -185,6 +185,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PE_SIMUALTION_OUTPUTFILE     : return "power evaluation simulation data output filename";
       case OUTPUT_KML                   : return "output Google Earth KML file (y/n)";
       case OUTPUT_TEMPORAL_GRAPH        : return "output temporal graph HTML file (y/n)";
+      case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -335,6 +336,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case PE_SIMUALTION_OUTPUTFILE     : s = gParameters.getPowerEvaluationSimulationDataOutputFilename().c_str(); return s;
       case OUTPUT_KML                   : return AsString(s, gParameters.getOutputKMLFile());
       case OUTPUT_TEMPORAL_GRAPH        : return AsString(s, gParameters.getOutputTemporalGraphFile());
+      case OUTPUT_SHAPEFILES            : return AsString(s, gParameters.getOutputShapeFiles());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -717,6 +719,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PE_SIMUALTION_OUTPUTFILE     : gParameters.setPowerEvaluationSimulationDataOutputFilename(sParameter.c_str(), true); break;
       case OUTPUT_KML                   : gParameters.setOutputKMLFile(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_TEMPORAL_GRAPH        : gParameters.setOutputTemporalGraphFile(ReadBoolean(sParameter, eParameterType)); break;
+      case OUTPUT_SHAPEFILES            : gParameters.setOutputShapeFiles(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

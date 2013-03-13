@@ -738,6 +738,13 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             "The Google Earth option is not available for purely temporal analyses or cartesian coordinates.\nThe option was disabled.\n",
                             BasePrint::P_WARNING);
     }
+    if (gParameters.getOutputShapeFiles() &&
+        (gParameters.GetCoordinatesType() != LATLON || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())) {
+            const_cast<CParameters&>(gParameters).setOutputShapeFiles(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The shapefiles option is not available for purely temporal analyses, cartesian coordinates or the location neighbors file.\nThe option was disabled.\n",
+                            BasePrint::P_WARNING);
+    }
     if (gParameters.getOutputTemporalGraphFile() &&
         (!gParameters.GetIsPurelyTemporalAnalysis() ||
         !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) {

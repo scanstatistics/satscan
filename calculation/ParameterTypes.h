@@ -126,7 +126,8 @@ enum ParameterType
     PE_OUTPUT_SIMUALTION_DATA,      /* report power evaluation's step 2 randomization data (boolean) */
     PE_SIMUALTION_OUTPUTFILE,       /* power evaluation simulation data output filename (string) */
     OUTPUT_KML,                     /* generate KML output file */
-    OUTPUT_TEMPORAL_GRAPH           /* generate temporal graph output file */
+    OUTPUT_TEMPORAL_GRAPH,          /* generate temporal graph output file */
+    OUTPUT_SHAPEFILES               /* generate shape files */
 };
 /** analysis and cluster types */
 enum AnalysisType

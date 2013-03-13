@@ -264,7 +264,7 @@ void ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
 void ParameterProgramOptions::listOptions(FILE * fp) {
     std::string buffer;
     for (ParameterType e=ANALYSISTYPE; e <= gParameters.giNumParameters; e = ParameterType(e + 1)) {
-        if (e != EARLY_SIM_TERMINATION && e != OBSERVABLE_REGIONS && e != CREATION_VERSION) { // skip certain parameters
+        if (e != EARLY_SIM_TERMINATION && e != OBSERVABLE_REGIONS && e != CREATION_VERSION && e != OUTPUT_SHAPEFILES) { // skip certain parameters
             const char * option = getOption(e, true);
             if (option != IniParameterSpecification::NotUsed) // skip deprecated parameters
                 fprintf(fp, " --%s \"%s\" ", option, GetParameterString(e, buffer).c_str());

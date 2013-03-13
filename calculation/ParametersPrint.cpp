@@ -771,6 +771,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       AdditionalOutputFile.setExtension(".kml");
       settings.push_back(std::make_pair("Google Earth KML File",AdditionalOutputFile.getFullPath(buffer)));
     }
+    if (gParameters.getOutputShapeFiles() && gParameters.GetCoordinatesType() == LATLON) {
+      AdditionalOutputFile.setExtension(".shp");
+      settings.push_back(std::make_pair("Shapefiles",AdditionalOutputFile.getFullPath(buffer)));
+    }
     if (gParameters.getOutputTemporalGraphFile() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
       AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
       TemporalChartGenerator::getFilename(AdditionalOutputFile);

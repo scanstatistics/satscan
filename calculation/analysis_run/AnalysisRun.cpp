@@ -38,7 +38,6 @@
 #include "SSException.h" 
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
-//#include "ClusterScatterChart.h"
 #include "ClusterKML.h"
 #include "ChartGenerator.h"
 #include "PoissonRandomizer.h"
@@ -1150,7 +1149,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
     if (gParameters.GetOutputAreaSpecificFiles())
       ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giAnalysisCount > 1));
     //if creating 'cluster information' files, create record data buffers
-    if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
+    if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles() || gParameters.getOutputShapeFiles())
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
     //open result output file
     OpenReportFile(fp, true);
@@ -1440,14 +1439,6 @@ void AnalysisRunner::reportClusters() {
             PrintTopIterativeScanCluster(_reportClusters);
         else {
             PrintTopClusters(_reportClusters);
-            /* Scatter chart code ...
-            if (_reportClusters.GetNumClustersRetained() && 
-                gParameters.GetCoordinatesType() == CARTESIAN && 
-                !gParameters.GetIsPurelyTemporalAnalysis() &&
-                !gParameters.UseLocationNeighborsFile()) {
-                ClusterScatterChart plot(*gpDataHub, _reportClusters, gSimVars);
-                plot.renderScatterChart();
-            } */
 
             // TODO: Test UseLocationNeighborsFile() -- why can't we use this feature with KML?
 

@@ -60,7 +60,7 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
                 gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0), gpShapeDataFileWriter(0) {
   try {
-    if (gParameters.GetOutputClusterLevelFiles())
+    if (gParameters.GetOutputClusterLevelFiles() || gParameters.getOutputShapeFiles())
       DefineClusterInformationFields();
     if (gParameters.GetOutputClusterCaseFiles())
       DefineClusterCaseInformationFields();
@@ -68,10 +68,11 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterCaseAscii())
       gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
-    if (gParameters.GetOutputClusterLevelDBase()) {
+    if (gParameters.GetOutputClusterLevelDBase() || gParameters.getOutputShapeFiles()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
-      if (!DataHub.GetParameters().GetIsPurelyTemporalAnalysis() && DataHub.GetParameters().GetCoordinatesType() == LATLON)
+      if (gParameters.getOutputShapeFiles()) {
         gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
+      }
     }
     if (gParameters.GetOutputClusterCaseDBase())
       gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
@@ -186,8 +187,8 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
          //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
          //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
       }
-      CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
     }
+    CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
   }
   catch (prg_exception& x) {
     x.addTrace("DefineClusterInformationFields()","ClusterInformationWriter");
@@ -276,7 +277,7 @@ std::string& ClusterInformationWriter::GetAreaID(std::string& sAreaId, const CCl
     post: function will record the appropriate data into the cluster record   */
 void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars) {
   try {
-    if (gParameters.GetOutputClusterLevelFiles())
+    if (gParameters.GetOutputClusterLevelFiles() || gParameters.getOutputShapeFiles())
       WriteClusterInformation(theCluster, iClusterNumber, simVars);
     if (gParameters.GetOutputClusterCaseFiles())
       WriteClusterCaseInformation(theCluster, iClusterNumber);
