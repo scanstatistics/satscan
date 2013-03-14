@@ -5,7 +5,6 @@
 #include "ChartGenerator.h"
 #include "SaTScanData.h"
 #include "UtilityFunctions.h"
-#include "Filename.h"
 #include "cluster.h"
 #include "SimulationVariables.h"
 #include <fstream>
