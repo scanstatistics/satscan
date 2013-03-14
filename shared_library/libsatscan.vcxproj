@@ -61,6 +61,7 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>
       </DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalOptions>/verbose:lib  %(AdditionalOptions)</AdditionalOptions>
@@ -95,6 +96,7 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>
       </DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalOptions>/verbose:lib  %(AdditionalOptions)</AdditionalOptions>
