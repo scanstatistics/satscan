@@ -241,11 +241,11 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
 
 APP_SRC     := $(SATSCAN)/batch_application/Main.cpp \
                $(SATSCAN)/batch_application/ParameterProgramOptions.cpp
-LIB_SRC     := $(SATSCAN)/java_application/shared_library/SharedLibrary.cpp \
-               $(SATSCAN)/java_application/shared_library/stsJNIPrintWindow.cpp \
-               $(SATSCAN)/java_application/shared_library/stsParametersUtility.cpp \
-               $(SATSCAN)/java_application/shared_library/JNIException.cpp \
-               $(SATSCAN)/java_application/shared_library/PrintCallback.cpp
+LIB_SRC     := $(SATSCAN)/shared_library/SharedLibrary.cpp \
+               $(SATSCAN)/shared_library/stsJNIPrintWindow.cpp \
+               $(SATSCAN)/shared_library/stsParametersUtility.cpp \
+               $(SATSCAN)/shared_library/JNIException.cpp \
+               $(SATSCAN)/shared_library/PrintCallback.cpp
 
 OBJS        := $(SRC:.cpp=.o)
 APP_OBJS    := $(APP_SRC:.cpp=.o)
