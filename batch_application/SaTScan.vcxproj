@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Itanium">
-      <Configuration>Debug</Configuration>
-      <Platform>Itanium</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -12,10 +8,6 @@
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Itanium">
-      <Configuration>Release</Configuration>
-      <Platform>Itanium</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -27,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>SaTScan.vc</ProjectName>
+    <ProjectName>satscan</ProjectName>
     <ProjectGuid>{F3018D4B-8E07-4E08-BDC8-4C61E3539166}</ProjectGuid>
     <RootNamespace>SaTScanvc</RootNamespace>
     <Keyword>Win32Proj</Keyword>
@@ -39,15 +31,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -70,12 +53,6 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -85,33 +62,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">false</LinkIncremental>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SaTScanBatch</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SaTScanBatch</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SaTScanBatch64</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SaTScanBatch</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SaTScanBatch64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -122,7 +93,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\Debug\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Debug\xbase32.lib;$(SolutionDir)newmat\Win32\Debug\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Debug\shapelib32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -139,7 +110,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -150,7 +121,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -161,41 +132,13 @@
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">
-    <Midl>
-      <TargetEnvironment>Itanium</TargetEnvironment>
-    </Midl>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Itanium\Debug\newmat.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)SaTScanBatchIA64.exe</OutputFile>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineIA64</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -204,7 +147,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Release\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\Release\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -225,7 +168,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -234,7 +177,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Release\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Release\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -244,36 +187,6 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">
-    <Midl>
-      <TargetEnvironment>Itanium</TargetEnvironment>
-    </Midl>
-    <ClCompile>
-      <Optimization>Full</Optimization>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\boost\boost_1_52_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Itanium\Release\newmat.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)SaTScanBatchIA64.exe</OutputFile>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineIA64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
