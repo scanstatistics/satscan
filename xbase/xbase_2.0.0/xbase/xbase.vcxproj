@@ -186,7 +186,6 @@
     <ClInclude Include="ndx.h" />
     <ClInclude Include="ntx.h" />
     <ClInclude Include="retcodes.h" />
-    <ClInclude Include="vc.xbase.h" />
     <ClInclude Include="xbase.h" />
     <ClInclude Include="xbconfig.h" />
     <ClInclude Include="xbconfigw32.h" />

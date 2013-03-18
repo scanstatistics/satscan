@@ -89,9 +89,6 @@
     <ClInclude Include="retcodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vc.xbase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="xbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
