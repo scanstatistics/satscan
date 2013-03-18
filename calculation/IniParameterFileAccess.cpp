@@ -147,39 +147,41 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
 /** Writes parameters of associated CParameters object to ini file, of most recent
     format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
-  try {
-    IniFile WriteFile;
-    gParameters.SetSourceFileName(sFilename);
-    gpSpecifications = new IniParameterSpecification();
+    try {
+        IniFile WriteFile;
+        gParameters.SetSourceFileName(sFilename);
+        gpSpecifications = new IniParameterSpecification();
 
-    //write settings as provided in main graphical interface
-    WriteInputSettings(WriteFile);
-    WriteAnalysisSettings(WriteFile);
-    WriteOutputSettings(WriteFile);
-    //write settings as provided in advanced features of graphical interface
-    WriteObservableRegionSettings(WriteFile);
-    WriteMultipleDataSetsSettings(WriteFile);
-    WriteDataCheckingSettings(WriteFile);
-    WriteSpatialNeighborsSettings(WriteFile);
-    WriteSpatialWindowSettings(WriteFile);
-    WriteTemporalWindowSettings(WriteFile);
-    WriteSpaceAndTimeAdjustmentSettings(WriteFile);
-    WriteInferenceSettings(WriteFile);
-    WriteClustersReportedSettings(WriteFile);
-    WriteAdditionalOutputSettings(WriteFile);
-    
-    //write settings as provided only through user mofication of parameter file and batch executable
-    WriteEllipticScanSettings(WriteFile);
-    WritePowerEvaluationsSettings(WriteFile);
-    WritePowerSimulationsSettings(WriteFile);
-    WriteRunOptionSettings(WriteFile);
-    WriteSystemSettings(WriteFile);
+        //write settings as provided in main graphical interface
+        WriteInputSettings(WriteFile);
+        WriteAnalysisSettings(WriteFile);
+        WriteOutputSettings(WriteFile);
 
-	WriteFile.Write(gParameters.GetSourceFileName());
-  } catch (prg_exception& x) {
-    x.addTrace("Write()", "IniParameterFileAccess");
-    throw;
-  }
+        //write settings as provided in advanced features of graphical interface
+        WriteObservableRegionSettings(WriteFile);
+        WriteMultipleDataSetsSettings(WriteFile);
+        WriteDataCheckingSettings(WriteFile);
+        WriteSpatialNeighborsSettings(WriteFile);
+        WriteSpatialWindowSettings(WriteFile);
+        WriteTemporalWindowSettings(WriteFile);
+        WriteSpaceAndTimeAdjustmentSettings(WriteFile);
+        WriteInferenceSettings(WriteFile);
+        WriteClustersReportedSettings(WriteFile);
+        WriteAdditionalOutputSettings(WriteFile);
+        WriteTemporalGraphSettings(WriteFile);
+
+        //write settings as provided only through user mofication of parameter file and batch executable
+        WriteEllipticScanSettings(WriteFile);
+        WritePowerEvaluationsSettings(WriteFile);
+        WritePowerSimulationsSettings(WriteFile);
+        WriteRunOptionSettings(WriteFile);
+        WriteSystemSettings(WriteFile);
+
+        WriteFile.Write(gParameters.GetSourceFileName());
+    } catch (prg_exception& x) {
+        x.addTrace("Write()", "IniParameterFileAccess");
+        throw;
+    }
 }
 
 /** Writes parameter settings grouped under 'Additional Output'. */
@@ -393,7 +395,6 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_KML, GetParameterString(OUTPUT_KML, s).c_str(), GetParameterComment(OUTPUT_KML));
-    WriteIniParameter(WriteFile, OUTPUT_TEMPORAL_GRAPH, GetParameterString(OUTPUT_TEMPORAL_GRAPH, s).c_str(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH));
   } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;
@@ -522,6 +523,17 @@ void IniParameterFileAccess::WriteSystemSettings(IniFile& WriteFile) {
   }
 }
 
+/** Writes parameter settings grouped under 'Temporal Graph'. */
+void IniParameterFileAccess::WriteTemporalGraphSettings(IniFile& WriteFile) {
+    std::string  s;
+    try {
+        WriteIniParameter(WriteFile, OUTPUT_TEMPORAL_GRAPH, GetParameterString(OUTPUT_TEMPORAL_GRAPH, s).c_str(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteTemporalGraphSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
   std::string  s;
@@ -537,4 +549,3 @@ void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
     throw;
   }
 }
-

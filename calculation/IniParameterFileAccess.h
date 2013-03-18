@@ -38,6 +38,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteSpatialNeighborsSettings(IniFile& WriteFile);
     void                                WriteSpatialWindowSettings(IniFile& WriteFile);
     void                                WriteSystemSettings(IniFile& WriteFile);
+    void                                WriteTemporalGraphSettings(IniFile& WriteFile);
     void                                WriteTemporalWindowSettings(IniFile& WriteFile);
 
   public:

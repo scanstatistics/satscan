@@ -33,6 +33,7 @@ class ParametersPrint {
     void                PrintSpatialWindowParameters(FILE* fp) const;
     void                PrintSystemParameters(FILE* fp) const;
     void                PrintTemporalWindowParameters(FILE* fp) const;
+    void                PrintTemporalGraphParameters(FILE* fp) const;
 
     void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp) const;
 

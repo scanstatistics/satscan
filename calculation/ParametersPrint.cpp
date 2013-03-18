@@ -157,6 +157,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintClustersReportedParameters(fp);
     //print 'Additional Output' tab settings
     PrintAdditionalOutputParameters(fp);
+    // print 'Temporal Graphs' tab settings
+    PrintTemporalGraphParameters(fp);
     //print 'Elliptic Scan' settings
     PrintEllipticScanParameters(fp);
     //print 'Power Evaluations' settings
@@ -1122,7 +1124,29 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
   }
 }
 
-/** Prints 'Spatial Window' tab parameters to file stream. */
+/** Prints 'Temporal Graphs' tab parameters to file stream. */
+void ParametersPrint::PrintTemporalGraphParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer;
+
+    try {
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) return;
+
+        settings.push_back(std::make_pair("Create Temporal Graph",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
+        if (gParameters.getOutputTemporalGraphFile()) {
+            FileName outputFile(gParameters.GetOutputFileName().c_str());
+            outputFile.setFullPath(gParameters.GetOutputFileName().c_str());
+            TemporalChartGenerator::getFilename(outputFile);
+            settings.push_back(std::make_pair("Temporal Graph File", outputFile.getFullPath(buffer)));
+        }
+        WriteSettingsContainer(settings, "Temporal Graphs", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintTemporalGraphParameters()","ParametersPrint");
+        throw;
+    }
+}
+
+/** Prints 'Temporal Window' tab parameters to file stream. */
 void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
   SettingContainer_t settings;
   std::string        buffer, worker;
