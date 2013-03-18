@@ -56,17 +56,17 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
 void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, bool markAsGini) {
     if (gvTopClusterList.size() == 0) {
         gvTopClusterList = other.gvTopClusterList;
-		for (ClusterList_t::iterator itrThis=gvTopClusterList.begin(); itrThis != gvTopClusterList.end(); ++itrThis) {
-			(*itrThis)->setAsGiniCluster(markAsGini);
-		}
-	} else {
+        for (ClusterList_t::iterator itrThis=gvTopClusterList.begin(); itrThis != gvTopClusterList.end(); ++itrThis) {
+            (*itrThis)->setAsGiniCluster(markAsGini);
+        }
+    } else {
         ClusterList_t combineClusters;
         ClusterList_t::const_iterator itrOther=other.gvTopClusterList.begin(), itrEndOther=other.gvTopClusterList.end();
         for (;itrOther != itrEndOther; ++itrOther) {
             // create bit set of cluster locations
             std::auto_ptr<boost::dynamic_bitset<> > otherSet;
             // iterate through this cluster collections to see if other cluster is duplicate of cluster already in set
-            ClusterList_t::const_iterator itrThis=gvTopClusterList.begin(), itrThisEnd=gvTopClusterList.end();
+            ClusterList_t::iterator itrThis=gvTopClusterList.begin(), itrThisEnd=gvTopClusterList.end();
             bool isDuplicate = false;
             for (;!isDuplicate && itrThis != itrThisEnd; ++itrThis) {
                 // clusters are identical in terms of time interval and cluster locations
@@ -82,16 +82,23 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
                     getClusterLocationsSet(DataHub, **itrThis, thisSet);
                     thisSet &= *otherSet;
                     isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
+                    if (isDuplicate && markAsGini) {
+                        // if these are duplicate clusters, we still want to ensure that existing one is marked as a gini cluster
+                        (*itrThis)->setAsGiniCluster(markAsGini);
+                    }
                 }
             }
-            if (!isDuplicate) combineClusters.push_back(*itrOther);
+            if (!isDuplicate) {
+                // cluster is not a duplicate, retain in temporary collection
+                combineClusters.push_back(*itrOther);
+            }
         }
         // now add the non-duplicate clusters to cluster collection
         ClusterList_t::const_iterator itr=combineClusters.begin(), itrEnd=combineClusters.end();
         for (;itr != itrEnd; ++itr) {
-			(*itr)->setAsGiniCluster(markAsGini);
-			gvTopClusterList.push_back(*itr);
-		}
+            (*itr)->setAsGiniCluster(markAsGini);
+            gvTopClusterList.push_back(*itr);
+        }
     }
 }
 

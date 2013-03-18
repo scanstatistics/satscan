@@ -209,52 +209,49 @@ void CCluster::DeallocateEvaluationAssistClassMembers() {
 
 /** Writes cluster properties to file stream in format required by result output file  */
 void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
-  try {
-    AsciiPrintFormat PrintFormat;
+    try {
+        AsciiPrintFormat PrintFormat;
+        std::string buffer;
+        unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
 
-	unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
-	PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
-    fprintf(fp, "%u.", iReportedCluster);
-    DisplayCensusTracts(fp, DataHub, PrintFormat);
-	std::string buffer;
-	supplementInfo.getOverlappingClusters(*this, buffer);
-	if (buffer.size()) {
-		PrintFormat.PrintSectionLabel(fp, "Overlap with clusters", false, true);
-		PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-	}
-    if (!DataHub.GetParameters().UseLocationNeighborsFile()) {
-      if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
-        DisplayCoordinates(fp, DataHub, PrintFormat);
-      else
-        DisplayLatLongCoords(fp, DataHub, PrintFormat);
+        PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
+        fprintf(fp, "%u.", iReportedCluster);
+        DisplayCensusTracts(fp, DataHub, PrintFormat);
+        if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
+            PrintFormat.PrintSectionLabel(fp, "Overlap with clusters", false, true);
+            if (supplementInfo.getOverlappingClusters(*this, buffer).size() == 0) buffer = "No Overlap";
+            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+        }
+        if (!DataHub.GetParameters().UseLocationNeighborsFile()) {
+            if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
+                DisplayCoordinates(fp, DataHub, PrintFormat);
+            else
+                DisplayLatLongCoords(fp, DataHub, PrintFormat);
+        }
+        if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
+            PrintFormat.PrintSectionLabel(fp, "Gini Cluster", false, true);
+            buffer = isGiniCluster() ? "Yes" : "No";
+            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+        }
+        DisplayTimeFrame(fp, DataHub, PrintFormat);
+        if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL || DataHub.GetParameters().GetProbabilityModelType() == CATEGORICAL)
+            DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
+        else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
+            DisplayClusterDataExponential(fp, DataHub, PrintFormat);
+        else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) { 
+            if (DataHub.GetParameters().getIsWeightedNormal())
+                DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
+            else
+                DisplayClusterDataNormal(fp, DataHub, PrintFormat);
+        } else
+            DisplayClusterDataStandard(fp, DataHub, PrintFormat);
+        DisplayTimeTrend(fp, DataHub, PrintFormat);
+        DisplayRatio(fp, DataHub, PrintFormat);
+        DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
+    } catch (prg_exception& x) {
+        x.addTrace("Display()","CCluster");
+        throw;
     }
-	if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
-		PrintFormat.PrintSectionLabel(fp, "Gini Cluster", false, true);
-		buffer = isGiniCluster() ? "Yes" : "No";
-		PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-	}
-    DisplayTimeFrame(fp, DataHub, PrintFormat);
-    if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL ||
-        DataHub.GetParameters().GetProbabilityModelType() == CATEGORICAL)
-      DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
-    else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
-      DisplayClusterDataExponential(fp, DataHub, PrintFormat);
-    else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) { 
-        if (DataHub.GetParameters().getIsWeightedNormal())
-            DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
-        else
-            DisplayClusterDataNormal(fp, DataHub, PrintFormat);
-    }
-    else
-      DisplayClusterDataStandard(fp, DataHub, PrintFormat);
-    DisplayTimeTrend(fp, DataHub, PrintFormat);
-    DisplayRatio(fp, DataHub, PrintFormat);
-    DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Display()","CCluster");
-    throw;
-  }
 }
 
 /** Prints annual cases to file stream is in format required by result output file. */
