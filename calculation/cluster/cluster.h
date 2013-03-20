@@ -37,7 +37,7 @@ class CCluster {
 
     void                          cacheReportLine(std::string& label, std::string& value) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
-    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value) const;
+    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache) const;
 
   public:
     CCluster();

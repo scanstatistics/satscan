@@ -138,7 +138,7 @@ class CSVTTCluster : public CCluster  {
     virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    void                        GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const;
+    std::string               & GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const;
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gClusterData->GetCaseCount(tSetIndex);}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;

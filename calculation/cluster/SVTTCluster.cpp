@@ -393,29 +393,17 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   std::string buffer, buffer2;
 
   if (gClusterData->getInsideTrend().getType() == LINEAR) {
-     PrintFormat.PrintSectionLabel(fp, "Inside time trend", false, true);
-     GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "Outside time trend", false, true);
-     GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
-     //buffer = "?";
-     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     printClusterData(fp, PrintFormat, "Inside time trend", GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend()), false);
+     printClusterData(fp, PrintFormat, "Outside time trend", GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend()), false);
+     //buffer = "?"; printClusterData(fp, PrintFormat, "Time trend difference", GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend()), false);
   }
 
   const AbstractTimeTrend& InTrend = gClusterData->getInsideTrend();
-  //PrintFormat.PrintSectionLabel(fp, "Inside Intercept", false, true);
-  //printString(buffer, "%g", InTrend.GetAlpha());
-  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  //PrintFormat.PrintSectionLabel(fp, "Inside Linear", false, true);
-  //printString(buffer, "%g", InTrend.GetBeta());
-  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //printClusterData(fp, PrintFormat, "Inside Intercept", printString(buffer, "%g", InTrend.GetAlpha()), false);
+  //printClusterData(fp, PrintFormat, "Inside Linear", printString(buffer, "%g", InTrend.GetBeta()), false);
   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&InTrend);
   if (pQTrend) {
-     //PrintFormat.PrintSectionLabel(fp, "Inside Quadratic", false, true);
-     //printString(buffer, "%g", pQTrend->GetBeta2());
-     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //printClusterData(fp, PrintFormat, "Inside Quadratic", printString(buffer, "%g", pQTrend->GetBeta2()), false);
      PrintFormat.PrintSectionLabel(fp, "Inside Risk Function", false, true);
      pQTrend->getRiskFunction(buffer, buffer2, DataHub);
      PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
@@ -423,17 +411,11 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   }
 
   const AbstractTimeTrend& OutTrend = gClusterData->getOutsideTrend();
-  //PrintFormat.PrintSectionLabel(fp, "Outside Intercept", false, true);
-  //printString(buffer, "%g", OutTrend.GetAlpha());
-  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  //PrintFormat.PrintSectionLabel(fp, "Outside Linear", false, true);
-  //printString(buffer, "%g", OutTrend.GetBeta());
-  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //printClusterData(fp, PrintFormat, "Outside Intercept", printString(buffer, "%g", OutTrend.GetAlpha()), false);
+  //printClusterData(fp, PrintFormat, "Outside Linear", printString(buffer, "%g", OutTrend.GetBeta()), false);
   pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&OutTrend);
   if (pQTrend) {
-     //PrintFormat.PrintSectionLabel(fp, "Outside Quadratic", false, true);
-     //printString(buffer, "%g", pQTrend->GetBeta2());
-     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //printClusterData(fp, PrintFormat, "Outside Quadratic", printString(buffer, "%g", pQTrend->GetBeta2()), false);
      PrintFormat.PrintSectionLabel(fp, "Outside Risk Function", false, true);
      pQTrend->getRiskFunction(buffer, buffer2, DataHub);
      PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
@@ -466,7 +448,7 @@ measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaT
 }
 
 /** Returns formatted time trend string. */
-void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const {
+std::string & CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const {
   try {
     switch (Trend.GetStatus()) {
      case AbstractTimeTrend::UNDEFINED          : buffer = "undefined"; break;
@@ -482,6 +464,7 @@ void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const AbstractTime
     x.addTrace("GetFormattedTimeTrend()","CSVTTCluster");
     throw;
   }
+  return buffer;
 }
 
 /** returns the number of cases for tract as defined by cluster */
