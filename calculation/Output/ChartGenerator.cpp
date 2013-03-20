@@ -19,7 +19,7 @@ const char * AbstractChartGenerator::BASE_TEMPLATE = " \
     <head> \n \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
-        <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #ececec;/*color: #666;*/} </style> \n \
+        <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #9ea090;} button {cursor: pointer;}</style> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/jquery-1.9.0/jquery-1.9.0.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/highcharts.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/modules/exporting.js\"></script> \
@@ -51,26 +51,25 @@ const char * TemporalChartGenerator::FILE_SUFFIX_EXT = "_temporal";
 const char * TemporalChartGenerator::TEMPLATE_HEADER = "\n \
         <script type=\"text/javascript\"> \n \
             $(document).ready(function () { \n \
-                var chart_line = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container_line', type: 'line', marginBottom: 150, borderColor: '#888888', plotBackgroundColor: { linearGradient: [0, 0, 500, 500], stops: [ [0, 'rgb(255, 255, 255)'], [1, 'rgb(200, 200, 255)'] ] }, borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
-                    title: { text: 'Observed verse Expected (line chart w/ detected cluster)', align: 'center' }, \n \
-                    tooltip: { crosshairs: true, shared: true, formatter: function() { var is_cluster = this.points.length > 2; var s = '<b>'+ this.x +'</b>'; if (is_cluster) { s+= '<br/><b>Cluster Point</b>'; } $.each(this.points, function(i, point) { if (point.series.type != 'area') { s += '<br/>'+ point.series.name +': '+  point.y +'m'; } }); if (is_cluster) { s+= '<br/><div style=\"margin-top:15px;\">LLR : 212.342</div>'; } return s; }, }, \n \
+                var chart = new Highcharts.Chart({ \n \
+                    chart: { renderTo: 'container_line', type: 'line', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 150, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
+                    title: { text: 'Detected Cluster w/ Observed and Expected', align: 'center' }, \n \
+                    tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
-                    xAxis: { categories: [--categories--], tickmarkPlacement: 'on', labels: { rotation: -45, align: 'right' } }, \n \
-                    yAxis: { title: { enabled: true, text: 'Counts', style: { fontWeight: 'normal' } }, min: 0 }, \n \
+                    xAxis: { categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }, \n \
+                    yAxis: { title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }, \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
-                    series: [ { type: 'area', name: 'Detected Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 6 }, data: [--cluster_data--]}, \n \
-                              { name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square' }, data: [--observed_data--] }, \n \
-                              { name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle' }, data: [--expected_data--]} ] \n \
+                    series: [ { id: 'cluster', zIndex: 3, type: 'line', name: 'Detected Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster_data--]}, \n \
+                              { id: 'obs', zIndex: 2, type: 'line', name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed_data--] }, \n \
+                              { id: 'exp', zIndex: 1, type: 'line', name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected_data--]} ] \n \
                 }); \n \
-                $('#toggle_type').click(function() { var create_series_list=[]; for (i=0; i < chart_line.series.length; i++) { var series = chart_line.series[i]; if (jQuery.inArray(series.type, ['column','line']) != -1) {  create_series_list.push(series); } } for (i=0; i < create_series_list.length; i++) { changeType(create_series_list[i], create_series_list[i].type == 'line' ? 'column' : 'line'); } return false; }); \n \
-                function changeType(series, newType) { var options = series.options; options['type'] = newType; series.chart.addSeries(options, true); series.remove();} \n \
+                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}return false;}); \n \
             }); \n \
         </script> \n";
 
 const char * TemporalChartGenerator::TEMPLATE_BODY = "\n \
-        <a href=\"\" id=\"toggle_type\" style=\"margin-top:20px;\">Toggle Types</a> \n \
-        <div id=\"container_line\" style=\"margin-top:20px;\"></div> \n";
+        <div id=\"container_line\" style=\"margin-top:20px;\"></div> \n \
+        <button id=\"toggle_type\" style=\"margin-top:20px;\">Switch Chart Type</button>  \n";
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const CCluster & cluster) :_dataHub(dataHub), _cluster(cluster) {
@@ -140,17 +139,23 @@ void TemporalChartGenerator::generateChart() const {
             categories << (dateItr == startDates.begin() ? "'" : ",'") << JulianToString(buffer, *dateItr, precision) << "'";
         }
 
-        
-
         // TODO: What about multiple data sets?
         const DataSetHandler& handler = _dataHub.GetDataSetHandler();
         count_t * pcases = handler.GetDataSet(0).getCaseData_PT();
         measure_t * pmeasure = handler.GetDataSet(0).getMeasureData_PT();
         double adjustment = _dataHub.GetMeasureAdjustment(0);
         int intervals = _dataHub.GetNumTimeIntervals();
+        // increase x-axis 'step' if there are many intervals, so that labels are not crowded
+        //  -- empirically, 50 ticks seems like a good upper limit
+        templateReplace(html, "--step--", printString(buffer, "%d", static_cast<int>(std::ceil(static_cast<double>(intervals)/50.0))));
         for (int i=0; i < intervals; ++i) {
-            observed_data << (i == 0 ? "" : ",") << (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
             expected_data << (i == 0 ? "" : ",") << (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
+            observed_data <<  (i == 0 ? "" : ",");
+            if (i <= _cluster.m_nFirstInterval || i >= _cluster.m_nLastInterval - 1) {
+                observed_data << (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
+            } else {
+                observed_data << "null";
+            }
             cluster_data <<  (i == 0 ? "" : ",");
             if (i < _cluster.m_nFirstInterval || _cluster.m_nLastInterval < i+1) {
                 cluster_data << "null";
@@ -187,8 +192,8 @@ const char * GiniChartGenerator::FILE_SUFFIX_EXT = "_gini";
 const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
         <script type=\"text/javascript\"> \n \
             $(document).ready(function () { \n \
-                var chart_line = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container_line', type: 'line', marginBottom: 80, borderColor: '#888888', plotBackgroundColor: { linearGradient: [0, 0, 500, 500], stops: [ [0, 'rgb(255, 255, 255)'], [1, 'rgb(200, 200, 255)'] ] }, borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
+                var chart = new Highcharts.Chart({ \n \
+                    chart: { renderTo: 'container_line', type: 'line', zoomType:'xy', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 80, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
                     title: { text: 'Gini coefficient at Spatial Window Stops', align: 'center' }, \n \
                     subtitle: { text: 'Coefficients based on clusters with p<--gini-pvalue--.' }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
@@ -198,8 +203,7 @@ const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [ { type: 'line', name: 'Gini coefficient', color: '#4572A7', marker: { enabled: true, symbol: 'circle', radius: 6 }, data: [--gini-data--]}, ] \n \
                 }); \n \
-                $('#toggle_type').click(function() { var create_series_list=[]; for (i=0; i < chart_line.series.length; i++) { var series = chart_line.series[i]; if (jQuery.inArray(series.type, ['column','line']) != -1) {  create_series_list.push(series); } } for (i=0; i < create_series_list.length; i++) { changeType(create_series_list[i], create_series_list[i].type == 'line' ? 'column' : 'line'); } return false; }); \n \
-                function changeType(series, newType) { var options = series.options; options['type'] = newType; series.chart.addSeries(options, true); series.remove();} \n \
+                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}return false;}); \n \
             }); \n \
         </script> \n";
 
