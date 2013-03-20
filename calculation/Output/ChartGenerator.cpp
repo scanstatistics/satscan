@@ -19,7 +19,7 @@ const char * AbstractChartGenerator::BASE_TEMPLATE = " \
     <head> \n \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
-        <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #9ea090;} button {cursor: pointer;}</style> \n \
+        <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #9ea090;} button {cursor: pointer;}button {-moz-border-radius:5px;-webkit-border-radius:5px;-moz-box-shadow:0px 0px 2px rgba(0,0,0,0.4);-webkit-box-shadow:0px 0px 2px rgba(0,0,0,0.4);color:rgba(0,0,0,0.9);text-shadow:1px 1px 0px rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.5);background:-webkit-gradient(linear,0% 0%,0% 100%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(top,rgba(255,255,255,1),rgba(185,185,185,1));padding:5px 5px 5px 5px;}button:hover {background:rgba(240,240,240,1);}button:active, button:focus {background:-webkit-gradient(linear,0% 100%,0% 0%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(bottom,rgba(255,255,255,1),rgba(185,185,185,1));}button:disabled {color:rgba(0,0,0,0.4);text-shadow:1px 1px 0px rgba(255,255,255,0.5);background:rgba(220,220,220,1);}</style> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/jquery-1.9.0/jquery-1.9.0.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/highcharts.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/modules/exporting.js\"></script> \
@@ -52,7 +52,7 @@ const char * TemporalChartGenerator::TEMPLATE_HEADER = "\n \
         <script type=\"text/javascript\"> \n \
             $(document).ready(function () { \n \
                 var chart = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container_line', type: 'line', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 150, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
+                    chart: { renderTo: 'container', type: 'line', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
                     title: { text: 'Detected Cluster w/ Observed and Expected', align: 'center' }, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
@@ -63,13 +63,14 @@ const char * TemporalChartGenerator::TEMPLATE_HEADER = "\n \
                               { id: 'obs', zIndex: 2, type: 'line', name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed_data--] }, \n \
                               { id: 'exp', zIndex: 1, type: 'line', name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected_data--]} ] \n \
                 }); \n \
-                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}return false;}); \n \
+                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}$(\"#toggle_type\").html((chart.series[0].type=='line'?'Switch to Column Chart':'Switch to Line Chart'));return false;}); \n \
             }); \n \
         </script> \n";
 
 const char * TemporalChartGenerator::TEMPLATE_BODY = "\n \
-        <div id=\"container_line\" style=\"margin-top:20px;\"></div> \n \
-        <button id=\"toggle_type\" style=\"margin-top:20px;\">Switch Chart Type</button>  \n";
+        <div id=\"container\" style=\"margin-top:20px;\"></div> \n \
+        <div><button id=\"toggle_type\" style=\"margin-top:10px;\">Switch to Column Chart</button> \n \
+        <div style=\"font-style:italic;float:right;font-size:small;\">To zoom, select and drag section of chart.</div></div> \n";
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const CCluster & cluster) :_dataHub(dataHub), _cluster(cluster) {
@@ -139,6 +140,17 @@ void TemporalChartGenerator::generateChart() const {
             categories << (dateItr == startDates.begin() ? "'" : ",'") << JulianToString(buffer, *dateItr, precision) << "'";
         }
 
+        // set margin bottom according to time precision
+        int margin_bottom=130;
+        switch (_dataHub.GetParameters().GetPrecisionOfTimesType()) {
+        case YEAR : margin_bottom = 90; break;
+        case MONTH : margin_bottom = 110; break;
+        case DAY:
+        case GENERIC:
+        default: margin_bottom=130;
+        }
+        templateReplace(html, "--margin-bottom--", printString(buffer, "%d", margin_bottom));        
+
         // TODO: What about multiple data sets?
         const DataSetHandler& handler = _dataHub.GetDataSetHandler();
         count_t * pcases = handler.GetDataSet(0).getCaseData_PT();
@@ -193,7 +205,7 @@ const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
         <script type=\"text/javascript\"> \n \
             $(document).ready(function () { \n \
                 var chart = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container_line', type: 'line', zoomType:'xy', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 80, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
+                    chart: { renderTo: 'container', type: 'line', zoomType:'xy', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 80, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
                     title: { text: 'Gini coefficient at Spatial Window Stops', align: 'center' }, \n \
                     subtitle: { text: 'Coefficients based on clusters with p<--gini-pvalue--.' }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
@@ -209,7 +221,7 @@ const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
 
 const char * GiniChartGenerator::TEMPLATE_BODY = "\n \
         <a href=\"\" id=\"toggle_type\" style=\"margin-top:20px;\">Toggle Types</a> \n \
-        <div id=\"container_line\" style=\"margin-top:20px;\"></div> \n";
+        <div id=\"container\" style=\"margin-top:20px;\"></div> \n";
 
 /** Creates HighCharts graph for Gini coefficients. */
 void GiniChartGenerator::generateChart() const {
