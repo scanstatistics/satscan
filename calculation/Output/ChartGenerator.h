@@ -24,12 +24,23 @@ class CCluster;
 class TemporalChartGenerator : public AbstractChartGenerator {
     public:
         static const char * FILE_SUFFIX_EXT;
+        static const int    MAX_INTERVALS;
 
     protected:
         static const char * TEMPLATE_HEADER;
         static const char * TEMPLATE_BODY;
         const CSaTScanData & _dataHub;
         const CCluster & _cluster;
+
+        class intervalGroups {
+            public:
+                typedef std::vector<std::pair<int,int> > intervals_t;
+            private:
+                intervals_t _interval_grps;
+            public:
+                void addGroup(int start, int end) {_interval_grps.push_back(std::make_pair(start,end));}
+                const intervals_t& getGroups() const {return _interval_grps;}
+        };
 
     public:
         TemporalChartGenerator(const CSaTScanData& dataHub, const CCluster & cluster);

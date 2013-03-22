@@ -47,6 +47,7 @@ std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& t
 /** ------------------- TemporalChartGenerator --------------------------------*/
 
 const char * TemporalChartGenerator::FILE_SUFFIX_EXT = "_temporal";
+const int TemporalChartGenerator::MAX_INTERVALS = 4000;
 
 const char * TemporalChartGenerator::TEMPLATE_HEADER = "\n \
         <script type=\"text/javascript\"> \n \
@@ -133,12 +134,6 @@ void TemporalChartGenerator::generateChart() const {
         templateReplace(html, "--title--", "Cluster Graph");
         // replace specialized body
         templateReplace(html, "--body--", TEMPLATE_BODY);
-        // define categories and replace in template
-        const std::vector<Julian>& startDates = _dataHub.GetTimeIntervalStartTimes();
-        DatePrecisionType precision = _dataHub.GetParameters().GetPrecisionOfTimesType();
-        for(std::vector<Julian>::const_iterator dateItr=startDates.begin(); dateItr != startDates.end(); ++dateItr) {
-            categories << (dateItr == startDates.begin() ? "'" : ",'") << JulianToString(buffer, *dateItr, precision) << "'";
-        }
 
         // set margin bottom according to time precision
         int margin_bottom=130;
@@ -157,22 +152,64 @@ void TemporalChartGenerator::generateChart() const {
         measure_t * pmeasure = handler.GetDataSet(0).getMeasureData_PT();
         double adjustment = _dataHub.GetMeasureAdjustment(0);
         int intervals = _dataHub.GetNumTimeIntervals();
+
+        intervalGroups groups;
+        if (intervals <= MAX_INTERVALS) {
+            // number of groups equals the number of intervals
+            for (int i=0; i < intervals; ++i) {
+                groups.addGroup(i, i+1);
+            }
+        } else {
+            int cluster_length = _cluster.m_nLastInterval - _cluster.m_nFirstInterval;
+            if (cluster_length <= MAX_INTERVALS) {
+                int extra_intervals = ((MAX_INTERVALS - cluster_length)/2) + 5;
+                // we can show entire cluster intervals plus a few before and after
+                for (int i=std::max(0, _cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, _cluster.m_nLastInterval + extra_intervals); ++i) {
+                    groups.addGroup(i, i+1);
+                }
+            } else {
+                // we can show entire cluster intervals but compressed -- plus a few before and after
+                int compressed_interval_length = static_cast<int>(ceil(static_cast<double>(_cluster.m_nLastInterval - _cluster.m_nFirstInterval)/static_cast<double>(MAX_INTERVALS)));
+
+                // Note: This rough calculation of a compressed interval means that the clusters last interval might not fall cleanly onto a interval boundary.
+                int extra_intervals = compressed_interval_length * 5;
+                for (int i=std::max(0, _cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, _cluster.m_nLastInterval + extra_intervals); i=i+compressed_interval_length) {
+                    groups.addGroup(i, i + compressed_interval_length);
+                }
+            }
+        }
+
         // increase x-axis 'step' if there are many intervals, so that labels are not crowded
         //  -- empirically, 50 ticks seems like a good upper limit
-        templateReplace(html, "--step--", printString(buffer, "%d", static_cast<int>(std::ceil(static_cast<double>(intervals)/50.0))));
-        for (int i=0; i < intervals; ++i) {
-            expected_data << (i == 0 ? "" : ",") << (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
-            observed_data <<  (i == 0 ? "" : ",");
-            if (i <= _cluster.m_nFirstInterval || i >= _cluster.m_nLastInterval - 1) {
-                observed_data << (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
-            } else {
-                observed_data << "null";
+        templateReplace(html, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
+
+        // define categories and replace in template
+        const std::vector<Julian>& startDates = _dataHub.GetTimeIntervalStartTimes();
+        DatePrecisionType precision = _dataHub.GetParameters().GetPrecisionOfTimesType();
+        // iterate through groups, creating totals for each interval grouping
+        for (intervalGroups::intervals_t::const_iterator itrGrp=groups.getGroups().begin(); itrGrp != groups.getGroups().end(); ++itrGrp) {
+            // define date categories
+            categories << (itrGrp==groups.getGroups().begin() ? "'" : ",'") << JulianToString(buffer, startDates[itrGrp->first], precision).c_str() << "'";
+            // calcuate the expected and observed for this interval
+            measure_t expected=0;
+            count_t observed=0;
+            for (int i=itrGrp->first; i < itrGrp->second; ++i) {
+                expected += (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
+                observed += (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
             }
-            cluster_data <<  (i == 0 ? "" : ",");
-            if (i < _cluster.m_nFirstInterval || _cluster.m_nLastInterval < i+1) {
-                cluster_data << "null";
+            // put totals to data streams
+            expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << expected;
+            observed_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",");
+            if (_cluster.m_nFirstInterval < itrGrp->first && itrGrp->second < _cluster.m_nLastInterval) {
+                observed_data << "null";
             } else {
-                cluster_data << (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
+                observed_data << observed;
+            }
+            cluster_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",");
+            if (_cluster.m_nFirstInterval <= itrGrp->first && itrGrp->first < _cluster.m_nLastInterval) {
+                cluster_data << observed;
+            } else {
+                cluster_data << "null";
             }
         }
         templateReplace(html, "--categories--", categories.str());
