@@ -40,7 +40,7 @@ DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
 
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
-LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lm -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lz -lm -Wl,-Bdynamic -lrt -lpthread
 # static libgcc flags
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread
 
@@ -51,7 +51,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-dynamic -lxbase -lnewmat -lshape -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-dynamic -lxbase -lnewmat -lshape -lz -lstdc++ -lm
 M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(ANALYSIS)/Analysis.cpp \
@@ -266,13 +266,14 @@ $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
 $(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape -lm -lrt -lpthread
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape- lz -lm -lrt -lpthread
 
 $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape -lm -lrt -lpthread
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape -lz -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbase -lnewmat -lshape -lstdc++ -lm -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbase -lnewmat -lshape -lz -lstdc++ -lm -o $@
+
 %.o : %.cpp
 	$(CC) $(CFLAGS) $< -o $@
 

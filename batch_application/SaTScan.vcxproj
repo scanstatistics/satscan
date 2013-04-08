@@ -82,7 +82,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -94,7 +94,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Debug\xbase32.lib;$(SolutionDir)newmat\Win32\Debug\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Debug\shapelib32.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Debug\xbase32.lib;$(SolutionDir)newmat\Win32\Debug\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Debug\shapelib32.lib;$(SolutionDir)zlib\zlib-1.2.7\Win32\Debug\zlib32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -103,6 +103,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/VERBOSE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,7 +112,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -123,7 +124,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Debug\zlib64.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -140,7 +141,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -151,7 +152,7 @@
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.2.7\win32\Debug\zlib32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -172,7 +173,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_52_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -183,7 +184,7 @@
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Release\zlib64.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -230,6 +231,7 @@
     <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp" />
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
@@ -546,6 +548,7 @@
     <ClInclude Include="..\calculation\utility\stsMonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+    <ClInclude Include="..\calculation\utility\ZipUtils.h" />
     <ClInclude Include="ParameterProgramOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

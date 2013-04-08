@@ -30,6 +30,13 @@ make libshape.dylib CXX="$6 -dynamiclib" CXXFLAGS="-O2 -Wall $4" $7
 echo shapelib done
 echo
 
+echo building zlib library ...
+cd $2/zlib/zlib-1.2.7
+make clean
+make libz.dylib CC="$6 -dynamiclib" CFLAGS="-O3 -Wall $4 -DHAVE_HIDDEN" $7
+echo zlib done
+echo
+
 echo building SaTScan binary ...
 cd $2
 make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 CC="$6"

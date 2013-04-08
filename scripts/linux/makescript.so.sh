@@ -30,6 +30,13 @@ nice -n 19 make libshape.a CXX=$7 CXXFLAGS="-O2 -Wall $5 -fPIC" $8
 echo shapelib done
 echo
 
+echo building zlib library ...
+cd $3/zlib/zlib-1.2.7
+make clean
+nice -n 19 make libz.a CC=$7 CFLAGS="-O3 -Wall $5 -fPIC -DHAVE_HIDDEN" $8
+echo zlib done
+echo
+
 echo building SaTScan binary ...
 cd $3
 make clean SATSCAN=$3 BOOSTDIR=$4 COMPILATION=$5 OPTIMIZATION=$6 CC=$7 M_CFLAGS=-fPIC

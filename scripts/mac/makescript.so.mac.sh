@@ -30,6 +30,13 @@ make libshape.dylib CXX="$6 -dynamiclib" CXXFLAGS="-O2 -Wall $4 -fPIC" $7
 echo shapelib done
 echo
 
+echo building zlib library ...
+cd $2/zlib/zlib-1.2.7
+make clean
+make libz.dylib CC="$6 -dynamiclib" CFLAGS="-O3 -Wall $4 -fPIC -DHAVE_HIDDEN" AR="/usr/bin/libtool" ARFLAGS="-o" $7
+echo zlib done
+echo
+
 jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
 
 #jni="/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Headers"
