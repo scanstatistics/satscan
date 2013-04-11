@@ -198,6 +198,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(UTILITY)/TimeStamp.cpp \
                $(UTILITY)/FieldDef.cpp \
                $(UTILITY)/ShapeFile.cpp \
+               $(UTILITY)/ZipUtils.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParametersValidate.cpp \
