@@ -40,8 +40,6 @@
 #define FSEEKO_FUNC(stream, offset, origin) fseeko64(stream, offset, origin)
 #endif
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,16 +65,13 @@
 #endif
 
 #include <string>
+#include "SSException.h"
 
 #define WRITEBUFFERSIZE (16384)
 #define MAXFILENAME (256)
 
 #ifdef _WIN32
-uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
-//    char *f;                /* name of file to get info on */
-//    tm_zip *tmzip;             /* return value: access, modific. and creation times */
-//    uLong *dt;             /* dostime */
-{
+uLong filetime(const char *f, tm_zip *tmzip, uLong *dt) {
   int ret = 0;
   {
       FILETIME ftLocal;
@@ -97,9 +92,6 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 #else
 #ifdef unix || __APPLE__
 uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
-//    char *f;               /* name of file to get info on */
-//    tm_zip *tmzip;         /* return value: access, modific. and creation times */
-//    uLong *dt;             /* dostime */
 {
   int ret=0;
   struct stat s;        /* results of stat() */
@@ -139,9 +131,6 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 }
 #else
 uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
-//    char *f;                /* name of file to get info on */
-//    tm_zip *tmzip;             /* return value: access, modific. and creation times */
-//    uLong *dt;             /* dostime */
 {
     return 0;
 }
@@ -151,8 +140,7 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 
 
 
-int check_exist_file(const char* filename)
-{
+int check_exist_file(const char* filename) {
     FILE* ftestexist;
     int ret = 1;
     ftestexist = FOPEN_FUNC(filename,"rb");
@@ -163,27 +151,9 @@ int check_exist_file(const char* filename)
     return ret;
 }
 
-void do_banner()
-{
-    printf("MiniZip 1.1, demo of zLib + MiniZip64 package, written by Gilles Vollant\n");
-    printf("more info on MiniZip at http://www.winimage.com/zLibDll/minizip.html\n\n");
-}
-
-void do_help()
-{
-    printf("Usage : minizip [-o] [-a] [-0 to -9] [-p password] [-j] file.zip [files_to_add]\n\n" \
-           "  -o  Overwrite existing file.zip\n" \
-           "  -a  Append to existing file.zip\n" \
-           "  -0  Store only\n" \
-           "  -1  Compress faster\n" \
-           "  -9  Compress better\n\n" \
-           "  -j  exclude path. store only the file name.\n\n");
-}
-
 /* calculate the CRC32 of a file,
    because to encrypt a file, we need known the CRC32 of the file before */
-int getFileCrc(const char* filenameinzip, void*buf, unsigned long size_buf, unsigned long* result_crc)
-{
+int getFileCrc(const char* filenameinzip, void*buf, unsigned long size_buf, unsigned long* result_crc) {
    unsigned long calculate_crc=0;
    int err=ZIP_OK;
    FILE * fin = FOPEN_FUNC(filenameinzip,"rb");
@@ -221,33 +191,24 @@ int getFileCrc(const char* filenameinzip, void*buf, unsigned long size_buf, unsi
     return err;
 }
 
-int isLargeFile(const char* filename)
-{
-  int largeFile = 0;
-  ZPOS64_T pos = 0;
-  FILE* pFile = FOPEN_FUNC(filename, "rb");
+int isLargeFile(const char* filename) {
+    int largeFile = 0;
+    ZPOS64_T pos = 0;
+    FILE* pFile = FOPEN_FUNC(filename, "rb");
 
-  if(pFile != NULL)
-  {
-    int n = FSEEKO_FUNC(pFile, 0, SEEK_END);
-    pos = FTELLO_FUNC(pFile);
-
-                printf("File : %s is %lld bytes\n", filename, pos);
-
-    if(pos >= 0xffffffff)
-     largeFile = 1;
-
-                fclose(pFile);
-  }
-
- return largeFile;
+    if(pFile != NULL) {
+        int n = FSEEKO_FUNC(pFile, 0, SEEK_END);
+        pos = FTELLO_FUNC(pFile);
+        //printf("File : %s is %lld bytes\n", filename, pos);
+        if(pos >= 0xffffffff)
+            largeFile = 1;
+        fclose(pFile);
+    }
+    return largeFile;
 }
 
 
-int zip_main(std::string& filename_try, const std::string& add_filename, bool append)
-//    int argc;
-//    char *argv[];
-{
+int addZip(std::string& filename_try, const std::string& add_filename, bool append) {
     int i, len;
     int opt_overwrite=0;
     int opt_compress_level=Z_DEFAULT_COMPRESSION;
@@ -258,11 +219,14 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
     void* buf=NULL;
     const char* password=NULL;
 
+
+    //throw prg_error("Conversion to latitude/longitude requires a vector of 3 elements.\n"
+    //                "Passed vector contains %u elements.","ConvertToLatLong()", vCoordinates.size());
+
     size_buf = WRITEBUFFERSIZE;
     buf = (void*)malloc(size_buf);
-    if (buf==NULL)
-    {
-        printf("Error allocating memory\n");
+    if (buf==NULL) {
+        throw memory_exception("Failed to allocate buffer for zip file buffer.");
         return ZIP_INTERNALERROR;
     }
 
@@ -296,13 +260,10 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
         zf = zipOpen64(filename_try,(opt_overwrite==2) ? 2 : 0);
 #        endif
 
-        if (zf == NULL)
-        {
-            printf("error opening %s\n",filename_try.c_str());
-            err= ZIP_ERRNO;
-        }
-        else
-            printf("creating %s\n",filename_try.c_str());
+        if (zf == NULL) {
+            throw prg_error("Failed to open to file '%s'.", "add_zip()", filename_try.c_str());
+            //err= ZIP_ERRNO;
+        } //else printf("creating %s\n",filename_try.c_str());
 
         FILE * fin;
         int size_read;
@@ -319,12 +280,12 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
         zi.external_fa = 0;
         filetime(filenameinzip,&zi.tmz_date,&zi.dosDate);
 
-/*
+        /*
                 err = zipOpenNewFileInZip(zf,filenameinzip,&zi,
                                  NULL,0,NULL,0,NULL / * comment * /,
                                  (opt_compress_level != 0) ? Z_DEFLATED : 0,
                                  opt_compress_level);
-*/
+        */
         if ((password != NULL) && (err==ZIP_OK))
             err = getFileCrc(filenameinzip,buf,size_buf,&crcFile);
 
@@ -369,12 +330,12 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
                                       zip64);
 
         if (err != ZIP_OK)
-            printf("error in opening %s in zipfile\n",filenameinzip);
+            throw prg_error("Error in opening %s in zipfile.", "add_zip()", filenameinzip); //printf("error in opening %s in zipfile\n",filenameinzip);
         else {
             fin = FOPEN_FUNC(filenameinzip,"rb");
             if (fin==NULL) {
                 err=ZIP_ERRNO;
-                printf("error in opening %s for reading\n",filenameinzip);
+                throw prg_error("Error in opening %s for reading.", "add_zip()", filenameinzip); //printf("error in opening %s for reading\n",filenameinzip);
             }
         }
 
@@ -384,14 +345,14 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
                 size_read = (int)fread(buf,1,size_buf,fin);
                 if (size_read < size_buf)
                     if (feof(fin)==0) {
-                        printf("error in reading %s\n",filenameinzip);
+                        throw prg_error("Error in reading %s.", "add_zip()", filenameinzip); //printf("error in reading %s\n",filenameinzip);
                         err = ZIP_ERRNO;
                     }
 
                  if (size_read>0) {
                     err = zipWriteInFileInZip (zf,buf,size_read);
                     if (err<0) {
-                        printf("error in writing %s in the zipfile\n", filenameinzip);
+                        throw prg_error("Error in writing %s in the zipfile.", "add_zip()", filenameinzip); //printf("error in writing %s in the zipfile\n", filenameinzip);
                     }
                  }
             } while ((err == ZIP_OK) && (size_read>0));
@@ -404,12 +365,12 @@ int zip_main(std::string& filename_try, const std::string& add_filename, bool ap
             else {
                 err = zipCloseFileInZip(zf);
                 if (err!=ZIP_OK)
-                    printf("error in closing %s in the zipfile\n", filenameinzip);
+                    throw prg_error("Error in closing %s in the zipfile.", "add_zip()", filenameinzip); //printf("error in closing %s in the zipfile\n", filenameinzip);
             }
 
             errclose = zipClose(zf,NULL);
             if (errclose != ZIP_OK)
-                printf("error in closing %s\n",filename_try.c_str());
+                throw prg_error("Error in closing %s.", "add_zip()", filename_try.c_str()); //printf("error in closing %s\n",filename_try.c_str());
     }
 
     free(buf);

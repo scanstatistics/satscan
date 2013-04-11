@@ -3,7 +3,7 @@
 #define __ZIP_UTILS_H
 //******************************************************************************
 
-int zip_main(std::string& filename_try, const std::string& add_filename, bool append);
+int addZip(std::string& filename_try, const std::string& add_filename, bool append);
 
 //******************************************************************************
 #endif

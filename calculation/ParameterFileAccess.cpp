@@ -150,7 +150,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case USE_MAXGEODISTANCE           : return "restrict maximum spatial size - distance? (y/n)";
       case MAXGEOPOPATRISK_REPORTED     : return "maximum reported spatial size in population at risk (<=50%)";
       case MAXGEOPOPFILE_REPORTED       : return "maximum reported spatial size in max circle population file (<=50%)";
-      case MAXGEODISTANCE_REPORTED      : return "maximum reported spatial size in distance from center {positive integer)";
+      case MAXGEODISTANCE_REPORTED      : return "maximum reported spatial size in distance from center (positive integer)";
       case USE_MAXGEOPOPFILE_REPORTED   : return "restrict maximum reported spatial size - max circle file? (y/n)";
       case USE_MAXGEODISTANCE_REPORTED  : return "restrict maximum reported spatial size - distance? (y/n)";
       case LOCATION_NEIGHBORS_FILE      : return "neighbors file";
@@ -186,6 +186,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_KML                   : return "output Google Earth KML file (y/n)";
       case OUTPUT_TEMPORAL_GRAPH        : return "output temporal graph HTML file (y/n)";
       case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
+      case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
+      case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
+      case COMPRESS_KML_OUTPUT          : return "compress the kml output into a kmz file (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -337,6 +340,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case OUTPUT_KML                   : return AsString(s, gParameters.getOutputKMLFile());
       case OUTPUT_TEMPORAL_GRAPH        : return AsString(s, gParameters.getOutputTemporalGraphFile());
       case OUTPUT_SHAPEFILES            : return AsString(s, gParameters.getOutputShapeFiles());
+      case INCLUDE_LOCATIONS_KML        : return AsString(s, gParameters.getIncludeLocationsKML());
+      case LOCATIONS_THRESHOLD_KML      : return AsString(s, gParameters.getLocationsThresholdKML());
+      case COMPRESS_KML_OUTPUT          : return AsString(s, gParameters.getCompressClusterKML());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -720,6 +726,9 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_KML                   : gParameters.setOutputKMLFile(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_TEMPORAL_GRAPH        : gParameters.setOutputTemporalGraphFile(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_SHAPEFILES            : gParameters.setOutputShapeFiles(ReadBoolean(sParameter, eParameterType)); break;
+      case INCLUDE_LOCATIONS_KML        : gParameters.setIncludeLocationsKML(ReadBoolean(sParameter, eParameterType)); break;
+      case LOCATIONS_THRESHOLD_KML      : gParameters.setLocationsThresholdKML(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case COMPRESS_KML_OUTPUT          : gParameters.setCompressClusterKML(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 122;
+const int CParameters::giNumParameters                = 125;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -151,6 +151,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_output_kml != rhs._output_kml) return false;
   if (_output_temporal_graph != rhs._output_temporal_graph) return false;
   if (_output_shapefiles != rhs._output_shapefiles) return false;
+  if (_include_locations_kml != rhs._include_locations_kml) return false;
+  if (_locations_threshold_kml != rhs._locations_threshold_kml) return false;
+  if (_compress_kml_output != rhs._compress_kml_output) return false;
 
   return true;
 }
@@ -353,6 +356,9 @@ void CParameters::Copy(const CParameters &rhs) {
   _output_kml = rhs._output_kml;
   _output_temporal_graph = rhs._output_temporal_graph;
   _output_shapefiles = rhs._output_shapefiles;
+  _include_locations_kml = rhs._include_locations_kml;
+  _compress_kml_output = rhs._compress_kml_output;
+  _locations_threshold_kml = rhs._locations_threshold_kml;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -837,6 +843,9 @@ void CParameters::SetAsDefaulted() {
   _output_kml = false;
   _output_temporal_graph = false;
   _output_shapefiles = false;
+  _include_locations_kml = false;
+  _compress_kml_output = false;
+  _locations_threshold_kml = 1000;
 }
 
 /** Sets start range start date. Throws exception. */

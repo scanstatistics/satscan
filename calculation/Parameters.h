@@ -77,13 +77,17 @@ class CParameters {
                                         gbOutputClusterCaseDBase;               /** indicates whether to output most likely cluster cases for each centroid in dBase format */
     bool                                gbOutputAreaSpecificAscii,              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
-    bool                                _output_kml;                            /* generate KML output file */
-    bool                                _output_temporal_graph;                 /* generate temporal graph output file */
-    bool                                _output_shapefiles;                     /* generate shapefile output */
+    bool                                _output_kml;                            /** generate KML output file */
+    bool                                _include_locations_kml;                 /** include cluster locations in kml output */
+    unsigned int                        _locations_threshold_kml;               /** threshold before cluster locations are put into separate kml files */
+    bool                                _compress_kml_output;                   /** compress kml output into kmz format */
+
+    bool                                _output_temporal_graph;                 /** generate temporal graph output file */
+    bool                                _output_shapefiles;                     /** generate shapefile output */
         /* Iterative scans variables */
-    bool                                gbIterativeRuns;                        /* iterative analysis? */
-    unsigned int                        giNumIterativeRuns;                     /* number of iterative scans to attempt */
-    double                              gbIterativeCutOffPValue;                /* P-Value used to exit iterative analysis */
+    bool                                gbIterativeRuns;                        /** iterative analysis? */
+    unsigned int                        giNumIterativeRuns;                     /** number of iterative scans to attempt */
+    double                              gbIterativeCutOffPValue;                /** P-Value used to exit iterative analysis */
         /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
@@ -199,6 +203,9 @@ class CParameters {
     unsigned int                        GetEarlyTermThreshold() const {return giEarlyTermThreshold;}
     ExecutionType                       GetExecutionType() const {return geExecutionType;}
     double                              getGiniIndexPValueCutoff() const {return _giniIndexPValueCutoff;}
+    bool                                getIncludeLocationsKML() const {return _include_locations_kml;}
+    bool                                getCompressClusterKML() const {return _compress_kml_output;}
+    unsigned int                        getLocationsThresholdKML() const {return _locations_threshold_kml;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
@@ -333,6 +340,9 @@ class CParameters {
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
     void                                setGiniIndexPValueCutoff(double dPValue) {_giniIndexPValueCutoff = dPValue;}
     void                                setGiniIndexReportType(GiniIndexReportType e);
+    void                                setIncludeLocationsKML(bool b) {_include_locations_kml = b;}
+    void                                setCompressClusterKML(bool b) {_compress_kml_output = b;}
+    void                                setLocationsThresholdKML(unsigned int i) {_locations_threshold_kml = i;}
     void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}

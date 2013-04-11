@@ -68,7 +68,10 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(OUTPUT_SIM_LLR_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_ASCII))
         (getOption(OUTPUT_SIM_LLR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_DBASE))
         (getOption(OUTPUT_TEMPORAL_GRAPH, true), po::value<std::string>(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH))
-        (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML));
+        (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML))
+        (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
+        (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML))
+        (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT));
 
     /* Polygons tab options */
     printString(buffer2, "%s\n  %d polygon regions specified via --Polygon1, --Polygon2, --Polygon3, etc.", GetParameterComment(OBSERVABLE_REGIONS), POLYGON_REGIONS);

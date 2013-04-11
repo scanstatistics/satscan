@@ -63,6 +63,10 @@
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
 #define PI 3.1415926535897932384626433832795028841972
+/* convert decimal number of degrees to radians */
+#define degrees2radians(dnd) (dnd * PI / 180.0)
+/* convert decimal number of degrees to radians */
+#define radians2degrees(radian) (radian * 180.0 / PI)
 /*radius of earth in km*/
 #define EARTH_RADIUS_km 6367
 /* Euler constant */

@@ -152,7 +152,7 @@
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.2.7\win32\Debug\zlib32.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.2.7\win32\Release\zlib32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>

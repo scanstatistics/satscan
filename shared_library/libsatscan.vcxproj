@@ -100,7 +100,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/verbose:lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)lib\zlib-1.2.7\x64\Release\zlib64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Release\zlib64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)satscan64.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -290,6 +290,7 @@
     <ClCompile Include="..\calculation\Output\stsASCIIFileWriter.cpp" />
     <ClCompile Include="..\calculation\Output\stsDBaseFileWriter.cpp" />
     <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp" />
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="JNIException.cpp" />
     <ClCompile Include="SharedLibrary.cpp" />
     <ClCompile Include="stsJNIPrintWindow.cpp" />
@@ -455,6 +456,7 @@
     <ClInclude Include="..\calculation\utility\stsMonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+    <ClInclude Include="..\calculation\utility\ZipUtils.h" />
     <ClInclude Include="JNIException.h" />
     <ClInclude Include="org_satscan_app_AppConstants.h" />
     <ClInclude Include="org_satscan_app_CalculationThread.h" />

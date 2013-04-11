@@ -1449,7 +1449,7 @@ void AnalysisRunner::reportClusters() {
                 !gParameters.GetIsPurelyTemporalAnalysis() &&
                 !gParameters.UseLocationNeighborsFile()) {
                 ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
-                kmlOut.renderKML();
+                kmlOut.generateKML();
             }
             // create temporal graph
             if (gParameters.GetIsPurelyTemporalAnalysis() && gParameters.getOutputTemporalGraphFile() && _reportClusters.GetNumClustersRetained()) {

@@ -142,6 +142,9 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case OUTPUT_KML                         : return "output Google Earth KML file (line 120)";
     case OUTPUT_TEMPORAL_GRAPH              : return "output temporal graph HTML file (line 121)";
     case OUTPUT_SHAPEFILES                  : return "output shapefiles (line 122)";
+    case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 123)";
+    case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 124)";
+    case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 125)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

@@ -418,7 +418,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
        bValid &= checkFileExists(gParameters.getMetaLocationsFilename(), "meta locations", PrintDirection);
     }
     //validate output file
-    bValid &= checkFileExists(gParameters.GetOutputFileName(), "results", PrintDirection);
+    bValid &= checkFileExists(gParameters.GetOutputFileName(), "results", PrintDirection, true);
   } catch (prg_exception& x) {
     x.addTrace("ValidateFileParameters()","ParametersValidate");
     throw;
