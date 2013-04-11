@@ -770,8 +770,8 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
     }
     if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
-      AdditionalOutputFile.setExtension(".kml");
-      settings.push_back(std::make_pair("Google Earth KML File",AdditionalOutputFile.getFullPath(buffer)));
+      AdditionalOutputFile.setExtension(gParameters.getCompressClusterKML() ? ".kmz" : ".kml");
+      settings.push_back(std::make_pair("Google Earth File",AdditionalOutputFile.getFullPath(buffer)));
     }
     if (gParameters.getOutputShapeFiles() && gParameters.GetCoordinatesType() == LATLON) {
       AdditionalOutputFile.setExtension(".shp");
