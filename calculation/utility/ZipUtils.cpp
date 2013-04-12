@@ -89,8 +89,7 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt) {
   }
   return ret;
 }
-#else
-#ifdef unix || __APPLE__
+#elif (defined __GNUC__ || defined __APPLE__)
 uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 {
   int ret=0;
@@ -134,7 +133,6 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 {
     return 0;
 }
-#endif
 #endif
 
 
@@ -257,7 +255,7 @@ int addZip(std::string& filename_try, const std::string& add_filename, bool appe
         fill_win32_filefunc64A(&ffunc);
         zf = zipOpen2_64(filename_try.c_str(),(opt_overwrite==2) ? 2 : 0,NULL,&ffunc);
 #        else
-        zf = zipOpen64(filename_try,(opt_overwrite==2) ? 2 : 0);
+        zf = zipOpen64(filename_try.c_str() ,(opt_overwrite==2) ? 2 : 0);
 #        endif
 
         if (zf == NULL) {

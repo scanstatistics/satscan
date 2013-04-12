@@ -110,10 +110,10 @@
         <pack name="Windows Specific Files" required="yes" os="windows">
             <description>Windows Specific Files</description>
             <file src="/prj/satscan/build.area/satscan/java_application/jni_application/dist/SaTScan.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/satscan/build.area/satscan/batch_application/Release/SaTScanBatch.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/satscan/build.area/satscan/java_application/shared_library/Release/satscan32.dll" targetdir="$INSTALL_PATH" />
+            <file src="/prj/satscan/build.area/satscan/batch_application/Win32/Release/SaTScanBatch.exe" targetdir="$INSTALL_PATH" /> />
+            <file src="/prj/satscan/build.area/satscan/shared_library/Release/satscan32.dll" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/satscan/batch_application/x64/Release/SaTScanBatch64.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/satscan/build.area/satscan/java_application/shared_library/x64/Release/satscan64.dll" targetdir="$INSTALL_PATH" />
+            <file src="/prj/satscan/build.area/satscan/shared_library/x64/Release/satscan64.dll" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/satscan/installers/resources/SaTScan.ico" targetdir="$INSTALL_PATH" />
         </pack>
 

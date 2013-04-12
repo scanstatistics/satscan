@@ -28,7 +28,7 @@ rm $installer_version/install-9_2_windows.jar
 
 # Build Windows command-line only archive
 rm -f $installer_version/satscan.9.2_windows.zip
-zip $installer_version/satscan.9.2_windows.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
+zip $installer_version/satscan.9.2_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
 zip $installer_version/satscan.9.2_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 cd $build/satscan/installers
 zip $installer_version/satscan.9.2_windows.zip -j documents/*
@@ -88,10 +88,10 @@ bzip2 -f $installer_version/satscan.9.2_mac.tar
 #     so only add Windows and Linux relevant files.
 rm -f $installer_version/update_data_combined.zip
 
-zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
-zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/shared_library/Release/satscan32.dll
+zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
+zip $installer_version/update_data_combined.zip -j $build/satscan/shared_library/Release/satscan32.dll
 zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
-zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/shared_library/x64/Release/satscan64.dll
+zip $installer_version/update_data_combined.zip -j $build/satscan/shared_library/x64/Release/satscan64.dll
 zip $installer_version/update_data_combined.zip -j $build/binaries/linux/*
 zip $installer_version/update_data_combined.zip -j $build/satscan/installers/documents/*
 zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
@@ -104,10 +104,10 @@ zip $installer_version/update_data_combined.zip -r sample_data
 # Windows update archive
 rm -f $installer_version/update_data_windows.zip
 
-zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
-zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/shared_library/Release/satscan32.dll
+zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
+zip $installer_version/update_data_windows.zip -j $build/satscan/shared_library/Release/satscan32.dll
 zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
-zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/shared_library/x64/Release/satscan64.dll
+zip $installer_version/update_data_windows.zip -j $build/satscan/shared_library/x64/Release/satscan64.dll
 zip $installer_version/update_data_windows.zip -j $build/satscan/installers/documents/*
 zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
 zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.exe
