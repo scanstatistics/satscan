@@ -32,14 +32,13 @@ class CParameters {
     SpatialAdjustmentType               geSpatialAdjustmentType;                /** type of spatial adjustment*/
     StudyPeriodDataCheckingType         geStudyPeriodDataCheckingType;          /** study period data checking type */
     CoordinatesDataCheckingType         geCoordinatesDataCheckingType;          /** geographical coordinates data checking type */
-        /* Power Calcution variables */
-       /* Maximum spatial cluster variables */
+    /* Maximum spatial cluster variables */
     double                              gdMaxSpatialSizeInPopulationAtRisk;
     bool                                gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
     double                              gdMaxSpatialSizeInMaxCirclePopulationFile;
     bool                                gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
     double                              gdMaxSpatialSizeInMaxDistanceFromCenter;
-       /* Reported Maximum spatial cluster variables */
+    /* Reported Maximum spatial cluster variables */
     bool                                gbRestrictReportedClusters;             /** indicates whether reported clusters are limited to specified maximum size */
     double                              gdMaxSpatialSizeInPopulationAtRisk_Reported;
     bool                                gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported;
@@ -49,24 +48,25 @@ class CParameters {
     /* Maximum temporal cluster variables */
     double                              gdMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
-        /* Time interval variables */
+    /* Time interval variables */
     long                                glTimeAggregationLength;                /** length of time aggregation */
     DatePrecisionType                   geTimeAggregationUnitsType;             /** time aggregation units type */
-        /* Temporal trend adjusment variables */
+    /* Temporal trend adjusment variables */
     double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
-        /* Input precision variables */
+    bool                                _adjustWeeklyTrends;                    /** Adjust for weekly trends. */
+    /* Input precision variables */
     DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none = no, years=months=days = yes */
     CoordinatesType                     geCoordinatesType;                      /** coordinates type for coordinates/special grid */
-        /* Ellipse variables */
+    /* Ellipse variables */
     long                                glTotalNumEllipses;                     /** total number of ellipses (ellipses by number rotations) */
     std::vector<double>                 gvEllipseShapes;                        /** shape of each ellipsoid */
     std::vector<int>                    gvEllipseRotations;                     /** number of rotations for each ellipsoid */
     NonCompactnessPenaltyType           geNonCompactnessPenaltyType;            /** indicates penalty for narrower ellipses */
-        /* Pure Clusters variables */
+    /* Pure Clusters variables */
     bool                                gbIncludePurelySpatialClusters,         /** indicates whether to include purely spatial clusters */
                                         gbIncludePurelyTemporalClusters;        /** indicates whether to include purely temporal clusters */
-        /* Additional output variables */
+    /* Additional output variables */
     bool                                gbOutputSimLogLikeliRatiosAscii,        /** indicates whether to output simulated loglikelihood ratios in acsii format */
                                         gbOutputSimLogLikeliRatiosDBase;        /** indicates whether to output simulated loglikelihood ratios in dBase format */
     bool                                gbOutputRelativeRisksAscii,             /** indicates whether to output relative risks for each tract/location in ascii format */
@@ -84,11 +84,11 @@ class CParameters {
 
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
     bool                                _output_shapefiles;                     /** generate shapefile output */
-        /* Iterative scans variables */
+    /* Iterative scans variables */
     bool                                gbIterativeRuns;                        /** iterative analysis? */
     unsigned int                        giNumIterativeRuns;                     /** number of iterative scans to attempt */
     double                              gbIterativeCutOffPValue;                /** P-Value used to exit iterative analysis */
-        /* Input/Output filenames */
+    /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
@@ -110,7 +110,7 @@ class CParameters {
     bool                                gbUseLocationNeighborsFile;             /** use sorted array neighbor file? */
     std::string                         gsMetaLocationsFilename;                /** meta locations file -- neighbors file */
     bool                                gbUseMetaLocationsFile;                 /** use meta locations file? */
-        /* Analysis dates */
+    /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodEndDate;                   /** study period end date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -179,6 +179,7 @@ class CParameters {
     void                                AddObservableRegion(const char * sRegions, size_t iIndex, bool bEmptyFirst);
     void                                AddSpatialWindowStop(double windowStop, bool bEmptyFirst);
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
+    bool                                getAdjustForWeeklyTrends() const {return _adjustWeeklyTrends;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
@@ -321,6 +322,7 @@ class CParameters {
     bool                                getIsReportingStandardPValue() const;
     void                                requestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
+    void                                setAdjustForWeeklyTrends(bool b) {_adjustWeeklyTrends = b;}
     void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);

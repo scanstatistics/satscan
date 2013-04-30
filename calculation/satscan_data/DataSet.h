@@ -118,7 +118,8 @@ class RealDataSet : public DataSet {
     RealDataSet(const RealDataSet& thisSet);
 
   protected:
-    PopulationData              gPopulation;                            /** population data */
+    boost::shared_ptr<PopulationData> _population;
+    //PopulationData              gPopulation;                            /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data set */
     measure_t                   gtTotalMeasureAux;                       /** number of auxillary entries in data set */
     count_t                     gtTotalCases;                           /** number of cases in data set */
@@ -146,8 +147,8 @@ class RealDataSet : public DataSet {
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex, bool bCreateable=false);
     TwoDimCountArray_t        & getCaseData_Censored() const;
     TwoDimCountArray_t        & getControlData() const;
-    PopulationData            & getPopulationData() {return gPopulation;}
-    const PopulationData      & getPopulationData() const {return gPopulation;}
+    PopulationData            & getPopulationData() {return *_population;}
+    const PopulationData      & getPopulationData() const {return *_population;}
     count_t                     getTotalCases() const {return gtTotalCases;}
     count_t                     getTotalCasesAtStart() const {return gtTotalCasesAtStart;}
     count_t                     getTotalControls() const {return gtTotalControls;}
@@ -156,7 +157,8 @@ class RealDataSet : public DataSet {
     measure_t                   getTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      getTotalPopulation() const {return gdTotalPop;}
     virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
-    void                        setAggregateCovariateCategories(bool b) {gPopulation.SetAggregateCovariateCategories(b);}
+    void                        resetPopulationData();
+    void                        setAggregateCovariateCategories(bool b) {_population->SetAggregateCovariateCategories(b);}
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setControlData_MetaLocations(const MetaManagerProxy& MetaProxy);

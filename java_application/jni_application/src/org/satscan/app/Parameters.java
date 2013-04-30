@@ -116,6 +116,7 @@ public class Parameters implements Cloneable {
     /* Maximum temporal cluster variables */
     private double                          gdMaxTemporalClusterSize=50.0; /** maximum value for temporal cluster */
     private TemporalSizeType                geMaxTemporalClusterSizeType=TemporalSizeType.PERCENTAGETYPE; /** maximum temporal cluster value type */
+    private boolean                         _adjustWeeklyTrends=false;
         /* Time interval variables */
     private int                             glTimeAggregationLength=0; /** length of time aggregation */
     private DatePrecisionType               geTimeAggregationUnitsType=DatePrecisionType.NONE; /** time aggregation units type */
@@ -400,9 +401,12 @@ public class Parameters implements Cloneable {
         if (_power_replica != rhs._power_replica) return false;
         if (_output_kml != rhs._output_kml) return false;
         if (_output_temporal_graph != rhs._output_temporal_graph) return false;
+        if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
             
         return true;
     }
+    public boolean getAdjustForWeeklyTrends() {return _adjustWeeklyTrends;}
+    public void setAdjustForWeeklyTrends(boolean b) {_adjustWeeklyTrends = b;}
     public boolean getPerformPowerEvaluation() {return _performPowerEvaluation;}
     public void setPerformPowerEvaluation(boolean b) {_performPowerEvaluation = b;}
     public CriticalValuesType getPowerEvaluationCriticalValueType() {return _critical_value_type;}

@@ -1365,6 +1365,24 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     //validate time aggregation units
     if (!ValidateTimeAggregationUnits(PrintDirection))
       bValid = false;
+    //validate the adjustment for weekly trends
+    if (gParameters.getAdjustForWeeklyTrends()) {
+        if (!(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON)) {
+          bValid = false;
+          PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
+                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+        }
+        if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
+          bValid = false;
+          PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
+                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+        }
+        if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
+          bValid = false;
+          PrintDirection.Printf("%s:\nThe adjustment for weekly trends can only be performed with a time aggregation length of 1 day.\n",
+                                BasePrint::P_PARAMERROR);
+        }
+    }
     //validate time trend adjustment
     switch (gParameters.GetProbabilityModelType()) {
       case BERNOULLI            :

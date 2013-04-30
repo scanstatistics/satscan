@@ -91,5 +91,20 @@ class dBaseFileDataSource : public DataSource {
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
+
+class OneCovariateDataSource : public DataSource {
+    protected:
+        unsigned short _covariateIndex;
+        unsigned long _covariate;
+        std::string _buffer;
+
+    public:
+        OneCovariateDataSource(unsigned short covariateIndex, unsigned long covariate): _covariateIndex(covariateIndex), _covariate(covariate) {}
+        virtual long                    GetCurrentRecordIndex() const {return 1;}
+        virtual long                    GetNumValues() {return 1;}
+        virtual const char            * GetValueAt(long iFieldIndex) {return iFieldIndex == _covariateIndex ? printString(_buffer, "%u", _covariate).c_str() : (const char*)0;}
+        virtual void                    GotoFirstRecord() {}
+        virtual bool                    ReadRecord() {return true;}
+};
 //******************************************************************************
 #endif

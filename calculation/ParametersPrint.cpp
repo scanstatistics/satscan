@@ -1010,6 +1010,11 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
   std::string        buffer, worker;
 
   try {
+    if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == ::SPACETIMEPERMUTATION) {
+      settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric",(gParameters.getAdjustForWeeklyTrends() ? "Yes" : "No")));
+    }
+
+    // The remaining options are only relevent for the Poisson model.
     if (gParameters.GetProbabilityModelType() != POISSON) return;
 
     if (bPrintingTemporalAdjustment) {

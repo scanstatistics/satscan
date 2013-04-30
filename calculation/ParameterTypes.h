@@ -130,7 +130,8 @@ enum ParameterType
     OUTPUT_SHAPEFILES               /* generate shape files */,
     INCLUDE_LOCATIONS_KML,          /* whether to include cluster locations kml output */
     LOCATIONS_THRESHOLD_KML,        /* threshold for generating separate kml files for cluster locations */
-    COMPRESS_KML_OUTPUT             /* compress the kml output into a kmz file */
+    COMPRESS_KML_OUTPUT,            /* compress the kml output into a kmz file */
+    ADJUST_WEEKLY_TRENDS            /* adjust for weekly trends, nonparametric */
 };
 /** analysis and cluster types */
 enum AnalysisType

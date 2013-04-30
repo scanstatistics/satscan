@@ -599,7 +599,8 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
              gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0), gpPopulationMeasureData(0) {
-  gPopulation.SetNumTracts(giLocationDimensions);
+    _population.reset(new PopulationData());
+    _population->SetNumTracts(giLocationDimensions);
 }
 
 /** copy constructor */
@@ -613,6 +614,12 @@ RealDataSet::~RealDataSet() {
     delete gpPopulationMeasureData;
   }
   catch(...){}
+}
+
+/** Resets population data structure, clearing all data and settings. */
+void RealDataSet::resetPopulationData() {
+    _population.reset(new PopulationData());
+    _population->SetNumTracts(giLocationDimensions);
 }
 
 /** Allocates two dimensional array which will represent cumulative censored case
@@ -652,8 +659,8 @@ TwoDimCountArray_t & RealDataSet::allocateControlData() {
 TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count) {
   size_t        tCategoryIndex;
 
-  tCategoryIndex = gPopulation.AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
-  if (gPopulation.GetNumOrdinalCategories() > gvCaseData_Cat.size())
+  tCategoryIndex = _population->AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
+  if (_population->GetNumOrdinalCategories() > gvCaseData_Cat.size())
     gvCaseData_Cat.insert(gvCaseData_Cat.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
 
   return *gvCaseData_Cat[tCategoryIndex];
@@ -663,7 +670,7 @@ TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNum
     does not contain case data while having zero population. */
 void RealDataSet::checkPopulationDataCases(CSaTScanData& Data) {
   try {
-    gPopulation.CheckCasesHavePopulations(gpCaseData->GetArray()[0], Data);
+    _population->CheckCasesHavePopulations(gpCaseData->GetArray()[0], Data);
   }
   catch(prg_exception& x) {
     x.addTrace("checkPopulationDataCases()","RealDataSet");

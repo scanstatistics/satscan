@@ -7,6 +7,7 @@
 #include "DateStringParser.h"
 #include "DataSource.h"
 #include "SSException.h"
+#include "PoissonModel.h"
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
@@ -46,8 +47,7 @@ void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Containe
     input files, indication of a bad date is returned as false and message
     sent to print direction. Caller is responsible for ensuring that passed
     'const char *' points to a valid string. */
-bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
-                                                             std::pair<Julian, DatePrecisionType>& PopulationDate) {
+bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, PopulationData::PopulationDate_t & PopulationDate) {
   bool                                  bValidDate=true;
   DateStringParser                      DateParser(gDataHub.GetParameters().GetPrecisionOfTimesType());
   DateStringParser::ParserStatus        eStatus;
@@ -85,7 +85,7 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
     intended to be used by purely temporal analyses when the population file is omitted. */
 bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   float                                                 fPopulation = 1000; /** arbitrarily selected population */
-  std::vector<std::pair<Julian, DatePrecisionType> >    vprPopulationDates;
+  PopulationData::PopulationDateContainer_t             vprPopulationDates;
   const TractHandler&                                   theTracts = *(gDataHub.GetTInfo());
   tract_t                                               t, tNumTracts = theTracts.getLocations().size();
   int                                                   iCategoryIndex;
@@ -96,7 +96,7 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
     DataSet.setAggregateCovariateCategories(true);
     iCategoryIndex = 0; /* with aggregation, only one population category with index of zero */
     // Use the same arbitrarily selected population date for each location - we'll use the study period start date.
-    vprPopulationDates.push_back(std::pair<Julian, DatePrecisionType>(gDataHub.GetStudyPeriodStartDate(), YEAR));
+    vprPopulationDates.push_back(std::make_pair(gDataHub.GetStudyPeriodStartDate(), YEAR));
     DataSet.getPopulationData().SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
     // for each location, assign the same population count and date
     for (t=0; t < tNumTracts; ++t)
@@ -236,11 +236,12 @@ void PoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
 bool PoissonDataSetHandler::ReadData() {
     try {
         SetRandomizers();
+
         for (size_t t=0; t < GetNumDataSets(); ++t) {
             if (gParameters.UsePopulationFile()) { //read population data file
                 // Set the covariate categories to aggregated if we're doing a power evaluation without reading the case file.
                 if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)
-                    GetDataSet(t).setAggregateCovariateCategories(true);          
+                    GetDataSet(t).setAggregateCovariateCategories(true);
                 if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
                 else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
                 if (!ReadPopulationFile(GetDataSet(t))) return false;
@@ -286,9 +287,9 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
   tract_t                                                       TractIdentifierIndex;
   float                                                         fPopulation;
   const short                                                   uPopulationDateIndex=1, uPopulationIndex=2, uCovariateIndex=3;
-  std::pair<Julian, DatePrecisionType>                          prPopulationDate;
-  std::vector<std::pair<Julian, DatePrecisionType> >            vprPopulationDates;
-  std::vector<std::pair<Julian, DatePrecisionType> >::iterator  itr;
+  PopulationData::PopulationDate_t                              prPopulationDate;
+  PopulationData::PopulationDateContainer_t                     vprPopulationDates;
+  PopulationData::PopulationDateContainer_t::iterator           itr;
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE);

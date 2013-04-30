@@ -62,11 +62,17 @@ class CSaTScanData; /** forward class declaration */
     - list of total cases/controls for each population covariate category
     - list of total cases for each ordinal number category */
 class PopulationData {
+  public:
+      typedef std::pair<Julian, DatePrecisionType> PopulationDate_t;
+      typedef std::vector<PopulationDate_t> PopulationDateContainer_t;
+      typedef std::vector<std::string> CovariatesNames_t;
+      typedef std::vector<size_t> AdditionalCovariates_t;
+
   private:
     bool                                gbAggregateCovariateCategories;   /** indicates that category data should be aggregated
                                                                               together, not maintained separate - Bernoulli */
     short                               giNumberCovariatesPerCategory;    /** number covariates expected in each record */
-    std::vector<std::string>            gvCovariateNames;                 /** covariates labels */
+    CovariatesNames_t                   gvCovariateNames;                 /** covariates labels */
     std::vector<std::vector<int> >      gvCovariateCategories;            /** vector of covariate categories
                                                                               - integers are indexes of covariate names */
     std::vector<count_t>                gvCovariateCategoryCaseCount;     /** number of total cases for covariate categories */
@@ -78,6 +84,7 @@ class PopulationData {
                                                                               date was introduced into gvPopulationDates */
     bool                                gbEndAsPopDt;                     /** indicates whether the study period end
                                                                               date was introduced into gvPopulationDates */
+    mutable AdditionalCovariates_t      _additionalCovariates;
 
     void                                AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
     void                                Init();
@@ -89,7 +96,7 @@ class PopulationData {
     void                                AddCovariateCategoryCaseCount(int iCategoryIndex, count_t Count);
     void                                AddCovariateCategoryControlCount(int iCategoryIndex, count_t Count);
     void                                AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex,
-                                                                       const std::pair<Julian, DatePrecisionType>& prPopulationDate,
+                                                                       const PopulationDate_t& prPopulationDate,
                                                                        float fPopulation);
     size_t                              AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
     void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
@@ -111,7 +118,7 @@ class PopulationData {
     const CovariateCategory           * GetCovariateCategory(tract_t tTractIndex, unsigned int iCategoryIndex) const;
     CovariateCategory                 & GetCovariateCategory(tract_t tTractIndex, unsigned int iCategoryIndex, int iPopulationListSize);
     const char                        * GetCovariateCategoryAsString(int iCategoryIndex, std::string& sBuffer) const;
-    int                                 GetCovariateCategoryIndex(const std::vector<std::string>& vCovariates) const;
+    int                                 GetCovariateCategoryIndex(const CovariatesNames_t& vCovariates) const;
     double                              GetOrdinalCategoryValue(int iCategoryIndex) const;
     float                               GetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex);
     Julian                              GetPopulationDate(int iDateIndex) const;
@@ -123,11 +130,11 @@ class PopulationData {
     int                                 LowerPopIndex(Julian Date) const;
     void                                RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount);
     void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
+    void                                setAdditionalCovariates(CovariatesNames_t& covariates);
     void                                SetAggregateCovariateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gCovariateCategoriesPerLocation.resize(iTracts, 0);}
-    void                                SetPopulationDates(std::vector<std::pair<Julian, DatePrecisionType> >& PopulationDates,
-                                                           Julian StartDate, Julian EndDate);
-    int                                 UpperPopIndex(Julian Date) const;                                                   
+    void                                SetPopulationDates(PopulationDateContainer_t& PopulationDates, Julian StartDate, Julian EndDate, bool dayPlus=true);
+    int                                 UpperPopIndex(Julian Date) const;
 };
 //******************************************************************************
 #endif

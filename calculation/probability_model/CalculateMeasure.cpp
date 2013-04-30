@@ -14,26 +14,26 @@ static FILE* pMResult;
 
 /** Calculates the risk for each population category storing results in vector
     'vRisk'. Sets data set's total case and population counts. */
-std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, std::vector<double>& vRisk) {
+std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, std::vector<double>& vRisk, PopulationData * pAltPopulationData) {
   int                   c;
   tract_t               t;
   double                nPop, dTotalPopulation=0;
   count_t               nCaseCount, tTotalCases=0;
   std::vector<double>   vAlpha;
-  const PopulationData& Population = Set.getPopulationData();
+  const PopulationData& population = pAltPopulationData ? *pAltPopulationData : Set.getPopulationData();
 
   try {
-    vRisk.resize(Population.GetNumCovariateCategories(), 0);
+    vRisk.resize(population.GetNumCovariateCategories(), 0);
     //calculate alpha - an array that indicates each population interval's percentage of study period.
-    Population.CalculateAlpha(vAlpha, StudyStartDate, StudyEndDate);
+    population.CalculateAlpha(vAlpha, StudyStartDate, StudyEndDate);
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
-    for (c=0; c < Population.GetNumCovariateCategories(); ++c) {
+    for (c=0; c < population.GetNumCovariateCategories(); ++c) {
        nPop = 0;
-       nCaseCount = Population.GetNumCovariateCategoryCases(c);
+       nCaseCount = population.GetNumCovariateCategoryCases(c);
        for (t=0; t < (int)Set.getLocationDimension(); ++t)
-          Population.GetAlphaAdjustedPopulation(nPop, t, c, 0, Population.GetNumPopulationDates(), vAlpha);
+          population.GetAlphaAdjustedPopulation(nPop, t, c, 0, population.GetNumPopulationDates(), vAlpha);
        if (nPop)
          vRisk[c] = (double)nCaseCount/nPop;
 #ifdef DEBUGMEASURE
@@ -51,8 +51,11 @@ std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, con
   fprintf(pMResult, "\n");
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
 #endif
-    Set.setTotalCases(tTotalCases);
-    Set.setTotalPopulation(dTotalPopulation);
+    // Only set data set total attributes if using data set's population data, not alternate.
+    if (!pAltPopulationData) {
+        Set.setTotalCases(tTotalCases);
+        Set.setTotalPopulation(dTotalPopulation);
+    }
   }
   catch (prg_exception & x) {
     x.addTrace("CalcRisk()", "CalculateMeasure.cpp");
@@ -65,20 +68,20 @@ std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, con
     for all categories represented by modifying the data sets population
     measure array such that m[n][t] = expected number of cases at population date
     index n and tract index t, for all categories of that tract. */
-boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate) {
+boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, PopulationData * pAltPopulationData) {
   std::vector<double>                     vRisk;
-  PopulationData                        & Population = Set.getPopulationData();
-  int                                     nPops = Population.GetNumPopulationDates();
+  PopulationData                        & population = pAltPopulationData ? *pAltPopulationData : Set.getPopulationData();
+  int                                     nPops = population.GetNumPopulationDates();
   tract_t                                 nTracts = Set.getLocationDimension();
-  boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure(new TwoDimMeasureArray_t(Population.GetNumPopulationDates(), Set.getLocationDimension()));
+  boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure(new TwoDimMeasureArray_t(population.GetNumPopulationDates(), Set.getLocationDimension()));
 
   try {
     //calculate risk for each population category
-    CalcRisk(Set, StudyStartDate, StudyEndDate, vRisk);
+    CalcRisk(Set, StudyStartDate, StudyEndDate, vRisk, pAltPopulationData);
     measure_t ** m = pPopMeasure->GetArray();
     for (int n=0; n < nPops; ++n)
        for (tract_t t=0; t < nTracts; ++t)
-          Population.GetRiskAdjustedPopulation(m[n][t], t, n, vRisk);
+          population.GetRiskAdjustedPopulation(m[n][t], t, n, vRisk);
 #ifdef DEBUGMEASURE
     fprintf(pMResult, "Pop\n");
     fprintf(pMResult, "Index  Tract   m\n");
@@ -108,9 +111,9 @@ boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian Stu
     at index i and tract at index t. Caller is responsible for ensuring that
     'vIntervalStartDates' contains a number of elements equaling the number of
     time intervals plus one.*/
-void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, const std::vector<Julian>& vIntervalStartDates, const Julian StartDate, const Julian EndDate) {
+void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, const std::vector<Julian>& vIntervalStartDates, const Julian StartDate, const Julian EndDate, PopulationData * pAltPopulationData) {
 
-  PopulationData      & thisPopulationData = DataSet.getPopulationData();
+  PopulationData      & population = pAltPopulationData ? *pAltPopulationData : DataSet.getPopulationData();
   int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = DataSet.getIntervalDimension();
   tract_t               t, nTracts = DataSet.getLocationDimension();
   measure_t          ** ppM, ** pPopulationMeasure, ** ppNonCumulativeMeasure, tTotalMeasure=0;
@@ -128,10 +131,10 @@ void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, c
     ppM = M_ArrayHandler.GetArray();
     
     for (i=0; i < nTimeIntervals+1; ++i) {
-       thisPopulationData.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
-       jLowDate = thisPopulationData.GetPopulationDate(lower);
+       population.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
+       jLowDate = population.GetPopulationDate(lower);
        nLowerPlus1 = lower + 1;
-       jLowDatePlus1 = thisPopulationData.GetPopulationDate(lower+1);
+       jLowDatePlus1 = population.GetPopulationDate(lower+1);
        for (t=0; t < nTracts; ++t) {
           if (jLowDatePlus1 == static_cast<Julian>(-1))
             ppM[i][t] = pPopulationMeasure[lower][t];
@@ -145,14 +148,14 @@ void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, c
     }
 
     for (i=0; i < nTimeIntervals; ++i) {
-       thisPopulationData.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
+       population.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
        for (t=0; t < nTracts; ++t) {
           ppNonCumulativeMeasure[i][t] = 0.0;
           tempSum  = 0.0;
-    	  temp1    = .5*(pPopulationMeasure[lower][t] + ppM[i][t])*(vIntervalStartDates[i]-thisPopulationData.GetPopulationDate(lower));
-          temp2    = .5*(pPopulationMeasure[upper][t] + ppM[i+1][t])*(thisPopulationData.GetPopulationDate(upper)-vIntervalStartDates[i+1]);
+    	  temp1    = .5*(pPopulationMeasure[lower][t] + ppM[i][t])*(vIntervalStartDates[i]-population.GetPopulationDate(lower));
+          temp2    = .5*(pPopulationMeasure[upper][t] + ppM[i+1][t])*(population.GetPopulationDate(upper)-vIntervalStartDates[i+1]);
           for (n=lower; n < upper; ++n) {
-    	     tempSum = tempSum + (((pPopulationMeasure[n][t] + pPopulationMeasure[n+1][t]) / 2) * (thisPopulationData.GetPopulationDate(n+1)-thisPopulationData.GetPopulationDate(n)));
+    	     tempSum = tempSum + (((pPopulationMeasure[n][t] + pPopulationMeasure[n+1][t]) / 2) * (population.GetPopulationDate(n+1)-population.GetPopulationDate(n)));
           }
           ppNonCumulativeMeasure[i][t] = ((tempSum - temp1 - temp2) / nTotalDays);
           tTotalMeasure += ppNonCumulativeMeasure[i][t];
@@ -164,7 +167,7 @@ void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, c
       fprintf(pMResult, "Intv  Index  Index    Tract   M           Measure\n");
       for (i=0; i<nTimeIntervals; i++)
       {
-    	 thisPopulationData.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, upper, lower);
+    	 population.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, upper, lower);
         for (t=0; t<nTracts; t++)
         {
           if (t==0)
@@ -182,7 +185,10 @@ void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, c
     x.addTrace("CalcMeasure()", "CalculateMeasure.cpp");
     throw;
   }
-  DataSet.setTotalMeasure(tTotalMeasure);
+    // Only set data set total attributes if using data set's population data, not alternate.
+    if (!pAltPopulationData) {
+        DataSet.setTotalMeasure(tTotalMeasure);
+    }
 }
 
 /*************************************************************************/

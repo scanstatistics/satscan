@@ -23,7 +23,7 @@ class ComparePopulationDates {
        set structures for real data and simulation data */
 class PoissonDataSetHandler : public DataSetHandler {
   protected:
-    bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, std::pair<Julian, DatePrecisionType>& PopulationDate);
+    bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, PopulationData::PopulationDate_t& PopulationDate);
     bool                                CreatePopulationData(RealDataSet& DataSet);
     bool                                ReadPopulationFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();

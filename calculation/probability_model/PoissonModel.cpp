@@ -4,6 +4,9 @@
 //******************************************************************************
 #include "PoissonModel.h"
 #include "SSException.h"
+#include "DateStringParser.h"
+#include "DataSource.h"
+#include "BasePrint.h"
 
 const double CPoissonModel::gTimeTrendConvergence = 0.0000001;
 
@@ -180,11 +183,11 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
   }
 }
 
-/** Calculates the expected number of cases for dataset. */
-void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
+/** Calculates the measure from data set's population data and applies any adjustments. */
+boost::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData) {
     try {
-        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
-        CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
+        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
+        CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
         measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
         for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
             for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
@@ -194,14 +197,93 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
         // validate that observed and expected agree
         if (!gParameters.getPerformPowerEvaluation() || !(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))
             gDataHub.ValidateObservedToExpectedCases(Set); 
-        // apply adjustments to measure
+        return pPopMeasure;
+    } catch (prg_exception &x) {
+        x.addTrace("calculateMeasure()","CPoissonModel");
+        throw;
+    }
+}
+
+/** Calculates the expected number of cases for dataset. */
+void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
+    try {
+        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = calculateMeasure(Set);
+        // apply any adjustments -- other than the weekly adjustment
         AdjustMeasure(Set, *pPopMeasure);
-        // When using power evaulations, we need to cache adjusted non-cummulative measure data in aux structure.
+
+        // If performing adjustment for day of week, at this point we want to calculate the measure again.
+        if (gParameters.getAdjustForWeeklyTrends()) {
+            //TwoDimMeasureArray_t dailyMeasure(Set.getMeasureData());
+
+            // Define a new PopulationData that will be grouped day of week covariate.
+            PopulationData populationData;
+            populationData.SetNumTracts(gDataHub.GetNumTracts());
+            // The weekly adjustment will have the population defined on every day in the study period.
+            // Since this adjustment requires the time aggregation to be set to 1 day, just iterate through defined time interval dates.
+            assert(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1);
+            PopulationData::PopulationDate_t prPopulationDate(0, DAY);
+            PopulationData::PopulationDateContainer_t vprPopulationDates;
+            for (unsigned int i=0; i < gDataHub.GetTimeIntervalStartTimes().size(); ++i) {
+                prPopulationDate.first = gDataHub.GetTimeIntervalStartTimes()[i];
+                vprPopulationDates.push_back(prPopulationDate);
+            }
+            populationData.SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), false/* TODO -- correct? */);
+            vprPopulationDates.clear(); //dump memory
+
+            PrintNull nullPrint; // TODO -- replace later.
+
+            // Simulate the reading of the population file -- this time use the dailyMeasure data and date as covariate.
+            const short uCovariateIndex=3;
+            measure_t ** ppMeasure = Set.getMeasureData().GetArray();
+            unsigned int numIntervals=Set.getMeasureData().Get1stDimension();
+            unsigned int numLocations=Set.getMeasureData().Get2ndDimension();
+            for (unsigned int i=0; i < numIntervals; ++i) {
+                prPopulationDate.first = gDataHub.GetTimeIntervalStartTimes()[i];
+                unsigned long covariate = prPopulationDate.first % 7; // convert date to day of week covariate
+                OneCovariateDataSource dataSource(uCovariateIndex, covariate);
+                int categoryIndex = populationData.CreateCovariateCategory(dataSource, uCovariateIndex, nullPrint);
+                for (unsigned int t=0; t < numLocations; ++t) {
+                    populationData.AddCovariateCategoryPopulation(t, categoryIndex, prPopulationDate, ppMeasure[i][t]);
+                }
+            }
+
+            // convert dataSet.getPopulationData() case information to populationData. ???
+            count_t ** ppCases = Set.getCaseData().GetArray();
+            for (unsigned int i=0; i < numIntervals; ++i) {
+                std::vector<std::string> covariates;
+                covariates.push_back(std::string(""));
+                Julian date = gDataHub.GetTimeIntervalStartTimes()[i];
+                printString(covariates.back(), "%u", date % 7);
+                int category_index = populationData.GetCovariateCategoryIndex(covariates);
+                assert(category_index != -1);
+                for (unsigned int t=0; t < numLocations; ++t) {
+                    populationData.AddCovariateCategoryCaseCount(category_index, ppCases[i][t] - (i == numIntervals - 1 ? 0 : ppCases[i+1][t]));
+                }
+            }
+
+            // now re-calculate the measure with alternative population data.
+            boost::shared_ptr<TwoDimMeasureArray_t> altPopulationMeasure = calculateMeasure(Set, &populationData);
+
+            // Do we need to retain the original measure array?
+            // Do we need to retain anything from this second population?
+
+            // Considerations?
+            // - power evaluations, randomization step
+        }
+
+        // When using power evaluations, we need to cache adjusted non-cummulative measure data in aux structure.
         // The non-cummulative measure data will be used in the null randomization of power step.
         if (gParameters.getPerformPowerEvaluation() && gParameters.GetPowerEvaluationSimulationType() == STANDARD) {
             Set.setPopulationMeasureData(*pPopMeasure);
             Set.setMeasureData_Aux(Set.getMeasureData());
         }
+
+        std::string outName(gParameters.GetOutputFileName());
+        outName += "._second.txt";
+        FILE * fp = fopen(outName.c_str(), "w");
+        gDataHub.DisplayMeasure(fp);
+        fclose(fp);
+
         // now we can make the measure data cummulative
         Set.setMeasureDataToCumulative(); 
         if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure

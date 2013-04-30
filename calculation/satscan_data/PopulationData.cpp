@@ -207,7 +207,7 @@ void PopulationData::AddCovariateCategoryControlCount(int iCategoryIndex, count_
     parameter 'fPopulation' is a positive value. An exception is thrown if 'tTractIndex' is invalid.
     If precision of parameter 'prPopulationDate' is DAY, the passed population is also assigned to
     day following date indicated by prPopulationDate.first. */
-void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex, const std::pair<Julian, DatePrecisionType>& prPopulationDate, float fPopulation) {
+void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex, const PopulationDate_t& prPopulationDate, float fPopulation) {
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gCovariateCategoriesPerLocation.size() - 1 )
       throw prg_error("Index %d out of range [size=%u].","AddCovariateCategoryPopulation()",
@@ -425,6 +425,21 @@ bool PopulationData::CheckZeroPopulations(BasePrint& PrintDirection) const {
   return bValid;
 }
 
+/** Define additional covariates that will be implied in the covariate read process. */
+void PopulationData::setAdditionalCovariates(CovariatesNames_t& covariates) {
+    _additionalCovariates.clear();
+    for (CovariatesNames_t::iterator itr=covariates.begin(); itr != covariates.end(); ++itr) {
+        CovariatesNames_t::iterator itrFind = std::find(gvCovariateNames.begin(), gvCovariateNames.end(), *itr);
+        if (itrFind == gvCovariateNames.end()) {
+            gvCovariateNames.push_back(*itr);
+            _additionalCovariates.push_back(gvCovariateNames.size() - 1);
+        } else {
+            _additionalCovariates.push_back(std::distance(gvCovariateNames.begin(), itrFind));
+        }
+    }
+}
+
+
 /** Attmepts to create new population category through parsing record contained
     by DataSource with covariates indicated to start at 'iScanOffset'. If
     previously specified to aggregate population categories, nothing is done
@@ -440,7 +455,7 @@ int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffse
   short                                         iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
-  std::vector<std::string>::iterator            itr;
+  CovariatesNames_t::iterator                   itr;
   std::vector<std::vector<int> >::iterator      itr_int;
 
   if (gbAggregateCovariateCategories) return 0;
@@ -456,7 +471,10 @@ int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffse
        else
          vPopulationCategory.push_back(std::distance(gvCovariateNames.begin(), itr));
   }
-
+  // Add any implied covariates to the list now.
+  for (AdditionalCovariates_t::iterator itr=_additionalCovariates.begin(); itr != _additionalCovariates.end(); ++itr) {
+      vPopulationCategory.push_back(*itr);
+  }
   //first list of covariates sets precedence - remaining categories read must
   //have the same number of covariates
   if (gvCovariateCategories.empty()) {
@@ -720,7 +738,7 @@ const char * PopulationData::GetCovariateCategoryAsString(int iCategoryIndex, st
 }
 
 /** Returns category index for passed vector of covariate strings. Returns -1 if not found. */
-int PopulationData::GetCovariateCategoryIndex(const std::vector<std::string>& vCovariates) const {
+int PopulationData::GetCovariateCategoryIndex(const CovariatesNames_t& vCovariates) const {
   int           iIndex=-1;
   size_t        t, j;
   bool          bMatch;
@@ -988,17 +1006,20 @@ void PopulationData::SetAggregateCovariateCategories(bool b) {
     period. Later we will use interpolation to estimate the population on dates
     that were not supplied by input data with respect to the study period. Caller
     is responsible for ensuring that StartDate <= EndDate. */
-void PopulationData::SetPopulationDates(std::vector<std::pair<Julian, DatePrecisionType> >& PopulationDates,
-                                        Julian StartDate, Julian EndDate) {
+void PopulationData::SetPopulationDates(PopulationDateContainer_t& PopulationDates, Julian StartDate, Julian EndDate, bool dayPlus) {
   unsigned int  n, iLastIndexedDateIndex, iDateIndexOffset=0, iRetainedDates, iTotalPopulationDates;
   bool          bStartFound=false, bEndFound=false;
 
   //first insert additional population dates for those read with precision of day
-  for (n=0; n < PopulationDates.size(); ++n)
-     if (PopulationDates[n].second == DAY) {
-       PopulationDates.insert(PopulationDates.begin() + (n + 1), std::make_pair(PopulationDates[n].first + 1, DAY));
-       ++n;
-     }
+
+  if (dayPlus) {
+    for (n=0; n < PopulationDates.size(); ++n)
+        if (PopulationDates[n].second == DAY) {
+            PopulationDates.insert(PopulationDates.begin() + (n + 1), std::make_pair(PopulationDates[n].first + 1, DAY));
+            ++n;
+        }
+  }
+
   //Loop over input defined population period to ascertain which population dates to keep.
   for (n=0; n < PopulationDates.size() && (!bStartFound || !bEndFound); ++n) {
      if (!bStartFound) {

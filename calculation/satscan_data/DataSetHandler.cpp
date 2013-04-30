@@ -83,8 +83,7 @@ bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
     return ReadCounts(DataSet, *Source);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadCaseFile()","DataSetHandler");
     throw;
   }
@@ -265,6 +264,14 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(Populati
 
     DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
     if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
+
+    if (gParameters.getAdjustForWeeklyTrends() && gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+        // If performing weekly adjustment for STP, set define additional covariate.
+        PopulationData::CovariatesNames_t vCategoryCovariates;
+        vCategoryCovariates.push_back(std::string(""));
+        printString(vCategoryCovariates.back(), "%u", nDate % 7);
+        thePopulation.setAdditionalCovariates(vCategoryCovariates);
+    }
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!RetrieveCovariatesIndex(thePopulation, iCategoryIndex, iCategoryOffSet, Source)) return DataSetHandler::Rejected;
   }
