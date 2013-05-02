@@ -8,6 +8,7 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -217,6 +218,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /*
+     * enables the google earth advanced options
+     */
+    public void enableGoogleEarthGroup() {
+        _googleEarthGroup.setEnabled(_analysisSettingsWindow.getReportingGoogleEarthKML());
+        _includeClusterLocationsInKML.setEnabled(_googleEarthGroup.isEnabled());
+        _createCompressedKMZ.setEnabled(_googleEarthGroup.isEnabled());
+    }
 
     /**
      * enabled study period and prospective date precision based on time interval unit
@@ -458,6 +467,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(bPoisson || bBernoulli);
                 enableIterativeScanOptionsGroup(!bH_Poisson);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(false);
                 break;
             case PURELYTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -475,6 +485,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(false);
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -494,6 +505,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(false);
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -513,6 +525,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(false);
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -530,6 +543,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(false);
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 break;
             case SPATIALVARTEMPTREND:
                 enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
@@ -547,6 +561,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIsotonicScan(false);
                 enableWindowShapeGroup(true);
                 enablePValueOptionsGroup();
+                enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 break;
         }
         enableClustersReportedGroup();
@@ -554,6 +569,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableAdjustmentsGroup(bPoisson);
         updateMonteCarloTextCaptions();
         enableTemporalGraphsGroup();
+        enableGoogleEarthGroup();
+    }
+
+    public void enableAdjustDayOfWeek(boolean enable) {        
+        _adjustDayOfWeek.setEnabled(enable);
+        if (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
+            _adjustDayOfWeek.setText("Adjust for day-of-week by space interaction");
+        } else {
+            _adjustDayOfWeek.setText("Adjust for day-of-week");            
+        }
     }
 
     /** Sets caption of spatial distance radio button based upon coordinates group setting. */
@@ -924,7 +949,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
         parameters.SetTimeTrendAdjustmentType(_temporalTrendAdjGroup.isEnabled() ? getAdjustmentTimeTrendControlType().ordinal() : Parameters.TimeTrendAdjustmentType.NOTADJUSTED.ordinal());
-        parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
+        parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));        
+        parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());        
         parameters.SetSpatialAdjustmentType(_spatialAdjustmentsGroup.isEnabled() ? getSpatialAdjustmentType().ordinal() : Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT.ordinal());
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
@@ -1003,6 +1029,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
         parameters.setPowerEvaluationMethod(getPowerEvaluationMethodType().ordinal());
         parameters.setPowerEvaluationCaseCount(Integer.parseInt((_totalPowerCases.getText().length() > 0 ?_totalPowerCases.getText() : "0")));
+        parameters.setNumPowerEvalReplicaPowerStep(Integer.parseInt(_numberPowerReplications.getText()));
         parameters.setPowerEvaluationCriticalValueType(getCriticalValuesType().ordinal());
         parameters.setPowerEstimationType(getPowerEstimationType().ordinal());
         parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
@@ -1415,6 +1442,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (Integer.parseInt(_totalPowerCases.getText()) == 0) {
                     throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }                
+                if (_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected()) {
+                    throw new AdvFeaturesExpection("A power evaluation cannot be performed when using adjustment for day of week\nunless case data is provided.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+                }                
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
             int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
@@ -1617,6 +1647,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         _spatialAdjustmentsNoneRadioButton.setSelected(true);
         _logLinearTextField.setText("0");
+        _adjustDayOfWeek.setSelected(false);
 
          // Power Evaluations tab
         _performPowerEvalautions.setSelected(false);
@@ -2152,7 +2183,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustmentsByRelativeRisksFileTextField.setText(parameters.GetAdjustmentsByRelativeRisksFilename());
         setTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
         _logLinearTextField.setText(parameters.GetTimeTrendAdjustmentPercentage() <= -100 ? "0" : Double.toString(parameters.GetTimeTrendAdjustmentPercentage()));
-
+        _adjustDayOfWeek.setSelected(parameters.getAdjustForWeeklyTrends());
+        
         // Inference tab
         setPValueReportingControlType(parameters.GetPValueReportingType());
         _checkReportGumbel.setSelected(parameters.GetReportGumbelPValue());
@@ -2214,6 +2246,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEvaluationWithCaseFile.setSelected(parameters.getPowerEvaluationMethod() == Parameters.PowerEvaluationMethodType.PE_ONLY_CASEFILE);
         _powerEvaluationWithSpecifiedCases.setSelected(parameters.getPowerEvaluationMethod() == Parameters.PowerEvaluationMethodType.PE_ONLY_SPECIFIED_CASES);
         _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationCaseCount()));
+        _numberPowerReplications.setText(Integer.toString(parameters.getNumPowerEvalReplicaPowerStep()));
         _criticalValuesMonteCarlo.setSelected(parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_MONTECARLO);
         _criticalValuesGumbel.setSelected(parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_GUMBEL);
         _powerEstimationMonteCarlo.setSelected(parameters.getPowerEstimationType() == Parameters.PowerEstimationType.PE_MONTECARLO);
@@ -2413,6 +2446,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustmentsFileBrowseButton = new javax.swing.JButton();
         _adjustmentsFileImportButton = new javax.swing.JButton();
         _adjustmentsByRelativeRisksFileLabel = new javax.swing.JLabel();
+        _adjustDayOfWeek = new javax.swing.JCheckBox();
         _inferenceTab = new javax.swing.JPanel();
         _pValueOptionsGroup = new javax.swing.JPanel();
         _radioDefaultPValues = new javax.swing.JRadioButton();
@@ -2470,6 +2504,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportClusterRankCheckBox = new javax.swing.JCheckBox();
         _additionalOutputFiles = new javax.swing.JPanel();
         _printAsciiColumnHeaders = new javax.swing.JCheckBox();
+        _googleEarthGroup = new javax.swing.JPanel();
+        _includeClusterLocationsInKML = new javax.swing.JCheckBox();
+        _createCompressedKMZ = new javax.swing.JCheckBox();
         _powerEvaluationsTab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
@@ -2928,7 +2965,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addContainerGap(232, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3044,7 +3081,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(280, Short.MAX_VALUE))
+                .addContainerGap(288, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3229,7 +3266,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(215, Short.MAX_VALUE))
+                .addContainerGap(223, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3542,7 +3579,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addContainerGap(189, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4125,12 +4162,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(208, Short.MAX_VALUE))
+                .addContainerGap(216, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
 
-        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments"));
+        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
         _temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, "temporal_trend_adjustment_htm"));
 
         _temporalTrendAdjNoneRadioButton.setSelected(true);
@@ -4380,6 +4417,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _adjustDayOfWeek.setText("Adjust for day-of-week ");
+
         javax.swing.GroupLayout _spaceTimeAjustmentsTabLayout = new javax.swing.GroupLayout(_spaceTimeAjustmentsTab);
         _spaceTimeAjustmentsTab.setLayout(_spaceTimeAjustmentsTabLayout);
         _spaceTimeAjustmentsTabLayout.setHorizontalGroup(
@@ -4389,7 +4428,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_adjustDayOfWeek, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _spaceTimeAjustmentsTabLayout.setVerticalGroup(
@@ -4397,11 +4437,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_adjustDayOfWeek)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addContainerGap(118, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4861,7 +4903,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(119, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5125,7 +5167,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -5217,6 +5259,34 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
+        _googleEarthGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Google Earth"));
+        _googleEarthGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_googleEarthGroup, "introduction_htm"));
+
+        _includeClusterLocationsInKML.setText("Include cluster locations");
+
+        _createCompressedKMZ.setText("Create compressed KMZ file");
+
+        javax.swing.GroupLayout _googleEarthGroupLayout = new javax.swing.GroupLayout(_googleEarthGroup);
+        _googleEarthGroup.setLayout(_googleEarthGroupLayout);
+        _googleEarthGroupLayout.setHorizontalGroup(
+            _googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_googleEarthGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _googleEarthGroupLayout.setVerticalGroup(
+            _googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_googleEarthGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_includeClusterLocationsInKML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_createCompressedKMZ)
+                .addContainerGap(9, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _additionalOutputTabLayout = new javax.swing.GroupLayout(_additionalOutputTab);
         _additionalOutputTab.setLayout(_additionalOutputTabLayout);
         _additionalOutputTabLayout.setHorizontalGroup(
@@ -5226,7 +5296,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_additionalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_googleEarthGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _additionalOutputTabLayout.setVerticalGroup(
@@ -5238,7 +5309,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(266, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_googleEarthGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(172, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -5502,7 +5575,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(148, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluations", _powerEvaluationsTab);
@@ -5547,7 +5620,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalGraphTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(419, Short.MAX_VALUE))
+                .addContainerGap(427, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Graphs", _temporalGraphTab);
@@ -5597,6 +5670,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _additionalDataSetsGroup;
     private javax.swing.JPanel _additionalOutputFiles;
     private javax.swing.JPanel _additionalOutputTab;
+    private javax.swing.JCheckBox _adjustDayOfWeek;
     private javax.swing.JCheckBox _adjustForEarlierAnalysesCheckBox;
     private javax.swing.JCheckBox _adjustForKnownRelativeRisksCheckBox;
     private javax.swing.JRadioButton _adjustmentByDataSetsRadioButton;
@@ -5623,6 +5697,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
+    private javax.swing.JCheckBox _createCompressedKMZ;
     private javax.swing.ButtonGroup _criticalValuesButtonGroup;
     private javax.swing.JRadioButton _criticalValuesGumbel;
     private javax.swing.JRadioButton _criticalValuesMonteCarlo;
@@ -5651,10 +5726,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
     private javax.swing.JCheckBox _giniOptimizedClusters;
+    private javax.swing.JPanel _googleEarthGroup;
     private javax.swing.JPanel _graphOutputGroup;
     private javax.swing.JLabel _hierarchicalLabel;
     private java.awt.Choice _hierarchicalSecondaryClusters;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
+    private javax.swing.JCheckBox _includeClusterLocationsInKML;
     private javax.swing.JCheckBox _includePureSpacClustCheckBox;
     private java.awt.Choice _indexBasedClusterCriteria;
     private javax.swing.JLabel _indexBasedCriteriaLabel;

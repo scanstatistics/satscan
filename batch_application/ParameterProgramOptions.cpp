@@ -68,10 +68,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(OUTPUT_SIM_LLR_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_ASCII))
         (getOption(OUTPUT_SIM_LLR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_DBASE))
         (getOption(OUTPUT_TEMPORAL_GRAPH, true), po::value<std::string>(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH))
-        (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML))
-        (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
-        (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML))
-        (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT));
+        (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML));
 
     /* Polygons tab options */
     printString(buffer2, "%s\n  %d polygon regions specified via --Polygon1, --Polygon2, --Polygon3, etc.", GetParameterComment(OBSERVABLE_REGIONS), POLYGON_REGIONS);
@@ -186,7 +183,10 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     opt_descriptions.back()->get<0>().add_options()
         (getOption(REPORT_CRITICAL_VALUES, true), po::value<std::string>(), GetParameterComment(REPORT_CRITICAL_VALUES))
         (getOption(REPORT_RANK, true), po::value<std::string>(), GetParameterComment(REPORT_RANK))
-        (getOption(PRINT_ASCII_HEADERS, true), po::value<std::string>(), GetParameterComment(PRINT_ASCII_HEADERS));
+        (getOption(PRINT_ASCII_HEADERS, true), po::value<std::string>(), GetParameterComment(PRINT_ASCII_HEADERS))
+        (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
+        (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT))
+        (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
 
     /* Temporal Graph Output tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalGraphOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));

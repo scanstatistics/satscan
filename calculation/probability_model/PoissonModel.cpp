@@ -260,15 +260,8 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
                     populationData.AddCovariateCategoryCaseCount(category_index, ppCases[i][t] - (i == numIntervals - 1 ? 0 : ppCases[i+1][t]));
                 }
             }
-
             // now re-calculate the measure with alternative population data.
-            boost::shared_ptr<TwoDimMeasureArray_t> altPopulationMeasure = calculateMeasure(Set, &populationData);
-
-            // Do we need to retain the original measure array?
-            // Do we need to retain anything from this second population?
-
-            // Considerations?
-            // - power evaluations, randomization step
+            pPopMeasure = calculateMeasure(Set, &populationData);
         }
 
         // When using power evaluations, we need to cache adjusted non-cummulative measure data in aux structure.
@@ -277,12 +270,6 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
             Set.setPopulationMeasureData(*pPopMeasure);
             Set.setMeasureData_Aux(Set.getMeasureData());
         }
-
-        std::string outName(gParameters.GetOutputFileName());
-        outName += "._second.txt";
-        FILE * fp = fopen(outName.c_str(), "w");
-        gDataHub.DisplayMeasure(fp);
-        fclose(fp);
 
         // now we can make the measure data cummulative
         Set.setMeasureDataToCumulative(); 

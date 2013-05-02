@@ -1370,17 +1370,17 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         if (!(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON)) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
-                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
-                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe adjustment for weekly trends can only be performed with a time aggregation length of 1 day.\n",
-                                BasePrint::P_PARAMERROR);
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
     }
     //validate time trend adjustment
