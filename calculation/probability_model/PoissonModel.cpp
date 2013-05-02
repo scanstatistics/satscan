@@ -211,13 +211,17 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
         // apply any adjustments -- other than the weekly adjustment
         AdjustMeasure(Set, *pPopMeasure);
 
+        // When using power evaluations, we need to cache adjusted non-cummulative measure data in aux structure.
+        // The non-cummulative measure data will be used in the null randomization of power step.
+        bool cachePopulationMeasureData = (gParameters.getPerformPowerEvaluation() && gParameters.GetPowerEvaluationSimulationType() == STANDARD);
+
         // If performing adjustment for day of week, at this point we want to calculate the measure again.
         if (gParameters.getAdjustForWeeklyTrends()) {
             //TwoDimMeasureArray_t dailyMeasure(Set.getMeasureData());
 
             // Define a new PopulationData that will be grouped day of week covariate.
-            PopulationData populationData;
-            populationData.SetNumTracts(gDataHub.GetNumTracts());
+            boost::shared_ptr<PopulationData> populationData(new PopulationData());
+            populationData->SetNumTracts(gDataHub.GetNumTracts());
             // The weekly adjustment will have the population defined on every day in the study period.
             // Since this adjustment requires the time aggregation to be set to 1 day, just iterate through defined time interval dates.
             assert(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1);
@@ -227,7 +231,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
                 prPopulationDate.first = gDataHub.GetTimeIntervalStartTimes()[i];
                 vprPopulationDates.push_back(prPopulationDate);
             }
-            populationData.SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), false/* TODO -- correct? */);
+            populationData->SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), false/* TODO -- correct? */);
             vprPopulationDates.clear(); //dump memory
 
             PrintNull nullPrint; // TODO -- replace later.
@@ -241,9 +245,9 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
                 prPopulationDate.first = gDataHub.GetTimeIntervalStartTimes()[i];
                 unsigned long covariate = prPopulationDate.first % 7; // convert date to day of week covariate
                 OneCovariateDataSource dataSource(uCovariateIndex, covariate);
-                int categoryIndex = populationData.CreateCovariateCategory(dataSource, uCovariateIndex, nullPrint);
+                int categoryIndex = populationData->CreateCovariateCategory(dataSource, uCovariateIndex, nullPrint);
                 for (unsigned int t=0; t < numLocations; ++t) {
-                    populationData.AddCovariateCategoryPopulation(t, categoryIndex, prPopulationDate, ppMeasure[i][t]);
+                    populationData->AddCovariateCategoryPopulation(t, categoryIndex, prPopulationDate, ppMeasure[i][t]);
                 }
             }
 
@@ -254,19 +258,19 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
                 covariates.push_back(std::string(""));
                 Julian date = gDataHub.GetTimeIntervalStartTimes()[i];
                 printString(covariates.back(), "%u", date % 7);
-                int category_index = populationData.GetCovariateCategoryIndex(covariates);
+                int category_index = populationData->GetCovariateCategoryIndex(covariates);
                 assert(category_index != -1);
                 for (unsigned int t=0; t < numLocations; ++t) {
-                    populationData.AddCovariateCategoryCaseCount(category_index, ppCases[i][t] - (i == numIntervals - 1 ? 0 : ppCases[i+1][t]));
+                    populationData->AddCovariateCategoryCaseCount(category_index, ppCases[i][t] - (i == numIntervals - 1 ? 0 : ppCases[i+1][t]));
                 }
             }
             // now re-calculate the measure with alternative population data.
-            pPopMeasure = calculateMeasure(Set, &populationData);
-        }
-
-        // When using power evaluations, we need to cache adjusted non-cummulative measure data in aux structure.
-        // The non-cummulative measure data will be used in the null randomization of power step.
-        if (gParameters.getPerformPowerEvaluation() && gParameters.GetPowerEvaluationSimulationType() == STANDARD) {
+            boost::shared_ptr<TwoDimMeasureArray_t> popMeasure = calculateMeasure(Set, populationData.get());
+            if (cachePopulationMeasureData) {
+                Set.setPopulationMeasureData(*popMeasure, &populationData);
+                Set.setMeasureData_Aux(Set.getMeasureData());
+            }
+        } else if (cachePopulationMeasureData) {
             Set.setPopulationMeasureData(*pPopMeasure);
             Set.setMeasureData_Aux(Set.getMeasureData());
         }

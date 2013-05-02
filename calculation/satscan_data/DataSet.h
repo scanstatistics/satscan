@@ -114,6 +114,9 @@ class DataSet {
 class RealDataSet : public DataSet {
   friend class DataSetHandler;
 
+  public:
+    typedef std::pair<boost::shared_ptr<TwoDimMeasureArray_t>, boost::shared_ptr<PopulationData> > PopulationDataPair_t;
+
   private:
     RealDataSet(const RealDataSet& thisSet);
 
@@ -132,7 +135,7 @@ class RealDataSet : public DataSet {
     TwoDimCountArray_t        * gpCaseData_Censored;                 /** number of censored individuals stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
-    TwoDimMeasureArray_t      * gpPopulationMeasureData;                     /** population measure array */
+    PopulationDataPair_t        _populationData; /* population measure data and PopulationData */
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
@@ -169,8 +172,8 @@ class RealDataSet : public DataSet {
     void                        setTotalMeasureAux(measure_t tTotalMeasureAux) {gtTotalMeasureAux = tTotalMeasureAux;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
-    void                        setPopulationMeasureData(TwoDimMeasureArray_t& other);
-    TwoDimMeasureArray_t     &  getPopulationMeasureData() const;
+    void                        setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation=0);
+    PopulationDataPair_t        getPopulationMeasureData() const;
 };
 //*****************************************************************************
 #endif

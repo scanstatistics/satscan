@@ -231,7 +231,8 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, Da
   // make a copy of real measure data for manipulation, getMeasureData_Aux() should be contain non-cummulative measure data with any initial adjustments
   TwoDimensionArrayHandler<measure_t> measure(RealSet.getMeasureData_Aux());
   // adjust the measure for known relative risks
-  _riskAdjustments->apply(RealSet.getPopulationMeasureData(), RealSet.getPopulationData(), RealSet.getTotalMeasure(), measure);
+  RealDataSet::PopulationDataPair_t populationPair = RealSet.getPopulationMeasureData();
+  _riskAdjustments->apply(*populationPair.first, *populationPair.second, RealSet.getTotalMeasure(), measure);
   //now set the measure as cummulative
   if (measure.Get1stDimension() > 1) {
     measure_t ** ppMeasure = measure.GetArray();

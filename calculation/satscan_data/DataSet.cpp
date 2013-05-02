@@ -598,7 +598,7 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
             :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
-             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0), gpPopulationMeasureData(0) {
+             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
 }
@@ -611,7 +611,6 @@ RealDataSet::~RealDataSet() {
   try {
     delete gpControlData;
     delete gpCaseData_Censored;
-    delete gpPopulationMeasureData;
   }
   catch(...){}
 }
@@ -764,14 +763,26 @@ void RealDataSet::setControlData_MetaLocations(const MetaManagerProxy& MetaProxy
   }
 }
 
-void RealDataSet::setPopulationMeasureData(TwoDimMeasureArray_t& other) {
-    if (!gpPopulationMeasureData)
-        gpPopulationMeasureData = new TwoDimensionArrayHandler<measure_t>(other);
+void RealDataSet::setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation) {
+    if (!_populationData.first.get())
+        _populationData.first.reset(new TwoDimensionArrayHandler<measure_t>(otherMeasure));
     else
-        *gpPopulationMeasureData = other;
+        *(_populationData.first.get()) = otherMeasure;
+    if (otherPopulation)  {
+        _populationData.second = *otherPopulation;
+    }
 }
 
-TwoDimMeasureArray_t & RealDataSet::getPopulationMeasureData() const {
-  if (!gpPopulationMeasureData) throw prg_error("gpPopulationMeasureData not allocated.","getPopulationMeasureData()");
-  return *gpPopulationMeasureData;
+RealDataSet::PopulationDataPair_t RealDataSet::getPopulationMeasureData() const {
+  PopulationDataPair_t populationPair;
+  if (!_populationData.first.get()) throw prg_error("gpPopulationMeasureData not allocated.","getPopulationMeasureData()");
+  populationPair.first = _populationData.first;
+  if (!_populationData.second.get()) {
+      // If PopulationData in pair is not defined, try returning '_population' -- the primary PopulationData object.
+      if (!_population.get()) throw prg_error("gpPopulationMeasureData not allocated.","getPopulationMeasureData()");
+      populationPair.second = _population;
+  } else {
+      populationPair.second = _populationData.second;
+  }
+  return populationPair;
 }
