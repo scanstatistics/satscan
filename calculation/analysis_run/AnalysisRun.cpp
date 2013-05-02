@@ -219,7 +219,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 simulation_out = gParameters.GetSimulationDataOutputFilename();
                 remove(simulation_out.c_str());
             }
-            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out);
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false);
         } else 
             AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
         unsigned int numReplicaStep1 = gSimVars.get_sim_count();
@@ -307,7 +307,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             for (size_t r=1; r < gParameters.GetNumDataSets(); ++r)
                 randomizers->at(r) = randomizers->at(0)->Clone();
             gPrintDirection.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-            runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep(), simulation_out);
+            runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep(), simulation_out, true);
 
             double power05, power01, power001;
             switch (gParameters.getPowerEstimationType()) {
@@ -824,11 +824,11 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
     - additional output file(s)
 *****************************************************
 */
-void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile) {
+void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep) {
   try {
     {
       PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica);
+      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica, isPowerStep);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
       //run threads:
@@ -888,7 +888,7 @@ void AnalysisRunner::ExecuteSuccessiveSimulations() {
                 remove(simulation_out.c_str());
             }
             boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
-            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out);
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false);
         }
     } catch (prg_exception& x) {
         x.addTrace("ExecuteSuccessiveSimulations()","AnalysisRunner");

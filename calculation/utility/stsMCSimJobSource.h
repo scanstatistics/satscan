@@ -83,6 +83,7 @@ public:
    ,PrintQueue & rPrintDirection
    ,AnalysisRunner & rRunner
    ,unsigned int num_replica
+   ,bool isPowerStep
   );
 
   bool                      is_exhausted() const;

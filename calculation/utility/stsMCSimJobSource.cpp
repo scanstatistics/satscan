@@ -11,6 +11,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  ,PrintQueue & rPrintDirection
  ,AnalysisRunner & rRunner
  ,unsigned int num_replica
+ ,bool isPowerStep
 )
  : guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
@@ -30,7 +31,7 @@ stsMCSimJobSource::stsMCSimJobSource(
   }
 
   if (rParameters.GetOutputSimLoglikeliRatiosFiles())
-    gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1));
+    gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1 || isPowerStep));
   if (rParameters.GetLogLikelihoodRatioIsTestStatistic())
     gszReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
   else
