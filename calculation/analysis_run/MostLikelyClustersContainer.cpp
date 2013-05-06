@@ -326,32 +326,58 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
       }
     }
   }
-  //check for overlap using brute force
-  for (tract_t t=1; t <= tTwoNumTracts; ++t) {
-     tract_t tOuter = DataHub.GetNeighbor(iTwoOffset, tTwoCentroid, t, ClusterTwo.GetCartesianRadius());
-     if (tOuter < DataHub.GetNumTracts()) {//outer tract is atomic location
-       for (tract_t v=1; v <= tOneNumTracts; ++v) {
-         tract_t tInner = DataHub.GetNeighbor(iOneOffset, tOneCentroid, v, ClusterOne.GetCartesianRadius());
-         if (tInner < DataHub.GetNumTracts()) {//inner and outer are atomic locations
-           if (tOuter == tInner) {
-             return true;
-           }
-         }
-         else if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(tInner - DataHub.GetNumTracts(), tOuter))
-           return true; //inner is meta location, outer is atomic
-       }
-     }
-     else {//outer tract is meta location
-       for (tract_t v=1; v <= tOneNumTracts; ++v) {
-         tract_t tInner = DataHub.GetNeighbor(iOneOffset, tOneCentroid, v, ClusterOne.GetCartesianRadius());
-         if (tInner < DataHub.GetNumTracts()) {//inner is atomic location, outer is meta location
-           if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(tOuter - DataHub.GetNumTracts(), tInner))
-             return true;
-         }    
-         else if (DataHub.GetTInfo()->getMetaManagerProxy().intersects(tInner - DataHub.GetNumTracts(), tOuter - DataHub.GetNumTracts()))
-           return true; //inner and outer are meta locations
-       }
-     }
+
+  // Check for overlap using brute force - comparing farthest locations in each cluster first.
+  // This process iterates through the locations of each cluster, starting on the right top and 
+  // walking backwards via diagonal succession (top down). The following matrix examples the sequence.
+  // 5| 21 16 11  7  4  2  1
+  // 4| 26 22 17 12  8  5  3
+  // 3| 30 27 23 18 13  9  6
+  // 2| 33 31 28 24 19 14 10
+  // 1| 35 34 32 29 25 20 15
+  //   ----------------------
+  //     1  2  3  4  5  6  7
+
+  // First determine the cluster with the greatest number of locations and define as X axis, the other on the y axis.
+  const CCluster& xCluster = tOneNumTracts > tTwoNumTracts ? ClusterOne : ClusterTwo;
+  const CCluster& yCluster = tOneNumTracts > tTwoNumTracts ? ClusterTwo : ClusterOne;
+  tract_t x_tracts = xCluster.GetNumTractsInCluster(), y_tracts = yCluster.GetNumTractsInCluster(),
+          x_centroid = xCluster.GetCentroidIndex(), y_centroid = yCluster.GetCentroidIndex();
+  int x_offset = xCluster.GetEllipseOffset(), y_offset = yCluster.GetEllipseOffset();
+  // Iterate through all the left leaning diagonals of the matrix.
+  unsigned int totalDiagonals = x_tracts + y_tracts - 1;
+  for (unsigned int diagonalIdx=0; diagonalIdx < totalDiagonals; ++diagonalIdx) {
+      // Given the example matrix above, the first diagnonal is comparing just location at index 7 of xCluster to index 5 of yCluster.
+      // Diagonal 2 with be  6 to 5, 7 to 3; diagonal 3 would be 5 to 5, 6 to 4, 7 to 3; and so on.
+      unsigned int xMin = diagonalIdx >= static_cast<unsigned int>(x_tracts) ? 1 : static_cast<unsigned int>(x_tracts) - diagonalIdx;
+      unsigned int xMax = static_cast<unsigned int>(x_tracts) - (diagonalIdx < static_cast<unsigned int>(y_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(y_tracts));
+      unsigned int yMax = static_cast<unsigned int>(y_tracts) - (diagonalIdx < static_cast<unsigned int>(x_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(x_tracts));
+      unsigned int yMin = diagonalIdx >= static_cast<unsigned int>(y_tracts) ? 1 : static_cast<unsigned int>(y_tracts) - diagonalIdx;
+      for (unsigned int x=xMin, y=yMax; ; ) {
+          tract_t x_location = DataHub.GetNeighbor(x_offset, x_centroid, x, xCluster.GetCartesianRadius());
+          tract_t y_location = DataHub.GetNeighbor(y_offset, y_centroid, y, yCluster.GetCartesianRadius());
+          if (x_location < DataHub.GetNumTracts() && y_location < DataHub.GetNumTracts()) {
+              // both x_location and y_location are atomic locations
+              if (x_location == y_location)
+                return true;
+          } else if (x_location >= DataHub.GetNumTracts() && y_location >= DataHub.GetNumTracts()) {
+              // both x_location and y_location are meta locations
+              if (DataHub.GetTInfo()->getMetaManagerProxy().intersects(x_location - DataHub.GetNumTracts(), y_location - DataHub.GetNumTracts()))
+                return true;
+          } else if (x_location < DataHub.GetNumTracts()) {
+              // x_location is an atomic location and y_location is a meta location
+              if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(y_location - DataHub.GetNumTracts(), x_location))
+                return true;
+          } else { // y_location < DataHub.GetNumTracts()
+              // y_location is an atomic location and x_location is a meta location
+              if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(x_location - DataHub.GetNumTracts(), y_location))
+                return true;
+          }
+          // Stop looping once both x and y variables reach respective min or max.
+          if (x == xMax && y == yMin) break;
+          if (x < xMax) ++x;
+          if (y > yMin) --y;
+      }
   }
   return false;
 }

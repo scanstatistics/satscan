@@ -163,6 +163,7 @@ class CSaTScanData {
 
     inline tract_t                           ** GetSortedArrayAsTract_T(int iEllipse) const;
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
+    bool                                        isSortArrayAllocoated() const {return gpSortedIntHandler != 0 || gpSortedUShortHandler != 0;}
 
     inline void                                 addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo);
 
