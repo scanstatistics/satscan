@@ -81,6 +81,7 @@ class CParameters {
     bool                                _include_locations_kml;                 /** include cluster locations in kml output */
     unsigned int                        _locations_threshold_kml;               /** threshold before cluster locations are put into separate kml files */
     bool                                _compress_kml_output;                   /** compress kml output into kmz format */
+    bool                                _launch_kml_viewer;                     /** compress kml output into kmz format */
 
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
     bool                                _output_shapefiles;                     /** generate shapefile output */
@@ -217,6 +218,8 @@ class CParameters {
     bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
+    bool                                getLaunchKMLViewer() const {return _launch_kml_viewer;}
+    void                                setLaunchKMLViewer(bool b) {_launch_kml_viewer = b;}
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}

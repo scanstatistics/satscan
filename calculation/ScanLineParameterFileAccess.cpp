@@ -145,7 +145,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 123)";
     case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 124)";
     case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 125)";
-    case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric";
+    case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 126)";
+    case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 127)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

@@ -406,6 +406,7 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"IncludeClusterLocationsKML"));
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"ThresholdLocationsSeparateKML"));
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"CompressKMLtoKMZ"));
+  gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"LaunchKMLViewer"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"AdjustForWeeklyTrends"));
 
   gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerEvaluations, (const char*)"PerformPowerEvaluation");

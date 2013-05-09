@@ -517,6 +517,18 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getAdjustForWeeklyTrends());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setIncludeLocationsKML", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getIncludeLocationsKML());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setCompressClusterKML", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCompressClusterKML());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setLaunchKMLViewer", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchKMLViewer());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1007,6 +1019,18 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getAdjustForWeeklyTrends", "()Z");
   Parameters.setAdjustForWeeklyTrends(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getIncludeLocationsKML", "()Z");
+  Parameters.setIncludeLocationsKML(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getCompressClusterKML", "()Z");
+  Parameters.setCompressClusterKML(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getLaunchKMLViewer", "()Z");
+  Parameters.setLaunchKMLViewer(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

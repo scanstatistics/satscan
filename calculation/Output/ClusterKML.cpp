@@ -52,17 +52,14 @@ ClusterKML::file_collection_t& ClusterKML::createKMLFiles(file_collection_t& fil
         KMLout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
         KMLout << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
 
-        // TODO: How to detect that a cluster is high or low? Oberserved vs expected? ... but how about ordinal model?
-        KMLout << "<Style id=\"cluster-centriod-high-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle><LineStyle><color>ff0000aa</color></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
-        KMLout << "<Style id=\"cluster-boundary-high-rate\"><LineStyle><color>ff0000aa</color><width>2</width></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
-        KMLout << "<Style id=\"cluster-placemark-high-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+        KMLout << "\t<Style id=\"high-rate-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>0.5</scale></LabelStyle><LineStyle><color>ff0000aa</color></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
+        KMLout << "\t<StyleMap id=\"high-rate-stylemap\"><Pair><key>normal</key><styleUrl>#high-rate-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#high-rate-style</styleUrl></Pair></StyleMap>" << std::endl;
+        KMLout << "\t<Style id=\"low-rate-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>0.5</scale></LabelStyle><LineStyle><color>ffff0000</color></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
+        KMLout << "\t<StyleMap id=\"low-rate-stylemap\"><Pair><key>normal</key><styleUrl>#low-rate-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#low-rate-style</styleUrl></Pair></StyleMap>" << std::endl;
+        KMLout << "\t<Style id=\"high-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+        KMLout << "\t<Style id=\"low-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
 
-        KMLout << "<Style id=\"cluster-centriod-low-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle><LineStyle><color>ffff0000</color></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
-        KMLout << "<Style id=\"cluster-boundary-low-rate\"><LineStyle><color>ffff0000</color><width>2</width></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
-        KMLout << "<Style id=\"cluster-placemark-low-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-
-        KMLout << "<name>SaTScan Clusters Detected</name><description>Spatial clusters detected in your analysis.</description>" << std::endl << std::endl;
-
+        KMLout << std::endl << "\t<name>SaTScan Clusters Detected</name><description>Spatial clusters detected in your analysis.</description>" << std::endl << std::endl;
         //if  no replications requested, attempt to display up to top 10 clusters
         tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
         //first iterate through all location coordinates to determine largest X and Y
@@ -159,78 +156,90 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
         } else {
             printString(clusterCentroidLabel, "Cluster %d Centroid", (iCluster + 1));
         }
-        outKML << "<Folder>" << std::endl; 
-        outKML << "<name>Cluster " << (iCluster + 1) << "</name>" << std::endl;
+        outKML << "\t<Placemark>" << std::endl; 
+        outKML << "\t\t<name>" << (iCluster + 1) << "</name>" << std::endl;
         // set popup window text
         getClusterLegend(cluster, iCluster, legend);
-        outKML << "<description>" << legend << "</description>" << std::endl;
+        outKML << "\t\t<description>" << legend << "</description>" << std::endl;
+        outKML << "\t\t<gx:balloonVisibility>1</gx:balloonVisibility>" << std::endl;
+        outKML << "\t\t<styleUrl>#" << (isHighRate ? "high-rate-stylemap" : "low-rate-stylemap") << "</styleUrl>" << std::endl;
+        outKML << "\t\t<MultiGeometry>" << std::endl;
         //set focal point of this cluster - cluster centriod
         _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
         prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-        outKML << "<LookAt><longitude>" << prLatitudeLongitude.second << "</longitude><latitude>" << prLatitudeLongitude.first
-               << "</latitude><altitude>1500</altitude><altitudeMode>relativeToGround</altitudeMode></LookAt>" << std::endl;
-        // create centroid placemark
-        outKML << "<Placemark><name>" << clusterCentroidLabel.c_str() <<"</name><description></description><styleUrl>#cluster-centriod-"<< (isHighRate ? "high" : "low") << "-rate</styleUrl>"
-               << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
         // get the coordinates of location farthest away from center
         std::vector<double> TractCoords;
         CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.GetNumTractsInCluster()), TractCoords);
         std::pair<double, double> pointOnCircumference = ConvertToLatLong(TractCoords);
-        if (prLatitudeLongitude != pointOnCircumference) {
-            // create boundary circle placemark
-            outKML << "<Placemark><name>Boundary</name><styleUrl>#cluster-boundary-" << (isHighRate ? "high" : "low") << "-rate</styleUrl><Polygon><outerBoundaryIs><LinearRing><extrude>1</extrude><tessellate>1</tessellate><coordinates>";
-            // calculate the points of a linear ring around the cluster and write them to kml file
-            ClusterKML::points_t circlePoints = getPointsOnCircleCircumference(prLatitudeLongitude, pointOnCircumference);
-            for (ClusterKML::points_t::const_iterator itr=circlePoints.begin(); itr != circlePoints.end(); ++itr) {
-                outKML << itr->first << "," << itr->second << ",500 ";
-            }
-            outKML << "</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>" << std::endl;
-            if (_dataHub.GetParameters().getIncludeLocationsKML()) {
-                std::stringstream  clusterPlacemarks;
-                // create locations folder and locations within cluster placemarks
-                for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                    tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                    if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                        _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
-                        CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
-                        prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-                        clusterPlacemarks << "<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") 
-                                          << "<description></description><styleUrl>";
-                        if (_separateLocationsKML) {
-                            // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
-                            clusterPlacemarks << fileCollection.front().getFileName() << fileCollection.front().getExtension();
-                        }
-                        clusterPlacemarks << "#cluster-placemark-" << (isHighRate ? "high" : "low") << "-rate</styleUrl>"
-                                          << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
-                                          << "</coordinates></Point></Placemark>" << std::endl;
-                    }
-                }
-                if (clusterPlacemarks.str().size()) {
-                    if (_separateLocationsKML) {
-                        // Create separate kml for this clusters locations, then reference in primary cluster.
-                        fileCollection.resize(fileCollection.size() + 1);
-                        fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
-                        printString(buffer, "cluster%u_locations", (iCluster + 1));
-                        fileCollection.back().setFileName(buffer.c_str());
-                        fileCollection.back().setExtension(KML_FILE_EXT);
-
-                        std::ofstream clusterKML;
-                        clusterKML.open(fileCollection.back().getFullPath(buffer).c_str());
-                        if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", fileCollection.back().getFullPath(buffer).c_str());
-                        clusterKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-                        clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
-                        clusterKML << "<name>Cluster " << (iCluster + 1) << " Locations</name>" << std::endl << clusterPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
-                        clusterKML.close();
-                        // Now reference this kml file in NetworkLink tag of primary kml.
-                        outKML << "<NetworkLink><name>Locations " << (iCluster + 1) << "</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
-                               << "cluster" << (iCluster + 1) << "_locations" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl;
-                    } else { // Insert locations into primary kml.
-                        outKML << "<Folder><name>Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "</Folder>" << std::endl;
-                    }
-                }
-            }
+        if (prLatitudeLongitude == pointOnCircumference) {
+            /* If the cluster only has one location, the centroid, then get the nearest neighbor - per Martin.
+               This is more difficult than I initially thought. First, I'm not sure he meant nearest point in 
+               terms of any point defined. I think he meant in terms of clusters reported in kml. I'm also thinking
+               that this includes points on drawn circles -- otherwise if the cluster locations of neighboring cluster
+               are on it's farside, then the clusters could overlap.
+            */
+            // Temporary implementation until we figure out the best course here.  Move north 5 degrees to create a point on circumference.
+            pointOnCircumference.first += (0.000278 * 5.0);
         }
-        outKML << "</Folder>" << std::endl << std::endl; 
+        // create boundary circle placemark
+        outKML << "\t\t\t<Polygon><outerBoundaryIs><LinearRing><extrude>1</extrude><tessellate>1</tessellate><coordinates>";
+        // calculate the points of a linear ring around the cluster and write them to kml file
+        ClusterKML::points_t circlePoints = getPointsOnCircleCircumference(prLatitudeLongitude, pointOnCircumference);
+        for (ClusterKML::points_t::const_iterator itr=circlePoints.begin(); itr != circlePoints.end(); ++itr) {
+            outKML << itr->first << "," << itr->second << ",500 ";
+        }
+        outKML << "</coordinates></LinearRing></outerBoundaryIs></Polygon>" << std::endl;
+        // create centroid placemark
+        outKML << "\t\t\t<Point><extrude>1</extrude><altitudeMode>relativeToGround</altitudeMode><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0" << "</coordinates></Point>" << std::endl;
+        outKML << "\t\t</MultiGeometry>" << std::endl << "\t</Placemark>" << std::endl; 
+        // add cluster locations if requested
+        if (_dataHub.GetParameters().getIncludeLocationsKML()) {
+            std::stringstream  clusterPlacemarks;
+            // create locations folder and locations within cluster placemarks
+            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
+                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                if (!_dataHub.GetIsNullifiedLocation(tTract)) {
+                    _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
+                    CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
+                    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+                    clusterPlacemarks << "\t<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") 
+                                      << "<description></description><styleUrl>";
+                    if (_separateLocationsKML) {
+                        // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
+                        clusterPlacemarks << fileCollection.front().getFileName() << fileCollection.front().getExtension();
+                    }
+                    clusterPlacemarks << "#cluster-placemark-" << (isHighRate ? "high" : "low") << "-rate</styleUrl>"
+                                      << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
+                                      << "</coordinates></Point></Placemark>" << std::endl;
+                }
+            }
+            if (clusterPlacemarks.str().size()) {
+                if (_separateLocationsKML) {
+                    // Create separate kml for this clusters locations, then reference in primary cluster.
+                    fileCollection.resize(fileCollection.size() + 1);
+                    fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+                    printString(buffer, "cluster%u_locations", (iCluster + 1));
+                    fileCollection.back().setFileName(buffer.c_str());
+                    fileCollection.back().setExtension(KML_FILE_EXT);
+
+                    std::ofstream clusterKML;
+                    clusterKML.open(fileCollection.back().getFullPath(buffer).c_str());
+                    if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", fileCollection.back().getFullPath(buffer).c_str());
+                    clusterKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+                    clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+                    clusterKML << "<name>Cluster " << (iCluster + 1) << " Locations</name>" << std::endl << clusterPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
+                    clusterKML.close();
+                    // Now reference this kml file in NetworkLink tag of primary kml.
+                    outKML << "\t<NetworkLink><name>" << (iCluster + 1) << " Locations</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
+                           << "cluster" << (iCluster + 1) << "_locations" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
+                } else { // Insert locations into primary kml.
+                    outKML << "\t<Folder><name>" << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "</Folder>" << std::endl;
+                }
+            }
+        } else {
+            outKML << std::endl; 
+        }
+
     } catch (prg_exception& x) {
         x.addTrace("writeCluster()","ClusterKML");
         throw;

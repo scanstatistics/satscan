@@ -1,6 +1,8 @@
 package org.satscan.gui;
 
+import java.awt.Desktop;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.ImageIcon;
@@ -17,6 +19,7 @@ import org.satscan.utils.EmailClientLauncher;
 import org.satscan.app.Parameters;
 import org.satscan.gui.utils.JDocumentRenderer;
 import org.satscan.app.OutputFileRegister;
+import org.satscan.utils.BareBonesBrowserLaunch;
 
 /**
  * Analysis execution progress/cancellation and results window.
@@ -147,6 +150,24 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 }
                 _progressTextArea.setCaretPosition(0);
                 OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
+            
+                try {
+                    if (_parameters.getOutputKMLFile() && _parameters.getLaunchKMLViewer()) {
+                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
+                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
+                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + (_parameters.getCompressClusterKML() ? ".kmz" : ".kml"));
+                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                            Desktop.getDesktop().open(path);
+                        } else {
+                            String kmlFile = "file://localhost/" + path.getAbsolutePath();
+                            kmlFile = kmlFile.replace('\\', '/');
+                            System.out.println(kmlFile);
+                            BareBonesBrowserLaunch.openURL(kmlFile);
+                        }
+                    }
+                } catch (Throwable t) {
+                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+                }
             }
         });
     }

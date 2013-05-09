@@ -189,6 +189,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
       case COMPRESS_KML_OUTPUT          : return "compress the kml output into a kmz file (y/n)";
+      case LAUNCH_KML_VIEWER            : return "whether to launch kml/kmz viewer - gui only (y/n)";
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -344,6 +345,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case INCLUDE_LOCATIONS_KML        : return AsString(s, gParameters.getIncludeLocationsKML());
       case LOCATIONS_THRESHOLD_KML      : return AsString(s, gParameters.getLocationsThresholdKML());
       case COMPRESS_KML_OUTPUT          : return AsString(s, gParameters.getCompressClusterKML());
+      case LAUNCH_KML_VIEWER            : return AsString(s, gParameters.getLaunchKMLViewer());
       case ADJUST_WEEKLY_TRENDS         : return AsString(s, gParameters.getAdjustForWeeklyTrends());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -731,6 +733,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case INCLUDE_LOCATIONS_KML        : gParameters.setIncludeLocationsKML(ReadBoolean(sParameter, eParameterType)); break;
       case LOCATIONS_THRESHOLD_KML      : gParameters.setLocationsThresholdKML(ReadUnsignedInt(sParameter, eParameterType)); break;
       case COMPRESS_KML_OUTPUT          : gParameters.setCompressClusterKML(ReadBoolean(sParameter, eParameterType)); break;
+      case LAUNCH_KML_VIEWER            : gParameters.setLaunchKMLViewer(ReadBoolean(sParameter, eParameterType)); break;
       case ADJUST_WEEKLY_TRENDS         : gParameters.setAdjustForWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };

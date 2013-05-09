@@ -146,6 +146,9 @@ public class Parameters implements Cloneable {
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
     private boolean                         _output_kml; /* report google earth kml file */
     private boolean                         _output_temporal_graph; /* report temporal graph file */
+    private boolean                         _include_locations_kml; /** include cluster locations in kml output */
+    private boolean                         _compress_kml_output; /** compress kml output into kmz format */
+    private boolean                         _launch_kml_viewer; /* whether to launch kml viewer */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -260,7 +263,12 @@ public class Parameters implements Cloneable {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
-
+    public boolean getLaunchKMLViewer() {return _launch_kml_viewer;}
+    public void setLaunchKMLViewer(boolean b) {_launch_kml_viewer = b;}
+    public boolean getIncludeLocationsKML() {return _include_locations_kml;}
+    public void setIncludeLocationsKML(boolean b) {_include_locations_kml = b;}
+    public boolean getCompressClusterKML() {return _compress_kml_output;}
+    public void setCompressClusterKML(boolean b) {_compress_kml_output = b;}
     public boolean getOutputKMLFile() {return _output_kml;}
     public void setOutputKMLFile(boolean b) {_output_kml = b;}
     public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
@@ -402,7 +410,10 @@ public class Parameters implements Cloneable {
         if (_output_kml != rhs._output_kml) return false;
         if (_output_temporal_graph != rhs._output_temporal_graph) return false;
         if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
-            
+        if (_include_locations_kml != rhs._include_locations_kml) return false;
+        if (_compress_kml_output != rhs._compress_kml_output) return false;
+        if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;        
+        
         return true;
     }
     public boolean getAdjustForWeeklyTrends() {return _adjustWeeklyTrends;}

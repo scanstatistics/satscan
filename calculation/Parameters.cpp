@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 126;
+const int CParameters::giNumParameters                = 127;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -154,6 +154,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_include_locations_kml != rhs._include_locations_kml) return false;
   if (_locations_threshold_kml != rhs._locations_threshold_kml) return false;
   if (_compress_kml_output != rhs._compress_kml_output) return false;
+  if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;
   if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
 
   return true;
@@ -360,6 +361,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _include_locations_kml = rhs._include_locations_kml;
   _compress_kml_output = rhs._compress_kml_output;
   _locations_threshold_kml = rhs._locations_threshold_kml;
+  _launch_kml_viewer = rhs._launch_kml_viewer;
   _adjustWeeklyTrends = rhs._adjustWeeklyTrends;
 }
 
@@ -847,6 +849,7 @@ void CParameters::SetAsDefaulted() {
   _output_shapefiles = false;
   _include_locations_kml = false;
   _compress_kml_output = false;
+  _launch_kml_viewer = true;
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
 }

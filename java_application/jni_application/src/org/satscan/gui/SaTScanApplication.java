@@ -471,7 +471,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     /**
-     * User guide actions; launches Adbode to view user guide in PDF format.
+     * User guide actions; launches Adobe (associated PDF viewer) to view user guide in PDF format.
      */
     public class UserGuideAction extends AbstractAction {
 

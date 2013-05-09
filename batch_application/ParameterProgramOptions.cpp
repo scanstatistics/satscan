@@ -186,6 +186,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(PRINT_ASCII_HEADERS, true), po::value<std::string>(), GetParameterComment(PRINT_ASCII_HEADERS))
         (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
         (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT))
+        (getOption(LAUNCH_KML_VIEWER, true), po::value<std::string>(), GetParameterComment(LAUNCH_KML_VIEWER))
         (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
 
     /* Temporal Graph Output tab options */
