@@ -57,12 +57,22 @@ MostLikelyClusterCaseInfoEachCentroidASCII=n
 MostLikelyClusterCaseInfoEachCentroidDBase=n
 ;output Google Earth KML file (y/n)
 OutputGoogleEarthKML=n
+
+[Additional Output]
 ;whether to include cluster locations kml output (y/n)
 IncludeClusterLocationsKML=n
 ;threshold for generating separate kml files for cluster locations (positive integer)
 ThresholdLocationsSeparateKML=1000
 ;compress the kml output into a kmz file (y/n)
 CompressKMLtoKMZ=n
+;whether to launch kml/kmz viewer - gui only (y/n)
+LaunchKMLViewer=n
+;report critical values for .01 and .05? (y/n)
+CriticalValue=n
+;report cluster rank (y/n)
+ReportClusterRank=n
+;print ascii headers in output files (y/n)
+PrintAsciiColumnHeaders=n
 
 [Multiple Data Sets]
 ; multiple data sets purpose type (0=Multivariate, 1=Adjustment)
@@ -127,6 +137,8 @@ IntervalEndRange=2000/1/1,2000/12/31
 TimeTrendAdjustmentType=0
 ;time trend adjustment percentage (>-100)
 TimeTrendPercentage=0
+;adjust for weekly trends, nonparametric
+AdjustForWeeklyTrends=n
 ;adjustments by known relative risks file name (with HA Randomization=1)
 AdjustmentsByKnownRelativeRisksFilename=
 ;use adjustments by known relative risks file? (y/n)
@@ -183,14 +195,6 @@ MaxSpatialSizeInDistanceFromCenter_Reported=1
 UseMaxCirclePopulationFileOption_Reported=n
 ;restrict maximum reported spatial size - distance? (y/n)
 UseDistanceFromCenterOption_Reported=n
-
-[Additional Output]
-;report critical values for .01 and .05? (y/n)
-CriticalValue=n
-;report cluster rank (y/n)
-ReportClusterRank=n
-;print ascii headers in output files (y/n)
-PrintAsciiColumnHeaders=n
 
 [Temporal Graph]
 ;output temporal graph HTML file (y/n)
