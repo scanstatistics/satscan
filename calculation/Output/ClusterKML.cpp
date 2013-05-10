@@ -208,7 +208,7 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
                         // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
                         clusterPlacemarks << fileCollection.front().getFileName() << fileCollection.front().getExtension();
                     }
-                    clusterPlacemarks << "#cluster-placemark-" << (isHighRate ? "high" : "low") << "-rate</styleUrl>"
+                    clusterPlacemarks << "#" << (isHighRate ? "high" : "low") << "-rate-placemark</styleUrl>"
                                       << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
                                       << "</coordinates></Point></Placemark>" << std::endl;
                 }

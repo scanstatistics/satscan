@@ -144,11 +144,11 @@ public class Parameters implements Cloneable {
                                             gbOutputClusterCaseDBase=false; /** indicates whether to output most likely cluster cases for each centroid in dBase format */
     private boolean                         gbOutputAreaSpecificAscii=false, /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ASCII format */
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
-    private boolean                         _output_kml; /* report google earth kml file */
-    private boolean                         _output_temporal_graph; /* report temporal graph file */
-    private boolean                         _include_locations_kml; /** include cluster locations in kml output */
-    private boolean                         _compress_kml_output; /** compress kml output into kmz format */
-    private boolean                         _launch_kml_viewer; /* whether to launch kml viewer */
+    private boolean                         _output_kml=false; /* report google earth kml file */
+    private boolean                         _output_temporal_graph=false; /* report temporal graph file */
+    private boolean                         _include_locations_kml=false; /** include cluster locations in kml output */
+    private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
+    private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */

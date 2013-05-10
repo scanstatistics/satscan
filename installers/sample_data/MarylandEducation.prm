@@ -66,7 +66,7 @@ ThresholdLocationsSeparateKML=1000
 ;compress the kml output into a kmz file (y/n)
 CompressKMLtoKMZ=n
 ;whether to launch kml/kmz viewer - gui only (y/n)
-LaunchKMLViewer=n
+LaunchKMLViewer=y
 ;report critical values for .01 and .05? (y/n)
 CriticalValue=n
 ;report cluster rank (y/n)

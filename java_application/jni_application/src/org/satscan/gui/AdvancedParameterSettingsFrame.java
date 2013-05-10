@@ -791,7 +791,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_reportTemporalGraph.isSelected() == false);
         bReturn &= (_includeClusterLocationsInKML.isSelected() == false);
         bReturn &= (_createCompressedKMZ.isSelected() == false);        
-        bReturn &= (_launchKMLViewer.isSelected() == false);        
+        bReturn &= (_launchKMLViewer.isSelected() == true);        
 
         return bReturn;
     }
@@ -1030,7 +1030,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setReportGiniOptimizedClusters(_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected());
         parameters.setIncludeLocationsKML(_includeClusterLocationsInKML.isEnabled() && _includeClusterLocationsInKML.isSelected());
         parameters.setCompressClusterKML(_createCompressedKMZ.isEnabled() && _createCompressedKMZ.isSelected());
-        parameters.setLaunchKMLViewer(_launchKMLViewer.isEnabled() && _launchKMLViewer.isSelected());
+        parameters.setLaunchKMLViewer(_launchKMLViewer.isSelected());
 
         // Power Evaluations tab
         parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
