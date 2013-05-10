@@ -161,12 +161,12 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                         } else {
                             String kmlFile = "file://localhost/" + path.getAbsolutePath();
                             kmlFile = kmlFile.replace('\\', '/');
-                            System.out.println(kmlFile);
                             BareBonesBrowserLaunch.openURL(kmlFile);
                         }
                     }
                 } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+                    JOptionPane.showMessageDialog(null, "Unable to launch KML file viewer. If you do not have a viewer, you can download Google Earth from http://www.google.com/earth/download/.");
+                    //new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
                 }
             }
         });
