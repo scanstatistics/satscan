@@ -202,7 +202,7 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
                     _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
                     CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
                     prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-                    clusterPlacemarks << "\t<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") 
+                    clusterPlacemarks << "\t\t<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") 
                                       << "<description></description><styleUrl>";
                     if (_separateLocationsKML) {
                         // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
@@ -233,7 +233,7 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
                     outKML << "\t<NetworkLink><name>" << (iCluster + 1) << " Locations</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
                            << "cluster" << (iCluster + 1) << "_locations" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
                 } else { // Insert locations into primary kml.
-                    outKML << "\t<Folder><name>" << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "</Folder>" << std::endl;
+                    outKML << "\t<Folder><name>" << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "\t</Folder>"<< std::endl << std::endl;
                 }
             }
         } else {
@@ -253,7 +253,7 @@ std::string & ClusterKML::getClusterLegend(const CCluster& cluster, int iCluster
 
     lines << "<![CDATA[" << std::endl << "<table style=\"font-size:12px;\">";
     for (; itr != itr_end; ++itr) {
-        lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td>" << itr->second << "</td></tr>";
+        lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td style=\"white-space:nowrap;\">" << itr->second << "</td></tr>";
     }
     lines << "</table>" << std::endl << "]]>";
 
