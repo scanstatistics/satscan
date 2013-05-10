@@ -7,6 +7,7 @@
 #include "UtilityFunctions.h"
 #include "cluster.h"
 #include "SimulationVariables.h"
+#include "Toolkit.h"
 #include <fstream>
 #include <boost/regex.hpp>
 
@@ -20,9 +21,9 @@ const char * AbstractChartGenerator::BASE_TEMPLATE = " \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
         <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #9ea090;} button {cursor: pointer;}button {-moz-border-radius:5px;-webkit-border-radius:5px;-moz-box-shadow:0px 0px 2px rgba(0,0,0,0.4);-webkit-box-shadow:0px 0px 2px rgba(0,0,0,0.4);color:rgba(0,0,0,0.9);text-shadow:1px 1px 0px rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.5);background:-webkit-gradient(linear,0% 0%,0% 100%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(top,rgba(255,255,255,1),rgba(185,185,185,1));padding:5px 5px 5px 5px;}button:hover {background:rgba(240,240,240,1);}button:active, button:focus {background:-webkit-gradient(linear,0% 100%,0% 0%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(bottom,rgba(255,255,255,1),rgba(185,185,185,1));}button:disabled {color:rgba(0,0,0,0.4);text-shadow:1px 1px 0px rgba(255,255,255,0.5);background:rgba(220,220,220,1);}</style> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/jquery-1.9.0/jquery-1.9.0.js\"></script> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/highcharts.js\"></script> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--/files/highcharts/highcharts-2.3.5/js/modules/exporting.js\"></script> \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js\"></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/highcharts/highcharts-2.3.5/js/highcharts.js\"></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/highcharts/highcharts-2.3.5/js/modules/exporting.js\"></script> \
         --header-- \
     </head> \n \
     <body> \n \
@@ -129,7 +130,7 @@ void TemporalChartGenerator::generateChart() const {
         // replace specialized header
         templateReplace(html, "--header--", TEMPLATE_HEADER);
         // site resource link path
-        templateReplace(html, "--resource-path--", "http://www118.imsweb.com");
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // replace page title
         templateReplace(html, "--title--", "Cluster Graph");
         // replace specialized body
@@ -280,7 +281,7 @@ void GiniChartGenerator::generateChart() const {
         // replace specialized header
         templateReplace(html, "--header--", TEMPLATE_HEADER);
         // site resource link path
-        templateReplace(html, "--resource-path--", "http://www118.imsweb.com");
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // replace page title
         templateReplace(html, "--title--", "Gini coefficient");
         // replace specialized body
