@@ -63,7 +63,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="522" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -107,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="74" max="32767" attributes="0"/>
+                      <EmptySpace pref="78" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -819,7 +819,11 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_coodrinatesFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_gridFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_gridFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="83" max="-2" attributes="0"/>
+                                  <Component id="_gridFileHintLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_gridFileTextField" min="-2" pref="301" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -849,7 +853,10 @@
                                       <Component id="_coodrinatesFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_gridFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_gridFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_gridFileHintLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                                   <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="_gridFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -992,6 +999,11 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Grid File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;grd&quot;,&quot;Grid Files (*.grd)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                launchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JLabel" name="_gridFileHintLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="(optional)" noResource="true"/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
             <Component class="javax.swing.JButton" name="_advancedInputButton">
@@ -1050,7 +1062,7 @@
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="190" max="32767" attributes="0"/>
+                      <EmptySpace pref="194" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1759,7 +1771,7 @@
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="155" max="32767" attributes="0"/>
+                      <EmptySpace pref="159" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

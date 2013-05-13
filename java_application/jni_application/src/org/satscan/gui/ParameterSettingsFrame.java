@@ -1414,6 +1414,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileTextField = new javax.swing.JTextField();
         _gridFileBrowseButton = new javax.swing.JButton();
         _gridFileImportButton = new javax.swing.JButton();
+        _gridFileHintLabel = new javax.swing.JLabel();
         _advancedInputButton = new javax.swing.JButton();
         _analysisTab = new javax.swing.JPanel();
         _analysisTypeGroup = new javax.swing.JPanel();
@@ -2245,6 +2246,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _gridFileHintLabel.setText("(optional)"); // NOI18N
+
         javax.swing.GroupLayout _geographicalInputPanelLayout = new javax.swing.GroupLayout(_geographicalInputPanel);
         _geographicalInputPanel.setLayout(_geographicalInputPanelLayout);
         _geographicalInputPanelLayout.setHorizontalGroup(
@@ -2259,7 +2262,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_coordinatesFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_coodrinatesFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_gridFileLabel)
+                    .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
+                        .addComponent(_gridFileLabel)
+                        .addGap(83, 83, 83)
+                        .addComponent(_gridFileHintLabel))
                     .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
                         .addComponent(_gridFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2284,7 +2290,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                             .addComponent(_coordinatesFileBrowseButton)
                             .addComponent(_coodrinatesFileImportButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_gridFileLabel)
+                        .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_gridFileLabel)
+                            .addComponent(_gridFileHintLabel))
                         .addGap(0, 0, 0)
                         .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_gridFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2322,7 +2330,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2796,7 +2804,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 194, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -3033,7 +3041,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 155, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3048,7 +3056,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+            .addComponent(_tabbedPane)
         );
 
         pack();
@@ -3104,6 +3112,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JPanel _geographicalInputPanel;
     private javax.swing.JPanel _geographicalOutputGroup;
     private javax.swing.JButton _gridFileBrowseButton;
+    private javax.swing.JLabel _gridFileHintLabel;
     private javax.swing.JButton _gridFileImportButton;
     private javax.swing.JLabel _gridFileLabel;
     private javax.swing.JTextField _gridFileTextField;
