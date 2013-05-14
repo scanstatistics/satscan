@@ -342,7 +342,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     private void enableAdditionalDataSetsGroup(boolean bEnable) {
-        bEnable &= (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true);
+        //bEnable &= (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true);
         bEnable &= _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _additionalDataSetsGroup.setEnabled(bEnable);
 
@@ -1094,8 +1094,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
         boolean bFirstDataSetHasPopulationFile = _analysisSettingsWindow.getEdtPopFileNameText().length() > 0;
 
-        if (!_additionalDataSetsGroup.isEnabled()) return;
-        
+        if (!_additionalDataSetsGroup.isEnabled()) return;      
+       
         for (int i = 0; i < _caseFilenames.size(); i++) {
             //Ensure that controls have this dataset display, should we need to
             //show window regarding an error with settings.
@@ -1216,6 +1216,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (indexBasedClusterdSelected && _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
             throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not permitted with the Gini index based collection feature.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
         }
+        // prevent using the isotonic scan statistic with multiple data sets.
+        if (_caseFilenames.size() > 0 && 
+            _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
+                throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not implemented with multiple data sets.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
+        }        
     }
 
     private void validateAdjustmentSettings() {

@@ -623,7 +623,7 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
       }
       if (gParameters.GetNumDataSets() > 1) {
         bReturn = false;
-        PrintDirection.Printf("%s:\nMultiple data sets are not permitted with isotonic scan in this version of SaTScan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nThe isotonic scan statistic is not implemented with mulitple data sets.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
         bReturn = false;
