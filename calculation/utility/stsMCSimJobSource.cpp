@@ -295,7 +295,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
     unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
     grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
-      ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
+      ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, grPrintDirection, true);
       SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
       grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
     }

@@ -126,7 +126,7 @@ unsigned int GetNumSystemProcessors() {
 }
 
 /** Calculates an estimate for the time remaining to complete X repetition given Y completed. */
-void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection) {
+void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint& printDirection, bool isUpperLimit) {
   boost::posix_time::ptime StopTime(GetCurrentTime_HighResolution());
   double dSecondsElapsed;
 
@@ -144,18 +144,18 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
 
   //print an estimation only if estimated time will be 30 seconds or more
   if (dEstimatedSecondsRemaining >= 30) {
-    if (dEstimatedSecondsRemaining < 60.0)
-        pPrintDirection->Printf(".... this will approximately take at most %.0lf seconds.\n", BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
-    else if (dEstimatedSecondsRemaining < 3600.0) {
+    if (dEstimatedSecondsRemaining < 60.0) {
+        const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf seconds.\n" : ".... this will take approximately %.0lf seconds.\n";
+        printDirection.Printf(message, BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
+    } else if (dEstimatedSecondsRemaining < 3600.0) {
       double dMinutes = std::ceil(dEstimatedSecondsRemaining/60.0);
-      pPrintDirection->Printf(".... this will approximately take at most %.0lf minute%s.\n",
-                              BasePrint::P_STDOUT, dMinutes, (dMinutes == 1.0 ? "" : "s"));
-    }
-    else {
+      const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf minute%s.\n" : ".... this will take approximately %.0lf minute%s.\n";
+      printDirection.Printf(message, BasePrint::P_STDOUT, dMinutes, (dMinutes == 1.0 ? "" : "s"));
+    } else {
       double dHours = std::floor(dEstimatedSecondsRemaining/3600.0);
       double dMinutes = std::ceil((dEstimatedSecondsRemaining - dHours * 3600.0)/60.0);
-      pPrintDirection->Printf(".... this will approximately take at most %.0lf hour%s %.0lf minute%s.\n",
-                              BasePrint::P_STDOUT, dHours, (dHours == 1.0 ? "" : "s"), dMinutes, (dMinutes == 1.0 ? "" : "s"));
+      const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf hour%s %.0lf minute%s.\n" : ".... this will take approximately %.0lf hour%s %.0lf minute%s.\n";
+      printDirection.Printf(message, BasePrint::P_STDOUT, dHours, (dHours == 1.0 ? "" : "s"), dMinutes, (dMinutes == 1.0 ? "" : "s"));
     }
   }
 }

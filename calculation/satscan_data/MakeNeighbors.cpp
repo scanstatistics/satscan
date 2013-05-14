@@ -232,7 +232,7 @@ void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub)
            gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1), 0, 0);
          CalculateNeighborsForCurrentState(prNeighborsCount);
          const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
-         if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, &gPrintDirection);
+         if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, gPrintDirection);
       }
     }
     else {
@@ -337,7 +337,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles(const CSaTScanData&
      AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
      CoupleLocationsAtSameCoordinates(prNeighborsCount);
      const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
-     if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, &gPrintDirection);
+     if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, gPrintDirection);
   }
 }
 
@@ -360,7 +360,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData
         AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
         CoupleLocationsAtSameCoordinates(prNeighborsCount);
         const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
-        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses(), t, &gPrintDirection);
+        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses(), t, gPrintDirection);
      }
   }
 }

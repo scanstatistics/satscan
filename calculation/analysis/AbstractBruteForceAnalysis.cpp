@@ -32,7 +32,7 @@ void AbstractBruteForceAnalysis::FindTopClusters(const AbstractDataSetGateway& D
             }
        }
        if (i==9)
-         ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, i+1, &gPrintDirection);
+         ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, i+1, gPrintDirection);
     }
   } catch (prg_exception& x) {
     x.addTrace("FindTopClusters()","AbstractBruteForceAnalysis");

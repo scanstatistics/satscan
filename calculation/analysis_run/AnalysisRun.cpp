@@ -1166,7 +1166,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
     for (size_t i=0; i < clusterSupplement.size(); ++i) {
         gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, clusterSupplement.size());
         if (i==9) //report estimate of time to report all clusters
-            ReportTimeEstimate(StartTime, clusterSupplement.size(), i, &gPrintDirection);
+            ReportTimeEstimate(StartTime, clusterSupplement.size(), i, gPrintDirection);
         //get reference to i'th top cluster
         const CCluster& TopCluster = mlc.GetCluster(i);
         //write cluster details to 'cluster information' file
