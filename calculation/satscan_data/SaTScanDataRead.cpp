@@ -359,15 +359,8 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
              break; //stop reading records, the first record defines remaining records format
            }
            //now that the number of dimensions is known, validate against requested ellipses
-           if (iScanCount - 1 > 2 && gParameters.GetSpatialWindowType() == ELLIPTIC &&
-               !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS ||
-               gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
-             gPrint.Printf("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
-                           "       dimensions be specified for a centroid when performing an analysis\n"
-                           "       which contain ellipses and restricts reporting of secondary clusters\n"
-                           "       to anything other than 'No Geographical Overlap'. You may want to\n"
-                           "       change the criteria for reporting secondary clusters and run the\n"
-                           "       analysis again.\n", BasePrint::P_ERROR);
+           if (iScanCount - 1 > 2 && gParameters.GetSpatialWindowType() == ELLIPTIC) {
+             gPrint.Printf("Error: Only two dimensions can be specified when using the elliptic window shape. Record %ld has %d dimensions.\n", BasePrint::P_ERROR, Source.GetCurrentRecordIndex(), iScanCount - 1);
              bValid = false;
              break;
            }
