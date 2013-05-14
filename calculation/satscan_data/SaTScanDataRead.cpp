@@ -1099,7 +1099,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
         }
         if (bValid)
           //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-          gDataHub.AllocateSortedArrayNeighbors(Source->GetCurrentRecordIndex() - 1, vRecordNeighborList);
+          gDataHub.AllocateSortedArrayNeighbors(Source->getNonBlankRecordsRead() - 1, vRecordNeighborList);
       }
     }
     //if invalid at this point then read encountered problems with data format,

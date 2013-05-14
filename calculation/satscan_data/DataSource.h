@@ -20,6 +20,7 @@ class DataSource {
      void                               clearBlankRecordFlag() {_blank_record_flag=false;}
      bool                               detectBlankRecordFlag() const {return _blank_record_flag;}
      virtual long                       GetCurrentRecordIndex() const = 0;
+     virtual long                       getNonBlankRecordsRead() const {return GetCurrentRecordIndex();}
      static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII=true);
      virtual long                       GetNumValues() = 0;
      virtual const char               * GetValueAt(long iFieldIndex) = 0;
@@ -54,6 +55,7 @@ class AsciiFileDataSource : public DataSource {
 
      std::auto_ptr<StringParser>        gStringParser;
      long                               glReadCount;
+     long                               glBlankReadCount;
      std::ifstream                      gSourceFile;
      BasePrint                        & gPrint;
      std::string                        gsReadBuffer;
@@ -65,6 +67,7 @@ class AsciiFileDataSource : public DataSource {
      virtual ~AsciiFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const {return glReadCount;}
+     virtual long                       getNonBlankRecordsRead() const {return glReadCount - glBlankReadCount;}
      virtual long                       GetNumValues() {return gStringParser->GetNumberWords();}
      virtual const char               * GetValueAt(long iFieldIndex) {return gStringParser->GetWord(iFieldIndex);}
      virtual void                       GotoFirstRecord();

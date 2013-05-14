@@ -104,7 +104,7 @@ void AsciiFileDataSource::StringParser::ThrowAsciiException() {
 
 /** constructor */
 AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print, const char cDelimiter)
-                    :DataSource(), glReadCount(0), gPrint(Print), gStringParser(new StringParser(Print, cDelimiter)) {
+                    :DataSource(), glReadCount(0), glBlankReadCount(0), gPrint(Print), gStringParser(new StringParser(Print, cDelimiter)) {
   try {
     gSourceFile.open(sSourceFilename.c_str());
     if (!gSourceFile)
@@ -119,6 +119,7 @@ AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, Bas
 /** Re-positions file cursor to beginning of file. */
 void AsciiFileDataSource::GotoFirstRecord() {
   glReadCount = 0;
+  glBlankReadCount = 0;
   gSourceFile.clear();
   gSourceFile.seekg(0L, std::ios::beg);
 }
@@ -151,6 +152,7 @@ bool AsciiFileDataSource::ReadRecord() {
       if (isBlank) {
           tripBlankRecordFlag();
           ++glReadCount;
+          ++glBlankReadCount;
       }
   }
 
