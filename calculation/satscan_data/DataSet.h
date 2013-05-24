@@ -8,6 +8,7 @@
 #include "PopulationData.h"
 #include "TimeTrend.h"
 #include "ptr_vector.h"
+#include "boost/date_time/gregorian/gregorian.hpp"
 
 //typedefs for multiple dimension arrays
 typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
@@ -116,26 +117,32 @@ class RealDataSet : public DataSet {
 
   public:
     typedef std::pair<boost::shared_ptr<TwoDimMeasureArray_t>, boost::shared_ptr<PopulationData> > PopulationDataPair_t;
+    typedef std::map<boost::gregorian::greg_weekday,count_t> CountsByWeekDay_t;
+    typedef std::map<unsigned int, count_t> CategoryCaseCount_t;
+    typedef std::map<boost::gregorian::greg_weekday,CategoryCaseCount_t> CategoryCountsByWeekDay_t;
 
   private:
     RealDataSet(const RealDataSet& thisSet);
 
   protected:
     boost::shared_ptr<PopulationData> _population;
-    //PopulationData              gPopulation;                            /** population data */
+    //PopulationData              gPopulation;                          /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data set */
-    measure_t                   gtTotalMeasureAux;                       /** number of auxillary entries in data set */
+    measure_t                   gtTotalMeasureAux;                      /** number of auxillary entries in data set */
     count_t                     gtTotalCases;                           /** number of cases in data set */
+    CountsByWeekDay_t           _totalCasesByWeekDay;
+    CountsByWeekDay_t           _totalControlsByWeekDay;
+    CategoryCountsByWeekDay_t   _totalCategoryCasesByWeekDay;
     double                      gdTotalPop;                             /** population in data set */
     count_t                     gtTotalCasesAtStart;                    /** number of cases as defined at analysis start */
     count_t                     gtTotalControls;                        /** number of controls in data set */
     measure_t                   gtTotalMeasureAtStart;                  /** number of expected cases as defined at analysis start */
-    TwoDimCountArray_t        * gpControlData;                      /** number of controls stratified with respect to time intervals by tract index
+    TwoDimCountArray_t        * gpControlData;                          /** number of controls stratified with respect to time intervals by tract index
                                                                             - controls are distributed in time intervals cumulatively */
-    TwoDimCountArray_t        * gpCaseData_Censored;                 /** number of censored individuals stratified with respect to time intervals by tract index
+    TwoDimCountArray_t        * gpCaseData_Censored;                    /** number of censored individuals stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
-    PopulationDataPair_t        _populationData; /* population measure data and PopulationData */
+    PopulationDataPair_t        _populationData;                        /* population measure data and PopulationData */
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
@@ -143,7 +150,7 @@ class RealDataSet : public DataSet {
 
     TwoDimCountArray_t        & allocateCaseData_Censored();
     TwoDimCountArray_t        & allocateControlData();
-    TwoDimCountArray_t        & addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
+    TwoDimCountArray_t        & addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count, Julian date);
     void                        checkPopulationDataCases(CSaTScanData& Data);
     double                      getCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex) const;
@@ -166,8 +173,14 @@ class RealDataSet : public DataSet {
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setControlData_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}
+    void                        setTotalCasesByWeekDay(CountsByWeekDay_t weekDayCounts) {_totalCasesByWeekDay = weekDayCounts;}
+    CountsByWeekDay_t           getTotalCasesByWeekDay() const {return _totalCasesByWeekDay;}
     void                        setTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}
+    void                        setTotalCategoryCasesByWeekDay(CategoryCountsByWeekDay_t weekDayCategoryCounts) {_totalCategoryCasesByWeekDay = weekDayCategoryCounts;}
+    CategoryCountsByWeekDay_t   getTotalCategoryCasesByWeekDay() const {return _totalCategoryCasesByWeekDay;}
+    CountsByWeekDay_t           getTotalControlByWeekDay() const {return _totalControlsByWeekDay;}
     void                        setTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
+    void                        setTotalControlByWeekDay(CountsByWeekDay_t weekDayCounts) {_totalControlsByWeekDay = weekDayCounts;}
     void                        setTotalMeasure(measure_t tTotalMeasure) {gtTotalMeasure = tTotalMeasure;}
     void                        setTotalMeasureAux(measure_t tTotalMeasureAux) {gtTotalMeasureAux = tTotalMeasureAux;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}

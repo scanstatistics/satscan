@@ -10,8 +10,8 @@ class HomogenousPoissonModel : public CModel {
     HomogenousPoissonModel();
     virtual ~HomogenousPoissonModel();
 
-    virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHug) const;
+    virtual void                CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub);
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //******************************************************************************
 #endif

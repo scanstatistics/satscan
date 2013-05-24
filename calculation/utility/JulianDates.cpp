@@ -219,6 +219,13 @@ void printTimeIntervals(const std::vector<Julian>& intervals, DatePrecisionType 
     }
 }
 
+boost::gregorian::greg_weekday getWeekDay(Julian date) {
+    UInt month, day, year;
+    JulianToMDY(&month, &day, &year, date);
+    boost::gregorian::date d(year, month, day);
+    return d.day_of_week();
+}
+
 /** class constructor */
 DecrementableEndDate::DecrementableEndDate(Julian StartingDate, DatePrecisionType eDecrementUnits)
                      :gStartingDate(StartingDate + 1),

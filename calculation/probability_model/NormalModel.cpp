@@ -12,7 +12,7 @@ CNormalModel::CNormalModel() : CModel() {}
 CNormalModel::~CNormalModel() {}
 
 /** No operation performed for this probability model. */
-void CNormalModel::CalculateMeasure(RealDataSet&) {/* no action here */}
+void CNormalModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
 double CNormalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {

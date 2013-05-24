@@ -222,7 +222,7 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
                  throw resolvable_error("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
                                         std::numeric_limits<count_t>::max());
                //record count and get category's 2-D array pointer
-               ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount).GetArray();
+               ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount, Date).GetArray();
                //update location case counts such that 'tCount' is reprented cumulatively through
                //time from start date through specifed date in record
                ppCategoryCounts[0][tLocationIndex] += tCount;
@@ -270,6 +270,8 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
     else {
       DataSet.setTotalCases(tTotalCases);
       DataSet.setTotalPopulation(tTotalCases);
+      AbstractOrdinalPermutedDataRandomizer * randomizer = dynamic_cast<AbstractOrdinalPermutedDataRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
+      if (randomizer) randomizer->setPermutedData(DataSet);
     }
   }
   catch (prg_exception& x) {
@@ -314,10 +316,17 @@ void OrdinalDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers[0] = new OrdinalPurelyTemporalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
-          else
-            gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis()) {
+              if (gParameters.getAdjustForWeeklyTrends()) 
+                gvDataSetRandomizers[0] = new OrdinalPurelyTemporalPermutedDataRandomizer(gDataHub, gParameters.GetRandomizationSeed());
+              else
+                gvDataSetRandomizers[0] = new OrdinalPurelyTemporalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
+          } else {
+            if (gParameters.getAdjustForWeeklyTrends()) 
+                gvDataSetRandomizers[0] = new OrdinalPermutedDataRandomizer(gDataHub, gParameters.GetRandomizationSeed());
+            else
+                gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
+          }
           break;
       case FILESOURCE :
           gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetSimulationDataSourceFilename(), gParameters.GetRandomizationSeed());

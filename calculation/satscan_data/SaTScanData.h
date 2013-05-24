@@ -139,6 +139,7 @@ class CSaTScanData {
     int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
     int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
+    Julian                                      intervalIndexToJulian(unsigned int intervalIdx) const;
     inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;

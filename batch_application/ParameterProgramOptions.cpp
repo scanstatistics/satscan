@@ -146,7 +146,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(ADJ_BY_RR_FILE, true), po::value<std::string>(), GetParameterComment(ADJ_BY_RR_FILE))
         (getOption(USE_ADJ_BY_RR_FILE, true), po::value<std::string>(), GetParameterComment(USE_ADJ_BY_RR_FILE))
         (getOption(SPATIAL_ADJ_TYPE, true), po::value<std::string>(), GetParameterComment(SPATIAL_ADJ_TYPE))
-        (getOption(TIME_TREND_TYPE, true), po::value<std::string>(), GetParameterComment(TIME_TREND_TYPE));
+        (getOption(TIME_TREND_TYPE, true), po::value<std::string>(), GetParameterComment(TIME_TREND_TYPE))
+        (getOption(ADJUST_WEEKLY_TRENDS, true), po::value<std::string>(), GetParameterComment(ADJUST_WEEKLY_TRENDS));
 
     /* Inference tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Inference), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));

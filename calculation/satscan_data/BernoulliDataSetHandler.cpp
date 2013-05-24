@@ -189,7 +189,14 @@ void BernoulliDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          if (gParameters.GetIsPurelyTemporalAnalysis())
+          if (gParameters.getAdjustForWeeklyTrends()) {
+              boost::gregorian::greg_weekday weekday = getWeekDay((gDataHub.GetTimeIntervalStartTimes().back()) - 1);
+              if (gParameters.GetIsPurelyTemporalAnalysis())
+                gvDataSetRandomizers.at(0) = new BernoulliPurelyTemporalNullHypothesisDayOfWeekRandomizer(weekday, gParameters.GetRandomizationSeed());
+              else
+                gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisDayOfWeekRandomizer(weekday, gParameters.GetRandomizationSeed());
+          }
+          else if (gParameters.GetIsPurelyTemporalAnalysis())
             gvDataSetRandomizers.at(0) = new BernoulliPurelyTemporalNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           else
             gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());

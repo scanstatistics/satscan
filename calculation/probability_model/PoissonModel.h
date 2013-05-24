@@ -27,7 +27,7 @@ class CPoissonModel : public CModel {
     virtual ~CPoissonModel();
 
     boost::shared_ptr<TwoDimMeasureArray_t> calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData=0);
-    virtual void                CalculateMeasure(RealDataSet& Set);
+    virtual void                CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //*****************************************************************************

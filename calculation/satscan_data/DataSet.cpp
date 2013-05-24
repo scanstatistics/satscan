@@ -601,6 +601,13 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
              gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
+    boost::gregorian::greg_weekday week_day = boost::date_time::Sunday;
+    for (; ; ) {
+        _totalCasesByWeekDay[week_day] = 0;
+        _totalControlsByWeekDay[week_day] = 0;
+        if (week_day == boost::date_time::Saturday) break;
+        week_day = boost::gregorian::greg_weekday(week_day.as_number() + 1);
+    }
 }
 
 /** copy constructor */
@@ -655,12 +662,15 @@ TwoDimCountArray_t & RealDataSet::allocateControlData() {
     dimensional array does not exist for category associated with 'dOrdinalNumber',
     one is allocated. Returns referance to two dimensional array associated with
     'dOrdinalNumber'. */
-TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count) {
+TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count, Julian date) {
   size_t        tCategoryIndex;
 
   tCategoryIndex = _population->AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
   if (_population->GetNumOrdinalCategories() > gvCaseData_Cat.size())
     gvCaseData_Cat.insert(gvCaseData_Cat.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
+
+  // update counts by week day by category
+  _totalCategoryCasesByWeekDay[getWeekDay(date)][tCategoryIndex] += Count;
 
   return *gvCaseData_Cat[tCategoryIndex];
 }

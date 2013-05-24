@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include <string>
+#include "boost/date_time/gregorian/gregorian.hpp"
 
 /* Date module header file - SaTScan                      */
 /*                                                        */
@@ -22,22 +23,23 @@ typedef unsigned long Julian;
 typedef boost::date_time::year_month_day_base<unsigned long, unsigned short, unsigned short > simple_ymd_type;
 typedef boost::date_time::gregorian_calendar_base<simple_ymd_type, Julian> gregorian_calendar;
 
-double          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
-int             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
-Julian          CharToJulian(const char* szDateString);
-Julian          relativeDateToJulian(const char* szDateString);
-UInt            DaysThisMonth(UInt nYear, UInt nMonth);
-double          IntervalInYears(DatePrecisionType eUnits, long nLength);
-bool            IsDateValid(UInt month, UInt day, UInt year);
-bool            IsLeapYear(UInt year);
-char          * JulianToChar(char* szDateString, Julian JNum);
-void            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
-std::string   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint);
-void            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
-Julian          MDYToJulian(UInt m, UInt d, UInt y);
-void            printDateRange(FILE * pFile);
-UInt            getMinimumYear();
-void            printTimeIntervals(const std::vector<Julian>& intervals, DatePrecisionType eDatePrint);
+double                          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
+int                             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
+Julian                          CharToJulian(const char* szDateString);
+Julian                          relativeDateToJulian(const char* szDateString);
+UInt                            DaysThisMonth(UInt nYear, UInt nMonth);
+double                          IntervalInYears(DatePrecisionType eUnits, long nLength);
+bool                            IsDateValid(UInt month, UInt day, UInt year);
+bool                            IsLeapYear(UInt year);
+char                          * JulianToChar(char* szDateString, Julian JNum);
+void                            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
+std::string                   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint);
+void                            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
+Julian                          MDYToJulian(UInt m, UInt d, UInt y);
+void                            printDateRange(FILE * pFile);
+UInt                            getMinimumYear();
+void                            printTimeIntervals(const std::vector<Julian>& intervals, DatePrecisionType eDatePrint);
+boost::gregorian::greg_weekday  getWeekDay(Julian date);
 
 /** Class that manages the subtraction of lengths of time from a starting end date.
     This class was created to:

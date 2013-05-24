@@ -4,143 +4,193 @@
 //******************************************************************************
 #include "ExponentialRandomizer.h"
 #include "SSException.h"
+#include "SaTScanData.h"
+
+/** constructor */
+AbstractExponentialRandomizer::AbstractExponentialRandomizer(const CSaTScanData& dataHub, long lInitialSeed) 
+ :AbstractPermutedDataRandomizer<ExponentialStationary_t, ExponentialPermuted_t>(dataHub, dataHub.GetParameters().getAdjustForWeeklyTrends(), lInitialSeed) {}
 
 /** Adds new randomization attributes with passed values. */
-void AbstractExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored) {
-  for (count_t i=0; i < tNumPatients; ++i) {
-    //add stationary values
-    gvStationaryAttribute.push_back(ExponentialStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
-    //add permutated value
-    gvOriginalPermutedAttribute.push_back(ExponentialPermuted_t(std::make_pair(tContinuousVariable, static_cast<unsigned short>(tCensored))));
-  }
+void AbstractExponentialRandomizer::AddPatients(count_t tNumPatients, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored) {
+    StationaryContainerCollection_t::iterator stationaryItr;
+    PermutedContainerCollection_t::iterator permutedItr;
+    // determine which collection of attributes to add these patients.
+    if (_dayOfWeekAdjustment) {
+        boost::gregorian::greg_weekday weekday = getWeekDay(date);
+        stationaryItr = gvStationaryAttributeCollections.begin() + static_cast<size_t>(weekday.as_number());
+        permutedItr = gvOriginalPermutedAttributeCollections.begin() + static_cast<size_t>(weekday.as_number());
+    } else {
+        stationaryItr = gvStationaryAttributeCollections.begin();
+        permutedItr = gvOriginalPermutedAttributeCollections.begin();
+    }
+    int iTimeInterval = _dataHub.GetTimeIntervalOfDate(date);
+    for (count_t i=0; i < tNumPatients; ++i) {
+        //add stationary values
+        stationaryItr->push_back(ExponentialStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
+        //add permutated value
+        permutedItr->push_back(ExponentialPermuted_t(std::make_pair(tContinuousVariable, static_cast<unsigned short>(tCensored))));
+    }
 }
 
 /** Calibrates accumulated continuous variables and assigns data to RealDataSet objects' structures. */
 void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
-  PermutedContainer_t::iterator         itr_permuted=gvOriginalPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = RealSet.getLocationDimension(), iNumTimeIntervals = RealSet.getIntervalDimension();
-  count_t                            ** ppCases, ** ppCensoredCases, tTotalCases=0;
-  measure_t                          ** ppMeasure, tTotalMeasure=0, tCalibratedMeasure = 0, tCalibration;
+    count_t tTotalCases=0;
+    measure_t tTotalMeasure=0, tCalibratedMeasure = 0, totalPopulation=0;
 
-  try {
-    for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted) {
-       if ((*itr_permuted).GetPermutedVariable().second == 0) ++tTotalCases;
-       tTotalMeasure += (*itr_permuted).GetPermutedVariable().first;
+    try {
+        // sanity checks
+        if (gvStationaryAttributeCollections.size() != gvOriginalPermutedAttributeCollections.size())
+            throw prg_error("Size of stationary collection (%u) does not equal size of permuted collection (%u).\n", 
+                            "AssignFromAttributes()", gvStationaryAttributeCollections.size(), gvOriginalPermutedAttributeCollections.size());
+        for (size_t t=0; t < gvStationaryAttributeCollections.size(); ++t) {
+            if (gvStationaryAttributeCollections[t].size() != gvOriginalPermutedAttributeCollections[t].size())
+                throw prg_error("Number of stationary attributes (%u) does not equal number of permuted attributes (%u).\n", 
+                                "AssignFromAttributes()", gvStationaryAttributeCollections[t].size(), gvOriginalPermutedAttributeCollections[t].size());
+        }
+        // calcuate the total number of cases and expected cases
+        for (PermutedContainerCollection_t::iterator itrPC=gvOriginalPermutedAttributeCollections.begin(); itrPC != gvOriginalPermutedAttributeCollections.end(); ++itrPC) {
+            for (PermutedContainer_t::iterator itrPermuted=itrPC->begin(); itrPermuted != itrPC->end(); ++itrPermuted) {
+                if ((*itrPermuted).GetPermutedVariable().second == 0) ++tTotalCases;
+                tTotalMeasure += (*itrPermuted).GetPermutedVariable().first;
+            }
+        }
+        //calibrate permuted continuous variable
+        if (tTotalMeasure == 0)
+            return; //when performing iterative scan, it is possible that total measure has become zero
+        measure_t tCalibration = (measure_t)tTotalCases/tTotalMeasure;
+        for (PermutedContainerCollection_t::iterator itrPC=gvOriginalPermutedAttributeCollections.begin(); itrPC != gvOriginalPermutedAttributeCollections.end(); ++itrPC) {
+            for (PermutedContainer_t::iterator itrPermuted=itrPC->begin(); itrPermuted != itrPC->end(); ++itrPermuted) {
+                (*itrPermuted).ReferencePermutedVariable().first *= tCalibration;
+                tCalibratedMeasure += (*itrPermuted).GetPermutedVariable().first;
+            }
+            totalPopulation += static_cast<measure_t>(itrPC->size());
+        }
+        //validate that calibration worked
+        if (fabs((measure_t)tTotalCases - tCalibratedMeasure) > 0.0001)
+            throw prg_error("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n", "AssignFromAttributes()", tCalibratedMeasure, tTotalCases);
+        //assign totals for observed and expected in this data set
+        RealSet.setTotalCases(tTotalCases);
+        RealSet.setTotalMeasure(tCalibratedMeasure);
+        RealSet.setTotalPopulation(totalPopulation);
+
+        count_t ** ppCases = RealSet.allocateCaseData().GetArray();
+        count_t ** ppCensoredCases = RealSet.allocateCaseData_Censored().GetArray();
+        measure_t ** ppMeasure = RealSet.allocateMeasureData().GetArray();
+        //assign data to measure, cases, and censored cases arrays
+        StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+        PermutedContainerCollection_t::iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+        for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+            StationaryContainer_t::iterator itrS=itrSC->begin();
+            PermutedContainer_t::iterator itrP=itrPC->begin();
+            for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+                ppMeasure[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += (*itrP).GetPermutedVariable().first;
+                ppCases[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += ((*itrP).GetPermutedVariable().second ? 0 : 1);
+                if ((*itrP).GetPermutedVariable().second)
+                    ++ppCensoredCases[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second];
+            }
+        }
+        //now set as cumulative, in respect to time intervals
+        int iNumTracts = RealSet.getLocationDimension(), iNumTimeIntervals = RealSet.getIntervalDimension();
+        for (int tTract=0; tTract < iNumTracts; ++tTract) {
+            for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+                ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
+                ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
+                ppCensoredCases[i][tTract] = ppCensoredCases[i+1][tTract] + ppCensoredCases[i][tTract];
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("AssignFromAttributes()","AbstractExponentialRandomizer");
+        throw;
     }
-    //calibrate permuted continuous variable
-    if (tTotalMeasure == 0)
-      return; //when performing iterative scan, it is possible that total measure has become zero
-    tCalibration = (measure_t)tTotalCases/tTotalMeasure;
-    itr_permuted=gvOriginalPermutedAttribute.begin();
-    for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted) {
-      (*itr_permuted).ReferencePermutedVariable().first *= tCalibration;
-      tCalibratedMeasure += (*itr_permuted).GetPermutedVariable().first;
-    }
-    //validate that calibration worked
-    if (fabs((measure_t)tTotalCases - tCalibratedMeasure) > 0.0001)
-      throw prg_error("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n", "CalibrateAndAssign()", tCalibratedMeasure, tTotalCases);
-    //assign totals for observed and expected in this data set
-    RealSet.setTotalCases(tTotalCases);
-    RealSet.setTotalMeasure(tCalibratedMeasure);
-    RealSet.setTotalPopulation(gvOriginalPermutedAttribute.size());
-    ppCases = RealSet.allocateCaseData().GetArray();
-    ppCensoredCases = RealSet.allocateCaseData_Censored().GetArray();
-    ppMeasure = RealSet.allocateMeasureData().GetArray();
-    //assign randomized data to measure, cases, and censored cases arrays
-    itr_permuted=gvOriginalPermutedAttribute.begin();
-    for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
-       ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += (*itr_permuted).GetPermutedVariable().first;
-       ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += ((*itr_permuted).GetPermutedVariable().second ? 0 : 1);
-       if ((*itr_permuted).GetPermutedVariable().second)
-         ++ppCensoredCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
-    }
-   //now set as cumulative, in respect to time intervals
-    for (tTract=0; tTract < iNumTracts; ++tTract)
-       for (i=iNumTimeIntervals-2; i >= 0; --i) {
-          ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
-          ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
-          ppCensoredCases[i][tTract] = ppCensoredCases[i+1][tTract] + ppCensoredCases[i][tTract];
-       }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("CalibrateAndAssign()","AbstractExponentialRandomizer");
-    throw;
-  }
 }
 
 /** Removes all stationary and permuted attributes associated with cases in interval and location. */
 void AbstractExponentialRandomizer::RemoveCase(int iTimeInterval, tract_t tTractIndex) {
-  ExponentialStationary_t               tAttribute(std::make_pair(iTimeInterval, tTractIndex));
-  StationaryContainer_t::iterator       itr;
-
-  while ((itr=std::find(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), tAttribute)) != gvStationaryAttribute.end()) {
-       size_t t = std::distance(gvStationaryAttribute.begin(), itr);
-       gvOriginalPermutedAttribute.erase(gvOriginalPermutedAttribute.begin() + t);
-       gvStationaryAttribute.erase(itr);
-  }
+    ExponentialStationary_t tAttribute(std::make_pair(iTimeInterval, tTractIndex));
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC) {
+        StationaryContainer_t::iterator itrS;
+        while ((itrS=std::find(itrSC->begin(), itrSC->end(), tAttribute)) != itrSC->end()) {
+            PermutedContainerCollection_t::iterator itrPC = gvOriginalPermutedAttributeCollections.begin() + std::distance(gvStationaryAttributeCollections.begin(), itrSC);
+            itrPC->erase(itrPC->begin() + std::distance(itrSC->begin(), itrS));
+            itrSC->erase(itrS);
+        }
+    }
 }
 
 //******************************************************************************
 
 /** Assigns randomized data to DataSet objects' structures. */
 void ExponentialRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
-  PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals = SimSet.getIntervalDimension();
-  count_t                            ** ppCases = SimSet.getCaseData().GetArray();
-  measure_t                          ** ppMeasure = SimSet.getMeasureData().GetArray();   
+    // reset case and measure data to zero
+    SimSet.getCaseData().Set(0);
+    SimSet.getMeasureData().Set(0);
 
-  SimSet.getCaseData().Set(0);
-  SimSet.getMeasureData().Set(0);
-  //assign randomized continuous data to measure and case arrays
-  for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
-     ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += (*itr_permuted).GetPermutedVariable().first;
-     ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += ((*itr_permuted).GetPermutedVariable().second ? 0 : 1);
-  }
-  //now set as cumulative, in respect to time intervals
-  for (tTract=0; tTract < iNumTracts; ++tTract)
-     for (i=iNumTimeIntervals-2; i >= 0; --i) {
-        ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
-        ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
-     }
+    //assign randomized continuous data to measure and case arrays
+    count_t   ** ppCases = SimSet.getCaseData().GetArray();
+    measure_t ** ppMeasure = SimSet.getMeasureData().GetArray();   
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::iterator itrPC=gvPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            ppMeasure[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += (*itrP).GetPermutedVariable().first;
+            ppCases[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += ((*itrP).GetPermutedVariable().second ? 0 : 1);
+        }
+    }
+    //now set as cumulative, in respect to time intervals
+    int iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals = SimSet.getIntervalDimension();
+    for (int tTract=0; tTract < iNumTracts; ++tTract) {
+        for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+            ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
+            ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
+        }
+    }
 }
 
 /** Calculates the total populations for each location - both censored and uncensored data.
     Caller is responsible for sizing vector to number of locations in input data. */
 std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation, bool bZeroFirst) const {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
+    if (bZeroFirst)
+        std::fill(vMaxCirclePopulation.begin(), vMaxCirclePopulation.end(), 0);
 
-  if (bZeroFirst)
-    std::fill(vMaxCirclePopulation.begin(), vMaxCirclePopulation.end(), 0);
-  //assign population array for accumulated data
-  for (; itr_stationary != gvStationaryAttribute.end();  ++itr_stationary)
-     ++vMaxCirclePopulation[itr_stationary->GetStationaryVariable().second];
-     
-  return vMaxCirclePopulation;
+    //assign population array for accumulated data
+    StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        for (; itrS != itrSC->end(); ++itrS) {
+            ++vMaxCirclePopulation[itrS->GetStationaryVariable().second];
+        }
+    }
+    return vMaxCirclePopulation;
 }
 
 //******************************************************************************
 
 /** Assigns randomized data to DataSet objects' purely temporal structures. */
 void ExponentialPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
-  PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, iNumTimeIntervals = SimSet.getIntervalDimension();
-  count_t                             * pCases = SimSet.getCaseData_PT();
-  measure_t                           * pMeasure = SimSet.getMeasureData_PT();
+    // reset case and measure data to zero
+    int iNumTimeIntervals = SimSet.getIntervalDimension();
+    count_t   * pCases = SimSet.getCaseData_PT();
+    measure_t * pMeasure = SimSet.getMeasureData_PT();
+    memset(pCases, 0, (iNumTimeIntervals+1) * sizeof(count_t));
+    memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
 
-  memset(pCases, 0, (iNumTimeIntervals+1) * sizeof(count_t));
-  memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
-  //assign randomized continuous data to measure and case arrays
-  for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
-     pMeasure[itr_stationary->GetStationaryVariable().first] += (*itr_permuted).GetPermutedVariable().first;
-     pCases[itr_stationary->GetStationaryVariable().first] += ((*itr_permuted).GetPermutedVariable().second ? 0 : 1);
-  }
-  //now set as cumulative, in respect to time intervals
-  for (i=iNumTimeIntervals-2; i >= 0; --i) {
-     pMeasure[i] = pMeasure[i+1] + pMeasure[i];
-     pCases[i] = pCases[i+1] + pCases[i];
-  }
+    //assign randomized continuous data to measure and case arrays
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::iterator itrPC=gvPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            pMeasure[itrS->GetStationaryVariable().first] += (*itrP).GetPermutedVariable().first;
+            pCases[itrS->GetStationaryVariable().first] += ((*itrP).GetPermutedVariable().second ? 0 : 1);
+        }
+    }
+    //now set as cumulative, in respect to time intervals
+    for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+        pMeasure[i] = pMeasure[i+1] + pMeasure[i];
+        pCases[i] = pCases[i+1] + pCases[i];
+    }
 }
-

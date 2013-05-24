@@ -10,7 +10,7 @@ class ExponentialModel : public CModel {
     ExponentialModel();
     virtual ~ExponentialModel();
 
-    virtual void                CalculateMeasure(RealDataSet& DataSet);
+    virtual void                CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //******************************************************************************

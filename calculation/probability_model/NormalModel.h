@@ -10,7 +10,7 @@ class CNormalModel : public CModel {
     CNormalModel();
     virtual ~CNormalModel();
 
-    virtual void                CalculateMeasure(RealDataSet& DataSet);
+    virtual void                CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //******************************************************************************

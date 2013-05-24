@@ -15,7 +15,7 @@ ExponentialModel::~ExponentialModel() {}
 
 /** Calculate expected number of cases -- no action taken in this function.
     Exponential model use the measure structures but data calculated in read process. */
-void ExponentialModel::CalculateMeasure(RealDataSet&) {/* no action here */}
+void ExponentialModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. */
 double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {

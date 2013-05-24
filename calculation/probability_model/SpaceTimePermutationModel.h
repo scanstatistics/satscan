@@ -16,7 +16,7 @@ class CSpaceTimePermutationModel : public CModel {
     CSpaceTimePermutationModel();
     virtual ~CSpaceTimePermutationModel();
 
-    virtual void   	        CalculateMeasure(RealDataSet& DataSet);
+    virtual void CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub);
 };
 
 //******************************************************************************

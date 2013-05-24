@@ -104,31 +104,53 @@ inline void AssignPermutedAttribute<T>::operator() (T& Attribute) {
   Attribute.SetRandomNumber(gGenerator.GetRandomFloat());
 }
 
+// ******************************************************************************************************
+
+class CSaTScanData; // forward class declaration
+
 /** abstract permutation randomizer class */
 template <class S, class P>
 class AbstractPermutedDataRandomizer : public AbstractRandomizer {
+   protected:
+        const CSaTScanData& _dataHub;
+        bool _dayOfWeekAdjustment;
+
   public:
-    typedef std::vector<S>      StationaryContainer_t;
-    typedef std::vector<P>      PermutedContainer_t;
+    typedef std::vector<S>                      StationaryContainer_t;
+    typedef std::vector<StationaryContainer_t>  StationaryContainerCollection_t;
+    typedef std::vector<P>                      PermutedContainer_t;
+    typedef std::vector<PermutedContainer_t>    PermutedContainerCollection_t;
 
   protected:
-    StationaryContainer_t       gvStationaryAttribute;
-    PermutedContainer_t         gvOriginalPermutedAttribute;
-    PermutedContainer_t         gvPermutedAttribute;
+    StationaryContainerCollection_t             gvStationaryAttributeCollections;
+    PermutedContainerCollection_t               gvOriginalPermutedAttributeCollections;
+    PermutedContainerCollection_t               gvPermutedAttributeCollections;
 
     virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, DataSet& thisSimSet) = 0;
     virtual void                SortPermutedAttribute();
 
   public:
-    AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    AbstractPermutedDataRandomizer(const CSaTScanData& dataHub, bool dayOfWeekAdjustment, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractPermutedDataRandomizer();
 
-    virtual void	        RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
+    virtual void                RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
 };
 
 /** constructor */
 template <class S, class P>
-AbstractPermutedDataRandomizer<S, P>::AbstractPermutedDataRandomizer(long lInitialSeed) : AbstractRandomizer(lInitialSeed) {}
+AbstractPermutedDataRandomizer<S, P>::AbstractPermutedDataRandomizer(const CSaTScanData& dataHub, bool dayOfWeekAdjustment, long lInitialSeed) 
+                                         :AbstractRandomizer(lInitialSeed), _dataHub(dataHub), _dayOfWeekAdjustment(dayOfWeekAdjustment) {
+    if (_dayOfWeekAdjustment) {
+        // with day of week adjustment, we will keep each week day separate
+        gvStationaryAttributeCollections.resize(7);
+        gvOriginalPermutedAttributeCollections.resize(7);
+        gvPermutedAttributeCollections.resize(7);
+    } else {
+        gvStationaryAttributeCollections.resize(1);
+        gvOriginalPermutedAttributeCollections.resize(1);
+        gvPermutedAttributeCollections.resize(1);
+    }
+}
 
 /** destructor */
 template <class S, class P>
@@ -148,12 +170,14 @@ void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& this
 /** re-initializes and  sorts permutated attribute */
 template <class S, class P>
 void AbstractPermutedDataRandomizer<S, P>::SortPermutedAttribute() {
-  // Reset permuted attributes to original order - this is needed to maintain
-  // consistancy of output when running in parallel.
-  gvPermutedAttribute = gvOriginalPermutedAttribute;
+    // Reset permuted attributes to original order - this is needed to maintain
+    // consistancy of output when running in parallel.
+    gvPermutedAttributeCollections = gvOriginalPermutedAttributeCollections;
 
-  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<P>(gRandomNumberGenerator));
-  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<P>());
+    for (PermutedContainerCollection_t::iterator itr=gvPermutedAttributeCollections.begin(); itr != gvPermutedAttributeCollections.end(); ++itr) {
+        std::for_each(itr->begin(), itr->end(), AssignPermutedAttribute<P>(gRandomNumberGenerator));
+        std::sort(itr->begin(), itr->end(), ComparePermutedAttribute<P>());
+    }
 }
 //******************************************************************************
 #endif

@@ -6,89 +6,129 @@
 #include "SaTScanData.h"
 #include "newmat.h"
 
+/** constructor */
+AbstractWeightedNormalRandomizer::AbstractWeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed) 
+ :AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(dataHub, dataHub.GetParameters().getAdjustForWeeklyTrends(), lInitialSeed), gtFirstRatioConstant(0), gtSecondRatioConstant(0) {}
+
 /** Adds new randomization entry with passed attrbiute values. */
-void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight) {
-  for (count_t t=0; t < tCount; ++t) {
-    //add stationary values
-    gvStationaryAttribute.push_back(WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
-    //add permutated value
-    gvPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
-    //add to vector which maintains original order
-    gvOriginalPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
-  }
+void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight) {
+    // determine which collection of attributes to add these patients.
+    StationaryContainerCollection_t::iterator stationaryItr;
+    PermutedContainerCollection_t::iterator permutedItr, permutedOrgItr;
+    if (_dayOfWeekAdjustment) {
+        boost::gregorian::greg_weekday weekday = getWeekDay(date);
+        stationaryItr = gvStationaryAttributeCollections.begin() + static_cast<size_t>(weekday.as_number());
+        permutedItr = gvPermutedAttributeCollections.begin() + static_cast<size_t>(weekday.as_number());
+        permutedOrgItr = gvOriginalPermutedAttributeCollections.begin() + static_cast<size_t>(weekday.as_number());
+    } else {
+        stationaryItr = gvStationaryAttributeCollections.begin();
+        permutedItr = gvPermutedAttributeCollections.begin();
+        permutedOrgItr = gvOriginalPermutedAttributeCollections.begin();
+    }
+    int iTimeInterval = _dataHub.GetTimeIntervalOfDate(date);
+    for (count_t t=0; t < tCount; ++t) {
+        //add stationary values
+        stationaryItr->push_back(WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
+        //add permutated value
+        permutedItr->push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
+        //add to vector which maintains original order
+        permutedOrgItr->push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
+    }
 }
 
-/** Adds new randomization entry with passed attrbiute values. */
-void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates) {
-  StationaryContainer_t::iterator itr;
-  itr = std::lower_bound(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)), CompareWeightedNormalStationary());
-  size_t tPosReturn = std::distance(gvStationaryAttribute.begin(), itr);
-
-  for (count_t t=0; t < tCount; ++t) {
-    //add stationary values
-    gvStationaryAttribute.insert(gvStationaryAttribute.begin() + tPosReturn, WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
-    //gvStationaryAttribute.push_back(WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
-    //add permutated value
-    gvPermutedAttribute.insert(gvPermutedAttribute.begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
-    //gvPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
-    //add to vector which maintains original order
-    gvOriginalPermutedAttribute.insert(gvOriginalPermutedAttribute.begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
-    //gvOriginalPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
-  }
+/** Adds new randomization entry with passed attrbiute values and covariates. */
+void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates) {
+    // determine which collection of attributes to add these patients
+    // Note that the Weighted normal model with covaraites is only implemented for purely spatial analyses, so day of week adjustment is not 
+    int iTimeInterval = _dataHub.GetTimeIntervalOfDate(date);
+    StationaryContainerCollection_t::iterator stationaryItr;
+    PermutedContainerCollection_t::iterator permutedItr, permutedOrgItr;
+    stationaryItr = gvStationaryAttributeCollections.begin();
+    permutedItr = gvPermutedAttributeCollections.begin();
+    permutedOrgItr = gvOriginalPermutedAttributeCollections.begin();
+    StationaryContainer_t::iterator itr;
+    itr = std::lower_bound(stationaryItr->begin(), stationaryItr->end(), WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)), CompareWeightedNormalStationary());
+    size_t tPosReturn = std::distance(stationaryItr->begin(), itr);
+    for (count_t t=0; t < tCount; ++t) {
+        //add stationary values
+        stationaryItr->insert(stationaryItr->begin() + tPosReturn, WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
+        //add permutated value
+        permutedItr->insert(permutedItr->begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
+        //add to vector which maintains original order
+        permutedOrgItr->insert(permutedOrgItr->begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
+    }
 }
 
 /** Allocates and sets appropriate data structures of RealDataSet object from internal
     collection of attributes. */
 void AbstractWeightedNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::iterator         itr_permuted=gvOriginalPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts=RealSet.getLocationDimension(), iNumTimeIntervals=RealSet.getIntervalDimension();
-  measure_t                          ** ppMeasure, ** ppMeasureAux, tTotalMeasure=0, tTotalMeasureAux=0;
-  count_t                            ** ppCases;
+    measure_t  tTotalMeasure=0, tTotalMeasureAux=0;
+    count_t    totalObservations=0;
 
-  ppCases = RealSet.allocateCaseData().GetArray();
-  ppMeasure = RealSet.allocateMeasureData().GetArray();
-  ppMeasureAux = RealSet.allocateMeasureData_Aux().GetArray();
-  itr_permuted=gvOriginalPermutedAttribute.begin();
+    // sanity checks
+    if (gvStationaryAttributeCollections.size() != gvOriginalPermutedAttributeCollections.size())
+        throw prg_error("Size of stationary collection (%u) does not equal size of permuted collection (%u).\n", 
+                        "AssignFromAttributes()", gvStationaryAttributeCollections.size(), gvOriginalPermutedAttributeCollections.size());
+    for (size_t t=0; t < gvStationaryAttributeCollections.size(); ++t) {
+        if (gvStationaryAttributeCollections[t].size() != gvOriginalPermutedAttributeCollections[t].size())
+            throw prg_error("Number of stationary attributes (%u) does not equal number of permuted attributes (%u).\n", 
+                            "AssignFromAttributes()", gvStationaryAttributeCollections[t].size(), gvOriginalPermutedAttributeCollections[t].size());
+    }
 
-  gtFirstRatioConstant = gtSecondRatioConstant = 0;
-  //first calculate totals -- we need them for const variables
-  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     tTotalMeasure += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-     tTotalMeasureAux += itr_permuted->GetPermutedVariable().second;
-     gtFirstRatioConstant += std::pow(itr_permuted->GetPermutedVariable().first, 2) * itr_permuted->GetPermutedVariable().second;
-  }
+    count_t ** ppCases = RealSet.allocateCaseData().GetArray();
+    measure_t ** ppMeasure = RealSet.allocateMeasureData().GetArray();
+    measure_t ** ppMeasureAux = RealSet.allocateMeasureData_Aux().GetArray();
+    gtFirstRatioConstant = gtSecondRatioConstant = 0;
+    //first calculate totals -- we need them for const variables
+    PermutedContainerCollection_t::iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrPC != gvOriginalPermutedAttributeCollections.end(); ++itrPC) {
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrP != itrPC->end(); ++itrP) {
+            tTotalMeasure += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+            tTotalMeasureAux += itrP->GetPermutedVariable().second;
+            gtFirstRatioConstant += std::pow(itrP->GetPermutedVariable().first, 2) * itrP->GetPermutedVariable().second;
+        }
+    }
 
-  itr_permuted=gvOriginalPermutedAttribute.begin();
-  itr_stationary=gvStationaryAttribute.begin();
-  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     ++ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
-     ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-     ppMeasureAux[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
-     gtSecondRatioConstant += itr_permuted->GetPermutedVariable().second * std::pow(itr_permuted->GetPermutedVariable().first - (tTotalMeasure/tTotalMeasureAux), 2);
-  }
-  gtSecondRatioConstant = 0.5 * gvOriginalPermutedAttribute.size() * log(gtSecondRatioConstant);
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    for (itrPC=gvOriginalPermutedAttributeCollections.begin(); itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            ++ppCases[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second];
+            ppMeasure[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+            ppMeasureAux[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().second;
+            gtSecondRatioConstant += itrP->GetPermutedVariable().second * std::pow(itrP->GetPermutedVariable().first - (tTotalMeasure/tTotalMeasureAux), 2);
+        }
+        totalObservations += static_cast<count_t>(itrPC->size());
+    }
+    gtSecondRatioConstant = 0.5 * static_cast<measure_t>(totalObservations) * log(gtSecondRatioConstant);
 
-  RealSet.setTotalCases(gvOriginalPermutedAttribute.size());
-  RealSet.setTotalMeasure(tTotalMeasure);
-  RealSet.setTotalMeasureAux(tTotalMeasureAux);
-  //now set as cumulative
-  for (tTract=0; tTract < iNumTracts; ++tTract)
-     for (i=iNumTimeIntervals-2; i >= 0; --i) {
-        ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
-        ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
-        ppMeasureAux[i][tTract] = ppMeasureAux[i+1][tTract] + ppMeasureAux[i][tTract];
-     }
+    RealSet.setTotalCases(totalObservations);
+    RealSet.setTotalMeasure(tTotalMeasure);
+    RealSet.setTotalMeasureAux(tTotalMeasureAux);
+    //now set as cumulative
+    int iNumTracts=RealSet.getLocationDimension(), iNumTimeIntervals=RealSet.getIntervalDimension();
+    for (int tTract=0; tTract < iNumTracts; ++tTract) {
+        for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+            ppCases[i][tTract] = ppCases[i+1][tTract] + ppCases[i][tTract];
+            ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
+            ppMeasureAux[i][tTract] = ppMeasureAux[i+1][tTract] + ppMeasureAux[i][tTract];
+        }
+    }
 }
 
 /** Sets Column vectors that are the weight and rate records as read from file. */
 void AbstractWeightedNormalRandomizer::get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const {
-  wg.reset(new ColumnVector(gvPermutedAttribute.size()));
-  deltag.reset(new ColumnVector(gvPermutedAttribute.size()));
-  for (size_t t=0; t < gvPermutedAttribute.size(); ++t) {
-      wg->element(t) = gvPermutedAttribute[t].GetPermutedVariable().first;
-      deltag->element(t) = gvPermutedAttribute[t].GetPermutedVariable().second;
-  }
+    // weighted normal model with covarites is only implemented for purely spatial analyese, so only using first container in collection.
+    wg.reset(new ColumnVector(gvPermutedAttributeCollections.begin()->size()));
+    deltag.reset(new ColumnVector(gvPermutedAttributeCollections.begin()->size()));
+
+    PermutedContainer_t::const_iterator itrP=gvPermutedAttributeCollections.begin()->begin();
+    for (size_t index=0; itrP != gvPermutedAttributeCollections.begin()->end(); ++itrP, ++index) {
+        wg->element(index) = itrP->GetPermutedVariable().first;
+        deltag->element(index) = itrP->GetPermutedVariable().second;
+    }
 }
 
 /** Sets matrix that has (# of observations rows) by (2 plus # of covariates columns) 
@@ -100,284 +140,323 @@ void AbstractWeightedNormalRandomizer::get_wg_deltag(std::auto_ptr<ColumnVector>
     etc. 
 */
 void AbstractWeightedNormalRandomizer::get_xg(std::auto_ptr<Matrix>& xg, bool bExcludeSelectColumn) const {
-  size_t numFixed = (bExcludeSelectColumn ? 1 : 2);
-  xg.reset(new Matrix(gvPermutedAttribute.size(), numFixed + gvPermutedAttribute.front().GetPermutedVariable().getAdditional()->size()));
-  for (size_t t=0; t < gvPermutedAttribute.size(); ++t) {
-      if (!bExcludeSelectColumn) xg->element(t, 0) = 0;
-      xg->element(t, bExcludeSelectColumn ? 0 : 1) = 1;
-      const MinimalGrowthArray<double>& covariates = *gvPermutedAttribute[t].GetPermutedVariable().getAdditional();
-      for (size_t tt=0; tt < covariates.size(); ++tt) {
-          xg->element(t, numFixed + tt) = covariates[tt];
-      }
-  }
+    // weighted normal model with covarites is only implemented for purely spatial analyese, so only using first container in collection.
+    size_t numFixed = (bExcludeSelectColumn ? 1 : 2);
+    xg.reset(new Matrix(gvPermutedAttributeCollections.begin()->size(), numFixed + gvPermutedAttributeCollections.begin()->front().GetPermutedVariable().getAdditional()->size()));
+
+    PermutedContainer_t::const_iterator itrP=gvPermutedAttributeCollections.begin()->begin();
+    for (size_t index=0; itrP != gvPermutedAttributeCollections.begin()->end(); ++itrP, ++index) {
+        if (!bExcludeSelectColumn) xg->element(index, 0) = 0;
+        xg->element(index, bExcludeSelectColumn ? 0 : 1) = 1;
+        const MinimalGrowthArray<double>& covariates = *(itrP->GetPermutedVariable().getAdditional());
+        for (size_t tt=0; tt < covariates.size(); ++tt) {
+            xg->element(index, numFixed + tt) = covariates[tt];
+        }
+    }
 }
 
 /** Calculates statistics about cluster from internal structures. */
 AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandomizer::getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
-  ClusterStatistics statistics;
-  measure_t tTotalWeight=0;
+    ClusterStatistics statistics;
+    measure_t tTotalWeight=0;
+    count_t totalObservations=0;
 
-  statistics.init();  
-  for (;itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     if (itr_stationary->GetStationaryVariable().first >= iIntervalStart &&
-         itr_stationary->GetStationaryVariable().first <= iIntervalEnd &&
-         std::find(vTracts.begin(), vTracts.end(), itr_stationary->GetStationaryVariable().second) != vTracts.end()) {
-       ++statistics.gtObservations;
-       statistics.gtMeanIn += itr_permuted->GetPermutedVariable().first;
-       statistics.gtWeightedMeanIn += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
-       statistics.gtWeight += itr_permuted->GetPermutedVariable().second;
-     } else {
-       statistics.gtMeanOut += itr_permuted->GetPermutedVariable().first;
-       statistics.gtWeightedMeanOut += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
-     }
-     tTotalWeight += itr_permuted->GetPermutedVariable().second;
-  }
-  if (statistics.gtObservations) statistics.gtMeanIn /= statistics.gtObservations;
-  statistics.gtMeanOut /= static_cast<measure_t>(gvOriginalPermutedAttribute.size() - statistics.gtObservations);
+    statistics.init();
+    StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::const_iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            if (itrS->GetStationaryVariable().first >= iIntervalStart && itrS->GetStationaryVariable().first <= iIntervalEnd &&
+                std::find(vTracts.begin(), vTracts.end(), itrS->GetStationaryVariable().second) != vTracts.end()) {
+                ++statistics.gtObservations;
+                statistics.gtMeanIn += itrP->GetPermutedVariable().first;
+                statistics.gtWeightedMeanIn += itrP->GetPermutedVariable().second * itrP->GetPermutedVariable().first;
+                statistics.gtWeight += itrP->GetPermutedVariable().second;
+            } else {
+                statistics.gtMeanOut += itrP->GetPermutedVariable().first;
+                statistics.gtWeightedMeanOut += itrP->GetPermutedVariable().second * itrP->GetPermutedVariable().first;
+            }
+            tTotalWeight += itrP->GetPermutedVariable().second;
+        }
+        totalObservations += static_cast<count_t>(itrPC->size());
+    }
+    if (statistics.gtObservations) statistics.gtMeanIn /= statistics.gtObservations;
+    statistics.gtMeanOut /= static_cast<measure_t>(totalObservations - statistics.gtObservations);
 
-  if (statistics.gtWeight) statistics.gtWeightedMeanIn /= statistics.gtWeight;
-  statistics.gtWeightedMeanOut /= tTotalWeight - statistics.gtWeight;
+    if (statistics.gtWeight) statistics.gtWeightedMeanIn /= statistics.gtWeight;
+    statistics.gtWeightedMeanOut /= tTotalWeight - statistics.gtWeight;
 
-  measure_t tVarianceIn=0, tVarianceOut=0, tWeightedVarianceIn=0, tWeightedVarianceOut=0;
-  itr_stationary=gvStationaryAttribute.begin();
-  itr_permuted=gvOriginalPermutedAttribute.begin();
-  for (;itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     if (itr_stationary->GetStationaryVariable().first >= iIntervalStart &&
-         itr_stationary->GetStationaryVariable().first <= iIntervalEnd &&
-         std::find(vTracts.begin(), vTracts.end(), itr_stationary->GetStationaryVariable().second) != vTracts.end()) {
-         tVarianceIn += std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtMeanIn, 2);
-         tWeightedVarianceIn += itr_permuted->GetPermutedVariable().second * std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtWeightedMeanIn, 2);
-     } else {
-         tVarianceOut += std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtMeanOut, 2);
-         tWeightedVarianceOut += itr_permuted->GetPermutedVariable().second * std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtWeightedMeanOut, 2);
-     }
-  }
+    measure_t tVarianceIn=0, tVarianceOut=0, tWeightedVarianceIn=0, tWeightedVarianceOut=0;
 
-  statistics.gtVariance = (tVarianceIn + tVarianceOut)/static_cast<measure_t>(gvOriginalPermutedAttribute.size());
-  statistics.gtVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
-  statistics.gtWeightedVariance = (tWeightedVarianceIn + tWeightedVarianceOut)/tTotalWeight;
-  statistics.gtWeightedVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
+    itrSC=gvStationaryAttributeCollections.begin();
+    itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            if (itrS->GetStationaryVariable().first >= iIntervalStart &&
+                itrS->GetStationaryVariable().first <= iIntervalEnd &&
+                std::find(vTracts.begin(), vTracts.end(), itrS->GetStationaryVariable().second) != vTracts.end()) {
+                tVarianceIn += std::pow(itrP->GetPermutedVariable().first - statistics.gtMeanIn, 2);
+                tWeightedVarianceIn += itrP->GetPermutedVariable().second * std::pow(itrP->GetPermutedVariable().first - statistics.gtWeightedMeanIn, 2);
+            } else {
+                tVarianceOut += std::pow(itrP->GetPermutedVariable().first - statistics.gtMeanOut, 2);
+                tWeightedVarianceOut += itrP->GetPermutedVariable().second * std::pow(itrP->GetPermutedVariable().first - statistics.gtWeightedMeanOut, 2);
+            }
+        }
+    }
+    statistics.gtVariance = (tVarianceIn + tVarianceOut)/static_cast<measure_t>(totalObservations);
+    statistics.gtVariance *= (static_cast<measure_t>(totalObservations)/(static_cast<measure_t>(totalObservations - 1)));
+    statistics.gtWeightedVariance = (tWeightedVarianceIn + tWeightedVarianceOut)/tTotalWeight;
+    statistics.gtWeightedVariance *= (static_cast<measure_t>(totalObservations)/(static_cast<measure_t>(totalObservations - 1)));
 
   return statistics; 
 }
 
 /** Calculates statistics about cluster from internal structures. */
 AbstractWeightedNormalRandomizer::ClusterLocationStatistics AbstractWeightedNormalRandomizer::getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
-  ClusterLocationStatistics statistics;
-  ClusterLocationStatistics::container_t::iterator itrObs, itrWeight;
-  measure_t tTotalWeight=0;
+    ClusterLocationStatistics statistics;
+    ClusterLocationStatistics::container_t::iterator itrObs, itrWeight;
+    measure_t tTotalWeight=0;
+    count_t totalObservations=0;
 
-  statistics.init();  
-  for (;itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     if (itr_stationary->GetStationaryVariable().first >= iIntervalStart &&
-         itr_stationary->GetStationaryVariable().first <= iIntervalEnd &&
-         std::find(vTracts.begin(), vTracts.end(), itr_stationary->GetStationaryVariable().second) != vTracts.end()) {
-        ++statistics.gtObservations;
-        statistics.gtMeanIn += itr_permuted->GetPermutedVariable().first;
-        statistics.gtWeightedMeanIn += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
-        statistics.gtWeight += itr_permuted->GetPermutedVariable().second;
+    statistics.init();
+    StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::const_iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            if (itrS->GetStationaryVariable().first >= iIntervalStart && itrS->GetStationaryVariable().first <= iIntervalEnd &&
+                std::find(vTracts.begin(), vTracts.end(), itrS->GetStationaryVariable().second) != vTracts.end()) {
+                ++statistics.gtObservations;
+                statistics.gtMeanIn += itrP->GetPermutedVariable().first;
+                statistics.gtWeightedMeanIn += itrP->GetPermutedVariable().second * itrP->GetPermutedVariable().first;
+                statistics.gtWeight += itrP->GetPermutedVariable().second;
 
-        itrObs = statistics.gtLocTotalObserved.find(itr_stationary->GetStationaryVariable().second);
-        if (itrObs == statistics.gtLocTotalObserved.end()) {
-           statistics.gtLocTotalObserved[itr_stationary->GetStationaryVariable().second] = 1;
-           statistics.gtLocMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first;
-           statistics.gtLocTotalWeight[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().second;
-           statistics.gtLocWeightedMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+                itrObs = statistics.gtLocTotalObserved.find(itrS->GetStationaryVariable().second);
+                if (itrObs == statistics.gtLocTotalObserved.end()) {
+                    statistics.gtLocTotalObserved[itrS->GetStationaryVariable().second] = 1;
+                    statistics.gtLocMean[itrS->GetStationaryVariable().second] = itrP->GetPermutedVariable().first;
+                    statistics.gtLocTotalWeight[itrS->GetStationaryVariable().second] = itrP->GetPermutedVariable().second;
+                    statistics.gtLocWeightedMean[itrS->GetStationaryVariable().second] = itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+                } else {
+                    ++itrObs->second;
+                    statistics.gtLocMean[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first;
+                    statistics.gtLocTotalWeight[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().second;
+                    statistics.gtLocWeightedMean[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+                }
+            } else {
+                statistics.gtMeanOut += itrP->GetPermutedVariable().first;
+                statistics.gtWeightedMeanOut += itrP->GetPermutedVariable().second * itrP->GetPermutedVariable().first;
+            }
+            tTotalWeight += itrP->GetPermutedVariable().second;
         }
-        else {
-           ++itrObs->second;
-           statistics.gtLocMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
-           statistics.gtLocTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
-           statistics.gtLocWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-        }
-     } else {
-       statistics.gtMeanOut += itr_permuted->GetPermutedVariable().first;
-       statistics.gtWeightedMeanOut += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
-     }
-     tTotalWeight += itr_permuted->GetPermutedVariable().second;
-  }
-  if (statistics.gtObservations) statistics.gtMeanIn /= statistics.gtObservations;
-  statistics.gtMeanOut /= static_cast<measure_t>(gvOriginalPermutedAttribute.size() - statistics.gtObservations);
+        totalObservations += static_cast<count_t>(itrPC->size());
+    }
 
-  if (statistics.gtWeight) statistics.gtWeightedMeanIn /= statistics.gtWeight;
-  statistics.gtWeightedMeanOut /= tTotalWeight - statistics.gtWeight;
+    if (statistics.gtObservations) statistics.gtMeanIn /= statistics.gtObservations;
+    statistics.gtMeanOut /= static_cast<measure_t>(totalObservations - statistics.gtObservations);
 
-  itrObs = statistics.gtLocTotalObserved.begin();
-  itrWeight = statistics.gtLocTotalWeight.begin();
-  for (; itrObs != statistics.gtLocTotalObserved.end(); ++itrObs, ++itrWeight) {
-      statistics.gtLocMean[itrObs->first] /= itrObs->second;
-      statistics.gtLocWeightedMean[itrWeight->first] /= itrWeight->second;
-  }
+    if (statistics.gtWeight) statistics.gtWeightedMeanIn /= statistics.gtWeight;
+    statistics.gtWeightedMeanOut /= tTotalWeight - statistics.gtWeight;
 
-  return statistics; 
+    itrObs = statistics.gtLocTotalObserved.begin();
+    itrWeight = statistics.gtLocTotalWeight.begin();
+    for (; itrObs != statistics.gtLocTotalObserved.end(); ++itrObs, ++itrWeight) {
+        statistics.gtLocMean[itrObs->first] /= itrObs->second;
+        statistics.gtLocWeightedMean[itrWeight->first] /= itrWeight->second;
+    }
+
+    return statistics; 
 }
 
 /** Calculates statistics about entire data set from internal structures. */
 AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandomizer::getDataSetStatistics() const {
-  PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin(), itr_end=gvOriginalPermutedAttribute.end();
-  DataSetStatistics statistics;
+    DataSetStatistics statistics;
+    count_t totalObservations=0;
 
-  statistics.init();
-  for (;itr_permuted != itr_end; ++itr_permuted) {
-      statistics.gtMean += itr_permuted->GetPermutedVariable().first;
-      statistics.gtWeightedMean += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
-      statistics.gtTotalWeight += itr_permuted->GetPermutedVariable().second;
-  }
-  statistics.gtMean /= static_cast<measure_t>(gvOriginalPermutedAttribute.size());
-  statistics.gtWeightedMean /= statistics.gtTotalWeight;
+    statistics.init();
+    PermutedContainerCollection_t::const_iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrPC != gvOriginalPermutedAttributeCollections.end(); ++itrPC) {
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrP != itrPC->end(); ++itrP) {
+            statistics.gtMean += itrP->GetPermutedVariable().first;
+            statistics.gtWeightedMean += itrP->GetPermutedVariable().second * itrP->GetPermutedVariable().first;
+            statistics.gtTotalWeight += itrP->GetPermutedVariable().second;
+        }
+        totalObservations += static_cast<count_t>(itrPC->size());
+    }
+    statistics.gtMean /= static_cast<measure_t>(totalObservations);
+    statistics.gtWeightedMean /= statistics.gtTotalWeight;
 
-  itr_permuted=gvOriginalPermutedAttribute.begin();
-  for (;itr_permuted != itr_end; ++itr_permuted) {
-      statistics.gtVariance += std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtMean, 2);
-      statistics.gtWeightedVariance += itr_permuted->GetPermutedVariable().second * std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtWeightedMean, 2);
-  }
-  statistics.gtVariance /= static_cast<measure_t>(gvOriginalPermutedAttribute.size());
-  statistics.gtVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
-  statistics.gtWeightedVariance /= statistics.gtTotalWeight;
-  statistics.gtWeightedVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
+    itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrPC != gvOriginalPermutedAttributeCollections.end(); ++itrPC) {
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrP != itrPC->end(); ++itrP) {
+            statistics.gtVariance += std::pow(itrP->GetPermutedVariable().first - statistics.gtMean, 2);
+            statistics.gtWeightedVariance += itrP->GetPermutedVariable().second * std::pow(itrP->GetPermutedVariable().first - statistics.gtWeightedMean, 2);
+        }
+    }
+    statistics.gtVariance /= static_cast<measure_t>(totalObservations);
+    statistics.gtVariance *= (static_cast<measure_t>(totalObservations)/(static_cast<measure_t>(totalObservations - 1)));
+    statistics.gtWeightedVariance /= statistics.gtTotalWeight;
+    statistics.gtWeightedVariance *= (static_cast<measure_t>(totalObservations)/(static_cast<measure_t>(totalObservations - 1)));
 
-  return statistics;
+    return statistics;
 }
 
 /** Returns whether covariates are present in randomizer entries. */
 bool AbstractWeightedNormalRandomizer::getHasCovariates() const {
-    if (gvOriginalPermutedAttribute.size()) {
-        return gvOriginalPermutedAttribute.front().GetPermutedVariable().getAdditional() != 0;
+    // weighted normal model with covarites is only implemented for purely spatial analyese, so only using first container in collection.
+    if (gvOriginalPermutedAttributeCollections.begin()->size()) {
+        return gvOriginalPermutedAttributeCollections.begin()->front().GetPermutedVariable().getAdditional() != 0;
     } else return false;
 }
 
 AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalRandomizer::getRiskEstimateStatistics(const CSaTScanData& DataHub) const {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin();
-  RiskEstimateStatistics statistics;
-  RiskEstimateStatistics::container_t::iterator itrObs, itrWeight;
+    RiskEstimateStatistics statistics;
+    RiskEstimateStatistics::container_t::iterator itrObs, itrWeight;
 
-  statistics.init(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
-  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-      statistics.gtTotalObserved[itr_stationary->GetStationaryVariable().second] += 1;
-      statistics.gtMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
-      statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
-      statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-  }
-  //Now calculate values for meta locations.
-  std::vector<tract_t> atomic;
-  for (tract_t t=0; t < DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(); ++t) {
-      DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(t, atomic);
-      for (std::vector<tract_t>::const_iterator itr=atomic.begin(); itr != atomic.end(); ++itr) {
-          statistics.gtTotalObserved[DataHub.GetNumTracts() + t] += statistics.gtTotalObserved[*itr];
-          statistics.gtMean[DataHub.GetNumTracts() + t] += statistics.gtMean[*itr];
-          statistics.gtTotalWeight[DataHub.GetNumTracts() + t] += statistics.gtTotalWeight[*itr];
-          statistics.gtWeightedMean[DataHub.GetNumTracts() + t] += statistics.gtWeightedMean[*itr];
-      }
-  }
-
-  itrObs = statistics.gtTotalObserved.begin();
-  itrWeight = statistics.gtTotalWeight.begin();
-  for (; itrObs != statistics.gtTotalObserved.end(); ++itrObs, ++itrWeight) {
-      if (itrObs->second) statistics.gtMean[itrObs->first] /= itrObs->second;
-      if (itrWeight->second) statistics.gtWeightedMean[itrWeight->first] /= itrWeight->second;
-  }
-
-  return statistics;
+    statistics.init(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
+    StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::const_iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        PermutedContainer_t::const_iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            statistics.gtTotalObserved[itrS->GetStationaryVariable().second] += 1;
+            statistics.gtMean[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first;
+            statistics.gtTotalWeight[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().second;
+            statistics.gtWeightedMean[itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+        }
+    }
+    //Now calculate values for meta locations.
+    std::vector<tract_t> atomic;
+    for (tract_t t=0; t < DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(); ++t) {
+        DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(t, atomic);
+        for (std::vector<tract_t>::const_iterator itr=atomic.begin(); itr != atomic.end(); ++itr) {
+            statistics.gtTotalObserved[DataHub.GetNumTracts() + t] += statistics.gtTotalObserved[*itr];
+            statistics.gtMean[DataHub.GetNumTracts() + t] += statistics.gtMean[*itr];
+            statistics.gtTotalWeight[DataHub.GetNumTracts() + t] += statistics.gtTotalWeight[*itr];
+            statistics.gtWeightedMean[DataHub.GetNumTracts() + t] += statistics.gtWeightedMean[*itr];
+        }
+    }
+    itrObs = statistics.gtTotalObserved.begin();
+    itrWeight = statistics.gtTotalWeight.begin();
+    for (; itrObs != statistics.gtTotalObserved.end(); ++itrObs, ++itrWeight) {
+        if (itrObs->second) statistics.gtMean[itrObs->first] /= itrObs->second;
+        if (itrWeight->second) statistics.gtWeightedMean[itrWeight->first] /= itrWeight->second;
+    }
+    return statistics;
 }
 
 /** Removes all stationary and permuted attributes associated with cases in interval and location. */
 void AbstractWeightedNormalRandomizer::RemoveCase(int iTimeInterval, tract_t tTractIndex) {
-  WeightedNormalStationary_t            tAttribute(std::make_pair(iTimeInterval, tTractIndex));
-  StationaryContainer_t::iterator       itr;
+    WeightedNormalStationary_t tAttribute(std::make_pair(iTimeInterval, tTractIndex));
 
-  while ((itr=std::find(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), tAttribute)) != gvStationaryAttribute.end()) {
-       size_t t = std::distance(gvStationaryAttribute.begin(), itr);
-       gvOriginalPermutedAttribute.erase(gvOriginalPermutedAttribute.begin() + t);
-       gvStationaryAttribute.erase(itr);
-  }
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC) {
+        StationaryContainer_t::iterator itrS;
+        while ((itrS=std::find(itrSC->begin(), itrSC->end(), tAttribute)) != itrSC->end()) {
+            PermutedContainerCollection_t::iterator itrPC = gvOriginalPermutedAttributeCollections.begin() + std::distance(gvStationaryAttributeCollections.begin(), itrSC);
+            itrPC->erase(itrPC->begin() + std::distance(itrSC->begin(), itrS));
+            itrSC->erase(itrS);
+        }
+    }
 }
 
 /** Returns whether every defined location has one and onle only observation. */
 bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(CSaTScanData& DataHub) {
-  boost::dynamic_bitset<> locationsSet(DataHub.GetNumTracts());
+    boost::dynamic_bitset<> locationsSet(DataHub.GetNumTracts());
 
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  for (; itr_stationary != itr_end; ++itr_stationary) {
-      if (locationsSet.test(itr_stationary->GetStationaryVariable().second))
-         return false;
-      else
-         locationsSet.set(itr_stationary->GetStationaryVariable().second);
-  }
-
-/*  
-  //For all 'off' bits, add location as no
-  std::vector<double> v;
-  for (boost::dynamic_bitset<>::size_type i=0; i < locationsSet.size(); ++i) {
-      if (!locationsSet[i]) {
-         // set location not evaluated
-         DataHub.setLocationNotEvaluated(i);
-         // Even though we are not evaluating this location, we need to add a dummy record.
-         // This record is needed because we rely on relative tract index in many places and
-         // to pretend to one does not exist cause major problems.
-         AddCase(1,0,i,
-                 gvPermutedAttribute.back().GetPermutedVariable().first, 
-                 gvPermutedAttribute.back().GetPermutedVariable().second, 
-                 gvPermutedAttribute.back().GetPermutedVariable().getAdditional()->get(v));
-      }
-  }
-*/
-  return locationsSet.size() == locationsSet.count();
+    StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC) {
+        StationaryContainer_t::const_iterator itrS=itrSC->begin();
+        for (; itrS != itrSC->end(); ++itrS) {
+            if (locationsSet.test(itrS->GetStationaryVariable().second))
+                return false;
+            else
+                locationsSet.set(itrS->GetStationaryVariable().second);
+        }
+    }
+    /*
+        //For all 'off' bits, add location as no
+        std::vector<double> v;
+        for (boost::dynamic_bitset<>::size_type i=0; i < locationsSet.size(); ++i) {
+            if (!locationsSet[i]) {
+                // set location not evaluated
+                DataHub.setLocationNotEvaluated(i);
+                // Even though we are not evaluating this location, we need to add a dummy record.
+                // This record is needed because we rely on relative tract index in many places and
+                // to pretend to one does not exist cause major problems.
+                AddCase(1,0,i,
+                        gvPermutedAttribute.back().GetPermutedVariable().first, 
+                        gvPermutedAttribute.back().GetPermutedVariable().second, 
+                        gvPermutedAttribute.back().GetPermutedVariable().getAdditional()->get(v));
+            }
+        }
+    */
+    return locationsSet.size() == locationsSet.count();
 }
 
 //******************************************************************************
 
 /** Assigns randomized data to dataset's simulation measure structures. */
 void WeightedNormalRandomizer::AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  measure_t                          ** ppMeasure, ** ppMeasureAux;
-  int                                   i, tTract, iNumTracts=RealSet.getLocationDimension(), iNumTimeIntervals=RealSet.getIntervalDimension();
-
-  //reset simulation measure arrays to zero
-  SimSet.getMeasureData().Set(0);
-  SimSet.getMeasureData_Aux().Set(0);
-  ppMeasure = SimSet.getMeasureData().GetArray();
-  ppMeasureAux = SimSet.getMeasureData_Aux().GetArray();
-  //assign randomized continuous data to measure and measure squared arrays
-  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-     ppMeasureAux[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
-  }
-  //now set as cumulative
-  for (tTract=0; tTract < iNumTracts; ++tTract)
-     for (i=iNumTimeIntervals-2; i >= 0; --i) {
-        ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
-        ppMeasureAux[i][tTract] = ppMeasureAux[i+1][tTract] + ppMeasureAux[i][tTract];
-     }
+    //reset simulation measure arrays to zero
+    SimSet.getMeasureData().Set(0);
+    SimSet.getMeasureData_Aux().Set(0);
+    //assign randomized continuous data to measure and measure squared arrays
+    measure_t ** ppMeasure = SimSet.getMeasureData().GetArray();
+    measure_t ** ppMeasureAux = SimSet.getMeasureData_Aux().GetArray();
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::iterator itrPC=gvPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            ppMeasure[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+            ppMeasureAux[itrS->GetStationaryVariable().first][itrS->GetStationaryVariable().second] += itrP->GetPermutedVariable().second;
+        }
+    }
+    //now set as cumulative
+    int iNumTracts=RealSet.getLocationDimension(), iNumTimeIntervals=RealSet.getIntervalDimension();
+    for (int tTract=0; tTract < iNumTracts; ++tTract) {
+        for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+            ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
+            ppMeasureAux[i][tTract] = ppMeasureAux[i+1][tTract] + ppMeasureAux[i][tTract];
+        }
+    }
 }
 //******************************************************************************
 
 /** Assigns randomized data to dataset's simulation measure structures. */
 void WeightedNormalPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet) {
-  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  measure_t                           * pMeasure, * pMeasureAux;
-  int                                   i, iNumTimeIntervals=RealSet.getIntervalDimension();
+    int iNumTimeIntervals=RealSet.getIntervalDimension();
 
-  //reset simulation measure arrays to zero
-  pMeasure = SimSet.getMeasureData_PT();
-  memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
-  pMeasureAux = SimSet.getMeasureData_PT_Aux();
-  memset(pMeasureAux, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
-  //assign randomized continuous data to measure and measure squared arrays
-  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     pMeasure[itr_stationary->GetStationaryVariable().first] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-     pMeasureAux[itr_stationary->GetStationaryVariable().first] += itr_permuted->GetPermutedVariable().second;
-  }
-  //now set as cumulative
-  for (i=iNumTimeIntervals-2; i >= 0; --i) {
-     pMeasure[i] = pMeasure[i+1] + pMeasure[i];
-     pMeasureAux[i] = pMeasureAux[i+1] + pMeasureAux[i];
-  }
+    //reset simulation measure arrays to zero
+    measure_t * pMeasure = SimSet.getMeasureData_PT();
+    memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
+    measure_t * pMeasureAux = SimSet.getMeasureData_PT_Aux();
+    memset(pMeasureAux, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
+
+    //assign randomized continuous data to measure and measure squared arrays
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::iterator itrPC=gvPermutedAttributeCollections.begin();
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            pMeasure[itrS->GetStationaryVariable().first] += itrP->GetPermutedVariable().first * itrP->GetPermutedVariable().second;
+            pMeasureAux[itrS->GetStationaryVariable().first] += itrP->GetPermutedVariable().second;
+        }
+    }
+    //now set as cumulative
+    for (int i=iNumTimeIntervals-2; i >= 0; --i) {
+        pMeasure[i] = pMeasure[i+1] + pMeasure[i];
+        pMeasureAux[i] = pMeasureAux[i+1] + pMeasureAux[i];
+    }
 }
-

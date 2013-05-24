@@ -10,7 +10,7 @@ class CRankModel : public CModel {
     CRankModel();
     virtual ~CRankModel();
 
-    virtual void                CalculateMeasure(RealDataSet& DataSet);
+    virtual void                CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHug) const;
 };
 //******************************************************************************

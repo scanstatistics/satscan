@@ -205,7 +205,7 @@ boost::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealData
 }
 
 /** Calculates the expected number of cases for dataset. */
-void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
+void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataHub) {
     try {
         boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = calculateMeasure(Set);
         // apply any adjustments -- other than the weekly adjustment

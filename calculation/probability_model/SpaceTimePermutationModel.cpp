@@ -14,7 +14,7 @@ CSpaceTimePermutationModel::~CSpaceTimePermutationModel() {}
 /** Determines the expected number of cases for each time interval/tract.
     Assigns values to CSatScanData::Measure array. Calculates total measure
     and validates that total measure equals total number of cases in set. */
-void CSpaceTimePermutationModel::CalculateMeasure(RealDataSet& DataSet) {
+void CSpaceTimePermutationModel::CalculateMeasure(RealDataSet& DataSet, const CSaTScanData& DataHub) {
   unsigned int          i, j, c, iNumCategories(DataSet.getPopulationData().GetNumCovariateCategories());
   count_t               tTotalCases(0), ** ppCases=0;
   measure_t          ** ppMeasure, T_C, tTotalMeasure(0);

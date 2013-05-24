@@ -4,16 +4,18 @@
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
 
+class CSaTScanData; // forward class declaration
+
 typedef StationaryAttribute<std::pair<int, tract_t> >   RankStationary_t;
 typedef PermutedAttribute<double>                       RankPermuted_t;
 
 /** Abstraction for Rank data randomizers */
 class AbstractRankRandomizer :  public AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>{
    public:
-     AbstractRankRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>(lInitialSeed) {}
+     AbstractRankRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
      virtual ~AbstractRankRandomizer() {}
 
-    virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable);
+    virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
 };
 
@@ -23,7 +25,7 @@ class RankRandomizer : public AbstractRankRandomizer {
     virtual void             AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    RankRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(lInitialSeed) {}
+    RankRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(dataHub, lInitialSeed) {}
     virtual ~RankRandomizer() {}
 
     virtual RankRandomizer * Clone() const {return new RankRandomizer(*this);}
@@ -35,7 +37,7 @@ class RankPurelyTemporalRandomizer : public AbstractRankRandomizer {
     virtual void             AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    RankPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(lInitialSeed) {}
+    RankPurelyTemporalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(dataHub, lInitialSeed) {}
     virtual ~RankPurelyTemporalRandomizer() {}
 
     virtual RankPurelyTemporalRandomizer * Clone() const {return new RankPurelyTemporalRandomizer(*this);}

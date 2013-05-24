@@ -16,7 +16,7 @@ OrdinalModel::~OrdinalModel() {}
 /** empty function - for the ordinal model, the routine to calculate expected cases
     is not needed (generally the measure array) since calculation of loglikelihood
     based upon cases in each category and total cases in each category */
-void OrdinalModel::CalculateMeasure(RealDataSet&) {/* no action here */}
+void OrdinalModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no action here */}
 
 /** Returns population as defined in CCluster object for data set at index. */
 double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {

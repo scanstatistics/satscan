@@ -1367,14 +1367,21 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       bValid = false;
     //validate the adjustment for weekly trends
     if (gParameters.getAdjustForWeeklyTrends()) {
-        if (!(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON)) {
+        if (!(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
+              gParameters.GetProbabilityModelType() == POISSON ||
+              gParameters.GetProbabilityModelType() == NORMAL ||
+              gParameters.GetProbabilityModelType() == EXPONENTIAL ||
+              gParameters.GetProbabilityModelType() == RANK ||
+              gParameters.GetProbabilityModelType() == ORDINAL ||
+              gParameters.GetProbabilityModelType() == CATEGORICAL ||
+              gParameters.GetProbabilityModelType() == BERNOULLI)) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
           bValid = false;
-          PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s model.\n",
+          PrintDirection.Printf("%s:\nThe adjustment for weekly trends is not implemented for the %s analysis.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {

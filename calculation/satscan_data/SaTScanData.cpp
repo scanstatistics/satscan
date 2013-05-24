@@ -215,7 +215,7 @@ void CSaTScanData::CalculateExpectedCases() {
 /** Calculates expected number of cases for dataset. */
 void CSaTScanData::CalculateMeasure(RealDataSet& DataSet) {
   try {
-    m_pModel->CalculateMeasure(DataSet);
+    m_pModel->CalculateMeasure(DataSet, *this);
     //record totals at start, the optional iterative scan feature modifies start values
     DataSet.setTotalCasesAtStart(DataSet.getTotalCases());
     DataSet.setTotalMeasureAtStart(DataSet.getTotalMeasure());
@@ -345,6 +345,12 @@ double CSaTScanData::GetEllipseAngle(int iEllipseIndex) const {
     the valid range is 0 to gParameters.GetNumTotalEllipses(). */
 double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
   return (iEllipseIndex == 0 ? 1.0 : gvEllipseShapes[iEllipseIndex - 1]);
+}
+
+/** convert interval index to Julian date. */
+Julian CSaTScanData::intervalIndexToJulian(unsigned int intervalIdx) const {
+    Julian date = gvTimeIntervalStartTimes.at(intervalIdx);
+    return date;
 }
 
 /** Returns whether data of location at index has been removed as a result of

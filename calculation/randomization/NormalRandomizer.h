@@ -7,13 +7,17 @@
 typedef StationaryAttribute<std::pair<int, tract_t> >   NormalStationary_t;
 typedef PermutedAttribute<double>                       NormalPermuted_t;
 
+class CSaTScanData; // forward class declaration
+
 /** */
 class AbstractNormalRandomizer : public AbstractPermutedDataRandomizer<NormalStationary_t, NormalPermuted_t>{
+   protected:
+        const CSaTScanData& _dataHub;
    public:
-     AbstractNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<NormalStationary_t, NormalPermuted_t>(lInitialSeed) {}
+     AbstractNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
      virtual ~AbstractNormalRandomizer() {}
 
-    virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable);
+    virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
@@ -26,7 +30,7 @@ class NormalRandomizer : public AbstractNormalRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    NormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}
+    NormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(dataHub, lInitialSeed) {}
     virtual ~NormalRandomizer() {}
 
     virtual NormalRandomizer * Clone() const {return new NormalRandomizer(*this);}
@@ -40,7 +44,7 @@ class NormalPurelyTemporalRandomizer : public AbstractNormalRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    NormalPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}
+    NormalPurelyTemporalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(dataHub, lInitialSeed) {}
     virtual ~NormalPurelyTemporalRandomizer() {}
 
     virtual NormalPurelyTemporalRandomizer * Clone() const {return new NormalPurelyTemporalRandomizer(*this);}

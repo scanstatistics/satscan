@@ -1008,15 +1008,10 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
 
   SettingContainer_t settings;
   std::string        buffer, worker;
-
   try {
-    if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == ::SPACETIMEPERMUTATION) {
+    if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
       settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric",(gParameters.getAdjustForWeeklyTrends() ? "Yes" : "No")));
     }
-
-    // The remaining options are only relevent for the Poisson model.
-    if (gParameters.GetProbabilityModelType() != POISSON) return;
-
     if (bPrintingTemporalAdjustment) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               :
@@ -1044,14 +1039,16 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                                   "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
       }
     }
-    settings.push_back(std::make_pair("Adjust for known relative risks",(gParameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
-    if (gParameters.UseAdjustmentForRelativeRisksFile())
-        settings.push_back(std::make_pair("Adjustments File",gParameters.GetAdjustmentsByRelativeRisksFilename()));
-    //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC) {
-       settings.push_back(std::make_pair("Time Trend Type (SVTT)","Quadratic"));
+    if (gParameters.GetProbabilityModelType() == POISSON) {
+        settings.push_back(std::make_pair("Adjust for known relative risks",(gParameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
+        if (gParameters.UseAdjustmentForRelativeRisksFile())
+            settings.push_back(std::make_pair("Adjustments File",gParameters.GetAdjustmentsByRelativeRisksFilename()));
+        //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
+        if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC)
+            settings.push_back(std::make_pair("Time Trend Type (SVTT)","Quadratic"));
     }
-    WriteSettingsContainer(settings, "Space And Time Adjustments", fp);
+    if (settings.size() > 0)
+        WriteSettingsContainer(settings, "Space And Time Adjustments", fp);
   }
   catch (prg_exception& x) {
     x.addTrace("PrintSpaceAndTimeAdjustmentsParameters()","ParametersPrint");

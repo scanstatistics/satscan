@@ -173,7 +173,7 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
            eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
-             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuousVariable, tCensorAttribute);
+             pRandomizer->AddPatients(tPatients, Date, tTractIndex, tContinuousVariable, tCensorAttribute);
              tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
@@ -318,9 +318,9 @@ void ExponentialDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers.at(0) = new ExponentialPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+              gvDataSetRandomizers.at(0) = new ExponentialPurelyTemporalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers.at(0) = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new ExponentialRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :

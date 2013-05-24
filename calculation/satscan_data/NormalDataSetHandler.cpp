@@ -193,7 +193,7 @@ bool NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& 
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
-             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
+             pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
@@ -261,6 +261,8 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
              if (bEmpty) {
                  tCovariatesFirst = vCovariates.size();
                  const_cast<CParameters&>(gParameters).SetIsWeightedNormalCovariates(tCovariatesFirst > 0);
+                 if (gParameters.getAdjustForWeeklyTrends() && tCovariatesFirst > 0)
+                    throw resolvable_error("Error: The weighted normal model does not implement the day of week adjustment with covariates defined in case file.\n");
              } else {
                //if not first record, check covariates count against first record
                if (tCovariatesFirst != vCovariates.size())
@@ -276,9 +278,9 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
 
              // -- input is expected to be actual weight variable; not variance -- dRateVariable = 1/dRateVariable;
              if (vCovariates.size())
-                pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable, vCovariates);
+                pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable, vCovariates);
              else
-                pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable);
+                pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable);
 
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
@@ -533,15 +535,15 @@ void NormalDataSetHandler::SetRandomizers() {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis()) {
               if (gParameters.getIsWeightedNormal())
-              gvDataSetRandomizers.at(0) = new WeightedNormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+                  gvDataSetRandomizers.at(0) = new WeightedNormalPurelyTemporalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
             else
-              gvDataSetRandomizers.at(0) = new NormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+                gvDataSetRandomizers.at(0) = new NormalPurelyTemporalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           }
           else {
             if (gParameters.getIsWeightedNormal())
-              gvDataSetRandomizers.at(0) = new WeightedNormalRandomizer(gParameters.GetRandomizationSeed());
+              gvDataSetRandomizers.at(0) = new WeightedNormalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
             else
-              gvDataSetRandomizers.at(0) = new NormalRandomizer(gParameters.GetRandomizationSeed());
+              gvDataSetRandomizers.at(0) = new NormalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           }
           break;
       case FILESOURCE :

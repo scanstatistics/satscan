@@ -61,7 +61,7 @@ class WeightedNormalVariables {
 typedef StationaryAttribute<std::pair<int, tract_t> >   WeightedNormalStationary_t;
 typedef PermutedAttribute<WeightedNormalVariables >   WeightedNormalPermuted_t;
 
-/** Function object used to compare LocationIdentifier::gsIndentifier. */
+/** Function object used to compare WeightedNormalStationary_t. */
 class CompareWeightedNormalStationary {
   public:
      bool operator() (const WeightedNormalStationary_t & lhs, const WeightedNormalStationary_t & rhs) {
@@ -70,6 +70,8 @@ class CompareWeightedNormalStationary {
          return lhs.GetStationaryVariable().first == rhs.GetStationaryVariable().first;
      }
 };
+
+class CSaTScanData; // forward class declaration
 
 /** */
 class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>{
@@ -139,12 +141,11 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
      measure_t                 gtSecondRatioConstant;
 
    public:
-     AbstractWeightedNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(lInitialSeed),
-                                                           gtFirstRatioConstant(0), gtSecondRatioConstant(0) {}
+     AbstractWeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
      virtual ~AbstractWeightedNormalRandomizer() {}
 
-    virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
-    virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates);
+    virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
+    virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
     void                       get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const;
     void                       get_xg(std::auto_ptr<Matrix>& xp, bool bExcludeSelectColumn=false) const;
@@ -168,7 +169,7 @@ class WeightedNormalRandomizer : public AbstractWeightedNormalRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    WeightedNormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(lInitialSeed) {}
+    WeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(dataHub, lInitialSeed) {}
     virtual ~WeightedNormalRandomizer() {}
 
     virtual WeightedNormalRandomizer * Clone() const {return new WeightedNormalRandomizer(*this);}
@@ -182,7 +183,7 @@ class WeightedNormalPurelyTemporalRandomizer : public AbstractWeightedNormalRand
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    WeightedNormalPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(lInitialSeed) {}
+    WeightedNormalPurelyTemporalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(dataHub, lInitialSeed) {}
     virtual ~WeightedNormalPurelyTemporalRandomizer() {}
 
     virtual WeightedNormalPurelyTemporalRandomizer * Clone() const {return new WeightedNormalPurelyTemporalRandomizer(*this);}

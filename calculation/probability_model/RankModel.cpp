@@ -13,7 +13,7 @@ CRankModel::CRankModel() : CModel() {}
 CRankModel::~CRankModel() {}
 
 /** No operation performed for this probability model. */
-void CRankModel::CalculateMeasure(RealDataSet&) {/* no action here */}
+void CRankModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
 double CRankModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {

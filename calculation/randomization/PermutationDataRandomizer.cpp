@@ -3,4 +3,4 @@
 #pragma hdrstop
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
-
+#include "SaTScanData.h"

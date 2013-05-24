@@ -206,7 +206,7 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
            bEmpty = false;
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
            if (eRecordStatus == DataSetHandler::Accepted) {
-             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
+             pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
              tTotalCases += Count;
              tTotalMeasure += tContinuousVariable;
            }
@@ -272,9 +272,9 @@ void RankDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers.at(0) = new RankPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+              gvDataSetRandomizers.at(0) = new RankPurelyTemporalRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers.at(0) = new RankRandomizer(gParameters.GetRandomizationSeed());
+              gvDataSetRandomizers.at(0) = new RankRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
