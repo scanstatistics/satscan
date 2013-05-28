@@ -174,7 +174,7 @@ void AbstractPermutedDataRandomizer<S, P>::SortPermutedAttribute() {
     // consistancy of output when running in parallel.
     gvPermutedAttributeCollections = gvOriginalPermutedAttributeCollections;
 
-    for (PermutedContainerCollection_t::iterator itr=gvPermutedAttributeCollections.begin(); itr != gvPermutedAttributeCollections.end(); ++itr) {
+    for (typename PermutedContainerCollection_t::iterator itr=gvPermutedAttributeCollections.begin(); itr != gvPermutedAttributeCollections.end(); ++itr) {
         std::for_each(itr->begin(), itr->end(), AssignPermutedAttribute<P>(gRandomNumberGenerator));
         std::sort(itr->begin(), itr->end(), ComparePermutedAttribute<P>());
     }
