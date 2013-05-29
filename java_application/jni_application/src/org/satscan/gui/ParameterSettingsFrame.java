@@ -617,7 +617,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (_timeAggregationLengthTextField.getText().length() == 0 || Integer.parseInt(_timeAggregationLengthTextField.getText()) < 1) {
                 throw new SettingsException("Please specify a time aggregation length greater than zero.", (Component) _timeAggregationLengthTextField);
             }
-
+            // check time aggregation length if using day of week adjustment, this adjustment can only be used if aggregation is 1 day
+            if (_advancedParametersSetting.isAdjustingForDayOfWeek()) {
+                int time_length = Integer.parseInt(_timeAggregationLengthTextField.getText());            
+                if (!(time_length == 1 && getTimeAggregationControlType() == Parameters.DatePrecisionType.DAY))
+                    throw new SettingsException("The adjustment for weekly trends can only be performed with a time aggregation length of 1 day.", (Component) _timeAggregationLengthTextField);            
+            }
+            
             dStudyPeriodLengthInUnits = CalculateTimeAggregationUnitsInStudyPeriod();
             if (dStudyPeriodLengthInUnits < Double.parseDouble(_timeAggregationLengthTextField.getText())) {
                 throw new SettingsException("A time aggregation of " + _timeAggregationLengthTextField.getText() + " " + sPrecisionString + (Integer.parseInt(_timeAggregationLengthTextField.getText()) == 1 ? "" : "s") + " is greater than the " + Math.floor(dStudyPeriodLengthInUnits) + " " + sPrecisionString + " study period.\n", (Component) _timeAggregationLengthTextField);

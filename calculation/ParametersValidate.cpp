@@ -1533,6 +1533,11 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     return false;
   }
 
+  if (gParameters.getAdjustForWeeklyTrends() && gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
+    PrintDirection.Printf("%s:\nThe adjustment for day of week cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    return false;
+  }
+
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) //svtt does not have a maximum temporal cluster size
     return true;
 

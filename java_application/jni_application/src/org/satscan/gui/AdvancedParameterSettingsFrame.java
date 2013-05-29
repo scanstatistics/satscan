@@ -573,6 +573,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableGoogleEarthGroup();
     }
 
+    public boolean isAdjustingForDayOfWeek() {
+        return _adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected();
+    }
+    
     public void enableAdjustDayOfWeek(boolean enable) {        
         _adjustDayOfWeek.setEnabled(enable);
         if (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
@@ -1250,6 +1254,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The adjustments file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
+        }
+        
+        if (isAdjustingForDayOfWeek()) {
+          double dStudyPeriodLengthInUnits = _analysisSettingsWindow.CalculateTimeAggregationUnitsInStudyPeriod();
+          if (dStudyPeriodLengthInUnits < 14.0)
+            throw new AdvFeaturesExpection("The adjustment for day of week cannot be performed on a period less than 14 days.", FocusedTabSet.ANALYSIS, (Component) _adjustDayOfWeek);
         }
     }
 
