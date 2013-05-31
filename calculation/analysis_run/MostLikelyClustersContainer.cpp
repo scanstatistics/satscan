@@ -311,6 +311,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
     double dClusterTwoMajorAxis = ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset);
     if (std::fabs(dDistanceBetween - (dClusterOneMajorAxis + dClusterTwoMajorAxis)) > dNumericalDeviation && dDistanceBetween > dClusterOneMajorAxis + dClusterTwoMajorAxis)
       return false;
+
     //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
     //or vice versa, centroid of first cluster is within radius of second cluster
     if (DataHub.GetParameters().UseSpecialGrid()) {
@@ -318,12 +319,43 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
           (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
         return true;
       }
-    }
-    else {
+    } else {
       if ((std::fabs(dDistanceBetween - ClusterOneRadius) > dNumericalDeviation && dDistanceBetween <= ClusterOneRadius) ||
           (std::fabs(dDistanceBetween - ClusterTwoRadius) > dNumericalDeviation && dDistanceBetween <= ClusterTwoRadius)) {
           return true;
       }
+    }
+
+    // If the distance of any location in one cluster - to the center of the other cluster is less than the radius
+    // of the other cluster, then they have overlapping locations.
+    bool useLocationToRadiusMethod = ((iOneOffset == 0 || iTwoOffset == 0) &&        // one of the clusters is circular
+                                       (DataHub.GetNumMetaTractsReferenced() == 0)); // meta locations were not used
+    if (useLocationToRadiusMethod) {
+        // determine which cluster has the fewest number of locations.
+        const CCluster * testCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterOne : &ClusterTwo;
+        const CCluster * otherCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterTwo : &ClusterOne;
+        // Override selection of smaller cluster if the other cluster is elliptical.
+        if (otherCluster->GetEllipseOffset() > 0)
+            std::swap(testCluster, otherCluster);
+        tract_t tracts = testCluster->GetNumTractsInCluster(), centroid = testCluster->GetCentroidIndex();
+        double radius = testCluster->GetCartesianRadius();
+        int offset = testCluster->GetEllipseOffset();
+        // get the coordinates for center of other cluster
+        std::vector<double> centroidCoordinates, locationCoordinates;
+        double compare_radius = otherCluster->GetCartesianRadius();
+        DataHub.GetGInfo()->retrieveCoordinates(otherCluster->GetCentroidIndex(), centroidCoordinates);
+
+        const TractHandler& tinfo = *(DataHub.GetTInfo());
+        for (tract_t t=1; t <= tracts; ++t) {
+            tract_t location = DataHub.GetNeighbor(offset, centroid, t, radius);
+            const TractHandler::Location::CoordsContainer_t& coordinates = tinfo.getLocations()[location]->getCoordinates();
+            for (unsigned int c=0; c < coordinates.size(); ++c) {
+                coordinates[c]->retrieve(locationCoordinates);
+                if (!macro_less_than(compare_radius, std::sqrt(tinfo.getDistanceSquared(centroidCoordinates, locationCoordinates)), DBL_CMP_TOLERANCE)) 
+                    return true;
+            }
+        }
+        return false;
     }
   }
 
@@ -547,9 +579,12 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
     if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
       std::auto_ptr<stsClusterCentroidGeometry> CandidateCenter;
       // we will potentially use the radius shortcut method if many locations and candidate cluster is circular
-      bool shouldShortCut = DataHub.GetGInfo()->getNumGridPoints() &&
-                            (DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()) >= MAX_BRUTE_FORCE_LOCATIONS && 
-                            CandidateCluster.GetEllipseOffset() == 0;
+      bool shouldShortCut = false; 
+      // We believe the new brute force algorithm will produce faster times such that this shortcut method is not needed.
+      // The shortcut method isn't ideal since it does not ensure non-overlap in cluster locations, but only in cluster radius.
+                            //DataHub.GetGInfo()->getNumGridPoints() &&
+                            //(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()) >= MAX_BRUTE_FORCE_LOCATIONS && 
+                            //CandidateCluster.GetEllipseOffset() == 0;
       if (shouldShortCut) {
           dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
           // retrieve coordinates of candidate cluster

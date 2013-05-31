@@ -219,7 +219,7 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
       gvCentroidNeighborStore[t] = new CentroidNeighbors();
       CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
       if (dClusterRadius != -1 && !gParameters.getReportGiniOptimizedClusters())
-          // can't use cluster radius with index based cluster reporting since this cluster radius might be a leaster maxima than another for cluster about same centroid
+          // can't use cluster radius with index based cluster reporting since this cluster radius might be a lesser maxima than another for cluster about same centroid
         CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
       else  
         CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
