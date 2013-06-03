@@ -1236,7 +1236,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected()) {
                 throw new AdvFeaturesExpection("Spatial adjustments can not performed in conjunction\n" + " with the inclusion of purely spatial clusters.", FocusedTabSet.ANALYSIS, (Component) _spatialAdjustmentsGroup);
             }
-            if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() == Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
+            if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() == Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION) {
                 throw new AdvFeaturesExpection("Spatial adjustments can not performed in conjunction\n" + "with the nonparametric temporal adjustment.", FocusedTabSet.ANALYSIS, (Component) _spatialAdjustmentsGroup);
             }
         }
