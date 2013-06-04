@@ -88,7 +88,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="567" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="579" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -130,7 +130,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="260" max="32767" attributes="0"/>
+                      <EmptySpace pref="272" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -535,7 +535,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="316" max="32767" attributes="0"/>
+                      <EmptySpace pref="328" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -739,7 +739,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="251" max="32767" attributes="0"/>
+                      <EmptySpace pref="263" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1009,7 +1009,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="217" max="32767" attributes="0"/>
+                      <EmptySpace pref="229" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1374,7 +1374,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="244" max="32767" attributes="0"/>
+                      <EmptySpace pref="256" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1679,25 +1679,16 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_startRangeToLabel">
                           <Properties>
@@ -1708,49 +1699,31 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endRangeToLabel">
                           <Properties>
@@ -1761,25 +1734,16 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);        &#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
                           <Properties>
@@ -1946,7 +1910,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="146" max="32767" attributes="0"/>
+                      <EmptySpace pref="158" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2314,7 +2278,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="155" max="32767" attributes="0"/>
+                      <EmptySpace pref="167" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2571,9 +2535,6 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_prospectiveStartMonthLabel">
                           <Properties>
@@ -2597,17 +2558,11 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_prospectiveStartDateMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2854,7 +2809,7 @@
                       <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="196" max="32767" attributes="0"/>
+                      <EmptySpace pref="208" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3181,7 +3136,7 @@
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_googleEarthGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="176" max="32767" attributes="0"/>
+                      <EmptySpace pref="188" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3449,7 +3404,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_powerEvaluationsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="184" max="32767" attributes="0"/>
+                      <EmptySpace pref="196" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3778,7 +3733,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="455" max="32767" attributes="0"/>
+                      <EmptySpace pref="467" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

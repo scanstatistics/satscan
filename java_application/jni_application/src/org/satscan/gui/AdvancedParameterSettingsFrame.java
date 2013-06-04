@@ -8,7 +8,6 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -27,6 +26,7 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.Utils;
 import org.satscan.importer.FileImporter;
 import org.satscan.app.UnknownEnumException;
+import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 
 /*
@@ -36,11 +36,12 @@ import org.satscan.gui.utils.help.HelpLinkedLabel;
  */
 /**
  *
- * @author  Hostovic
+ * @author Hostovic
  */
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     public enum FocusedTabSet {
+
         INPUT, ANALYSIS, OUTPUT
     };
     private JPanel _glass = null;
@@ -58,13 +59,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     final static String FLEXIBLE_GENERIC = "flexible_generic";
     final static String PROSPECTIVE_COMPLETE = "prospectiveCompleteDate";
     final static String PROSPECTIVE_GENERIC = "prospectiveGenericDate";
-
+    private DateComponentsGroup _flexStartRangeStartDateComponentsGroup;
+    private DateComponentsGroup _flexStartRangeEndDateComponentsGroup;
+    private DateComponentsGroup _flexEndRangeStartDateComponentsGroup;
+    private DateComponentsGroup _flexEndRangeEndDateComponentsGroup;
+    private DateComponentsGroup _prospectiveStartDateComponentsGroup;
 
     /**
      * Creates new form ParameterSettingsFrame
      */
     public AdvancedParameterSettingsFrame(final JRootPane rootPane, final ParameterSettingsFrame analysisSettingsWindow, final Parameters parameters) {
         initComponents();
+        _flexStartRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, 2000, 1, 1, false);
+        _flexStartRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, 2000, 12, 31, true);
+        _flexEndRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, 2000, 1, 1, false);
+        _flexEndRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, 2000, 12, 31, true);
+        _prospectiveStartDateComponentsGroup = new DateComponentsGroup(undo, _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, 2000, 12, 31, true);
+
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         _analysisSettingsWindow = analysisSettingsWindow;
@@ -83,7 +94,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * recursively searches Container objects contained in 'rootComponent' for for 'searchComponent'.
+     * recursively searches Container objects contained in 'rootComponent' for
+     * for 'searchComponent'.
      */
     boolean isContainedComponent(Component rootComponent, Component searchComponent) {
         if (rootComponent == searchComponent) {
@@ -190,7 +202,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Modally shows import dialog. */
+    /**
+     * Modally shows import dialog.
+     */
     public void launchImporter(String sFileName, FileImporter.InputFileType eFileType) {
         //try {
         ImportWizardDialog wizard = new ImportWizardDialog(SaTScanApplication.getInstance(), sFileName, eFileType, _analysisSettingsWindow.getModelControlType(), _analysisSettingsWindow.getCoordinatesType());
@@ -229,11 +243,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * enabled study period and prospective date precision based on time interval unit
+     * enabled study period and prospective date precision based on time
+     * interval unit
      */
     public void enableDatesByTimePrecisionUnits() {
-        CardLayout cl_flexible = (CardLayout)(_flexible_window_cards.getLayout());
-        CardLayout cl_prospective = (CardLayout)(_prospectiveStartDateCards.getLayout());
+        CardLayout cl_flexible = (CardLayout) (_flexible_window_cards.getLayout());
+        CardLayout cl_prospective = (CardLayout) (_prospectiveStartDateCards.getLayout());
         switch (_analysisSettingsWindow.getPrecisionOfTimesControlType()) {
             case NONE:
             case DAY:
@@ -261,82 +276,86 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Enables dates of flexible temporal window and prospective surveillance groups.
-     * Enabling is determined through:
-     * - querying the 'precision of time' control contained in the analysis window
-     * - the Enabled property of the TGroupBox of which dates are contained
-     * - the Enabled and Checked properties of the TCheckBox that indicates whether
-     * user wishes to adjust for earlier analyses. */
+    /**
+     * Enables dates of flexible temporal window and prospective surveillance
+     * groups. Enabling is determined through: - querying the 'precision of
+     * time' control contained in the analysis window - the Enabled property of
+     * the TGroupBox of which dates are contained - the Enabled and Checked
+     * properties of the TCheckBox that indicates whether user wishes to adjust
+     * for earlier analyses.
+     */
     public void enableDates() {
-        boolean bYears = true, bMonths = true, bDays = true,
-                bEnable = _flexibleTemporalWindowDefinitionGroup.isEnabled() &&
-                _restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected();
+        boolean enableYears = true, enableMonths = true, enableDays = true,
+                enableGroup = _flexibleTemporalWindowDefinitionGroup.isEnabled()
+                && _restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected();
 
         switch (_analysisSettingsWindow.getPrecisionOfTimesControlType()) {
             case NONE:
             case DAY:
-                bYears = bMonths = bDays = bEnable;
+                enableYears = enableMonths = enableDays = enableGroup;
                 break;
             case YEAR:
-                bYears = bEnable;
-                bMonths = bDays = false;
+                enableYears = enableGroup;
+                enableMonths = enableDays = false;
                 break;
             case MONTH:
-                bYears = bMonths = bEnable;
-                bDays = false;
+                enableYears = enableMonths = enableGroup;
+                enableDays = false;
                 break;
         }
 
         //enable generic ranges
-        _startRangeStartGenericTextField.setEnabled(bEnable);
-        _startRangeEndGenericTextField.setEnabled(bEnable);
-        _endRangeStartGenericTextField.setEnabled(bEnable);
-        _endRangeEndGenericTextField.setEnabled(bEnable);
+        _startRangeStartGenericTextField.setEnabled(enableGroup);
+        _startRangeEndGenericTextField.setEnabled(enableGroup);
+        _endRangeStartGenericTextField.setEnabled(enableGroup);
+        _endRangeEndGenericTextField.setEnabled(enableGroup);
 
         //enable start range dates
-        _startRangeStartYearTextField.setEnabled(bYears);
-        _startRangeStartMonthTextField.setEnabled(bMonths);
-        if (!_startRangeStartMonthTextField.isEnabled() && bEnable) {
-            _startRangeStartMonthTextField.setText("1");
+        _startRangeStartYearTextField.setEnabled(enableYears);
+        _startRangeStartMonthTextField.setEnabled(enableMonths);
+        if (!_startRangeStartMonthTextField.isEnabled() && enableGroup) {
+            _flexStartRangeStartDateComponentsGroup.setMonth(1);
         }
-        _startRangeStartDayTextField.setEnabled(bDays);
-        if (!_startRangeStartDayTextField.isEnabled() && bEnable) {
-            _startRangeStartDayTextField.setText("1");
+        _startRangeStartDayTextField.setEnabled(enableDays);
+        if (!_startRangeStartDayTextField.isEnabled() && enableGroup) {
+            _flexStartRangeStartDateComponentsGroup.setDay(1);
         }
-        _startRangeEndYearTextField.setEnabled(bYears);
-        _startRangeEndMonthTextField.setEnabled(bMonths);
-        if (!_startRangeEndMonthTextField.isEnabled() && bEnable) {
-            _startRangeEndMonthTextField.setText("12");
+        _startRangeEndYearTextField.setEnabled(enableYears);
+        _startRangeEndMonthTextField.setEnabled(enableMonths);
+        if (!_startRangeEndMonthTextField.isEnabled() && enableGroup) {
+            _flexStartRangeEndDateComponentsGroup.setMonth(12);
         }
-        _startRangeEndDayTextField.setEnabled(bDays);
-        if (!_startRangeEndDayTextField.isEnabled() && bEnable) {
-            GregorianCalendar thisCalender = new GregorianCalendar();
-            thisCalender.set(Calendar.YEAR, Integer.parseInt(_startRangeEndYearTextField.getText()));
-            thisCalender.set(Calendar.MONTH, Integer.parseInt(_startRangeEndMonthTextField.getText()) - 1);
-            _startRangeEndDayTextField.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
+        _startRangeEndDayTextField.setEnabled(enableDays);
+        if (!_startRangeEndDayTextField.isEnabled() && enableGroup) {
+            _flexStartRangeEndDateComponentsGroup.setDay(31);
         }
+        // to be cautious, validate the groups 
+        _flexStartRangeStartDateComponentsGroup.validateGroup();
+        _flexStartRangeEndDateComponentsGroup.validateGroup();
+        
         //enable end range dates
-        _endRangeStartYearTextField.setEnabled(bYears);
-        _endRangeStartMonthTextField.setEnabled(bMonths);
-        if (!_endRangeStartMonthTextField.isEnabled() && bEnable) {
-            _endRangeStartMonthTextField.setText("1");
+        _endRangeStartYearTextField.setEnabled(enableYears);
+        _endRangeStartMonthTextField.setEnabled(enableMonths);
+        if (!_endRangeStartMonthTextField.isEnabled() && enableGroup) {
+            _flexEndRangeStartDateComponentsGroup.setMonth(1);
         }
-        _endRangeStartDayTextField.setEnabled(bDays);
-        if (!_endRangeStartDayTextField.isEnabled() && bEnable) {
-            _endRangeStartDayTextField.setText("1");
+        _endRangeStartDayTextField.setEnabled(enableDays);
+        if (!_endRangeStartDayTextField.isEnabled() && enableGroup) {
+            _flexEndRangeStartDateComponentsGroup.setDay(1);
         }
-        _endRangeEndYearTextField.setEnabled(bYears);
-        _endRangeEndMonthTextField.setEnabled(bMonths);
-        if (!_endRangeEndMonthTextField.isEnabled() && bEnable) {
-            _endRangeEndMonthTextField.setText("12");
+        _endRangeEndYearTextField.setEnabled(enableYears);
+        _endRangeEndMonthTextField.setEnabled(enableMonths);
+        if (!_endRangeEndMonthTextField.isEnabled() && enableGroup) {
+            _flexEndRangeEndDateComponentsGroup.setMonth(12);
         }
-        _endRangeEndDayTextField.setEnabled(bDays);
-        if (!_endRangeEndDayTextField.isEnabled() && bEnable) {
-            GregorianCalendar thisCalender = new GregorianCalendar();
-            thisCalender.set(Calendar.YEAR, Integer.parseInt(_endRangeEndYearTextField.getText()));
-            thisCalender.set(Calendar.MONTH, Integer.parseInt(_endRangeEndMonthTextField.getText()) - 1);
-            _endRangeEndDayTextField.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
+        _endRangeEndDayTextField.setEnabled(enableDays);
+        if (!_endRangeEndDayTextField.isEnabled() && enableGroup) {
+            _flexEndRangeEndDateComponentsGroup.setDay(31);
         }
+        // to be cautious, validate the groups 
+        _flexEndRangeStartDateComponentsGroup.validateGroup();
+        _flexEndRangeEndDateComponentsGroup.validateGroup();
+        
         //enable date contained in prospective surveillance group
         enableProspectiveStartDate();
     }
@@ -353,7 +372,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableDataSetPurposeControls();
     }
 
-    /** Enables neighbors file group. */
+    /**
+     * Enables neighbors file group.
+     */
     private void enableNonEucludianNeighborsGroup(boolean bEnable) {
         _specialNeighborFilesGroup.setEnabled(bEnable);
         _specifiyNeighborsFileCheckBox.setEnabled(bEnable);
@@ -384,7 +405,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _allLocationsRadioButton.setEnabled(bEnable);
     }
 
-    /** returns spatial adjustment type from control index  */
+    /**
+     * returns spatial adjustment type from control index
+     */
     private Parameters.SpatialAdjustmentType getAdjustmentSpatialControlType() {
         Parameters.SpatialAdjustmentType eReturn = null;
 
@@ -397,7 +420,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** enables adjustment options controls */
+    /**
+     * enables adjustment options controls
+     */
     private void enableAdjustmentsGroup(boolean bEnable) {
         _knownAdjustmentsGroup.setEnabled(bEnable);
         _adjustForKnownRelativeRisksCheckBox.setEnabled(bEnable);
@@ -425,25 +450,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bExponential = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
                 bOrdinal = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL;
         boolean bPurelySpatial = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL,
-                bSpaceTime = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
-                             _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
+                bSpaceTime = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                || _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
 
-        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP
-                                      /* testing additional models for gumbel https://www.squishlist.com/ims/satscan/66320/
-                                       || bNormal || bCategorical || bExponential || bOrdinal*/
-                                      );
+        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP /* testing additional models for gumbel https://www.squishlist.com/ims/satscan/66320/
+                 || bNormal || bCategorical || bExponential || bOrdinal*/);
         _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled);
-        if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected())
+        if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected()) {
             _radioDefaultPValues.setSelected(true);
+        }
 
-        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled &&
-                                      (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));       
-        if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected())
+        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled
+                && (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));
+        if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected()) {
             _checkReportGumbel.setSelected(false);
-        
-        _earlyTerminationThreshold.setEnabled(_radioEarlyTerminationPValues.isSelected());        
+        }
+
+        _earlyTerminationThreshold.setEnabled(_radioEarlyTerminationPValues.isSelected());
     }
-    
+
     public void enableSettingsForAnalysisModelCombination() {
         boolean bPoisson = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bSpaceTimePermutation = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
@@ -576,17 +601,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean isAdjustingForDayOfWeek() {
         return _adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected();
     }
-    
-    public void enableAdjustDayOfWeek(boolean enable) {        
+
+    public void enableAdjustDayOfWeek(boolean enable) {
         _adjustDayOfWeek.setEnabled(enable);
         if (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
             _adjustDayOfWeek.setText("Adjust for day-of-week by space interaction");
         } else {
-            _adjustDayOfWeek.setText("Adjust for day-of-week");            
+            _adjustDayOfWeek.setText("Adjust for day-of-week");
         }
     }
 
-    /** Sets caption of spatial distance radio button based upon coordinates group setting. */
+    /**
+     * Sets caption of spatial distance radio button based upon coordinates
+     * group setting.
+     */
     public void setSpatialDistanceCaption() {
         String sRadioCaption = "", sLabelCaption = "";
 
@@ -613,10 +641,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void updateMaxiumTemporalSizeTextCaptions() {
         switch (_analysisSettingsWindow.getModelControlType()) {
             case POISSON:
-            case HOMOGENEOUSPOISSON:    
+            case HOMOGENEOUSPOISSON:
             case BERNOULLI:
             case ORDINAL:
-            case CATEGORICAL:  
+            case CATEGORICAL:
             case NORMAL:
             case EXPONENTIAL:
                 _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
@@ -647,20 +675,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void updateCriticalValuesTextCaptions() {
         _criticalValuesReplicationsLabel.setText("(" + _montCarloReplicationsTextField.getText() + " replications - value defined on Inference tab)");
     }
-    
+
     public void updateMonteCarloTextCaptions() {
         switch (getPValueReportingControlType()) {
             case DEFAULT_PVALUE:
-            case TERMINATION_PVALUE:    
+            case TERMINATION_PVALUE:
                 _labelMonteCarloReplications.setText("Maximum number of replications (0, 9, 999, or value ending in 999):");
                 break;
             case STANDARD_PVALUE:
-            case GUMBEL_PVALUE:    
+            case GUMBEL_PVALUE:
                 _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):");
                 break;
         }
     }
-    
+
     /**
      * Enables/disables TListBox that list defined data sets
      */
@@ -673,7 +701,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables or disables the New button on the Input tab
      */
     private void enableNewButton() {
-         boolean bEnable = _additionalDataSetsGroup.isEnabled();
+        boolean bEnable = _additionalDataSetsGroup.isEnabled();
         _addDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() < MAXIMUM_ADDITIONAL_SETS ? bEnable : false);
     }
 
@@ -685,9 +713,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _removeDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() > 0 ? bEnable : false);
     }
 
-    /** Checks to determine if only default values are set in the dialog
-     *  Returns true if only default values are set
-     *  Returns false if user specified a value other than a default
+    /**
+     * Checks to determine if only default values are set in the dialog Returns
+     * true if only default values are set Returns false if user specified a
+     * value other than a default
      */
     public boolean getDefaultsSetForInputOptions() {
         boolean bReturn = true;
@@ -715,7 +744,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_adjustForEarlierAnalysesCheckBox.isSelected() == false);
         bReturn &= (_reportCriticalValuesCheckBox.isSelected() == false);
         bReturn &= (_radioDefaultPValues.isSelected() == true);
-        bReturn &= (_checkReportGumbel.isSelected() == false);        
+        bReturn &= (_checkReportGumbel.isSelected() == false);
         bReturn &= (Integer.parseInt(_prospectiveStartDateYearTextField.getText()) == 1900 || Integer.parseInt(_prospectiveStartDateYearTextField.getText()) == 2000);
         bReturn &= (Integer.parseInt(_prospectiveStartDateMonthTextField.getText()) == 12);
         bReturn &= (Integer.parseInt(_prospectiveStartDateDayTextField.getText()) == 31);
@@ -723,7 +752,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Integer.parseInt(_numIterativeScansTextField.getText()) == 10);
         bReturn &= (Double.parseDouble(_iterativeScanCutoffTextField.getText()) == 0.05);
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
-        
+
         // Spatial Window tab
         bReturn &= (Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) == 50);
         bReturn &= (_spatialPopulationFileCheckBox.isSelected() == false);
@@ -769,12 +798,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_criticalValuesMonteCarlo.isSelected() == true);
         bReturn &= (_powerEstimationMonteCarlo.isSelected() == true);
         bReturn &= _alternativeHypothesisFilename.getText().equals("");
-        
+
         return bReturn;
     }
     //	** Checks to determine if only default values are set in the dialog
     //	** Returns true if only default values are set
     //	** Returns false if user specified a value other than a default
+
     public boolean getDefaultsSetForOutputOptions() {
         boolean bReturn = true;
 
@@ -794,8 +824,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_printAsciiColumnHeaders.isSelected() == false);
         bReturn &= (_reportTemporalGraph.isSelected() == false);
         bReturn &= (_includeClusterLocationsInKML.isSelected() == false);
-        bReturn &= (_createCompressedKMZ.isSelected() == false);        
-        bReturn &= (_launchKMLViewer.isSelected() == true);        
+        bReturn &= (_createCompressedKMZ.isSelected() == false);
+        bReturn &= (_launchKMLViewer.isSelected() == true);
 
         return bReturn;
     }
@@ -901,7 +931,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** returns MultipleCoordinatesType for controls */
+    /**
+     * returns MultipleCoordinatesType for controls
+     */
     Parameters.MultipleCoordinatesType getMultipleCoordinatesType() {
         Parameters.MultipleCoordinatesType eReturn;
 
@@ -916,7 +948,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** returns geographical coordinates data type for control */
+    /**
+     * returns geographical coordinates data type for control
+     */
     private Parameters.CoordinatesDataCheckingType getCoordinatesDataCheckingTypeFromControl() {
         Parameters.CoordinatesDataCheckingType eReturn = null;
 
@@ -930,7 +964,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** sets CParameters class with settings in form */
+    /**
+     * sets CParameters class with settings in form
+     */
     public void saveParameterSettings(Parameters parameters) {
         String sString;
 
@@ -957,8 +993,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
         parameters.SetTimeTrendAdjustmentType(_temporalTrendAdjGroup.isEnabled() ? getAdjustmentTimeTrendControlType().ordinal() : Parameters.TimeTrendAdjustmentType.NOTADJUSTED.ordinal());
-        parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));        
-        parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());        
+        parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
+        parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());
         parameters.SetSpatialAdjustmentType(_spatialAdjustmentsGroup.isEnabled() ? getSpatialAdjustmentType().ordinal() : Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT.ordinal());
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
@@ -1018,7 +1054,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         }
         parameters.SetProspectiveStartDate(sString);
-        parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));        
+        parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.SetMaxCirclePopulationFileName(_maxCirclePopulationFilenameTextField.getText());
         parameters.SetMaximumTemporalClusterSize(_percentageTemporalRadioButton.isSelected() ? Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) : Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()));
         parameters.SetMaximumTemporalClusterSizeType(_percentageTemporalRadioButton.isSelected() ? Parameters.TemporalSizeType.PERCENTAGETYPE.ordinal() : Parameters.TemporalSizeType.TIMETYPE.ordinal());
@@ -1039,12 +1075,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Power Evaluations tab
         parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
         parameters.setPowerEvaluationMethod(getPowerEvaluationMethodType().ordinal());
-        parameters.setPowerEvaluationCaseCount(Integer.parseInt((_totalPowerCases.getText().length() > 0 ?_totalPowerCases.getText() : "0")));
+        parameters.setPowerEvaluationCaseCount(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "0")));
         parameters.setNumPowerEvalReplicaPowerStep(Integer.parseInt(_numberPowerReplications.getText()));
         parameters.setPowerEvaluationCriticalValueType(getCriticalValuesType().ordinal());
         parameters.setPowerEstimationType(getPowerEstimationType().ordinal());
         parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
-        
+
         // Temporal Graphs tab
         parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
     }
@@ -1057,12 +1093,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return _adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected();
     }
 
-    /** Returns boolean indication of whether user has selected power evaluation without case file data. */
+    /**
+     * Returns boolean indication of whether user has selected power evaluation
+     * without case file data.
+     */
     public boolean isPowerEvaluationNoCaseFile() {
         return _performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected();
     }
-    
-    /** returns maximum temporal cluster size type for control */
+
+    /**
+     * returns maximum temporal cluster size type for control
+     */
     public Parameters.TemporalSizeType getMaxTemporalClusterSizeControlType() {
         Parameters.TemporalSizeType eReturn = null;
 
@@ -1075,7 +1116,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** returns maximum temporal cluster size from appropriate control */
+    /**
+     * returns maximum temporal cluster size from appropriate control
+     */
     public double getMaxTemporalClusterSizeFromControl() {
         double dReturn;
 
@@ -1094,12 +1137,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      *
      */
     private void validateInputFiles() {
-        boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
+        boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL
+                || _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
         boolean bFirstDataSetHasPopulationFile = _analysisSettingsWindow.getEdtPopFileNameText().length() > 0;
 
-        if (!_additionalDataSetsGroup.isEnabled()) return;      
-       
+        if (!_additionalDataSetsGroup.isEnabled()) {
+            return;
+        }
+
         for (int i = 0; i < _caseFilenames.size(); i++) {
             //Ensure that controls have this dataset display, should we need to
             //show window regarding an error with settings.
@@ -1127,8 +1172,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 //For purely temporal analyses, the population file is optional. But if one first
                 //dataset does or does not supply a population file; the other dataset must do the same.
                 if (bAnalysisIsPurelyTemporal) {
-                    if ((_populationFilenames.get(i).length() == 0 && bFirstDataSetHasPopulationFile) ||
-                            (_populationFilenames.get(i).length() > 0 && !bFirstDataSetHasPopulationFile)) {
+                    if ((_populationFilenames.get(i).length() == 0 && bFirstDataSetHasPopulationFile)
+                            || (_populationFilenames.get(i).length() > 0 && !bFirstDataSetHasPopulationFile)) {
                         throw new AdvFeaturesExpection("For the Poisson model with purely temporal analyses, the population file is optional but all data\n" + "sets must either specify a population file or omit it.",
                                 FocusedTabSet.INPUT, (Component) _populationFileTextField);
                     } else if (_populationFilenames.get(i).length() > 0 && !FileAccess.ValidateFileAccess(_populationFilenames.get(i), false)) {
@@ -1144,20 +1189,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         }  //for loop
         //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
-        if ((_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL ||
-             _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)
-            && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
-            throw new AdvFeaturesExpection("For the ordinal and multinomial probability models with input data defined in multiple data sets,\n" + 
-                                            "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
+        if ((_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL
+                || _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)
+                && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
+            throw new AdvFeaturesExpection("For the ordinal and multinomial probability models with input data defined in multiple data sets,\n"
+                    + "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
         }
         //validate that purpose for multiple data sets is not 'mulitvariate' if also reporting index based clusters
         if (_multivariateAdjustmentsRadioButton.isEnabled() && _multivariateAdjustmentsRadioButton.isSelected() && _indexBasedClusterCriteria.isEnabled()) {
             throw new AdvFeaturesExpection("The multivariate option is not implemented when reporting clusters with\nthe Gini index based collection.",
-                                            FocusedTabSet.INPUT, (Component) _multivariateAdjustmentsRadioButton);
+                    FocusedTabSet.INPUT, (Component) _multivariateAdjustmentsRadioButton);
         }
     }
 
-    /** validate user settings of the Neighbors File tab. */
+    /**
+     * validate user settings of the Neighbors File tab.
+     */
     private void validateNeighborsFileSettings() {
         if (_specialNeighborFilesGroup.isEnabled() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
             //validate the case file for this dataset
@@ -1190,23 +1237,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
         }
         if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
-            if (_maxReportedSpatialClusterSizeTextField.isEnabled() && Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) < Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()))
+            if (_maxReportedSpatialClusterSizeTextField.isEnabled() && Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) < Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText())) {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population at risk,\ncan not be greater than the maximum specifed on Spatial Window tab.",
-                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialClusterSizeTextField);
-            if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false))
+                        FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialClusterSizeTextField);
+            }
+            if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
                 throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
-                                               FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
-            if (_maxReportedSpatialPercentFileTextField.isEnabled() && Double.parseDouble(_maxSpatialPercentFileTextField.getText()) < Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()))
+                        FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+            }
+            if (_maxReportedSpatialPercentFileTextField.isEnabled() && Double.parseDouble(_maxSpatialPercentFileTextField.getText()) < Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText())) {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population in maximum circle file,\ncan not be greater than the maximum specifed on Spatial Window tab.",
-                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialPercentFileTextField);
-            if (_maxReportedSpatialRadiusTextField.isEnabled() && Double.parseDouble(_maxSpatialRadiusTextField.getText()) < Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()))
+                        FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialPercentFileTextField);
+            }
+            if (_maxReportedSpatialRadiusTextField.isEnabled() && Double.parseDouble(_maxSpatialRadiusTextField.getText()) < Double.parseDouble(_maxReportedSpatialRadiusTextField.getText())) {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as as fixed distance,\ncan not be greater than the maximum distance specifed on Spatial Window tab.",
-                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialRadiusTextField);
+                        FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialRadiusTextField);
+            }
         }
         //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
         //as percentage of max circle population or as a distance.
-        if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
-                _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
+        if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
             if (!_spatialPopulationFileCheckBox.isSelected() && _spatialPopulationFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
                 throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eucledian neigbors, the maximum spatial cluster size must be defined as a\n" + "percentage of the population as defined in a max circle size file.\n",
                         FocusedTabSet.ANALYSIS, (Component) _spatialPopulationFileCheckBox);
@@ -1221,15 +1272,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not permitted with the Gini index based collection feature.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
         }
         // prevent using the isotonic scan statistic with multiple data sets.
-        if (_caseFilenames.size() > 0 && 
-            _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
-                throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not implemented with multiple data sets.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
-        }        
+        if (_caseFilenames.size() > 0
+                && _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
+            throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not implemented with multiple data sets.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
+        }
     }
 
     private void validateAdjustmentSettings() {
-        boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
+        boolean bAnalysisIsPurelyTemporal = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL
+                || _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
 
         //validate spatial adjustments
         if (_spatialAdjustmentsGroup.isEnabled() && _spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
@@ -1241,8 +1292,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         }
         //validate temporal adjustments
-        if (_temporalTrendAdjGroup.isEnabled() && _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON && bAnalysisIsPurelyTemporal &&
-                _analysisSettingsWindow.getEdtPopFileNameText().length() == 0 && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
+        if (_temporalTrendAdjGroup.isEnabled() && _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON && bAnalysisIsPurelyTemporal
+                && _analysisSettingsWindow.getEdtPopFileNameText().length() == 0 && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
             throw new AdvFeaturesExpection("Temporal adjustments can not be performed for a purely temporal analysis\n" + "using the Poisson model, when no population file has been specfied.", FocusedTabSet.ANALYSIS, (Component) _temporalTrendAdjGroup);
         }
         //validate spatial/temporal/space-time adjustments
@@ -1255,11 +1306,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
         }
-        
+
         if (isAdjustingForDayOfWeek()) {
-          double dStudyPeriodLengthInUnits = _analysisSettingsWindow.CalculateTimeAggregationUnitsInStudyPeriod();
-          if (dStudyPeriodLengthInUnits < 14.0)
-            throw new AdvFeaturesExpection("The adjustment for day of week cannot be performed on a period less than 14 days.", FocusedTabSet.ANALYSIS, (Component) _adjustDayOfWeek);
+            double dStudyPeriodLengthInUnits = _analysisSettingsWindow.CalculateTimeAggregationUnitsInStudyPeriod();
+            if (dStudyPeriodLengthInUnits < 14.0) {
+                throw new AdvFeaturesExpection("The adjustment for day of week cannot be performed on a period less than 14 days.", FocusedTabSet.ANALYSIS, (Component) _adjustDayOfWeek);
+            }
         }
     }
 
@@ -1301,38 +1353,40 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
         }
-    //    else
-    // ZdException::GenerateNotification("Unknown temporal percentage type: %d.","validateTemporalClusterSize()", getMaxTemporalClusterSizeControlType());
+        //    else
+        // ZdException::GenerateNotification("Unknown temporal percentage type: %d.","validateTemporalClusterSize()", getMaxTemporalClusterSizeControlType());
     }
 
-    /** validates scanning window range settings - throws exception */
+    /**
+     * validates scanning window range settings - throws exception
+     */
     private void validateScanningWindowRanges() {
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             GregorianCalendar StudyPeriodStartDate = _analysisSettingsWindow.getStudyPeriodStartDateAsCalender();
             GregorianCalendar StudyPeriodEndDate = _analysisSettingsWindow.getStudyPeriodEndDateAsCalender();
             GregorianCalendar StartRangeStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
-                                                                                                           _startRangeStartYearTextField.getText(), 
-                                                                                                           _startRangeStartMonthTextField.getText(), 
-                                                                                                           _startRangeStartDayTextField.getText(), 
-                                                                                                           _startRangeStartGenericTextField.getText());
+                    _startRangeStartYearTextField.getText(),
+                    _startRangeStartMonthTextField.getText(),
+                    _startRangeStartDayTextField.getText(),
+                    _startRangeStartGenericTextField.getText());
 
             GregorianCalendar StartRangeEndDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
-                                                                                                         _startRangeEndYearTextField.getText(),
-                                                                                                         _startRangeEndMonthTextField.getText(),
-                                                                                                         _startRangeEndDayTextField.getText(),
-                                                                                                         _startRangeEndGenericTextField.getText());
+                    _startRangeEndYearTextField.getText(),
+                    _startRangeEndMonthTextField.getText(),
+                    _startRangeEndDayTextField.getText(),
+                    _startRangeEndGenericTextField.getText());
 
             GregorianCalendar EndRangeStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
-                                                                                                         _endRangeStartYearTextField.getText(),
-                                                                                                         _endRangeStartMonthTextField.getText(),
-                                                                                                         _endRangeStartDayTextField.getText(),
-                                                                                                         _endRangeStartGenericTextField.getText());
+                    _endRangeStartYearTextField.getText(),
+                    _endRangeStartMonthTextField.getText(),
+                    _endRangeStartDayTextField.getText(),
+                    _endRangeStartGenericTextField.getText());
 
             GregorianCalendar EndRangeEndDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
-                                                                                                       _endRangeEndYearTextField.getText(),
-                                                                                                       _endRangeEndMonthTextField.getText(),
-                                                                                                       _endRangeEndDayTextField.getText(),
-                                                                                                       _endRangeEndGenericTextField.getText());
+                    _endRangeEndYearTextField.getText(),
+                    _endRangeEndMonthTextField.getText(),
+                    _endRangeEndDayTextField.getText(),
+                    _endRangeEndGenericTextField.getText());
 
             //check that scanning ranges are within study period
             if (StartRangeStartDate.before(StudyPeriodStartDate) || StartRangeStartDate.after(StudyPeriodEndDate)) {
@@ -1366,8 +1420,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Specific prospective space-time date check
-     * Must be between the start and end dates of the analysis */
+    /**
+     * Specific prospective space-time date check Must be between the start and
+     * end dates of the analysis
+     */
     private void validateProspDateRange() {
         if (!(_adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected())) {
             return;
@@ -1388,29 +1444,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         GregorianCalendar StudyPeriodStartDate = _analysisSettingsWindow.getStudyPeriodStartDateAsCalender();
         GregorianCalendar StudyPeriodEndDate = _analysisSettingsWindow.getStudyPeriodEndDateAsCalender();
         GregorianCalendar ProspectiveStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
-                                                                                                        _prospectiveStartDateYearTextField.getText(), 
-                                                                                                        _prospectiveStartDateMonthTextField.getText(), 
-                                                                                                        _prospectiveStartDateDayTextField.getText(), 
-                                                                                                        _prospectiveStartDateGenericTextField.getText());
+                _prospectiveStartDateYearTextField.getText(),
+                _prospectiveStartDateMonthTextField.getText(),
+                _prospectiveStartDateDayTextField.getText(),
+                _prospectiveStartDateGenericTextField.getText());
         if (ProspectiveStartDate.before(StudyPeriodStartDate) || ProspectiveStartDate.after(StudyPeriodEndDate)) {
             throw new AdvFeaturesExpection("The prospective start date must be between the study period start and end dates.",
                     FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateYearTextField);
         }
     }
 
-    /** validates temporal window settings - throws exception */
+    /**
+     * validates temporal window settings - throws exception
+     */
     private void validateTemporalWindowSettings() {
         validateTemporalClusterSize();
         validateScanningWindowRanges();
     }
 
-    /** validates reported clusters limiting control setting - throws exception */
+    /**
+     * validates reported clusters limiting control setting - throws exception
+     */
     private void validateClustersReportedSettings() {
         boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
         boolean bHierarchael = _mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected();
         if (bUsingNeighbors && bHierarchael && _hierarchicalSecondaryClusters.getSelectedIndex() > 0 && _hierarchicalSecondaryClusters.getSelectedIndex() < 5) {
             throw new AdvFeaturesExpection("Non-eculedian neighbors can only restrict secondary cluster in terms of no geographical overlap.\n",
-                                           FocusedTabSet.OUTPUT, (Component) _hierarchicalSecondaryClusters);
+                    FocusedTabSet.OUTPUT, (Component) _hierarchicalSecondaryClusters);
         }
         // Verify that either hierarchael or Gini is selected.
         if ((_mostLikelyClustersHierarchically.isEnabled() || _giniOptimizedClusters.isEnabled())) {
@@ -1418,26 +1478,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             boolean bGiniSelected = _giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected();
             if (!(bHierarchaelSelected || bGiniSelected)) {
                 throw new AdvFeaturesExpection("A criteria for reporting clusters must be specified.\n",
-                                               FocusedTabSet.OUTPUT, (Component) _mostLikelyClustersHierarchically);
+                        FocusedTabSet.OUTPUT, (Component) _mostLikelyClustersHierarchically);
             }
         }
         //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
         //as percentage of max circle population or as a distance.
         if (_restrictReportedClustersCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
-            if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
-                _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
+            if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                    && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
                 if (!_reportedSpatialPopulationFileCheckBox.isSelected() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
                     throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eculedian neighbors, the maximum reported spatial cluster size must be\n" + "defined as a percentage of the population as defined in a max circle size file.\n",
-                                                   FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
+                            FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
                 } else if (!_reportedSpatialPopulationFileCheckBox.isSelected() && !_reportedSpatialDistanceCheckBox.isSelected()) {
                     throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n", FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
                 }
             }
         }
     }
-    
+
     /**
-     * Validates the power evaluations parameters in conjunction with other selected parameters.
+     * Validates the power evaluations parameters in conjunction with other
+     * selected parameters.
      */
     private void validatePowerEvaluations() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
@@ -1460,13 +1521,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
                 if (_knownAdjustmentsGroup.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected()) {
                     throw new AdvFeaturesExpection("A power evaluation cannot be performed when using adjustments for known relative\nrisks without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
-                }                
+                }
                 if (Integer.parseInt(_totalPowerCases.getText()) == 0) {
                     throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
-                }                
+                }
                 if (_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected()) {
                     throw new AdvFeaturesExpection("A power evaluation cannot be performed when using adjustment for day of week\nunless case data is provided.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
-                }                
+                }
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
             int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
@@ -1488,11 +1549,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
-            }            
+            }
         }
     }
 
-    /** validates Monte Carlo replications */
+    /**
+     * validates Monte Carlo replications
+     */
     private void validateInferenceSettings() {
         //double        dNumReplications/*, dMaxReplications*/;
         int dNumReplications;
@@ -1504,18 +1567,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         dNumReplications = Integer.parseInt(_montCarloReplicationsTextField.getText());
         if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || (dNumReplications + 1) % 1000 == 0))) {
             throw new AdvFeaturesExpection("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.",
-                    FocusedTabSet.ANALYSIS,(Component) _montCarloReplicationsTextField);
+                    FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
         }
-        
+
         int earlyTerminatationThreshold = Integer.parseInt(_earlyTerminationThreshold.getText());
-        if (dNumReplications > 0 && getPValueReportingControlType() == Parameters.PValueReportingType.TERMINATION_PVALUE && 
-            (earlyTerminatationThreshold < 1  || earlyTerminatationThreshold >  dNumReplications)) {
-            throw new AdvFeaturesExpection("Invalid early termination cutoff.\nThe cutoff may be from 1 to number of specified replications (" + dNumReplications +  ").",
-                    FocusedTabSet.ANALYSIS,(Component) _earlyTerminationThreshold);
+        if (dNumReplications > 0 && getPValueReportingControlType() == Parameters.PValueReportingType.TERMINATION_PVALUE
+                && (earlyTerminatationThreshold < 1 || earlyTerminatationThreshold > dNumReplications)) {
+            throw new AdvFeaturesExpection("Invalid early termination cutoff.\nThe cutoff may be from 1 to number of specified replications (" + dNumReplications + ").",
+                    FocusedTabSet.ANALYSIS, (Component) _earlyTerminationThreshold);
         }
     }
-    
-    /** validates all the settings in this dialog */
+
+    /**
+     * validates all the settings in this dialog
+     */
     public void validateParameters() {
         validateInputFiles();
         validateNeighborsFileSettings();
@@ -1545,7 +1610,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _populationFileImportButton.setEnabled(bEnable);
         _caseFileLabel.setEnabled(bEnable);
         _controlFileLabel.setEnabled(bEnable);
-        _populationFileLabel.setEnabled(bEnable);        
+        _populationFileLabel.setEnabled(bEnable);
     }
 
     /**
@@ -1608,7 +1673,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _metaLocationsFileTextField.setText("");
     }
 
-    /** Sets maximum temporal cluster size control for passed type */
+    /**
+     * Sets maximum temporal cluster size control for passed type
+     */
     private void setMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType eTemporalSizeType) {
         switch (eTemporalSizeType) {
             case TIMETYPE:
@@ -1620,8 +1687,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Sets default values for Analysis related tabs and their respective controls
-     * pulled these default values from the CParameter class
+    /**
+     * Sets default values for Analysis related tabs and their respective
+     * controls pulled these default values from the CParameter class
      */
     private void setDefaultsForAnalysisTabs() {
         // Inference tab
@@ -1671,7 +1739,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _logLinearTextField.setText("0");
         _adjustDayOfWeek.setSelected(false);
 
-         // Power Evaluations tab
+        // Power Evaluations tab
         _performPowerEvalautions.setSelected(false);
         _partOfRegularAnalysis.setSelected(true);
         _totalPowerCases.setText("0");
@@ -1680,8 +1748,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilename.setText("");
     }
 
-    /** Sets default values for Output related tab and respective controls
-     *   pulled these default values from the CParameter class
+    /**
+     * Sets default values for Output related tab and respective controls pulled
+     * these default values from the CParameter class
      */
     private void setDefaultsForOutputTab() {
         _mostLikelyClustersHierarchically.setSelected(true);
@@ -1726,11 +1795,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void enableSpatialOptionsGroup(boolean bEnable, boolean bEnableIncludePurelyTemporal) {
         _spatialOptionsGroup.setEnabled(bEnable);
-        boolean bEnablePopPercentage = !(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
-                _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
+        boolean bEnablePopPercentage = !(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
         _maxSpatialClusterSizeTextField.setEnabled(bEnable && bEnablePopPercentage);
         _percentageOfPopulationLabel.setEnabled(bEnable && bEnablePopPercentage);
-        
+
         boolean bEnablePopulationFile = bEnable && _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _spatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile);
         _maxSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _spatialPopulationFileCheckBox.isSelected());
@@ -1755,10 +1824,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
         _spatialWindowShapeGroup.setEnabled(bEnable);
         _circularRadioButton.setEnabled(bEnable);
-        _ellipticRadioButton.setEnabled(bEnable && 
-                                        _analysisSettingsWindow.getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN &&
-                                        _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
-                                        (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true));
+        _ellipticRadioButton.setEnabled(bEnable
+                && _analysisSettingsWindow.getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN
+                && _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON
+                && (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true));
         _nonCompactnessPenaltyLabel.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         _nonCompactnessPenaltyComboBox.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         if (!_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected() && _circularRadioButton.isEnabled()) {
@@ -1767,13 +1836,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setSpatialDistanceCaption();
     }
 
-    /** enables or disables the spatial options group control */
+    /**
+     * enables or disables the spatial options group control
+     */
     private void enableReportedSpatialOptionsGroup(boolean bEnable) {
         _reportedSpatialOptionsGroup.setEnabled(bEnable);
         _restrictReportedClustersCheckBox.setEnabled(bEnable);
 
-        boolean bEnablePopPercentage = !(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
-                _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
+        boolean bEnablePopPercentage = !(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
         _maxReportedSpatialClusterSizeTextField.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
         _reportedPercentOfPopulationLabel.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
         boolean bEnablePopulationFile = bEnable && _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
@@ -1787,26 +1858,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxReportedRadiusLabel.setEnabled(_reportedSpatialDistanceCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected());
     }
 
-    /** returns p-value reporting option type control index */
+    /**
+     * returns p-value reporting option type control index
+     */
     private Parameters.PValueReportingType getPValueReportingControlType() {
         Parameters.PValueReportingType eReturn = null;
 
         if (_radioDefaultPValues.isSelected()) {
             eReturn = Parameters.PValueReportingType.DEFAULT_PVALUE;
-        }
-        else if (_radioEarlyTerminationPValues.isSelected()) {
+        } else if (_radioEarlyTerminationPValues.isSelected()) {
             eReturn = Parameters.PValueReportingType.TERMINATION_PVALUE;
-        }
-        else if (_radioStandardPValues.isSelected()) {
+        } else if (_radioStandardPValues.isSelected()) {
             eReturn = Parameters.PValueReportingType.STANDARD_PVALUE;
-        }
-        else if (_radioGumbelPValues.isSelected()) {
+        } else if (_radioGumbelPValues.isSelected()) {
             eReturn = Parameters.PValueReportingType.GUMBEL_PVALUE;
         }
         return eReturn;
     }
-    
-    /** sets p-value reporting option type control index */
+
+    /**
+     * sets p-value reporting option type control index
+     */
     private void setPValueReportingControlType(Parameters.PValueReportingType ePValueReportingType) {
         switch (ePValueReportingType) {
             case DEFAULT_PVALUE:
@@ -1823,9 +1895,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
         }
     }
-    
-    
-    /** returns adjustment for time trend type for control index */
+
+    /**
+     * returns adjustment for time trend type for control index
+     */
     private Parameters.TimeTrendAdjustmentType getAdjustmentTimeTrendControlType() {
         Parameters.TimeTrendAdjustmentType eReturn = null;
 
@@ -1844,7 +1917,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }
 
-    /** Sets time trend adjustment control's index */
+    /**
+     * Sets time trend adjustment control's index
+     */
     private void setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
         switch (eTimeTrendAdjustmentType) {
             case NOTADJUSTED:
@@ -1865,7 +1940,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** enables or disables the temporal time trend adjustment control group */
+    /**
+     * enables or disables the temporal time trend adjustment control group
+     */
     private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bTimeStratified, boolean bLogYearPercentage, boolean bCalculatedLog) {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
 
@@ -1902,7 +1979,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** enables temporal options controls */
+    /**
+     * enables temporal options controls
+     */
     private void enableTemporalRanges(boolean bEnable, boolean bEnableRanges) {
         _flexibleTemporalWindowDefinitionGroup.setEnabled(bEnable && bEnableRanges);
         _restrictTemporalRangeCheckBox.setEnabled(bEnable && bEnableRanges);
@@ -1921,12 +2000,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables controls of 'Temporal Graphs' groups
      */
     private void enableTemporalGraphsGroup() {
-        _reportTemporalGraph.setEnabled(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL &&
-                                        (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON || 
-                                         _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI));
-    }    
-    
-    /** enables or disables the temporal options group control */
+        _reportTemporalGraph.setEnabled(_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL
+                && (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON
+                || _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI));
+    }
+
+    /**
+     * enables or disables the temporal options group control
+     */
     private void enableTemporalOptionsGroup(boolean bEnable, boolean bEnableIncludePurelySpatial, boolean bEnableRanges) {
         _temporalOptionsGroup.setEnabled(bEnable);
         _percentageTemporalRadioButton.setEnabled(bEnable);
@@ -1939,60 +2020,67 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableTemporalRanges(bEnable, bEnableRanges);
     }
 
-    /** Enables isotonic scan feature controls. */
+    /**
+     * Enables isotonic scan feature controls.
+     */
     private void enableIsotonicScan(boolean bEnable) {
         _performIsotonicScanCheckBox.setEnabled(bEnable);
     }
 
-    /** enabled prospective start date controls */
+    /**
+     * enabled prospective start date controls
+     */
     private void enableProspectiveStartDate() {
-        boolean bYears = true, bMonths = true, bDays = true,
-                bEnable = _prospectiveSurveillanceGroup.isEnabled() &&
-                _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected();
+        boolean enableYears = true, enableMonths = true, enableDays = true,
+                enableGroup = _prospectiveSurveillanceGroup.isEnabled()
+                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected();
 
         switch (_analysisSettingsWindow.getPrecisionOfTimesControlType()) {
             case NONE:
             case DAY:
-                bYears = bMonths = bDays = bEnable;
+                enableYears = enableMonths = enableDays = enableGroup;
                 break;
             case YEAR:
-                bYears = bEnable;
-                bMonths = bDays = false;
+                enableYears = enableGroup;
+                enableMonths = enableDays = false;
                 break;
             case MONTH:
-                bYears = bMonths = bEnable;
-                bDays = false;
+                enableYears = enableMonths = enableGroup;
+                enableDays = false;
                 break;
         }
 
-        _prospectiveStartDateGenericTextField.setEnabled(bEnable);
-        _prospectiveStartGenericLabel.setEnabled(bEnable);
+        _prospectiveStartDateGenericTextField.setEnabled(enableGroup);
+        _prospectiveStartGenericLabel.setEnabled(enableGroup);
 
-        _prospectiveStartYearLabel.setEnabled(bYears);
-        _prospectiveStartDateYearTextField.setEnabled(bYears);
-        _prospectiveStartMonthLabel.setEnabled(bMonths);
-        _prospectiveStartDateMonthTextField.setEnabled(bMonths);
-        if (!bMonths && bEnable) {
-            _prospectiveStartDateMonthTextField.setText(_analysisSettingsWindow.getEdtStudyPeriodEndDateMonthText());
+        _prospectiveStartYearLabel.setEnabled(enableYears);
+        _prospectiveStartDateYearTextField.setEnabled(enableYears);
+        _prospectiveStartMonthLabel.setEnabled(enableMonths);
+        _prospectiveStartDateMonthTextField.setEnabled(enableMonths);
+        if (!enableMonths && enableGroup) {
+            _prospectiveStartDateComponentsGroup.setMonth(Integer.parseInt(_analysisSettingsWindow.getEdtStudyPeriodEndDateMonthText()));
         }
-        _prospectiveStartDayLabel.setEnabled(bDays);
-        _prospectiveStartDateDayTextField.setEnabled(bDays);
-        if (!bDays && bEnable) {
-            GregorianCalendar thisCalender = new GregorianCalendar();
-            thisCalender.set(Calendar.YEAR, Integer.parseInt(_prospectiveStartDateYearTextField.getText()));
-            thisCalender.set(Calendar.MONTH, Integer.parseInt(_prospectiveStartDateMonthTextField.getText()) - 1);
-            _prospectiveStartDateDayTextField.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
+        _prospectiveStartDayLabel.setEnabled(enableDays);
+        _prospectiveStartDateDayTextField.setEnabled(enableDays);
+        if (!enableDays && enableGroup) {
+            _prospectiveStartDateComponentsGroup.setDay(31);
         }
+        // to be cautious, validate the group
+        _prospectiveStartDateComponentsGroup.validateGroup();
     }
 
-    /** enables or disables the prospective start date group control */
+    /**
+     * enables or disables the prospective start date group control
+     */
     private void enableProspectiveSurveillanceGroup(boolean bEnable) {
         _prospectiveSurveillanceGroup.setEnabled(bEnable);
         _adjustForEarlierAnalysesCheckBox.setEnabled(bEnable);
         enableProspectiveStartDate();
     }
 
-    /** Enables controls on the clusters reported tab. */
+    /**
+     * Enables controls on the clusters reported tab.
+     */
     private void enableClustersReportedOptions(boolean bEnable) {
         _hierarchicalSecondaryClusters.setEnabled(bEnable && _mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected());
         _hierarchicalLabel.setEnabled(_hierarchicalSecondaryClusters.isEnabled());
@@ -2001,8 +2089,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _indexBasedCriteriaLabel.setEnabled(_indexBasedClusterCriteria.isEnabled());
         _checkboxReportIndexCoefficients.setEnabled(_indexBasedClusterCriteria.isEnabled());
     }
-    
-    /** Set appropriate control for maximum spatial cluster size type. */
+
+    /**
+     * Set appropriate control for maximum spatial cluster size type.
+     */
     private void setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
         switch (eSpatialSizeType) {
             case MAXDISTANCE:
@@ -2032,7 +2122,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Set appropriate control for maximum spatial cluster size type. */
+    /**
+     * Set appropriate control for maximum spatial cluster size type.
+     */
     private void setMaxTemporalClusterSizeControl(double dMaxSize) {
         Double d = new Double(dMaxSize);
         double dMaxValue = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;
@@ -2048,7 +2140,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Sets spatial adjustment control type */
+    /**
+     * Sets spatial adjustment control type
+     */
     private void setSpatialAdjustmentTypeControl(Parameters.SpatialAdjustmentType eSpatialAdjustmentType) {
         switch (eSpatialAdjustmentType) {
             case NO_SPATIAL_ADJUSTMENT:
@@ -2060,7 +2154,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Sets study period data checking control's index */
+    /**
+     * Sets study period data checking control's index
+     */
     private void setStudyPeriodDataCheckingControl(Parameters.StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
         switch (eStudyPeriodDataCheckingType) {
             case RELAXEDBOUNDS:
@@ -2085,9 +2181,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** parses up a date string and places it into the given month, day, year
+    /**
+     * parses up a date string and places it into the given month, day, year
      * interace text control (TEdit *). Defaults prospective survallience start
-     * date to months/days to like study period end date.                       */
+     * date to months/days to like study period end date.
+     */
     private void parseProspectiveDate(String sDateString, JTextField Year, JTextField Month, JTextField Day) {
         String[] dateParts = sDateString.split("/");
         GregorianCalendar thisCalender = new GregorianCalendar();
@@ -2136,8 +2234,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         iDay = Integer.parseInt(dateParts[2]);
                         thisCalender.set(Calendar.YEAR, iYear);
                         thisCalender.set(Calendar.MONTH, iMonth - 1);
-                        if (iYear >= AppConstants.MIN_YEAR && iYear <= AppConstants.MAX_YEAR && iMonth >= 1 && iMonth <= 12 &&
-                                iDay >= 1 && iDay <= thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+                        if (iYear >= AppConstants.MIN_YEAR && iYear <= AppConstants.MAX_YEAR && iMonth >= 1 && iMonth <= 12
+                                && iDay >= 1 && iDay <= thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                             Year.setText(dateParts[0]);
                             Month.setText(dateParts[1]);
                             Day.setText(dateParts[2]);
@@ -2150,7 +2248,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** Set appropriate control for maximum spatial cluster size type. */
+    /**
+     * Set appropriate control for maximum spatial cluster size type.
+     */
     private void setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
         switch (eSpatialSizeType) {
             case MAXDISTANCE:
@@ -2173,10 +2273,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setMaxSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), false));
         _spatialPopulationFileCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false));
         _spatialDistanceCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), false));
-        
+
         _maxCirclePopulationFilenameTextField.setText(parameters.GetMaxCirclePopulationFileName());
         _inclPureTempClustCheckBox.setSelected(parameters.GetIncludePurelyTemporalClusters());
-        
+
         _circularRadioButton.setSelected(parameters.GetSpatialWindowType() == Parameters.SpatialWindowType.CIRCULAR);
         _ellipticRadioButton.setSelected(parameters.GetSpatialWindowType() == Parameters.SpatialWindowType.ELLIPTIC);
         _nonCompactnessPenaltyComboBox.select(parameters.GetNonCompactnessPenaltyType().ordinal());
@@ -2184,8 +2284,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _performIsotonicScanCheckBox.setSelected(parameters.GetRiskType() == Parameters.RiskType.MONOTONERISK);
 
         // Multiple Coordinates Tab
-       setMultipleCoordinatesType(parameters.GetMultipleCoordinatesType());
- 
+        setMultipleCoordinatesType(parameters.GetMultipleCoordinatesType());
+
         // Temporal tab
         setMaxTemporalClusterSizeTypeControl(parameters.GetMaximumTemporalClusterSizeType());
         setMaxTemporalClusterSizeControl(parameters.GetMaximumTemporalClusterSize());
@@ -2209,7 +2309,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
         _logLinearTextField.setText(parameters.GetTimeTrendAdjustmentPercentage() <= -100 ? "0" : Double.toString(parameters.GetTimeTrendAdjustmentPercentage()));
         _adjustDayOfWeek.setSelected(parameters.getAdjustForWeeklyTrends());
-        
+
         // Inference tab
         setPValueReportingControlType(parameters.GetPValueReportingType());
         _checkReportGumbel.setSelected(parameters.GetReportGumbelPValue());
@@ -2261,7 +2361,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Data Checking Tab
         setStudyPeriodDataCheckingControl(parameters.GetStudyPeriodDataCheckingType());
         setCoordinatesDataCheckingControl(parameters.GetCoordinatesDataCheckingType());
-        
+
         // Neighbors Tab
         _specifiyNeighborsFileCheckBox.setSelected(parameters.UseLocationNeighborsFile());
         _neighborsFileTextField.setText(parameters.GetLocationNeighborsFileName());
@@ -2280,17 +2380,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEstimationMonteCarlo.setSelected(parameters.getPowerEstimationType() == Parameters.PowerEstimationType.PE_MONTECARLO);
         _powerEstimationGumbel.setSelected(parameters.getPowerEstimationType() == Parameters.PowerEstimationType.PE_GUMBEL);
         _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
-        
+
         // Temporal Graphs tab
         _reportTemporalGraph.setSelected(parameters.getOutputTemporalGraphFile());
-        
+
         updateCriticalValuesTextCaptions();
     }
 
     /**
      * Enabled the power evaluations group based upon current settings.
      */
-     private void enablePowerEvaluationsGroup() {
+    private void enablePowerEvaluationsGroup() {
         Parameters.AnalysisType eAnalysisType = _analysisSettingsWindow.getAnalysisControlType();
         Parameters.ProbabilityModelType eModelType = _analysisSettingsWindow.getModelControlType();
 
@@ -2314,29 +2414,30 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilenameButton.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
         _numberPowerReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
         _numberPowerReplications.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
-     }
+    }
 
     /**
-     * Enables clusters reported group based upon other primary settings, such as analysis type and probablility model.
+     * Enables clusters reported group based upon other primary settings, such
+     * as analysis type and probablility model.
      */
-     private void enableClustersReportedGroup() {
+    private void enableClustersReportedGroup() {
         Parameters.AnalysisType eAnalysisType = _analysisSettingsWindow.getAnalysisControlType();
         Parameters.ProbabilityModelType eModelType = _analysisSettingsWindow.getModelControlType();
 
         boolean bEnableGroup = eAnalysisType != Parameters.AnalysisType.PURELYTEMPORAL && eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
         _clustersReportedGroup.setEnabled(bEnableGroup);
         _mostLikelyClustersHierarchically.setEnabled(bEnableGroup);
-        boolean bEnableIndexBased = eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL &&
-                                    eModelType != Parameters.ProbabilityModelType.ORDINAL &&
-                                    eModelType != Parameters.ProbabilityModelType.CATEGORICAL;
+        boolean bEnableIndexBased = eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL
+                && eModelType != Parameters.ProbabilityModelType.ORDINAL
+                && eModelType != Parameters.ProbabilityModelType.CATEGORICAL;
         _giniOptimizedClusters.setEnabled(bEnableGroup && bEnableIndexBased);
         enableClustersReportedOptions(bEnableGroup);
-     }
+    }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -2994,7 +3095,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(240, Short.MAX_VALUE))
+                .addContainerGap(272, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3110,7 +3211,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(296, Short.MAX_VALUE))
+                .addContainerGap(328, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3295,7 +3396,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(231, Short.MAX_VALUE))
+                .addContainerGap(263, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3608,7 +3709,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(197, Short.MAX_VALUE))
+                .addContainerGap(229, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3756,224 +3857,32 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
 
         _startRangeStartYearTextField.setText("2000"); // NOI18N
-        _startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeStartYearTextField, e, 4);
-            }
-        });
-        _startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _startRangeStartMonthTextField.setText("01"); // NOI18N
-        _startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeStartMonthTextField, e, 2);
-            }
-        });
-        _startRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _startRangeStartDayTextField.setText("01"); // NOI18N
-        _startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeStartDayTextField, e, 2);
-            }
-        });
-        _startRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _startRangeToLabel.setText("to"); // NOI18N
 
         _startRangeEndYearTextField.setText("2000"); // NOI18N
-        _startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeEndYearTextField, e, 4);
-            }
-        });
-        _startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _startRangeEndMonthTextField.setText("01"); // NOI18N
-        _startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeEndMonthTextField, e, 2);
-            }
-        });
-        _startRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _startRangeEndDayTextField.setText("01"); // NOI18N
-        _startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeEndDayTextField, e, 2);
-            }
-        });
-        _startRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeEndDayTextField.setText("31"); // NOI18N
-        _endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndDayTextField, e, 2);
-            }
-        });
-        _endRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeEndMonthTextField.setText("12"); // NOI18N
-        _endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);
-            }
-        });
-        _endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeEndYearTextField.setText("2000"); // NOI18N
-        _endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);
-            }
-        });
-        _endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeToLabel.setText("to"); // NOI18N
 
         _endRangeStartDayTextField.setText("31"); // NOI18N
-        _endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);
-            }
-        });
-        _endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeStartMonthTextField.setText("12"); // NOI18N
-        _endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);
-            }
-        });
-        _endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endRangeStartYearTextField.setText("2000"); // NOI18N
-        _endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);
-            }
-        });
-        _endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _endWindowRangeLabel.setText("End time in range:"); // NOI18N
 
@@ -4191,7 +4100,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addContainerGap(256, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4472,7 +4381,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(126, Short.MAX_VALUE))
+                .addContainerGap(158, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4607,22 +4516,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _prospectiveStartYearLabel.setText("Year"); // NOI18N
 
         _prospectiveStartDateYearTextField.setText("2000"); // NOI18N
-        _prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);
-            }
-        });
-        _prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -4633,40 +4526,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _prospectiveStartDayLabel.setText("Day"); // NOI18N
 
         _prospectiveStartDateDayTextField.setText("31"); // NOI18N
-        _prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);
-            }
-        });
-        _prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         _prospectiveStartDateMonthTextField.setText("12"); // NOI18N
-        _prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _prospectiveStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateMonthTextField, e, 2);
-            }
-        });
-        _prospectiveStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
 
         javax.swing.GroupLayout _prospectiveCompleteCardLayout = new javax.swing.GroupLayout(_prospectiveCompleteCard);
         _prospectiveCompleteCard.setLayout(_prospectiveCompleteCardLayout);
@@ -4932,7 +4793,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5196,7 +5057,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(176, Short.MAX_VALUE))
+                .addContainerGap(208, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -5360,7 +5221,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_googleEarthGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(156, Short.MAX_VALUE))
+                .addContainerGap(188, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -5624,7 +5485,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(164, Short.MAX_VALUE))
+                .addContainerGap(196, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluations", _powerEvaluationsTab);
@@ -5669,7 +5530,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalGraphTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(435, Short.MAX_VALUE))
+                .addContainerGap(467, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Graphs", _temporalGraphTab);
@@ -5703,7 +5564,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5713,7 +5574,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
     private javax.swing.JPanel _additionalDataSetsGroup;

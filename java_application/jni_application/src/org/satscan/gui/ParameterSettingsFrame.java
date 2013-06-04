@@ -23,6 +23,7 @@ import org.satscan.app.ParameterHistory;
 import org.satscan.app.Parameters;
 import org.satscan.app.RegionFeaturesException;
 import org.satscan.app.UnknownEnumException;
+import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.Utils;
@@ -38,20 +39,20 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private AdvancedParameterSettingsFrame _advancedParametersSetting = null;
     private OberservableRegionsFrame _oberservableRegionsFrame = null;
     private boolean gbPromptOnExist = true;
-    private int _stickyStudyPeriodStartDateMonth = 12;
-    private int _stickyStudyPeriodStartDateDay = 1;
-    private int _stickyStudyPeriodEndDateMonth = 12;
-    private int _stickyStudyPeriodEndDateDay = 1;
     private final UndoManager undo = new UndoManager();
     private final JRootPane _rootPane;
     final static String STUDY_COMPLETE = "study_complete";
     final static String STUDY_GENERIC = "study_generic";
+    private DateComponentsGroup _startDateComponentsGroup;
+    private DateComponentsGroup _endDateComponentsGroup;
 
     /**
      * Creates new form ParameterSettingsFrame
      */
     public ParameterSettingsFrame(final JRootPane rootPane, final String sParameterFilename) {
         initComponents();
+        _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
+        _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         addInternalFrameListener(this);
@@ -945,49 +946,52 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /** enables or disables the study period group controls */
-    private void enableStudyPeriodDates(boolean bYear, boolean bMonth, boolean bDay) {
+    private void enableStudyPeriodDates(boolean enableYear, boolean enableMonth, boolean enableDay) {
         //enable study period year controls
-        _studyPeriodStartDateYearTextField.setEditable(bYear);
-        _studyPeriodEndDateYearTextField.setEnabled(bYear);
-        //store values and restore values or set as default values
-        if (_studyPeriodStartDateMonthTextField.isEnabled() && !bMonth) {
-            _stickyStudyPeriodStartDateMonth = Integer.parseInt(_studyPeriodStartDateMonthTextField.getText());
-            _studyPeriodStartDateMonthTextField.setText("1");
+        _studyPeriodStartDateYearTextField.setEditable(enableYear);
+        _studyPeriodEndDateYearTextField.setEnabled(enableYear);
+        
+        // Start date month and day values.
+        if (_studyPeriodStartDateMonthTextField.isEnabled() && !enableMonth) {
+            // Start date month is going from enabled to disabled. Save month as January.
+            _startDateComponentsGroup.setMonth(1);
+        } else if (!_studyPeriodStartDateMonthTextField.isEnabled() && enableMonth) {
+            // Start date month is going from disabled to enabled. Restore from sticky value.
+            _startDateComponentsGroup.restoreMonth();
         }
-        if (!_studyPeriodStartDateMonthTextField.isEnabled() && bMonth) {
-            _studyPeriodStartDateMonthTextField.setText(Integer.toString(_stickyStudyPeriodStartDateMonth));
-        }
-        if (_studyPeriodStartDateDayTextField.isEnabled() && !bDay) {
-            _stickyStudyPeriodStartDateDay = Integer.parseInt(_studyPeriodStartDateDayTextField.getText());
-            _studyPeriodStartDateDayTextField.setText("1");
-        }
-        if (!_studyPeriodStartDateDayTextField.isEnabled() && bDay) {
-            _studyPeriodStartDateDayTextField.setText(Integer.toString(_stickyStudyPeriodStartDateDay));
+        if (_studyPeriodStartDateDayTextField.isEnabled() && !enableDay) {
+            // Start date day is going from enabled to disabled. Save as first day of month.
+            _startDateComponentsGroup.setDay(1);
+        } else if (!_studyPeriodStartDateDayTextField.isEnabled() && enableDay) {
+            // Start date day is going from disabled to enabled. Restore from sticky value.
+            _startDateComponentsGroup.restoreDay();
         }
 
-        if (_studyPeriodEndDateMonthTextField.isEnabled() && !bMonth) {
-            _stickyStudyPeriodEndDateMonth = Integer.parseInt(_studyPeriodEndDateMonthTextField.getText());
-            _studyPeriodEndDateMonthTextField.setText("12");
+        // End date month and day values.
+        if (_studyPeriodEndDateMonthTextField.isEnabled() && !enableMonth) {
+            // End date month is going from enabled to disabled. Save to month as December.
+            _endDateComponentsGroup.setMonth(12);
+        } else if (!_studyPeriodEndDateMonthTextField.isEnabled() && enableMonth) {
+            // Start date month is going from disabled to enabled. Restore from sticky value.
+            _endDateComponentsGroup.restoreMonth();
         }
-        if (!_studyPeriodEndDateMonthTextField.isEnabled() && bMonth) {
-            _studyPeriodEndDateMonthTextField.setText(Integer.toString(_stickyStudyPeriodEndDateMonth));
+        if (_studyPeriodEndDateDayTextField.isEnabled() && !enableDay) {
+            // End date day is going from enabled to disabled. Save as last day of month.
+            _endDateComponentsGroup.setDay(31);
+        } else if (!_studyPeriodEndDateDayTextField.isEnabled() && enableDay) {
+            // End date day is going from disabled to enabled. Restore from sticky value.
+            _endDateComponentsGroup.restoreDay();
+        } else if (!enableDay) {
+            // End date is continuing to be disabled, make sure that day is last day of month.
+            _endDateComponentsGroup.setDay(31);
         }
-        if (_studyPeriodEndDateDayTextField.isEnabled() && !bDay) {
-            _stickyStudyPeriodEndDateDay = Integer.parseInt(_studyPeriodEndDateDayTextField.getText());
-            GregorianCalendar thisCalender = new GregorianCalendar();
-            thisCalender.set(Calendar.YEAR, Integer.parseInt(_studyPeriodEndDateYearTextField.getText()));
-            thisCalender.set(Calendar.MONTH, Integer.parseInt(_studyPeriodEndDateMonthTextField.getText()) - 1);
-            _studyPeriodEndDateDayTextField.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
-        }
-        if (!_studyPeriodEndDateDayTextField.isEnabled() && bDay) {
-            _studyPeriodEndDateDayTextField.setText(Integer.toString(_stickyStudyPeriodEndDateDay));
-        }
+        
         //enable study period month controls
-        _studyPeriodStartDateMonthTextField.setEnabled(bMonth);
-        _studyPeriodEndDateMonthTextField.setEnabled(bMonth);
+        _studyPeriodStartDateMonthTextField.setEnabled(enableMonth);
+        _studyPeriodEndDateMonthTextField.setEnabled(enableMonth);
         //enable study period day controls
-        _studyPeriodStartDateDayTextField.setEnabled(bDay);
-        _studyPeriodEndDateDayTextField.setEnabled(bDay);
+        _studyPeriodStartDateDayTextField.setEnabled(enableDay);
+        _studyPeriodEndDateDayTextField.setEnabled(enableDay);
     }
 
     /**
@@ -1663,40 +1667,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _startDateYearLabel.setText("Year"); // NOI18N
 
         _studyPeriodStartDateYearTextField.setText("2000"); // NOI18N
-        _studyPeriodStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateYearTextField, e, 4);
-            }
-        });
-        _studyPeriodStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() != Parameters.DatePrecisionType.GENERIC) {
-                    Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);
-                }
-            }
-        });
 
         _studyPeriodStartDateMonthTextField.setText("01"); // NOI18N
-        _studyPeriodStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateMonthTextField, e, 2);
-            }
-        });
-        _studyPeriodStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);
-            }
-        });
 
         _startDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _startDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1707,40 +1679,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _startDateDayLabel.setText("Day"); // NOI18N
 
         _studyPeriodStartDateDayTextField.setText("01"); // NOI18N
-        _studyPeriodStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateDayTextField, e, 2);
-            }
-        });
-        _studyPeriodStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);
-            }
-        });
 
         _endDateLabel.setText("End Date:"); // NOI18N
 
         _studyPeriodEndDateYearTextField.setText("2000"); // NOI18N
-        _studyPeriodEndDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodEndDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateYearTextField, e, 4);
-            }
-        });
-        _studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
-            }
-        });
 
         _endDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1751,38 +1693,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _endDateMonthLabel.setText("Month"); // NOI18N
 
         _studyPeriodEndDateMonthTextField.setText("12"); // NOI18N
-        _studyPeriodEndDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodEndDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);
-            }
-        });
-        _studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
-            }
-        });
 
         _studyPeriodEndDateDayTextField.setText("31"); // NOI18N
-        _studyPeriodEndDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _studyPeriodEndDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateDayTextField, e, 2);
-            }
-        });
-        _studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
-            }
-        });
 
         _endDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -2336,7 +2248,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 94, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2810,7 +2722,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 194, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 210, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -3047,7 +2959,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3062,7 +2974,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
         );
 
         pack();
