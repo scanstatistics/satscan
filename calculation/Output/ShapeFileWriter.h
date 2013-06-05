@@ -9,7 +9,7 @@
 /** Shape file data writer. */
 class ShapeDataFileWriter {
     private:
-        void                        _setup(const CParameters& Parameters, const std::string& sFileExtension,  bool bAppend);
+        void                        _setup(const CParameters& Parameters, const std::string& sFileExtension, int shapetype,  bool bAppend);
 
     protected:
         static const char         * SHAPE_FILE_EXT;
@@ -19,10 +19,12 @@ public:
         FileName                    _fileName;
 
    public :
-        ShapeDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend = false);
+        ShapeDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, int shapetype=SHPT_POINT, bool bAppend = false);
         ~ShapeDataFileWriter();
 
-        void	                    writeCoordinates(double x, double y);
+        int                         getShapeType() const {return _file->getType();}
+        void                        writeCoordinates(double x, double y);
+        void                        writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY);
 };
 //******************************************************************************
 #endif

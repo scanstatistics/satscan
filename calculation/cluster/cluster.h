@@ -99,7 +99,7 @@ class CCluster {
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
-    virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }//= 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
@@ -126,7 +126,7 @@ class CCluster {
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     ReportCache_t               & getReportLinesCache() const;
     RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
-    virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
 	bool                          isGiniCluster() const {return gGiniCluster;}

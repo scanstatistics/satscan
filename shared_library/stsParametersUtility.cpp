@@ -529,6 +529,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchKMLViewer());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setOutputShapeFiles", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputShapeFiles());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1031,6 +1035,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getLaunchKMLViewer", "()Z");
   Parameters.setLaunchKMLViewer(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputShapeFiles", "()Z");
+  Parameters.setOutputShapeFiles(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

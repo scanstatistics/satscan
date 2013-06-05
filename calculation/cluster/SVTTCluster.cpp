@@ -432,9 +432,9 @@ const AbstractClusterData * CSVTTCluster::GetClusterData() const {
 }
 
 /** returns end date of defined cluster as formated string */
-std::string& CSVTTCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CSVTTCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint, sep);
 }
 
 /** Returns number of expcected cases in accumulated data. */
@@ -473,9 +473,9 @@ count_t CSVTTCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTSc
 }
 
 /** returns start date of defined cluster as formated string */
-std::string& CSVTTCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CSVTTCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint, sep);
 }
 
 /** re-initializes cluster data */

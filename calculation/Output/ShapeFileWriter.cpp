@@ -15,9 +15,9 @@
 const char * ShapeDataFileWriter::SHAPE_FILE_EXT    = ".shp";
 
 /** constructor */
-ShapeDataFileWriter::ShapeDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend) {
+ShapeDataFileWriter::ShapeDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, int shapetype, bool bAppend) {
     try {
-        _setup(Parameters, sFileExtension, bAppend);
+        _setup(Parameters, sFileExtension, shapetype, bAppend);
     } catch (prg_exception& x) {
         x.addTrace("constructor()","ShapeDataFileWriter");
         throw;
@@ -28,7 +28,7 @@ ShapeDataFileWriter::ShapeDataFileWriter(const CParameters& Parameters, const st
 ShapeDataFileWriter::~ShapeDataFileWriter() {}
 
 /** internal setup - opens file stream */
-void ShapeDataFileWriter::_setup(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend) {
+void ShapeDataFileWriter::_setup(const CParameters& Parameters, const std::string& sFileExtension, int shapetype, bool bAppend) {
     std::string   buffer, ext(sFileExtension);
 
     try {
@@ -39,10 +39,10 @@ void ShapeDataFileWriter::_setup(const CParameters& Parameters, const std::strin
         // open file stream for writing
         if (bAppend) {
             _file.reset(new ShapeFile(_fileName.getFullPath(buffer).c_str(), "r+b"));
-            if (_file->getType() != SHPT_POINT)
-                throw prg_error("Shape file has type %d but expecting type %d.","_setup()", _file->getType(), SHPT_POINT);
+            if (_file->getType() != shapetype)
+                throw prg_error("Shape file has type %d but expecting type %d.","_setup()", _file->getType(), shapetype);
         } else {
-            _file.reset(new ShapeFile(_fileName.getFullPath(buffer).c_str(), SHPT_POINT));
+            _file.reset(new ShapeFile(_fileName.getFullPath(buffer).c_str(), shapetype));
         }
     } catch (prg_exception& x) {
         x.addTrace("_setup()","ShapeDataFileWriter");
@@ -61,3 +61,13 @@ void ShapeDataFileWriter::writeCoordinates(double x, double y) {
     }
 }
 
+/** Write data to file stream. Note that caller is responsible for ensuring that
+    record buffer structure agrees with file structure. */
+void ShapeDataFileWriter::writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY) {
+    try {
+        _file->writePolygon(polygonX, polygonY);
+    } catch (prg_exception& x) {
+        x.addTrace("writePolygon()","ShapeDataFileWriter");
+        throw;
+    }
+}

@@ -21,6 +21,7 @@ class ShapeFile {
         int             getType() const;
         void            writePoint(double x, double y);
         void            writePolygon(const ConvexPolygonObservableRegion& polygon);
+        void            writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY);
 
         static void     dump(const char * fileName);
         static void     test(const char * fileName);

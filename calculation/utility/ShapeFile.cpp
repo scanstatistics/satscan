@@ -49,17 +49,31 @@ int ShapeFile::getType() const {
 }
 
 void ShapeFile::writePoint(double x, double y) {
-    if (getType() == SHPT_POINT) {
-        SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
-        SHPObject * pShape = SHPCreateSimpleObject(SHPT_POINT, 1, (double*)&(x), (double*)&(y), NULL); 
-        SHPWriteObject(shp, -1, pShape);
-        SHPDestroyObject(pShape);
-        SHPClose(shp);
-    }
+    if (getType() != SHPT_POINT) 
+        throw prg_error("File type (%d) does not match SHPT_POINT!","writePoint()",getType());
+
+    SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    SHPObject * pShape = SHPCreateSimpleObject(SHPT_POINT, 1, (double*)&(x), (double*)&(y), NULL); 
+    SHPWriteObject(shp, -1, pShape);
+    SHPDestroyObject(pShape);
+    SHPClose(shp);
 }
 
 void ShapeFile::writePolygon(const ConvexPolygonObservableRegion& polygon) {
     throw prg_error("ShapeFile::writePolygon(const ConvexPolygonObservableRegion&) not implemented yet!","writePolygon()");
+}
+
+void ShapeFile::writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY) {
+    if (polygonX.size() != polygonY.size())
+        throw prg_error("Number of X coordinates (%u) does not equal number of Y coordinates (%u)!","writePolygon()",polygonX.size(),polygonY.size());
+    if (getType() != SHPT_POLYGON) 
+        throw prg_error("File type (%d) does not match SHPT_POLYGON!","writePolygon()",getType());
+
+    SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    SHPObject * pShape = SHPCreateSimpleObject(SHPT_POLYGON, polygonX.size(), const_cast<double*>(&(polygonX[0])), const_cast<double*>(&(polygonY[0])), NULL); 
+    SHPWriteObject(shp, -1, pShape);
+    SHPDestroyObject(pShape);
+    SHPClose(shp);
 }
 
 /////////////////////////////////////////

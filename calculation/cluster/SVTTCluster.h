@@ -135,13 +135,13 @@ class CSVTTCluster : public CCluster  {
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}
-    virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     std::string               & GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const;
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gClusterData->GetCaseCount(tSetIndex);}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual void                InitializeSVTT(tract_t nCenter, const AbstractDataSetGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataSetInterface & Interface);
     void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);

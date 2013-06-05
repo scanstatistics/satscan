@@ -675,6 +675,9 @@
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Output\GisUtils.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1159,6 +1162,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\utility\ZipUtils.h">
       <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Output\GisUtils.h">
+      <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

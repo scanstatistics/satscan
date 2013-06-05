@@ -139,6 +139,7 @@
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp" />
+    <ClCompile Include="..\calculation\Output\GisUtils.cpp" />
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\IniParameterSpecification.h" />
     <ClInclude Include="..\calculation\Output\ChartGenerator.h" />
+    <ClInclude Include="..\calculation\Output\GisUtils.h" />
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />

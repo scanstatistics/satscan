@@ -32,10 +32,10 @@ class PurelySpatialHomogeneousPoissonCluster : public CCluster {
     virtual void                        CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual ClusterType                 GetClusterType() const {return PURELYSPATIALHOMOGENEOUSCLUSTER;}
-    virtual std::string               & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string               & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    virtual std::string               & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string               & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual void                        Initialize(tract_t nCenter=0);
 };
 //*****************************************************************************

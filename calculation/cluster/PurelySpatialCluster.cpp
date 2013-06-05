@@ -98,9 +98,9 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataH
 }
 
 /** returns end date of defined cluster as formated string */
-std::string& CPurelySpatialCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPurelySpatialCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint, sep);
 }
 
 /** Returns the measure for location as defined by cluster. */
@@ -114,9 +114,9 @@ count_t CPurelySpatialCluster::GetObservedCountForTract(tract_t tTractIndex, con
 }
 
 /** returns start date of defined cluster as formated string */
-std::string& CPurelySpatialCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPurelySpatialCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint, sep);
 }
 
 /** re-initializes cluster data */

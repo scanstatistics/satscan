@@ -745,6 +745,11 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             "The shapefiles option is not available for purely temporal analyses, cartesian coordinates or the location neighbors file.\nThe option was disabled.\n",
                             BasePrint::P_WARNING);
     }
+    if (gParameters.getOutputShapeFiles() && !gParameters.GetOutputClusterLevelDBase()) {
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The shapefiles option requires that the 'Cluster Information' dBase file also be generated.\nThe option was enabled.\n",
+                            BasePrint::P_WARNING);
+    }  
     if (gParameters.getOutputTemporalGraphFile() &&
         (!gParameters.GetIsPurelyTemporalAnalysis() ||
         !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) {

@@ -767,6 +767,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clusterCaseInColumnFormatAsciiCheckBox.setSelected(parameters.GetOutputClusterCaseAscii());  // Output Most Likely Cluster for each Centroid
         _clusterCaseInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterCaseDBase());
         _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
+        _reportShapefile.setSelected(parameters.getOutputShapeFiles());
         enableSettingsForAnalysisModelCombination();
         enableAdvancedButtons();
     }
@@ -870,6 +871,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputSimLogLikeliRatiosAscii(_simulatedLogLikelihoodRatiosAsciiCheckBox.isSelected());
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
         parameters.setOutputKMLFile(_reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected());
+        parameters.setOutputShapeFiles(_reportShapefile.isEnabled() && _reportShapefile.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
     }
@@ -1062,7 +1064,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaAsciiCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaDBaseCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaLabel.setEnabled(bRelativeRisks);
-        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL);
+        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
+                                         getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL &&
+                                         getAnalysisControlType() != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+        _reportShapefile.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
+                                         getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL &&
+                                         getAnalysisControlType() != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
     }
 
     /**
@@ -1488,6 +1495,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton = new javax.swing.JButton();
         _geographicalOutputGroup = new javax.swing.JPanel();
         _reportGoogleEarthKML = new javax.swing.JCheckBox();
+        _reportShapefile = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -2249,7 +2257,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 102, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2724,7 +2732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 218, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2922,19 +2930,25 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _reportShapefile.setText("Shapefile");
+
         javax.swing.GroupLayout _geographicalOutputGroupLayout = new javax.swing.GroupLayout(_geographicalOutputGroup);
         _geographicalOutputGroup.setLayout(_geographicalOutputGroupLayout);
         _geographicalOutputGroupLayout.setHorizontalGroup(
             _geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                    .addComponent(_reportShapefile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalOutputGroupLayout.setVerticalGroup(
             _geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
                 .addComponent(_reportGoogleEarthKML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportShapefile)
                 .addGap(0, 8, Short.MAX_VALUE))
         );
 
@@ -2962,7 +2976,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 179, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 160, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2977,7 +2991,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+            .addComponent(_tabbedPane)
         );
 
         pack();
@@ -3062,6 +3076,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaDBaseCheckBox;
     private javax.swing.JLabel _relativeRiskEstimatesAreaLabel;
     private javax.swing.JCheckBox _reportGoogleEarthKML;
+    private javax.swing.JCheckBox _reportShapefile;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
     private javax.swing.JTextField _resultsFileTextField;

@@ -5,12 +5,11 @@
 #include<vector>
 #include "SimulationVariables.h"
 #include "MostLikelyClustersContainer.h"
+#include "GisUtils.h"
 
 class CSaTScanData;
 
 class ClusterKML {
-  typedef std::pair<double, double> point_t;
-  typedef std::vector<point_t> points_t;
   typedef std::vector<FileName> file_collection_t;
 
   protected:      
@@ -25,8 +24,8 @@ class ClusterKML {
       bool                                _separateLocationsKML;
 
       file_collection_t                 & createKMLFiles(file_collection_t& fileCollection) const;
+      std::string                       & getBalloonTemplate(std::string& buffer) const;
       std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
-      points_t                            getPointsOnCircleCircumference(point_t centerPoint, point_t pointOnCircumference) const;
       void                                writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster) const;
 
   public:

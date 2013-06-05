@@ -191,6 +191,11 @@ void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
     WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
     WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
+    WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
+    WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
+    WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
+    WriteIniParameter(WriteFile, LAUNCH_KML_VIEWER, GetParameterString(LAUNCH_KML_VIEWER, s).c_str(), GetParameterComment(LAUNCH_KML_VIEWER));
+
   } catch (prg_exception& x) {
     x.addTrace("WriteAdditionalOutputSettings()","IniParameterFileAccess");
     throw;
@@ -395,10 +400,7 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_KML, GetParameterString(OUTPUT_KML, s).c_str(), GetParameterComment(OUTPUT_KML));
-    WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
-    WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
-    WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
-    WriteIniParameter(WriteFile, LAUNCH_KML_VIEWER, GetParameterString(LAUNCH_KML_VIEWER, s).c_str(), GetParameterComment(LAUNCH_KML_VIEWER));
+    WriteIniParameter(WriteFile, OUTPUT_SHAPEFILES, GetParameterString(OUTPUT_SHAPEFILES, s).c_str(), GetParameterComment(OUTPUT_SHAPEFILES));
   } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;

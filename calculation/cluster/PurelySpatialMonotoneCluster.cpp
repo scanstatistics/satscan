@@ -220,9 +220,9 @@ void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iData
 }
 
 /** returns end date of defined cluster as formated string */
-std::string& CPSMonotoneCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPSMonotoneCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint, sep);
 }
 
 /** Returns number of expected cases in accumulated data. */
@@ -246,9 +246,9 @@ double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, const CSaTScanData& Da
 }
 
 /** returns start date of defined cluster as formated string */
-std::string& CPSMonotoneCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPSMonotoneCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint, sep);
 }
 
 /** initialize cluster data and data members */

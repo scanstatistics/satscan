@@ -11,6 +11,7 @@
 #include "SVTTCluster.h"
 #include "SSException.h"
 #include "WeightedNormalRandomizer.h"
+#include "GisUtils.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	            = ".col";
 const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	        = ".sci";
@@ -71,7 +72,7 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
     if (gParameters.GetOutputClusterLevelDBase() || gParameters.getOutputShapeFiles()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
       if (gParameters.getOutputShapeFiles()) {
-        gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
+        gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, SHPT_POLYGON, bAppend);
       }
     }
     if (gParameters.GetOutputClusterCaseDBase())
@@ -480,7 +481,25 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
          case LATLON    : prLatitudeLongitude = ConvertToLatLong(vCoordinates);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = prLatitudeLongitude.first;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = prLatitudeLongitude.second;
-                          if (gpShapeDataFileWriter) gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+                          // write to shapefile, if we are creating one
+                          if (gpShapeDataFileWriter) {
+                              if (gpShapeDataFileWriter->getShapeType() == SHPT_POINT) {
+                                  gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+                              } else if (gpShapeDataFileWriter->getShapeType() == SHPT_POLYGON) {
+                                std::vector<double> x,y;
+                                GisUtils::pointpair_t clusterSegment = GisUtils::getClusterRadiusSegmentPoints(gDataHub, thisCluster);
+                                GisUtils::points_t circlePoints = GisUtils::getPointsOnCircleCircumference(clusterSegment.first, clusterSegment.second);
+                                // break the circle points into collection of x and collection of y.
+                                for(GisUtils::points_t::const_iterator itrPt=circlePoints.begin(); itrPt != circlePoints.end(); ++itrPt) {
+                                    x.push_back(itrPt->first);
+                                    y.push_back(itrPt->second);
+                                }
+                                gpShapeDataFileWriter->writePolygon(x, y);
+                              } else {
+                                throw prg_error("Unknown shapefile type '%d'.","WriteCoordinates()", gpShapeDataFileWriter->getShapeType());
+                              }
+                          }
+
                           dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
                           Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;

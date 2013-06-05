@@ -61,7 +61,7 @@ void usage_message(std::string program, po::options_description& desc, const Par
 }
 
 int main(int argc, char *argv[]) {
-  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false, outputShapefiles=false;
+  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage;
@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
     /* hidden options */
     po::options_description hidden("Hidden options", 200);
     hidden.add_options()("centric,t", po::bool_switch(&forceCentric), "Centric execution (overrides parameter file)")
-                        ("output-shapefiles", po::bool_switch(&outputShapefiles), "output shapefiles")
                         ("all-out,a", po::bool_switch(&allOut), "All output files (overrides parameter file)")
                         ("standard-pvalue,d", po::bool_switch(&standardPvalue), "Report standard p-value (overrides parameter file)")
                         ("RandomSeed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
@@ -130,7 +129,6 @@ int main(int argc, char *argv[]) {
     }
     /* apply parameter overrides*/
     parameterOptions.setParameterOverrides(vm);
-    if (outputShapefiles) Parameters.setOutputShapeFiles(true);
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY); 
     if (allOut) Parameters.requestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);

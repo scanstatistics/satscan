@@ -867,9 +867,9 @@ void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const Asc
 }
 
 /** returns end date of defined cluster as formated string */
-std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint, sep);
 }
 
 /** Returns number of expected cases in accumulated data. */
@@ -1071,9 +1071,9 @@ double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData
 }
 
 /** returns start date of defined cluster as formated string */
-std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep);
 }
 
 /** Prints name and coordinates of locations contained in cluster to ASCII file.

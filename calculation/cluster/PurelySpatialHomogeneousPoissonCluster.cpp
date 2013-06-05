@@ -100,9 +100,9 @@ void PurelySpatialHomogeneousPoissonCluster::DisplayTimeFrame(FILE* fp, const CS
 }
 
 /** returns end date of defined cluster as formated string */
-std::string& PurelySpatialHomogeneousPoissonCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& PurelySpatialHomogeneousPoissonCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint, sep);
 }
 
 /** Returns the measure for location as defined by cluster. */
@@ -122,9 +122,9 @@ count_t PurelySpatialHomogeneousPoissonCluster::GetObservedCountForTract(tract_t
 }
 
 /** returns start date of defined cluster as formated string */
-std::string& PurelySpatialHomogeneousPoissonCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+std::string& PurelySpatialHomogeneousPoissonCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint, sep);
 }
 
 /** re-initializes cluster data */

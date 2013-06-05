@@ -149,6 +149,7 @@ public class Parameters implements Cloneable {
     private boolean                         _include_locations_kml=false; /** include cluster locations in kml output */
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
     private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
+    private boolean                         _output_shapefiles=false;
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -263,6 +264,9 @@ public class Parameters implements Cloneable {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
+    
+    public boolean getOutputShapeFiles() {return _output_shapefiles;}
+    public void setOutputShapeFiles(boolean b) {_output_shapefiles = b;}    
     public boolean getLaunchKMLViewer() {return _launch_kml_viewer;}
     public void setLaunchKMLViewer(boolean b) {_launch_kml_viewer = b;}
     public boolean getIncludeLocationsKML() {return _include_locations_kml;}
@@ -412,7 +416,8 @@ public class Parameters implements Cloneable {
         if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
         if (_include_locations_kml != rhs._include_locations_kml) return false;
         if (_compress_kml_output != rhs._compress_kml_output) return false;
-        if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;        
+        if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;  
+        if (_output_shapefiles != rhs._output_shapefiles) return false;
         
         return true;
     }

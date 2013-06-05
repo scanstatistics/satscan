@@ -39,13 +39,13 @@ class CPSMonotoneCluster : public CCluster {
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData.get();}
     virtual const AbstractClusterData * GetClusterData() const {return gpClusterData.get();}
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
-    virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gpClusterData->GetCaseCount(tSetIndex);}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     double                      GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const;
-    virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     void                        SetTotalTracts();
     virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,

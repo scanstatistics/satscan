@@ -148,14 +148,15 @@ char* JulianToChar(char* szDateString, Julian JNum) {
 }
 
 /** Converts Julian into date string. */
-std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint) {
+std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep) {
   UInt month, day, year;
 
   JulianToMDY(&month, &day, &year, JNum);
+  sep = sep == 0 ? "/" : sep;
   switch (eDatePrint) {
       case YEAR    : printString(sDate, "%u", year); break;
-      case MONTH   : printString(sDate, "%u/%u", year, month); break;
-      case DAY     : printString(sDate, "%u/%u/%u", year, month, day); break;
+      case MONTH   : printString(sDate, "%u%s%u", year, sep, month); break;
+      case DAY     : printString(sDate, "%u%s%u%s%u", year, sep, month, sep, day); break;
       case GENERIC : {
                      boost::gregorian::date baseDate(GENERIC_DATE_BASE_YEAR, GENERIC_DATE_BASE_MONTH, GENERIC_DATE_BASE_DAY);
                      printString(sDate, "%ld", JNum - baseDate.julian_day()); break;
