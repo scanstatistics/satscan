@@ -116,6 +116,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(OUTPUT)/ShapeFileWriter.cpp \
                $(OUTPUT)/ClusterKML.cpp \
                $(OUTPUT)/ChartGenerator.cpp \
+               $(OUTPUT)/GisUtils.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \
