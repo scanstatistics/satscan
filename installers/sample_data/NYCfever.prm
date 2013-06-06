@@ -57,22 +57,8 @@ MostLikelyClusterCaseInfoEachCentroidASCII=n
 MostLikelyClusterCaseInfoEachCentroidDBase=n
 ;output Google Earth KML file (y/n)
 OutputGoogleEarthKML=n
-
-[Additional Output]
-;whether to include cluster locations kml output (y/n)
-IncludeClusterLocationsKML=n
-;threshold for generating separate kml files for cluster locations (positive integer)
-ThresholdLocationsSeparateKML=1000
-;compress the kml output into a kmz file (y/n)
-CompressKMLtoKMZ=n
-;whether to launch kml/kmz viewer - gui only (y/n)
-LaunchKMLViewer=y
-;report critical values for .01 and .05? (y/n)
-CriticalValue=n
-;report cluster rank (y/n)
-ReportClusterRank=n
-;print ascii headers in output files (y/n)
-PrintAsciiColumnHeaders=n
+;output shapefiles (y/n)
+OutputShapefiles=n
 
 [Multiple Data Sets]
 ; multiple data sets purpose type (0=Multivariate, 1=Adjustment)
@@ -195,6 +181,22 @@ MaxSpatialSizeInDistanceFromCenter_Reported=1
 UseMaxCirclePopulationFileOption_Reported=n
 ;restrict maximum reported spatial size - distance? (y/n)
 UseDistanceFromCenterOption_Reported=n
+
+[Additional Output]
+;report critical values for .01 and .05? (y/n)
+CriticalValue=n
+;report cluster rank (y/n)
+ReportClusterRank=n
+;print ascii headers in output files (y/n)
+PrintAsciiColumnHeaders=n
+;whether to include cluster locations kml output (y/n)
+IncludeClusterLocationsKML=n
+;threshold for generating separate kml files for cluster locations (positive integer)
+ThresholdLocationsSeparateKML=1000
+;compress the kml output into a kmz file (y/n)
+CompressKMLtoKMZ=n
+;whether to launch kml/kmz viewer - gui only (y/n)
+LaunchKMLViewer=y
 
 [Temporal Graph]
 ;output temporal graph HTML file (y/n)
