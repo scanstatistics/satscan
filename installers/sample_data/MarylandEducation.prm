@@ -34,7 +34,7 @@ TimeAggregationLength=1
 
 [Output]
 ;analysis results output filename
-ResultsFile=MarylandEducation.out.txt
+ResultsFile=MarylandEducation.txt
 ;output simulated log likelihoods ratios in ASCII format? (y/n)
 SaveSimLLRsASCII=n
 ;output simulated log likelihoods ratios in dBase format? (y/n)

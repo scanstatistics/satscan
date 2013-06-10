@@ -34,7 +34,7 @@ TimeAggregationLength=1
 
 [Output]
 ;analysis results output filename
-ResultsFile=NormalFake.out.txt
+ResultsFile=NormalFake.txt
 ;output simulated log likelihoods ratios in ASCII format? (y/n)
 SaveSimLLRsASCII=n
 ;output simulated log likelihoods ratios in dBase format? (y/n)
