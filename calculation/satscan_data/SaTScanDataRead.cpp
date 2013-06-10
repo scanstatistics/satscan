@@ -602,8 +602,8 @@ bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterv
                           bValid = false;
                       } else {
                           if (i == 0) focusInterval.second.get<0>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
-                          else if (i == 1) focusInterval.second.get<1>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
-                          else if (i == 2) focusInterval.second.get<2>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                          else if (i == 1) focusInterval.second.get<1>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                          else if (i == 2) focusInterval.second.get<2>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
                           else if (i == 3) focusInterval.second.get<3>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
                       }
                       break;
