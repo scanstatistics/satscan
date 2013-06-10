@@ -14,12 +14,13 @@ package org.satscan.gui.utils.help;
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  */
+import java.awt.Color;
 import org.satscan.gui.utils.*;
 import java.awt.event.*;
 
 public class HelpLinkedLabel extends JHyperLink {
     public HelpLinkedLabel(final String title, final String helpID) {
-        super(title);
+        super(title, Color.BLACK);
         this.addActionListener(new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
                 HelpShow.showHelp(helpID);

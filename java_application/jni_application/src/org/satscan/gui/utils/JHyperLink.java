@@ -56,14 +56,20 @@ public class JHyperLink extends JLabel {
         super(text);
         _instance = this;
         
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        
-        setForeground(LINK_COLOR);
-        
-        addMouseListener( mouseListener );
-        
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));        
+        setForeground(LINK_COLOR);        
+        addMouseListener( mouseListener );        
     }
 
+    public JHyperLink(String text, Color color) {
+        super(text);
+        _instance = this;
+        
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));        
+        setForeground(color);        
+        addMouseListener( mouseListener );        
+    }
+    
     public void addActionListener(ActionListener l) {
         if(!actionListenerList.contains( l )) {
             actionListenerList.add( l );

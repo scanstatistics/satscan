@@ -46,7 +46,7 @@ public class HelpLinkedTitledBorder implements Border, MouseListener, MouseMotio
     }
 
     private void _setup(JComponent container, final String title, final String helpID) {
-        titleComponent = new JHyperLink(title);
+        titleComponent = new JHyperLink(title, Color.BLACK);
         titleComponent.addActionListener(new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
                 HelpShow.showHelp(helpID);
