@@ -115,7 +115,7 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
         outKML << getClusterStyleTags(cluster, iCluster, buffer, isHighRate).c_str() << std::endl; 
         outKML << "\t<Placemark>" << std::endl; 
         outKML << "\t\t<name>" << (iCluster + 1) << "</name>" << std::endl;
-        outKML << "\t\t<snippet>Cluster " << (iCluster + 1) << "</snippet>" << std::endl;
+        outKML << "\t\t<snippet>SaTScan Cluster #" << (iCluster + 1) << "</snippet>" << std::endl;
         // set popup window text
 
         outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
@@ -195,7 +195,7 @@ std::string & ClusterKML::getClusterStyleTags(const CCluster& cluster, int iClus
     std::stringstream  lines;
     std::string buffer;
 
-    lines << "\t<Style id=\"cluster-" << (iCluster + 1) << "-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>0.5</scale></LabelStyle>";
+    lines << "\t<Style id=\"cluster-" << (iCluster + 1) << "-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>1.0</scale></LabelStyle>";
     lines << "<LineStyle><color>" << (isHighRate ? "ff0000aa" : "ffff0000") << "</color></LineStyle><PolyStyle><color>" << (isHighRate ? "400000aa" : "40ff0000") << "</color></PolyStyle>";
     lines << "<BalloonStyle><text>" << getClusterBalloonTemplate(cluster, buffer).c_str() << "</text></BalloonStyle></Style>"<< std::endl;
     lines << "\t<StyleMap id=\"cluster-" << (iCluster + 1) << "-stylemap\"><Pair><key>normal</key><styleUrl>#cluster-" << (iCluster + 1) << "-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#cluster-" << (iCluster + 1) << "-style</styleUrl></Pair></StyleMap>";
@@ -210,7 +210,7 @@ std::string & ClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std
     const CParameters& parameters = _dataHub.GetParameters();
     const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s</th><td style=\"white-space:nowrap;\">$[%s]</td></tr>";
 
-    templateLines << "<![CDATA[<b>$[name]</b><br/><table border=\"0\">";
+    templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
     for (; itr != itr_end; ++itr) {
         templateLines << printString(buffer, rowFormat, itr->first.c_str(), itr->first.c_str()).c_str();
