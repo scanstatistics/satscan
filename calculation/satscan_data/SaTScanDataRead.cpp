@@ -577,10 +577,8 @@ bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterv
 
     try {
         focusInterval.first = Source.GetValueAt(iSourceOffset) != 0;
-        if (focusInterval.first && !(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL)) {
-          gPrint.Printf("Error: Extra data found in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-          bValid = false;
-        }
+        // Focused grid points is only implemented for the retrospective temporal and space-time analyses, ignore any focus dates otherwise.
+        focusInterval.first &= (gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL);
 
         if (focusInterval.first && bValid) {
           //if there is one more value, then we expect 4 more: <startrange start>  <startrange end>  <endrange start>  <endrange end>
