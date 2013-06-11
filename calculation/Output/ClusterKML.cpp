@@ -54,7 +54,7 @@ ClusterKML::file_collection_t& ClusterKML::createKMLFiles(file_collection_t& fil
         KMLout << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
         KMLout << "\t<Style id=\"high-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
         KMLout << "\t<Style id=\"low-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-        KMLout << std::endl << "\t<name>SaTScan Clusters Detected</name><description>Spatial clusters detected in your analysis.</description>" << std::endl << std::endl;
+        KMLout << std::endl << "\t<name>SaTScan Clusters Detected</name>" << std::endl << std::endl;
         //if  no replications requested, attempt to display up to top 10 clusters
         tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
         //first iterate through all location coordinates to determine largest X and Y
@@ -174,10 +174,10 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
                     clusterKML << "<name>Cluster " << (iCluster + 1) << " Locations</name>" << std::endl << clusterPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
                     clusterKML.close();
                     // Now reference this kml file in NetworkLink tag of primary kml.
-                    outKML << "\t<NetworkLink><name>" << (iCluster + 1) << " Locations</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
+                    outKML << "\t<NetworkLink><name>Cluster " << (iCluster + 1) << " Locations</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
                            << "cluster" << (iCluster + 1) << "_locations" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
                 } else { // Insert locations into primary kml.
-                    outKML << "\t<Folder><name>" << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "\t</Folder>"<< std::endl << std::endl;
+                    outKML << "\t<Folder><name>Cluster " << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "\t</Folder>"<< std::endl << std::endl;
                 }
             }
         } else {

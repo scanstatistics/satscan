@@ -146,7 +146,7 @@ public class Parameters implements Cloneable {
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
     private boolean                         _output_kml=false; /* report google earth kml file */
     private boolean                         _output_temporal_graph=false; /* report temporal graph file */
-    private boolean                         _include_locations_kml=false; /** include cluster locations in kml output */
+    private boolean                         _include_locations_kml=true; /** include cluster locations in kml output */
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
     private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
     private boolean                         _output_shapefiles=false;

@@ -847,7 +847,7 @@ void CParameters::SetAsDefaulted() {
   _output_kml = false;
   _output_temporal_graph = false;
   _output_shapefiles = false;
-  _include_locations_kml = false;
+  _include_locations_kml = true;
   _compress_kml_output = false;
   _launch_kml_viewer = true;
   _locations_threshold_kml = 1000;

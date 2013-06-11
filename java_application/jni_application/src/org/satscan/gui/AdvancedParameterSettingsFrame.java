@@ -823,7 +823,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_reportClusterRankCheckBox.isSelected() == false);
         bReturn &= (_printAsciiColumnHeaders.isSelected() == false);
         bReturn &= (_reportTemporalGraph.isSelected() == false);
-        bReturn &= (_includeClusterLocationsInKML.isSelected() == false);
+        bReturn &= (_includeClusterLocationsInKML.isSelected() == true);
         bReturn &= (_createCompressedKMZ.isSelected() == false);
         bReturn &= (_launchKMLViewer.isSelected() == true);
 

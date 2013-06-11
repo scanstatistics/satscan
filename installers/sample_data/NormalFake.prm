@@ -194,7 +194,7 @@ IncludeClusterLocationsKML=n
 ;threshold for generating separate kml files for cluster locations (positive integer)
 ThresholdLocationsSeparateKML=1000
 ;compress the kml output into a kmz file (y/n)
-CompressKMLtoKMZ=n
+CompressKMLtoKMZ=y
 ;whether to launch kml/kmz viewer - gui only (y/n)
 LaunchKMLViewer=y
 
