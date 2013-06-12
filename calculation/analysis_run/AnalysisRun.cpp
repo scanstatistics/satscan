@@ -204,6 +204,7 @@ void AnalysisRunner::Execute() {
 void AnalysisRunner::ExecutePowerEvaluations() {
     try {
         FILE * fp=0;
+        std::string buffer;
         OpenReportFile(fp, true);
         fprintf(fp, "\nPOWER EVALUATIONS\n");
         _clusterRanker.sort(); // need to sort otherwise simulation process of ranking clusters will fail
@@ -225,7 +226,14 @@ void AnalysisRunner::ExecutePowerEvaluations() {
         unsigned int numReplicaStep1 = gSimVars.get_sim_count();
 
         // report critical values gathered from simulations and/or user specified
-        fprintf(fp,"\nAlpha\t\t\t\t\t0.05\t\t\t\t0.01\t\t\t\t0.001\n-----\t\t\t\t\t----\t\t\t\t----\t\t\t\t-----\n");
+        AsciiPrintFormat::printPadRight(fp, "\nAlpha", 25);
+        AsciiPrintFormat::printPadRight(fp, "0.05", 20);
+        AsciiPrintFormat::printPadRight(fp, "0.01", 20);
+        AsciiPrintFormat::printPadRight(fp, "0.001", 20);
+        AsciiPrintFormat::printPadRight(fp, "\n-----", 25);
+        AsciiPrintFormat::printPadRight(fp, "----", 20);
+        AsciiPrintFormat::printPadRight(fp, "----", 20);
+        AsciiPrintFormat::printPadRight(fp, "-----", 20);
         double critical05, critical01, critical001;
         switch (gParameters.getPowerEvaluationCriticalValueType()) {
             case CV_MONTECARLO:
@@ -245,7 +253,11 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 break;
             default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
         };
-        fprintf(fp,"Critical Value\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", critical05, critical01, critical001);
+        AsciiPrintFormat::printPadRight(fp, "\nCritical Value", 25);
+        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical05,buffer, 3).c_str(), 20);
+        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical01,buffer, 3).c_str(), 20);
+        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical001,buffer, 3).c_str(), 20);
+        fprintf(fp,"\n");
         // if power estimation is monte carlo, then set sim vars to track those LLRs
         if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
             gSimVars.reset(critical05);
@@ -262,9 +274,9 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 // read power evaluations adjustments
                 SaTScanDataReader reader(*gpDataHub);
                 if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationAltHypothesisFilename(), riskAdjustments, false))
-                    throw resolvable_error("There were problems reading the power evaluation adjustments file.", "ExecutePowerEvaluations()");
+                    throw resolvable_error("There were problems reading the hypothesis alternative file.", "ExecutePowerEvaluations()");
                 if (!riskAdjustments.size())
-                    throw resolvable_error("Power evaluations can not be performed. No adjustments found in power evaluation file.", "ExecutePowerEvaluations()");
+                    throw resolvable_error("Power evaluations can not be performed. No adjustments found in the hypothesis alternative file.", "ExecutePowerEvaluations()");
                 number_randomizations = riskAdjustments.size();
             } break;
             case FILESOURCE : {
@@ -284,8 +296,9 @@ void AnalysisRunner::ExecutePowerEvaluations() {
         if (number_randomizations == 0) {
             fprintf(fp,"\nNo alternative hypothesis sets found in source files.\n");
         } else {
-            fprintf(fp,"\nEstimated Power\n---------------\n");
+            fprintf(fp,"\nEstimated Power\n---------------");
         }
+        SimulationVariables simVarsCopy(gSimVars);
         for (size_t t=0; t < number_randomizations; ++t) {
             ++giAnalysisCount;
             // create adjusted randomizers
@@ -312,9 +325,9 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             double power05, power01, power001;
             switch (gParameters.getPowerEstimationType()) {
                 case PE_MONTECARLO:
-                    power05 = static_cast<double>(gSimVars.get_llr_counters().at(0).second)/static_cast<double>(numReplicaStep1);
-                    power01 = static_cast<double>(gSimVars.get_llr_counters().at(1).second)/static_cast<double>(numReplicaStep1);
-                    power001 = static_cast<double>(gSimVars.get_llr_counters().at(2).second)/static_cast<double>(numReplicaStep1);
+                    power05 = static_cast<double>(gSimVars.get_llr_counters().at(0).second)/static_cast<double>(gParameters.getNumPowerEvalReplicaPowerStep());
+                    power01 = static_cast<double>(gSimVars.get_llr_counters().at(1).second)/static_cast<double>(gParameters.getNumPowerEvalReplicaPowerStep());
+                    power001 = static_cast<double>(gSimVars.get_llr_counters().at(2).second)/static_cast<double>(gParameters.getNumPowerEvalReplicaPowerStep());
                     break;
                 case PE_GUMBEL:
                     power05 = calculateGumbelPValue(gSimVars, critical05).first;
@@ -323,8 +336,15 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                     break;
                 default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEstimationType());
             }
-            fprintf(fp,"Alternative #%d\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", t+1, power05, power01, power001);
+            AsciiPrintFormat::printPadRight(fp, printString(buffer, "\nAlternative #%d", t+1).c_str(), 25);
+            AsciiPrintFormat::printPadRight(fp, getValueAsString(power05,buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fp, getValueAsString(power01,buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fp, getValueAsString(power001,buffer, 3).c_str(), 20);
+
+            // reset simualtion variables for next power estimation interation
+            gSimVars = simVarsCopy;
         }
+        fprintf(fp,"\n");
         fclose(fp); fp=0;
     } catch (prg_exception& x) {
         x.addTrace("ExecutePowerEvaluations()","AnalysisRunner");

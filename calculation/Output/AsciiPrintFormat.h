@@ -23,8 +23,6 @@ class AsciiPrintFormat {
      static const unsigned int  giRightMargin;
      static const unsigned int  giVersionHeaderWidth;
 
-     static void                putChar(char c, FILE* fp);
-
    public:
      AsciiPrintFormat(bool bOneDataSet=true);
      virtual ~AsciiPrintFormat();
@@ -35,6 +33,8 @@ class AsciiPrintFormat {
      void                       PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines=1) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
      static void                PrintVersionHeader(FILE* fp);
+     static void                printPadRight(FILE* fp, const char * s, unsigned int width, char pad=' ');
+     static void                putChar(char c, FILE* fp, unsigned int num=1);
      void                       SetMarginsAsClusterSection(unsigned int iNumber);
      void                       SetMarginsAsOverviewSection();
      void                       SetMarginsAsRunTimeReportSection();

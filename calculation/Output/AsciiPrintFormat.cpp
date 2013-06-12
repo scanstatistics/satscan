@@ -33,13 +33,25 @@ AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet)
 /** destructor */
 AsciiPrintFormat::~AsciiPrintFormat() {}
 
+/* prints string to file then pads right with character */
+void AsciiPrintFormat::printPadRight(FILE* fp, const char * s, unsigned int width, char pad) {
+    std::string text(s);
+    if (text.size() > width)
+        throw prg_error("String %s is longer than specified width (%u).","printPadRight()", s, width);
+    fprintf(fp,"%s", s);
+    putChar(pad, fp, width - text.size());
+}
+
 /** Calls std::putc(char,FILE*) and checks for error. */
-void AsciiPrintFormat::putChar(char c, FILE* fp) {
-  putc(c, fp);
-  if (ferror(fp)) {
-    perror("Write to file stream failed!");
-    throw prg_error("Write to file stream failed: %s!","putChar()", strerror(errno));
-  }
+void AsciiPrintFormat::putChar(char c, FILE* fp, unsigned int num) {
+    while (num > 0) {
+        putc(c, fp);
+        if (ferror(fp)) {
+            perror("Write to file stream failed!");
+            throw prg_error("Write to file stream failed: %s!","putChar()", strerror(errno));
+        }
+        --num;
+    }
 }
 
 /** Prints data supplied by sDataString parameter to file in a manner

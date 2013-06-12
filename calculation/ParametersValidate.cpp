@@ -810,10 +810,6 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe power evaluation is only available for the standard and Gumbel p-value reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
-        if (gParameters.GetNumReplicationsRequested() < 999) {
-            PrintDirection.Printf("%s:\nThe minimum number of standard replications for the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
-            bValid = false;
-        }
         if (gParameters.getNumPowerEvalReplicaPowerStep() < 100) {
             PrintDirection.Printf("%s:\nThe minimum number of power replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 100);
             bValid = false;
@@ -822,9 +818,9 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe number of power replications in the power evaluation must be a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
-        if (gParameters.GetNumReplicationsRequested() > gParameters.getNumPowerEvalReplicaPowerStep()) {
-            PrintDirection.Printf("%s:\nThe number of power replications (%u) must be greater than or equal to standard replications (%u).\n", 
-                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getNumPowerEvalReplicaPowerStep(), gParameters.GetNumReplicationsRequested());
+        if (!(gParameters.GetNumReplicationsRequested() <= gParameters.getNumPowerEvalReplicaPowerStep() - 1)) {
+            PrintDirection.Printf("%s:\nThe number of standard replications must be at most one less than the number of power replications (%u).\n", 
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getNumPowerEvalReplicaPowerStep());
             bValid = false;
         }
         if (gParameters.GetIsIterativeScanning()) {

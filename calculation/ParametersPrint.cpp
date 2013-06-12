@@ -840,12 +840,11 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                 buffer = "Power Step Randomization Method";
                 switch (gParameters.GetPowerEvaluationSimulationType()) {
                     case STANDARD         : 
-                        settings.push_back(std::make_pair(buffer,"Null Randomization")); break;
-                        settings.push_back(std::make_pair("Alternative Hypothesis File",gParameters.getPowerEvaluationAltHypothesisFilename()));
+                        settings.push_back(std::make_pair(buffer,"Null Randomization"));
+                        settings.push_back(std::make_pair("Hypothesis Alternative File",gParameters.getPowerEvaluationAltHypothesisFilename())); break;
                     case FILESOURCE       :
-                        settings.push_back(std::make_pair(buffer,"File Source")); break;
+                        settings.push_back(std::make_pair(buffer,"File Source"));
                         settings.push_back(std::make_pair("Randomization Source File",gParameters.getPowerEvaluationSimulationDataSourceFilename())); break;
-                        break;
                     case HA_RANDOMIZATION :
                     default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.GetPowerEvaluationSimulationType());
                 };
