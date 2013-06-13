@@ -676,7 +676,7 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
   }
 }
 
-/** starts analysis execution - development */
+/** starts analysis execution */
 void AnalysisRunner::ExecuteCentricEvaluation() {
   unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(gpDataHub->m_nGridTracts));
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
@@ -994,8 +994,7 @@ void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
   for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end() && !anyClusters; ++itrMLC)
       anyClusters = itrMLC->GetNumClustersRetained() > 0; 
   if (anyClusters && gSimVars.get_sim_count() < gParameters.GetNumReplicationsRequested()) {
-    fprintf(fp, "\nNOTE: The sequential Monte Carlo procedure was used to terminate\n");
-    fprintf(fp, "      the calculations after %u replications.\n", gSimVars.get_sim_count());
+    fprintf(fp, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.\n", gSimVars.get_sim_count());
   }
 }
 

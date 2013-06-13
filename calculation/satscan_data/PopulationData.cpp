@@ -962,19 +962,16 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
             if (!bZeroFound) {
               bZeroFound = true;
               AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 0, 2);
-              fprintf(pDisplay,"Warning: According to the input data, the following locations have a\n");
-              fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
-              PrintDirection.Printf("Warning: According to the input data, the following locations have a\n"
-                                    "         population totaling zero for the specified date(s).\n\n",
-                                    BasePrint::P_WARNING);
+              fprintf(pDisplay,"Warning: The following locations have a population totaling zero for the specified date(s).\n");
+              PrintDirection.Printf("Warning: The following locations have a population totaling zero for the specified date(s).\n", BasePrint::P_WARNING);
             }
             //Suppress printing the same population date for a location; this can happen when original population date from
             //input file was precise to the day.
             if (lastReported != gvPopulationDates[j]) {
               JulianToChar(sDateBuffer, gvPopulationDates[j]);
               if (pDisplay)
-                fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
-              PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+                fprintf(pDisplay,"Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+              PrintDirection.Printf("Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
               lastReported = gvPopulationDates[j];
             }
           }
