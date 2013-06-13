@@ -706,7 +706,7 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
          //PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
          std::pair<double,double> p = GetGumbelPValue(simVars);
          if (p.first == 0.0) {
-           getValueAsString(p.second, buffer).insert(0, "< ");
+           getValueAsString(p.second, buffer, 1).insert(0, "< ");
          } else {
            getValueAsString(p.first, buffer);
          }
