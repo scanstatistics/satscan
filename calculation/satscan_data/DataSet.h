@@ -17,6 +17,9 @@ typedef TwoDimensionArrayHandler<measure_t>    TwoDimMeasureArray_t;
 typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
 typedef ptr_vector<TwoDimCountArray_t>         CasesByCategory_t;
 
+void printCountArray(const TwoDimCountArray_t& arrayClass, FILE * stream=stdout);
+void printMeasureArray(const TwoDimMeasureArray_t& arrayClass, FILE * stream=stdout);
+
 class CSaTScanData; /** forward class declaration */
 class DataSetHandler; /** forward class declaration */
 class MetaManagerProxy;

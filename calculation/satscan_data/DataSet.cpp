@@ -5,7 +5,26 @@
 #include "DataSet.h"
 #include "SaTScanData.h"
 #include "SSException.h"
-#include "MetaTractManager.h" 
+#include "MetaTractManager.h"
+
+
+void printCountArray(const TwoDimCountArray_t& arrayClass, FILE * stream) {
+    count_t ** pp = arrayClass.GetArray();
+    for (unsigned int i=0; i < arrayClass.Get1stDimension(); ++i)
+        for (unsigned int t=0; t < arrayClass.Get2ndDimension(); ++t)
+            fprintf(stream, "Count [%i][%i] = %i\n", i, t, pp[i][t]);
+    fprintf(stream, "\n");
+    fflush(stream);
+}
+
+void printMeasureArray(const TwoDimMeasureArray_t& arrayClass, FILE * stream) {
+    measure_t ** pp = arrayClass.GetArray();
+    for (unsigned int i=0; i < arrayClass.Get1stDimension(); ++i)
+        for (unsigned int t=0; t < arrayClass.Get2ndDimension(); ++t)
+            fprintf(stream, "Measure [%i][%i] = %lf\n", i, t, pp[i][t]);
+    fprintf(stream, "\n");
+    fflush(stream);
+}
 
 /** constructor */
 DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)

@@ -1509,8 +1509,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("A power evaluation cannot be performed with the isotonic scan.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
             }
             Parameters.PValueReportingType pvalues = getPValueReportingControlType();
-            if (!(pvalues == Parameters.PValueReportingType.STANDARD_PVALUE || pvalues == Parameters.PValueReportingType.GUMBEL_PVALUE)) {
-                throw new AdvFeaturesExpection("The power evaluation is only available for the Standard Monte Carlo and Gumbel p-value reporting.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
+            if (pvalues == Parameters.PValueReportingType.TERMINATION_PVALUE) {
+                throw new AdvFeaturesExpection("The power evaluation is not available for the Sequential Standard Monte Carlo p-value reporting.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
             }
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
                 if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
@@ -1531,13 +1531,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
             int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
+            if (replica < 999) {
+                throw new AdvFeaturesExpection("The minimum number of standard replications in the power evaluation is 999.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
+            }
             if (replicaPE < 100) {
                 throw new AdvFeaturesExpection("The minimum number of power replications in the power evaluation is 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
             }
             if (replicaPE % 100 != 0) {
                 throw new AdvFeaturesExpection("The number of power replications in the power evaluation must be a multiple of 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
             }
-            if (!(replica <= replicaPE - 1)) {
+            if (replicaPE > replica + 1) {
                 throw new AdvFeaturesExpection("The number of standard replications must be at most one less than the number of power replications.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
             }
             if (_alternativeHypothesisFilename.getText().length() == 0) {

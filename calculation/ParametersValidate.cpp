@@ -784,6 +784,10 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe power evaluation is not available for the isotonic scan statistic.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
+        if(gParameters.GetPValueReportingType() == TERMINATION_PVALUE) {
+            PrintDirection.Printf("%s:\nThe power evaluation is not available for the Sequential Standard Monte Carlo p-value reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            bValid = false;
+        }
         // if the user is specifying the total # of cases, then certain features are not valid
         if (gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES) {
             // temporal adjustments are not available without case data
@@ -810,6 +814,10 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe power evaluation is only available for the standard and Gumbel p-value reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
+        if (gParameters.GetNumReplicationsRequested() < 999) {
+            PrintDirection.Printf("%s:\nThe minimum number of standard replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
+            bValid = false;
+        }
         if (gParameters.getNumPowerEvalReplicaPowerStep() < 100) {
             PrintDirection.Printf("%s:\nThe minimum number of power replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 100);
             bValid = false;
@@ -818,7 +826,7 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             PrintDirection.Printf("%s:\nThe number of power replications in the power evaluation must be a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             bValid = false;
         }
-        if (!(gParameters.GetNumReplicationsRequested() <= gParameters.getNumPowerEvalReplicaPowerStep() - 1)) {
+        if (gParameters.getNumPowerEvalReplicaPowerStep() > gParameters.GetNumReplicationsRequested() + 1) {
             PrintDirection.Printf("%s:\nThe number of standard replications must be at most one less than the number of power replications (%u).\n", 
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getNumPowerEvalReplicaPowerStep());
             bValid = false;

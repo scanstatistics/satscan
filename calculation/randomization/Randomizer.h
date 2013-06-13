@@ -11,7 +11,6 @@
 class AbstractRandomizer {
     protected:
         RandomNumberGenerator gRandomNumberGenerator;  /** generates random numbers */
-        void SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex);
 
     public:
         AbstractRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
@@ -20,6 +19,8 @@ class AbstractRandomizer {
         static const long glDataSetSeedOffSet;
         virtual AbstractRandomizer * Clone() const = 0;
         virtual void RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation) = 0;
+        const RandomNumberGenerator getRandomNumberGenerator() const {return gRandomNumberGenerator;}
+        void SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex);
 };
 
 typedef ptr_vector<AbstractRandomizer> RandomizerContainer_t;

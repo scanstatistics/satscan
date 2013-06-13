@@ -857,6 +857,8 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                 }
             }
         }
+        printString(buffer, "%u", gParameters.getNumPowerEvalReplicaPowerStep());
+        settings.push_back(std::make_pair("Number of Replications",buffer));
         WriteSettingsContainer(settings, "Power Evaluations", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintPowerEvaluationsParameters()","ParametersPrint");

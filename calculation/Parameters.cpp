@@ -568,7 +568,9 @@ void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, dou
 
 /** Returns whether early termination option is set. */
 bool CParameters::GetTerminateSimulationsEarly() const {
-   return (GetPValueReportingType() == DEFAULT_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE) && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
+   return (GetPValueReportingType() == DEFAULT_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE) && // these 2 p-value options early terminate
+          GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE && // number of replications is at least at threshold for reporting p-value
+          getPerformPowerEvaluation() == false; // we're not performing the power evaluation
 }
 
 bool CParameters::getIsReportingIndexBasedCoefficents() const {

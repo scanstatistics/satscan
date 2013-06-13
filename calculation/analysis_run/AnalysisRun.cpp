@@ -254,9 +254,9 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
         };
         AsciiPrintFormat::printPadRight(fp, "\nCritical Value", 25);
-        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical05,buffer, 3).c_str(), 20);
-        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical01,buffer, 3).c_str(), 20);
-        AsciiPrintFormat::printPadRight(fp, getValueAsString(critical001,buffer, 3).c_str(), 20);
+        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical05).c_str(), 20);
+        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical01).c_str(), 20);
+        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical001).c_str(), 20);
         fprintf(fp,"\n");
         // if power estimation is monte carlo, then set sim vars to track those LLRs
         if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
