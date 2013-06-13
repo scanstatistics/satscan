@@ -739,7 +739,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     if (canReportClusterFiles && gParameters.GetOutputClusterCaseDBase()) {
-      AdditionalOutputFile.setExtension(".cci.dbf");
+      AdditionalOutputFile.setExtension(".sci.dbf");
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     // area specific files
@@ -774,7 +774,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       settings.push_back(std::make_pair("Google Earth File",AdditionalOutputFile.getFullPath(buffer)));
     }
     if (gParameters.getOutputShapeFiles() && gParameters.GetCoordinatesType() == LATLON) {
-      AdditionalOutputFile.setExtension(".shp");
+      AdditionalOutputFile.setExtension(".col.shp");
       settings.push_back(std::make_pair("Shapefiles",AdditionalOutputFile.getFullPath(buffer)));
     }
     if (gParameters.getOutputTemporalGraphFile() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
