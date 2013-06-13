@@ -180,7 +180,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 setTitle("Advanced Output Features");
                 jTabbedPane1.addTab("Clusters Reported", null, _clustersReportedTab, null);
                 jTabbedPane1.addTab("Additional Output", null, _additionalOutputTab, null);
-                jTabbedPane1.addTab("Temporal Graphs", null, _temporalGraphTab, null);
+                // jTabbedPane1.addTab("Temporal Graphs", null, _temporalGraphTab, null); -- https://www.squishlist.com/ims/satscan/66330/
                 break;
             case INPUT:
             default:
