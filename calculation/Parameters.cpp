@@ -836,7 +836,7 @@ void CParameters::SetAsDefaulted() {
   _reportGiniOptimizedClusters = true;
   _giniIndexReportType = OPTIMAL_ONLY;
   _reportGiniIndexCoefficients = false;
-  _powerEvaluationTotalCases = 0;
+  _powerEvaluationTotalCases = 600;
   _critical_value_type = CV_MONTECARLO;
   _power_estimation_type = PE_MONTECARLO;
   _power_alt_hypothesis_filename = "";

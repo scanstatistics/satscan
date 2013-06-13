@@ -214,7 +214,7 @@ PerformPowerEvaluation=n
 ;power evaluation method (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)
 PowerEvaluationsMethod=0
 ;total cases in power evaluation
-PowerEvaluationTotalCases=0
+PowerEvaluationTotalCases=600
 ;critical value type (0=Monte Carlo, 1=Gumbel, 2=User Specified Values)
 CriticalValueType=0
 ;power estimation type (0=Monte Carlo, 1=Gumbel)
