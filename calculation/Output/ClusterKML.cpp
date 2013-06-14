@@ -213,6 +213,9 @@ std::string & ClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std
     templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
     for (; itr != itr_end; ++itr) {
+        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
+            // skip reporting P-Values for prospective analyses
+            continue;
         templateLines << printString(buffer, rowFormat, itr->first.c_str(), itr->first.c_str()).c_str();
     }
     templateLines << "</table>]]>";
@@ -234,10 +237,14 @@ std::string& ClusterKML::encode(const std::string& data, std::string& buffer) co
 
 /** Returns ExtendedData tags for this cluster. */
 std::string & ClusterKML::getClusterExtendedData(const CCluster& cluster, int iCluster, std::string& buffer) const {
+    const CParameters& parameters = _dataHub.GetParameters();
     std::stringstream lines;
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
     lines << "<ExtendedData>";
     for (; itr != itr_end; ++itr) {
+        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
+            // skip reporting P-Values for prospective analyses
+            continue;
         lines << "<Data name=\"" << itr->first.c_str() << "\"><value>" << encode(itr->second, buffer).c_str() << "</value></Data>";
     }
     lines << "</ExtendedData>";
@@ -247,11 +254,15 @@ std::string & ClusterKML::getClusterExtendedData(const CCluster& cluster, int iC
 
 /** Return legend of cluster information to be used as popup in html page. */
 std::string & ClusterKML::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
+    const CParameters& parameters = _dataHub.GetParameters();
     std::stringstream  lines;
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
 
     lines << "<![CDATA[" << std::endl << "<table style=\"font-size:12px;\">";
     for (; itr != itr_end; ++itr) {
+        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
+            // skip reporting P-Values for prospective analyses
+            continue;
         lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td style=\"white-space:nowrap;\">" << itr->second << "</td></tr>";
     }
     lines << "</table>" << std::endl << "]]>";
