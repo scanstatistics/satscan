@@ -188,8 +188,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
-      case COMPRESS_KML_OUTPUT          : return "compress the kml output into a kmz file (y/n)";
-      case LAUNCH_KML_VIEWER            : return "whether to launch kml/kmz viewer - gui only (y/n)";
+      case COMPRESS_KML_OUTPUT          : return "create compressed KMZ file instead of KML file (y/n)";
+      case LAUNCH_KML_VIEWER            : return "automatically launch Google Earth - gui only (y/n)";
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };

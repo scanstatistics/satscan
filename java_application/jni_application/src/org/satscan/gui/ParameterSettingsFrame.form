@@ -108,7 +108,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="102" max="32767" attributes="0"/>
+                      <EmptySpace pref="106" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1045,7 +1045,7 @@
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="218" max="32767" attributes="0"/>
+                      <EmptySpace pref="222" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1751,10 +1751,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_textOutputFormatGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="160" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="164" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2159,7 +2159,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_reportGoogleEarthKML">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Google Earth KML File"/>
+                    <Property name="text" type="java.lang.String" value="KML file for Google Earth"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableGoogleEarthGroup();&#xa;    }&#xa;});"/>
@@ -2167,7 +2167,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportShapefile">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Shapefile"/>
+                    <Property name="text" type="java.lang.String" value="Shapefile for GIS software"/>
                   </Properties>
                 </Component>
               </SubComponents>

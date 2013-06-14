@@ -3,6 +3,12 @@
 CaseFile=MarylandEducation.cas
 ;control data filename
 ControlFile=
+;time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
+PrecisionCaseTimes=0
+;study period start date (YYYY/MM/DD)
+StartDate=2000/1/1
+;study period end date (YYYY/MM/DD)
+EndDate=2000/12/31
 ;population data filename
 PopulationFile=
 ;coordinate data filename
@@ -11,14 +17,8 @@ CoordinatesFile=MarylandEducation.geo
 UseGridFile=n
 ;grid data filename
 GridFile=
-;time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
-PrecisionCaseTimes=0
 ;coordinate type (0=Cartesian, 1=latitude/longitude)
 CoordinatesType=1
-;study period start date (YYYY/MM/DD)
-StartDate=2000/1/1
-;study period end date (YYYY/MM/DD)
-EndDate=2000/12/31
 
 [Analysis]
 ;analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal)
@@ -35,18 +35,10 @@ TimeAggregationLength=1
 [Output]
 ;analysis results output filename
 ResultsFile=MarylandEducation.txt
-;output simulated log likelihoods ratios in ASCII format? (y/n)
-SaveSimLLRsASCII=n
-;output simulated log likelihoods ratios in dBase format? (y/n)
-SaveSimLLRsDBase=n
-;output relative risks in ASCII format? (y/n)
-IncludeRelativeRisksCensusAreasASCII=n
-;output relative risks in dBase format? (y/n)
-IncludeRelativeRisksCensusAreasDBase=n
-;output location information in ASCII format? (y/n)
-CensusAreasReportedClustersASCII=n
-;output location information in dBase format? (y/n)
-CensusAreasReportedClustersDBase=n
+;output Google Earth KML file (y/n)
+OutputGoogleEarthKML=n
+;output shapefiles (y/n)
+OutputShapefiles=n
 ;output cluster information in ASCII format? (y/n)
 MostLikelyClusterEachCentroidASCII=n
 ;output cluster information in dBase format? (y/n)
@@ -55,10 +47,18 @@ MostLikelyClusterEachCentroidDBase=n
 MostLikelyClusterCaseInfoEachCentroidASCII=n
 ;output cluster case information in dBase format? (y/n)
 MostLikelyClusterCaseInfoEachCentroidDBase=n
-;output Google Earth KML file (y/n)
-OutputGoogleEarthKML=n
-;output shapefiles (y/n)
-OutputShapefiles=n
+;output location information in ASCII format? (y/n)
+CensusAreasReportedClustersASCII=n
+;output location information in dBase format? (y/n)
+CensusAreasReportedClustersDBase=n
+;output relative risks in ASCII format? (y/n)
+IncludeRelativeRisksCensusAreasASCII=n
+;output relative risks in dBase format? (y/n)
+IncludeRelativeRisksCensusAreasDBase=n
+;output simulated log likelihoods ratios in ASCII format? (y/n)
+SaveSimLLRsASCII=n
+;output simulated log likelihoods ratios in dBase format? (y/n)
+SaveSimLLRsDBase=n
 
 [Multiple Data Sets]
 ; multiple data sets purpose type (0=Multivariate, 1=Adjustment)
@@ -71,32 +71,32 @@ StudyPeriodCheckType=0
 GeographicalCoordinatesCheckType=0
 
 [Spatial Neighbors]
-;neighbors file
-NeighborsFilename=
 ;use neighbors file (y/n)
 UseNeighborsFile=n
-;meta locations file
-MetaLocationsFilename=
+;neighbors file
+NeighborsFilename=
 ;use meta locations file (y/n)
 UseMetaLocationsFile=n
+;meta locations file
+MetaLocationsFilename=
 ;multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)
 MultipleCoordinatesType=0
 
 [Spatial Window]
 ;maximum spatial size in population at risk (<=50%)
 MaxSpatialSizeInPopulationAtRisk=50
-;maximum spatial size in max circle population file (<=50%)
-MaxSpatialSizeInMaxCirclePopulationFile=50
-;maximum spatial size in distance from center (positive integer)
-MaxSpatialSizeInDistanceFromCenter=1
 ;restrict maximum spatial size - max circle file? (y/n)
 UseMaxCirclePopulationFileOption=n
-;restrict maximum spatial size - distance? (y/n)
-UseDistanceFromCenterOption=n
-;include purely temporal clusters? (y/n)
-IncludePurelyTemporal=n
+;maximum spatial size in max circle population file (<=50%)
+MaxSpatialSizeInMaxCirclePopulationFile=50
 ;maximum circle size filename
 MaxCirclePopulationFile=
+;restrict maximum spatial size - distance? (y/n)
+UseDistanceFromCenterOption=n
+;maximum spatial size in distance from center (positive integer)
+MaxSpatialSizeInDistanceFromCenter=1
+;include purely temporal clusters? (y/n)
+IncludePurelyTemporal=n
 ;window shape (0=Circular, 1=Elliptic)
 SpatialWindowShapeType=0
 ;elliptic non-compactness penalty (0=NoPenalty, 1=MediumPenalty, 2=StrongPenalty)
@@ -105,12 +105,12 @@ NonCompactnessPenalty=0
 IsotonicScan=0
 
 [Temporal Window]
+;how max temporal size should be interpretted (0=Percentage, 1=Time)
+MaxTemporalSizeInterpretation=0
 ;maximum temporal cluster size (<=90%)
 MaxTemporalSize=50
 ;include purely spatial clusters? (y/n)
 IncludePurelySpatial=n
-;how max temporal size should be interpretted (0=Percentage, 1=Time)
-MaxTemporalSizeInterpretation=0
 ;temporal clusters evaluated (0=All, 1=Alive, 2=Flexible Window)
 IncludeClusters=0
 ;flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)
@@ -123,90 +123,36 @@ IntervalEndRange=2000/1/1,2000/12/31
 TimeTrendAdjustmentType=0
 ;time trend adjustment percentage (>-100)
 TimeTrendPercentage=0
-;adjust for weekly trends, nonparametric
-AdjustForWeeklyTrends=n
-;adjustments by known relative risks file name (with HA Randomization=1)
-AdjustmentsByKnownRelativeRisksFilename=
-;use adjustments by known relative risks file? (y/n)
-UseAdjustmentsByRRFile=n
-;spatial adjustments type (0=No Spatial Adjustment, 1=Spatially Stratified Randomization)
-SpatialAdjustmentType=0
 ;time trend type - SVTT only (Linear=0, Quadratic=1)
 TimeTrendType=0
+;adjust for weekly trends, nonparametric
+AdjustForWeeklyTrends=n
+;spatial adjustments type (0=No Spatial Adjustment, 1=Spatially Stratified Randomization)
+SpatialAdjustmentType=0
+;use adjustments by known relative risks file? (y/n)
+UseAdjustmentsByRRFile=n
+;adjustments by known relative risks file name (with HA Randomization=1)
+AdjustmentsByKnownRelativeRisksFilename=
 
 [Inference]
-;prospective surveillance start date (YYYY/MM/DD)
-ProspectiveStartDate=2000/12/31
 ;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) 
 PValueReportType=0
-;report Gumbel p-values (y/n)
-ReportGumbel=n
 ;early termination threshold
 EarlyTerminationThreshold=50
+;report Gumbel p-values (y/n)
+ReportGumbel=n
+;Monte Carlo replications (0, 9, 999, n999)
+MonteCarloReps=999
 ;adjust for earlier analyses(prospective analyses only)? (y/n)
 AdjustForEarlierAnalyses=n
+;prospective surveillance start date (YYYY/MM/DD)
+ProspectiveStartDate=2000/12/31
 ;perform iterative scans? (y/n)
 IterativeScan=n
 ;maximum iterations for iterative scan (0-32000)
 IterativeScanMaxIterations=10
 ;max p-value for iterative scan before cutoff (0.000-1.000)
 IterativeScanMaxPValue=0.05
-;Monte Carlo replications (0, 9, 999, n999)
-MonteCarloReps=999
-
-[Clusters Reported]
-;report hierarchical clusters (y/n)
-ReportHierarchicalClusters=y
-;report gini clusters (y/n)
-ReportGiniClusters=n
-;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
-CriteriaForReportingSecondaryClusters=0
-;spatial window maxima stops (comma separated decimal values[<=50%] )
-SpatialMaxima=1,2,3,4,5,6,8,10,12,15,20,25,30,40,50
-;gini index cluster reporting type (0=optimal index only, 1=all values)
-GiniIndexClusterReportingType=0
-;max p-value for clusters used in calculation of index based coefficients (0.000-1.000)
-GiniIndexClustersPValueCutOff=0.05
-;report gini index coefficents to results file (y/n)
-ReportGiniIndexCoefficents=n
-;restrict reported clusters to maximum geographical cluster size? (y/n)
-UseReportOnlySmallerClusters=n
-;maximum reported spatial size in population at risk (<=50%)
-MaxSpatialSizeInPopulationAtRisk_Reported=50
-;maximum reported spatial size in max circle population file (<=50%)
-MaxSizeInMaxCirclePopulationFile_Reported=50
-;maximum reported spatial size in distance from center (positive integer)
-MaxSpatialSizeInDistanceFromCenter_Reported=1
-;restrict maximum reported spatial size - max circle file? (y/n)
-UseMaxCirclePopulationFileOption_Reported=n
-;restrict maximum reported spatial size - distance? (y/n)
-UseDistanceFromCenterOption_Reported=n
-
-[Additional Output]
-;report critical values for .01 and .05? (y/n)
-CriticalValue=n
-;report cluster rank (y/n)
-ReportClusterRank=n
-;print ascii headers in output files (y/n)
-PrintAsciiColumnHeaders=n
-;whether to include cluster locations kml output (y/n)
-IncludeClusterLocationsKML=n
-;threshold for generating separate kml files for cluster locations (positive integer)
-ThresholdLocationsSeparateKML=1000
-;compress the kml output into a kmz file (y/n)
-CompressKMLtoKMZ=y
-;whether to launch kml/kmz viewer - gui only (y/n)
-LaunchKMLViewer=y
-
-[Temporal Graph]
-;output temporal graph HTML file (y/n)
-OutputTemporalGraphHTML=n
-
-[Elliptic Scan]
-;elliptic shapes - one value for each ellipse (comma separated decimal values)
-EllipseShapes=1.5,2,3,4,5
-;elliptic angles - one value for each ellipse (comma separated integer values)
-EllipseAngles=4,6,9,12,15
 
 [Power Evaluations]
 ;perform power evaluation - Poisson only (y/n)
@@ -217,18 +163,18 @@ PowerEvaluationsMethod=0
 PowerEvaluationTotalCases=600
 ;critical value type (0=Monte Carlo, 1=Gumbel, 2=User Specified Values)
 CriticalValueType=0
-;power estimation type (0=Monte Carlo, 1=Gumbel)
-PowerEstimationType=0
-;power evaluation alternative hypothesis filename
-AlternativeHypothesisFilename=
-;number of replications in power step
-NumberPowerReplications=1000
 ;power evaluation critical value .05 (> 0)
 CriticalValue05=0
 ;power evaluation critical value .001 (> 0)
 CriticalValue01=0
 ;power evaluation critical value .001 (> 0)
 CriticalValue001=0
+;power estimation type (0=Monte Carlo, 1=Gumbel)
+PowerEstimationType=0
+;number of replications in power step
+NumberPowerReplications=1000
+;power evaluation alternative hypothesis filename
+AlternativeHypothesisFilename=
 ;power evaluation simulation method for power step (0=Null Randomization, 1=N/A, 2=File Import)
 PowerEvaluationsSimulationMethod=0
 ;power evaluation simulation data source filename
@@ -237,6 +183,62 @@ PowerEvaluationsSimulationSourceFilename=
 ReportPowerEvaluationSimulationData=n
 ;power evaluation simulation data output filename
 PowerEvaluationsSimulationOutputFilename=
+
+[Clusters Reported]
+;report hierarchical clusters (y/n)
+ReportHierarchicalClusters=y
+;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
+CriteriaForReportingSecondaryClusters=0
+;report gini clusters (y/n)
+ReportGiniClusters=n
+;gini index cluster reporting type (0=optimal index only, 1=all values)
+GiniIndexClusterReportingType=0
+;spatial window maxima stops (comma separated decimal values[<=50%] )
+SpatialMaxima=1,2,3,4,5,6,8,10,12,15,20,25,30,40,50
+;max p-value for clusters used in calculation of index based coefficients (0.000-1.000)
+GiniIndexClustersPValueCutOff=0.05
+;report gini index coefficents to results file (y/n)
+ReportGiniIndexCoefficents=n
+;restrict reported clusters to maximum geographical cluster size? (y/n)
+UseReportOnlySmallerClusters=n
+;maximum reported spatial size in population at risk (<=50%)
+MaxSpatialSizeInPopulationAtRisk_Reported=50
+;restrict maximum reported spatial size - max circle file? (y/n)
+UseMaxCirclePopulationFileOption_Reported=n
+;maximum reported spatial size in max circle population file (<=50%)
+MaxSizeInMaxCirclePopulationFile_Reported=50
+;restrict maximum reported spatial size - distance? (y/n)
+UseDistanceFromCenterOption_Reported=n
+;maximum reported spatial size in distance from center (positive integer)
+MaxSpatialSizeInDistanceFromCenter_Reported=1
+
+[Geographical Output]
+;automatically launch Google Earth - gui only (y/n)
+LaunchKMLViewer=y
+;create compressed KMZ file instead of KML file (y/n)
+CompressKMLtoKMZ=n
+;whether to include cluster locations kml output (y/n)
+IncludeClusterLocationsKML=y
+;threshold for generating separate kml files for cluster locations (positive integer)
+ThresholdLocationsSeparateKML=1000
+
+[Temporal Graph]
+;output temporal graph HTML file (y/n)
+OutputTemporalGraphHTML=n
+
+[Additional Output]
+;report critical values for .01 and .05? (y/n)
+CriticalValue=n
+;report cluster rank (y/n)
+ReportClusterRank=n
+;print ascii headers in output files (y/n)
+PrintAsciiColumnHeaders=n
+
+[Elliptic Scan]
+;elliptic shapes - one value for each ellipse (comma separated decimal values)
+EllipseShapes=1.5,2,3,4,5
+;elliptic angles - one value for each ellipse (comma separated integer values)
+EllipseAngles=4,6,9,12,15
 
 [Power Simulations]
 ;simulation methods (0=Null Randomization, 1=N/A, 2=File Import)
@@ -249,14 +251,14 @@ PrintSimulatedDataToFile=n
 SimulatedDataOutputFilename=
 
 [Run Options]
-;analysis execution method  (0=Automatic, 1=Successively, 2=Centrically)
-ExecutionType=0
 ;number of parallel processes to execute (0=All Processors, x=At Most X Processors)
 NumberParallelProcesses=0
-;log analysis run to history file? (y/n)
-LogRunToHistoryFile=n
 ;suppressing warnings? (y/n)
 SuppressWarnings=n
+;log analysis run to history file? (y/n)
+LogRunToHistoryFile=n
+;analysis execution method  (0=Automatic, 1=Successively, 2=Centrically)
+ExecutionType=0
 
 [System]
 ;system setting - do not modify

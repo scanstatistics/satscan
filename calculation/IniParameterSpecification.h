@@ -28,6 +28,7 @@ class IniParameterSpecification {
     static const char         * ClustersReported;
     static const char         * AdditionalOutput;
     static const char         * TemporalGraphOutput;
+    static const char         * GeographicalOutput;
 
     static const char         * EllipticScan;
     static const char         * SequentialScan;

@@ -19,6 +19,7 @@ class ParametersPrint {
     void                PrintClustersReportedParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
     void                PrintEllipticScanParameters(FILE* fp) const;
+    void                PrintGeographicalOutputParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
     void                PrintIsotonicScanParameters(FILE* fp) const;
@@ -38,8 +39,8 @@ class ParametersPrint {
     void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp) const;
 
   public:
-    ParametersPrint(const CParameters& Parameters);
-    ~ParametersPrint();
+    ParametersPrint(const CParameters& Parameters) : gParameters(Parameters) {}
+    ~ParametersPrint() {}
 
     const char        * GetAnalysisTypeAsString() const;
     const char        * GetAreaScanRateTypeAsString() const;
