@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
   Left = 384
   Top = 170
-  Width = 743
+  Width = 863
   Height = 600
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,14 +16,14 @@ object frmMain: TfrmMain
   object Bevel1: TBevel
     Left = 0
     Top = 29
-    Width = 727
+    Width = 847
     Height = 2
     Align = alTop
   end
   object Splitter1: TSplitter
     Left = 0
     Top = 254
-    Width = 727
+    Width = 847
     Height = 3
     Cursor = crVSplit
     Align = alTop
@@ -33,7 +33,7 @@ object frmMain: TfrmMain
   object pnlTop: TPanel
     Left = 0
     Top = 31
-    Width = 727
+    Width = 847
     Height = 223
     Align = alTop
     BevelOuter = bvNone
@@ -43,7 +43,7 @@ object frmMain: TfrmMain
     object pnlTopTop: TPanel
       Left = 0
       Top = 0
-      Width = 727
+      Width = 847
       Height = 89
       Align = alTop
       BevelOuter = bvNone
@@ -63,7 +63,7 @@ object frmMain: TfrmMain
         Caption = 'SaTScan Batch Application (scrutinized executable)'
       end
       object Label1: TLabel
-        Left = 442
+        Left = 562
         Top = 7
         Width = 92
         Height = 13
@@ -73,7 +73,7 @@ object frmMain: TfrmMain
       object edtYardstickExecutable: TEdit
         Left = 12
         Top = 22
-        Width = 388
+        Width = 508
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 0
@@ -82,14 +82,14 @@ object frmMain: TfrmMain
       object edtScutinizedExecutable: TEdit
         Left = 12
         Top = 61
-        Width = 388
+        Width = 508
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 1
         OnChange = edtChangeInput
       end
       object btnBrowseBatchExecutable: TButton
-        Left = 405
+        Left = 525
         Top = 60
         Width = 31
         Height = 21
@@ -108,7 +108,7 @@ object frmMain: TfrmMain
         OnClick = btnBrowseBatchExecutableClick
       end
       object btnBrowseBatchComparatorExecutable: TButton
-        Left = 405
+        Left = 525
         Top = 21
         Width = 31
         Height = 21
@@ -127,7 +127,7 @@ object frmMain: TfrmMain
         OnClick = btnBrowseBatchExecutableComparatorClick
       end
       object edtYardstickOptions: TEdit
-        Left = 440
+        Left = 560
         Top = 22
         Width = 169
         Height = 21
@@ -135,7 +135,7 @@ object frmMain: TfrmMain
         TabOrder = 4
       end
       object edtScrutinizedOptions: TEdit
-        Left = 440
+        Left = 560
         Top = 61
         Width = 169
         Height = 21
@@ -143,18 +143,20 @@ object frmMain: TfrmMain
         TabOrder = 5
       end
       object chkScrutNewParams: TCheckBox
-        Left = 616
+        Left = 736
         Top = 64
         Width = 105
         Height = 17
+        Anchors = [akTop, akRight]
         Caption = '9.2 Type Options'
         TabOrder = 6
       end
       object chkYardNewParams: TCheckBox
-        Left = 616
+        Left = 736
         Top = 24
         Width = 105
         Height = 17
+        Anchors = [akTop, akRight]
         Caption = '9.2 Type Options'
         TabOrder = 7
       end
@@ -162,7 +164,7 @@ object frmMain: TfrmMain
     object Panel1: TPanel
       Left = 0
       Top = 89
-      Width = 584
+      Width = 704
       Height = 134
       Align = alClient
       BevelOuter = bvNone
@@ -179,7 +181,7 @@ object frmMain: TfrmMain
       object ltvScheduledBatchs: TListView
         Left = 12
         Top = 8
-        Width = 580
+        Width = 700
         Height = 115
         Anchors = [akLeft, akTop, akRight, akBottom]
         Columns = <
@@ -198,7 +200,7 @@ object frmMain: TfrmMain
       end
     end
     object pnlTopButtons: TPanel
-      Left = 584
+      Left = 704
       Top = 89
       Width = 143
       Height = 134
@@ -272,7 +274,7 @@ object frmMain: TfrmMain
   object pnlClient: TPanel
     Left = 0
     Top = 257
-    Width = 727
+    Width = 847
     Height = 200
     Align = alClient
     BevelOuter = bvNone
@@ -282,7 +284,7 @@ object frmMain: TfrmMain
     object lstDisplay: TListView
       Left = 12
       Top = 11
-      Width = 592
+      Width = 712
       Height = 176
       Anchors = [akLeft, akTop, akRight, akBottom]
       Columns = <
@@ -329,7 +331,7 @@ object frmMain: TfrmMain
       OnSelectItem = lstDisplaySelectItem
     end
     object pnlClientRight: TPanel
-      Left = 575
+      Left = 695
       Top = 0
       Width = 152
       Height = 200
@@ -425,7 +427,7 @@ object frmMain: TfrmMain
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 727
+    Width = 847
     Height = 29
     ButtonHeight = 23
     ButtonWidth = 25
@@ -610,7 +612,7 @@ object frmMain: TfrmMain
   object pnlBottom: TPanel
     Left = 0
     Top = 457
-    Width = 727
+    Width = 847
     Height = 105
     Align = alBottom
     BevelOuter = bvNone
@@ -625,7 +627,7 @@ object frmMain: TfrmMain
     object memMessages: TMemo
       Left = 12
       Top = 14
-      Width = 710
+      Width = 830
       Height = 86
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
