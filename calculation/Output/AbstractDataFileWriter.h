@@ -61,6 +61,7 @@ class AbstractDataFileWriter {
     static const size_t         DEFAULT_LOC_FIELD_SIZE;
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * RECURRENCE_INTERVAL_FLD;
+    static const char         * PERCENTAGE_CASES_FIELD;
 
     size_t                      GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
 

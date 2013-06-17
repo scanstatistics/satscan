@@ -250,6 +250,11 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     //   //CreateField(vDataFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
     //   //CreateField(vDataFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
     //}
+
+    if (gParameters.GetProbabilityModelType() == BERNOULLI ||
+        gParameters.GetProbabilityModelType() == ORDINAL ||
+        gParameters.GetProbabilityModelType() == CATEGORICAL)
+      CreateField(vDataFieldDefinitions, PERCENTAGE_CASES_FIELD, FieldValue::NUMBER_FLD, 5, 1, uwOffset, 1);
   }
   catch (prg_exception& x) {
     x.addTrace("DefineClusterCaseInformationFields()","ClusterInformationWriter");
@@ -581,6 +586,12 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+
+      if (gParameters.GetProbabilityModelType() == BERNOULLI) {
+          double percentCases = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
+          Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = percentCases;
+      }
+
       //if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       //  const AbtractSVTTClusterData * pClusterData=0;
       //  if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
@@ -680,12 +691,15 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
        tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
        if (tRelativeRisk != -1 /*indicator of infinity*/)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
+       double dTotalCasesInClusterDataSet = gDataHub.GetProbabilityModel().GetPopulation(*itr_Index, theCluster, gDataHub);
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = itrCategory->GetCategoryIndex(m) + 1;
           //record observed cases - not combining categories
           Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           //record expected cases - not combining categories
           Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
+          //record percentage cases per category
+          Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / dTotalCasesInClusterDataSet;
           if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
           if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
        }

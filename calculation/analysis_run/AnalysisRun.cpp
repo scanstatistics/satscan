@@ -994,7 +994,10 @@ void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
   for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end() && !anyClusters; ++itrMLC)
       anyClusters = itrMLC->GetNumClustersRetained() > 0; 
   if (anyClusters && gSimVars.get_sim_count() < gParameters.GetNumReplicationsRequested()) {
-    fprintf(fp, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.\n", gSimVars.get_sim_count());
+      std::string buffer;
+      AsciiPrintFormat printFormat;
+      printString(buffer, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.\n", gSimVars.get_sim_count());
+      printFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 

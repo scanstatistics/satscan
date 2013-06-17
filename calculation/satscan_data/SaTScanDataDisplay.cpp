@@ -110,7 +110,7 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
 
 /** Prints summary of section to results file - detailing input data. */
 void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod) {
-  std::string           buffer, work, label;
+  std::string           buffer, work, work2, label;
   AsciiPrintFormat      PrintFormat(gDataSets->GetNumDataSets() == 1);
   unsigned int          i;
 
@@ -166,6 +166,16 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
                                 break;
     default                   : break;
   }
+  if (gParameters.GetProbabilityModelType() == BERNOULLI) {
+    PrintFormat.PrintSectionLabel(fp, "Percent cases in area", true, false);
+    getValueAsString(100.0 * gDataSets->GetDataSet(0).getTotalCases() / gDataSets->GetDataSet(0).getTotalPopulation(), buffer, 1);
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+        getValueAsString(100.0 * gDataSets->GetDataSet(i).getTotalCases() / gDataSets->GetDataSet(i).getTotalPopulation(), work2, 1);
+        printString(work, ", %s", work2.c_str());
+        buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
   //print total area per data set for Homogeneous Poisson model
   if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
       const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
@@ -194,6 +204,15 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
          buffer += work;
       }
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+      PrintFormat.PrintSectionLabel(fp, "Percent cases in area per category", false, false);
+      buffer="";
+      for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+         getValueAsString(100.0 * Population.GetNumOrdinalCategoryCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1);
+         printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
+         buffer += work;
+      }
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
     else {
       for (i=0, buffer=""; i < gDataSets->GetNumDataSets(); ++i, buffer="") {
@@ -205,6 +224,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
            buffer += work;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
         printString(label, "Total category cases, data set #%d ", i + 1);
         PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
         buffer="";
@@ -213,6 +233,17 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
            buffer += work;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+        printString(label, "Percent cases in area, data set #%d ", i + 1);
+        PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
+        buffer="";
+        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+           getValueAsString(100.0 * Population.GetNumOrdinalCategoryCases(j) / gDataSets->GetDataSet(i).getTotalCases(), work2, 1);
+           printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
+           buffer += work;
+        }
+        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
       }
     }
   }

@@ -493,6 +493,16 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        buffer += work;
      }
      printClusterData(fp, PrintFormat, "Relative risk", buffer, true);
+     //print percent cases in area per category
+     buffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       count_t tObserved=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
+       printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), getValueAsString(100.0 * tObserved / dTotalCasesInClusterDataSet, work2,1).c_str());
+       buffer += work;
+     }     
+     printClusterData(fp, PrintFormat, "Percent cases in area", buffer, true);
   }
 }
 
@@ -520,6 +530,11 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      DisplayObservedDivExpected(fp, *itr_Index ,DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
        DisplayRelativeRisk(fp, *itr_Index, DataHub, PrintFormat);
+     if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+        //percent cases in an area
+        double percentCases = 100.0 * GetObservedCount(*itr_Index) / DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub);
+        printClusterData(fp, PrintFormat, "Percent cases in area", getValueAsString(percentCases, buffer,1), true);
+     }
    }
 }
 
