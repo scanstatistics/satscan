@@ -97,7 +97,8 @@ const char * TfrmMain::INACTIVE_MINIMIZED_CONSOLE_DATA  = "InactiveMinimizedCons
 const char * TfrmMain::EXECUTE_METHOD_DATA              = "ExecuteMethod";
 const char * TfrmMain::EXECUTE_OPTIONS_YARDSTICK_DATA   = "YardstickExeOptions";
 const char * TfrmMain::EXECUTE_OPTIONS_SCRUTINIZED_DATA = "ScrutinizedExeOptions";
-
+const char * TfrmMain::OLD_OPTIONS_YARDSTICK_DATA       = "OldProgamOptions";
+const char * TfrmMain::NEW_OPTIONS_SCRUTINIZED_DATA     = "NewProgamOptions";
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
@@ -136,6 +137,10 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
       gpFrmOptions->rdgExecuteMethod->ItemIndex = pRegistry->ReadInteger(EXECUTE_METHOD_DATA);
     edtYardstickOptions->Text = pRegistry->ReadString(EXECUTE_OPTIONS_YARDSTICK_DATA);
     edtScrutinizedOptions->Text = pRegistry->ReadString(EXECUTE_OPTIONS_SCRUTINIZED_DATA);
+    if (pRegistry->GetDataSize(OLD_OPTIONS_YARDSTICK_DATA) != -1)
+      chkYardNewParams->Checked = pRegistry->ReadBool(OLD_OPTIONS_YARDSTICK_DATA);
+    if (pRegistry->GetDataSize(NEW_OPTIONS_SCRUTINIZED_DATA) != -1)
+      chkScrutNewParams->Checked = pRegistry->ReadBool(NEW_OPTIONS_SCRUTINIZED_DATA);
 
     pRegistry->CloseKey();
   }
@@ -180,6 +185,8 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteInteger(EXECUTE_METHOD_DATA, gpFrmOptions->rdgExecuteMethod->ItemIndex);
       pRegistry->WriteString(EXECUTE_OPTIONS_YARDSTICK_DATA, edtYardstickOptions->Text);
       pRegistry->WriteString(EXECUTE_OPTIONS_SCRUTINIZED_DATA, edtScrutinizedOptions->Text);
+      pRegistry->WriteBool(OLD_OPTIONS_YARDSTICK_DATA, chkYardNewParams->Checked);
+      pRegistry->WriteBool(NEW_OPTIONS_SCRUTINIZED_DATA, chkScrutNewParams->Checked);
       pRegistry->CloseKey();
     }
     delete pRegistry;

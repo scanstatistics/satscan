@@ -209,6 +209,8 @@ __published:	// IDE-managed Components
     static const char                 * EXECUTE_METHOD_DATA;
     static const char                 * EXECUTE_OPTIONS_YARDSTICK_DATA;
     static const char                 * EXECUTE_OPTIONS_SCRUTINIZED_DATA;
+    static const char                 * OLD_OPTIONS_YARDSTICK_DATA;
+    static const char                 * NEW_OPTIONS_SCRUTINIZED_DATA;
 
     void                                AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition);
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);
