@@ -1123,7 +1123,12 @@ void TfrmMain::ExecuteCreateProcessEachAnalysis() {
         //get filename that will be the result file
         GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtYardstickExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str(), edtYardstickOptions->Text.c_str());
+        sCommand.printf("\"%s\" \"%s\" %s \"%s\" %s",
+                        edtYardstickExecutable->Text.c_str(),
+                        thisParameterInfo.GetFilenameString(),
+                        (chkYardNewParams->Checked ? "--ResultsFile" : "-o"),
+                        sComparatorFilename.c_str(),
+                        edtYardstickOptions->Text.c_str());
         if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           memMessages->Lines->Add("Yardstick Executable Failed/Cancelled : ");
           memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
@@ -1133,7 +1138,12 @@ void TfrmMain::ExecuteCreateProcessEachAnalysis() {
         //get filename that will be the result file created for comparison
         GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
         //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtScutinizedExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str(), edtScrutinizedOptions->Text.c_str());
+        sCommand.printf("\"%s\" \"%s\" %s \"%s\" %s",
+                        edtScutinizedExecutable->Text.c_str(),
+                        thisParameterInfo.GetFilenameString(),
+                        (chkScrutNewParams->Checked ? "--ResultsFile" : "-o"),
+                        sCompareFilename.c_str(),
+                        edtScrutinizedOptions->Text.c_str());
         //execute SaTScan version that is in question
         if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           memMessages->Lines->Add("Scrutinized Executable Failed/Cancelled : ");
@@ -1179,10 +1189,10 @@ void TfrmMain::ExecuteThroughBatchFile() {
    memMessages->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
-   sCurTitle = Application->Title;   
+   sCurTitle = Application->Title;
    gvColumnSortOrder.clear();
    gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
-       
+
    while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
         ParameterResultsInfo thisParameterInfo(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str());
         if (!FileExists(thisParameterInfo.GetFilenameString())) {
@@ -1194,12 +1204,22 @@ void TfrmMain::ExecuteThroughBatchFile() {
         //get filename that will be the result file
         GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtYardstickExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str(), edtYardstickOptions->Text.c_str());
+        sCommand.printf("\"%s\" \"%s\" %s \"%s\" %s",
+                        edtYardstickExecutable->Text.c_str(),
+                        thisParameterInfo.GetFilenameString(),
+                        (chkYardNewParams->Checked ? "--ResultsFile" : "-o"),
+                        sComparatorFilename.c_str(),
+                        edtYardstickOptions->Text.c_str());
         filestream << sCommand.c_str() << std::endl;
         //get filename that will be the result file created for comparison
         GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
         //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtScutinizedExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str(), edtScrutinizedOptions->Text.c_str());
+        sCommand.printf("\"%s\" \"%s\" %s \"%s\" %s",
+                        edtScutinizedExecutable->Text.c_str(),
+                        thisParameterInfo.GetFilenameString(),
+                        (chkScrutNewParams->Checked ? "--ResultsFile" : "-o"),
+                        sCompareFilename.c_str(),
+                        edtScrutinizedOptions->Text.c_str());
         filestream << sCommand.c_str() << std::endl;
         gvParameterResultsInfo.push_back(thisParameterInfo);
    }

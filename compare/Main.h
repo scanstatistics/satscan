@@ -156,6 +156,8 @@ __published:	// IDE-managed Components
         TLabel *Label1;
         TSpeedButton *sbtnCompareClusterCase;
         TAction *ActionCompareClusterCaseInformation;
+        TCheckBox *chkScrutNewParams;
+        TCheckBox *chkYardNewParams;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
