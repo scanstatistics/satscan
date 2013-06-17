@@ -702,7 +702,7 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
     if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
-        getValueAsString(p.second, buffer).insert(0, "< ");
+        getValueAsString(p.second, buffer, 1).insert(0, "< ");
       } else {
         getValueAsString(p.first, buffer);
       }

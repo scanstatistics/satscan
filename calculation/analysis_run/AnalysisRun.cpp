@@ -1209,7 +1209,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
             ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
-            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i, gSimVars);
+            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars);
         _clustersReported = true;
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
