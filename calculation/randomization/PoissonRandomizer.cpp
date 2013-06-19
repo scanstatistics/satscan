@@ -116,7 +116,7 @@ void PoissonTimeStratifiedRandomizer::randomize(const RealDataSet& RealSet, cons
 void PoissonTimeStratifiedRandomizer::randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet) {
   std::vector<measure_t> vMPI(RealSet.getIntervalDimension(), 0);
   measure_t ** ppMeasure = measure.GetArray();
-  for (unsigned int t=0; t < RealSet.getIntervalDimension(); ++t) {
+  for (unsigned int t=0; t < RealSet.getLocationDimension(); ++t) {
     vMPI[RealSet.getIntervalDimension()-1] += ppMeasure[RealSet.getIntervalDimension()-1][t];
     for (unsigned int i=0; i < RealSet.getIntervalDimension() - 1; ++i)
         vMPI[i] += ppMeasure[i][t] - ppMeasure[i+1][t];
