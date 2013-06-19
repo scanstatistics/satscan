@@ -329,7 +329,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
     // If the distance of any location in one cluster - to the center of the other cluster is less than the radius
     // of the other cluster, then they have overlapping locations.
     bool useLocationToRadiusMethod = ((iOneOffset == 0 || iTwoOffset == 0) &&        // one of the clusters is circular
-                                       (DataHub.GetNumMetaTractsReferenced() == 0)); // meta locations were not used
+                                       (DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations() == 0)); // meta locations were not used
     if (useLocationToRadiusMethod) {
         // determine which cluster has the fewest number of locations.
         const CCluster * testCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterOne : &ClusterTwo;
