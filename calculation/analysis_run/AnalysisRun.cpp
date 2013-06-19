@@ -1251,22 +1251,25 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
     //open result output file
     OpenReportFile(fp, true);
     if (mlc.GetNumClustersRetained()) {
+      if (giAnalysisCount > 1) {
+        std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
+        gpDataHub->DisplaySummary(fp, s, false);
+        fprintf(fp, "\n");
+      }
+
       //get most likely cluster
       const CCluster& TopCluster = mlc.GetTopRankedCluster();
-	  clusterSupplement.addCluster(TopCluster, 1);
-	  fprintf(fp, "\nMOST LIKELY CLUSTER\n\n");
-      //std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
-      //gpDataHub->DisplaySummary(fp, s, false);
-      //fprintf(fp, "\n");
+      clusterSupplement.addCluster(TopCluster, giAnalysisCount);
+      fprintf(fp, "\nMOST LIKELY CLUSTER\n\n");
       //print cluster definition to file stream
       TopCluster.Display(fp, *gpDataHub, clusterSupplement, gSimVars);
       //print cluster definition to 'cluster information' record buffer
       if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
-        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, 1, gSimVars);
+        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giAnalysisCount, gSimVars);
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
         LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
-        TopCluster.Write(Writer, *gpDataHub, 1, gSimVars);
+        TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars);
       }
       //check track of whether this cluster was significant in top five percentage
       if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))

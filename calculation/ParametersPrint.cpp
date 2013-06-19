@@ -155,7 +155,7 @@ void ParametersPrint::PrintGeographicalOutputParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetCoordinatesType() == LATLON) {
+        if (!gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
             settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Compress KML File in KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Include Cluster Locations in KML File",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
@@ -782,6 +782,7 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
     try {
         if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
             settings.push_back(std::make_pair("Perform Power Evaluations", (gParameters.getPerformPowerEvaluation() ? "Yes" : "No")));
+            if (!gParameters.getPerformPowerEvaluation()) return;
             buffer = "Power Method";
             switch (gParameters.getPowerEvaluationMethod()) {
                 case PE_WITH_ANALYSIS: 
