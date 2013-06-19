@@ -810,10 +810,6 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
             }
         }
         bValid &= checkFileExists(gParameters.getPowerEvaluationAltHypothesisFilename(), "power evaluations alternative hypothesis", PrintDirection);
-        if (!(gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == GUMBEL_PVALUE)) {
-            PrintDirection.Printf("%s:\nThe power evaluation is only available for the standard and Gumbel p-value reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-            bValid = false;
-        }
         if (gParameters.GetNumReplicationsRequested() < 999) {
             PrintDirection.Printf("%s:\nThe minimum number of standard replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
             bValid = false;
