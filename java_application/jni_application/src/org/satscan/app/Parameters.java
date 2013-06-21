@@ -204,7 +204,7 @@ public class Parameters implements Cloneable {
     PowerEvaluationMethodType               _power_evaluation_method=PowerEvaluationMethodType.PE_WITH_ANALYSIS;
     private String                          _power_alt_hypothesis_filename=""; /** power evaluation alternative filename */
     private int                             _powerEvaluationTotalCases=600; /* number cases in power evaluation, user specified */
-    private int                             _power_replica; /* number of replications in power step of power evaluations */
+    private int                             _power_replica=1000; /* number of replications in power step of power evaluations */
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */

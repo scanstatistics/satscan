@@ -21,7 +21,7 @@ public final class AppConstants {
     public static final int VERSION_MAJOR = 9;
     public static final int VERSION_MINOR = 2;
     public static final int VERSION_RELEASE = 0;
-    public static final String VERSION_PHASE = "Beta 9";
+    public static final String VERSION_PHASE = "Beta 10";
 
     public static final String getSoftwareTitle() {
         return APP_TITLE;
