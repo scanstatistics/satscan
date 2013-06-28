@@ -8,14 +8,22 @@ launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.0.1"
 IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.4.3.5"
 
 #### Windows ##############################################################################
-# Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
-$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
 
 # Build Windows SaTScan updater executable from java jar file ... this executable is needed when updating from v7.0.3 and earlier.
 $launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_updater.xml
 
+# prompt user to sign the exe file created by launch4j
+echo
+echo "Run the Windows batch file 'signUpdateApplication.bat' now to sign update_app.exe. Hit <enter> once done ..."
+read dummy
+
 # Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
 $launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
+
+# prompt user to sign the exe file created by launch4j
+echo
+echo "Run the Windows batch file 'signSaTScanGuiApp.bat' now to sign SaTScan.exe. Hit <enter> once done ..."
+read dummy
 
 # Build the IzPack Java installer for Windows.
 $IzPack/bin/compile $build/satscan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-9_2_windows.jar -k standard
@@ -25,6 +33,11 @@ $IzPack/bin/compile $build/satscan/installers/izpack/windows/install_windows.xml
 #  - we wanted a message to user when Java not installed
 $launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_install.xml
 rm $installer_version/install-9_2_windows.jar
+
+# prompt user to sign the exe file created by launch4j
+echo
+echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-9_2_windows.exe. Hit <enter> once done ..."
+read dummy
 
 # Build Windows command-line only archive
 rm -f $installer_version/satscan.9.2_windows.zip
