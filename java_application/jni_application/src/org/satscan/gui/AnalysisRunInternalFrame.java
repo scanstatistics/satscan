@@ -3,8 +3,13 @@ package org.satscan.gui;
 import java.awt.Desktop;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
@@ -12,7 +17,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.satscan.app.AppConstants;
 import org.satscan.app.CalculationThread;
 import org.satscan.utils.EmailClientLauncher;
@@ -20,6 +29,8 @@ import org.satscan.app.Parameters;
 import org.satscan.gui.utils.JDocumentRenderer;
 import org.satscan.app.OutputFileRegister;
 import org.satscan.utils.BareBonesBrowserLaunch;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Analysis execution progress/cancellation and results window.
@@ -135,6 +146,15 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         });
     }
 
+    private boolean placemarkExist(File file) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        org.w3c.dom.Document doc = dBuilder.parse(file);
+        doc.getDocumentElement().normalize();
+        NodeList nodes = doc.getElementsByTagName("Placemark");
+        return nodes.getLength() > 0;
+    }
+    
     /** Loads analysis results from file into memo control */
     synchronized public void LoadFromFile(final String sFileName) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -156,12 +176,44 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                         int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
                         extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
                         File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + (_parameters.getCompressClusterKML() ? ".kmz" : ".kml"));
-                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                            Desktop.getDesktop().open(path);
+                        
+                        // Determine if any clusters were reported -- prevent launching Google Earth when no clusters reported.
+                        boolean reallyLaunch = true;
+                        if (_parameters.getCompressClusterKML()) {
+                            // open kmz and check the primary kml file for placemarks
+                            File test = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".kml");
+                            test.createNewFile();
+                            //get the zip file content
+                            ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
+                            //get the zipped file list entry
+                            ZipEntry ze = zis.getNextEntry();  
+                            while(ze != null) {
+                                if (ze.getName().equals(test.getName())) {
+                                   byte[] buffer = new byte[1024];                            
+                                   FileOutputStream fos = new FileOutputStream(test);
+                                   int len;
+                                   while ((len = zis.read(buffer)) > 0) {
+                                        fos.write(buffer, 0, len);
+                                   }
+                                   fos.close();
+                                   break;
+                                }
+                                ze = zis.getNextEntry();
+                            }
+                            reallyLaunch = placemarkExist(test);
+                            test.delete();
                         } else {
-                            String kmlFile = "file://localhost/" + path.getAbsolutePath();
-                            kmlFile = kmlFile.replace('\\', '/');
-                            BareBonesBrowserLaunch.openURL(kmlFile);
+                            reallyLaunch = placemarkExist(path);
+                        }
+
+                        if (reallyLaunch) {                            
+                            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                                Desktop.getDesktop().open(path);
+                            } else {
+                                String kmlFile = "file://localhost/" + path.getAbsolutePath();
+                                kmlFile = kmlFile.replace('\\', '/');
+                                BareBonesBrowserLaunch.openURL(kmlFile);
+                            }                        
                         }
                     }
                 } catch (Throwable t) {

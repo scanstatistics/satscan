@@ -55,6 +55,8 @@ public class HelpShow {
                     popup.setDisplayed(true);
                 } else {
                     mainHB.setCurrentID(helpID != null ? helpID : defaultID);
+                    mainHB.setSize(SaTScanApplication.getInstance().getSize());
+                    mainHB.setLocation(SaTScanApplication.getInstance().getLocation());
                     mainHB.setDisplayed(true);
                 }
             }
