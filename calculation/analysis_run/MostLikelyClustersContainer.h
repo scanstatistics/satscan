@@ -151,7 +151,7 @@ class MostLikelyClustersContainer {
 
     void                        Add(const CCluster& Cluster);
     void                        Add(std::auto_ptr<CCluster>& pCluster);
-    void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, bool markAsGini);
+    void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, const SimulationVariables& simVars, bool markAsGini);
     void                        Empty();
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
@@ -162,7 +162,7 @@ class MostLikelyClustersContainer {
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
-    void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print);
+    void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride=0);
     void                        sort();
 };
 

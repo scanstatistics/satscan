@@ -437,7 +437,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
             }
         }
         if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-            settings.push_back(std::make_pair("Report Gini Optimized Clusters", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Report Gini Optimized Cluster Collection", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
             if (gParameters.getReportGiniOptimizedClusters()) {
                 buffer = "Gini Index Based Collection Reporting";
                 switch (gParameters.getGiniIndexReportType()) {

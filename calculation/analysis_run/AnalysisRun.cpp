@@ -1294,20 +1294,28 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 
 /** Performs ranking on each collection of clusters. */
 void AnalysisRunner::rankClusterCollections() {
-    // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
-    // We need to maintain a copy since geographical overlap might be different than index based ranking (no overlap).
-    if (gParameters.getReportHierarchicalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()) || gParameters.GetIsPurelyTemporalAnalysis()) {
+        // Not performing heirarchacal nor gini clusters, then we're only grabbing the top ranked cluster.
         _reportClusters = gTopClustersContainers.back();
-        _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
+        _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection, 1);
         // don't need to add clusters to cluster ranker if not performing simulations
         if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
-    }
-    if (gParameters.getReportGiniOptimizedClusters()) {
-        // Index based clusters always use 'No Geographical Overlap'.
-        for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr) {
-            itr->rankClusters(*gpDataHub, NOGEOOVERLAP, gPrintDirection);
+    } else {
+        // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
+        // We need to maintain a copy since geographical overlap might be different than index based ranking (no overlap).
+        if (gParameters.getReportHierarchicalClusters()) {
+            _reportClusters = gTopClustersContainers.back();
+            _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
             // don't need to add clusters to cluster ranker if not performing simulations
-            if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(*itr);
+            if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
+        }
+        if (gParameters.getReportGiniOptimizedClusters()) {
+            // Index based clusters always use 'No Geographical Overlap'.
+            for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr) {
+                itr->rankClusters(*gpDataHub, NOGEOOVERLAP, gPrintDirection);
+                // don't need to add clusters to cluster ranker if not performing simulations
+                if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(*itr);
+            }
         }
     }
     // cause the cluster ranker to sort clusters by LLR for ranking during simulations
@@ -1440,14 +1448,14 @@ void AnalysisRunner::reportClusters() {
                 }
                 // combine clusters from maximized GINI collection with reporting collection
                 if (maximizedCollection) 
-                    _reportClusters.combine(*maximizedCollection, *gpDataHub, true);
+                    _reportClusters.combine(*maximizedCollection, *gpDataHub, gSimVars, true);
                 else if (_reportClusters.GetNumClustersRetained() == 0) {
                     /* When reporting only Gini coefficients (optimal only) then if no significant gini collection found, 
                        then report cluster collection from largest maxima with clusters. */
                     MLC_Collections_t::reverse_iterator rev(gTopClustersContainers.end()), rev_end(gTopClustersContainers.begin());
                     for (; rev != rev_end; rev++) {
                         if (rev->GetNumClustersRetained()) {
-                            _reportClusters.combine(*rev, *gpDataHub, true);
+                            _reportClusters.combine(*rev, *gpDataHub, gSimVars, true);
                             break;
                         }
                     }
@@ -1455,7 +1463,7 @@ void AnalysisRunner::reportClusters() {
             } else {
                 // combine clusters from each maxima collection with reporting collection
                 for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-                    _reportClusters.combine(*itrMLC, *gpDataHub, true);
+                    _reportClusters.combine(*itrMLC, *gpDataHub, gSimVars, true);
             }
             // now sort combined cluster collection by LLR
             _reportClusters.sort();

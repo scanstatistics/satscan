@@ -53,11 +53,17 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
 }
 
 /** Combines passed collection with this collection of clusters. */
-void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, bool markAsGini) {
+void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, const SimulationVariables& simVars, bool markAsGini) {
+    const CParameters& params = DataHub.GetParameters();
+    double p_cutoff = params.getGiniIndexPValueCutoff();
+    bool markAlwaysOn = params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE;
+
     if (gvTopClusterList.size() == 0) {
         gvTopClusterList = other.gvTopClusterList;
         for (ClusterList_t::iterator itrThis=gvTopClusterList.begin(); itrThis != gvTopClusterList.end(); ++itrThis) {
-            (*itrThis)->setAsGiniCluster(markAsGini);
+            if (markAlwaysOn || macro_less_than((*itrThis)->getReportingPValue(params, simVars, false), p_cutoff, DBL_CMP_TOLERANCE)) {
+                (*itrThis)->setAsGiniCluster(markAsGini);
+            }
         }
     } else {
         ClusterList_t combineClusters;
@@ -84,7 +90,9 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
                     isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
                     if (isDuplicate && markAsGini) {
                         // if these are duplicate clusters, we still want to ensure that existing one is marked as a gini cluster
-                        (*itrThis)->setAsGiniCluster(markAsGini);
+                        if (markAlwaysOn || macro_less_than((*itrThis)->getReportingPValue(params, simVars, false), p_cutoff, DBL_CMP_TOLERANCE)) {
+                            (*itrThis)->setAsGiniCluster(markAsGini);
+                        }
                     }
                 }
             }
@@ -96,7 +104,9 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
         // now add the non-duplicate clusters to cluster collection
         ClusterList_t::const_iterator itr=combineClusters.begin(), itrEnd=combineClusters.end();
         for (;itr != itrEnd; ++itr) {
-            (*itr)->setAsGiniCluster(markAsGini);
+            if (markAlwaysOn || macro_less_than((*itr)->getReportingPValue(params, simVars, false), p_cutoff, DBL_CMP_TOLERANCE)) {
+                (*itr)->setAsGiniCluster(markAsGini);
+            }
             gvTopClusterList.push_back(*itr);
         }
     }
@@ -168,7 +178,7 @@ double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataH
 double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
-    unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();    
+    unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();
     //create a copy of top cluster pointers
     ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
     ClusterList_t sortClusters;
@@ -502,7 +512,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     Note that this function should not be called with cluster list containing
     purely temporal clusters. The ranking performed is based soley on geographical
     orientation.   */
-void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print) {
+void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride) {
    const CParameters& parameters(DataHub.GetParameters());
    unsigned int       uClustersToKeepEachPass;
 
@@ -512,7 +522,10 @@ void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, Crit
      //return from function if no clusters retained
      if (!gvTopClusterList.size()) return;
      //determine maximum number of clusters to retain
-     if (parameters.GetIsIterativeScanning())
+     if (numKeepOverride > 0) {
+         uClustersToKeepEachPass = numKeepOverride;
+     }
+     else if (parameters.GetIsIterativeScanning())
        uClustersToKeepEachPass = 1;
      else if (eOverlapType == NORESTRICTIONS)
        uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());

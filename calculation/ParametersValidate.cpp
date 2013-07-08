@@ -578,13 +578,6 @@ bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDir
 
   if (gParameters.GetIsPurelyTemporalAnalysis()) return true;
 
-  // One of the criterian for reporting clusters must be selected.
-  if (!gParameters.getReportHierarchicalClusters() && !gParameters.getReportGiniOptimizedClusters()) {
-    bReturn = false;
-    PrintDirection.Printf("%s:\nFor any spatial analysis, a cluster reporting criterian must be selected (hierarchael or Gini optimized cluster size).\n",
-                           BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-  }
-
   //verify the index based cluster collection option with other settings.
   if (gParameters.getReportGiniOptimizedClusters()) {
       if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
