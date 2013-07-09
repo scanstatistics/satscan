@@ -129,7 +129,8 @@ class CCluster {
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
-	bool                          isGiniCluster() const {return gGiniCluster;}
+    bool                          isGiniCluster() const {return gGiniCluster;}
+    bool                          isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
@@ -138,7 +139,7 @@ class CCluster {
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
-	void                          setAsGiniCluster(bool b) {gGiniCluster = b;}
+    void                          setAsGiniCluster(bool b) {gGiniCluster = b;}
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);

@@ -158,7 +158,7 @@ void ParametersPrint::PrintGeographicalOutputParameters(FILE* fp) const {
         if (!gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
             settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Compress KML File in KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Include Cluster Locations in KML File",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
             printString(buffer, "%u", gParameters.getLocationsThresholdKML());
             settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
             WriteSettingsContainer(settings, "Geographical Output", fp);

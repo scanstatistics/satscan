@@ -5449,7 +5449,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _googleEarthGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "KML file for Google Earth"));
         _googleEarthGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_googleEarthGroup, "introduction_htm"));
 
-        _includeClusterLocationsInKML.setText("Include cluster locations");
+        _includeClusterLocationsInKML.setText("Include All Location IDs in the Clusters");
         _includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();

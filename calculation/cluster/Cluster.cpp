@@ -1091,6 +1091,21 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep);
 }
 
+/** Returns whether cluster is significant. */
+bool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+    const CParameters& params = Data.GetParameters();
+    if (reportableRecurrenceInterval(params, simVars)) {
+        // recurrence interval greater than one year is significant --TODO: what about generic dates?
+        return GetRecurrenceInterval(Data, iReportedCluster, simVars).first > 1.0;
+    } else if (reportablePValue(params, simVars)) {
+        // p-value  less than 0.05 is significant
+        return getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
+    } else {
+        // If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.
+        return true;
+    }
+}
+
 /** Prints name and coordinates of locations contained in cluster to ASCII file.
     Note: This is a debug function and can be helpful when used with Excel to get
     visual of cluster using scatter plotting. */

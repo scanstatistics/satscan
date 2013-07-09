@@ -116,8 +116,7 @@ void ClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& 
         outKML << "\t<Placemark>" << std::endl; 
         outKML << "\t\t<name>" << (iCluster + 1) << "</name>" << std::endl;
         outKML << "\t\t<snippet>SaTScan Cluster #" << (iCluster + 1) << "</snippet>" << std::endl;
-        // set popup window text
-
+        outKML << "\t\t<visibility>" << (iCluster == 0 || cluster.isSignificant(_dataHub, iCluster, _simVars) ? "1" : "0") << "</visibility>" << std::endl;
         outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
         outKML << "\t\t" << getClusterExtendedData(cluster, iCluster, buffer).c_str() << std::endl;

@@ -3773,7 +3773,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_includeClusterLocationsInKML">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include cluster locations"/>
+                    <Property name="text" type="java.lang.String" value="Include All Location IDs in the Clusters"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
