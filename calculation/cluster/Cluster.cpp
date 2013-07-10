@@ -760,7 +760,7 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
       dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
   }
   dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength())/dAdjustedP_Value;
-  
+
   switch (parameters.GetTimeAggregationUnitsType()) {
       case YEAR    : return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR,1.0));
       case MONTH   : return std::make_pair(dUnitsInOccurrence/12.0, std::max((dUnitsInOccurrence/12.0) * AVERAGE_DAYS_IN_YEAR,1.0));
@@ -1092,18 +1092,27 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
 }
 
 /** Returns whether cluster is significant. */
-bool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+    boost::logic::tribool significance(boost::logic::indeterminate);
     const CParameters& params = Data.GetParameters();
     if (reportableRecurrenceInterval(params, simVars)) {
-        // recurrence interval greater than one year is significant --TODO: what about generic dates?
-        return GetRecurrenceInterval(Data, iReportedCluster, simVars).first > 1.0;
+        // recurrence interval greater than one year is significant
+        RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
+        // 365 days or 100*(# time aggregation units), whichever is larger (e.g., if time aggregation is 3 months, only report clusters with RI>300 months)
+        switch (params.GetTimeAggregationUnitsType()) {
+            case YEAR    : significance = (ri.first > 100.0 * static_cast<double>(params.GetTimeAggregationLength())); break;
+            case MONTH   : {double ri_in_months = ri.first * 12.0;
+                            return ri_in_months > 100.0 * static_cast<double>(params.GetTimeAggregationLength());
+                           } break;
+            case DAY     : significance = (ri.second > std::max(365.0, 100.0 * static_cast<double>(params.GetTimeAggregationLength()))); break;
+            case GENERIC : significance = (ri.first > 100.0); break; // I'm not sure how Martin picked this number.
+            default      : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.", "isSignificant()", params.GetTimeAggregationUnitsType());
+        }
     } else if (reportablePValue(params, simVars)) {
         // p-value  less than 0.05 is significant
-        return getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
-    } else {
-        // If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.
-        return true;
-    }
+        significance = getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
+    } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
+    return significance;
 }
 
 /** Prints name and coordinates of locations contained in cluster to ASCII file.
@@ -1169,13 +1178,13 @@ bool CCluster::reportableMonteCarloPValue(const CParameters& parameters, const S
 }
 
 /** Returns indication whether this cluster can report p-value. */
-bool CCluster::reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) const {
+bool CCluster::reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) {
   //Require at least 99 simulations requested.
   return parameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
 }
 
 /** Returns indication whether this cluster can report recurrence interval. */
-bool CCluster::reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) const {
+bool CCluster::reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) {
   //Require at least 99 simulations requested.
   if (parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE)
       return false;

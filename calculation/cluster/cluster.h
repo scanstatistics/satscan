@@ -11,6 +11,7 @@
 #include "AsciiPrintFormat.h"
 #include "SimulationVariables.h"
 #include "boost/tuple/tuple.hpp"
+#include "boost/logic/tribool.hpp"
 
 class LocationInformationWriter; /** forward class declaration */
 class ClusterSupplementInfo;
@@ -130,12 +131,12 @@ class CCluster {
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
     bool                          isGiniCluster() const {return gGiniCluster;}
-    bool                          isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
+    boost::logic::tribool         isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
-    bool                          reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) const;
-    bool                          reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) const;
+    static bool                   reportablePValue(const CParameters& parameters, const SimulationVariables& simVars);
+    static bool                   reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars);
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
