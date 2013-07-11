@@ -1101,12 +1101,10 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
         // 365 days or 100*(# time aggregation units), whichever is larger (e.g., if time aggregation is 3 months, only report clusters with RI>300 months)
         switch (params.GetTimeAggregationUnitsType()) {
             case YEAR    : significance = (ri.first > 100.0 * static_cast<double>(params.GetTimeAggregationLength())); break;
-            case MONTH   : {double ri_in_months = ri.first * 12.0;
-                            return ri_in_months > 100.0 * static_cast<double>(params.GetTimeAggregationLength());
-                           } break;
+            case MONTH   : significance = (ri.first * 12.0 > 100.0 * static_cast<double>(params.GetTimeAggregationLength())); break;
             case DAY     : significance = (ri.second > std::max(365.0, 100.0 * static_cast<double>(params.GetTimeAggregationLength()))); break;
             case GENERIC : significance = (ri.first > 100.0); break; // I'm not sure how Martin picked this number.
-            default      : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.", "isSignificant()", params.GetTimeAggregationUnitsType());
+            default      : throw prg_error("Unknown time aggregation type '%d'.", "isSignificant()", params.GetTimeAggregationUnitsType());
         }
     } else if (reportablePValue(params, simVars)) {
         // p-value  less than 0.05 is significant
