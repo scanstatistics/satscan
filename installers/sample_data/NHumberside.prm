@@ -135,7 +135,7 @@ UseAdjustmentsByRRFile=n
 AdjustmentsByKnownRelativeRisksFilename=
 
 [Inference]
-;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) 
+;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3)
 PValueReportType=0
 ;early termination threshold
 EarlyTerminationThreshold=50
@@ -184,13 +184,21 @@ ReportPowerEvaluationSimulationData=n
 ;power evaluation simulation data output filename
 PowerEvaluationsSimulationOutputFilename=
 
-[Clusters Reported]
+[Spatial Output]
+;automatically launch Google Earth - gui only (y/n)
+LaunchKMLViewer=y
+;create compressed KMZ file instead of KML file (y/n)
+CompressKMLtoKMZ=n
+;whether to include cluster locations kml output (y/n)
+IncludeClusterLocationsKML=y
+;threshold for generating separate kml files for cluster locations (positive integer)
+ThresholdLocationsSeparateKML=1000
 ;report hierarchical clusters (y/n)
 ReportHierarchicalClusters=y
 ;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
 CriteriaForReportingSecondaryClusters=0
 ;report gini clusters (y/n)
-ReportGiniClusters=n
+ReportGiniClusters=y
 ;gini index cluster reporting type (0=optimal index only, 1=all values)
 GiniIndexClusterReportingType=0
 ;spatial window maxima stops (comma separated decimal values[<=50%] )
@@ -212,21 +220,11 @@ UseDistanceFromCenterOption_Reported=n
 ;maximum reported spatial size in distance from center (positive integer)
 MaxSpatialSizeInDistanceFromCenter_Reported=1
 
-[Geographical Output]
-;automatically launch Google Earth - gui only (y/n)
-LaunchKMLViewer=y
-;create compressed KMZ file instead of KML file (y/n)
-CompressKMLtoKMZ=n
-;whether to include cluster locations kml output (y/n)
-IncludeClusterLocationsKML=y
-;threshold for generating separate kml files for cluster locations (positive integer)
-ThresholdLocationsSeparateKML=1000
-
-[Temporal Graph]
+[Temporal Output]
 ;output temporal graph HTML file (y/n)
 OutputTemporalGraphHTML=n
 
-[Additional Output]
+[Other Output]
 ;report critical values for .01 and .05? (y/n)
 CriticalValue=n
 ;report cluster rank (y/n)

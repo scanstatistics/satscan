@@ -20,8 +20,8 @@ const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
 const char * IniParameterSpecification::ClustersReported        = "Clusters Reported";
 const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
-const char * IniParameterSpecification::TemporalGraphOutput     = "Temporal Graph";
-const char * IniParameterSpecification::GeographicalOutput      = "Geographical Output";
+const char * IniParameterSpecification::TemporalOutput          = "Temporal Output";
+const char * IniParameterSpecification::SpatialOutput           = "Spatial Output";
 
 const char * IniParameterSpecification::EllipticScan            = "Elliptic Scan";
 const char * IniParameterSpecification::SequentialScan          = "Sequential Scan";
@@ -37,6 +37,7 @@ const char * IniParameterSpecification::ScanningWindow          = "Scanning Wind
 const char * IniParameterSpecification::TimeParameters          = "Time Parameters";
 const char * IniParameterSpecification::OutputFiles             = "Output Files";
 const char * IniParameterSpecification::AdvancedFeatures        = "Advanced Features";
+const char * IniParameterSpecification::OtherOutput             = "Other Output";
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
@@ -381,12 +382,12 @@ void IniParameterSpecification::Build_9_0_x_ParameterList() {
 void IniParameterSpecification::Build_9_2_x_ParameterList() {
   Build_9_0_x_ParameterList();
 
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportHierarchicalClusters"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportGiniClusters"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"SpatialMaxima"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniIndexClusterReportingType"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniIndexClustersPValueCutOff"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportGiniIndexCoefficents"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"ReportHierarchicalClusters"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"ReportGiniClusters"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"SpatialMaxima"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"GiniIndexClusterReportingType"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"GiniIndexClustersPValueCutOff"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"ReportGiniIndexCoefficents"));
 
   gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationTotalCases"));
   gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"CriticalValueType"));
@@ -402,17 +403,31 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"PowerEvaluationsSimulationOutputFilename"));
 
   gvParameterInfo.push_back(std::make_pair(Output, (const char*)"OutputGoogleEarthKML"));
-  gvParameterInfo.push_back(std::make_pair(TemporalGraphOutput, (const char*)"OutputTemporalGraphHTML"));
+  gvParameterInfo.push_back(std::make_pair(TemporalOutput, (const char*)"OutputTemporalGraphHTML"));
   gvParameterInfo.push_back(std::make_pair(Output, (const char*)"OutputShapefiles"));
-  gvParameterInfo.push_back(std::make_pair(GeographicalOutput, (const char*)"IncludeClusterLocationsKML"));
-  gvParameterInfo.push_back(std::make_pair(GeographicalOutput, (const char*)"ThresholdLocationsSeparateKML"));
-  gvParameterInfo.push_back(std::make_pair(GeographicalOutput, (const char*)"CompressKMLtoKMZ"));
-  gvParameterInfo.push_back(std::make_pair(GeographicalOutput, (const char*)"LaunchKMLViewer"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"IncludeClusterLocationsKML"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"ThresholdLocationsSeparateKML"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"CompressKMLtoKMZ"));
+  gvParameterInfo.push_back(std::make_pair(SpatialOutput, (const char*)"LaunchKMLViewer"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"AdjustForWeeklyTrends"));
 
   gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerEvaluations, (const char*)"PerformPowerEvaluation");
   gvParameterInfo[POWER_05 - 1] = std::make_pair(PowerEvaluations, (const char*)"CriticalValue05");
   gvParameterInfo[POWER_01 - 1] = std::make_pair(PowerEvaluations, (const char*)"CriticalValue01");
+
+  // 'Clusters Reported' was renamed to 'Spatial Output'
+  gvParameterInfo[CRITERIA_SECOND_CLUSTERS - 1] = std::make_pair(SpatialOutput, (const char*)"CriteriaForReportingSecondaryClusters");
+  gvParameterInfo[USE_REPORTED_GEOSIZE - 1] = std::make_pair(SpatialOutput, (const char*)"UseReportOnlySmallerClusters");
+  gvParameterInfo[MAXGEOPOPATRISK_REPORTED - 1] = std::make_pair(SpatialOutput, (const char*)"MaxSpatialSizeInPopulationAtRisk_Reported");
+  gvParameterInfo[USE_MAXGEOPOPFILE_REPORTED - 1] = std::make_pair(SpatialOutput, (const char*)"UseMaxCirclePopulationFileOption_Reported");
+  gvParameterInfo[MAXGEOPOPFILE_REPORTED - 1] = std::make_pair(SpatialOutput, (const char*)"MaxSizeInMaxCirclePopulationFile_Reported");
+  gvParameterInfo[USE_MAXGEODISTANCE_REPORTED - 1] = std::make_pair(SpatialOutput, (const char*)"UseDistanceFromCenterOption_Reported");
+  gvParameterInfo[MAXGEODISTANCE_REPORTED - 1] = std::make_pair(SpatialOutput, (const char*)"MaxSpatialSizeInDistanceFromCenter_Reported");
+
+  // 'Additional Output' was renamed to 'Other Output'
+  gvParameterInfo[REPORT_CRITICAL_VALUES - 1] = std::make_pair(OtherOutput, (const char*)"CriticalValue");
+  gvParameterInfo[REPORT_RANK - 1] = std::make_pair(OtherOutput, (const char*)"ReportClusterRank");
+  gvParameterInfo[PRINT_ASCII_HEADERS - 1] = std::make_pair(OtherOutput, (const char*)"PrintAsciiColumnHeaders");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

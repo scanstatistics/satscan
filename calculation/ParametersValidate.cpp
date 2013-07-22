@@ -571,7 +571,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
   return true;
 }
 
-bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDirection) const {
+bool ParametersValidate::ValidateSpatialOutputParameters(BasePrint & PrintDirection) const {
   if (gParameters.getPerformPowerEvaluation()) return true;
 
   bool  bReturn=true;
@@ -751,7 +751,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             "The temporal graph option is only available for purely temporal analyses with Poisson or Bernoulli models.\nThe option was disabled.\n",
                             BasePrint::P_WARNING);
     }
-    if (!ValidateClustersReportedParameters(PrintDirection))
+    if (!ValidateSpatialOutputParameters(PrintDirection))
         bValid = false;
   } catch (prg_exception& x) {
     x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");

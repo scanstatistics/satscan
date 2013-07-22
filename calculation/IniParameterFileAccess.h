@@ -19,12 +19,11 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
     void                                ReadObservableRegionSettings(const IniFile& SourceFile);
 
-    void                                WriteAdditionalOutputSettings(IniFile& WriteFile);
+    void                                WriteOtherOutputSettings(IniFile& WriteFile);
     void                                WriteAnalysisSettings(IniFile& WriteFile);
-    void                                WriteClustersReportedSettings(IniFile& WriteFile);
+    void                                WriteSpatialOutputSettings(IniFile& WriteFile);
     void                                WriteDataCheckingSettings(IniFile& WriteFile);
     void                                WriteEllipticScanSettings(IniFile& WriteFile);
-    void                                WriteGeographicalOutputSettings(IniFile& WriteFile);
     void                                WriteInferenceSettings(IniFile& WriteFile);
     void                                WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
     void                                WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);

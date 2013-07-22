@@ -175,9 +175,13 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(PE_OUTPUT_SIMUALTION_DATA, true), po::value<std::string>(), GetParameterComment(PE_OUTPUT_SIMUALTION_DATA))
         (getOption(PE_SIMUALTION_OUTPUTFILE, true), po::value<std::string>(), GetParameterComment(PE_SIMUALTION_OUTPUTFILE));
 
-    /* Clusters Reported tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::ClustersReported), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    /* Spatial Output tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpatialOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
+        (getOption(LAUNCH_KML_VIEWER, true), po::value<std::string>(), GetParameterComment(LAUNCH_KML_VIEWER))
+        (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT))
+        (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
+        (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML))
         (getOption(REPORT_HIERARCHICAL_CLUSTERS, true), po::value<std::string>(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS))
         (getOption(CRITERIA_SECOND_CLUSTERS, true), po::value<std::string>(), GetParameterComment(CRITERIA_SECOND_CLUSTERS))
         (getOption(REPORT_GINI_CLUSTERS, true), po::value<std::string>(), GetParameterComment(REPORT_GINI_CLUSTERS))
@@ -192,21 +196,13 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(USE_MAXGEODISTANCE_REPORTED, true), po::value<std::string>(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED))
         (getOption(MAXGEODISTANCE_REPORTED, true), po::value<std::string>(), GetParameterComment(MAXGEODISTANCE_REPORTED));
 
-    /* Geographical Output tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::GeographicalOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
-    opt_descriptions.back()->get<0>().add_options()
-        (getOption(LAUNCH_KML_VIEWER, true), po::value<std::string>(), GetParameterComment(LAUNCH_KML_VIEWER))
-        (getOption(COMPRESS_KML_OUTPUT, true), po::value<std::string>(), GetParameterComment(COMPRESS_KML_OUTPUT))
-        (getOption(INCLUDE_LOCATIONS_KML, true), po::value<std::string>(), GetParameterComment(INCLUDE_LOCATIONS_KML))
-        (getOption(LOCATIONS_THRESHOLD_KML, true), po::value<std::string>(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
-
-    /* Temporal Graph Output tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalGraphOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    /* Temporal Output tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
         (getOption(OUTPUT_TEMPORAL_GRAPH, true), po::value<std::string>(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH));
 
-    /* Additional Output tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdditionalOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    /* Other Output tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::OtherOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
         (getOption(REPORT_CRITICAL_VALUES, true), po::value<std::string>(), GetParameterComment(REPORT_CRITICAL_VALUES))
         (getOption(REPORT_RANK, true), po::value<std::string>(), GetParameterComment(REPORT_RANK))

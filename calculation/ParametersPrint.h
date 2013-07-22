@@ -14,16 +14,15 @@ class ParametersPrint {
     typedef std::vector< std::pair<std::string, std::string> > SettingContainer_t;
     const CParameters & gParameters;
 
-    void                PrintAdditionalOutputParameters(FILE* fp) const;
     void                PrintAnalysisParameters(FILE* fp) const;
-    void                PrintClustersReportedParameters(FILE* fp) const;
+    void                PrintSpatialOutputParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
     void                PrintEllipticScanParameters(FILE* fp) const;
-    void                PrintGeographicalOutputParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
     void                PrintIsotonicScanParameters(FILE* fp) const;
     void                PrintMultipleDataSetParameters(FILE* fp) const;
+    void                PrintOtherOutputParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;
     void                PrintPowerEvaluationsParameters(FILE* fp) const;
     void                PrintPowerSimulationsParameters(FILE* fp) const;
@@ -34,7 +33,7 @@ class ParametersPrint {
     void                PrintSpatialWindowParameters(FILE* fp) const;
     void                PrintSystemParameters(FILE* fp) const;
     void                PrintTemporalWindowParameters(FILE* fp) const;
-    void                PrintTemporalGraphParameters(FILE* fp) const;
+    void                PrintTemporalOutputParameters(FILE* fp) const;
 
     void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp) const;
 

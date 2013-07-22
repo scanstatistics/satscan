@@ -15,7 +15,7 @@ class ParametersValidate {
 
     bool                checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck=false) const;
 
-    bool                ValidateClustersReportedParameters(BasePrint & PrintDirection) const;
+    bool                ValidateSpatialOutputParameters(BasePrint & PrintDirection) const;
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const;

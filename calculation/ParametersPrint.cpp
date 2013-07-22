@@ -134,10 +134,9 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
         PrintPowerEvaluationsParameters(fp);
-        PrintClustersReportedParameters(fp);
-        PrintGeographicalOutputParameters(fp);
-        PrintTemporalGraphParameters(fp);
-        PrintAdditionalOutputParameters(fp);
+        PrintSpatialOutputParameters(fp);
+        PrintTemporalOutputParameters(fp);
+        PrintOtherOutputParameters(fp);
         PrintEllipticScanParameters(fp);
         PrintPowerSimulationsParameters(fp);
         PrintRunOptionsParameters(fp);
@@ -149,28 +148,8 @@ void ParametersPrint::Print(FILE* fp) const {
     }
 }
 
-/** Print parameters of 'Geographical Output' tab/section. */
-void ParametersPrint::PrintGeographicalOutputParameters(FILE* fp) const {
-    SettingContainer_t settings;
-    std::string buffer;
-
-    try {
-        if (!gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
-            settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Compress KML File in KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
-            printString(buffer, "%u", gParameters.getLocationsThresholdKML());
-            settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
-            WriteSettingsContainer(settings, "Geographical Output", fp);
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("PrintGeographicalOutputParameters()","ParametersPrint");
-        throw;
-    }
-}
-
 /** Print parameters of 'Additional Output' tab/section. */
-void ParametersPrint::PrintAdditionalOutputParameters(FILE* fp) const {
+void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
 
     try {
@@ -181,9 +160,9 @@ void ParametersPrint::PrintAdditionalOutputParameters(FILE* fp) const {
         if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
             gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
             settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
-        WriteSettingsContainer(settings, "Additional Output", fp);
+        WriteSettingsContainer(settings, "Other Output", fp);
     } catch (prg_exception& x) {
-        x.addTrace("PrintAdditionalOutputParameters()","ParametersPrint");
+        x.addTrace("PrintOtherOutputParameters()","ParametersPrint");
         throw;
     }
 }
@@ -408,14 +387,25 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
-/** Prints 'Clusters Reported' tab parameters to file stream. */
-void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
+/** Prints 'Spatial Output' tab parameters to file stream. */
+void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer, worker;
 
     try {
-        // skip these settings for purely temporal analysis or when performing power evaluations without running an analysis
-        if (gParameters.GetIsPurelyTemporalAnalysis() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
+        // skip these settings for purely temporal analysis
+        if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+
+        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
+            settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Compress KML File into KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
+            printString(buffer, "%u", gParameters.getLocationsThresholdKML());
+            settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
+        }
+
+        // skip these settings when performing power evaluations without running an analysis
+        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
 
         settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
         if (gParameters.getReportHierarchicalClusters()) {
@@ -433,7 +423,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
                     settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters")); break;
                 case NORESTRICTIONS        :
                     settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid")); break;
-                default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
+                default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintSpatialOutputParameters()", gParameters.GetCriteriaSecondClustersType());
             }
         }
         if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
@@ -443,7 +433,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
                 switch (gParameters.getGiniIndexReportType()) {
                     case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
                     case ALL_VALUES    : settings.push_back(std::make_pair(buffer,"All Values")); break;
-                    default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintClustersReportedParameters()", gParameters.getGiniIndexReportType());
+                    default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintSpatialOutputParameters()", gParameters.getGiniIndexReportType());
                 }
                 settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
                 printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
@@ -470,9 +460,9 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
                 settings.push_back(std::make_pair("Reported Clusters",buffer));
             }
         }
-        WriteSettingsContainer(settings, "Clusters Reported", fp);
+        WriteSettingsContainer(settings, "Spatial Output", fp);
     } catch (prg_exception& x) {
-        x.addTrace("PrintClustersReportedParameters()","ParametersPrint");
+        x.addTrace("PrintSpatialOutputParameters()","ParametersPrint");
         throw;
     }
 }
@@ -1099,8 +1089,8 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
     }
 }
 
-/** Prints 'Temporal Graphs' tab parameters to file stream. */
-void ParametersPrint::PrintTemporalGraphParameters(FILE* fp) const {
+/** Prints 'Temporal Ouput' tab parameters to file stream. */
+void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
 
@@ -1117,9 +1107,9 @@ void ParametersPrint::PrintTemporalGraphParameters(FILE* fp) const {
             TemporalChartGenerator::getFilename(outputFile);
             settings.push_back(std::make_pair("Temporal Graph File", outputFile.getFullPath(buffer)));
         }
-        WriteSettingsContainer(settings, "Temporal Graphs", fp);
+        WriteSettingsContainer(settings, "Temporal Output", fp);
     } catch (prg_exception& x) {
-        x.addTrace("PrintTemporalGraphParameters()","ParametersPrint");
+        x.addTrace("PrintTemporalOutputParameters()","ParametersPrint");
         throw;
     }
 }

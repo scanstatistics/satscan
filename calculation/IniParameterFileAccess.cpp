@@ -166,10 +166,9 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         WriteSpaceAndTimeAdjustmentSettings(WriteFile);
         WriteInferenceSettings(WriteFile);
         WritePowerEvaluationsSettings(WriteFile);
-        WriteClustersReportedSettings(WriteFile);
-        WriteGeographicalOutputSettings(WriteFile);
+        WriteSpatialOutputSettings(WriteFile);
         WriteTemporalGraphSettings(WriteFile);
-        WriteAdditionalOutputSettings(WriteFile);
+        WriteOtherOutputSettings(WriteFile);
 
         //write settings as provided only through user mofication of parameter file and batch executable
         WriteEllipticScanSettings(WriteFile);
@@ -184,33 +183,18 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     }
 }
 
-/** Writes parameter settings grouped under 'Additional Output'. */
-void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
+/** Writes parameter settings grouped under 'Other Output'. */
+void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
         WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
         WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
         WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
     } catch (prg_exception& x) {
-        x.addTrace("WriteAdditionalOutputSettings()","IniParameterFileAccess");
+        x.addTrace("WriteOtherOutputSettings()","IniParameterFileAccess");
         throw;
     }
 }
-
-/** Writes parameter settings grouped under 'Geographical Output'. */
-void IniParameterFileAccess::WriteGeographicalOutputSettings(IniFile& WriteFile) {
-    std::string s;
-    try {
-        WriteIniParameter(WriteFile, LAUNCH_KML_VIEWER, GetParameterString(LAUNCH_KML_VIEWER, s).c_str(), GetParameterComment(LAUNCH_KML_VIEWER));
-        WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
-        WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
-        WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
-    } catch (prg_exception& x) {
-        x.addTrace("WriteGeographicalOutputSettings()","IniParameterFileAccess");
-        throw;
-    }
-}
-
 
 /** Writes parameter settings grouped under 'Analysis'. */
 void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
@@ -227,10 +211,14 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
     }
 }
 
-/** Writes parameter settings grouped under 'Clusters Reported'. */
-void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
+/** Writes parameter settings grouped under 'Spatial Output'. */
+void IniParameterFileAccess::WriteSpatialOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
+        WriteIniParameter(WriteFile, LAUNCH_KML_VIEWER, GetParameterString(LAUNCH_KML_VIEWER, s).c_str(), GetParameterComment(LAUNCH_KML_VIEWER));
+        WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
+        WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
+        WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
         WriteIniParameter(WriteFile, REPORT_HIERARCHICAL_CLUSTERS, GetParameterString(REPORT_HIERARCHICAL_CLUSTERS, s).c_str(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS));
         WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
         WriteIniParameter(WriteFile, REPORT_GINI_CLUSTERS, GetParameterString(REPORT_GINI_CLUSTERS, s).c_str(), GetParameterComment(REPORT_GINI_CLUSTERS));
@@ -245,7 +233,7 @@ void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
         WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
     } catch (prg_exception& x) {
-        x.addTrace("WriteClustersReportedSettings()","IniParameterFileAccess");
+        x.addTrace("WriteSpatialOutputSettings()","IniParameterFileAccess");
         throw;
     }
 }
