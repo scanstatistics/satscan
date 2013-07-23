@@ -177,7 +177,7 @@ std::string & ClusterScatterChart::getClusterLegend(const CCluster& cluster, int
 
   lines << "Cluster " << iCluster + 1 << "<br>";
   for (; itr != itr_end; ++itr) {
-      lines << itr->first << " : " << itr->second << "<br>";
+      lines << itr->first << " : " << itr->second.first << "<br>";
   }
   legend = lines.str();
   std::replace(legend.begin(), legend.end(), '\n', ' ');

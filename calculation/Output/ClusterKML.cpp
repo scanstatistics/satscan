@@ -204,10 +204,12 @@ std::string & ClusterKML::getClusterStyleTags(const CCluster& cluster, int iClus
 
 /* Returns cluster balloon template. */
 std::string & ClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std::string& templateString) const {
-    std::string buffer;
+    std::string buffer, bufferSetIdx, bufferSetMargin;
     std::stringstream  templateLines;
     const CParameters& parameters = _dataHub.GetParameters();
-    const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s</th><td style=\"white-space:nowrap;\">$[%s]</td></tr>";
+    const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;%s\">%s</th><td style=\"white-space:nowrap;\">$[%s%s]</td></tr>";
+    const char * setRowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s</th><td style=\"white-space:nowrap;\"></td></tr>";
+    unsigned int setIdx=0, currSetIdx=0, numDataSets=_dataHub.GetNumDataSets();
 
     templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
@@ -215,7 +217,22 @@ std::string & ClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std
         if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
             // skip reporting P-Values for prospective analyses
             continue;
-        templateLines << printString(buffer, rowFormat, itr->first.c_str(), itr->first.c_str()).c_str();
+        if (numDataSets > 1) {
+            setIdx = itr->second.second;
+            if (setIdx != 0 && currSetIdx != setIdx) {
+                // add table row for data set label
+                templateLines << printString(buffer, setRowFormat, printString(bufferSetIdx, "Data Set %u", setIdx).c_str()).c_str();
+            }
+            // define padding for data row
+            bufferSetMargin = setIdx > 0 ? "padding-left:10px;" : "";
+            currSetIdx = setIdx;
+        }
+        templateLines << printString(buffer,
+                                     rowFormat, 
+                                     bufferSetMargin.c_str(), 
+                                     itr->first.c_str(), 
+                                     itr->first.c_str(), 
+                                     setIdx == 0 ? "" : printString(bufferSetIdx, " set%u", setIdx).c_str()).c_str();
     }
     templateLines << "</table>]]>";
     templateString = templateLines.str();
@@ -239,12 +256,17 @@ std::string & ClusterKML::getClusterExtendedData(const CCluster& cluster, int iC
     const CParameters& parameters = _dataHub.GetParameters();
     std::stringstream lines;
     CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
+    std::string bufferSetIdx;
+    unsigned int numDataSets = _dataHub.GetNumDataSets();
+
     lines << "<ExtendedData>";
     for (; itr != itr_end; ++itr) {
         if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
             // skip reporting P-Values for prospective analyses
             continue;
-        lines << "<Data name=\"" << itr->first.c_str() << "\"><value>" << encode(itr->second, buffer).c_str() << "</value></Data>";
+        lines << "<Data name=\"" << itr->first.c_str() 
+              << (numDataSets > 1 && itr->second.second != 0 ? printString(bufferSetIdx, " set%u", itr->second.second).c_str() : "") 
+              << "\"><value>" << encode(itr->second.first, buffer).c_str() << "</value></Data>";
     }
     lines << "</ExtendedData>";
     buffer = lines.str();
@@ -262,7 +284,7 @@ std::string & ClusterKML::getClusterLegend(const CCluster& cluster, int iCluster
         if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
             // skip reporting P-Values for prospective analyses
             continue;
-        lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td style=\"white-space:nowrap;\">" << itr->second << "</td></tr>";
+        lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td style=\"white-space:nowrap;\">" << itr->second.first << "</td></tr>";
     }
     lines << "</table>" << std::endl << "]]>";
     legend = lines.str();

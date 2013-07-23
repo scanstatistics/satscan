@@ -61,10 +61,10 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
 }
 
 /** Adds report line to cluster report cache. */
-void CCluster::cacheReportLine(std::string& label, std::string& value) const {
+void CCluster::cacheReportLine(std::string& label, std::string& value, unsigned int setIdx) const {
   if (!gpCachedReportLines)
       gpCachedReportLines = new ReportCache_t();
-  gpCachedReportLines->push_back(std::make_pair(label,value));
+  gpCachedReportLines->push_back(std::make_pair(label, std::make_pair(value, setIdx) ));
 }
 
 /** returns the area rate for cluster */ 
@@ -192,12 +192,12 @@ CCluster::ReportCache_t & CCluster::getReportLinesCache() const {
     have a better solution at the moment. When/or if we have another cluster report file that needs to report a different collection of fields,
     we'll need to come up with a better solution.
 */
-void CCluster::printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache) const {
+void CCluster::printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx) const {
     PrintFormat.PrintSectionLabel(fp, label, false, true);
     PrintFormat.PrintAlignedMarginsDataString(fp, value);
     if (saveToCache) {
         std::string s(label);
-        cacheReportLine(s, value);
+        cacheReportLine(s, value, setIdx);
     }
 }
 
@@ -330,11 +330,11 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      }
      //print total individuals (censored and non-censored)
      GetPopulationAsString(buffer, DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub));
-     printClusterData(fp, PrintFormat, "Total individuals", buffer, true);
+     printClusterData(fp, PrintFormat, "Total individuals", buffer, true, *itr_Index + 1);
      //print total cases (non-censored)
-     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true);
+     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true, *itr_Index + 1);
      //print expected cases
-     printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer), true);
+     printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer), true, *itr_Index + 1);
      DisplayObservedDivExpected(fp, *itr_Index, DataHub, PrintFormat);
      //not printing censored information at Martin's directive, but leave in place for now
      ////print total censored cases
@@ -369,16 +369,16 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
        PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print total cases
-     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true);
+     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true, *itr_Index + 1);
      //print estimated mean inside
      tObserved = GetObservedCount(*itr_Index);
      tExpected = GetExpectedCount(DataHub, *itr_Index);
      dEstimatedMeanInside = (tObserved ? tExpected/tObserved : 0);
-     printClusterData(fp, PrintFormat, "Mean inside", getValueAsString(dEstimatedMeanInside, buffer), true);
+     printClusterData(fp, PrintFormat, "Mean inside", getValueAsString(dEstimatedMeanInside, buffer), true, *itr_Index + 1);
      //print estimated mean inside
      count_t tCasesOutside = Handler.GetDataSet(*itr_Index).getTotalCases() - tObserved;
      dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).getTotalMeasure() - tExpected)/tCasesOutside : 0);
-     printClusterData(fp, PrintFormat, "Mean outside", getValueAsString(dEstimatedMeanOutside, buffer), true);
+     printClusterData(fp, PrintFormat, "Mean outside", getValueAsString(dEstimatedMeanOutside, buffer), true, *itr_Index + 1);
      //print unexplained variance
      dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureAux(*itr_Index),
                                              Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
@@ -421,7 +421,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      }
      //print total cases per data set
      dTotalCasesInClusterDataSet = DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub);
-     printClusterData(fp, PrintFormat, "Total cases", GetPopulationAsString(buffer, dTotalCasesInClusterDataSet), true);
+     printClusterData(fp, PrintFormat, "Total cases", GetPopulationAsString(buffer, dTotalCasesInClusterDataSet), true, *itr_Index + 1);
 
      //print category ordinal values
      const RealDataSet& thisDataSet = DataHub.GetDataSetHandler().GetDataSet(*itr_Index);
@@ -436,7 +436,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
          buffer += work;
        }
      }
-     printClusterData(fp, PrintFormat, "Category", buffer, true);
+     printClusterData(fp, PrintFormat, "Category", buffer, true, *itr_Index + 1);
 
      //print observed case data per category
      buffer = "";
@@ -447,7 +447,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        printString(work, "%s%ld", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObserved);
        buffer += work;
      }
-     printClusterData(fp, PrintFormat, "Number of cases", buffer, true);
+     printClusterData(fp, PrintFormat, "Number of cases", buffer, true, *itr_Index + 1);
      //print expected case data per category
      buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
@@ -458,7 +458,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), work2.c_str());
        buffer += work;
      }
-     printClusterData(fp, PrintFormat, "Expected cases", buffer, true);
+     printClusterData(fp, PrintFormat, "Expected cases", buffer, true, *itr_Index + 1);
      //print observed div expected case data per category
      buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
@@ -492,7 +492,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        }
        buffer += work;
      }
-     printClusterData(fp, PrintFormat, "Relative risk", buffer, true);
+     printClusterData(fp, PrintFormat, "Relative risk", buffer, true, *itr_Index + 1);
      //print percent cases in area per category
      buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
@@ -502,7 +502,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), getValueAsString(100.0 * tObserved / dTotalCasesInClusterDataSet, work2,1).c_str());
        buffer += work;
      }     
-     printClusterData(fp, PrintFormat, "Percent cases in area", buffer, true);
+     printClusterData(fp, PrintFormat, "Percent cases in area", buffer, true, *itr_Index + 1);
   }
 }
 
@@ -523,9 +523,9 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
        PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print observed cases
-     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true);
+     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true, *itr_Index + 1);
      //print expected cases
-     printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer), true);
+     printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer), true, *itr_Index + 1);
      DisplayAnnualCaseInformation(fp, *itr_Index, DataHub, PrintFormat);
      DisplayObservedDivExpected(fp, *itr_Index ,DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
@@ -533,7 +533,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
         //percent cases in an area
         double percentCases = 100.0 * GetObservedCount(*itr_Index) / DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub);
-        printClusterData(fp, PrintFormat, "Percent cases in area", getValueAsString(percentCases, buffer,1), true);
+        printClusterData(fp, PrintFormat, "Percent cases in area", getValueAsString(percentCases, buffer,1), true, *itr_Index + 1);
      }
    }
 }
@@ -565,21 +565,21 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, tractIndexes);
 
      //print total cases
-     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", statistics.gtObservations), true);
+     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", statistics.gtObservations), true, *itr_Index + 1);
      //print total cluster weight
-     printClusterData(fp, PrintFormat, "Total weights", getValueAsString(statistics.gtWeight, buffer), true);
+     printClusterData(fp, PrintFormat, "Total weights", getValueAsString(statistics.gtWeight, buffer), true, *itr_Index + 1);
      //print mean inside
-     printClusterData(fp, PrintFormat, "Mean inside", getValueAsString(statistics.gtMeanIn, buffer), true);
+     printClusterData(fp, PrintFormat, "Mean inside", getValueAsString(statistics.gtMeanIn, buffer), true, *itr_Index + 1);
      //print mean outside
-     printClusterData(fp, PrintFormat, "Mean outside", getValueAsString(statistics.gtMeanOut, buffer), true);
+     printClusterData(fp, PrintFormat, "Mean outside", getValueAsString(statistics.gtMeanOut, buffer), true, *itr_Index + 1);
      //print cluster variance
      printClusterData(fp, PrintFormat, "Variance", getValueAsString(statistics.gtVariance, buffer), false);
      //print cluster standard deviation
      printClusterData(fp, PrintFormat, "Standard deviation", getValueAsString(std::sqrt(statistics.gtVariance), buffer), false);
      //print weighted mean inside
-     printClusterData(fp, PrintFormat, "Weighted mean inside", getValueAsString(statistics.gtWeightedMeanIn, buffer), true);
+     printClusterData(fp, PrintFormat, "Weighted mean inside", getValueAsString(statistics.gtWeightedMeanIn, buffer), true, *itr_Index + 1);
      //print weighted mean outside
-     printClusterData(fp, PrintFormat, "Weighted mean outside", getValueAsString(statistics.gtWeightedMeanOut, buffer), true);
+     printClusterData(fp, PrintFormat, "Weighted mean outside", getValueAsString(statistics.gtWeightedMeanOut, buffer), true, *itr_Index + 1);
      //print cluster weighted variance
      printClusterData(fp, PrintFormat, "Weighted variance", getValueAsString(statistics.gtWeightedVariance, buffer), false);
      //print cluster standard deviation
@@ -862,13 +862,13 @@ void CCluster::DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const C
     buffer = "infinity";
   else
     buffer = getValueAsString(dRelativeRisk, buffer);
-  printClusterData(fp, PrintFormat, "Relative risk", buffer, true);
+  printClusterData(fp, PrintFormat, "Relative risk", buffer, true, iDataSetIndex + 1);
 }
 
 /** Writes clusters overall relative risk in format required by result output file. */
 void CCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
-  printClusterData(fp, PrintFormat, "Observed / expected", getValueAsString(GetObservedDivExpected(DataHub, iDataSetIndex), buffer), true);
+  printClusterData(fp, PrintFormat, "Observed / expected", getValueAsString(GetObservedDivExpected(DataHub, iDataSetIndex), buffer), true, iDataSetIndex + 1);
 }
 
 /** Prints clusters time frame in format required by result output file. */

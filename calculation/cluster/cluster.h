@@ -22,7 +22,7 @@ class ClusterSupplementInfo;
 class CCluster {
   public:
     typedef std::pair<double,double> RecurrenceInterval_t;
-    typedef std::deque<std::pair<std::string,std::string> > ReportCache_t;
+    typedef std::deque<std::pair<std::string, std::pair<std::string, unsigned int> > > ReportCache_t; // <Label, <Value, Set Index> >
     static unsigned int           MIN_RANK_RPT_GUMBEL;
 
   protected:
@@ -36,9 +36,9 @@ class CCluster {
     mutable ReportCache_t       * gpCachedReportLines;
 	mutable bool                  gGiniCluster;
 
-    void                          cacheReportLine(std::string& label, std::string& value) const;
+    void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=0) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
-    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache) const;
+    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx=0) const;
 
   public:
     CCluster();
