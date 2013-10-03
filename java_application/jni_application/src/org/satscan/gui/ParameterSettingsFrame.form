@@ -42,7 +42,6 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
-    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -64,7 +63,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="562" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -108,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="106" max="32767" attributes="0"/>
+                      <EmptySpace pref="114" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -208,7 +207,7 @@
                     <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Case Files:&quot;,&quot;case_file_htm&quot;)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Case Files:&quot;,&quot;Case File&quot;)"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_caseFileTextField">
@@ -240,7 +239,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, &quot;time_precision_htm&quot;));"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, &quot;Time Precision&quot;));"/>
                   </AuxValues>
 
                   <Layout>
@@ -384,7 +383,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, &quot;study_period_htm&quot;));"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, &quot;Study Period&quot;));"/>
                       </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -670,7 +669,7 @@
                     <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Control Files:&quot;,&quot;control_file_htm&quot;)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Control Files:&quot;,&quot;Control File&quot;)"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_controlFileTextField">
@@ -749,7 +748,7 @@
                     <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Population File:&quot;,&quot;population_file_name_htm&quot;)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Population File:&quot;,&quot;Population File&quot;)"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_populationFileTextField">
@@ -859,7 +858,7 @@
                     <Property name="text" type="java.lang.String" value="Coordinates File:" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Coordinates File:&quot;,&quot;coordinates_file_name_htm&quot;)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Coordinates File:&quot;,&quot;Coordinates File&quot;)"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_coordiantesFileTextField">
@@ -891,7 +890,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, &quot;coordinates_file_htm&quot;));"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, &quot;Coordinates&quot;));"/>
                   </AuxValues>
 
                   <Layout>
@@ -959,7 +958,7 @@
                     <Property name="text" type="java.lang.String" value="Grid File:" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Grid File:&quot;,&quot;grid_file_name_htm&quot;)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Grid File:&quot;,&quot;Grid File&quot;)"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_gridFileTextField">
@@ -1045,7 +1044,7 @@
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="222" max="32767" attributes="0"/>
+                      <EmptySpace pref="230" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1754,7 +1753,7 @@
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="164" max="32767" attributes="0"/>
+                      <EmptySpace pref="172" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

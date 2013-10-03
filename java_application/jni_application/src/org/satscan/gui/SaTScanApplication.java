@@ -463,7 +463,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         public void actionPerformed(ActionEvent e) {
             try {
-                HelpShow.showHelp("introduction_htm");
+                HelpShow.showHelp("Introduction");
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             }

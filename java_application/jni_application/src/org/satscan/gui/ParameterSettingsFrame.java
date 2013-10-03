@@ -1375,7 +1375,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane = new javax.swing.JTabbedPane();
         _inputTab = new javax.swing.JPanel();
         _caseInputPanel = new javax.swing.JPanel();
-        _caseFileLabel = new HelpLinkedLabel("Case Files:","case_file_htm");
+        _caseFileLabel = new HelpLinkedLabel("Case Files:","Case File");
         _caseFileTextField = new javax.swing.JTextField();
         _caseFileBrowseButton = new javax.swing.JButton();
         _caseFileImportButton = new javax.swing.JButton();
@@ -1408,26 +1408,26 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _endDateLabel1 = new javax.swing.JLabel();
         _studyPeriodEndDateGenericTextField = new javax.swing.JTextField();
         _endDateYearLabel1 = new javax.swing.JLabel();
-        _controlFileLabel = new HelpLinkedLabel("Control Files:","control_file_htm");
+        _controlFileLabel = new HelpLinkedLabel("Control Files:","Control File");
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileBrowseButton = new javax.swing.JButton();
         _controlFileImportButton = new javax.swing.JButton();
         _bernoulliModelHintLabel = new javax.swing.JLabel();
         _populationInputPanel = new javax.swing.JPanel();
-        _populationFileLabel = new HelpLinkedLabel("Population File:","population_file_name_htm");
+        _populationFileLabel = new HelpLinkedLabel("Population File:","Population File");
         _populationFileTextField = new javax.swing.JTextField();
         _populationFileBrowseButton = new javax.swing.JButton();
         _populationFileImportButton = new javax.swing.JButton();
         _poissionModelHintLabel = new javax.swing.JLabel();
         _geographicalInputPanel = new javax.swing.JPanel();
-        _coordinatesFileLabel = new HelpLinkedLabel("Coordinates File:","coordinates_file_name_htm");
+        _coordinatesFileLabel = new HelpLinkedLabel("Coordinates File:","Coordinates File");
         _coordiantesFileTextField = new javax.swing.JTextField();
         _coordinatesFileBrowseButton = new javax.swing.JButton();
         _coodrinatesFileImportButton = new javax.swing.JButton();
         _coordinateTypeGroup = new javax.swing.JPanel();
         _cartesianRadioButton = new javax.swing.JRadioButton();
         _latLongRadioButton = new javax.swing.JRadioButton();
-        _gridFileLabel = new HelpLinkedLabel("Grid File:","grid_file_name_htm");
+        _gridFileLabel = new HelpLinkedLabel("Grid File:","Grid File");
         _gridFileTextField = new javax.swing.JTextField();
         _gridFileBrowseButton = new javax.swing.JButton();
         _gridFileImportButton = new javax.swing.JButton();
@@ -1576,7 +1576,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _timePrecisionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Precision"));
-        _timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, "time_precision_htm"));
+        _timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, "Time Precision"));
 
         _timePrecisionNone.setText("None"); // NOI18N
         _timePrecisionNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1666,7 +1666,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _studyPeriodGroup.setLayout(new java.awt.CardLayout());
 
         _studyPeriodComplete.setBorder(javax.swing.BorderFactory.createTitledBorder("Study Period"));
-        _studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, "study_period_htm"));
+        _studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, "Study Period"));
 
         _startDateLabel.setText("Start Date:"); // NOI18N
 
@@ -2080,7 +2080,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _coordinateTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Coordinates"));
-        _coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, "coordinates_file_htm"));
+        _coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, "Coordinates"));
 
         _cartesianRadioButton.setSelected(true);
         _cartesianRadioButton.setText("Cartesian"); // NOI18N
@@ -2257,7 +2257,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 106, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2732,7 +2732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 222, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 230, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2976,7 +2976,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 172, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2991,7 +2991,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
         );
 
         pack();

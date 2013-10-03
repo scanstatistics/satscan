@@ -28,10 +28,11 @@ public class HelpShow {
      * @param helpID
      */
      public static void showHelp(String helpID) {
-        final String helpsetName = "SaTScan_Help";
-        final String defaultID = "introduction_htm";
+        final String helpsetName = "help";
+        final String defaultID = "Introduction";
         ShowType showType = helpID.contains("http://") ? HelpShow.ShowType.Website : HelpShow.ShowType.JavaHelp;
 
+        
         try {
             if (showType == ShowType.Website) {
                 BareBonesBrowserLaunch.openURL(helpID);
