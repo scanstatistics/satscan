@@ -206,7 +206,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
         FILE * fp=0;
         std::string buffer;
         OpenReportFile(fp, true);
-        fprintf(fp, "\nPOWER EVALUATIONS\n");
+        fprintf(fp, "\nESTIMATED POWER\n");
         _clusterRanker.sort(); // need to sort otherwise simulation process of ranking clusters will fail
         boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
         // if simulations not already done is analysis stage, perform them now
@@ -225,15 +225,6 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
         unsigned int numReplicaStep1 = gSimVars.get_sim_count();
 
-        // report critical values gathered from simulations and/or user specified
-        AsciiPrintFormat::printPadRight(fp, "\nAlpha", 25);
-        AsciiPrintFormat::printPadRight(fp, "0.05", 20);
-        AsciiPrintFormat::printPadRight(fp, "0.01", 20);
-        AsciiPrintFormat::printPadRight(fp, "0.001", 20);
-        AsciiPrintFormat::printPadRight(fp, "\n-----", 25);
-        AsciiPrintFormat::printPadRight(fp, "----", 20);
-        AsciiPrintFormat::printPadRight(fp, "----", 20);
-        AsciiPrintFormat::printPadRight(fp, "-----", 20);
         double critical05, critical01, critical001;
         switch (gParameters.getPowerEvaluationCriticalValueType()) {
             case CV_MONTECARLO:
@@ -253,11 +244,6 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 break;
             default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
         };
-        AsciiPrintFormat::printPadRight(fp, "\nCritical Value", 25);
-        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical05).c_str(), 20);
-        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical01).c_str(), 20);
-        AsciiPrintFormat::printPadRight(fp, printString(buffer, "%lf", critical001).c_str(), 20);
-        fprintf(fp,"\n");
         // if power estimation is monte carlo, then set sim vars to track those LLRs
         if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
             gSimVars.reset(critical05);
@@ -296,7 +282,15 @@ void AnalysisRunner::ExecutePowerEvaluations() {
         if (number_randomizations == 0) {
             fprintf(fp,"\nNo alternative hypothesis sets found in source files.\n");
         } else {
-            fprintf(fp,"\nEstimated Power\n---------------");
+            // report critical values gathered from simulations and/or user specified
+            AsciiPrintFormat::printPadRight(fp, "\nAlpha", 25);
+            AsciiPrintFormat::printPadRight(fp, "0.05", 20);
+            AsciiPrintFormat::printPadRight(fp, "0.01", 20);
+            AsciiPrintFormat::printPadRight(fp, "0.001", 20);
+            AsciiPrintFormat::printPadRight(fp, "\n-----", 25);
+            AsciiPrintFormat::printPadRight(fp, "----", 20);
+            AsciiPrintFormat::printPadRight(fp, "----", 20);
+            AsciiPrintFormat::printPadRight(fp, "-----", 20);
         }
         SimulationVariables simVarsCopy(gSimVars);
         for (size_t t=0; t < number_randomizations; ++t) {
@@ -337,9 +331,9 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEstimationType());
             }
             AsciiPrintFormat::printPadRight(fp, printString(buffer, "\nAlternative #%d", t+1).c_str(), 25);
-            AsciiPrintFormat::printPadRight(fp, getValueAsString(power05,buffer, 3).c_str(), 20);
-            AsciiPrintFormat::printPadRight(fp, getValueAsString(power01,buffer, 3).c_str(), 20);
-            AsciiPrintFormat::printPadRight(fp, getValueAsString(power001,buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power05,buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power01,buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power001,buffer, 3).c_str(), 20);
 
             // reset simualtion variables for next power estimation interation
             gSimVars = simVarsCopy;
@@ -924,7 +918,7 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
   // Martin is not sure that critical values should be reported if early termination occurs.
   if (gSimVars.get_sim_count() != gParameters.GetNumReplicationsRequested()) return;
 
-  if (GetIsCalculatingSignificantRatios() && gSimVars.get_sim_count() >= 19) {
+  if (gParameters.GetReportCriticalValues() && GetIsCalculatingSignificantRatios() && gSimVars.get_sim_count() >= 19) {
     PrintFormat.SetMarginsAsOverviewSection();
     fprintf(fp,"\n");
     printString(buffer, "A cluster is statistically significant when its %s "
@@ -936,7 +930,7 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
     bool printAllGumbel = (gParameters.GetPValueReportingType() == GUMBEL_PVALUE ||
                            (gParameters.GetReportGumbelPValue() && (gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE)));
 
-    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() > 0)) {
+    if (printAllGumbel || (printSelectiveGumbel && (gSimVars.get_sim_count() > 0 && gSimVars.get_sim_count() < 99999))) {
       fprintf(fp,"\nGumbel Critical Values:\n");
     }
     if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 99999)) {
@@ -962,7 +956,7 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
 
     // skip reporting standard critical values if p-value reporting is gumbel
     if (gParameters.GetPValueReportingType() != GUMBEL_PVALUE) {
-		if (gSimVars.get_sim_count() > 0)
+		if (gSimVars.get_sim_count() >= 19)
             fprintf(fp,"\nStandard Monte Carlo Critical Values:\n");
         if (gSimVars.get_sim_count() >= 99999) {
 			SignificantRatios::alpha_t alpha00001(gpSignificantRatios->getAlpha00001());

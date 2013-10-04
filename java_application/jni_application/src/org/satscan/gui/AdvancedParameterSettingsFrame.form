@@ -88,7 +88,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="543" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -130,7 +130,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="236" max="32767" attributes="0"/>
+                      <EmptySpace pref="240" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -538,7 +538,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="292" max="32767" attributes="0"/>
+                      <EmptySpace pref="296" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -743,7 +743,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="227" max="32767" attributes="0"/>
+                      <EmptySpace pref="231" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1013,7 +1013,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="193" max="32767" attributes="0"/>
+                      <EmptySpace pref="197" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1378,7 +1378,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="220" max="32767" attributes="0"/>
+                      <EmptySpace pref="224" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1914,7 +1914,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="122" max="32767" attributes="0"/>
+                      <EmptySpace pref="126" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2282,7 +2282,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="131" max="32767" attributes="0"/>
+                      <EmptySpace pref="135" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2816,7 +2816,7 @@
                       <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="99" max="32767" attributes="0"/>
+                      <EmptySpace pref="103" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3195,7 +3195,7 @@
                       <Component id="_reportClusterRankGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="278" max="32767" attributes="0"/>
+                      <EmptySpace pref="282" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3368,11 +3368,11 @@
             </Container>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JPanel" name="_powerEvaluationsTab">
+        <Container class="javax.swing.JPanel" name="_powerEvaluationTab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Power Evaluations">
-                <Property name="tabTitle" type="java.lang.String" value="Power Evaluations"/>
+              <JTabbedPaneConstraints tabName="Power Evaluation">
+                <Property name="tabTitle" type="java.lang.String" value="Power Evaluation"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -3392,7 +3392,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_powerEvaluationsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="160" max="32767" attributes="0"/>
+                      <EmptySpace pref="164" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3592,7 +3592,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_alternativeHypothesisFilenameLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Hypothesis Alternative File:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Alternative Hypothesis File:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_alternativeHypothesisFilename">
@@ -3606,7 +3606,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for alternative hypothesis file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Hypothesis Alternative File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;ha&quot;,&quot;Hypothesis Alternative Files (*.ha)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _alternativeHypothesisFilename.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Alternative Hypothesis File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;ha&quot;,&quot;Alternative Hypothesis Files (*.ha)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _alternativeHypothesisFilename.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_numberPowerReplicationsLabel">
@@ -3720,7 +3720,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="431" max="32767" attributes="0"/>
+                      <EmptySpace pref="435" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

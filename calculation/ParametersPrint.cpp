@@ -815,7 +815,7 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Number of Replications",buffer));
             switch (gParameters.GetPowerEvaluationSimulationType()) {
                 case STANDARD         : 
-                    settings.push_back(std::make_pair("Hypothesis Alternative File",gParameters.getPowerEvaluationAltHypothesisFilename()));
+                    settings.push_back(std::make_pair("Alternative Hypothesis File",gParameters.getPowerEvaluationAltHypothesisFilename()));
                     break;
                 case FILESOURCE       :
                     settings.push_back(std::make_pair("Power Step Randomization Method","File Source"));
@@ -831,7 +831,7 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                 }
             }
         }
-        WriteSettingsContainer(settings, "Power Evaluations", fp);
+        WriteSettingsContainer(settings, "Power Evaluation", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintPowerEvaluationsParameters()","ParametersPrint");
         throw;

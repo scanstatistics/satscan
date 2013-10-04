@@ -9,6 +9,8 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 #include "SimulationVariables.h"
 
 // Conversion routines for Latitude/Longitude option for data input
@@ -263,6 +265,15 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
     std::string format;
     printString(format, "%%.%dlf", iPrecision);
     printString(s, format.c_str(), value);
+    return s;
+}
+
+/** Returns double as string with specified decimal precision.
+*/
+std::string & getRoundAsString(double value, std::string& s, unsigned int precision) {
+    std::stringstream buffer;
+    buffer << std::setprecision(precision) << std::setiosflags(std::ios_base::fixed) << value;
+    s = buffer.str();
     return s;
 }
 

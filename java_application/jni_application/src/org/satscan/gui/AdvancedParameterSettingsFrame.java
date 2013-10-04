@@ -174,7 +174,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Temporal Window", null, _temporalWindowTab, null);
                 jTabbedPane1.addTab("Space and Time Adjustments", null, _spaceTimeAjustmentsTab, null);
                 jTabbedPane1.addTab("Inference", null, _inferenceTab, null);
-                jTabbedPane1.addTab("Power Evaluations", null, _powerEvaluationsTab, null);
+                jTabbedPane1.addTab("Power Evaluations", null, _powerEvaluationTab, null);
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
@@ -1527,10 +1527,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The number of standard replications must be at most one less than the number of power replications.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
             }
             if (_alternativeHypothesisFilename.getText().length() == 0) {
-                throw new AdvFeaturesExpection("Please specify a hypothesis alternative filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+                throw new AdvFeaturesExpection("Please specify an alternative hypothesis  filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
             if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
-                throw new AdvFeaturesExpection("The hypothesis alternative file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
+                throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
         }
@@ -2614,7 +2614,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportClusterRankCheckBox = new javax.swing.JCheckBox();
         _additionalOutputFiles = new javax.swing.JPanel();
         _printAsciiColumnHeaders = new javax.swing.JCheckBox();
-        _powerEvaluationsTab = new javax.swing.JPanel();
+        _powerEvaluationTab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
         _powerEvaluationWithCaseFile = new javax.swing.JRadioButton();
@@ -3072,7 +3072,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(236, Short.MAX_VALUE))
+                .addContainerGap(240, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3188,7 +3188,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(292, Short.MAX_VALUE))
+                .addContainerGap(296, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3373,7 +3373,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(227, Short.MAX_VALUE))
+                .addContainerGap(231, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3686,7 +3686,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(193, Short.MAX_VALUE))
+                .addContainerGap(197, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4077,7 +4077,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(220, Short.MAX_VALUE))
+                .addContainerGap(224, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4358,7 +4358,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4770,7 +4770,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(131, Short.MAX_VALUE))
+                .addContainerGap(135, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5069,7 +5069,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5182,7 +5182,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(278, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5239,7 +5239,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
 
-        _alternativeHypothesisFilenameLabel.setText("Hypothesis Alternative File:"); // NOI18N
+        _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
 
         _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
@@ -5252,9 +5252,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Hypothesis Alternative File");
+                fc.setDialogTitle("Select Alternative Hypothesis File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("ha","Hypothesis Alternative Files (*.ha)"));
+                fc.addChoosableFileFilter(new InputFileFilter("ha","Alternative Hypothesis Files (*.ha)"));
                 int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
@@ -5431,24 +5431,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout _powerEvaluationsTabLayout = new javax.swing.GroupLayout(_powerEvaluationsTab);
-        _powerEvaluationsTab.setLayout(_powerEvaluationsTabLayout);
-        _powerEvaluationsTabLayout.setHorizontalGroup(
-            _powerEvaluationsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
+        javax.swing.GroupLayout _powerEvaluationTabLayout = new javax.swing.GroupLayout(_powerEvaluationTab);
+        _powerEvaluationTab.setLayout(_powerEvaluationTabLayout);
+        _powerEvaluationTabLayout.setHorizontalGroup(
+            _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        _powerEvaluationsTabLayout.setVerticalGroup(
-            _powerEvaluationsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationsTabLayout.createSequentialGroup()
+        _powerEvaluationTabLayout.setVerticalGroup(
+            _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(164, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Power Evaluations", _powerEvaluationsTab);
+        jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
 
         _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Graph Output Format"));
         _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, "create_additional_output_files_htm"));
@@ -5490,7 +5490,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(431, Short.MAX_VALUE))
+                .addContainerGap(435, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5524,7 +5524,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5665,11 +5665,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEstimationMonteCarlo;
     private javax.swing.JLabel _powerEstimationTypeLabel;
     private javax.swing.ButtonGroup _powerEvaluationMethodButtonGroup;
+    private javax.swing.JPanel _powerEvaluationTab;
     private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
-    private javax.swing.JPanel _powerEvaluationsTab;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JPanel _prospectiveCompleteCard;
     private javax.swing.JPanel _prospectiveGenericDate;
