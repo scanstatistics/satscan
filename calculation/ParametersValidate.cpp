@@ -572,8 +572,6 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
 }
 
 bool ParametersValidate::ValidateSpatialOutputParameters(BasePrint & PrintDirection) const {
-  if (gParameters.getPerformPowerEvaluation()) return true;
-
   bool  bReturn=true;
 
   if (gParameters.GetIsPurelyTemporalAnalysis()) return true;
