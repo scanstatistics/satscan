@@ -28,11 +28,10 @@ void CPSMonotoneAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           process of finding most likely clusters. This function is only a shell. */
 void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
-  gMaxCluster.reset(new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType()));
+  _topClusters.setTopClusters(CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType()));
   gComparatorCluster.reset(new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType() == HIGHANDLOW ? HIGH : gParameters.GetExecuteScanRateType()));
   if (gParameters.GetExecuteScanRateType() == HIGHANDLOW)
     gAuxComparatorCluster.reset(new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, LOW));
-  _topClusters.setTopClusters(*gMaxCluster);
 }
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
@@ -41,8 +40,6 @@ void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbstractDataSetGatewa
 const SharedClusterVector_t CPSMonotoneAnalysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   try {
     _topClusters.reset(tCenter);
-    gMaxCluster->AllocateForMaxCircles(gDataHub.GetNeighborCountArray()[0][tCenter]+1);
-    gMaxCluster->Initialize(tCenter);
     CentroidNeighbors CentroidDef(0, gDataHub, tCenter);
     _topClusters.resetNeighborCounts(0);
     if (gParameters.GetExecuteScanRateType() == HIGHANDLOW) {

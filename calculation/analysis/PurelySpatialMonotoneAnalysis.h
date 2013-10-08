@@ -8,7 +8,6 @@
 /** Derives from base class to re-define methods for monotone purely spatial analysis. */
 class CPSMonotoneAnalysis : public CAnalysis {
   private:
-    std::auto_ptr<CPSMonotoneCluster> gMaxCluster;           /** cluster object utilized to find top cluster in real data */
     std::auto_ptr<CPSMonotoneCluster> gComparatorCluster;    /** cluster object utilized to find top cluster in real data */
     std::auto_ptr<CPSMonotoneCluster> gAuxComparatorCluster; /** cluster object utilized to find top cluster in real data */
     CClusterSetCollections            _topClusters;
