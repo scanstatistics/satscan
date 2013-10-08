@@ -580,25 +580,25 @@ bool ParametersValidate::ValidateSpatialOutputParameters(BasePrint & PrintDirect
   if (gParameters.getReportGiniOptimizedClusters()) {
       if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
          bReturn = false;
-         PrintDirection.Printf("%s:\nThe %s model is not implemented for Gini index based collection reporting.\n",
+         PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented for the %s model.\n",
                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
       if (gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
           bReturn = false;
-          PrintDirection.Printf("%s:\nMultivariate purpose for multiple data sets is not implemented for Gini index based collection reporting.\n",
+          PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented with multiple data sets using the multivariate purpose.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetRiskType() == MONOTONERISK) {
         bReturn = false;
-        PrintDirection.Printf("%s:\nThe isotonic scan is not implemented for Gini index based collection reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented for the isotonic scan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
         bReturn = false;
-        PrintDirection.Printf("%s:\nThe Gini index based collection reporting is only implemented for purely spatial analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nGini index based collection reporting is only implemented for purely spatial analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetIsIterativeScanning()) {
         bReturn = false;
-        PrintDirection.Printf("%s:\nThe iterative scan feature is not implemented for Gini index based collection reporting.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented with the iterative scan statistic.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
   }
   return bReturn;

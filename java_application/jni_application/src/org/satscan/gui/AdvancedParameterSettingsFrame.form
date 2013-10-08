@@ -482,7 +482,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_multivariateAdjustmentsRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_multivariateAdjustmentsRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;          enableSetDefaultsButton();&#xa;          enableClustersReportedGroup();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="_adjustmentByDataSetsRadioButton">
@@ -498,7 +498,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentByDataSetsRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentByDataSetsRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSetDefaultsButton();&#xa;            enableClustersReportedGroup();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
