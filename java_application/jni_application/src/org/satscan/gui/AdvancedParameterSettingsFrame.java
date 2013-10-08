@@ -1241,7 +1241,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population in maximum circle file,\ncan not be greater than the maximum specifed on Spatial Window tab.",
                         FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialPercentFileTextField);
             }
-            if (_maxReportedSpatialRadiusTextField.isEnabled() && Double.parseDouble(_maxSpatialRadiusTextField.getText()) < Double.parseDouble(_maxReportedSpatialRadiusTextField.getText())) {
+            if (_maxSpatialRadiusTextField.isEnabled() && _maxReportedSpatialRadiusTextField.isEnabled() && 
+                Double.parseDouble(_maxSpatialRadiusTextField.getText()) < Double.parseDouble(_maxReportedSpatialRadiusTextField.getText())) {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as as fixed distance,\ncan not be greater than the maximum distance specifed on Spatial Window tab.",
                         FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialRadiusTextField);
             }

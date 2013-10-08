@@ -1,8 +1,8 @@
 [Input]
 ;case data filename
-CaseFile=C:\prj\satscan.development\satscan\installers\sample_data\NHumberside.cas
+CaseFile=NHumberside.cas
 ;control data filename
-ControlFile=C:\prj\satscan.development\satscan\installers\sample_data\NHumberside.ctl
+ControlFile=NHumberside.ctl
 ;time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
 PrecisionCaseTimes=0
 ;study period start date (YYYY/MM/DD)
@@ -12,7 +12,7 @@ EndDate=2001/11/24
 ;population data filename
 PopulationFile=
 ;coordinate data filename
-CoordinatesFile=C:\prj\satscan.development\satscan\installers\sample_data\NHumberside.geo
+CoordinatesFile=NHumberside.geo
 ;use grid file? (y/n)
 UseGridFile=n
 ;grid data filename
@@ -34,7 +34,7 @@ TimeAggregationLength=1
 
 [Output]
 ;analysis results output filename
-ResultsFile=C:\prj\satscan.development\satscan\installers\sample_data\NHumberside.txt
+ResultsFile=NHumberside.txt
 ;output Google Earth KML file (y/n)
 OutputGoogleEarthKML=n
 ;output shapefiles (y/n)
@@ -135,7 +135,7 @@ UseAdjustmentsByRRFile=n
 AdjustmentsByKnownRelativeRisksFilename=
 
 [Inference]
-;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) 
+;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3)
 PValueReportType=0
 ;early termination threshold
 EarlyTerminationThreshold=50

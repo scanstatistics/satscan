@@ -1114,7 +1114,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
         PrintDirection.Printf("%s:\nThe maximum spatial cluster size, defined as percentage of population in max circle file, is invalid. "
                               "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dPercentMaxFileValue, 100/*50*/);
       }
-      //validate maximum as pecentage of population defined in max circle file
+      //validate maximum as a fixed distance
       double dDistanceValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
       if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) && dDistanceValue <= 0.0) {
         bValid = false;
@@ -1139,10 +1139,10 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                                   "The specified value is %2g. Must be greater than zero and <= %2g.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dRptPercentMaxFileValue, dPercentMaxFileValue);
           }
       }
-      //validate maximum as pecentage of population defined in max circle file  -- reported
+      //validate maximum as a fixed distance  -- reported
       if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
           double dRptDistanceValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
-          if (dRptDistanceValue <= 0.0 || dRptDistanceValue > dDistanceValue) {
+          if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) && (dRptDistanceValue <= 0.0 || dRptDistanceValue > dDistanceValue)) {
             bValid = false;
             PrintDirection.Printf("%s:\nThe maximum reported spatial cluster size of %2g units is invalid. "
                                   "Must be greater than zero and <= %2g.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dRptDistanceValue, dDistanceValue);
