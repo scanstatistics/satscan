@@ -15,7 +15,12 @@ class CParameters {
         unsigned int iMinor; 
         unsigned int iRelease;
 
-        unsigned int getNumber() const {return iMajor * 100 + iMinor * 10 + iRelease;}
+        bool operator<(const CreationVersion& other) const {
+            if (iMajor < other.iMajor) return true;
+            if (iMinor < other.iMinor) return true;
+            if (iRelease < other.iRelease) return true;
+            return false;
+        }
     };
 
   private:
