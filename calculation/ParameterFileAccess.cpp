@@ -29,7 +29,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
 
     // Now correct any current defaults to revert to old defaults.
-    if (gParameters.GetCreationVersion().iMajor <= 9 && gParameters.GetCreationVersion().iMinor < 2) {
+    if (gParameters.GetCreationVersion().getNumber() < 920) {
        gParameters.setReportGiniOptimizedClusters(false);
     }
   }

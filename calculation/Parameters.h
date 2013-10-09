@@ -10,7 +10,13 @@
 
 class CParameters {
   public:
-    struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
+    struct CreationVersion {
+        unsigned int iMajor; 
+        unsigned int iMinor; 
+        unsigned int iRelease;
+
+        unsigned int getNumber() const {return iMajor * 100 + iMinor * 10 + iRelease;}
+    };
 
   private:
     MultipleCoordinatesType             geMultipleCoordinatesType;              /** multiple locations type */
