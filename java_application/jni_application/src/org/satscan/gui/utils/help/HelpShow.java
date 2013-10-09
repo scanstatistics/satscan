@@ -31,7 +31,6 @@ public class HelpShow {
         final String helpsetName = "help";
         final String defaultID = "Introduction";
         ShowType showType = helpID.contains("http://") ? HelpShow.ShowType.Website : HelpShow.ShowType.JavaHelp;
-
         
         try {
             if (showType == ShowType.Website) {

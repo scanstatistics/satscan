@@ -2257,7 +2257,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 118, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2265,7 +2265,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane.addTab("Input", _inputTab);
 
         _analysisTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Type of Analysis"));
-        this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, "type_of_analysis_htm"));
+        this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, "Type of Analysis"));
 
         jLabel1.setText("Retrospective Analyses:"); // NOI18N
 
@@ -2397,7 +2397,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Probability Model"));
-        _probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, "probability_model_htm"));
+        _probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, "Probability Model"));
 
         _probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);
         _poissonModelRadioButton.setSelected(true);
@@ -2553,7 +2553,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Scan For Areas With:"));
-        _scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, "scan_for_high_or_low_rates_htm"));
+        _scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, "Scan for High or Low Rates"));
 
         _highRatesRadioButton.setSelected(true);
         _highRatesRadioButton.setText("High Rates"); // NOI18N
@@ -2592,7 +2592,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _timeAggregationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Aggregation"));
-        this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, "time_aggregation_htm"));
+        this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, "Time Aggregation"));
 
         _timeAggregationUnitsLabel.setText("Units:"); // NOI18N
 
@@ -2732,7 +2732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 230, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 234, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2740,7 +2740,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane.addTab("Analysis", _analysisTab);
 
         _additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Output Format"));
-        _additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, "create_additional_output_files_htm"));
+        _additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, "Column Output Format"));
 
         _asciiLabel.setText("ASCII"); // NOI18N
 
@@ -2876,7 +2876,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
-        _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "results_file_htm"));
+        _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "Text Output Format"));
 
         _resultsFileLabel.setText("Results File:"); // NOI18N
 
@@ -2920,7 +2920,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output Format"));
-        _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, "create_additional_output_files_htm"));
+        _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, "Geographical Output Format"));
 
         _reportGoogleEarthKML.setText("KML file for Google Earth");
         _reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {
@@ -2976,7 +2976,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 172, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2991,7 +2991,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
         );
 
         pack();
