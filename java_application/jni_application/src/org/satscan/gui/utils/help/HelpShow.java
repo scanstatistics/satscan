@@ -46,18 +46,18 @@ public class HelpShow {
                         return;
                     }
                 }
-                HelpSet mainHS = new HelpSet(cl, url);
-                HelpBroker mainHB = mainHS.createHelpBroker();
+                HelpBroker mainHB = SaTScanApplication.getInstance().getHelpBroker();
                 if (showType == ShowType.JavaHelpPopup && helpID != null) {
-                    Popup popup = (Popup)Popup.getPresentation(mainHS,null);
-                    popup.setInvoker (SaTScanApplication.getInstance());
+                    Popup popup = SaTScanApplication.getInstance().getHelpPopup();
                     popup.setCurrentID(helpID);
                     popup.setDisplayed(true);
                 } else {
                     mainHB.setCurrentID(helpID != null ? helpID : defaultID);
-                    mainHB.setSize(SaTScanApplication.getInstance().getSize());
-                    mainHB.setLocation(SaTScanApplication.getInstance().getLocation());
-                    mainHB.setDisplayed(true);
+                    if (!mainHB.isDisplayed()) {
+                        mainHB.setSize(SaTScanApplication.getInstance().getSize());
+                        mainHB.setLocation(SaTScanApplication.getInstance().getLocation());
+                        mainHB.setDisplayed(true);
+                    }
                 }
             }
         } catch (Throwable t) {

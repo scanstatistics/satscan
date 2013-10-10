@@ -42,8 +42,14 @@ import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.help.HelpSetException;
+import javax.help.Popup;
+import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
 import org.satscan.gui.utils.MacOSApplication;
 import org.satscan.gui.utils.help.HelpShow;
@@ -78,6 +84,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
     private MacOSApplication _mac_os_app = new MacOSApplication();
+    private HelpSet _mainHS = null;
+    private HelpBroker _mainHB = null;
+    private Popup _popupHB = null;
 
     /**
      * Creates new form SaTScanApplication
@@ -111,6 +120,33 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         return _instance;
     }
 
+    public HelpBroker getHelpBroker() throws HelpSetException {
+        if (_mainHB == null) {        
+            final String helpsetName = "help";
+            SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
+            ClassLoader cl = SaTScanApplication.class.getClassLoader();
+            URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
+            if (url == null) {
+                url = HelpSet.findHelpSet(cl, helpsetName, ".hs", Locale.getDefault());
+                if (url == null) {
+                    JOptionPane.showMessageDialog(null, "The help system could not be located.", " Help", JOptionPane.WARNING_MESSAGE);
+                    return null;
+                }
+            }
+            _mainHS = new HelpSet(cl, url);
+            _mainHB = _mainHS.createHelpBroker();
+        }
+        return _mainHB;
+    }
+
+    public Popup getHelpPopup() throws HelpSetException {
+        if (_popupHB == null) {        
+            _popupHB = (Popup)Popup.getPresentation(getHelpBroker().getHelpSet(),null);
+            _popupHB.setInvoker (getInstance());
+        }
+        return _popupHB;
+    }
+    
     /**
      * Loads shared object library.
      * @param is64bitEnabled
