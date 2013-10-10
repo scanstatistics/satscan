@@ -1462,28 +1462,31 @@ void AnalysisRunner::reportClusters() {
             // now sort combined cluster collection by LLR
             _reportClusters.sort();
         }
-        if (gParameters.GetIsIterativeScanning())
+
+        if (gParameters.GetIsIterativeScanning()) {
             PrintTopIterativeScanCluster(_reportClusters);
-        else {
+        } else {
             PrintTopClusters(_reportClusters);
-
-            // TODO: Test UseLocationNeighborsFile() -- why can't we use this feature with KML?
-
-            // Google Earth code ... 
-            if (gParameters.getOutputKMLFile() &&
-                _reportClusters.GetNumClustersRetained() && 
-                gParameters.GetCoordinatesType() == LATLON && 
-                !gParameters.GetIsPurelyTemporalAnalysis() &&
-                !gParameters.UseLocationNeighborsFile()) {
-                ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
-                kmlOut.generateKML();
-            }
             // create temporal graph
             if (gParameters.GetIsPurelyTemporalAnalysis() && gParameters.getOutputTemporalGraphFile() && _reportClusters.GetNumClustersRetained()) {
                 // TODO: What about space-time, imcluding purely temporal cluster? What if one of the detected clusters is purely temporal.
                 TemporalChartGenerator generator(*gpDataHub, _reportClusters.GetTopRankedCluster());
                 generator.generateChart();
             }
+        }
+
+        // TODO: Test UseLocationNeighborsFile() -- why can't we use this feature with KML?
+        bool generateKML = gParameters.getOutputKMLFile() && 
+                           _reportClusters.GetNumClustersRetained() && 
+                           gParameters.GetCoordinatesType() == LATLON &&
+                           !gParameters.GetIsPurelyTemporalAnalysis() && 
+                           !gParameters.UseLocationNeighborsFile() &&
+                           (!gParameters.GetIsIterativeScanning() || (gParameters.GetIsIterativeScanning() && giAnalysisCount == 1));
+
+        // Google Earth code ... 
+        if (generateKML) {
+            ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
+            kmlOut.generateKML();
         }
     } catch (prg_exception& x) {
         x.addTrace("reportClusters()","AnalysisRunner");
