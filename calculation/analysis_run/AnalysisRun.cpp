@@ -1475,7 +1475,6 @@ void AnalysisRunner::reportClusters() {
             }
         }
 
-        // TODO: Test UseLocationNeighborsFile() -- why can't we use this feature with KML?
         bool generateKML = gParameters.getOutputKMLFile() && 
                            _reportClusters.GetNumClustersRetained() && 
                            gParameters.GetCoordinatesType() == LATLON &&
@@ -1483,7 +1482,7 @@ void AnalysisRunner::reportClusters() {
                            !gParameters.UseLocationNeighborsFile() &&
                            (!gParameters.GetIsIterativeScanning() || (gParameters.GetIsIterativeScanning() && giAnalysisCount == 1));
 
-        // Google Earth code ... 
+        // Google Earth file
         if (generateKML) {
             ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
             kmlOut.generateKML();
