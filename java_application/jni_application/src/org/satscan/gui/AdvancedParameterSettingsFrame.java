@@ -174,7 +174,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Temporal Window", null, _temporalWindowTab, null);
                 jTabbedPane1.addTab("Space and Time Adjustments", null, _spaceTimeAjustmentsTab, null);
                 jTabbedPane1.addTab("Inference", null, _inferenceTab, null);
-                jTabbedPane1.addTab("Power Evaluations", null, _powerEvaluationTab, null);
+                jTabbedPane1.addTab("Power Evaluation", null, _powerEvaluationTab, null);
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
