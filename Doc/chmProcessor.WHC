@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Configuracion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFiles>
-    <string>.\SaTScan_Users_Guide.doc</string>
+    <string>.\SaTScan_Users_Guide.docx</string>
   </SourceFiles>
   <Compilar>true</Compilar>
   <DirectorioDestino>..\..\..\..\Users\hostovic\Desktop\SaTScan User Guide_final.july.updates-project</DirectorioDestino>
@@ -17,7 +17,7 @@
   <NivelTemasIndice>0</NivelTemasIndice>
   <ArchivoAyuda>.\SaTScan.chm</ArchivoAyuda>
   <CommandLine />
-  <GeneratePdf>true</GeneratePdf>
+  <GeneratePdf>false</GeneratePdf>
   <PdfPath>..\installers\documents\SaTScan_Users_Guide.pdf</PdfPath>
   <WebKeywords />
   <WebDescription />
