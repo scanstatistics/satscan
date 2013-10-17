@@ -124,7 +124,7 @@ public class AboutDialog extends javax.swing.JDialog {
 
         jLabel1.setText("Martin Kulldorff, Harvard Medical School, Boston and");
 
-        jLabel5.setText("Information Management Services Inc, Silver Spring, Maryland.");
+        jLabel5.setText("Information Management Services Inc, Calverton, Maryland.");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
