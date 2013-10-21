@@ -16,10 +16,15 @@ class CParameters {
         unsigned int iRelease;
 
         bool operator<(const CreationVersion& other) const {
-            if (iMajor < other.iMajor) return true;
-            if (iMinor < other.iMinor) return true;
-            if (iRelease < other.iRelease) return true;
-            return false;
+            if (iMajor == other.iMajor) {
+                if (iMinor == other.iMinor) {
+                    return iRelease < other.iRelease;
+                } else {
+                    return iMinor < other.iMinor;
+                }
+            } else {
+                return iMajor < other.iMajor;
+            }
         }
     };
 
