@@ -155,7 +155,7 @@ public class InstallerFrame extends javax.swing.JFrame {
         }
 
         /** 
-         * Deterimnes write accesss of archive file.
+         * Determines write access of archive file.
          */
         private void checkAccess(File f) throws Exception {
             if (f.exists() && !f.isDirectory()) {
@@ -165,12 +165,18 @@ public class InstallerFrame extends javax.swing.JFrame {
                     try {
                         outStream = new BufferedOutputStream(new FileOutputStream(f));
                     } catch (Exception e) {
-                        int option = JOptionPane.showConfirmDialog(InstallerFrame.this,
-                                "The updater have determined that file '" + f.getAbsolutePath() +
+                        String message = "The updater have determined that file '" + f.getAbsolutePath() +
                                 "'\nis open or active and can not be correctly updated.\n\n" +
-                                "Please shutdown any application(s) accessing this file and select Ok.",
-                                "SaTScan Update",
-                                JOptionPane.OK_CANCEL_OPTION);
+                                "Please shutdown any application(s) accessing this file and select Ok.\n\n" +
+                                "Note that you might not have privelages to perform this update.\n"; 
+                        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                            message += "In that case, you will need to Cancel this update, restart SaTScan with the 'Run as adminstrator'\n" +
+                                       "Windows feature and select the 'Check for New Version' option again.";
+                        } else {
+                            message += "In that case, you will need to Cancel this update, restart SaTScan as an adminstrator\n" +
+                                       "and select the 'Check for New Version' option again.";
+                        }
+                        int option = JOptionPane.showConfirmDialog(InstallerFrame.this, message, "SaTScan Update", JOptionPane.OK_CANCEL_OPTION);
                         if (option != JOptionPane.YES_OPTION) {
                             throw new fileAccessException(f.getAbsolutePath());
                         }
