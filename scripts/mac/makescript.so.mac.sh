@@ -12,7 +12,7 @@ fi
 echo building xbase library ...
 cd $2/xbase/xbase_2.0.0/xbase
 make clean CFLAGS=-fPIC
-make libxbase.dylib COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10} CFLAGS=-fPIC
+make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10} CFLAGS=-fPIC
 echo xbase done
 echo
 
