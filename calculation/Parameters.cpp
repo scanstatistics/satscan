@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 127;
+const int CParameters::giNumParameters                = 128;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -156,6 +156,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_compress_kml_output != rhs._compress_kml_output) return false;
   if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;
   if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
+  if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;
 
   return true;
 }
@@ -363,6 +364,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _locations_threshold_kml = rhs._locations_threshold_kml;
   _launch_kml_viewer = rhs._launch_kml_viewer;
   _adjustWeeklyTrends = rhs._adjustWeeklyTrends;
+  _minimum_temporal_cluster_size = rhs._minimum_temporal_cluster_size;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -854,6 +856,7 @@ void CParameters::SetAsDefaulted() {
   _launch_kml_viewer = true;
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
+  _minimum_temporal_cluster_size = 1;
 }
 
 /** Sets start range start date. Throws exception. */

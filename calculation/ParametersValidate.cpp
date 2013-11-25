@@ -78,7 +78,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
       }
     }
     //validate range parameters
-    if (! ValidateRangeParameters(PrintDirection))
+   if (! ValidateRangeParameters(PrintDirection))
       bValid = false;
     //validate iterative scan parameters
     if (! ValidateIterativeScanParameters(PrintDirection))
@@ -494,8 +494,8 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
   return bValid;
 }
 
-/** Validates the maximum temporal cluster size parameters. */
-bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const {
+/** Validates the temporal cluster size parameters. */
+bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) const {
   std::string   sPrecisionString;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
@@ -521,11 +521,11 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                               100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
         return false;
       }
-      //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+      //validate the time aggregation length agree with the study period and maximum temporal cluster size
+      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
-      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
+      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
       if (dMaxTemporalLengthInUnits < 1) {
         GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
         PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
@@ -534,8 +534,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                               sPrecisionString.c_str(), sPrecisionString.c_str());
         return false;
       }
-    }
-    else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
+    } else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
       //validate for maximum specified as time aggregation unit
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
         PrintDirection.Printf("%s:\nThe maximum temporal cluster size of '%2g' is invalid. "
@@ -545,10 +544,10 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
-      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
+      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
         PrintDirection.Printf("%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
                               "Note that current settings limit the maximum to %d %s%s.\n",
@@ -560,12 +559,28 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                               (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
         return false;
       }
+      dMaxTemporalLengthInUnits = gParameters.GetMaximumTemporalClusterSize();
+    } else
+      throw prg_error("Unknown temporal percentage type: %d.", "ValidateTemporalClusterSize()", gParameters.GetMaximumTemporalClusterSizeType());
+
+    if (gParameters.getMinimumTemporalClusterSize() < 1) {
+        GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
+        PrintDirection.Printf("%s:\nThe minimum temporal cluster size is 1 %s when time aggregating to %ss.\n",
+                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sPrecisionString.c_str(), sPrecisionString.c_str());
+        return false;
     }
-    else
-      throw prg_error("Unknown temporal percentage type: %d.",
-                      "ValidateMaximumTemporalClusterSize()", gParameters.GetMaximumTemporalClusterSizeType());
+    // compare the maximum temporal cluster size to the minimum temporal cluster size
+    if (gParameters.getMinimumTemporalClusterSize() > static_cast<unsigned int>(dMaxTemporalLengthInUnits)) {
+        PrintDirection.Printf("%s:\nThe minimum temporal cluster size of %d %s%s is greater than the maximum temporal cluster size of %d %s%s.\n",
+                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 
+                              gParameters.getMinimumTemporalClusterSize(),
+                              sPrecisionString.c_str(), (gParameters.getMinimumTemporalClusterSize() == 1 ? "" : "s"),
+                              static_cast<unsigned int>(dMaxTemporalLengthInUnits), 
+                              sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        return false;
+    }
   } catch (prg_exception& x) {
-    x.addTrace("ValidateMaximumTemporalClusterSize()","ParametersValidate");
+    x.addTrace("ValidateTemporalClusterSize()","ParametersValidate");
     throw;
   }
   return true;
@@ -1348,8 +1363,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
       return true;
     }
-    //validate maximum temporal cluster size
-    if (!ValidateMaximumTemporalClusterSize(PrintDirection))
+    //validate temporal cluster sizes
+    if (!ValidateTemporalClusterSize(PrintDirection))
       bValid = false;
     //Prospective analyses include only alive clusters - reset this parameter
     //instead of reporting error since this parameter has under gone changes

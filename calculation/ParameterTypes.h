@@ -132,7 +132,8 @@ enum ParameterType
     LOCATIONS_THRESHOLD_KML,        /* threshold for generating separate kml files for cluster locations */
     COMPRESS_KML_OUTPUT,            /* compress the kml output into a kmz file */
     LAUNCH_KML_VIEWER,              /* whether to launch kml/kmz viewer - gui only */
-    ADJUST_WEEKLY_TRENDS            /* adjust for weekly trends, nonparametric */
+    ADJUST_WEEKLY_TRENDS,           /* adjust for weekly trends, nonparametric */
+    MIN_TEMPORAL_CLUSTER            /* minimum temporal cluster size */
 };
 /** analysis and cluster types */
 enum AnalysisType

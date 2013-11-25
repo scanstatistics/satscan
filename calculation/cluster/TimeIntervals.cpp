@@ -41,12 +41,12 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
                 gpMaxWindowLengthIndicator.reset(new FixedMaxWindowLengthIndicator(gDataHub));
         } else {
             switch (eIncludeClustersType) {
-                case ALLCLUSTERS        : _interval_range = IntervalRange_t(0, gDataHub.GetNumTimeIntervals(), 1, gDataHub.GetNumTimeIntervals()); break;
+                case ALLCLUSTERS        : _interval_range = IntervalRange_t(0, gDataHub.GetNumTimeIntervals(), gDataHub.getMinTimeIntervalCut(), gDataHub.GetNumTimeIntervals()); break;
                 case ALIVECLUSTERS      : _interval_range = IntervalRange_t(0, gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTimeIntervals()); break;
-                case CLUSTERSINRANGE    : _interval_range = IntervalRange_t(gDataHub.GetFlexibleWindowStartRangeStartIndex(), 
-                                                                            gDataHub.GetFlexibleWindowStartRangeEndIndex(), 
-                                                                            gDataHub.GetFlexibleWindowEndRangeStartIndex(), 
-                                                                            gDataHub.GetFlexibleWindowEndRangeEndIndex()); break;  
+                case CLUSTERSINRANGE    : _interval_range = IntervalRange_t(gDataHub.GetFlexibleWindowStartRangeStartIndex(),
+                                                                            gDataHub.GetFlexibleWindowStartRangeEndIndex(),
+                                                                            gDataHub.GetFlexibleWindowEndRangeStartIndex(),
+                                                                            gDataHub.GetFlexibleWindowEndRangeEndIndex()); break;
                 default : throw prg_error("Unknown cluster inclusion type: '%d'.", "Setup()", gDataHub.GetParameters().GetIncludeClustersType());
             };
             gpMaxWindowLengthIndicator.reset(new FixedMaxWindowLengthIndicator(gDataHub));

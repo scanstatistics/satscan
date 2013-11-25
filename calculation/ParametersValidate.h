@@ -24,7 +24,6 @@ class ParametersValidate {
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
     bool                ValidateInferenceParameters(BasePrint & PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
-    bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const;
@@ -35,6 +34,7 @@ class ParametersValidate {
     bool                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
     bool                ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const;
     bool                ValidateSVTTAnalysisSettings(BasePrint& PrintDirection) const;
+    bool                ValidateTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateTemporalParameters(BasePrint & PrintDirection) const;
     bool                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
 

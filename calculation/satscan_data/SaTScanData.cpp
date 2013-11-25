@@ -245,6 +245,17 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     // collapse unused time intervals into one based upon the prospective start date and maximum
     // temporal cluster size.
     if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetAdjustForEarlierAnalyses()) {
+      // Check the length of the shortest prospective window is not less than the minimum temporal cluster size.
+      dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[m_nProspectiveIntervalStart] - 1,
+                                                                gParameters.GetTimeAggregationUnitsType(), 1);
+      if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
+        dProspectivePeriodLength = std::floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
+      if (dProspectivePeriodLength < static_cast<double>(gParameters.getMinimumTemporalClusterSize())) {
+          std::string buffer;
+          GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), buffer, dProspectivePeriodLength > 1.0, false);
+          throw resolvable_error("Error: The minimum temporal cluster size is longer than the initial prospective period of %.1lf %s.",
+                                 dProspectivePeriodLength, buffer.c_str());
+      }
       // For prospective analyses, not all time intervals may be evaluated; consequently some of the
       // initial intervals can be combined into one interval. When evaluating real data, we will only
       // consider 'alive' clusters (clusters where the end date range equals the study period end date). For
@@ -253,12 +264,13 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
         // If the maximum temporal cluster size is defined as a percentage of the population at risk,
         // then the maximum cluster size must be calculated for each prospective period.
         for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
-           dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
-                                                                     gParameters.GetTimeAggregationUnitsType(), 1);
-           dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
-           //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-           gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
+            dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
+                                                                      gParameters.GetTimeAggregationUnitsType(), 1);
+            dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
+            //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+            gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
         }
+
         // Now we know the index of the earliest accessed time interval, we can determine the
         // number of time intervals that can be collapsed.
         iNumCollapsibleIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
@@ -424,6 +436,8 @@ void CSaTScanData::Init() {
   gtTotalMeasureAux = 0;
   m_nStartDate = 0;
   m_nEndDate = 0;
+  m_nIntervalCut=1;
+  _min_iterval_cut=4;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -709,30 +723,31 @@ void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eT
 /* Calculates the number of time aggregation units to include in potential clusters
    without exceeding the maximum temporal cluster size.*/
 void CSaTScanData::SetIntervalCut() {
-  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
+    double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
-  try {
-    if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-      //calculate the number of time interval units which comprise the maximum
-      //temporal cluster size in the study period
-      dStudyPeriodLengthInUnits = CalculateNumberOfTimeIntervals(m_nStartDate, m_nEndDate, gParameters.GetTimeAggregationUnitsType(), 1);
-      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
-      //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-      m_nIntervalCut = static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
+    try {
+        if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+            //calculate the number of time interval units which comprise the maximum
+            //temporal cluster size in the study period
+            dStudyPeriodLengthInUnits = CalculateNumberOfTimeIntervals(m_nStartDate, m_nEndDate, gParameters.GetTimeAggregationUnitsType(), 1);
+            dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
+            //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+            m_nIntervalCut = static_cast<int>(std::floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
+        } else
+            m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
+
+        if (m_nIntervalCut==0)
+        //Validation in CParameters should have produced error before this body of code.
+        //Only a program error or user selecting not to validate parameters should cause
+        //this error to occur.
+        throw prg_error("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
+
+        // calculate the minimum interval cut -- with the minimum being one interval
+        _min_iterval_cut = static_cast<int>(std::ceil(static_cast<double>(gParameters.getMinimumTemporalClusterSize())/static_cast<double>(gParameters.GetTimeAggregationLength())));
+    } catch (prg_exception& x) {
+        x.addTrace("SetIntervalCut()","CSaTScanData");
+        throw;
     }
-    else
-      m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
-
-    if (m_nIntervalCut==0)
-      //Validation in CParameters should have produced error before this body of code.
-      //Only a program error or user selecting not to validate parameters should cause
-      //this error to occur.
-      throw prg_error("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
-   }
-  catch (prg_exception& x) {
-    x.addTrace("SetIntervalCut()","CSaTScanData");
-    throw;
-  }
 }
 
 /** Calculates the time interval start times given study period and time interval
@@ -754,6 +769,14 @@ void CSaTScanData::SetIntervalStartTimes() {
       //find the next prior interval start time from current, given length of time intervals
       IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetTimeAggregationLength());
   }
+
+  // If the last calculated interval date is not the start date, remove last added so that the initial interval is at least
+  // as long as aggregation length. This will prevent the initial time period from being shorter than aggregation
+  // length -- but it will also have the effect of making the initial interval longer than the aggregation length.
+  if (IntervalStartingDate < m_nStartDate) {
+      gvTimeIntervalStartTimes.pop_back();
+  }
+
   //push study period start date onto vector
   gvTimeIntervalStartTimes.push_back(m_nStartDate);
   //reverse elements of vector so that elements are ordered: study period start --> 'study period end + 1'
@@ -764,8 +787,8 @@ void CSaTScanData::SetIntervalStartTimes() {
   if (m_nTimeIntervals <= 1)
     //This error should be catch in the CParameters validation process.
     throw prg_error("The number of time intervals was calculated as one. Temporal\n"
-                    "and space-time analyses can not be performed on less than one\n"
-                    "time interval.\n", "SetIntervalStartTimes()");
+                    "and space-time analyses can not be performed on less than two\n"
+                    "time intervals.\n", "SetIntervalStartTimes()");
 }
 
 /* Calculates which time interval the prospective surveillance start date is in.*/
@@ -866,6 +889,16 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
         m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
         m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     }
+
+    // verify that windows will be evaluated given the flexible window definition and the minimum cluster size
+    if (_min_iterval_cut >= (m_nFlexibleWindowEndRangeEndIndex - m_nFlexibleWindowStartRangeStartIndex)) {
+      throw resolvable_error("Error: No clusters will be evaluated.\n"
+                             "       The flexible scanning window defines a range in which no windows will\n"
+                             "       be evaluated given a minimum temporal cluster size of %i %s.\n",
+                             gParameters.getMinimumTemporalClusterSize(), 
+                             GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, gParameters.getMinimumTemporalClusterSize() > 1, false));
+    }
+
   }
 }
 

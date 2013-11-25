@@ -13,21 +13,24 @@ class AbstractMaxWindowLengthIndicator {
     AbstractMaxWindowLengthIndicator() {}
     virtual ~AbstractMaxWindowLengthIndicator() {}
 
-    virtual int                         GetNextWindowLength() = 0;
-    virtual void                        Reset() {}
+    virtual int getNextWindowLength() = 0;
+    virtual void reset() {}
+    virtual int getMinWindowLength() = 0;
 };
 
 /** Returns a fixed value for maximum temporal window length, as initially
     calculated by CSaTScanData object. */
 class FixedMaxWindowLengthIndicator : public AbstractMaxWindowLengthIndicator {
   private:
-    int                                 giMaxWindowLength;
+    int _minWindowLength;
+    int _maxWindowLength;
 
   public:
     FixedMaxWindowLengthIndicator(const CSaTScanData & Data);
-    virtual ~FixedMaxWindowLengthIndicator();
+    virtual ~FixedMaxWindowLengthIndicator() {}
 
-    virtual int                         GetNextWindowLength() {return giMaxWindowLength;}
+    virtual int getMinWindowLength() {return _minWindowLength;}
+    virtual int getNextWindowLength() {return _maxWindowLength;}
 };
 
 /** Returns maximum temporal window length for prospective period, as initially
@@ -36,14 +39,16 @@ class FixedMaxWindowLengthIndicator : public AbstractMaxWindowLengthIndicator {
     prospective period. */
 class ProspectiveMaxWindowLengthIndicator : public AbstractMaxWindowLengthIndicator {
   private:
-    std::vector<int>                    gvMaxWindowLengths;
-    std::vector<int>::const_iterator    gitr;
+    int _minWindowLength;
+    std::vector<int> gvMaxWindowLengths;
+    std::vector<int>::const_iterator gitr;
 
   public:
     ProspectiveMaxWindowLengthIndicator(const CSaTScanData& Data);
-    virtual ~ProspectiveMaxWindowLengthIndicator();
+    virtual ~ProspectiveMaxWindowLengthIndicator() {}
 
-    virtual int                         GetNextWindowLength() {return *(++gitr);}
-    virtual void                        Reset() {gitr = gvMaxWindowLengths.begin();}
+    virtual int getMinWindowLength() {return _minWindowLength;}
+    virtual int getNextWindowLength() {return *(++gitr);}
+    virtual void reset() {gitr = gvMaxWindowLengths.begin();}
 };
 #endif

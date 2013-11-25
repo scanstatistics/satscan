@@ -29,9 +29,9 @@ public class Parameters implements Cloneable {
     /** criteria for reporting secondary clusters types */
     public enum CriteriaSecondaryClustersType {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
                                                NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS};
-    /** interperation types for maximum temporal size */
+    /** interpretation types for maximum temporal size */
     public enum TemporalSizeType              {PERCENTAGETYPE, TIMETYPE};
-    /** interperation types for maximum spatial size */
+    /** interpretation types for maximum spatial size */
     public enum SpatialSizeType               {PERCENTOFPOPULATION, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
     /** defines how simulated data will be created - only pertinent for Poisson */
     public enum SimulationType                {STANDARD, HA_RANDOMIZATION, FILESOURCE};
@@ -106,7 +106,7 @@ public class Parameters implements Cloneable {
     private double                          gdMaxSpatialSizeInMaxCirclePopulationFile=50.0;
     private boolean                         gbRestrictMaxSpatialSizeThroughDistanceFromCenter=false;
     private double                          gdMaxSpatialSizeInMaxDistanceFromCenter=1.0;
-       /* Reported Maximum spatial cluster variables */
+    /* Reported Maximum spatial cluster variables */
     private boolean                         gbRestrictReportedClusters=false;             /** indicates whether reported clusters are limited to specified maximum size */
     private double                          gdMaxSpatialSizeInPopulationAtRisk_Reported=50.0;
     private boolean                         gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported=false;
@@ -117,23 +117,25 @@ public class Parameters implements Cloneable {
     private double                          gdMaxTemporalClusterSize=50.0; /** maximum value for temporal cluster */
     private TemporalSizeType                geMaxTemporalClusterSizeType=TemporalSizeType.PERCENTAGETYPE; /** maximum temporal cluster value type */
     private boolean                         _adjustWeeklyTrends=false;
-        /* Time interval variables */
+    /* minimum temporal cluster size */
+    private int                             _minimum_temporal_cluster_size=1;    
+    /* Time interval variables */
     private int                             glTimeAggregationLength=0; /** length of time aggregation */
     private DatePrecisionType               geTimeAggregationUnitsType=DatePrecisionType.NONE; /** time aggregation units type */
-        /* Temporal trend adjusment variables */
+    /* Temporal trend adjusment variables */
     private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
     private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
-        /* Input precision variables */
+    /* Input precision variables */
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
-        /* Ellipse variables */
+    /* Ellipse variables */
     private Vector<Double>                  gvEllipseShapes; /** shape of each ellipsoid */
     private Vector<Integer>                 gvEllipseRotations; /** number of rotations for each ellipsoid */
     private NonCompactnessPenaltyType       geNonCompactnessPenaltyType=NonCompactnessPenaltyType.MEDIUMPENALTY; /** indicates penalty for narrower ellipses */
-        /* Pure Clusters variables */
+    /* Pure Clusters variables */
     private boolean                         gbIncludePurelySpatialClusters=false, /** indicates whether to include purely spatial clusters */
                                             gbIncludePurelyTemporalClusters=false; /** indicates whether to include purely temporal clusters */
-        /* Additional output variables */
+    /* Additional output variables */
     private boolean                         gbOutputSimLogLikeliRatiosAscii=false, /** indicates whether to output simulated log likelihood ratios in ASCII format */
                                             gbOutputSimLogLikeliRatiosDBase=false; /** indicates whether to output simulated log likelihood ratios in dBase format */
     private boolean                         gbOutputRelativeRisksAscii=false, /** indicates whether to output relative risks for each tract/location in ASCII format */
@@ -264,7 +266,9 @@ public class Parameters implements Cloneable {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
-    
+
+    public int getMinimumTemporalClusterSize() {return _minimum_temporal_cluster_size;}
+    public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
     public boolean getOutputShapeFiles() {return _output_shapefiles;}
     public void setOutputShapeFiles(boolean b) {_output_shapefiles = b;}    
     public boolean getLaunchKMLViewer() {return _launch_kml_viewer;}
@@ -418,6 +422,7 @@ public class Parameters implements Cloneable {
         if (_compress_kml_output != rhs._compress_kml_output) return false;
         if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;  
         if (_output_shapefiles != rhs._output_shapefiles) return false;
+        if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;
         
         return true;
     }

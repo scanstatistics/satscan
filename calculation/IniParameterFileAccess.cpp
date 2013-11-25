@@ -538,6 +538,7 @@ void IniParameterFileAccess::WriteTemporalGraphSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
     std::string  s;
     try {
+        WriteIniParameter(WriteFile, MIN_TEMPORAL_CLUSTER, GetParameterString(MIN_TEMPORAL_CLUSTER, s).c_str(), GetParameterComment(MIN_TEMPORAL_CLUSTER));
         WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, GetParameterString(MAX_TEMPORAL_TYPE, s).c_str(), GetParameterComment(MAX_TEMPORAL_TYPE));
         WriteIniParameter(WriteFile, TIMESIZE, GetParameterString(TIMESIZE, s).c_str(), GetParameterComment(TIMESIZE));
         WriteIniParameter(WriteFile, PURESPATIAL, GetParameterString(PURESPATIAL, s).c_str(), GetParameterComment(PURESPATIAL));

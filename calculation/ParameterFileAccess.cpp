@@ -192,6 +192,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case COMPRESS_KML_OUTPUT          : return "create compressed KMZ file instead of KML file (y/n)";
       case LAUNCH_KML_VIEWER            : return "automatically launch Google Earth - gui only (y/n)";
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
+      case MIN_TEMPORAL_CLUSTER         : return "minimum temporal cluster size (in time aggregation units)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -348,6 +349,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case COMPRESS_KML_OUTPUT          : return AsString(s, gParameters.getCompressClusterKML());
       case LAUNCH_KML_VIEWER            : return AsString(s, gParameters.getLaunchKMLViewer());
       case ADJUST_WEEKLY_TRENDS         : return AsString(s, gParameters.getAdjustForWeeklyTrends());
+      case MIN_TEMPORAL_CLUSTER         : return AsString(s, gParameters.getMinimumTemporalClusterSize());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -736,6 +738,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case COMPRESS_KML_OUTPUT          : gParameters.setCompressClusterKML(ReadBoolean(sParameter, eParameterType)); break;
       case LAUNCH_KML_VIEWER            : gParameters.setLaunchKMLViewer(ReadBoolean(sParameter, eParameterType)); break;
       case ADJUST_WEEKLY_TRENDS         : gParameters.setAdjustForWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
+      case MIN_TEMPORAL_CLUSTER         : gParameters.setMinimumTemporalClusterSize(ReadUnsignedInt(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

@@ -41,7 +41,7 @@ const char * IniParameterSpecification::OtherOutput             = "Other Output"
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_9_2_x_ParameterList();
+  Build_9_3_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -93,8 +93,9 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_8_2_x_ParameterList();
   else if (Version.iMajor == 9  && Version.iMinor == 0)
     Build_9_0_x_ParameterList();
-  else
+  else if (Version.iMajor == 9  && Version.iMinor == 2 && Version.iRelease < 1)
     Build_9_2_x_ParameterList();
+  else Build_9_3_x_ParameterList();
 }
 
 /** destructor */
@@ -428,6 +429,13 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo[REPORT_CRITICAL_VALUES - 1] = std::make_pair(OtherOutput, (const char*)"CriticalValue");
   gvParameterInfo[REPORT_RANK - 1] = std::make_pair(OtherOutput, (const char*)"ReportClusterRank");
   gvParameterInfo[PRINT_ASCII_HEADERS - 1] = std::make_pair(OtherOutput, (const char*)"PrintAsciiColumnHeaders");
+}
+
+/** Version 9.3.x */
+void IniParameterSpecification::Build_9_3_x_ParameterList() {
+  Build_9_2_x_ParameterList();
+
+  gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"MinimumTemporalClusterSize"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

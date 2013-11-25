@@ -173,6 +173,7 @@ class CParameters {
     bool                                _report_power_simulation_data;           /* report power simulation data to file */
     std::string                         _power_simulation_output_filename;       /* output filename for power evaluation's randomization */
     PowerEvaluationMethodType           _power_evaluation_method;                /* power evaluation method */
+    unsigned int                        _minimum_temporal_cluster_size;          /* mimimum temporal cluster size in time aggregation units */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -241,6 +242,7 @@ class CParameters {
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     double                              GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     double                              GetMaximumTemporalClusterSize() const {return gdMaxTemporalClusterSize;}
+    unsigned int                        getMinimumTemporalClusterSize() const {return _minimum_temporal_cluster_size;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     const std::string                 & getMetaLocationsFilename() const {return gsMetaLocationsFilename;}  
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
@@ -372,6 +374,7 @@ class CParameters {
     void                                SetIterativeCutOffPValue(double dPValue) {gbIterativeCutOffPValue = dPValue;}
     void                                SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath=false);
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
+    void                                setMinimumTemporalClusterSize(unsigned int i) {_minimum_temporal_cluster_size = i;}
     void                                SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
     void                                SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, double d, bool bReported);

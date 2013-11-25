@@ -128,6 +128,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     /* Temporal Window tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalWindow), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
+        (getOption(MIN_TEMPORAL_CLUSTER, true), po::value<std::string>(), GetParameterComment(MIN_TEMPORAL_CLUSTER))
         (getOption(MAX_TEMPORAL_TYPE, true), po::value<std::string>(), GetParameterComment(MAX_TEMPORAL_TYPE))
         (getOption(TIMESIZE, true), po::value<std::string>(), GetParameterComment(TIMESIZE))
         (getOption(PURESPATIAL, true), po::value<std::string>(), GetParameterComment(PURESPATIAL))

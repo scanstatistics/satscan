@@ -37,9 +37,7 @@ make libz.dylib CC="$7 $8 $9 -dynamiclib" CFLAGS="-O3 -Wall $4 -fPIC -DHAVE_HIDD
 echo zlib done
 echo
 
-jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
-
-#jni="/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Headers"
+jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
 
 echo building SaTScan binary ...
 cd $2

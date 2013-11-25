@@ -69,6 +69,7 @@ class CSaTScanData {
     std::vector<int>                            gvProspectiveIntervalCuts;
     int                                         m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
     int                                         m_nIntervalCut; // Maximum time intervals allowed in a cluster (base on TimeSize)
+    int                                         _min_iterval_cut; // minimum time intervals allowed in a cluster
     int                                         m_nFlexibleWindowStartRangeStartIndex;
     int                                         m_nFlexibleWindowStartRangeEndIndex;
     int                                         m_nFlexibleWindowEndRangeStartIndex;
@@ -138,6 +139,7 @@ class CSaTScanData {
     int                                         GetTimeIntervalOfDate(Julian Date) const;
     int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
     int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
+    int                                         getMinTimeIntervalCut() const {return _min_iterval_cut;}
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     Julian                                      intervalIndexToJulian(unsigned int intervalIdx) const;
     inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}

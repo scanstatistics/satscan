@@ -659,15 +659,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         switch (_analysisSettingsWindow.getTimeAggregationControlType()) {
             case YEAR:
                 _maxTemporalTimeUnitsLabel.setText("years");
+                _minTemporalTimeUnitsLabel.setText("years");
                 break;
             case MONTH:
                 _maxTemporalTimeUnitsLabel.setText("months");
+                _minTemporalTimeUnitsLabel.setText("months");
                 break;
             case DAY:
                 _maxTemporalTimeUnitsLabel.setText("days");
+                _minTemporalTimeUnitsLabel.setText("days");
                 break;
             case GENERIC:
                 _maxTemporalTimeUnitsLabel.setText("units");
+                _minTemporalTimeUnitsLabel.setText("units");
                 break;
         }
     }
@@ -769,6 +773,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_percentageTemporalRadioButton.isSelected() == true);
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50);
         bReturn &= (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1);
+        bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 1);
         bReturn &= (_includePureSpacClustCheckBox.isSelected() == false);
         bReturn &= (Integer.parseInt(_startRangeStartYearTextField.getText()) == 1900 || Integer.parseInt(_startRangeStartYearTextField.getText()) == 2000);
         bReturn &= (Integer.parseInt(_startRangeStartMonthTextField.getText()) == 1);
@@ -1048,6 +1053,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetProspectiveStartDate(sString);
         parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.SetMaxCirclePopulationFileName(_maxCirclePopulationFilenameTextField.getText());
+        parameters.setMinimumTemporalClusterSize(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
         parameters.SetMaximumTemporalClusterSize(_percentageTemporalRadioButton.isSelected() ? Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) : Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()));
         parameters.SetMaximumTemporalClusterSizeType(_percentageTemporalRadioButton.isSelected() ? Parameters.TemporalSizeType.PERCENTAGETYPE.ordinal() : Parameters.TemporalSizeType.TIMETYPE.ordinal());
         parameters.SetIncludePurelyTemporalClusters(_inclPureTempClustCheckBox.isEnabled() && _inclPureTempClustCheckBox.isSelected());
@@ -1300,10 +1306,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void validateTemporalClusterSize() {
         String sErrorMessage, sPrecisionString;
-        double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
+        double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits=0;
 
         //check whether we are specifiying temporal information
-        if (!_temporalOptionsGroup.isEnabled()) {
+        if (!_maxTemporalOptionsGroup.isEnabled()) {
             return;
         }
 
@@ -1335,9 +1341,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 sErrorMessage = "A maximum temporal cluster size of " + Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) + sPrecisionString + (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1 ? "" : "s") + " exceeds " + (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50 : 90) + " percent of a " + Math.floor(dStudyPeriodLengthInUnits) + " " + sPrecisionString + " study period.\n" + "Note that current settings limit the maximum to " + Math.floor(dMaxTemporalLengthInUnits) + " " + sPrecisionString + (dMaxTemporalLengthInUnits == 1 ? "" : "s") + ".";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
+            dMaxTemporalLengthInUnits = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
         }
-        //    else
-        // ZdException::GenerateNotification("Unknown temporal percentage type: %d.","validateTemporalClusterSize()", getMaxTemporalClusterSizeControlType());
+        
+        // validate the minimum temporal cluster size setting
+        int minTemporalClusterSize = Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText());
+        if (minTemporalClusterSize < 1) {            
+            sPrecisionString = _analysisSettingsWindow.getDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), false, false);
+            sErrorMessage = "The minimum temporal cluster size is 1 " + sPrecisionString + " when time aggregating to " + sPrecisionString +"s.";
+            throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);            
+        }
+        // compare the maximum temporal cluster size to the minimum temporal cluster size
+        if (minTemporalClusterSize > dMaxTemporalLengthInUnits) {            
+            sPrecisionString = _analysisSettingsWindow.getDatePrecisionAsString(_analysisSettingsWindow.getTimeAggregationControlType(), dMaxTemporalLengthInUnits > 1, false);
+            sErrorMessage = "The minimum temporal cluster size is greater than the maximum temporal cluster size of " + dMaxTemporalLengthInUnits + " " + sPrecisionString + ".";
+            throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);            
+        }        
     }
 
     /**
@@ -1695,6 +1714,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _onePerLocationIdRadioButton.setSelected(true);
 
         // Temporal tab
+        _minTemporalClusterSizeUnitsTextField.setText("1");
         setMaxTemporalClusterSizeTypeControl(Parameters.TemporalSizeType.PERCENTAGETYPE);
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
@@ -1983,13 +2003,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables or disables the temporal options group control
      */
     private void enableTemporalOptionsGroup(boolean bEnable, boolean bEnableIncludePurelySpatial, boolean bEnableRanges) {
-        _temporalOptionsGroup.setEnabled(bEnable);
+        _maxTemporalOptionsGroup.setEnabled(bEnable);        
         _percentageTemporalRadioButton.setEnabled(bEnable);
         _maxTemporalClusterSizeTextField.setEnabled(bEnable && _percentageTemporalRadioButton.isSelected());
         _percentageOfStudyPeriodLabel.setEnabled(bEnable);
         _timeTemporalRadioButton.setEnabled(bEnable);
         _maxTemporalClusterSizeUnitsTextField.setEnabled(bEnable && _timeTemporalRadioButton.isSelected());
         _maxTemporalTimeUnitsLabel.setEnabled(bEnable);
+        _minTemporalOptionsGroup.setEnabled(bEnable);
+        _minTemporalClusterSizeUnitsTextField.setEnabled(bEnable);  
+        _minTemporalTimeUnitsLabel.setEnabled(bEnable);          
         _includePureSpacClustCheckBox.setEnabled(bEnable && bEnableIncludePurelySpatial);
         enableTemporalRanges(bEnable, bEnableRanges);
     }
@@ -2259,6 +2282,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setMultipleCoordinatesType(parameters.GetMultipleCoordinatesType());
 
         // Temporal tab
+        _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumTemporalClusterSize()));
         setMaxTemporalClusterSizeTypeControl(parameters.GetMaximumTemporalClusterSizeType());
         setMaxTemporalClusterSizeControl(parameters.GetMaximumTemporalClusterSize());
         _includePureSpacClustCheckBox.setSelected(parameters.GetIncludePurelySpatialClusters());
@@ -2494,7 +2518,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _nonCompactnessPenaltyComboBox = new java.awt.Choice();
         _performIsotonicScanCheckBox = new javax.swing.JCheckBox();
         _temporalWindowTab = new javax.swing.JPanel();
-        _temporalOptionsGroup = new javax.swing.JPanel();
+        _maxTemporalOptionsGroup = new javax.swing.JPanel();
         _percentageTemporalRadioButton = new javax.swing.JRadioButton();
         _timeTemporalRadioButton = new javax.swing.JRadioButton();
         _maxTemporalClusterSizeTextField = new javax.swing.JTextField();
@@ -2531,6 +2555,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _endGenericRangeToLabel = new javax.swing.JLabel();
         _endRangeStartGenericTextField = new javax.swing.JTextField();
         _endGenericWindowRangeLabel = new javax.swing.JLabel();
+        _minTemporalOptionsGroup = new javax.swing.JPanel();
+        _minTemporalClusterSizeUnitsTextField = new javax.swing.JTextField();
+        _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
         _spaceTimeAjustmentsTab = new javax.swing.JPanel();
         _temporalTrendAdjGroup = new javax.swing.JPanel();
         _temporalTrendAdjNoneRadioButton = new javax.swing.JRadioButton();
@@ -3072,7 +3099,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(173, Short.MAX_VALUE))
+                .addContainerGap(165, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3188,7 +3215,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addContainerGap(221, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3373,7 +3400,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(164, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3686,13 +3713,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
 
-        _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
-        _temporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalOptionsGroup, "Maximum Temporal Cluster Size"));
+        _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
+        _maxTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_maxTemporalOptionsGroup, "Maximum Temporal Cluster Size"));
 
         _percentageTemporalRadioButton.setSelected(true);
         _percentageTemporalRadioButton.setText("is"); // NOI18N
@@ -3702,7 +3729,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3715,7 +3742,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             }
@@ -3768,20 +3795,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _maxTemporalTimeUnitsLabel.setText("years"); // NOI18N
 
-        javax.swing.GroupLayout _temporalOptionsGroupLayout = new javax.swing.GroupLayout(_temporalOptionsGroup);
-        _temporalOptionsGroup.setLayout(_temporalOptionsGroupLayout);
-        _temporalOptionsGroupLayout.setHorizontalGroup(
-            _temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalOptionsGroupLayout.createSequentialGroup()
+        javax.swing.GroupLayout _maxTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_maxTemporalOptionsGroup);
+        _maxTemporalOptionsGroup.setLayout(_maxTemporalOptionsGroupLayout);
+        _maxTemporalOptionsGroupLayout.setHorizontalGroup(
+            _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_temporalOptionsGroupLayout.createSequentialGroup()
+                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_percentageTemporalRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_percentageOfStudyPeriodLabel))
-                    .addGroup(_temporalOptionsGroupLayout.createSequentialGroup()
+                    .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_timeTemporalRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3789,16 +3816,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_maxTemporalTimeUnitsLabel)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        _temporalOptionsGroupLayout.setVerticalGroup(
-            _temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalOptionsGroupLayout.createSequentialGroup()
+        _maxTemporalOptionsGroupLayout.setVerticalGroup(
+            _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_percentageTemporalRadioButton)
                     .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_percentageOfStudyPeriodLabel))
                 .addGap(10, 10, 10)
-                .addGroup(_temporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_timeTemporalRadioButton)
                     .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_maxTemporalTimeUnitsLabel))
@@ -3824,7 +3851,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
                 enableDatesByTimePrecisionUnits();
-                enableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                 enableSetDefaultsButton();
             }
         });
@@ -4042,7 +4069,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_restrictTemporalRangeCheckBox))
                 .addContainerGap())
         );
@@ -4056,28 +4083,76 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Cluster Size"));
+
+        _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
+        _minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_minTemporalClusterSizeUnitsTextField, e, 6);
+            }
+        });
+        _minTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_minTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _minTemporalClusterSizeUnitsTextField.setText("1");
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        _minTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _minTemporalTimeUnitsLabel.setText("years"); // NOI18N
+
+        javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
+        _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
+        _minTemporalOptionsGroupLayout.setHorizontalGroup(
+            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_minTemporalTimeUnitsLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        _minTemporalOptionsGroupLayout.setVerticalGroup(
+            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _minTemporalOptionsGroupLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_minTemporalTimeUnitsLabel))
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout _temporalWindowTabLayout = new javax.swing.GroupLayout(_temporalWindowTab);
         _temporalWindowTab.setLayout(_temporalWindowTabLayout);
         _temporalWindowTabLayout.setHorizontalGroup(
             _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _temporalWindowTabLayout.createSequentialGroup()
+            .addGroup(_temporalWindowTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_temporalOptionsGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(_temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _temporalWindowTabLayout.setVerticalGroup(
             _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_temporalWindowTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_temporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_includePureSpacClustCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(157, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4358,7 +4433,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4770,7 +4845,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5069,7 +5144,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5182,7 +5257,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(215, Short.MAX_VALUE))
+                .addContainerGap(207, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5445,7 +5520,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(89, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -5490,7 +5565,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(368, Short.MAX_VALUE))
+                .addContainerGap(360, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5524,7 +5599,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5624,9 +5699,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _maxSpatialRadiusTextField;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;
     private javax.swing.JTextField _maxTemporalClusterSizeUnitsTextField;
+    private javax.swing.JPanel _maxTemporalOptionsGroup;
     private javax.swing.JLabel _maxTemporalTimeUnitsLabel;
     private javax.swing.JButton _metaLocationsFileBrowseButton;
     private javax.swing.JTextField _metaLocationsFileTextField;
+    private javax.swing.JTextField _minTemporalClusterSizeUnitsTextField;
+    private javax.swing.JPanel _minTemporalOptionsGroup;
+    private javax.swing.JLabel _minTemporalTimeUnitsLabel;
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JPanel _monteCarloGroup;
     private javax.swing.JCheckBox _mostLikelyClustersHierarchically;
@@ -5738,7 +5817,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.ButtonGroup _studyPeriodCheckButtonGroup;
     private javax.swing.JPanel _studyPeriodCheckGroup;
     private javax.swing.ButtonGroup _temporalOptionsButtonGroup;
-    private javax.swing.JPanel _temporalOptionsGroup;
     private javax.swing.JPanel _temporalOutputTab;
     private javax.swing.ButtonGroup _temporalTrendAdjButtonGroup;
     private javax.swing.JPanel _temporalTrendAdjGroup;

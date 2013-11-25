@@ -147,6 +147,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 125)";
     case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 126)";
     case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 127)";
+    case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 128)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }
