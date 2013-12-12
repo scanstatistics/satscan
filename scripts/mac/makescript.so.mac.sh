@@ -12,7 +12,7 @@ fi
 echo building xbase library ...
 cd $2/xbase/xbase_2.0.0/xbase
 make clean CFLAGS=-fPIC
-make libxbase.dylib COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10} CFLAGS=-fPIC
+make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10} CFLAGS=-fPIC
 echo xbase done
 echo
 
@@ -37,9 +37,7 @@ make libz.dylib CC="$7 $8 $9 -dynamiclib" CFLAGS="-O3 -Wall $4 -fPIC -DHAVE_HIDD
 echo zlib done
 echo
 
-jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
-
-#jni="/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Headers"
+jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
 
 echo building SaTScan binary ...
 cd $2
