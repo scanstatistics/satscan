@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>SaTScan</string>
 	<key>CFBundleVersion</key>
-	<string>9.2.0</string>
+	<string>9.3.0</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.satscan.SaTScan</string>
 	<key>CFBundleExecutable</key>

@@ -9,7 +9,7 @@ then
 fi
 
 echo
-echo " Assigning application bundle properties ... "
+echo "Assigning application bundle properties ... "
 
 # Set application file to file to be a bundle
 SetFile -a B $1
