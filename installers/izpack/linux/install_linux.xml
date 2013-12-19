@@ -73,7 +73,10 @@
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
         <panel classname="ProcessPanel" os="unix"/>
+        <!--
         <panel classname="SimpleFinishPanel"/>
+        -->
+        <panel classname="FinishPanel"/>
     </panels>
 
     <!--
