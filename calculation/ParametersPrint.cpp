@@ -1123,13 +1123,9 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
         // skip this section if purely spatial or svtt analyses, these settings are not relevant
         if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) return;
 
-        switch (gParameters.GetTimeAggregationUnitsType()) {
-                case YEAR  : printString(buffer, "%i Year", gParameters.getMinimumTemporalClusterSize()); break;
-                case MONTH : printString(buffer, "%i Month", gParameters.getMinimumTemporalClusterSize()); break;
-                case DAY   : printString(buffer, "%i Day", gParameters.getMinimumTemporalClusterSize()); break;
-                case GENERIC : printString(buffer, "%i Generic", gParameters.getMinimumTemporalClusterSize()); break;
-                default : throw prg_error("Unknown date precision type '%d'.\n","PrintTemporalWindowParameters()", gParameters.GetTimeAggregationUnitsType());
-        }
+        printString(buffer, "%i %s",
+                    gParameters.getMinimumTemporalClusterSize(),
+                    GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.getMinimumTemporalClusterSize() != 1, true));
         settings.push_back(std::make_pair("Minimum Temporal Cluster Size", buffer)); 
         switch (gParameters.GetMaximumTemporalClusterSizeType()) {
             case PERCENTAGETYPE :

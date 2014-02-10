@@ -228,6 +228,10 @@ IniLine * IniSection::GetLine(long lIndex) const {
    return gaIniLines[lIndex];
 }
 
+const IniSection::Comment_t & IniSection::GetComment(long lIndex) const {
+    return gvCommentLineVectors.at(static_cast<size_t>(lIndex));
+}
+
 //Get the Section Name - includes the brackets (ie. [FileInfo]
 const char * IniSection::GetName() const {
    return gsSectionName.c_str();

@@ -26,6 +26,12 @@ class CParameters {
                 return iMajor < other.iMajor;
             }
         }
+        bool operator==(const CreationVersion& other) const {
+            return iMajor == other.iMajor && iMinor == other.iMinor && iRelease == other.iRelease;
+        }
+        bool operator!=(const CreationVersion& other) const {
+            return !(*this == other);
+        }
     };
 
   private:

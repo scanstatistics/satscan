@@ -14,8 +14,10 @@ class ParameterAccessCoordinator {
     ParameterAccessCoordinator(CParameters& Parameters);
     virtual ~ParameterAccessCoordinator();
 
-    bool                        Read(const char* sFilename, BasePrint& PrintDirection);
-    void                        Write(const char * sFilename, BasePrint& PrintDirection /* ability to specify a version to write as ?*/);
+    static CParameters::CreationVersion getIniVersion(const char* szFilename);
+
+    bool                         Read(const char* sFilename, BasePrint& PrintDirection);
+    void                         Write(const char * sFilename, BasePrint& PrintDirection /* ability to specify a version to write as ?*/);
 };
 
 /** Abstract base class for reading/writing parameters from file. */

@@ -14,6 +14,23 @@ ParameterAccessCoordinator::ParameterAccessCoordinator(CParameters& Parameters)
 /** destructor */
 ParameterAccessCoordinator::~ParameterAccessCoordinator() {}
 
+CParameters::CreationVersion ParameterAccessCoordinator::getIniVersion(const char* sFilename) {
+    CParameters::CreationVersion default_version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    try {
+        if (!access(sFilename, 04)) {
+            IniFile ini; ini.Read(sFilename);
+            if (ini.GetNumSections())
+                version = IniParameterSpecification::getIniVersion(ini);
+            else // older line based parameter files
+                version = default_version;
+        }
+    } catch (...) {
+        version = default_version;
+    }
+    return version;
+}
+
 /** Determines format of parameter file and invokes particular parameter reader
     class to read parameters from file. */
 bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDirection) {

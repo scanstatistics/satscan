@@ -105,6 +105,8 @@ NonCompactnessPenalty=1
 IsotonicScan=0
 
 [Temporal Window]
+;minimum temporal cluster size (in time aggregation units)
+MinimumTemporalClusterSize=1
 ;how max temporal size should be interpretted (0=Percentage, 1=Time)
 MaxTemporalSizeInterpretation=0
 ;maximum temporal cluster size (<=90%)

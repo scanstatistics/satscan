@@ -143,6 +143,42 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
     }
 }
 
+void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpecification& specification) {
+    const IniParameterSpecification * hold = gpSpecifications;
+    try {
+        gpSpecifications = &specification;
+
+        //write settings as provided in main graphical interface
+        WriteInputSettings(ini);
+        WriteAnalysisSettings(ini);
+        WriteOutputSettings(ini);
+
+        //write settings as provided in advanced features of graphical interface
+        WriteObservableRegionSettings(ini);
+        WriteMultipleDataSetsSettings(ini);
+        WriteDataCheckingSettings(ini);
+        WriteSpatialNeighborsSettings(ini);
+        WriteSpatialWindowSettings(ini);
+        WriteTemporalWindowSettings(ini);
+        WriteSpaceAndTimeAdjustmentSettings(ini);
+        WriteInferenceSettings(ini);
+        WritePowerEvaluationsSettings(ini);
+        WriteSpatialOutputSettings(ini);
+        WriteTemporalGraphSettings(ini);
+        WriteOtherOutputSettings(ini);
+
+        //write settings as provided only through user mofication of parameter file and batch executable
+        WriteEllipticScanSettings(ini);
+        WritePowerSimulationsSettings(ini);
+        WriteRunOptionSettings(ini);
+        WriteSystemSettings(ini);
+        gpSpecifications = hold;
+    } catch (...) {
+        gpSpecifications = hold;
+        throw;
+    }
+}
+
 /** Writes parameters of associated CParameters object to ini file, of most recent
     format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
@@ -150,32 +186,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         IniFile WriteFile;
         gParameters.SetSourceFileName(sFilename);
         gpSpecifications = new IniParameterSpecification();
-
-        //write settings as provided in main graphical interface
-        WriteInputSettings(WriteFile);
-        WriteAnalysisSettings(WriteFile);
-        WriteOutputSettings(WriteFile);
-
-        //write settings as provided in advanced features of graphical interface
-        WriteObservableRegionSettings(WriteFile);
-        WriteMultipleDataSetsSettings(WriteFile);
-        WriteDataCheckingSettings(WriteFile);
-        WriteSpatialNeighborsSettings(WriteFile);
-        WriteSpatialWindowSettings(WriteFile);
-        WriteTemporalWindowSettings(WriteFile);
-        WriteSpaceAndTimeAdjustmentSettings(WriteFile);
-        WriteInferenceSettings(WriteFile);
-        WritePowerEvaluationsSettings(WriteFile);
-        WriteSpatialOutputSettings(WriteFile);
-        WriteTemporalGraphSettings(WriteFile);
-        WriteOtherOutputSettings(WriteFile);
-
-        //write settings as provided only through user mofication of parameter file and batch executable
-        WriteEllipticScanSettings(WriteFile);
-        WritePowerSimulationsSettings(WriteFile);
-        WriteRunOptionSettings(WriteFile);
-        WriteSystemSettings(WriteFile);
-
+        writeSections(WriteFile, *gpSpecifications);
         WriteFile.Write(gParameters.GetSourceFileName());
     } catch (prg_exception& x) {
         x.addTrace("Write()", "IniParameterFileAccess");

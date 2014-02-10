@@ -31,7 +31,8 @@ class IniLine {
 
 class IniSection {
   public:
-    typedef std::vector< std::vector<std::string> > CommentContainer_t;
+    typedef std::vector<std::string> Comment_t;
+    typedef std::vector<Comment_t> CommentContainer_t;
 
   private:
     ptr_vector<IniLine>         gaIniLines;
@@ -57,6 +58,7 @@ class IniSection {
     int                         GetInt(const char *sKeyName, int iDefault = 0) const;
     bool                        GetIsModified() const;
     IniLine                   * GetLine(long lIndex) const;
+    const Comment_t           & GetComment(long lIndex) const;
     const char                * GetName() const;
     long                        GetNumLines() const;
     const char                * GetString(std::string& buffer, const char *sKeyName, const char *sDefault = "") const;

@@ -5,13 +5,81 @@
 #include "Parameters.h"
 #include "Ini.h"
 
+
 /** Defines interface for retrieving ini section and key name for parameters. */
 class IniParameterSpecification {
   public:
-    typedef std::vector<std::pair<const char*, const char*> > ParameterInfo_t;
-    typedef std::map<ParameterType, std::pair<const char*, const char*> > MultipleParameterInfo_t;
+
+    class SectionInfo {
+        public:
+            const char *  _label;
+            unsigned int  _ordinal;
+
+        public:
+            SectionInfo():_label(0), _ordinal(0) {}
+            SectionInfo(const char * label, unsigned int ordinal):_label(label), _ordinal(ordinal) {}
+    };
+
+    class ParamInfo {
+        public:
+            ParameterType _type;
+            const char *  _label;
+            unsigned int  _ordinal;
+            const SectionInfo * _section;
+
+        public:
+            ParamInfo() : _label(0), _section(0) {}
+            ParamInfo(ParameterType type, const char * label, unsigned int ordinal, const SectionInfo& section):
+                _type(type), _label(label), _ordinal(ordinal), _section(&section) {}
+
+            bool operator<(const ParamInfo& pinfo) {
+                if (_section->_ordinal == pinfo._section->_ordinal) {
+                    return this->_ordinal < pinfo._ordinal;
+                } else {
+                    return _section->_ordinal < pinfo._section->_ordinal;
+                }
+            }
+    };
+
+    typedef std::map<ParameterType, ParamInfo> ParameterInfoMap_t;
+    typedef std::map<ParameterType, ParamInfo > MultipleParameterInfoMap_t;
+
+    typedef std::vector<ParamInfo> ParameterInfoCollection_t;
 
   public:
+    SectionInfo                 _input_section;
+    SectionInfo                 _input_files_section;
+    SectionInfo                 _analysis_section;
+    SectionInfo                 _time_parameters_section;
+    SectionInfo                 _scanning_window_section;
+    SectionInfo                 _output_section;
+    SectionInfo                 _output_files_section;
+    SectionInfo                 _polygons_section;
+    SectionInfo                 _multiple_data_section;
+    SectionInfo                 _data_checking_section;
+    SectionInfo                 _non_eucledian_section;
+    SectionInfo                 _spatial_neighbors_section;
+    SectionInfo                 _spatial_window_section;
+    SectionInfo                 _temporal_window_section;
+    SectionInfo                 _space_time_adjustments_section;
+    SectionInfo                 _inference_section;
+    SectionInfo                 _power_evaluation_section;
+    SectionInfo                 _clusters_reported_section;
+    SectionInfo                 _spatial_output_section;
+    SectionInfo                 _temporal_output_section;
+    SectionInfo                 _other_output_section;
+    SectionInfo                 _additional_output_section;
+    SectionInfo                 _elliptic_section;
+    SectionInfo                 _isotonic_scan_section;
+    SectionInfo                 _sequential_section;
+    SectionInfo                 _power_simulations_section;
+    SectionInfo                 _batch_features_section;
+    SectionInfo                 _run_options_section;
+    SectionInfo                 _advanced_section;
+    SectionInfo                 _system_section;
+
+    SectionInfo                 _not_used_section;
+
     static const char         * NotUsed;
     static const char         * Input;
     static const char         * MultipleDataSets;
@@ -46,11 +114,13 @@ class IniParameterSpecification {
     static const char         * OutputFiles;
     static const char         * AdvancedFeatures;
 
-  protected:
-    ParameterInfo_t             gvParameterInfo;
-    MultipleParameterInfo_t     gvMultipleParameterInfo;
+    void                        setup(CParameters::CreationVersion version);
 
-    void                        BuildPrimaryParameterList();
+  protected:
+    ParameterInfoMap_t          _parameter_info;
+    MultipleParameterInfoMap_t  _multiple_parameter_info;
+
+    void                        Build_3_0_5_ParameterList();
     void                        Build_4_0_x_ParameterList();
     void                        Build_5_0_x_ParameterList();
     void                        Build_5_1_x_ParameterList();
@@ -66,10 +136,16 @@ class IniParameterSpecification {
    public:
      IniParameterSpecification();
      IniParameterSpecification(const IniFile& SourceFile, CParameters& Parameters);
-     virtual ~IniParameterSpecification();
+     IniParameterSpecification(CParameters::CreationVersion version, CParameters& Parameters);
+     IniParameterSpecification(const IniFile& SourceFile, CParameters::CreationVersion version, CParameters& Parameters);
+     virtual ~IniParameterSpecification() {}
+
+    static CParameters::CreationVersion getIniVersion(const IniFile& SourceFile);
 
     bool                GetParameterIniInfo(ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;
     bool                GetMultipleParameterIniInfo(ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;
+
+    ParameterInfoCollection_t & getParameterInfoCollection(ParameterInfoCollection_t& collection) const;
 };
 //***************************************************************************
 #endif

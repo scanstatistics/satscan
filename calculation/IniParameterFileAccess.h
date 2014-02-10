@@ -47,6 +47,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
 
      virtual bool                       Read(const char* szFilename);
      virtual void                       Write(const char * szFilename);
+
+     void                               writeSections(IniFile& ini, const IniParameterSpecification& specification);
 };
 //***************************************************************************
 #endif
