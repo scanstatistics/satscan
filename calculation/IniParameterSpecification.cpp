@@ -64,7 +64,7 @@ IniParameterSpecification::IniParameterSpecification(CParameters::CreationVersio
     setup(version);
 }
 
-/** constructor - builds specification to version specified in argument 
+/** constructor - builds specification to version specified in argument
      - argument version must agree with version of ini file. */
 IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, CParameters::CreationVersion version, CParameters& Parameters) {
     // first get the Version setting from the source Ini file
@@ -167,7 +167,7 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_9_0_x_ParameterList();
     else if (version.iMajor == 9  && version.iMinor == 2 && version.iRelease < 1)
         Build_9_2_x_ParameterList();
-    else 
+    else
         Build_9_3_x_ParameterList();
 }
 
@@ -599,7 +599,8 @@ IniParameterSpecification::ParameterInfoCollection_t & IniParameterSpecification
     collection.clear();
     for (ParameterInfoMap_t::const_iterator itr=_parameter_info.begin(); itr != _parameter_info.end(); ++itr) {
         if (strcmp(itr->second._section->_label, _not_used_section._label))
-            collection.push_back(itr->second);
+            //collection.push_back(itr->second);
+            collection.push_back(ParamInfo(itr->second));
     }
     std::sort(collection.begin(), collection.end());
     return collection;

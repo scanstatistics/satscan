@@ -42,7 +42,7 @@ void usage_message(std::string program, po::options_description& desc, const Par
     message << " All parameter settings specified with a parameter file." << std::endl;
     message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename>" << std::endl << std::endl;
     message << " All parameter settings specified with command-line arguments -- see 'display-parameters'." << std::endl;
-    message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " --" << prgOptions.getOption(CASEFILE) 
+    message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " --" << prgOptions.getOption(CASEFILE)
             << " <case filename> --" << prgOptions.getOption(POPFILE) <<" <population filename> ..."<< std::endl << std::endl;
     message << " Default parameter settings defined in a parameter file then override with command-line arguments." << std::endl;
     message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename> --"
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         // positional options
         po::positional_options_description pd;
         pd.add("parameter-file", -1);
-        po::parsed_options& options = po::command_line_parser(argc, argv).options(application).allow_unregistered().style(po::command_line_style::default_style|po::command_line_style::case_insensitive).positional(pd).run();
+        const po::parsed_options& options = po::command_line_parser(argc, argv).options(application).allow_unregistered().style(po::command_line_style::default_style|po::command_line_style::case_insensitive).positional(pd).run();
         for (size_t opt=0; opt < options.options.size(); ++opt) {
             if (options.options.at(opt).string_key == "override-version" || options.options.at(opt).string_key == "n") {
                 if (sscanf(options.options.at(opt).value.front().c_str(), "%u.%u.%u", &opts_version.iMajor, &opts_version.iMinor, &opts_version.iRelease) < 3)
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
         cmdline_options.add(opt_descriptions[t]->get<0>());
     cmdline_options.add(application).add(hidden);
 
-    // display help if no additional arguments specified 
+    // display help if no additional arguments specified
     if (argc < 2) {
         usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console);
         return 1;
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     }
     /* apply parameter overrides*/
     parameterOptions.setParameterOverrides(vm);
-    if (forceCentric) Parameters.SetExecutionType(CENTRICALLY); 
+    if (forceCentric) Parameters.SetExecutionType(CENTRICALLY);
     if (allOut) Parameters.requestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());

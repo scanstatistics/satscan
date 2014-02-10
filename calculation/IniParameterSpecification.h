@@ -5,11 +5,9 @@
 #include "Parameters.h"
 #include "Ini.h"
 
-
 /** Defines interface for retrieving ini section and key name for parameters. */
 class IniParameterSpecification {
   public:
-
     class SectionInfo {
         public:
             const char *  _label;
@@ -29,10 +27,12 @@ class IniParameterSpecification {
 
         public:
             ParamInfo() : _label(0), _section(0) {}
+            ParamInfo(const ParamInfo& other):
+              _type(other._type), _label(other._label), _ordinal(other._ordinal), _section(other._section) {}
             ParamInfo(ParameterType type, const char * label, unsigned int ordinal, const SectionInfo& section):
                 _type(type), _label(label), _ordinal(ordinal), _section(&section) {}
 
-            bool operator<(const ParamInfo& pinfo) {
+            bool operator<(const ParamInfo& pinfo) const {
                 if (_section->_ordinal == pinfo._section->_ordinal) {
                     return this->_ordinal < pinfo._ordinal;
                 } else {
