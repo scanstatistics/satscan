@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -51,6 +50,7 @@ import javax.help.HelpSetException;
 import javax.help.Popup;
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
+import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.MacOSApplication;
 import org.satscan.gui.utils.help.HelpShow;
 
@@ -300,14 +300,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
-        JFileChooser fc = new JFileChooser(lastBrowseDirectory);
-        fc.setDialogTitle("Select Parameter File");
-        fc.addChoosableFileFilter(new InputFileFilter("txt", "Text Files (*.txt)"));
-        fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
-        int returnVal = fc.showOpenDialog(SaTScanApplication.this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            lastBrowseDirectory = fc.getCurrentDirectory();
-            openNewParameterSessionWindow(fc.getSelectedFile().getAbsolutePath());
+        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", new InputFileFilter[]{new InputFileFilter("txt", "Text Files (*.txt)"), new InputFileFilter("prm", "Settings Files (*.prm)")}, lastBrowseDirectory);
+        File file = select.browse_load(true);
+        if (file != null) {
+            openNewParameterSessionWindow(file.getAbsolutePath());   
+            lastBrowseDirectory = select.getDirectory();
         }
     }
 

@@ -21,6 +21,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -49,7 +50,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cancelButton" min="-2" pref="100" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="_basePanel" alignment="0" pref="541" max="32767" attributes="0"/>
+                  <Component id="_basePanel" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -59,7 +60,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="_basePanel" pref="503" max="32767" attributes="0"/>
+              <Component id="_basePanel" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -123,8 +124,8 @@
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="_sourceFileTypeOptions" alignment="0" pref="541" max="32767" attributes="1"/>
-                  <Component id="jScrollPane1" alignment="0" pref="541" max="32767" attributes="1"/>
+                  <Component id="_sourceFileTypeOptions" alignment="0" max="32767" attributes="1"/>
+                  <Component id="jScrollPane1" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
@@ -133,7 +134,7 @@
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="_firstRowColumnHeadersCheckBox" pref="220" max="32767" attributes="0"/>
+                      <Component id="_firstRowColumnHeadersCheckBox" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="164" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -254,7 +255,6 @@
                               <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                                 <EtchetBorder/>
                               </Border>
-                              <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
                             </TitledBorder>
                           </Border>
                         </Property>
@@ -362,7 +362,6 @@
                               <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                                 <EtchetBorder/>
                               </Border>
-                              <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
                             </TitledBorder>
                           </Border>
                         </Property>
@@ -438,12 +437,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jSplitPane1" alignment="0" pref="541" max="32767" attributes="0"/>
+                  <Component id="jSplitPane1" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jSplitPane1" alignment="0" pref="503" max="32767" attributes="0"/>
+                  <Component id="jSplitPane1" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
@@ -637,7 +636,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="408" max="-2" attributes="0"/>
                       <Component id="_progressBar" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                      <EmptySpace pref="27" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -658,7 +657,7 @@
                 <Property name="text" type="java.lang.String" value="Change" noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select directory to save imported file&quot;);&#xa;        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);&#xa;        fc.setCurrentDirectory(new File(_outputDirectoryTextField.getText()));&#xa;        int returnVal = fc.showOpenDialog(ImportWizardDialog.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _outputDirectoryTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;        }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), &quot;Select directory to save imported file&quot;, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JProgressBar" name="_progressBar">
