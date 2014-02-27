@@ -52,7 +52,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         initComponents();
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         addInternalFrameListener(this);
-        _parameters = parameters;
+        _parameters = (Parameters)parameters.clone();
         setTitle("Running " + (_parameters.GetSourceFileName().equals("") ? "Session" : _parameters.GetSourceFileName()));
         new CalculationThread(this, _parameters).start();
     }
