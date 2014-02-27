@@ -65,14 +65,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static Boolean _debug_url = new Boolean(false);
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
-    private final ExecuteSessionAction _executeSessionAction;
-    private final ExecuteOptionsAction _executeOptionsAction;
-    private final CloseSessionAction _closeSessionAction;
-    private final SaveSessionAction _saveSessionAction;
-    private final SaveSessionAsAction _saveSessionAsAction;
-    private final PrintResultsAction _printResultsAction;
+    private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
+    private final ExecuteOptionsAction _executeOptionsAction = new ExecuteOptionsAction();
+    private final CloseSessionAction _closeSessionAction = new CloseSessionAction();
+    private final SaveSessionAction _saveSessionAction = new SaveSessionAction();
+    private final SaveSessionAsAction _saveSessionAsAction = new SaveSessionAsAction();
+    private final PrintResultsAction _printResultsAction = new PrintResultsAction();
+    private final ApplicationPreferencesAction _applicationPreferencesAction = new ApplicationPreferencesAction();
     private JInternalFrame _focusedInternalFrame = null;
-    private boolean gbShowStartWindow = true;
+    private boolean _firstShow = true;
     private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
     private static SaTScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
@@ -83,6 +84,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String DEFAULT_WIDTH = "1024";
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
+    private static String CHECK_UPDATE_START = "true";    
+    private final UpdateCheckDialog _updateCheck;
     private MacOSApplication _mac_os_app = new MacOSApplication();
     private HelpSet _mainHS = null;
     private HelpBroker _mainHB = null;
@@ -94,12 +97,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     public SaTScanApplication() {
         _instance = this;
         System.out.println(System.getProperties());
-        _executeSessionAction = new ExecuteSessionAction();
-        _executeOptionsAction = new ExecuteOptionsAction();
-        _closeSessionAction = new CloseSessionAction();
-        _saveSessionAction = new SaveSessionAction();
-        _saveSessionAsAction = new SaveSessionAsAction();
-        _printResultsAction = new PrintResultsAction();
         initComponents();
         Preferences _prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
         setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
@@ -113,7 +110,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         addWindowFocusListener(this);
         addWindowListener(this);
         refreshOpenList();
+        softwareUpdateAvailable.setVisible(false);
         setLocationRelativeTo(null);
+        _updateCheck = new UpdateCheckDialog(this);
     }
 
     public static SaTScanApplication getInstance() {
@@ -355,7 +354,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     /**
-     * Close session action; attmepts to close active session window.
+     * Close session action; attempts to close active session window.
      */
     public class CloseSessionAction extends AbstractAction {
 
@@ -375,6 +374,27 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
     }
 
+    /**
+     * Displays application preferences window.
+     */
+    public class ApplicationPreferencesAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public ApplicationPreferencesAction() {
+            super("Preferences");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ApplicationPreferences preferences = new ApplicationPreferences(_instance);
+                preferences.setVisible(true);
+            } catch (Throwable t) {
+                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            }
+        }
+    }
+    
     /**
      * Print results action; attempts to print results from run window.
      */
@@ -416,7 +436,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     /**
-     * Session execute action; attmepts to start execution of specified
+     * Session execute action; attempts to start execution of specified
      * analysis settings.
      */
     public class ExecuteSessionAction extends AbstractAction {
@@ -531,37 +551,52 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
     }
 
+    private void showUpdateDialog() {
+        try {
+            _updateCheck.setVisible(true);
+            if (_updateCheck.restartRequired()) {
+                if (getAnalysesRunning()) {
+                    JOptionPane.showMessageDialog(SaTScanApplication.this, "SaTScan can not update will analyses are executing. " +
+                              "Please cancel or wait for analyses then close SaTScan.", "Error", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                //trigger windowClosing event manually ...
+                windowClosing(new WindowEvent(SaTScanApplication.this, WindowEvent.WINDOW_CLOSING));
+            }
+        } catch (Throwable t) {
+            new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+        }
+    }     
+    
     /**
-     * Check version action; checks whether a new version of SaTScan is available.
-     * TODO: download and updated process not implemented yet.
+     * Check version action; checks whether a new version of TreeScan is available.
      */
     public class CheckNewVersionAction extends AbstractAction {
-
         private static final long serialVersionUID = 1L;
-
         public CheckNewVersionAction() {
             super("Check for New Version");
         }
-
         public void actionPerformed(ActionEvent e) {
-            try {
-                UpdateCheckDialog updateCheck = new UpdateCheckDialog(SaTScanApplication.this);
-                updateCheck.setVisible(true);
-                if (updateCheck.getRestartRequired()) {
-                    if (getAnalysesRunning()) {
-                        JOptionPane.showMessageDialog(SaTScanApplication.this, "SaTScan can not update will analyses are executing. " +
-                                "Please cancel or wait for analyses then close SaTScan.", "Error", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-                    //trigger windowClosing event manually ...
-                    windowClosing(new WindowEvent(SaTScanApplication.this, WindowEvent.WINDOW_CLOSING));
-                }
-            } catch (Throwable t) {
-                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
-            }
+            showUpdateDialog();
         }
     }
 
+    /**
+     * Check version action; checks whether a new version of TreeScan is available.
+     */
+    public class DownloadNewVersionAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public DownloadNewVersionAction() {
+            super("Download New Version");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            showUpdateDialog();
+        }
+    }    
+    
     /**
      * returns whether there are actively running analyses
      */
@@ -745,6 +780,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _printToolButton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
         _versionUpdateToolButton = new javax.swing.JButton();
+        softwareUpdateAvailable = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JToolBar.Separator();
         helpSystemToolButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
@@ -757,6 +793,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionMenuItem = new javax.swing.JMenuItem();
         _saveSessionAsMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator2 = new javax.swing.JSeparator();
+        _appPreferences = new javax.swing.JMenuItem();
         _printMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator3 = new javax.swing.JSeparator();
         _exitMenuItem = new javax.swing.JMenuItem();
@@ -815,10 +852,25 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _ToolBar.add(jSeparator4);
 
         _versionUpdateToolButton.setAction(new CheckNewVersionAction());
-        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/update.png"))); // NOI18N
+        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/refresh.png"))); // NOI18N
         _versionUpdateToolButton.setToolTipText("Check for New Version"); // NOI18N
+        _versionUpdateToolButton.setFocusable(false);
         _versionUpdateToolButton.setHideActionText(true);
+        _versionUpdateToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        _versionUpdateToolButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         _ToolBar.add(_versionUpdateToolButton);
+
+        softwareUpdateAvailable.setAction(new DownloadNewVersionAction());
+        softwareUpdateAvailable.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        softwareUpdateAvailable.setForeground(new java.awt.Color(255, 255, 255));
+        softwareUpdateAvailable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/download.png"))); // NOI18N
+        softwareUpdateAvailable.setText("");
+        softwareUpdateAvailable.setToolTipText("Software Update Ready for Download"); // NOI18N
+        softwareUpdateAvailable.setFocusable(false);
+        softwareUpdateAvailable.setHideActionText(true);
+        softwareUpdateAvailable.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        softwareUpdateAvailable.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        _ToolBar.add(softwareUpdateAvailable);
         _ToolBar.add(jSeparator5);
 
         helpSystemToolButton.setAction(new HelpSystemAction());
@@ -862,6 +914,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _fileMenu.add(_saveSessionAsMenuItem);
         _fileMenu.add(_fileMenuSeparator2);
+
+        _appPreferences.setAction(_applicationPreferencesAction);
+        _appPreferences.setIcon(null);
+        _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _fileMenu.add(_appPreferences);
 
         _printMenuItem.setAction(_printResultsAction);
         _printMenuItem.setIcon(null);
@@ -990,11 +1047,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      * When the main window first shows, displays the start window.
      */
     public void windowGainedFocus(WindowEvent e) {
-        if (gbShowStartWindow) {
+        if (_firstShow) {
             try {
                 StartDialog startDialog = new StartDialog(SaTScanApplication.this);
                 startDialog.setVisible(true);
-                gbShowStartWindow = false;
+                _firstShow = false;
                 switch (startDialog.GetOpenType()) {
                     case NEW:
                         openNewParameterSessionWindow("");
@@ -1132,6 +1189,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
+    private javax.swing.JMenuItem _appPreferences;
     private javax.swing.JMenuItem _chechVersionMenuItem;
     private javax.swing.JMenuItem _closeSessionMenuItem;
     private javax.swing.JMenuItem _executeOptionsMenuItem;
@@ -1160,7 +1218,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JMenu _sessionMenu;
     private javax.swing.JMenuItem _suggestedCitationMenuItem;
     private javax.swing.JMenuItem _userGuideMenuItem;
-    private javax.swing.JButton _versionUpdateToolButton;
+    protected javax.swing.JButton _versionUpdateToolButton;
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JButton helpSystemToolButton;
     private javax.swing.JToolBar.Separator jSeparator1;
@@ -1169,5 +1227,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JMenuBar menuBar;
+    protected javax.swing.JButton softwareUpdateAvailable;
     // End of variables declaration//GEN-END:variables
 }
