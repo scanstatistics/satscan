@@ -18,7 +18,7 @@ UseGridFile=n
 ;grid data filename
 GridFile=
 ;coordinate type (0=Cartesian, 1=latitude/longitude)
-CoordinatesType=0
+CoordinatesType=1
 
 [Analysis]
 ;analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal)
