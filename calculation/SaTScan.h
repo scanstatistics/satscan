@@ -57,8 +57,8 @@
 #define VERSION_MAJOR   "9"
 #define VERSION_MINOR   "3"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Beta 3" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "Not Yet Released"
+#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "March 2014"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
