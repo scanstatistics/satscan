@@ -697,11 +697,13 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
        polygons.push_back(ConvexPolygonBuilder::buildConvexPolygon(inequalities));
     }
     //test that polygons do not overlap
-    for (size_t i=0; i < polygons.size() - 1; ++i) {
-        for (size_t j=i+1; j < polygons.size(); ++j) {
-            if (polygons[i].intersectsRegion(polygons[j]))
-                throw region_exception("Inequalities define regions that overlap.\n"
-                                       "Please check inequalities and/or redefine to not have overlap.");
+    if (polygons.size()) {
+        for (size_t i=0; i < polygons.size() - 1; ++i) {
+            for (size_t j=i+1; j < polygons.size(); ++j) {
+                if (polygons[i].intersectsRegion(polygons[j]))
+                    throw region_exception("Inequalities define regions that overlap.\n"
+                                           "Please check inequalities and/or redefine to not have overlap.");
+            }
         }
     }
   } catch (region_exception& x) {

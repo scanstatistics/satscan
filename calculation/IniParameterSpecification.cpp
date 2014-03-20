@@ -464,7 +464,7 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
     Build_7_0_x_ParameterList();
 
     _parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygons", 1, _polygons_section);
-    _multiple_parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygons", 1, _polygons_section);
+    _multiple_parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygon", 1, _polygons_section);
 
     //non-Euclidian neighbors moved to new spatial neighbors tab
     _parameter_info[USE_LOCATION_NEIGHBORS_FILE] = ParamInfo(USE_LOCATION_NEIGHBORS_FILE, "UseNeighborsFile", 1, _spatial_neighbors_section);
@@ -591,6 +591,7 @@ bool IniParameterSpecification::GetMultipleParameterIniInfo(ParameterType eParam
     if (itr != _multiple_parameter_info.end()) {
         *sSectionName = itr->second._section->_label;
         *sKey = itr->second._label;
+        return true;
     }
     return false;
 }
