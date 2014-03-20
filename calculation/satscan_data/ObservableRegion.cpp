@@ -341,7 +341,7 @@ InequalityContainer_t ConvexPolygonBuilder::parse(const std::string& linearInequ
             matched=true;
         }
         else 
-            throw prg_exception("Inequality does not match known format (%s).", value.c_str());
+            throw prg_exception("Inequality does not match known format (%s).", "parse()", value.c_str());
        
         // matches[0] contains the original string.  matches[n]
         // contains a sub_match object for each matching
