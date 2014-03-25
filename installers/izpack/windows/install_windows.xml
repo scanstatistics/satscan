@@ -15,7 +15,7 @@
     -->
     <info>
         <appname>SaTScan</appname>
-        <appversion>9.2</appversion>
+        <appversion>9.4</appversion>
         <appsubpath>SaTScan</appsubpath>
         <authors>
             <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@satscan.org"/>
@@ -23,7 +23,7 @@
         <url>http://www.satscan.org/</url>
         <javaversion>1.6</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
-        
+
         <run-privileged/>
     </info>
 

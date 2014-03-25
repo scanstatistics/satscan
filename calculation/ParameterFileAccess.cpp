@@ -203,6 +203,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PE_SIMUALTION_OUTPUTFILE     : return "power evaluation simulation data output filename";
       case OUTPUT_KML                   : return "output Google Earth KML file (y/n)";
       case OUTPUT_TEMPORAL_GRAPH        : return "output temporal graph HTML file (y/n)";
+      case TEMPORAL_GRAPH_REPORT_TYPE   : return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
+      case TEMPORAL_GRAPH_MLC_COUNT     : return "number of most likely clusters to report in temporal graph (positive integer)";
+      case TEMPORAL_GRAPH_CUTOFF        : return "significant clusters p-value cutoff to report in temporal graph (0.000-1.000)";
       case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
@@ -360,6 +363,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case PE_SIMUALTION_OUTPUTFILE     : s = gParameters.getPowerEvaluationSimulationDataOutputFilename().c_str(); return s;
       case OUTPUT_KML                   : return AsString(s, gParameters.getOutputKMLFile());
       case OUTPUT_TEMPORAL_GRAPH        : return AsString(s, gParameters.getOutputTemporalGraphFile());
+      case TEMPORAL_GRAPH_REPORT_TYPE   : return AsString(s, gParameters.getTemporalGraphReportType());
+      case TEMPORAL_GRAPH_MLC_COUNT     : return AsString(s, gParameters.getTemporalGraphMostLikelyCount());
+      case TEMPORAL_GRAPH_CUTOFF        : return AsString(s, gParameters.getTemporalGraphSignificantCutoff());
       case OUTPUT_SHAPEFILES            : return AsString(s, gParameters.getOutputShapeFiles());
       case INCLUDE_LOCATIONS_KML        : return AsString(s, gParameters.getIncludeLocationsKML());
       case LOCATIONS_THRESHOLD_KML      : return AsString(s, gParameters.getLocationsThresholdKML());
@@ -749,6 +755,10 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PE_SIMUALTION_OUTPUTFILE     : gParameters.setPowerEvaluationSimulationDataOutputFilename(sParameter.c_str(), true); break;
       case OUTPUT_KML                   : gParameters.setOutputKMLFile(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_TEMPORAL_GRAPH        : gParameters.setOutputTemporalGraphFile(ReadBoolean(sParameter, eParameterType)); break;
+      case TEMPORAL_GRAPH_REPORT_TYPE   : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, MLC_ONLY, SIGNIFICANT_ONLY);
+                                          gParameters.setTemporalGraphReportType((TemporalGraphReportType)iValue); break;
+      case TEMPORAL_GRAPH_MLC_COUNT     : gParameters.setTemporalGraphMostLikelyCount(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case TEMPORAL_GRAPH_CUTOFF        : gParameters.setTemporalGraphSignificantCutoff(ReadDouble(sParameter, eParameterType)); break;
       case OUTPUT_SHAPEFILES            : gParameters.setOutputShapeFiles(ReadBoolean(sParameter, eParameterType)); break;
       case INCLUDE_LOCATIONS_KML        : gParameters.setIncludeLocationsKML(ReadBoolean(sParameter, eParameterType)); break;
       case LOCATIONS_THRESHOLD_KML      : gParameters.setLocationsThresholdKML(ReadUnsignedInt(sParameter, eParameterType)); break;

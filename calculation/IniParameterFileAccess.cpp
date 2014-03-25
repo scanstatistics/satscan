@@ -539,6 +539,9 @@ void IniParameterFileAccess::WriteTemporalGraphSettings(IniFile& WriteFile) {
     std::string  s;
     try {
         WriteIniParameter(WriteFile, OUTPUT_TEMPORAL_GRAPH, GetParameterString(OUTPUT_TEMPORAL_GRAPH, s).c_str(), GetParameterComment(OUTPUT_TEMPORAL_GRAPH));
+        WriteIniParameter(WriteFile, TEMPORAL_GRAPH_REPORT_TYPE, GetParameterString(TEMPORAL_GRAPH_REPORT_TYPE, s).c_str(), GetParameterComment(TEMPORAL_GRAPH_REPORT_TYPE));
+        WriteIniParameter(WriteFile, TEMPORAL_GRAPH_MLC_COUNT, GetParameterString(TEMPORAL_GRAPH_MLC_COUNT, s).c_str(), GetParameterComment(TEMPORAL_GRAPH_MLC_COUNT));
+        WriteIniParameter(WriteFile, TEMPORAL_GRAPH_CUTOFF, GetParameterString(TEMPORAL_GRAPH_CUTOFF, s).c_str(), GetParameterComment(TEMPORAL_GRAPH_CUTOFF));
     } catch (prg_exception& x) {
         x.addTrace("WriteTemporalGraphSettings()","IniParameterFileAccess");
         throw;

@@ -537,6 +537,18 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumTemporalClusterSize());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphReportType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalGraphReportType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphSignificantCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getTemporalGraphSignificantCutoff());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphMostLikelyCount", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalGraphMostLikelyCount());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1049,6 +1061,16 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setMinimumTemporalClusterSize(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
+  Parameters.setTemporalGraphReportType((TemporalGraphReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getTemporalGraphReportType", "Lorg/satscan/app/Parameters$TemporalGraphReportType;"));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphSignificantCutoff", "()D");
+  Parameters.setTemporalGraphSignificantCutoff(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphMostLikelyCount", "()I");
+  Parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
   return Parameters;
 }
-

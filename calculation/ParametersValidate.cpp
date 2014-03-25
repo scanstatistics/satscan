@@ -697,11 +697,13 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
        polygons.push_back(ConvexPolygonBuilder::buildConvexPolygon(inequalities));
     }
     //test that polygons do not overlap
+    if (polygons.size()) {
     for (size_t i=0; i < polygons.size() - 1; ++i) {
         for (size_t j=i+1; j < polygons.size(); ++j) {
             if (polygons[i].intersectsRegion(polygons[j]))
                 throw region_exception("Inequalities define regions that overlap.\n"
                                        "Please check inequalities and/or redefine to not have overlap.");
+            }
         }
     }
   } catch (region_exception& x) {
@@ -757,11 +759,12 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING);
     }  
     if (gParameters.getOutputTemporalGraphFile() &&
-        (!gParameters.GetIsPurelyTemporalAnalysis() ||
-        !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) {
+        (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
+        !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+          gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL))) {
             const_cast<CParameters&>(gParameters).setOutputTemporalGraphFile(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The temporal graph option is only available for purely temporal analyses with Poisson or Bernoulli models.\nThe option was disabled.\n",
+                            "The temporal graph option is only available for temporal analyses with Poisson, Bernoulli, STP and Exponential models.\nThe option was disabled.\n",
                             BasePrint::P_WARNING);
     }
     if (!ValidateSpatialOutputParameters(PrintDirection))

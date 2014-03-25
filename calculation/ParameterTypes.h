@@ -127,6 +127,9 @@ enum ParameterType
     PE_SIMUALTION_OUTPUTFILE,       /* power evaluation simulation data output filename (string) */
     OUTPUT_KML,                     /* generate KML output file */
     OUTPUT_TEMPORAL_GRAPH,          /* generate temporal graph output file */
+    TEMPORAL_GRAPH_REPORT_TYPE,     /* which clusters to generate temporal graph (enum)*/
+    TEMPORAL_GRAPH_MLC_COUNT,       /* number of most likely clusters to generate temporal graph (integer)*/
+    TEMPORAL_GRAPH_CUTOFF,          /* p-value cutoff for signicant clusters when generating temporal graph (numeric)*/
     OUTPUT_SHAPEFILES               /* generate shape files */,
     INCLUDE_LOCATIONS_KML,          /* whether to include cluster locations kml output */
     LOCATIONS_THRESHOLD_KML,        /* threshold for generating separate kml files for cluster locations */
@@ -329,6 +332,13 @@ enum PowerEvaluationMethodType
     PE_WITH_ANALYSIS=0,             /* execute standard analysis and power evaluation together */
     PE_ONLY_CASEFILE,               /* execute only power evaluation, using total cases from case file */
     PE_ONLY_SPECIFIED_CASES         /* execute only power evaluation, using user specified total cases */
+};
+/** temporal graph reporting type */
+enum TemporalGraphReportType
+{
+    MLC_ONLY=0,                    /* generate a temporal graph for the most likley cluster only */
+    X_MCL_ONLY,                    /* generate a temporal graph for the first X likley clusters */
+    SIGNIFICANT_ONLY               /* generate a temporal graph for significant clusters only */
 };
 //*****************************************************************************
 #endif

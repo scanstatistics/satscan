@@ -1468,9 +1468,8 @@ void AnalysisRunner::reportClusters() {
         } else {
             PrintTopClusters(_reportClusters);
             // create temporal graph
-            if (gParameters.GetIsPurelyTemporalAnalysis() && gParameters.getOutputTemporalGraphFile() && _reportClusters.GetNumClustersRetained()) {
-                // TODO: What about space-time, imcluding purely temporal cluster? What if one of the detected clusters is purely temporal.
-                TemporalChartGenerator generator(*gpDataHub, _reportClusters.GetTopRankedCluster());
+            if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) && gParameters.getOutputTemporalGraphFile()) {
+                TemporalChartGenerator generator(*gpDataHub, _reportClusters, gSimVars);
                 generator.generateChart();
             }
         }

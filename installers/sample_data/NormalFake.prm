@@ -225,6 +225,12 @@ MaxSpatialSizeInDistanceFromCenter_Reported=1
 [Temporal Output]
 ;output temporal graph HTML file (y/n)
 OutputTemporalGraphHTML=n
+;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
+TemporalGraphReportType=0
+;number of most likely clusters to report in temporal graph (positive integer)
+TemporalGraphMostMLC=1
+;significant clusters p-value cutoff to report in temporal graph (0.000-1.000)
+TemporalGraphSignificanceCutoff=0.05
 
 [Other Output]
 ;report critical values for .01 and .05? (y/n)
@@ -262,5 +268,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=9.3.0
+Version=9.4.0
 

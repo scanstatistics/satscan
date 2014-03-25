@@ -105,8 +105,14 @@ class CParameters {
     bool                                _compress_kml_output;                   /** compress kml output into kmz format */
     bool                                _launch_kml_viewer;                     /** compress kml output into kmz format */
 
+    /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
+    TemporalGraphReportType             _temporal_graph_report_type;            /* which clusters to report in temporal graph */
+    int                                 _temporal_graph_report_count;           /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
+    double                              _temporal_graph_report_cutoff;          /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
+
     bool                                _output_shapefiles;                     /** generate shapefile output */
+
     /* Iterative scans variables */
     bool                                gbIterativeRuns;                        /** iterative analysis? */
     unsigned int                        giNumIterativeRuns;                     /** number of iterative scans to attempt */
@@ -198,6 +204,13 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+
+    double                              getTemporalGraphSignificantCutoff() const {return _temporal_graph_report_cutoff;}
+    void                                setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
+    int                                 getTemporalGraphMostLikelyCount() const {return _temporal_graph_report_count;}
+    void                                setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
+    TemporalGraphReportType             getTemporalGraphReportType() const {return _temporal_graph_report_type;}
+    void                                setTemporalGraphReportType(TemporalGraphReportType e);
     void                                AddEllipsoidShape(double dShape, bool bEmptyFirst);
     void                                AddEllipsoidRotations(int iRotations, bool bEmptyFirst);
     void                                AddObservableRegion(const char * sRegions, size_t iIndex, bool bEmptyFirst);

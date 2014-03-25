@@ -141,13 +141,16 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case PE_SIMUALTION_OUTPUTFILE           : return "power evaluation simulation data output filename (line 119)";
     case OUTPUT_KML                         : return "output Google Earth KML file (line 120)";
     case OUTPUT_TEMPORAL_GRAPH              : return "output temporal graph HTML file (line 121)";
-    case OUTPUT_SHAPEFILES                  : return "output shapefiles (line 122)";
-    case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 123)";
-    case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 124)";
-    case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 125)";
-    case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 126)";
-    case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 127)";
-    case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 128)";
+    case TEMPORAL_GRAPH_REPORT_TYPE         : return "temporal graph report type (line 122)";
+    case TEMPORAL_GRAPH_MLC_COUNT           : return "temporal graph MLC count (line 123)";
+    case TEMPORAL_GRAPH_CUTOFF              : return "temporal graph significant p-value (line 124)";
+    case OUTPUT_SHAPEFILES                  : return "output shapefiles (line 125)";
+    case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 126)";
+    case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 127)";
+    case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 128)";
+    case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 129)";
+    case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 130)";
+    case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 131)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

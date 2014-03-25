@@ -75,6 +75,8 @@ public class Parameters implements Cloneable {
     public enum PowerEstimationType           {PE_MONTECARLO, PE_GUMBEL};
     /** power evaluation method */
     public enum PowerEvaluationMethodType     {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
+    /** temporal graph reporting type */
+    public enum TemporalGraphReportType       {MLC_ONLY, X_MCL_ONLY, SIGNIFICANT_ONLY}
     
     private int                             giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
     private ExecutionType                   geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
@@ -148,6 +150,9 @@ public class Parameters implements Cloneable {
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
     private boolean                         _output_kml=false; /* report google earth kml file */
     private boolean                         _output_temporal_graph=false; /* report temporal graph file */
+    private TemporalGraphReportType         _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; /* which clusters to report in temporal graph */
+    private int                             _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
+    private double                          _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
     private boolean                         _include_locations_kml=true; /** include cluster locations in kml output */
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
     private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
@@ -267,6 +272,15 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
+    public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
+    public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
+    public void setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
+    public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
+    public void setTemporalGraphReportType(int iOrdinal) {
+        try { _temporal_graph_report_type = TemporalGraphReportType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
+    }        
     public int getMinimumTemporalClusterSize() {return _minimum_temporal_cluster_size;}
     public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
     public boolean getOutputShapeFiles() {return _output_shapefiles;}
@@ -422,7 +436,10 @@ public class Parameters implements Cloneable {
         if (_compress_kml_output != rhs._compress_kml_output) return false;
         if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;  
         if (_output_shapefiles != rhs._output_shapefiles) return false;
-        if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;
+        if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;        
+        if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
+        if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
+        if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
         
         return true;
     }

@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 128;
+const int CParameters::giNumParameters                = 131;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -150,6 +150,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_power_evaluation_method != rhs._power_evaluation_method) return false;
   if (_output_kml != rhs._output_kml) return false;
   if (_output_temporal_graph != rhs._output_temporal_graph) return false;
+  if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
+  if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
+  if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
   if (_output_shapefiles != rhs._output_shapefiles) return false;
   if (_include_locations_kml != rhs._include_locations_kml) return false;
   if (_locations_threshold_kml != rhs._locations_threshold_kml) return false;
@@ -157,6 +160,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;
   if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
   if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;
+  if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
+  if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
+  if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
 
   return true;
 }
@@ -358,6 +364,9 @@ void CParameters::Copy(const CParameters &rhs) {
   _power_evaluation_method               = rhs._power_evaluation_method;
   _output_kml = rhs._output_kml;
   _output_temporal_graph = rhs._output_temporal_graph;
+  _temporal_graph_report_type = rhs._temporal_graph_report_type;
+  _temporal_graph_report_count = rhs._temporal_graph_report_count;
+  _temporal_graph_report_cutoff = rhs._temporal_graph_report_cutoff;
   _output_shapefiles = rhs._output_shapefiles;
   _include_locations_kml = rhs._include_locations_kml;
   _compress_kml_output = rhs._compress_kml_output;
@@ -850,6 +859,9 @@ void CParameters::SetAsDefaulted() {
   _power_evaluation_method = PE_WITH_ANALYSIS;
   _output_kml = false;
   _output_temporal_graph = false;
+  _temporal_graph_report_cutoff = 0.05;
+  _temporal_graph_report_count = 1;
+  _temporal_graph_report_type = MLC_ONLY;
   _output_shapefiles = false;
   _include_locations_kml = true;
   _compress_kml_output = false;
@@ -1160,6 +1172,13 @@ void CParameters::SetStudyPeriodEndDate(const char * sStudyPeriodEndDate) {
 /** Sets study period start date. Throws exception if out of range. */
 void CParameters::SetStudyPeriodStartDate(const char * sStudyPeriodStartDate) {
   gsStudyPeriodStartDate = sStudyPeriodStartDate;
+}
+
+/** Sets temporal graph report type. Throws exception if out of range. */
+void CParameters::setTemporalGraphReportType(TemporalGraphReportType e) {
+  if (e < MLC_ONLY || e > SIGNIFICANT_ONLY)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, MLC_ONLY, SIGNIFICANT_ONLY);
+  _temporal_graph_report_type = e;
 }
 
 /** Sets time aggregation length. Throws exception if out of range. */

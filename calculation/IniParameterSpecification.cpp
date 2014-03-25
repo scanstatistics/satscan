@@ -167,8 +167,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_9_0_x_ParameterList();
     else if (version.iMajor == 9  && version.iMinor == 2 && version.iRelease < 1)
         Build_9_2_x_ParameterList();
-    else
+    else if (version.iMajor == 9  && version.iMinor == 3)
         Build_9_3_x_ParameterList();
+    else
+        Build_9_4_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -375,9 +377,9 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
     _parameter_info[RUN_HISTORY_FILENAME] = ParamInfo(RUN_HISTORY_FILENAME, NotUsed, 0, _not_used_section);
     _parameter_info[TIMETRENDCONVRG] = ParamInfo(TIMETRENDCONVRG, NotUsed, 0, _not_used_section);
 
-    _multiple_parameter_info[CASEFILE] = ParamInfo(CASEFILE, "CaseFile", 1, _input_section);
-    _multiple_parameter_info[CONTROLFILE] = ParamInfo(CONTROLFILE, "ControlFile", 2, _input_section);
-    _multiple_parameter_info[POPFILE] = ParamInfo(POPFILE, "PopulationFile", 3, _input_section);
+    _multiple_parameter_info[CASEFILE] = ParamInfo(CASEFILE, "CaseFile", 2, _multiple_data_section);
+    _multiple_parameter_info[CONTROLFILE] = ParamInfo(CONTROLFILE, "ControlFile", 3, _multiple_data_section);
+    _multiple_parameter_info[POPFILE] = ParamInfo(POPFILE, "PopulationFile", 4, _multiple_data_section);
 
     assert(_parameter_info.size() == 70);
 }
@@ -464,7 +466,7 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
     Build_7_0_x_ParameterList();
 
     _parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygons", 1, _polygons_section);
-    _multiple_parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygons", 1, _polygons_section);
+    _multiple_parameter_info[OBSERVABLE_REGIONS] = ParamInfo(OBSERVABLE_REGIONS, "Polygon", 1, _polygons_section);
 
     //non-Euclidian neighbors moved to new spatial neighbors tab
     _parameter_info[USE_LOCATION_NEIGHBORS_FILE] = ParamInfo(USE_LOCATION_NEIGHBORS_FILE, "UseNeighborsFile", 1, _spatial_neighbors_section);
@@ -572,6 +574,17 @@ void IniParameterSpecification::Build_9_3_x_ParameterList() {
     assert(_parameter_info.size() == 128);
 }
 
+/** Version 9.4.x */
+void IniParameterSpecification::Build_9_4_x_ParameterList() {
+    Build_9_3_x_ParameterList();
+
+    _parameter_info[TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(TEMPORAL_GRAPH_REPORT_TYPE, "TemporalGraphReportType", 2, _temporal_output_section);
+    _parameter_info[TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(TEMPORAL_GRAPH_MLC_COUNT, "TemporalGraphMostMLC", 3, _temporal_output_section);
+    _parameter_info[TEMPORAL_GRAPH_CUTOFF] = ParamInfo(TEMPORAL_GRAPH_CUTOFF, "TemporalGraphSignificanceCutoff", 4, _temporal_output_section);
+
+    assert(_parameter_info.size() == 131);
+}
+
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */
 bool IniParameterSpecification::GetParameterIniInfo(ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {
@@ -591,6 +604,7 @@ bool IniParameterSpecification::GetMultipleParameterIniInfo(ParameterType eParam
     if (itr != _multiple_parameter_info.end()) {
         *sSectionName = itr->second._section->_label;
         *sKey = itr->second._label;
+        return true;
     }
     return false;
 }

@@ -132,6 +132,7 @@ class IniParameterSpecification {
     void                        Build_9_0_x_ParameterList();
     void                        Build_9_2_x_ParameterList();
     void                        Build_9_3_x_ParameterList();
+    void                        Build_9_4_x_ParameterList();
 
    public:
      IniParameterSpecification();

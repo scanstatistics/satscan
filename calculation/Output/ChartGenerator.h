@@ -9,7 +9,7 @@
 class AbstractChartGenerator {
     protected:
         static const char * HTML_FILE_EXT;
-        static const char * BASE_TEMPLATE;
+        static const char * TEMPLATE_BODY;
         static std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 
     public:
@@ -19,6 +19,7 @@ class AbstractChartGenerator {
 
 class CSaTScanData;
 class CCluster;
+class SimulationVariables;
 
 /* generator for temporal chart */
 class TemporalChartGenerator : public AbstractChartGenerator {
@@ -27,10 +28,14 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         static const int    MAX_INTERVALS;
 
     protected:
-        static const char * TEMPLATE_HEADER;
-        static const char * TEMPLATE_BODY;
+        static const char * BASE_TEMPLATE;
+        static const char * TEMPLATE_CHARTHEADER;
+        static const char * TEMPLATE_CHARTHEADER_PT_SERIES;
+        static const char * TEMPLATE_CHARTHEADER_ST_SERIES;
+        static const char * TEMPLATE_CHARTSECTION;
         const CSaTScanData & _dataHub;
-        const CCluster & _cluster;
+        const MostLikelyClustersContainer & _clusters;
+        const SimulationVariables & _simVars;
 
         class intervalGroups {
             public:
@@ -41,16 +46,23 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                 void addGroup(int start, int end) {_interval_grps.push_back(std::make_pair(start,end));}
                 const intervals_t& getGroups() const {return _interval_grps;}
         };
+        intervalGroups getIntervalGroups(const CCluster& cluster) const;
+        std::pair<int, int> _getSeriesStreams(const CCluster& cluster,
+                                              const intervalGroups& groups,
+                                              size_t dataSetIdx,
+                                              std::stringstream& categories,
+                                              std::stringstream& cluster_data,
+                                              std::stringstream& expected_data,
+                                              std::stringstream& observed_data,
+                                              std::stringstream& cluster_observed_data,
+                                              std::stringstream& cluster_expected_data) const;
 
     public:
-        TemporalChartGenerator(const CSaTScanData& dataHub, const CCluster & cluster);
+        TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars);
 
         virtual void generateChart() const;
         static FileName& getFilename(FileName& filename);
 };
-
-//class MLC_Collections_t;
-class SimulationVariables;
 
 /* generator for Gini chart */
 class GiniChartGenerator : public AbstractChartGenerator {
@@ -58,8 +70,9 @@ class GiniChartGenerator : public AbstractChartGenerator {
         static const char * FILE_SUFFIX_EXT;
 
     protected:
-        static const char * TEMPLATE_HEADER;
-        static const char * TEMPLATE_BODY;
+        static const char * BASE_TEMPLATE;
+        static const char * TEMPLATE_CHARTHEADER;
+        static const char * TEMPLATE_CHARTSECTION;
         const MLC_Collections_t & _mlc;
         const CSaTScanData & _dataHub;
         const SimulationVariables & _simVars;

@@ -14,27 +14,15 @@
 /** ------------------- AbstractChartGenerator --------------------------------*/
 const char * AbstractChartGenerator::HTML_FILE_EXT = ".html";
 
-const char * AbstractChartGenerator::BASE_TEMPLATE = " \
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
-<html lang=\"en\"> \n \
-    <head> \n \
-        <title>--title--</title> \n \
-        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
-        <style type=\"text/css\"> body {font: 100% Arial,Helvetica;background: #9ea090;} button {cursor: pointer;}button {-moz-border-radius:5px;-webkit-border-radius:5px;-moz-box-shadow:0px 0px 2px rgba(0,0,0,0.4);-webkit-box-shadow:0px 0px 2px rgba(0,0,0,0.4);color:rgba(0,0,0,0.9);text-shadow:1px 1px 0px rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.5);background:-webkit-gradient(linear,0% 0%,0% 100%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(top,rgba(255,255,255,1),rgba(185,185,185,1));padding:5px 5px 5px 5px;}button:hover {background:rgba(240,240,240,1);}button:active, button:focus {background:-webkit-gradient(linear,0% 100%,0% 0%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));background:-moz-linear-gradient(bottom,rgba(255,255,255,1),rgba(185,185,185,1));}button:disabled {color:rgba(0,0,0,0.4);text-shadow:1px 1px 0px rgba(255,255,255,0.5);background:rgba(220,220,220,1);}</style> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js\"></script> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--javascript/highcharts/highcharts-2.3.5/js/highcharts.js\"></script> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--javascript/highcharts/highcharts-2.3.5/js/modules/exporting.js\"></script> \
-        --header-- \
-    </head> \n \
-    <body> \n \
-        <!--[if lt IE 9]> \n \
-        <div id=\"ie\" style=\"z-index:255;border-top:5px solid #fff;border-bottom:5px solid #fff;background-color:#c00; color:#fff;\"><div class=\"iewrap\" style=\"border-top:5px solid #e57373;border-bottom:5px solid #e57373;\"><div class=\"iehead\" style=\"margin: 14px 14px;font-size: 20px;\">Notice to Internet Explorer users!</div><div class=\"iebody\" style=\"font-size: 14px;line-height: 14px;margin: 14px 28px;\">It appears that you are using Internet Explorer, <strong>this page may not display correctly with versions 8 or earlier of this browser</strong>.<br /><br /> \n \
-            <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i> \n \
-        </div></div></div> \n \
-        <![endif]--> \
-        --body-- \
-    </body> \n \
-</html> \n";
+const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
+        <body style=\"margin:0;background-color: #fff;\"> \n \
+        <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
+        <tbody><tr> \n \
+        <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"Östersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
+        <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
+        <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
+        </tr></tbody></table> \n \
+        --main-content-- \n";
 
 /** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
 std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
@@ -50,41 +38,144 @@ std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& t
 const char * TemporalChartGenerator::FILE_SUFFIX_EXT = "_temporal";
 const int TemporalChartGenerator::MAX_INTERVALS = 4000;
 
-const char * TemporalChartGenerator::TEMPLATE_HEADER = "\n \
-        <script type=\"text/javascript\"> \n \
+const char * TemporalChartGenerator::BASE_TEMPLATE = " \
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
+<html lang=\"en\"> \n \
+    <head> \n \
+        <title>--title--</title> \n \
+        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
+        <style type=\"text/css\"> \n \
+        body{font:100% Arial,Helvetica;background:#9ea090} \n \
+        .chart-options{display:none} \n \
+        .show-chart-options,.hide-chart-options{color:#13369f;border:1px solid #d7e9ed;margin-top:3px;-webkit-border-radius:3px;-moz-border-radius:3px} \n \
+        .show-chart-options a,.hide-chart-options a{color:#13369f;background-color:#f5f8fa;font-size:11px;text-decoration:none;padding:4px 6px;display:block} \n \
+        .show-chart-options a{padding-left:24px;background-image:url('--resource-path--images/down_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
+        .hide-chart-options a{padding-left:24px;background-image:url('--resource-path--images/up_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
+        .show-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/down_grip_selected.png')} \n \
+        .hide-chart-options a{border-top:1px solid #d7e9ed;background-image:url('--resource-path--images/up_grip.png')} \n \
+        .hide-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/up_grip_selected.png')} \n \
+        .chart-options{padding:10px 0 10px 0;background-color:#e6eef2;border:1px solid silver} \n \
+        .options-row{margin:0 10px 10px 10px} \n \
+        .options-row>label:first-child, .options-row detail{color:#13369f;font-weight:bold} \n \
+        .options-row input[type='radio']{margin:5px} \n \
+        .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
+        .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
+        .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
+        </style> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-3.0.9/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-3.0.9/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript'> \n \
+            var charts = {}; \n \
             $(document).ready(function () { \n \
-                var chart = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container', type: 'line', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
-                    title: { text: 'Detected Cluster w/ Observed and Expected', align: 'center' }, \n \
+                --charts--   \n\n \
+                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.text); }); \n \
+                $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
+                $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
+                $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
+                $('.options-row input[type=\"radio\"]').click(function(event) { \n \
+                    var series_type = $(this).attr('series-type'); \n \
+                    var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
+                    $.each($(this).attr('series-id').split(','), function(index, value) { chart.get(value).update({type:series_type}, true); }); \n \
+                }); \n \
+                $('.options-row input[type=\"checkbox\"]').click(function(event) { \n \
+                    var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
+                    if ($(this).is(':checked')) { \n \
+                        chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
+                        chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
+                        chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
+                    } else { \n \
+                        chart.xAxis[0].removePlotBand('band' ); \n \
+                        chart.xAxis[0].removePlotLine('start'); \n \
+                        chart.xAxis[0].removePlotLine('end'); \n \
+                    } \n \
+                }); \n \
+            }); \n \
+        </script> \n \
+    </head> \n \
+    <body> \n \
+        <!--[if lt IE 9]> \n \
+        <div id=\"ie\" style=\"z-index:255;border-top:5px solid #fff;border-bottom:5px solid #fff;background-color:#c00; color:#fff;\"><div class=\"iewrap\" style=\"border-top:5px solid #e57373;border-bottom:5px solid #e57373;\"><div class=\"iehead\" style=\"margin: 14px 14px;font-size: 20px;\">Notice to Internet Explorer users!</div><div class=\"iebody\" style=\"font-size: 14px;line-height: 14px;margin: 14px 28px;\">It appears that you are using Internet Explorer, <strong>this page may not display correctly with versions 8 or earlier of this browser</strong>.<br /><br /> \n \
+            <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i> \n \
+        </div></div></div> \n \
+        <![endif]--> \
+        --body-- \
+    </body> \n \
+</html> \n";
+
+const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
+                var --container-id-- = new Highcharts.Chart({ \n \
+                    chart: { renderTo: '--container-id--', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: 20 }, \n \
+                    title: { text: '--chart-title--', align: 'center' }, \n \
+                    exporting: {filename: 'cluster_graph'}, \n \
+                    plotOptions: { column: { grouping: false }}, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
                     xAxis: { categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }, \n \
                     yAxis: { title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }, \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
-                    series: [ { id: 'cluster', zIndex: 3, type: 'line', name: 'Detected Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster_data--]}, \n \
-                              { id: 'obs', zIndex: 2, type: 'line', name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed_data--] }, \n \
-                              { id: 'exp', zIndex: 1, type: 'line', name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected_data--]} ] \n \
+                    --series--\n \
                 }); \n \
-                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}$(\"#toggle_type\").html((chart.series[0].type=='line'?'Switch to Column Chart':'Switch to Line Chart'));return false;}); \n \
-            }); \n \
-        </script> \n";
+                charts['--container-id--'] = --container-id--;";
 
-const char * TemporalChartGenerator::TEMPLATE_BODY = "\n \
-        <div id=\"container\" style=\"margin-top:20px;\"></div> \n \
-        <div><button id=\"toggle_type\" style=\"margin-top:10px;\">Switch to Column Chart</button> \n \
-        <div style=\"font-style:italic;float:right;font-size:small;\">To zoom, select and drag section of chart.</div></div> \n";
+const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER_PT_SERIES = "\
+                series: [ { id: 'cluster', zIndex: 2, type: 'column', name: 'Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster-data--] }, \n \
+                          { id: 'obs', zIndex: 1, type: 'column', name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed-data--] }, \n \
+                          { id: 'exp', zIndex: 3, type: 'line', name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected-data--]} ]";
+
+const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER_ST_SERIES = "\
+                series: [ { id: 'cluster', zIndex: 5, type: 'column', name: 'Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster-data--] }, \n \
+                          { id: 'obs', zIndex: 1, type: 'column', name: 'Observed (Outside Cluster)', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed-data--] }, \n \
+                          { id: 'exp', zIndex: 2, type: 'line', name: 'Expected (Outside Cluster)', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected-data--]}, \n \
+                          { id: 'cluster_obs', zIndex: 3, type: 'column', name: 'Observed (Inside Cluster)', color: '#003264', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--cluster-observed-data--] }, \n \
+                          { id: 'cluster_exp', zIndex: 4, type: 'line', name: 'Expected (Inside Cluster)', color: '#394521', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--cluster-expected-data--] } \n \
+                        ]";
+
+const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
+         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
+            <div id=\"--container-id--\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
+            <div class=\"options\"> \n \
+                <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
+                <div class=\"chart-options\"> \n \
+                    <div class=\"options-table\"> \n \
+                      <h4>Chart Options</h4> \n \
+                      <div class=\"options-row\"> \n \
+                          <label for=\"title_obs\">Title</label> \n \
+                          <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
+                              <p class=\"help-block\">The graph title can be updated simply by editing this text.</p> \n \
+                          </div> \n \
+                      </div> \n \
+                      <div class=\"options-row\"> \n \
+                          <label>Observed Chart Type</label> \n \
+                          <div> \n \
+                            <label> \n \
+                              <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"column\" series-id=\"--chart-switch-ids--\" checked=checked/>Histogram \n \
+                            </label> \n \
+                            <label> \n \
+                              <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"line\" series-id=\"--chart-switch-ids--\"/>Line \n \
+                            </label> \n \
+                            <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
+                          </div> \n \
+                      </div> \n \
+                      <div class=\"options-row\"> \n \
+                          <label>Cluster Band</label> \n \
+                          <div> \n \
+                            <label> \n \
+                              <input type=\"checkbox\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\"/>Show Cluster Band \n \
+                            </label> \n \
+                            <p class=\"help-block\">Switch the series type between line and histogram.</p> \n \
+                          </div> \n \
+                      </div> \n \
+                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart.</div> \n \
+                    </div> \n \
+                    <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
+                </div> \n \
+            </div> \n \
+         </div> \n";
 
 /** constructor */
-TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const CCluster & cluster) :_dataHub(dataHub), _cluster(cluster) {
-    try {
-        if (_cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-            throw prg_error("TemporalChartGenerator not implemented for clusters of type '%d'.", "constructor()", _cluster.GetClusterType());
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("constructor()","TemporalChartGenerator");
-        throw;
-    }
-}
+TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars) 
+    :_dataHub(dataHub), _clusters(clusters), _simVars(simVars) {}
 
 /* TODO: Once we start creating Gini graph, we might break TEMPLATE into parts. A good portion of the header
          will certainly be shared between the 2 files.
@@ -112,7 +203,7 @@ TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, cons
 
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
-    std::string buffer;
+    std::string buffer, buffer2;
     FileName fileName;
 
     try {
@@ -123,107 +214,267 @@ void TemporalChartGenerator::generateChart() const {
         //open output file
         HTMLout.open(fileName.getFullPath(buffer).c_str());
         if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
-        std::stringstream html, categories, observed_data, expected_data, cluster_data;
+        if (!_clusters.GetNumClustersRetained()) {
+            HTMLout.close();
+            return;
+        }
+
+        std::stringstream html, jscharts, cluster_sections;
 
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
-        // replace specialized header
-        templateReplace(html, "--header--", TEMPLATE_HEADER);
-        // site resource link path
-        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // replace page title
-        templateReplace(html, "--title--", "Cluster Graph");
+        templateReplace(html, "--title--", "Cluster Temporal Graph");
         // replace specialized body
         templateReplace(html, "--body--", TEMPLATE_BODY);
+        // site resource link path
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
 
         // set margin bottom according to time precision
         int margin_bottom=130;
         switch (_dataHub.GetParameters().GetPrecisionOfTimesType()) {
-        case YEAR : margin_bottom = 90; break;
-        case MONTH : margin_bottom = 110; break;
-        case DAY:
-        case GENERIC:
-        default: margin_bottom=130;
+            case YEAR : margin_bottom = 90; break;
+            case MONTH : margin_bottom = 110; break;
+            case DAY:
+            case GENERIC:
+            default: margin_bottom=130;
         }
-        templateReplace(html, "--margin-bottom--", printString(buffer, "%d", margin_bottom));        
 
-        // TODO: What about multiple data sets?
+        // We might need to calculated purely temporal data structures.
+        // TODO: Is there a better way to do this?
         const DataSetHandler& handler = _dataHub.GetDataSetHandler();
-        count_t * pcases = handler.GetDataSet(0).getCaseData_PT();
-        measure_t * pmeasure = handler.GetDataSet(0).getMeasureData_PT();
-        double adjustment = _dataHub.GetMeasureAdjustment(0);
-        int intervals = _dataHub.GetNumTimeIntervals();
-
-        intervalGroups groups;
-        if (intervals <= MAX_INTERVALS) {
-            // number of groups equals the number of intervals
-            for (int i=0; i < intervals; ++i) {
-                groups.addGroup(i, i+1);
+        if (_dataHub.GetParameters().GetAnalysisType() != PURELYTEMPORAL) {
+            DataSetHandler& temp_handler = const_cast<DataSetHandler&>(handler);
+            for (size_t idx=0; idx < temp_handler.GetNumDataSets(); ++idx) {
+                temp_handler.GetDataSet(idx).setCaseData_PT();
+                temp_handler.GetDataSet(idx).setMeasureData_PT();
             }
+        }
+
+        // Determine clusters will have a graph generated based on settings.
+        std::vector<const CCluster*> graphClusters;
+        switch (_dataHub.GetParameters().getTemporalGraphReportType()) {
+        case MLC_ONLY :
+            graphClusters.push_back(&_clusters.GetCluster(0)); break;
+        case X_MCL_ONLY :
+            for (int i=0; i < _dataHub.GetParameters().getTemporalGraphMostLikelyCount(); ++i)
+                graphClusters.push_back(&_clusters.GetCluster(i)); 
+            break;
+        case SIGNIFICANT_ONLY :
+            for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
+                const CCluster & cluster = _clusters.GetCluster(i);
+                if (cluster.getReportingPValue(_dataHub.GetParameters(), _simVars, i == 0) <= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
+                    graphClusters.push_back(&cluster); 
+            }
+            break;
+        }
+
+        for (size_t clusterIdx=0; clusterIdx < graphClusters.size(); ++clusterIdx) {
+            const CCluster& cluster = *graphClusters[clusterIdx];
+            // This graph is only valid for temporal clusters.
+            if (!(cluster.GetClusterType() == PURELYTEMPORALCLUSTER || cluster.GetClusterType() == SPACETIMECLUSTER))
+                continue;
+
+            // calculate the graphs interval groups for this cluster
+            intervalGroups groups = getIntervalGroups(cluster);
+
+            for (size_t setIdx=0; setIdx < handler.GetNumDataSets(); ++setIdx) {
+
+                std::stringstream chart_js, chart_series, chart_section, categories, observed_data, expected_data, cluster_data, cluster_observed_data, cluster_expected_data;
+                chart_js << TEMPLATE_CHARTHEADER;
+
+                if (_dataHub.GetParameters().GetAnalysisType() == ::PURELYTEMPORAL) {
+                    buffer = "Detected Cluster";
+                } else {
+                    printString(buffer, "Cluster #%u", clusterIdx + 1);
+                }
+                if (handler.GetNumDataSets() > 1) {
+                    buffer += printString(buffer2, " Data Set #%u", setIdx + 1);
+                }
+                templateReplace(chart_js, "--chart-title--", buffer);
+                templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
+
+
+                // increase x-axis 'step' if there are many intervals, so that labels are not crowded
+                //  -- empirically, 50 ticks seems like a good upper limit
+                templateReplace(chart_js, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
+
+                std::pair<int,int> cluster_grp_idx = _getSeriesStreams(cluster, groups, setIdx, categories, cluster_data, expected_data, observed_data, cluster_observed_data, cluster_expected_data);
+
+                // define the identifying attribute of this chart
+                printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
+                templateReplace(chart_js, "--container-id--", buffer);
+                templateReplace(chart_js, "--categories--", categories.str());
+
+                if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
+                    chart_series << TEMPLATE_CHARTHEADER_PT_SERIES;
+                } else {
+                    chart_series << TEMPLATE_CHARTHEADER_ST_SERIES;
+                }
+                // replace the series variables
+                templateReplace(chart_series, "--cluster-data--", cluster_data.str());
+                templateReplace(chart_series, "--observed-data--", observed_data.str());
+                templateReplace(chart_series, "--expected-data--", expected_data.str());
+                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+                    templateReplace(chart_series, "--cluster-observed-data--", cluster_observed_data.str());
+                    templateReplace(chart_series, "--cluster-expected-data--", cluster_expected_data.str());
+                }
+                // replace the series
+                templateReplace(chart_js, "--series--", chart_series.str());
+                jscharts << chart_js.str() << std::endl;
+
+                // create chart html section
+                chart_section << TEMPLATE_CHARTSECTION;
+                templateReplace(chart_section, "--container-id--", buffer);
+                printString(buffer, "%d", cluster_grp_idx.first);
+                templateReplace(chart_section, "--cluster-start-idx--", buffer);
+                printString(buffer, "%d", cluster_grp_idx.second);
+                templateReplace(chart_section, "--cluster-end-idx--", buffer);
+                if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
+                    templateReplace(chart_section, "--chart-switch-ids--", "obs,cluster");
+                } else {
+                    templateReplace(chart_section, "--chart-switch-ids--", "obs,cluster,cluster_obs");
+                }
+
+                // add section to collection of sections
+                cluster_sections << chart_section.str() << std::endl << std::endl;
+            }
+        }
+
+        templateReplace(html, "--charts--", jscharts.str());
+        if (graphClusters.size()) {
+            templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
-            int cluster_length = _cluster.m_nLastInterval - _cluster.m_nFirstInterval;
-            if (cluster_length <= MAX_INTERVALS) {
-                int extra_intervals = ((MAX_INTERVALS - cluster_length)/2) + 5;
-                // we can show entire cluster intervals plus a few before and after
-                for (int i=std::max(0, _cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, _cluster.m_nLastInterval + extra_intervals); ++i) {
-                    groups.addGroup(i, i+1);
-                }
-            } else {
-                // we can show entire cluster intervals but compressed -- plus a few before and after
-                int compressed_interval_length = static_cast<int>(ceil(static_cast<double>(_cluster.m_nLastInterval - _cluster.m_nFirstInterval)/static_cast<double>(MAX_INTERVALS)));
-
-                // Note: This rough calculation of a compressed interval means that the clusters last interval might not fall cleanly onto a interval boundary.
-                int extra_intervals = compressed_interval_length * 5;
-                for (int i=std::max(0, _cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, _cluster.m_nLastInterval + extra_intervals); i=i+compressed_interval_length) {
-                    groups.addGroup(i, i + compressed_interval_length);
-                }
-            }
+            printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            templateReplace(html, "--main-content--", buffer2.c_str());
         }
-
-        // increase x-axis 'step' if there are many intervals, so that labels are not crowded
-        //  -- empirically, 50 ticks seems like a good upper limit
-        templateReplace(html, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
-
-        // define categories and replace in template
-        const std::vector<Julian>& startDates = _dataHub.GetTimeIntervalStartTimes();
-        DatePrecisionType precision = _dataHub.GetParameters().GetPrecisionOfTimesType();
-        // iterate through groups, creating totals for each interval grouping
-        for (intervalGroups::intervals_t::const_iterator itrGrp=groups.getGroups().begin(); itrGrp != groups.getGroups().end(); ++itrGrp) {
-            // define date categories
-            categories << (itrGrp==groups.getGroups().begin() ? "'" : ",'") << JulianToString(buffer, startDates[itrGrp->first], precision).c_str() << "'";
-            // calcuate the expected and observed for this interval
-            measure_t expected=0;
-            count_t observed=0;
-            for (int i=itrGrp->first; i < itrGrp->second; ++i) {
-                expected += (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
-                observed += (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
-            }
-            // put totals to data streams
-            expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << expected;
-            observed_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",");
-            if (_cluster.m_nFirstInterval < itrGrp->first && itrGrp->second < _cluster.m_nLastInterval) {
-                observed_data << "null";
-            } else {
-                observed_data << observed;
-            }
-            cluster_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",");
-            if (_cluster.m_nFirstInterval <= itrGrp->first && itrGrp->first < _cluster.m_nLastInterval) {
-                cluster_data << observed;
-            } else {
-                cluster_data << "null";
-            }
-        }
-        templateReplace(html, "--categories--", categories.str());
-        templateReplace(html, "--observed_data--", observed_data.str());
-        templateReplace(html, "--expected_data--", expected_data.str());
-        templateReplace(html, "--cluster_data--", cluster_data.str());
-
         HTMLout << html.str() << std::endl;
         HTMLout.close();
     } catch (prg_exception& x) {
         x.addTrace("generate()","TemporalChartGenerator");
         throw;
     }
+}
+
+/* Calculates the best fit graph groupings for this cluster. */
+TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups(const CCluster& cluster) const {
+    intervalGroups groups;
+    int intervals = _dataHub.GetNumTimeIntervals();
+
+    if (intervals <= MAX_INTERVALS) {
+        // number of groups equals the number of intervals
+        for (int i=0; i < intervals; ++i) {
+            groups.addGroup(i, i+1);
+        }
+    } else {
+        int cluster_length = cluster.m_nLastInterval - cluster.m_nFirstInterval;
+        if (cluster_length <= MAX_INTERVALS) {
+            int extra_intervals = ((MAX_INTERVALS - cluster_length)/2) + 5;
+            // we can show entire cluster intervals plus a few before and after
+            for (int i=std::max(0, cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, cluster.m_nLastInterval + extra_intervals); ++i) {
+                groups.addGroup(i, i+1);
+            }
+        } else {
+            // we can show entire cluster intervals but compressed -- plus a few before and after
+            int compressed_interval_length = static_cast<int>(ceil(static_cast<double>(cluster.m_nLastInterval - cluster.m_nFirstInterval)/static_cast<double>(MAX_INTERVALS)));
+            // Note: This rough calculation of a compressed interval means that the clusters last interval might not fall cleanly onto a interval boundary.
+            int extra_intervals = compressed_interval_length * 5;
+            for (int i=std::max(0, cluster.m_nFirstInterval - extra_intervals); i < std::min(intervals, cluster.m_nLastInterval + extra_intervals); i=i+compressed_interval_length) {
+                groups.addGroup(i, i + compressed_interval_length);
+            }
+        }
+    }
+    return groups;
+}
+
+/* Calculates the series values in a purely temporal context. */
+std::pair<int, int> TemporalChartGenerator::_getSeriesStreams(const CCluster& cluster,
+                                                              const intervalGroups& groups,
+                                                              size_t dataSetIdx,
+                                                              std::stringstream& categories,
+                                                              std::stringstream& cluster_data,
+                                                              std::stringstream& expected_data, 
+                                                              std::stringstream& observed_data,
+                                                              std::stringstream& cluster_observed_data,
+                                                              std::stringstream& cluster_expected_data) const {
+
+    std::string buffer;
+    double adjustment = _dataHub.GetMeasureAdjustment(dataSetIdx);
+    int intervals = _dataHub.GetNumTimeIntervals();
+    std::pair<int, int> groupClusterIdx(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
+    const DataSetHandler& handler = _dataHub.GetDataSetHandler();
+    count_t * pcases = handler.GetDataSet(dataSetIdx).getCaseData_PT();
+    measure_t * pmeasure = handler.GetDataSet(dataSetIdx).getMeasureData_PT();
+    count_t ** ppcases = handler.GetDataSet(dataSetIdx).getCaseData().GetArray();
+    measure_t ** ppmeasure = handler.GetDataSet(dataSetIdx).getMeasureData().GetArray();
+
+    // define categories and replace in template
+    const std::vector<Julian>& startDates = _dataHub.GetTimeIntervalStartTimes();
+    DatePrecisionType precision = _dataHub.GetParameters().GetPrecisionOfTimesType();
+    // iterate through groups, creating totals for each interval grouping
+    for (intervalGroups::intervals_t::const_iterator itrGrp=groups.getGroups().begin(); itrGrp != groups.getGroups().end(); ++itrGrp) {
+        // define date categories
+        categories << (itrGrp==groups.getGroups().begin() ? "'" : ",'") << JulianToString(buffer, startDates[itrGrp->first], precision).c_str() << "'";
+        // calcuate the expected and observed for this interval
+        measure_t expected=0, cluster_expected=0;
+        count_t observed=0, cluster_observed=0;
+        for (int i=itrGrp->first; i < itrGrp->second; ++i) {
+            expected += (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
+            observed += (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
+        }
+        // if not purely spatial cluster, we're expressing this as outside verse inside cluster
+        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+            // calculate cluster observed and expected series across entire period, not just cluster window
+            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
+                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                if (tTract >= _dataHub.GetNumTracts() && _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations()) {
+                    //When the location index exceeds number of tracts and the meta neighbors manager contains
+                    //entries, we need to resolve meta location into it's real location indexes.
+                    std::vector<tract_t> indexes;
+                    _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
+                    for (size_t t=0; t < indexes.size(); ++t) {
+                        for (int i=itrGrp->first; i < itrGrp->second; ++i) {
+                            cluster_observed += (i == intervals - 1 ? ppcases[i][indexes[t]] : ppcases[i][indexes[t]] - ppcases[i+1][indexes[t]]);
+                            cluster_expected += (adjustment * (i == intervals - 1 ? ppmeasure[i][indexes[t]] : ppmeasure[i][indexes[t]] - ppmeasure[i+1][indexes[t]]));
+                        }
+                    }
+                } else {
+                    for (int i=itrGrp->first; i < itrGrp->second; ++i) {
+                        cluster_observed += (i == intervals - 1 ? ppcases[i][tTract] : ppcases[i][tTract] - ppcases[i+1][tTract]);
+                        cluster_expected += (adjustment * (i == intervals - 1 ? ppmeasure[i][tTract] : ppmeasure[i][tTract] - ppmeasure[i+1][tTract]));
+                    }
+                }
+            }
+            // removed observed and expected from overall temporal values
+            observed -= cluster_observed;
+            expected -= cluster_expected;
+        }
+
+        // put totals to data streams
+        expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(expected, buffer, 2).c_str();
+        observed_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << observed;
+        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+            cluster_expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(cluster_expected, buffer, 2).c_str();
+            cluster_observed_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << cluster_observed;
+        }
+        if (cluster.m_nFirstInterval <= itrGrp->first && itrGrp->second <= cluster.m_nLastInterval) {
+            groupClusterIdx.first = std::min(groupClusterIdx.first, itrGrp->first);
+            groupClusterIdx.second = std::max(groupClusterIdx.second, itrGrp->second) - 1;
+            cluster_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << (cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? observed : cluster_observed);
+        } else {
+            cluster_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << "null";
+        }
+    }
+
+    // if cluster start index is not set, set to start of first group
+    if (groupClusterIdx.first == std::numeric_limits<int>::max()) {
+        groupClusterIdx.first = groups.getGroups().front().first;
+    }
+    // if cluster end index is not set, set to end of last group
+    if (groupClusterIdx.second == std::numeric_limits<int>::min()) {
+        groupClusterIdx.second = groups.getGroups().back().second;
+    }
+    return groupClusterIdx;
 }
 
 /** Alters pass Filename to include suffix and extension. */
@@ -239,13 +490,59 @@ FileName& TemporalChartGenerator::getFilename(FileName& filename) {
 
 const char * GiniChartGenerator::FILE_SUFFIX_EXT = "_gini";
 
-const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
-        <script type=\"text/javascript\"> \n \
+const char * GiniChartGenerator::BASE_TEMPLATE = " \
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
+<html lang=\"en\"> \n \
+    <head> \n \
+        <title>--title--</title> \n \
+        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
+        <style type=\"text/css\"> \n \
+        body{font:100% Arial,Helvetica;background:#9ea090} \n \
+        .chart-options{display:none} \n \
+        .show-chart-options,.hide-chart-options{color:#13369f;border:1px solid #d7e9ed;margin-top:3px;-webkit-border-radius:3px;-moz-border-radius:3px} \n \
+        .show-chart-options a,.hide-chart-options a{color:#13369f;background-color:#f5f8fa;font-size:11px;text-decoration:none;padding:4px 6px;display:block} \n \
+        .show-chart-options a{padding-left:24px;background-image:url('--resource-path--images/down_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
+        .hide-chart-options a{padding-left:24px;background-image:url('--resource-path--images/up_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
+        .show-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/down_grip_selected.png')} \n \
+        .hide-chart-options a{border-top:1px solid #d7e9ed;background-image:url('--resource-path--images/up_grip.png')} \n \
+        .hide-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/up_grip_selected.png')} \n \
+        .chart-options{padding:10px 0 10px 0;background-color:#e6eef2;border:1px solid silver} \n \
+        .options-row{margin:0 10px 10px 10px} \n \
+        .options-row>label:first-child, .options-row detail{color:#13369f;font-weight:bold} \n \
+        .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
+        .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
+        .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
+        </style> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-3.0.9/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-3.0.9/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript'> \n \
+            var charts = {}; \n \
             $(document).ready(function () { \n \
-                var chart = new Highcharts.Chart({ \n \
-                    chart: { renderTo: 'container', type: 'line', zoomType:'xy', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 80, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
+                --charts--   \n\n \
+                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.text); }); \n \
+                $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
+                $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
+                $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
+            }); \n \
+        </script> \n \
+    </head> \n \
+    <body> \n \
+        <!--[if lt IE 9]> \n \
+        <div id=\"ie\" style=\"z-index:255;border-top:5px solid #fff;border-bottom:5px solid #fff;background-color:#c00; color:#fff;\"><div class=\"iewrap\" style=\"border-top:5px solid #e57373;border-bottom:5px solid #e57373;\"><div class=\"iehead\" style=\"margin: 14px 14px;font-size: 20px;\">Notice to Internet Explorer users!</div><div class=\"iebody\" style=\"font-size: 14px;line-height: 14px;margin: 14px 28px;\">It appears that you are using Internet Explorer, <strong>this page may not display correctly with versions 8 or earlier of this browser</strong>.<br /><br /> \n \
+            <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i> \n \
+        </div></div></div> \n \
+        <![endif]--> \
+        --body-- \
+    </body> \n \
+</html> \n";
+
+const char * GiniChartGenerator::TEMPLATE_CHARTHEADER = "\n \
+                var chart_0 = new Highcharts.Chart({ \n \
+                    chart: { renderTo: 'chart_0', type: 'line', zoomType:'xy', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: 80, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 10, borderWidth: 4, marginRight: 20 }, \n \
                     title: { text: 'Gini coefficient at Spatial Window Stops', align: 'center' }, \n \
                     subtitle: { text: 'Coefficients based on clusters with p<--gini-pvalue--.' }, \n \
+                    exporting: {filename: 'gini_graph'}, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
                     tooltip: { crosshairs: true }, \n \
                     xAxis: { categories: [--categories--], tickmarkPlacement: 'on', labels: { formatter: function() { return this.value +'%'} } }, \n \
@@ -253,13 +550,27 @@ const char * GiniChartGenerator::TEMPLATE_HEADER = "\n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [ { type: 'line', name: 'Gini coefficient', color: '#4572A7', marker: { enabled: true, symbol: 'circle', radius: 6 }, data: [--gini-data--]}, ] \n \
                 }); \n \
-                $('#toggle_type').click(function(){var newType=chart.series[0].type=='line'?'column':'line';for(var i=0;i<chart.series.length;i++){serie = chart.series[0];serie.chart.addSeries({type:newType,name:serie.name,zIndex: serie.options.zIndex,color:serie.color,marker:{enabled:true,radius:0},data:serie.options.data},false);serie.remove();}return false;}); \n \
-            }); \n \
-        </script> \n";
+                charts['chart_0'] = chart_0;";
 
-const char * GiniChartGenerator::TEMPLATE_BODY = "\n \
-        <a href=\"\" id=\"toggle_type\" style=\"margin-top:20px;\">Toggle Types</a> \n \
-        <div id=\"container\" style=\"margin-top:20px;\"></div> \n";
+const char * GiniChartGenerator::TEMPLATE_CHARTSECTION = "\
+         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
+            <div id=\"chart_0\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
+            <div class=\"options\"> \n \
+                <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
+                <div class=\"chart-options\"> \n \
+                    <div class=\"options-table\"> \n \
+                      <h4>Chart Options</h4> \n \
+                      <div class=\"options-row\"> \n \
+                          <label for=\"title_obs\">Title</label> \n \
+                          <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
+                              <p class=\"help-block\">The graph title can be updated simply by editing this text.</p> \n \
+                          </div> \n \
+                      </div> \n \
+                    </div> \n \
+                    <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
+                </div> \n \
+            </div> \n \
+         </div> \n";
 
 /** Creates HighCharts graph for Gini coefficients. */
 void GiniChartGenerator::generateChart() const {
@@ -274,18 +585,21 @@ void GiniChartGenerator::generateChart() const {
         //open output file
         HTMLout.open(fileName.getFullPath(buffer).c_str());
         if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
-        std::stringstream html, categories, gini_data;
+
+        //std::stringstream html, categories, gini_data;
+        
+        std::stringstream html, chart_js, categories, gini_data;
 
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
-        // replace specialized header
-        templateReplace(html, "--header--", TEMPLATE_HEADER);
-        // site resource link path
-        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // replace page title
         templateReplace(html, "--title--", "Gini coefficient");
         // replace specialized body
         templateReplace(html, "--body--", TEMPLATE_BODY);
+        // site resource link path
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
+
+        chart_js << TEMPLATE_CHARTHEADER;
 
         // calculate maximized gini collection
         double maxGINI = 0;
@@ -311,11 +625,13 @@ void GiniChartGenerator::generateChart() const {
         }
 
         // replace categories in template
-        templateReplace(html, "--categories--", categories.str());
+        templateReplace(chart_js, "--categories--", categories.str());
         // replace gini data in template
-        templateReplace(html, "--gini-data--", gini_data.str());
+        templateReplace(chart_js, "--gini-data--", gini_data.str());
         // replace gini p-value cutoff
-        templateReplace(html, "--gini-pvalue--", getValueAsString(_dataHub.GetParameters().getGiniIndexPValueCutoff(), buffer));
+        templateReplace(chart_js, "--gini-pvalue--", getValueAsString(_dataHub.GetParameters().getGiniIndexPValueCutoff(), buffer));
+        templateReplace(html, "--charts--", chart_js.str());
+        templateReplace(html, "--main-content--", TEMPLATE_CHARTSECTION);
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();
