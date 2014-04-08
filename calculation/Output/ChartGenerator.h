@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "FileName.h"
 #include "MostLikelyClustersContainer.h"
+#include "UtilityFunctions.h"
+#include <fstream>
 
 /* abstract base class for chart generation. */
 class AbstractChartGenerator {
@@ -15,6 +17,30 @@ class AbstractChartGenerator {
     public:
         AbstractChartGenerator() {}
         virtual void generateChart() const = 0;
+};
+
+class ChartSeries {
+    protected:
+        std::string _id;
+        unsigned int _zindex;
+        std::string _type;
+        std::string _name;
+        std::string _color;
+        std::string _symbol;
+        unsigned int _y_axis;
+        std::stringstream _data_stream;
+
+    public:
+        ChartSeries(const std::string& id, unsigned int zindex, const std::string& type, 
+                    const std::string& name, const std::string& color, const std::string& symbol, unsigned int y_axis) 
+                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis) {}
+
+        std::stringstream & datastream() {return _data_stream;}
+        std::string & toString(std::string& r) const {
+            return printString(r, 
+                               "{ id: '%s', zIndex: %u, type: '%s', name: '%s', color: '#%s', yAxis: %u, marker: { enabled: true, symbol: '%s', radius: 0 }, data: [%s] }", 
+                               _id.c_str(), _zindex, _type.c_str(), _name.c_str(), _color.c_str(), _y_axis, _symbol.c_str(), _data_stream.str().c_str());
+        }
 };
 
 class CSaTScanData;
@@ -30,8 +56,6 @@ class TemporalChartGenerator : public AbstractChartGenerator {
     protected:
         static const char * BASE_TEMPLATE;
         static const char * TEMPLATE_CHARTHEADER;
-        static const char * TEMPLATE_CHARTHEADER_PT_SERIES;
-        static const char * TEMPLATE_CHARTHEADER_ST_SERIES;
         static const char * TEMPLATE_CHARTSECTION;
         const CSaTScanData & _dataHub;
         const MostLikelyClustersContainer & _clusters;
@@ -47,15 +71,17 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                 const intervals_t& getGroups() const {return _interval_grps;}
         };
         intervalGroups getIntervalGroups(const CCluster& cluster) const;
-        std::pair<int, int> _getSeriesStreams(const CCluster& cluster,
+        std::pair<int, int> getSeriesStreams(const CCluster& cluster,
                                               const intervalGroups& groups,
                                               size_t dataSetIdx,
                                               std::stringstream& categories,
-                                              std::stringstream& cluster_data,
-                                              std::stringstream& expected_data,
-                                              std::stringstream& observed_data,
-                                              std::stringstream& cluster_observed_data,
-                                              std::stringstream& cluster_expected_data) const;
+                                              ChartSeries& clusterSeries,
+                                              ChartSeries& observedSeries,
+                                              ChartSeries& expectedSeries,
+                                              ChartSeries * cluster_observedSeries,
+                                              ChartSeries * cluster_expectedSeries,
+                                              ChartSeries * odeSeries,
+                                              ChartSeries * cluster_odeSeries) const;
 
     public:
         TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars);

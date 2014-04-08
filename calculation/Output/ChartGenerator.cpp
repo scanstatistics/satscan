@@ -4,11 +4,9 @@
 //******************************************************************************
 #include "ChartGenerator.h"
 #include "SaTScanData.h"
-#include "UtilityFunctions.h"
 #include "cluster.h"
 #include "SimulationVariables.h"
 #include "Toolkit.h"
-#include <fstream>
 #include <boost/regex.hpp>
 
 /** ------------------- AbstractChartGenerator --------------------------------*/
@@ -105,31 +103,18 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                 var --container-id-- = new Highcharts.Chart({ \n \
-                    chart: { renderTo: '--container-id--', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: 20 }, \n \
+                    chart: { renderTo: '--container-id--', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
                     title: { text: '--chart-title--', align: 'center' }, \n \
                     exporting: {filename: 'cluster_graph'}, \n \
                     plotOptions: { column: { grouping: false }}, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { backgroundColor: '#F5F5F5' }, \n \
-                    xAxis: { categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }, \n \
-                    yAxis: { title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }, \n \
+                    xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }], \n \
+                    yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
-                    --series--\n \
+                    series: [--series--]\n \
                 }); \n \
                 charts['--container-id--'] = --container-id--;";
-
-const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER_PT_SERIES = "\
-                series: [ { id: 'cluster', zIndex: 2, type: 'column', name: 'Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster-data--] }, \n \
-                          { id: 'obs', zIndex: 1, type: 'column', name: 'Observed', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed-data--] }, \n \
-                          { id: 'exp', zIndex: 3, type: 'line', name: 'Expected', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected-data--]} ]";
-
-const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER_ST_SERIES = "\
-                series: [ { id: 'cluster', zIndex: 5, type: 'column', name: 'Cluster', color: '#AA4643', marker: { enabled: true, symbol: 'circle', radius: 0 }, data: [--cluster-data--] }, \n \
-                          { id: 'obs', zIndex: 1, type: 'column', name: 'Observed (Outside Cluster)', color: '#4572A7', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--observed-data--] }, \n \
-                          { id: 'exp', zIndex: 2, type: 'line', name: 'Expected (Outside Cluster)', color: '#89A54E', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--expected-data--]}, \n \
-                          { id: 'cluster_obs', zIndex: 3, type: 'column', name: 'Observed (Inside Cluster)', color: '#003264', marker: { enabled: true, symbol: 'square', radius: 0 }, data: [--cluster-observed-data--] }, \n \
-                          { id: 'cluster_exp', zIndex: 4, type: 'line', name: 'Expected (Inside Cluster)', color: '#394521', marker: { enabled: true, symbol: 'triangle', radius: 0 }, data: [--cluster-expected-data--] } \n \
-                        ]";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
          <div style=\"margin:20px;\" class=\"chart-section\"> \n \
@@ -154,7 +139,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                             <label> \n \
                               <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"line\" series-id=\"--chart-switch-ids--\"/>Line \n \
                             </label> \n \
-                            <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
+                            <p class=\"help-block\">Switch the series type between line and histogram.</p> \n \
                           </div> \n \
                       </div> \n \
                       <div class=\"options-row\"> \n \
@@ -163,7 +148,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                             <label> \n \
                               <input type=\"checkbox\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\"/>Show Cluster Band \n \
                             </label> \n \
-                            <p class=\"help-block\">Switch the series type between line and histogram.</p> \n \
+                            <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
                           </div> \n \
                       </div> \n \
                       <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart.</div> \n \
@@ -219,7 +204,7 @@ void TemporalChartGenerator::generateChart() const {
             return;
         }
 
-        std::stringstream html, jscharts, cluster_sections;
+        std::stringstream html, charts_javascript, cluster_sections;
 
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
@@ -274,74 +259,107 @@ void TemporalChartGenerator::generateChart() const {
             // This graph is only valid for temporal clusters.
             if (!(cluster.GetClusterType() == PURELYTEMPORALCLUSTER || cluster.GetClusterType() == SPACETIMECLUSTER))
                 continue;
-
             // calculate the graphs interval groups for this cluster
             intervalGroups groups = getIntervalGroups(cluster);
-
             for (size_t setIdx=0; setIdx < handler.GetNumDataSets(); ++setIdx) {
-
-                std::stringstream chart_js, chart_series, chart_section, categories, observed_data, expected_data, cluster_data, cluster_observed_data, cluster_expected_data;
+                std::stringstream chart_js, chart_series, chart_section, categories;
+                // set the chart header for this cluster
                 chart_js << TEMPLATE_CHARTHEADER;
 
-                if (_dataHub.GetParameters().GetAnalysisType() == ::PURELYTEMPORAL) {
-                    buffer = "Detected Cluster";
+                bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
+                // define seach series that we'll graph - next three are always printed.
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "4572A7", "square", 0));
+                std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0));
+                std::auto_ptr<ChartSeries> clusterSeries(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
+                // the remaining series are conditionally present in the chart
+                std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
+                std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries;
+
+                // space-time clusters also graph series which allow comparison between inside and outside the cluster
+                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "003264", "square", 0));
+                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0));
+                }
+
+                // the Poisson and Exponential models also graphs observed / expected
+                if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
+                    // graphing observed / expected, with y-axis along right side
+                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true }");
+                    odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster)"), "00FF00", "triangle", 1));
+                    if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+                        // space-time clusters also graph series which allow comparison between inside and outside the cluster
+                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Inside Cluster)", "FF8000", "triangle", 1));
+                } else if (_dataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+                    // the Bernoulli model also graphs cases / (cases + controls)
+                    // graphing cases ratio, with y-axis along right side
+                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true }");
+                    odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1));
+                    if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+                        // space-time clusters also graph series which allow comparison between inside and outside the cluster
+                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1));
                 } else {
+                    templateReplace(chart_js, "--additional-yaxis--", "");
+                }
+                
+                // set default chart title 
+                if (_dataHub.GetParameters().GetAnalysisType() == PURELYTEMPORAL)
+                    buffer = "Detected Cluster";
+                else 
                     printString(buffer, "Cluster #%u", clusterIdx + 1);
-                }
-                if (handler.GetNumDataSets() > 1) {
+                // potentially include data set index
+                if (handler.GetNumDataSets() > 1)
                     buffer += printString(buffer2, " Data Set #%u", setIdx + 1);
-                }
                 templateReplace(chart_js, "--chart-title--", buffer);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
-
+                templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
 
                 // increase x-axis 'step' if there are many intervals, so that labels are not crowded
                 //  -- empirically, 50 ticks seems like a good upper limit
                 templateReplace(chart_js, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
 
-                std::pair<int,int> cluster_grp_idx = _getSeriesStreams(cluster, groups, setIdx, categories, cluster_data, expected_data, observed_data, cluster_observed_data, cluster_expected_data);
+                // get series datastreams plus cluster indexes start and end ticks
+                std::pair<int,int> cluster_grp_idx = getSeriesStreams(cluster, groups, setIdx, categories, *clusterSeries, 
+                                                                      *observedSeries, *expectedSeries, 
+                                                                      observedClusterSeries.get(), expectedClusterSeries.get(),
+                                                                      odeSeries.get(), cluster_odeSeries.get());
 
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
                 templateReplace(chart_js, "--container-id--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());
 
-                if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
-                    chart_series << TEMPLATE_CHARTHEADER_PT_SERIES;
-                } else {
-                    chart_series << TEMPLATE_CHARTHEADER_ST_SERIES;
-                }
-                // replace the series variables
-                templateReplace(chart_series, "--cluster-data--", cluster_data.str());
-                templateReplace(chart_series, "--observed-data--", observed_data.str());
-                templateReplace(chart_series, "--expected-data--", expected_data.str());
-                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-                    templateReplace(chart_series, "--cluster-observed-data--", cluster_observed_data.str());
-                    templateReplace(chart_series, "--cluster-expected-data--", cluster_expected_data.str());
-                }
                 // replace the series
+                chart_series << clusterSeries->toString(buffer).c_str();
+                chart_series << "," << observedSeries->toString(buffer).c_str();
+                chart_series << "," << expectedSeries->toString(buffer).c_str();
+                if (observedClusterSeries.get())
+                    chart_series << "," << observedClusterSeries->toString(buffer).c_str();
+                if (expectedClusterSeries.get())
+                    chart_series << "," << expectedClusterSeries->toString(buffer).c_str();
+                if (odeSeries.get()) 
+                    chart_series << "," << odeSeries->toString(buffer).c_str();
+                if (cluster_odeSeries.get())
+                    chart_series << "," << cluster_odeSeries->toString(buffer).c_str();
                 templateReplace(chart_js, "--series--", chart_series.str());
-                jscharts << chart_js.str() << std::endl;
+
+                // add this charts javascript to collection
+                charts_javascript << chart_js.str() << std::endl;
 
                 // create chart html section
                 chart_section << TEMPLATE_CHARTSECTION;
+                printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
                 templateReplace(chart_section, "--container-id--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.first);
                 templateReplace(chart_section, "--cluster-start-idx--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.second);
                 templateReplace(chart_section, "--cluster-end-idx--", buffer);
-                if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
-                    templateReplace(chart_section, "--chart-switch-ids--", "obs,cluster");
-                } else {
-                    templateReplace(chart_section, "--chart-switch-ids--", "obs,cluster,cluster_obs");
-                }
-
+                templateReplace(chart_section, "--chart-switch-ids--", cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? "obs,cluster" : "obs,cluster,cluster_obs");
                 // add section to collection of sections
                 cluster_sections << chart_section.str() << std::endl << std::endl;
             }
         }
 
-        templateReplace(html, "--charts--", jscharts.str());
+        templateReplace(html, "--charts--", charts_javascript.str());
         if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
@@ -388,15 +406,11 @@ TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups
 }
 
 /* Calculates the series values in a purely temporal context. */
-std::pair<int, int> TemporalChartGenerator::_getSeriesStreams(const CCluster& cluster,
-                                                              const intervalGroups& groups,
-                                                              size_t dataSetIdx,
-                                                              std::stringstream& categories,
-                                                              std::stringstream& cluster_data,
-                                                              std::stringstream& expected_data, 
-                                                              std::stringstream& observed_data,
-                                                              std::stringstream& cluster_observed_data,
-                                                              std::stringstream& cluster_expected_data) const {
+std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& cluster,const intervalGroups& groups, size_t dataSetIdx,
+                                                             std::stringstream& categories, ChartSeries& clusterSeries,
+                                                             ChartSeries& observedSeries, ChartSeries& expectedSeries,
+                                                             ChartSeries * cluster_observedSeries, ChartSeries * cluster_expectedSeries,
+                                                             ChartSeries * odeSeries, ChartSeries * cluster_odeSeries) const {
 
     std::string buffer;
     double adjustment = _dataHub.GetMeasureAdjustment(dataSetIdx);
@@ -419,11 +433,11 @@ std::pair<int, int> TemporalChartGenerator::_getSeriesStreams(const CCluster& cl
         measure_t expected=0, cluster_expected=0;
         count_t observed=0, cluster_observed=0;
         for (int i=itrGrp->first; i < itrGrp->second; ++i) {
-            expected += (adjustment * (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]));
+            expected += (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]);
             observed += (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
         }
-        // if not purely spatial cluster, we're expressing this as outside verse inside cluster
-        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+        // if not purely temporal cluster, we're expressing this as outside verse inside cluster
+        if (cluster_observedSeries || cluster_expectedSeries) {
             // calculate cluster observed and expected series across entire period, not just cluster window
             for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
                 tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
@@ -435,34 +449,48 @@ std::pair<int, int> TemporalChartGenerator::_getSeriesStreams(const CCluster& cl
                     for (size_t t=0; t < indexes.size(); ++t) {
                         for (int i=itrGrp->first; i < itrGrp->second; ++i) {
                             cluster_observed += (i == intervals - 1 ? ppcases[i][indexes[t]] : ppcases[i][indexes[t]] - ppcases[i+1][indexes[t]]);
-                            cluster_expected += (adjustment * (i == intervals - 1 ? ppmeasure[i][indexes[t]] : ppmeasure[i][indexes[t]] - ppmeasure[i+1][indexes[t]]));
+                            cluster_expected += (i == intervals - 1 ? ppmeasure[i][indexes[t]] : ppmeasure[i][indexes[t]] - ppmeasure[i+1][indexes[t]]);
                         }
                     }
                 } else {
                     for (int i=itrGrp->first; i < itrGrp->second; ++i) {
                         cluster_observed += (i == intervals - 1 ? ppcases[i][tTract] : ppcases[i][tTract] - ppcases[i+1][tTract]);
-                        cluster_expected += (adjustment * (i == intervals - 1 ? ppmeasure[i][tTract] : ppmeasure[i][tTract] - ppmeasure[i+1][tTract]));
+                        cluster_expected += (i == intervals - 1 ? ppmeasure[i][tTract] : ppmeasure[i][tTract] - ppmeasure[i+1][tTract]);
                     }
                 }
             }
             // removed observed and expected from overall temporal values
             observed -= cluster_observed;
             expected -= cluster_expected;
+            if (cluster_odeSeries) {
+                // For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
+                // For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster.
+                getValueAsString(cluster_expected ? static_cast<measure_t>(cluster_observed)/cluster_expected : 0, buffer, 2);
+                cluster_odeSeries->datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") <<  buffer.c_str();
+            }
         }
-
-        // put totals to data streams
-        expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(expected, buffer, 2).c_str();
-        observed_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << observed;
-        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-            cluster_expected_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(cluster_expected, buffer, 2).c_str();
-            cluster_observed_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << cluster_observed;
+        if (odeSeries) {
+            // For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
+            // For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster.
+            getValueAsString(expected ? static_cast<measure_t>(observed)/expected : 0, buffer, 2);
+            odeSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") <<  buffer.c_str();
         }
+        // apply measure adjustment now
+        expected *= adjustment;
+        cluster_expected *= adjustment;
+        // put totals to other streams
+        expectedSeries.datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(expected, buffer, 2).c_str();
+        observedSeries.datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << observed;
+        if (cluster_expectedSeries)
+            cluster_expectedSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(cluster_expected, buffer, 2).c_str();
+        if (cluster_observedSeries)
+            cluster_observedSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << cluster_observed;
         if (cluster.m_nFirstInterval <= itrGrp->first && itrGrp->second <= cluster.m_nLastInterval) {
             groupClusterIdx.first = std::min(groupClusterIdx.first, itrGrp->first);
             groupClusterIdx.second = std::max(groupClusterIdx.second, itrGrp->second) - 1;
-            cluster_data <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << (cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? observed : cluster_observed);
+            clusterSeries.datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << (cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? observed : cluster_observed);
         } else {
-            cluster_data << (itrGrp==groups.getGroups().begin() ? "" : ",") << "null";
+            clusterSeries.datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << "null";
         }
     }
 
