@@ -41,6 +41,8 @@ import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -299,7 +301,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
-        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", new InputFileFilter[]{new InputFileFilter("txt", "Text Files (*.txt)"), new InputFileFilter("prm", "Settings Files (*.prm)")}, lastBrowseDirectory);
+        List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+        filters.add(new InputFileFilter("txt", "Text Files (*.txt)"));
+        filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
+        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", filters, lastBrowseDirectory);
         File file = select.browse_load(true);
         if (file != null) {
             openNewParameterSessionWindow(file.getAbsolutePath());   

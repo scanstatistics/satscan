@@ -1,5 +1,6 @@
 package org.satscan.app;
 import java.util.*;
+import org.satscan.importer.InputSourceSettings;
 
 public class Parameters implements Cloneable {
 
@@ -213,6 +214,8 @@ public class Parameters implements Cloneable {
     private int                             _powerEvaluationTotalCases=600; /* number cases in power evaluation, user specified */
     private int                             _power_replica=1000; /* number of replications in power step of power evaluations */
     
+    private Vector<InputSourceSettings>     _input_sources;
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -239,6 +242,7 @@ public class Parameters implements Cloneable {
       gvEllipseRotations.addElement(12);
       gvEllipseRotations.addElement(15);
       gvObservableRegions = new Vector<String>();
+      _input_sources = new Vector<InputSourceSettings>();
     }
 
     @Override
@@ -266,12 +270,20 @@ public class Parameters implements Cloneable {
             newObject.gsLocationNeighborsFilename = new String(gsLocationNeighborsFilename);
             newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
             newObject.gvObservableRegions = new Vector<String>(gvObservableRegions);
+            newObject._input_sources = new Vector<InputSourceSettings>();
+            for (InputSourceSettings iss : _input_sources) {
+                newObject._input_sources.addElement(iss.clone());
+            }
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
 
+    public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
+    public void clearInputSourceSettings() {_input_sources.clear();}
+    public Vector<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
+    
     public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
     public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
     public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
@@ -440,6 +452,7 @@ public class Parameters implements Cloneable {
         if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
         if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
         if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
+        if (!_input_sources.equals(rhs._input_sources)) return false;
         
         return true;
     }

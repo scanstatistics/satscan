@@ -477,6 +477,7 @@
     <ClInclude Include="org_satscan_app_Parameters.h" />
     <ClInclude Include="org_satscan_gui_OberservableRegionsFrame.h" />
     <ClInclude Include="org_satscan_gui_ParameterSettingsFrame.h" />
+    <ClInclude Include="org_satscan_importer_ShapefileDataSource.h" />
     <ClInclude Include="stsJNIPrintWindow.h" />
     <ClInclude Include="stsParametersUtility.h" />
     <ClInclude Include="PrintCallback.h" />

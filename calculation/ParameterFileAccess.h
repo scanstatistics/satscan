@@ -63,6 +63,19 @@ class AbtractParameterFileAccess {
 
      virtual bool               Read(const char* szFilename) = 0;
      void                       SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
+     CParameters::InputSource & setInputSource(CParameters::InputSource & source,
+                                               const std::string& typeStr, 
+                                               const std::string& mapStr, 
+                                               const std::string& delimiterStr, 
+                                               const std::string& groupStr, 
+                                               const std::string& skipStr, 
+                                               const std::string& headerStr,
+                                               const std::string& coordinatetypeStr,
+                                               const std::string& hemisphereStr,
+                                               const std::string& zoneStr,
+                                               const std::string& northingStr,
+                                               const std::string& eastingStr,
+                                               BasePrint& PrintDirection);
      virtual void               Write(const char * szFilename) = 0;
 };
 

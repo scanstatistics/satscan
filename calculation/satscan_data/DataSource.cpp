@@ -5,20 +5,28 @@
 #include "DataSource.h"
 #include "SSException.h"
 #include "FileName.h"
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 /** Static method which returns newly allocated DataSource object. */
-DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII) {
-    FileName theFile(sSourceFilename.c_str());
-    if (!bAssumeASCII && !stricmp(theFile.getExtension().c_str(), dBaseFile::GetFileTypeExtension()))
-      //Though ZdFile hierarchy has other files types, most are not formats used outside IMS.
-      //There are 3 that could be used: dBase, comma separated, and scanf.
-      //The scanf version could possibly replace AsciiFileDataSource but is likely slower.
-      //The comma separated version would probably work but user would have to use default
-      //field delimiter (comma) and group delimiter (double quote).
-      //The dBase version is already used to create output files and is a common format. 
-      return new dBaseFileDataSource(sSourceFilename);
-    else
-      return new AsciiFileDataSource(sSourceFilename, Print);
+DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, const CParameters::InputSource * source, BasePrint& Print) {
+    // if a InputSource is not defined, default to space delimited ascii source
+    if (!source)
+        return new AsciiFileDataSource(sSourceFilename, Print);
+    // return data source object by input source type
+    DataSource * dataSource=0;
+    switch (source->getSourceType()) {
+        case DBASE           : dataSource = new dBaseFileDataSource(sSourceFilename); break;
+        case SHAPE           : dataSource = new ShapeFileDataSource(sSourceFilename);
+                               if (source->getShapeCoordinatesType() == CParameters::InputSource::UTM_CONVERSION)
+                                 ((ShapeFileDataSource*)dataSource)->setUTMConversionInformation(source->getHemisphere().at(0), source->getZone(), source->getNorthing(), source->getEasting());
+                               break;
+        case CSV             : dataSource = new CsvFileDataSource(sSourceFilename, Print, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
+        case SPACE_DELIMITED :
+        default              : dataSource = new AsciiFileDataSource(sSourceFilename, Print); break;
+    }
+    dataSource->setFieldsMap(source->getFieldsMap());
+    return dataSource;
 }
 
 //******************* class AsciiFileDataSource ********************************
@@ -196,40 +204,269 @@ long dBaseFileDataSource::GetNumValues() {
 
 /** Returns iFieldIndex'th field value from current record. */
 const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
-  if (gwCurrentFieldIndex != iFieldIndex) {
-    if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
-      return 0;
-    gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
-    if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
-      //format date fields -- read process currently expects yyyy/mm/dd
-      gsValue.insert(4, "/");
-      gsValue.insert(7, "/");
+    iFieldIndex = tranlateFieldIndex(iFieldIndex);
+
+    if (gwCurrentFieldIndex != iFieldIndex) {
+        if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
+            return 0;
+        gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
+        if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
+            //format date fields -- read process currently expects yyyy/mm/dd
+            gsValue.insert(4, "/");
+            gsValue.insert(7, "/");
+        }
+        gwCurrentFieldIndex = iFieldIndex;
     }
-    gwCurrentFieldIndex = iFieldIndex;
-  }
-  return gsValue.c_str();
+    return gsValue.c_str();
 }
 
 /** Positions read cursor to first record. */
 void dBaseFileDataSource::GotoFirstRecord() {
-  if (glNumRecords) {
-    gSourceFile->GotoRecord(1);
-    glCurrentRecord = 1;
-    gbFirstRead = false;
-    gwCurrentFieldIndex=-1;
-  }  
+    if (glNumRecords) {
+        gSourceFile->GotoRecord(1);
+        glCurrentRecord = 1;
+        gbFirstRead = false;
+        gwCurrentFieldIndex=-1;
+    }  
 }
 
 /** Either reads first file record in file or next after current record. */
 bool dBaseFileDataSource::ReadRecord() {
-  if (glCurrentRecord >= glNumRecords) return false;
-  gwCurrentFieldIndex=-1;
-  if (gbFirstRead)
-    GotoFirstRecord();
-  else
-    gSourceFile->GotoRecord(++glCurrentRecord);
-  return true;  
+    if (glCurrentRecord >= glNumRecords) return false;
+    gwCurrentFieldIndex=-1;
+    if (gbFirstRead)
+        GotoFirstRecord();
+    else
+        gSourceFile->GotoRecord(++glCurrentRecord);
+    return true;  
 }
 
-//******************* class TwoDimensionArrayDataSource ***********************************
+//******************* class CsvFileDataSource ********************************
 
+/** constructor */
+CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
+                  :DataSource(), _readCount(0), _blankReadCount(0), _print(print), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
+    // special processing for 'whitespace' delimiter string
+    if (_delimiter == "") {
+        _delimiter = "\t\v\f\r\n ";
+        _ignore_empty_fields = true;
+    }
+    _sourceFile.open(sSourceFilename.c_str());
+    if (!_sourceFile)
+        throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
+    // Get the byte-order mark, if there is one
+    unsigned char bom[4];
+    _sourceFile.read(reinterpret_cast<char*>(bom), 4);
+    //Since we don't know what the endian was on the machine that created the file we
+    //are reading, we'll need to check both ways.
+    if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
+        (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
+        (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
+      ThrowUnicodeException();
+    _sourceFile.seekg(0L, std::ios::beg);
+    // if first row is header, increment number of rows to skip
+    if (_firstRowHeaders) ++_skip;
+}
+
+/** Re-positions file cursor to beginning of file. */
+void CsvFileDataSource::GotoFirstRecord() {
+    _readCount = 0;
+    _blankReadCount = 0;
+    _sourceFile.clear();
+    _sourceFile.seekg(0L, std::ios::beg);
+    std::string readbuffer;
+    for (int i=0; i < _skip; ++i) 
+        getlinePortable(_sourceFile, readbuffer);
+}
+
+/** sets current parsing string -- returns indication of whether string contains any words. */
+bool CsvFileDataSource::parse(const std::string& s) {
+    _values.clear();
+    std::string e("\\");
+    boost::escaped_list_separator<char> separator(e, _delimiter, _grouper);
+    boost::tokenizer<boost::escaped_list_separator<char> > values(s, separator);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=values.begin(); itr != values.end(); ++itr) {
+        _values.push_back(*itr);
+        //trim any whitespace around value
+        boost::trim(_values.back());
+        // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
+        if (!_values.back().size() && _ignore_empty_fields)
+            _values.pop_back();
+    }
+    return _values.size() > 0;
+}
+
+/** Attempts to read line from source and parse into 'words'. 
+    Lines that contain no words are skipped and scanning continues to next line in file. 
+    Returns indication of whether record buffer contains 'words'.*/
+bool CsvFileDataSource::ReadRecord() {
+    bool isBlank = true;
+    std::string readbuffer;
+
+    // skip records as necessary
+    for (long i=_readCount; i < _skip; ++i) 
+        getlinePortable(_sourceFile, readbuffer);
+
+    while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
+        isBlank = !parse(readbuffer);
+        if (isBlank) {
+            tripBlankRecordFlag();
+            ++_readCount;
+            ++_blankReadCount;
+        }
+    }
+
+    ++_readCount;
+    return (readbuffer.size() > 0 && GetNumValues());
+}
+
+/** Returns number of values */
+long CsvFileDataSource::GetNumValues() {
+    // Field maps are all or nothing. This means that all fields are defined
+    // in mapping or straight from record parse.
+    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_values.size());
+}
+
+const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
+    iFieldIndex = tranlateFieldIndex(iFieldIndex);
+    if (iFieldIndex > static_cast<long>(_values.size()) - 1)
+        return 0;
+    return _values.at(static_cast<size_t>(iFieldIndex)).c_str();
+}
+
+void CsvFileDataSource::ThrowUnicodeException() {
+    throw resolvable_error("Error: The %s contains data that is Unicode formatted.\n       Please see 'ASCII Input File Format' in the user guide for help.\n",
+                             _print.GetImpliedFileTypeString().c_str());
+}
+
+//******************* class ShapeFileDataSource ********************************
+
+/* Returns boolean indication as to whether associated projection is supported. If projection
+   is not supported, return value includes a message to indicating a reason why it is not supported. */
+std::pair<bool, std::string> ShapeFileDataSource::isSupportedProjection(const std::string& shapefileFilename) {
+    return std::make_pair(true, "");
+    //ShapeFile shapeFile(shapefileFilename.c_str(), "r", false);
+    //if (shapeFile.hasProjection()) {
+    //    const Projection & projection = shapeFile.getProjection();
+    //    Projection::utm_info_t utm_info = projection.guessUTM();
+    //    return std::make_pair(true, "");
+    //} else {
+    //    std::string buffer;
+    //    shapeFile.getProjectionFilename(shapefileFilename, buffer);
+    //    return std::make_pair(false, printString(buffer, "Projection file '%s' could not be opened or is missing.", buffer.c_str()));
+    //}
+}
+
+/* Returns boolean indication as to whether shape type of file is supported. If not supported, 
+   return value includes a message to indicating a reason why it is not supported. */
+std::pair<bool, std::string> ShapeFileDataSource::isSupportedShapeType(const std::string& shapefileFilename) {
+    std::string buffer;
+    try {
+        ShapeFile shapeFile(shapefileFilename.c_str(), "r", false);
+        if (!(shapeFile.getType() == SHPT_POINT || shapeFile.getType() == SHPT_POLYGON))
+            return std::make_pair(false, printString(buffer, "The shape type of file is not supported - type is %s. Supported types are: %s and %s.",
+                                                     shapeFile.getTypeAsString(shapeFile.getType()),
+                                                     shapeFile.getTypeAsString(SHPT_POINT),
+                                                     shapeFile.getTypeAsString(SHPT_POLYGON)
+                                                     ));
+    } catch (...) {        
+        return std::make_pair(false, printString(buffer, "Unable to read file '%s'.", shapefileFilename.c_str()));
+    }
+    return std::make_pair(true, buffer);
+}
+
+ShapeFileDataSource::ShapeFileDataSource(const std::string& sSourceFilename)
+                :DataSource(), _current_field_idx(-1), _first_read(false), _current_record(0), _convert_utm(false) {
+    // check that shape type is supported
+    std::pair<bool, std::string> supportedType = isSupportedShapeType(sSourceFilename);
+    if (!supportedType.first)
+        throw resolvable_error("%s", supportedType.second.c_str());
+    // check that projection is present and supported
+    std::pair<bool, std::string> supportedProjection = isSupportedProjection(sSourceFilename);
+    if (!supportedProjection.first)
+        throw resolvable_error("%s", supportedProjection.second.c_str());
+
+    _shape_file.reset(new ShapeFile(sSourceFilename.c_str(), "r", false));
+    _num_records = _shape_file->getEntityCount();
+    // open associated dBase file
+    FileName file(sSourceFilename.c_str());
+    file.setExtension(dBaseFile::GetFileTypeExtension());
+    std::string buffer;
+    if (ValidateFileAccess(file.getFullPath(buffer), false))
+        _dbase_file.reset(new dBaseFile(file.getFullPath(buffer).c_str()));
+}
+
+/** Returns current record index. */
+long ShapeFileDataSource::GetCurrentRecordIndex() const {
+  return static_cast<long>(_current_record);
+}
+
+/** Returns the number of fields in record buffer. */
+long ShapeFileDataSource::GetNumValues() {
+    long count=2; /* the latitude/longitude coordinates are implicit in the count */
+    if (_dbase_file.get())
+        count += _dbase_file->GetNumFields();
+    return _fields_map.size() > 0 ? std::min(static_cast<long>(_fields_map.size()), count) : count;
+}
+
+/** Returns iFieldIndex'th field value from current record. */
+const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
+    _read_buffer.clear();
+
+    if (iFieldIndex < static_cast<long>(_fields_map.size())) {
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            ShapeFieldType type  = boost::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            if (type == ONECOUNT) {
+                _read_buffer = "1";
+            } else if (type == GENERATEDID) {
+                _read_buffer = printString(_read_buffer, "location%u", _current_record);
+            } else {
+                double x, y;
+                printf("shape record %u\n", _current_record);
+                _shape_file->getShapeAsXY(static_cast<int>(_current_record - 1), x, y);
+                printf("X: %g, Y: %g\n", x,y);
+                if (_convert_utm) {
+                    UTM_To_LatitudeLongitude(y, x, _hemisphere, _zone, y, x);
+                    printf("Post X: %g, Y: %g\n", x,y);
+                }
+                printString(_read_buffer, "%lf", (type == POINTX ? y : x));
+            }
+        } else {
+            iFieldIndex = boost::any_cast<long>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            if (!_dbase_file.get() || iFieldIndex > (long)(_dbase_file->GetNumFields()))
+                return 0;
+            _dbase_file->GetSystemRecord()->GetFieldValue(iFieldIndex - 1, _read_buffer);
+            if (_dbase_file->GetSystemRecord()->GetFieldType(iFieldIndex - 1) == FieldValue::DATE_FLD && _read_buffer.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
+                //format date fields -- read process currently expects yyyy/mm/dd
+                _read_buffer.insert(4, "/");
+                _read_buffer.insert(7, "/");
+            }
+        }
+        _current_field_idx = iFieldIndex;
+    }
+    return _read_buffer.size() ? _read_buffer.c_str() : 0;
+}
+
+/** Positions read cursor to first record. */
+void ShapeFileDataSource::GotoFirstRecord() {
+    if (_num_records) {
+        if (_dbase_file.get())
+            _dbase_file->GotoRecord(1);
+        _current_record = 0;
+        _first_read = false;
+        _current_field_idx=-1;
+    }  
+}
+
+/** Either reads first file record in file or next after current record. */
+bool ShapeFileDataSource::ReadRecord() {
+    if (_current_record >= _num_records) return false;
+    _current_field_idx=-1;
+    if (_first_read)
+        GotoFirstRecord();
+    else
+        _dbase_file->GotoRecord(++_current_record);
+    return true;  
+}

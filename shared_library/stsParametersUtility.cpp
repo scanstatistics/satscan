@@ -5,6 +5,8 @@
 #include "stsParametersUtility.h"
 #include "ParameterFileAccess.h"
 #include "JNIException.h"
+#include "DataSource.h"
+#include "IniParameterFileAccess.h"
 
 /** Reads parameters from file 'filename' in C++ code and sets class members of Java JParameters class. */
 JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read(JNIEnv * pEnv, jobject jParameters, jstring filename) {
@@ -63,10 +65,10 @@ JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write(JNIEnv * pEnv, jobj
 }
 
 /** Returns ordinal of enumeration gotten from 'sFunctionName' called. */
-int ParametersUtility::getEnumTypeOrdinalIndex(JNIEnv& Env, jobject& jParameters, const char * sFunctionName, const char * sEnumClassSignature) {
-  jclass clazz = Env.GetObjectClass(jParameters);
+int ParametersUtility::getEnumTypeOrdinalIndex(JNIEnv& Env, jobject& object, const char * sFunctionName, const char * sEnumClassSignature) {
+  jclass clazz = Env.GetObjectClass(object);
   jmethodID mid = _getMethodId_Checked(Env, clazz, sFunctionName, std::string(std::string("()") + sEnumClassSignature).c_str());
-  jobject t_object = Env.CallObjectMethod(jParameters, mid);
+  jobject t_object = Env.CallObjectMethod(object, mid);
   jni_error::_detectError(Env);
   jclass t_class = Env.FindClass(sEnumClassSignature);
   jmethodID t_mid = _getMethodId_Checked(Env, t_class, "ordinal", "()I");
@@ -447,6 +449,97 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   for (size_t t=0; t < Parameters.getObservableRegions().size(); ++t) {
     Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getObservableRegions()[t].c_str()), (jint)(t), (t ? JNI_FALSE : JNI_TRUE));
     jni_error::_detectError(Env);
+  }
+
+  mid = _getMethodId_Checked(Env, clazz, "clearInputSourceSettings", "()V");
+  Env.CallVoidMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+
+  jmethodID mid_add_source = _getMethodId_Checked(Env, clazz, "addInputSourceSettings", "(Lorg/satscan/importer/InputSourceSettings;)V");
+  jclass issclazz = Env.FindClass("org/satscan/importer/InputSourceSettings");
+  jmethodID mid_constructor = _getMethodId_Checked(Env, issclazz, "<init>", "()V");
+  CParameters::InputSourceContainer_t::const_iterator itr=Parameters.getInputSources().begin();
+  for (; itr != Parameters.getInputSources().end(); ++itr) {
+      const CParameters::InputSourceKey_t& key = itr->first;
+      const CParameters::InputSource& iss = itr->second;
+      jobject issobject = Env.NewObject(issclazz, mid_constructor);
+      Env.CallVoidMethod(jParameters, mid_add_source, issobject);
+
+      // translate ParameterType to Java InputSourceSettings.InputFileType
+      mid = _getMethodId_Checked(Env, issclazz, "setInputFileType", "(I)V");
+      switch (key.first) {
+        case CASEFILE : Env.CallVoidMethod(issobject, mid, (jint)0); break;
+        case CONTROLFILE : Env.CallVoidMethod(issobject, mid, (jint)1); break;
+        case POPFILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
+        case COORDFILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
+        case GRIDFILE : Env.CallVoidMethod(issobject, mid, (jint)4); break;
+        case MAXCIRCLEPOPFILE : Env.CallVoidMethod(issobject, mid, (jint)5); break;
+        case ADJ_BY_RR_FILE : Env.CallVoidMethod(issobject, mid, (jint)6); break;
+        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
+      }
+
+      mid = _getMethodId_Checked(Env, issclazz, "setDataSetIndex", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)key.second);
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setSourceDataFileType", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getSourceType());
+
+      mid = _getMethodId_Checked(Env, issclazz, "setDelimiter", "(Ljava/lang/String;)V");
+      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getDelimiter().c_str()));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setGroup", "(Ljava/lang/String;)V");
+      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getGroup().c_str()));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setSkiplines", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getSkip());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setFirstRowHeader", "(Z)V");
+      Env.CallVoidMethod(issobject, mid, (jboolean)iss.getFirstRowHeader());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setShapeCoordinatesType", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getShapeCoordinatesType());
+
+      mid = _getMethodId_Checked(Env, issclazz, "setHemisphere", "(Ljava/lang/String;)V");
+      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getHemisphere().c_str()));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setZone", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getZone());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setNorthing", "(D)V");
+      Env.CallVoidMethod(issobject, mid, (jdouble)iss.getNorthing());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setEasting", "(D)V");
+      Env.CallVoidMethod(issobject, mid, (jdouble)iss.getEasting());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "addFieldMapping", "(Ljava/lang/String;)V");
+      FieldMapContainer_t::const_iterator itrMap=iss.getFieldsMap().begin();
+      for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
+          std::stringstream s;
+          if (itrMap->type() == typeid(long)) {
+            s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == ::SHAPE ? 4 : 0));
+          } else if (itrMap->type() == typeid(ShapeFileDataSource::ShapeFieldType)) {
+              switch (boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itrMap)) {
+                case ShapeFileDataSource::POINTX   : s << 1; break;
+                case ShapeFileDataSource::POINTY   : s << 2; break;
+                case ShapeFileDataSource::ONECOUNT : s << 3; break;
+                case ShapeFileDataSource::GENERATEDID : s << 4; break;
+                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
+              }
+          } else {
+            throw prg_error("Unknown type '%s'.", "WriteInputSource()", itrMap->type().name());
+          }
+          Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(s.str().c_str()));
+          jni_error::_detectError(Env);
+      }
   }
 
   mid = _getMethodId_Checked(Env, clazz, "SetTimeTrendType", "(I)V");
@@ -978,6 +1071,121 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       sFilename = Env.GetStringUTFChars(str_object, &iscopy);
       Parameters.AddObservableRegion(sFilename, i, i == 0);
       if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+  }
+
+  mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/Vector;");
+  vectorobject = Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  vclazz = Env.GetObjectClass(vectorobject);
+  mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
+  vsize = Env.CallIntMethod(vectorobject, mid);
+  for (jint i=0; i < vsize; ++i) {
+      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      jobject iss_object = (jobject)Env.CallObjectMethod(vectorobject, mid, i);
+      jclass issclazz = Env.GetObjectClass(iss_object);
+
+      CParameters::InputSource inputsource;
+      inputsource.setSourceType((SourceType)getEnumTypeOrdinalIndex(Env, iss_object, "getSourceDataFileType", "Lorg/satscan/importer/InputSourceSettings$SourceDataFileType;"));
+
+      mid = _getMethodId_Checked(Env, issclazz, "getFieldMaps", "()Ljava/util/Vector;");
+      jobject vectorobject_mappings = Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      jclass vclazz_mappings = Env.GetObjectClass(vectorobject_mappings);
+      mid = _getMethodId_Checked(Env, vclazz_mappings, "size", "()I");
+      std::vector<boost::any> map;
+      jint vsize_mappings = Env.CallIntMethod(vectorobject_mappings, mid);
+      for (jint j=0; j < vsize_mappings; ++j) {
+        mid = _getMethodId_Checked(Env, vclazz_mappings, "elementAt", "(I)Ljava/lang/Object;");
+        jstring str_object = (jstring)Env.CallObjectMethod(vectorobject_mappings, mid, j);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(str_object, &iscopy);
+        std::string buffer(sFilename);
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+        int column;
+        if (!string_to_type<int>(buffer.c_str(), column))
+            throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
+        if (inputsource.getSourceType() == SHAPE) {
+            if (column == 1) {
+                map.push_back(ShapeFileDataSource::POINTX);
+            } else if (column == 2) {
+                map.push_back(ShapeFileDataSource::POINTY);
+            } else if (column == 3) {
+                map.push_back(ShapeFileDataSource::ONECOUNT);
+            } else if (column == 4) {
+                map.push_back(ShapeFileDataSource::GENERATEDID);
+            } else {
+                map.push_back((long)column - 4);
+            }
+        } else {
+            map.push_back((long)column);
+        }
+      }
+      inputsource.setFieldsMap(map);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getDelimiter", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      inputsource.setDelimiter(std::string(sFilename));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getGroup", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      inputsource.setGroup(std::string(sFilename));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getSkiplines", "()I");
+      inputsource.setSkip(Env.CallIntMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getFirstRowHeader", "()Z");
+      inputsource.setFirstRowHeader(Env.CallBooleanMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      inputsource.setShapeCoordinatesType((CParameters::InputSource::ShapeCoordinatesType)(getEnumTypeOrdinalIndex(Env, iss_object, "getShapeCoordinatesType", "Lorg/satscan/importer/InputSourceSettings$ShapeCoordinatesType;")));
+
+      mid = _getMethodId_Checked(Env, issclazz, "getHemisphere", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      inputsource.setHemisphere(std::string(sFilename));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getZone", "()I");
+      inputsource.setZone(static_cast<unsigned int>(Env.CallIntMethod(iss_object, mid)));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getNorthing", "()D");
+      inputsource.setNorthing(Env.CallDoubleMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getEasting", "()D");
+      inputsource.setEasting(Env.CallDoubleMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      unsigned int datasetIdx;
+      mid = _getMethodId_Checked(Env, issclazz, "getDataSetIndex", "()I");
+      datasetIdx = static_cast<unsigned int>(Env.CallIntMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      /* Translate Java class InputSourceSettings.InputFileType into ParameterType.
+        {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR}
+      */
+      ParameterType type=CASEFILE;
+      int filetype = getEnumTypeOrdinalIndex(Env, iss_object, "getInputFileType", "Lorg/satscan/importer/InputSourceSettings$InputFileType;");
+      switch (filetype) {
+        case 0/*Case*/                 : type = CASEFILE; break;
+        case 1/*Control*/              : type = CONTROLFILE; break;
+        case 2/*Population*/           : type = POPFILE; break;
+        case 3/*Coordinates*/          : type = COORDFILE; break;
+        case 4/*SpecialGrid*/          : type = GRIDFILE; break;
+        case 5/*MaxCirclePopulation*/  : type = MAXCIRCLEPOPFILE; break;
+        case 6/*AdjustmentsByRR*/      : type = ADJ_BY_RR_FILE; break;
+        default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
+      }
+      Parameters.defineInputSource(type, inputsource, datasetIdx);
   }
 
   Parameters.setTimeTrendType((TimeTrendType)getEnumTypeOrdinalIndex(Env, jParameters, "getTimeTrendType", "Lorg/satscan/app/Parameters$TimeTrendType;"));

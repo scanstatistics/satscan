@@ -44,6 +44,7 @@
 #endif
 
 #include "boost/tuple/tuple.hpp"
+#include <boost/any.hpp>
 #include "BasePrint.h"
 
 /**********************************************************************
@@ -57,7 +58,7 @@
 #define VERSION_MAJOR   "9"
 #define VERSION_MINOR   "4"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Beta 1" /** testing phase name - leave blank for release */
+#define VERSION_PHASE   "Beta 2" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Yet Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
@@ -107,5 +108,10 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 #define MIN_SIMULATION_RPT_PVALUE 99
 /** interval range type */
 typedef boost::tuple<int,int,int,int>  IntervalRange_t;
+/* The SPACE_DELIMITED data source is the original SaTScan file type - that is a space limited ASCII file 
+   without support for embeded spaces in field value. */
+enum SourceType {SPACE_DELIMITED=0, CSV, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
+/* data source fields map container typedef */
+typedef std::vector<boost::any> FieldMapContainer_t;
 //*****************************************************************************
 #endif

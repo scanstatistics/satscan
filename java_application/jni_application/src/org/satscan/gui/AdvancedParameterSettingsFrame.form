@@ -90,7 +90,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="512" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -132,7 +132,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="181" max="32767" attributes="0"/>
+                      <EmptySpace pref="205" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -262,36 +262,27 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
+                                      <Component id="_populationFileTextField" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="_populationFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="_caseFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="_controlFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="_populationFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="364" max="32767" attributes="0"/>
                                   </Group>
-                                  <Group type="102" attributes="0">
+                                  <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="_populationFileTextField" max="32767" attributes="0"/>
                                           <Component id="_controlFileTextField" max="32767" attributes="0"/>
                                           <Component id="_caseFileTextField" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="_caseFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="_caseFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="_controlFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="_controlFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="_populationFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="_populationFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                          </Group>
+                                          <Component id="_caseFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
+                                          <Component id="_controlFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -306,7 +297,6 @@
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="_caseFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_caseFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="_caseFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -314,7 +304,6 @@
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="_controlFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_controlFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="_controlFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -322,7 +311,6 @@
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="_populationFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_populationFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="_populationFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
@@ -350,16 +338,7 @@
                         <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Case File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _caseFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_caseFileImportButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import case file ..." noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Case File Import Source&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _caseFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_controlFileLabel">
@@ -381,16 +360,7 @@
                         <Property name="toolTipText" type="java.lang.String" value="Browse for control file ..." noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Control File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _controlFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_controlFileImportButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import control file ..." noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Control File Import Source&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Control);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _controlFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_populationFileLabel">
@@ -412,16 +382,7 @@
                         <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..." noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Population File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _populationFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_populationFileImportButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import population file ..." noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Population File Import Source&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Population);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _populationFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
@@ -540,7 +501,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="237" max="32767" attributes="0"/>
+                      <EmptySpace pref="261" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -745,7 +706,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="172" max="32767" attributes="0"/>
+                      <EmptySpace pref="196" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -764,7 +725,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, &quot;Non-Euclidian Neighbors File&quot;));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, AppConstants.NONEUCLIDIANFILE_HELPID));"/>
               </AuxValues>
 
               <Layout>
@@ -845,7 +806,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for neighbors file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;nei&quot;,&quot;Neighbors Files (*.nei)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Neighbors File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _neighborsFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.Neighbors);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _neighborsFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_specifiyMetaLocationsFileCheckBox">
@@ -875,7 +836,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for meta locations file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;meta&quot;,&quot;Meta Locations Files (*.meta)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Meta Locations File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _metaLocationsFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.MetaLocations);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _metaLocationsFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1015,7 +976,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="138" max="32767" attributes="0"/>
+                      <EmptySpace pref="162" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1063,13 +1024,11 @@
                                           <Component id="_maxCirclePopulationFilenameTextField" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_maxCirclePopFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_maxCirclePopFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" attributes="0">
                                           <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_percentageOfPopFileLabel" max="32767" attributes="0"/>
+                                          <Component id="_percentageOfPopFileLabel" pref="476" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1098,7 +1057,6 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_maxCirclePopulationFilenameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_maxCirclePopFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_maxCirclePopFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
@@ -1164,16 +1122,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for max circle size file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;max&quot;,&quot;Max Circle Size files (*.max)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Max Circle Size File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _maxCirclePopulationFilenameTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JButton" name="_maxCirclePopFileImportButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Import max circle size file ..." noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;max&quot;,&quot;Max Circle Files (*.max)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Max Circle Import Source&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.MaxCirclePopulation);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.MaxCirclePopulation.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.MaxCirclePopulation));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _maxCirclePopulationFilenameTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_spatialDistanceCheckBox">
@@ -1383,7 +1332,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="81" max="32767" attributes="0"/>
+                      <EmptySpace pref="105" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1489,7 +1438,7 @@
                     <Property name="text" type="java.lang.String" value="50" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxTemporalClusterSizeTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        double dMaxValue = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;&#xa;        while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) &gt; dMaxValue) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxTemporalClusterSizeTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        double dMaxValue = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;&#xa;        while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) &gt; dMaxValue) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfStudyPeriodLabel">
@@ -1976,7 +1925,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="67" max="32767" attributes="0"/>
+                      <EmptySpace pref="91" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2227,10 +2176,8 @@
                                   <Component id="_adjustmentsByRelativeRisksFileTextField" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_adjustmentsFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_adjustForKnownRelativeRisksCheckBox" max="32767" attributes="0"/>
+                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="595" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2246,7 +2193,6 @@
                               <Component id="_adjustmentsByRelativeRisksFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_adjustmentsByRelativeRisksFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_adjustmentsFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_adjustmentsFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2267,7 +2213,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        boolean  bEnabled = _knownAdjustmentsGroup.isEnabled() &amp;&amp; e.getStateChange() == java.awt.event.ItemEvent.SELECTED;&#xa;        &#xa;        _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnabled);&#xa;        _adjustmentsByRelativeRisksFileTextField.setEnabled(bEnabled);&#xa;        _adjustmentsFileBrowseButton.setEnabled(bEnabled);&#xa;        _adjustmentsFileImportButton.setEnabled(bEnabled);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        boolean  bEnabled = _knownAdjustmentsGroup.isEnabled() &amp;&amp; e.getStateChange() == java.awt.event.ItemEvent.SELECTED;&#xa;        &#xa;        _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnabled);&#xa;        _adjustmentsByRelativeRisksFileTextField.setEnabled(bEnabled);&#xa;        _adjustmentsFileBrowseButton.setEnabled(bEnabled);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_adjustmentsByRelativeRisksFileTextField">
@@ -2281,16 +2227,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for adjustments file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Adjustments File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _adjustmentsByRelativeRisksFileTextField.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JButton" name="_adjustmentsFileImportButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Import adjustments file ..." noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Adjustments File Import Source&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.AdjustmentsByRR);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.AdjustmentsByRR.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.AdjustmentsByRR));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _adjustmentsByRelativeRisksFileTextField, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_adjustmentsByRelativeRisksFileLabel">
@@ -2344,7 +2281,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="76" max="32767" attributes="0"/>
+                      <EmptySpace pref="100" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2878,7 +2815,7 @@
                       <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="44" max="32767" attributes="0"/>
+                      <EmptySpace pref="68" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3257,7 +3194,7 @@
                       <Component id="_reportClusterRankGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="223" max="32767" attributes="0"/>
+                      <EmptySpace pref="247" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3454,7 +3391,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_powerEvaluationsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="105" max="32767" attributes="0"/>
+                      <EmptySpace pref="129" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3668,7 +3605,7 @@
                     <Property name="toolTipText" type="java.lang.String" value="Browse for alternative hypothesis file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;ha&quot;,&quot;Alternative Hypothesis Files (*.ha)&quot;)};&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Alternative Hypothesis File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _alternativeHypothesisFilename.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.AlternativeHypothesis);&#xa;        FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), _settings_window, _alternativeHypothesisFilename, inputSourceSettings);&#xa;        sourcesetting.setVisible(true);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_numberPowerReplicationsLabel">
@@ -3782,7 +3719,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="289" max="32767" attributes="0"/>
+                      <EmptySpace pref="313" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

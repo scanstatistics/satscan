@@ -13,29 +13,25 @@ import org.satscan.app.*;
  * Imports from data source to SaTScan formatted data file.
  */
 public class FileImporter {
-    public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR};
-    public enum SourceDataFileType {Delimited, dBase, Excel};
-    
-    private final InputFileType _fileType;
-    private final SourceDataFileType _sourceDataFileType;
+    //private final InputSourceSettings.InputFileType _fileType;
+    //private final InputSourceSettings.SourceDataFileType _sourceDataFileType;
     private final File _destinationFile;
     private final ImportDataSource _dataSource;
     private final Vector<ImportVariable> _importVariables;
     private final JProgressBar _progress;
     private boolean _cancelled=false;
     
-    public FileImporter(ImportDataSource dataSource, Vector<ImportVariable> importVariables, InputFileType fileType, SourceDataFileType sourceDataFileType, File destinationFile, JProgressBar progress) {
+    public FileImporter(ImportDataSource dataSource, Vector<ImportVariable> importVariables, InputSourceSettings.InputFileType fileType, InputSourceSettings.SourceDataFileType sourceDataFileType, File destinationFile, JProgressBar progress) {
         _dataSource = dataSource;
         _importVariables = importVariables;
-        _fileType = fileType;
-        _sourceDataFileType = sourceDataFileType;
+        //_fileType = fileType;
+        //_sourceDataFileType = sourceDataFileType;
         _destinationFile = destinationFile;
         _progress = progress;
     }
     
     /** This a temporary hack function that formats date fields to sFormat. This is needed because SaTScan
-     * expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208.
-     * This function should be removed once the zdfile interface for satscan is implementated! */
+     * expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208. */
     private String formatDateField(String dateString) {
         StringBuilder builder = new StringBuilder();
         builder.append(dateString.substring(0, 4));

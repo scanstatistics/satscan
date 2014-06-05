@@ -114,6 +114,22 @@ class IniParameterSpecification {
     static const char         * OutputFiles;
     static const char         * AdvancedFeatures;
 
+    static const char         * SourceType;
+    static const char         * SourceDelimiter;
+    static const char         * SourceGrouper;
+    static const char         * SourceSkip;
+    static const char         * SourceFirstRowHeader;
+    static const char         * SourceFieldMap;
+    static const char         * SourceFieldMapShapeX;
+    static const char         * SourceFieldMapShapeY;
+    static const char         * SourceFieldMapOneCount;
+    static const char         * SourceFieldMapGeneratedId;
+    static const char         * SourceShapeCoordinatesType;
+    static const char         * SourceHemisphere;
+    static const char         * SourceZone;
+    static const char         * SourceNorthing;
+    static const char         * SourceEasting;
+
     void                        setup(CParameters::CreationVersion version);
 
   protected:

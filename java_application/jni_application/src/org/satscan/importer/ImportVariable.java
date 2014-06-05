@@ -22,6 +22,7 @@ public class ImportVariable implements Cloneable {
     private boolean gbRequiredVariable;
     private int gwInputFileVariableIndex;
     private String gsHelpText;
+    private boolean _showing=true;
 
     public ImportVariable() {
         initialize();
@@ -57,6 +58,15 @@ public class ImportVariable implements Cloneable {
         }
     }
 
+    public boolean getShowing() {
+        return _showing;
+    }
+
+    public boolean setShowing(boolean b) {
+        _showing = b;
+        return _showing;
+    }
+    
     public final String getHelpText() {
         return gsHelpText;
     }

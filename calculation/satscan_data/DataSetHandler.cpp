@@ -81,7 +81,7 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
 bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint));
     return ReadCounts(DataSet, *Source);
   } catch (prg_exception& x) {
     x.addTrace("ReadCaseFile()","DataSetHandler");

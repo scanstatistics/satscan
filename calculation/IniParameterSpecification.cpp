@@ -5,40 +5,56 @@
 #include "IniParameterSpecification.h"
 #include "SSException.h"
 
-const char * IniParameterSpecification::NotUsed                 = "NotUsed";
+const char * IniParameterSpecification::NotUsed                   = "NotUsed";
 
-const char * IniParameterSpecification::Input                   = "Input";
-const char * IniParameterSpecification::MultipleDataSets        = "Multiple Data Sets";
-const char * IniParameterSpecification::DataChecking            = "Data Checking";
-const char * IniParameterSpecification::NeighborsFile           = "Non-Eucledian Neighbors";
-const char * IniParameterSpecification::SpatialNeighbors        = "Spatial Neighbors";
-const char * IniParameterSpecification::Analysis                = "Analysis";
-const char * IniParameterSpecification::SpatialWindow           = "Spatial Window";
-const char * IniParameterSpecification::TemporalWindow          = "Temporal Window";
-const char * IniParameterSpecification::Polygons                = "Polygons";
-const char * IniParameterSpecification::SpaceAndTimeAdjustments = "Space and Time Adjustments";
-const char * IniParameterSpecification::Inference               = "Inference";
-const char * IniParameterSpecification::Output                  = "Output";
-const char * IniParameterSpecification::ClustersReported        = "Clusters Reported";
-const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
-const char * IniParameterSpecification::TemporalOutput          = "Temporal Output";
-const char * IniParameterSpecification::SpatialOutput           = "Spatial Output";
+const char * IniParameterSpecification::Input                     = "Input";
+const char * IniParameterSpecification::MultipleDataSets          = "Multiple Data Sets";
+const char * IniParameterSpecification::DataChecking              = "Data Checking";
+const char * IniParameterSpecification::NeighborsFile             = "Non-Eucledian Neighbors";
+const char * IniParameterSpecification::SpatialNeighbors          = "Spatial Neighbors";
+const char * IniParameterSpecification::Analysis                  = "Analysis";
+const char * IniParameterSpecification::SpatialWindow             = "Spatial Window";
+const char * IniParameterSpecification::TemporalWindow            = "Temporal Window";
+const char * IniParameterSpecification::Polygons                  = "Polygons";
+const char * IniParameterSpecification::SpaceAndTimeAdjustments   = "Space and Time Adjustments";
+const char * IniParameterSpecification::Inference                 = "Inference";
+const char * IniParameterSpecification::Output                    = "Output";
+const char * IniParameterSpecification::ClustersReported          = "Clusters Reported";
+const char * IniParameterSpecification::AdditionalOutput          = "Additional Output";
+const char * IniParameterSpecification::TemporalOutput            = "Temporal Output";
+const char * IniParameterSpecification::SpatialOutput             = "Spatial Output";
 
-const char * IniParameterSpecification::EllipticScan            = "Elliptic Scan";
-const char * IniParameterSpecification::SequentialScan          = "Sequential Scan";
-const char * IniParameterSpecification::IsotonicScan            = "Isotonic Scan";
-const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
-const char * IniParameterSpecification::PowerEvaluations        = "Power Evaluation";
-const char * IniParameterSpecification::RunOptions              = "Run Options";
-const char * IniParameterSpecification::BatchModeFeatures       = "BatchMode Features";
-const char * IniParameterSpecification::System                  = "System";
+const char * IniParameterSpecification::EllipticScan              = "Elliptic Scan";
+const char * IniParameterSpecification::SequentialScan            = "Sequential Scan";
+const char * IniParameterSpecification::IsotonicScan              = "Isotonic Scan";
+const char * IniParameterSpecification::PowerSimulations          = "Power Simulations";
+const char * IniParameterSpecification::PowerEvaluations          = "Power Evaluation";
+const char * IniParameterSpecification::RunOptions                = "Run Options";
+const char * IniParameterSpecification::BatchModeFeatures         = "BatchMode Features";
+const char * IniParameterSpecification::System                    = "System";
 
-const char * IniParameterSpecification::InputFiles              = "Input Files";
-const char * IniParameterSpecification::ScanningWindow          = "Scanning Window";
-const char * IniParameterSpecification::TimeParameters          = "Time Parameters";
-const char * IniParameterSpecification::OutputFiles             = "Output Files";
-const char * IniParameterSpecification::AdvancedFeatures        = "Advanced Features";
-const char * IniParameterSpecification::OtherOutput             = "Other Output";
+const char * IniParameterSpecification::InputFiles                = "Input Files";
+const char * IniParameterSpecification::ScanningWindow            = "Scanning Window";
+const char * IniParameterSpecification::TimeParameters            = "Time Parameters";
+const char * IniParameterSpecification::OutputFiles               = "Output Files";
+const char * IniParameterSpecification::AdvancedFeatures          = "Advanced Features";
+const char * IniParameterSpecification::OtherOutput               = "Other Output";
+
+const char * IniParameterSpecification::SourceType                = "SourceType";
+const char * IniParameterSpecification::SourceDelimiter           = "SourceDelimiter";
+const char * IniParameterSpecification::SourceGrouper             = "SourceGrouper";
+const char * IniParameterSpecification::SourceSkip                = "SourceSkip";
+const char * IniParameterSpecification::SourceFieldMap            = "SourceFieldMap";
+const char * IniParameterSpecification::SourceFirstRowHeader      = "SourceFirstRowHeader";
+const char * IniParameterSpecification::SourceFieldMapShapeX      = "shapeX";
+const char * IniParameterSpecification::SourceFieldMapShapeY      = "shapeY";
+const char * IniParameterSpecification::SourceFieldMapOneCount    = "oneCount";
+const char * IniParameterSpecification::SourceFieldMapGeneratedId = "generatedId";
+const char * IniParameterSpecification::SourceShapeCoordinatesType= "SourceShapeCoordinatesType";
+const char * IniParameterSpecification::SourceHemisphere          = "SourceHemisphere";
+const char * IniParameterSpecification::SourceZone                = "SourceZone";
+const char * IniParameterSpecification::SourceNorthing            = "SourceNorthing";
+const char * IniParameterSpecification::SourceEasting             = "SourceEasting";
 
 /** constructor - builds specification to current version */
 IniParameterSpecification::IniParameterSpecification() {

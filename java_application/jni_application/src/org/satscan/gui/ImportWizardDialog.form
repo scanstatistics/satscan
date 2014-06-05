@@ -12,12 +12,15 @@
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_groupIndicatorButtonGroup.add(_doubleQuotesRadioButton);&#xa;_groupIndicatorButtonGroup.add(_singleQuotesRadioButton);"/>
       </AuxValues>
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="_import_operation_buttonGroup">
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_projectionButtonGroup">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="Import Wizard" noResource="true"/>
     <Property name="modal" type="boolean" value="true"/>
-    <Property name="resizable" type="boolean" value="false"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -43,7 +46,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="previousButton" min="-2" pref="100" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="nextButton" min="-2" pref="100" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="executeButton" min="-2" pref="100" max="-2" attributes="0"/>
@@ -60,7 +63,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="_basePanel" max="32767" attributes="0"/>
+              <Component id="_basePanel" min="-2" pref="485" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -68,7 +71,7 @@
                   <Component id="nextButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="previousButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -87,7 +90,7 @@
         <Property name="text" type="java.lang.String" value="Next &gt;" noResource="true"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="nextButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _fileFormatCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            else if (_showingCard == _dataMappingCardName) {&#xa;                if (checkForRequiredVariables()) return;&#xa;                makeActivePanel(_outPutSettingsCardName);&#xa;            }&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="nextButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _fileFormatCardName || _showingCard == _shapeFileOptionsCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            else if (_showingCard == _dataMappingCardName) {&#xa;                if (checkForRequiredVariables()) return;&#xa;                makeActivePanel(_outPutSettingsCardName);&#xa;            }&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="previousButton">
@@ -95,7 +98,7 @@
         <Property name="text" type="java.lang.String" value="&lt; Previous" noResource="true"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="previousButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _dataMappingCardName)&#xa;                makeActivePanel(_fileFormatCardName);&#xa;            else if (_showingCard == _outPutSettingsCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="previousButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _dataMappingCardName) {&#xa;                if (_sourceDataFileType == SourceDataFileType.Shapefile)&#xa;                    makeActivePanel(_shapeFileOptionsCardName);&#xa;                else&#xa;                    makeActivePanel(_fileFormatCardName);&#xa;            } else if (_showingCard == _outPutSettingsCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="executeButton">
@@ -103,7 +106,7 @@
         <Property name="text" type="java.lang.String" value="Execute" noResource="true"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="executeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            try {&#xa;                createDestinationInformation();&#xa;            } catch (IOException i) {&#xa;                JOptionPane.showMessageDialog(ImportWizardDialog.this,&#xa;                        &quot;The import wizard encountered an error attempting to create the import file.\n&quot; +&#xa;                        &quot;This is most likely occuring because write permissions are not granted for\n&quot; +&#xa;                        &quot;specified directory. Please check path or review user permissions for specified directory.\n&quot;, &quot;Note&quot;, JOptionPane.WARNING_MESSAGE);&#xa;                return;&#xa;            }&#xa;            ImportTask task = new ImportTask();&#xa;            task.addPropertyChangeListener(ImportWizardDialog.this);&#xa;            task.execute();&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="executeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_execute_import_now.isSelected()) {&#xa;                try {&#xa;                    createDestinationInformation();&#xa;                } catch (IOException i) {&#xa;                    JOptionPane.showMessageDialog(ImportWizardDialog.this,&#xa;                            &quot;The import wizard encountered an error attempting to create the import file.\n&quot; +&#xa;                            &quot;This is most likely occuring because write permissions are not granted for\n&quot; +&#xa;                            &quot;specified directory. Please check path or review user permissions for specified directory.\n&quot;, &quot;Note&quot;, JOptionPane.WARNING_MESSAGE);&#xa;                    return;&#xa;                }&#xa;                ImportTask task = new ImportTask();&#xa;                task.addPropertyChangeListener(ImportWizardDialog.this);&#xa;                task.execute();&#xa;            } else {&#xa;                _cancelled = false;&#xa;                setVisible(false);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
       </AuxValues>
     </Component>
     <Container class="javax.swing.JPanel" name="_basePanel">
@@ -144,7 +147,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="284" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="266" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -274,7 +277,7 @@
                                   <Component id="_otherRadioButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_otherFieldSeparatorTextField" min="-2" pref="20" max="-2" attributes="0"/>
-                                  <EmptySpace pref="177" max="32767" attributes="0"/>
+                                  <EmptySpace pref="238" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -375,7 +378,7 @@
                                   <Component id="_doubleQuotesRadioButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                                   <Component id="_singleQuotesRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="307" max="32767" attributes="0"/>
+                                  <EmptySpace pref="368" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -449,9 +452,6 @@
           <SubComponents>
             <Container class="javax.swing.JSplitPane" name="jSplitPane1">
               <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="null"/>
-                </Property>
                 <Property name="dividerLocation" type="int" value="250"/>
                 <Property name="orientation" type="int" value="0"/>
               </Properties>
@@ -473,9 +473,9 @@
                                   <Group type="102" attributes="0">
                                       <Component id="_displayVariablesLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="_displayVariablesComboBox" pref="327" max="32767" attributes="0"/>
+                                      <Component id="_displayVariablesComboBox" pref="386" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="jScrollPane2" alignment="1" pref="478" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane2" alignment="1" pref="537" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_clearSelectionButton" min="-2" max="-2" attributes="0"/>
@@ -492,7 +492,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_clearSelectionButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jScrollPane2" pref="213" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane2" pref="212" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -517,7 +517,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        setShowingVariables();&#xa;        enableNavigationButtons();&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (_fileType == InputSourceSettings.InputFileType.Coordinates || _fileType == InputSourceSettings.InputFileType.SpecialGrid) {&#xa;            if (_displayVariablesComboBox.getSelectedIndex() == 0) {&#xa;              _coordinatesType = Parameters.CoordinatesType.LATLON;&#xa;            } else {&#xa;              _coordinatesType = Parameters.CoordinatesType.CARTESIAN;&#xa;            }&#xa;        }&#xa;        setShowingVariables();&#xa;        enableNavigationButtons();&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="jScrollPane2">
@@ -557,13 +557,13 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_importTableScrollPane" alignment="0" pref="541" max="32767" attributes="0"/>
+                          <Component id="_importTableScrollPane" alignment="0" pref="600" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="_importTableScrollPane" pref="237" max="32767" attributes="0"/>
+                              <Component id="_importTableScrollPane" pref="218" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -609,16 +609,20 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_progressBar" alignment="0" pref="521" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_outputDirectoryTextField" pref="446" max="32767" attributes="0"/>
+                          <Component id="_execute_import_now" alignment="1" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_progressBar" pref="582" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                              <Component id="_outputDirectoryTextField" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_save_import_settings" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -627,29 +631,25 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
+                      <Component id="_execute_import_now" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="_changeSaveDirectoryButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="_outputDirectoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="_outputDirectoryTextField" min="-2" max="-2" attributes="0"/>
+                          <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="408" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="_save_import_settings" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="376" max="-2" attributes="0"/>
                       <Component id="_progressBar" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="27" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="jLabel3">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Save imported file in directory:" noResource="true"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JTextField" name="_outputDirectoryTextField">
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputDirectoryTextField.setText(_prefs.get(_prefLastBackup, System.getProperty(&quot;user.home&quot;)));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_changeSaveDirectoryButton">
@@ -657,10 +657,295 @@
                 <Property name="text" type="java.lang.String" value="Change" noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), &quot;Select directory to save imported file&quot;, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_load(true);&#xa;        if (file != null) {&#xa;            org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;        }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), &quot;Select directory to save imported file&quot;, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JProgressBar" name="_progressBar">
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="_execute_import_now">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="_import_operation_buttonGroup"/>
+                </Property>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Save imported input file:"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_execute_import_now.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            executeButton.setText(&quot;Execute&quot;);&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="_save_import_settings">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="_import_operation_buttonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Read directly from data source when running the analysis."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_save_import_settings.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            executeButton.setText(&quot;Done&quot;);&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_shapeFileOptionsPanel">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+              <CardConstraints cardName="card5"/>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="_ScrollPaneShapefileCoordinatesSampling" max="32767" attributes="0"/>
+                  <Component id="jLabel3" alignment="0" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" alignment="0" max="32767" attributes="0"/>
+                  <Component id="jScrollPane4" alignment="0" pref="602" max="32767" attributes="0"/>
+                  <Component id="_latlongRadioButton" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel2" max="32767" attributes="0"/>
+                          <Component id="_utmRadioButton" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="_hemisphereChoice" min="-2" pref="40" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="_zoneChoice" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                                      <Component id="jLabel9" min="-2" pref="55" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="_northing" min="-2" pref="65" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="jLabel10" min="-2" pref="55" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="_easting" min="-2" pref="65" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="jLabel6" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                                      <Component id="jLabel11" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="_othercoordinatesRadioButton" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_ScrollPaneShapefileCoordinatesSampling" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane3" min="-2" pref="56" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane4" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_latlongRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="_utmRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                          <Component id="_hemisphereChoice" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                          <Component id="_zoneChoice" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_northing" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_easting" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="_othercoordinatesRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="67" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="jLabel2">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Shapefile Coordinates Sampling:"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="_ScrollPaneShapefileCoordinatesSampling">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="_textAreashapefileCoordinatesSampling">
+                  <Properties>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="rows" type="int" value="5"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="jLabel3">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Projection File Contents:"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+              <Properties>
+                <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="jTextArea1">
+                  <Properties>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="rows" type="int" value="2"/>
+                    <Property name="wrapStyleWord" type="boolean" value="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jTextArea1.setLineWrap(true);"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane4">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="null"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextPane" name="jTextPane1">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="f0" green="f0" red="f0" type="rgb"/>
+                    </Property>
+                    <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xd;&#xa;  &lt;head&gt;&#xd;&#xa;&#xd;&#xa;  &lt;/head&gt;&#xd;&#xa;  &lt;body&gt;&#xd;&#xa;    &lt;p style=&quot;margin-top: 0&quot;&gt;&#xd;&#xa;      &#xd;Please use the coordinates sampling, projection file contents and your knowledge of shapefiles to select best option below:&#xa;    &lt;/p&gt;&#xd;&#xa;  &lt;/body&gt;&#xd;&#xa;&lt;/html&gt;&#xd;&#xa;"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JRadioButton" name="_latlongRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="_projectionButtonGroup"/>
+                </Property>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Coordinates are already in a latitude / longitude coordinates system."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latlongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _coordinatesType = Parameters.CoordinatesType.LATLON;&#xa;            switch (_coordinatesType) {&#xa;                case CARTESIAN : _displayVariablesComboBox.setSelectedIndex(1); break;&#xa;                case LATLON    :   &#xa;                default        : _displayVariablesComboBox.setSelectedIndex(0); &#xa;            }&#xa;        }&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="_utmRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="_projectionButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Coordinates are in a UTM coordinate system."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_utmRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _coordinatesType = Parameters.CoordinatesType.LATLON;&#xa;            switch (_coordinatesType) {&#xa;                case CARTESIAN : _displayVariablesComboBox.setSelectedIndex(1); break;&#xa;                case LATLON    :   &#xa;                default        : _displayVariablesComboBox.setSelectedIndex(0); &#xa;            }&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel6">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Convert the coordinates to latitude / longitude knowing the following is true:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel7">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Hemisphere:"/>
+              </Properties>
+            </Component>
+            <Component class="java.awt.Choice" name="_hemisphereChoice">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_hemisphereChoice.add(&quot;N&quot;);&#xd;&#xa;_hemisphereChoice.add(&quot;S&quot;);"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel8">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Zone:"/>
+              </Properties>
+            </Component>
+            <Component class="java.awt.Choice" name="_zoneChoice">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for (int i=1; i &lt;= 60; ++i) {&#xd;&#xa;    _zoneChoice.add(Integer.toString(i));&#xd;&#xa;}"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel9">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Northing:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_northing">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="0"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_northing.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_northing, e, 20);&#xa;    }&#xa;});&#xa;_northing.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_northing.getText().length() == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _northing.setText(&quot;0&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_northing.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel10">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Easting:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_easting">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="500000"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_easting.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_easting, e, 20);&#xa;    }&#xa;});&#xa;_easting.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_easting.getText().length() == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _easting.setText(&quot;500000&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_easting.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="_othercoordinatesRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="_projectionButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Coordinates are in another coordinate system and should be considered Cartesian values."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_othercoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) { &#xa;            _coordinatesType = Parameters.CoordinatesType.CARTESIAN;&#xa;            switch (_coordinatesType) {&#xa;                case CARTESIAN : _displayVariablesComboBox.setSelectedIndex(1); break;&#xa;                case LATLON    :   &#xa;                default        : _displayVariablesComboBox.setSelectedIndex(0); &#xa;            }&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel11">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="(Note: If using this data as input for the coordinates or grid files, the coordinates type should be set to Cartesian.)"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

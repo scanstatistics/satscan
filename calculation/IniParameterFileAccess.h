@@ -18,7 +18,10 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const;
     void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
     void                                ReadObservableRegionSettings(const IniFile& SourceFile);
+    void                                ReadInputSourceSettings(const IniFile& SourceFile);
+    bool                                ReadInputSourceSection(const IniFile& SourceFile, const char* sectionName, const char* keyPrefix, CParameters::InputSource& source);
 
+    void                                WriteInputSource(IniFile& WriteFile, ParameterType eParameterType, const CParameters::InputSource * source);
     void                                WriteOtherOutputSettings(IniFile& WriteFile);
     void                                WriteAnalysisSettings(IniFile& WriteFile);
     void                                WriteSpatialOutputSettings(IniFile& WriteFile);

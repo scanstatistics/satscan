@@ -5,7 +5,9 @@
 #include "ParameterFileAccess.h"
 #include "ScanLineParameterFileAccess.h"
 #include "IniParameterFileAccess.h"
+#include "DataSource.h"
 #include<boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 /** constructor */
 ParameterAccessCoordinator::ParameterAccessCoordinator(CParameters& Parameters)
@@ -776,6 +778,131 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
     throw;
   }
 }
+
+/** Attempts to write values to InputSource. */
+CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameters::InputSource & source,
+                                                                      const std::string& typeStr, 
+                                                                      const std::string& mapStr, 
+                                                                      const std::string& delimiterStr, 
+                                                                      const std::string& groupStr, 
+                                                                      const std::string& skipStr,
+                                                                      const std::string& headerStr,
+                                                                      const std::string& coordinatetypeStr,
+                                                                      const std::string& hemisphereStr,
+                                                                      const std::string& zoneStr,
+                                                                      const std::string& northingStr,
+                                                                      const std::string& eastingStr,
+                                                                      BasePrint& PrintDirection) {
+    try {
+        // set defaults
+        source.setSourceType(SPACE_DELIMITED);
+        source.clearFieldsMap();
+        source.setDelimiter(",");
+        source.setGroup("\"");
+        source.setSkip(0);
+        source.setFirstRowHeader(false);
+
+        // source file type
+        if (typeStr.size()) {
+            int type;
+            if (!string_to_type<int>(typeStr.c_str(), type))
+                throw resolvable_error("Unable to read parameter value '%s' as %s.", typeStr.c_str(), IniParameterSpecification::SourceType);
+            if (type < SPACE_DELIMITED || type > SHAPE)
+                throw resolvable_error("Parameter value '%d' out of range [%d,%d] for %s.", type, SPACE_DELIMITED, SHAPE, IniParameterSpecification::SourceType);
+            source.setSourceType((SourceType)type);
+        }
+        // fields map
+        printf("mapStr %s\n", mapStr.c_str());
+        if (mapStr.size()) {
+            int column;
+            FieldMapContainer_t fields_map;
+            boost::escaped_list_separator<char> separator('\\', ',', '\"');
+            boost::tokenizer<boost::escaped_list_separator<char> > mappings(mapStr, separator);
+            for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=mappings.begin(); itr != mappings.end(); ++itr) {
+                std::string token(*itr);
+                trimString(token);
+                if (token == IniParameterSpecification::SourceFieldMapShapeX) {
+                    fields_map.push_back(ShapeFileDataSource::POINTX);
+                } else if (token == IniParameterSpecification::SourceFieldMapShapeY) {
+                    fields_map.push_back(ShapeFileDataSource::POINTY);
+                } else if (token == IniParameterSpecification::SourceFieldMapOneCount) {
+                    fields_map.push_back(ShapeFileDataSource::ONECOUNT);
+                } else if (token == IniParameterSpecification::SourceFieldMapGeneratedId) {
+                    fields_map.push_back(ShapeFileDataSource::GENERATEDID);
+                } else if (string_to_type<int>(token.c_str(), column)) {
+                    fields_map.push_back((long)column);
+                } else {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceFieldMap);
+                }
+            }
+            source.setFieldsMap(fields_map);
+        }
+        if (source.getSourceType() == SHAPE && source.getFieldsMap().size() == 0) {
+            throw resolvable_error("The %s is required for a shapefile source type but a mapping was not defined.", IniParameterSpecification::SourceFieldMap);
+        }
+        if (source.getSourceType() == CSV) {
+            source.setDelimiter(delimiterStr);
+            if (source.getDelimiter().size() > 1)
+                throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getDelimiter().c_str());
+            source.setGroup(groupStr);
+            if (source.getGroup().size() > 1)
+                throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getGroup().c_str());
+            unsigned int skip;
+            if (!string_to_type<unsigned int>(skipStr.c_str(), skip)) {
+                throw resolvable_error("Unable to read parameter value '%s' as %s.", skipStr.c_str(), IniParameterSpecification::SourceSkip);
+            }
+            source.setSkip(skip);
+            if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
+                !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
+                !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
+                throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+            }
+            bool rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
+            source.setFirstRowHeader(rowheader);
+        } else if (source.getSourceType() == SHAPE) {
+            // source file type
+            if (coordinatetypeStr.size()) {
+                int type;
+                if (!string_to_type<int>(coordinatetypeStr.c_str(), type))
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", coordinatetypeStr.c_str(), IniParameterSpecification::SourceShapeCoordinatesType);
+                if (type < CParameters::InputSource::LATLONG_DATA || type > CParameters::InputSource::CARTESIAN_DATA)
+                    throw resolvable_error("Parameter value '%d' out of range [%d,%d] for %s.", type, CParameters::InputSource::LATLONG_DATA, CParameters::InputSource::CARTESIAN_DATA, IniParameterSpecification::SourceShapeCoordinatesType);
+                source.setShapeCoordinatesType((CParameters::InputSource::ShapeCoordinatesType)type);
+            }
+            if (source.getShapeCoordinatesType() == CParameters::InputSource::UTM_CONVERSION) {
+                source.setHemisphere(boost::to_upper_copy(hemisphereStr));
+                if (!(source.getHemisphere() == "N" || source.getHemisphere() == "S"))
+                    throw resolvable_error("The %s value settings is limited to either 'N' or 'S'. Values specified is '%s'.", IniParameterSpecification::SourceHemisphere, source.getHemisphere().c_str());
+                unsigned int zone;
+                if (!string_to_type<unsigned int>(zoneStr.c_str(), zone)) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", zoneStr.c_str(), IniParameterSpecification::SourceZone);
+                }
+                if (zone < 1 || zone > 60) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s. Zone must be 1 to 60.", zoneStr.c_str(), IniParameterSpecification::SourceZone);
+                }
+                source.setZone(zone);
+                double northing;
+                if (!string_to_type<double>(northingStr.c_str(), northing)) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", northingStr.c_str(), IniParameterSpecification::SourceNorthing);
+                }
+                source.setNorthing(northing);
+                double easting;
+                if (!string_to_type<double>(eastingStr.c_str(), easting)) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", eastingStr.c_str(), IniParameterSpecification::SourceEasting);
+                }
+                source.setEasting(easting);
+            }
+        }
+    } catch (resolvable_error &x) {
+        gbReadStatusError = true;
+        PrintDirection.Printf(x.what(), BasePrint::P_PARAMERROR);
+    } catch (prg_exception &x) {
+        x.addTrace("SetParameter()","AbtractParameterFileAccess");
+        throw;
+    }
+    return source;
+}
+
 
 parameter_error::parameter_error(const char * format, ...) : resolvable_error() {
   try {

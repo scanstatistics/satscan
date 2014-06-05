@@ -4,7 +4,10 @@
 //***************************************************************************
 #include "IniParameterFileAccess.h"
 #include "RandomNumberGenerator.h"
-                                                                       
+#include "UtilityFunctions.h"
+#include "DataSource.h"
+#include <boost/algorithm/string/join.hpp>
+
 /** constructor */
 IniParameterFileAccess::IniParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection)
                        :AbtractParameterFileAccess(Parameters, PrintDirection), gpSpecifications(0) {}
@@ -51,6 +54,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
             ReadIniParameter(SourceFile, eType);
         ReadObservableRegionSettings(SourceFile);
         ReadMultipleDataSetsSettings(SourceFile);
+        ReadInputSourceSettings(SourceFile);
     } catch (prg_exception& x) {
         x.addTrace("Read()","IniParameterFileAccess");
         throw;
@@ -141,6 +145,171 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
         x.addTrace("ReadObservableRegionSettings()","IniParameterFileAccess");
         throw;
     }
+}
+
+/* Reads optional input source settings. */
+void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
+    const char * section, * multiple_sets_section, * key;
+    std::string buffer;
+
+    try {
+        // section name for multiple data sets
+        if (!GetSpecifications().GetParameterIniInfo(MULTI_DATASET_PURPOSE_TYPE, &multiple_sets_section, &key) && gParameters.GetNumDataSets() > 1) 
+            throw prg_error("Unable to determine section for multiple data sets.", "ReadInputSourceSettings()");
+
+        // case file
+        if (GetSpecifications().GetParameterIniInfo(CASEFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(CASEFILE, source);
+            // case for multiple data sets
+            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+                printString(buffer, "%s%u", key, (setIdx + 1));
+                CParameters::InputSource sourceset;
+                if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
+                    gParameters.defineInputSource(CASEFILE, sourceset, setIdx + 1);
+            }
+        }
+        // control file
+        if (GetSpecifications().GetParameterIniInfo(CONTROLFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(CONTROLFILE, source);
+            // control for multiple data sets
+            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+                printString(buffer, "%s%u", key, (setIdx + 1));
+                CParameters::InputSource sourceset;
+                if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
+                    gParameters.defineInputSource(CONTROLFILE, sourceset, setIdx + 1);
+            }
+        }
+        // population file
+        if (GetSpecifications().GetParameterIniInfo(POPFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(POPFILE, source);
+            // population for multiple data sets
+            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+                printString(buffer, "%s%u", key, (setIdx + 1));
+                CParameters::InputSource sourceset;
+                if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
+                    gParameters.defineInputSource(POPFILE, sourceset, setIdx + 1);
+            }
+        }
+        // coordinates file
+        if (GetSpecifications().GetParameterIniInfo(COORDFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(COORDFILE, source);
+        }
+        // grid file
+        if (GetSpecifications().GetParameterIniInfo(GRIDFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(GRIDFILE, source);
+        }
+        // maximum circle population file
+        if (GetSpecifications().GetParameterIniInfo(MAXCIRCLEPOPFILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(MAXCIRCLEPOPFILE, source);
+        }
+        // adjustments population file
+        if (GetSpecifications().GetParameterIniInfo(ADJ_BY_RR_FILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(ADJ_BY_RR_FILE, source);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadInputSourceSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/* Reads key/values in passed source section. */
+bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, const char* sectionName, const char* keyPrefix, CParameters::InputSource& source) {
+    long lSectionIndex, lKeyIndex=-1;
+    std::string key, buffer;
+    bool anykeys=false;
+    std::string type, map, delimiter, group, skip, header, coordinatetype, hemisphere, zone, northing, easting;
+
+    if ((lSectionIndex = SourceFile.GetSectionIndex(sectionName)) > -1) {
+        const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
+        // source file type
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceType);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            type = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // fields map
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceFieldMap);
+        source.clearFieldsMap();
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            map = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // delimiter
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceDelimiter);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            delimiter = pSection->GetLine(lKeyIndex)->GetValue();
+        } 
+        // grouper
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceGrouper);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            group = pSection->GetLine(lKeyIndex)->GetValue();
+        } 
+        // skip
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceSkip);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            skip = pSection->GetLine(lKeyIndex)->GetValue();
+         }
+        // first row header
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceFirstRowHeader);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            header = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // shape coordinate source file type
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceShapeCoordinatesType);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            coordinatetype = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // hemisphere
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceHemisphere);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            hemisphere = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // zone
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceZone);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            zone = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // northing
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceNorthing);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            northing = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // easting
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceEasting);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            easting = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        if (anykeys) {
+            setInputSource(source, trimString(type), trimString(map), 
+                           trimString(delimiter), trimString(group), trimString(skip), trimString(header), 
+                           trimString(coordinatetype), trimString(hemisphere), trimString(zone), trimString(northing), trimString(easting), 
+                           gPrintDirection);
+        }
+    }
+    return anykeys;
 }
 
 void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpecification& specification) {
@@ -292,6 +461,92 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
     }
 }
 
+/** Write InputSource object to ini file. */
+void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType eParameterType, const CParameters::InputSource * source) {
+    const char  * sSectionName, * sKey;
+    std::string buffer, key;
+
+    try {
+        if (source) {
+            if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
+                IniSection *  pSection = WriteFile.GetSection(sSectionName);
+
+                pSection->AddComment("source type (SPACE_DELIMITED=0, CSV=1, DBASE=2, SHAPE=3)");
+                printString(key, "%s-%s", sKey, IniParameterSpecification::SourceType);
+                pSection->AddLine(key.c_str(), AsString(buffer, source->getSourceType()).c_str());
+
+                if (source->getFieldsMap().size()) {
+                    printString(buffer, "source field map (comma separated list of integers, %s, %s, %s, %s)", 
+                                IniParameterSpecification::SourceFieldMapShapeX, 
+                                IniParameterSpecification::SourceFieldMapShapeY, 
+                                IniParameterSpecification::SourceFieldMapOneCount,
+                                IniParameterSpecification::SourceFieldMapGeneratedId);
+                    pSection->AddComment(buffer.c_str());
+                    std::stringstream s;
+                    for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
+                        if (itr->type() == typeid(long)) {
+                            s << boost::any_cast<long>(*itr);
+                        } else if (itr->type() == typeid(ShapeFileDataSource::ShapeFieldType)) {
+                            switch (boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr)) {
+                                case ShapeFileDataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
+                                case ShapeFileDataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
+                                case ShapeFileDataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
+                                case ShapeFileDataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
+                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
+                            }
+                        } else {
+                            throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());
+                        }
+                        if ((itr+1) != source->getFieldsMap().end())
+                            s << ",";
+                    }
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceFieldMap);
+                    pSection->AddLine(key.c_str(), s.str().c_str());
+                }                
+
+                if (source->getSourceType() == CSV) {
+                    pSection->AddComment("csv source delimiter (leave empty for space or tab delimiter)");
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceDelimiter);
+                    pSection->AddLine(key.c_str(), source->getDelimiter().c_str());
+
+                    pSection->AddComment("csv source group character");
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceGrouper);
+                    pSection->AddLine(key.c_str(), source->getGroup().c_str());
+
+                    pSection->AddComment("csv source skip initial lines (i.e. meta data)");
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceSkip);
+                    pSection->AddLine(key.c_str(), AsString(buffer, source->getSkip()).c_str());
+
+                    pSection->AddComment("csv source first row column header");
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceFirstRowHeader);
+                    pSection->AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
+                } else if (source->getSourceType() == SHAPE) {
+                    pSection->AddComment("shape coordinate type (LATLONG_DATA=0, UTM_CONVERSION, CARTESIAN_DATA)");
+                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceShapeCoordinatesType);
+                    pSection->AddLine(key.c_str(), AsString(buffer, source->getShapeCoordinatesType()).c_str());
+                    if (source->getShapeCoordinatesType() == CParameters::InputSource::UTM_CONVERSION) {
+                        pSection->AddComment("UTM conversion hemisphere ('N' or 'S')");
+                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceHemisphere);
+                        pSection->AddLine(key.c_str(), source->getHemisphere().c_str());
+                        pSection->AddComment("UTM conversion zone (1 - 60)");
+                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceZone);
+                        pSection->AddLine(key.c_str(), AsString(buffer, source->getZone()).c_str());
+                        pSection->AddComment("UTM conversion northing (0 - 500,000)");
+                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceNorthing);
+                        pSection->AddLine(key.c_str(), AsString(buffer, source->getNorthing()).c_str());
+                        pSection->AddComment("UTM conversion easting (0 - 500,000)");
+                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceEasting);
+                        pSection->AddLine(key.c_str(), AsString(buffer, source->getEasting()).c_str());
+                    }
+                }
+            } else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WriteInputSource()","IniParameterFileAccess");
+        throw;
+    }
+}
+
 /** Writes specified comment and value to file for parameter type. */
 void IniParameterFileAccess::WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment) {
     const char  * sSectionName, * sKey;
@@ -324,14 +579,19 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     std::string  s;
     try {
         WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s).c_str(), GetParameterComment(CASEFILE));
+        WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE));
         WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s).c_str(), GetParameterComment(CONTROLFILE));
+        WriteInputSource(WriteFile, CONTROLFILE, gParameters.getInputSource(CONTROLFILE));
         WriteIniParameter(WriteFile, PRECISION, GetParameterString(PRECISION, s).c_str(), GetParameterComment(PRECISION));
         WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s).c_str(), GetParameterComment(STARTDATE));
         WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s).c_str(), GetParameterComment(ENDDATE));
         WriteIniParameter(WriteFile, POPFILE, GetParameterString(POPFILE, s).c_str(), GetParameterComment(POPFILE));
+        WriteInputSource(WriteFile, POPFILE, gParameters.getInputSource(POPFILE));
         WriteIniParameter(WriteFile, COORDFILE, GetParameterString(COORDFILE, s).c_str(), GetParameterComment(COORDFILE));
+        WriteInputSource(WriteFile, COORDFILE, gParameters.getInputSource(COORDFILE));
         WriteIniParameter(WriteFile, SPECIALGRID, GetParameterString(SPECIALGRID, s).c_str(), GetParameterComment(SPECIALGRID));
         WriteIniParameter(WriteFile, GRIDFILE, GetParameterString(GRIDFILE, s).c_str(), GetParameterComment(GRIDFILE));
+        WriteInputSource(WriteFile, GRIDFILE, gParameters.getInputSource(GRIDFILE));
         WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s).c_str(), GetParameterComment(COORDTYPE));
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSettings()","IniParameterFileAccess");
@@ -352,16 +612,19 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " case data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.c_str());
+                WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(CONTROLFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " control data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetControlFileName(t + 1).c_str(), sComment.c_str());
+                WriteInputSource(WriteFile, CONTROLFILE, gParameters.getInputSource(CONTROLFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(POPFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " population data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.c_str());
+                WriteInputSource(WriteFile, POPFILE, gParameters.getInputSource(POPFILE, t+1));
             }
         }
     } catch (prg_exception& x) {
@@ -482,6 +745,7 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
         WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
         WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
         WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(ADJ_BY_RR_FILE));
+        WriteInputSource(WriteFile, ADJ_BY_RR_FILE, gParameters.getInputSource(ADJ_BY_RR_FILE));
     } catch (prg_exception& x) {
         x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
         throw;
@@ -511,6 +775,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE));
         WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s).c_str(), GetParameterComment(MAXGEOPOPFILE));
         WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s).c_str(), GetParameterComment(MAXCIRCLEPOPFILE));
+        WriteInputSource(WriteFile, MAXCIRCLEPOPFILE, gParameters.getInputSource(MAXCIRCLEPOPFILE));
         WriteIniParameter(WriteFile, USE_MAXGEODISTANCE, GetParameterString(USE_MAXGEODISTANCE, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE));
         WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s).c_str(), GetParameterComment(MAXGEODISTANCE));
         WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s).c_str(), GetParameterComment(PURETEMPORAL));

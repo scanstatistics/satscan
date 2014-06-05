@@ -332,7 +332,7 @@ bool NormalDataSetHandler::setIsWeighted() {
   try {
     for (size_t t=0; t < GetNumDataSets(); ++t) {
         const RealDataSet& DataSet = GetDataSet(t);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint));
         if (Source->ReadRecord()) {
             setColumns.at(t) = Source->GetNumValues();
         }

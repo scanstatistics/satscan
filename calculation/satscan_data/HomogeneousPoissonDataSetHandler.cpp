@@ -317,7 +317,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCartesianCoordinates(DataSource& Sour
 bool HomogeneousPoissonDataSetHandler::ReadCoordinatesFile(RealDataSet& DataSet) {
   try {
       gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
-      std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
+      std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gParameters.getInputSource(COORDFILE), gPrint));
     return ReadCoordinates(DataSet, *Source);
   }
   catch (prg_exception& x) {
@@ -342,7 +342,7 @@ bool HomogeneousPoissonDataSetHandler::ReadData() {
     if (gParameters.UseSpecialGrid()) {
        gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
        gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
-       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gPrint));
+       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gParameters.getInputSource(GRIDFILE), gPrint));
        if (!ReadGridFile(*Source)) return false;
     }
     SetRandomizers();

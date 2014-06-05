@@ -65,6 +65,136 @@ std::pair<double, double> ConvertToLatLong(const std::vector<double>& vCoordinat
   return prLatitudeLongitude;
 }
 
+/* Convert UTM to Latitude/Longitude - algorithm at http://www.sascommunity.org/wiki/Latitude/longitude_to_UTM_conversion_%28and_vice-versa%29 */
+void UTM_To_LatitudeLongitude(double& latitude, double& longitude, char hemisphere, unsigned int zone, double northing, double easting) {
+    double a=6378137; // equatorial radius;
+    double b=6356752.314; // polar radius (values of a and b are for WGS84 datum - for other datums see http://www.uwgb.edu/dutchs/usefuldata/utmformulas.htm );
+    double k0=0.9996; // scale along central meridian;
+
+    double e =  std::pow(1.0 - std::pow(b, 2.0)/std::pow(a, 2.0), 0.5); // eccentricity; e=(1-(&b**2/&a**2))**0.5;
+    double e1 = (1.0 - std::pow(1.0 - std::pow(e, 2.0), 0.5)) / (1.0 + std::pow(1.0 - std::pow(e, 2.0), 0.5)); // e1=%sysevalf((1-(1-&e**2)**0.5)/(1+(1-&e**2)**0.5));
+    double ep2 = std::pow(e, 2.0)/(1.0 - std::pow(e, 2.0)); // e prime squared; // ep2=&e**2/(1-&e**2); *e prime squared;
+    double c1 = (3.0 * e1/2.0) - (27.0 * std::pow(e1, 3.0) / 32.0); // c1=(3*&e1/2)-(27*(&e1**3)/32);
+    double c2 = (21.0 * std::pow(e1, 2.0)/16.0) - (55.0 * std::pow(e1, 4.0)/32.0); // c2=(21*(&e1**2)/16)-(55*(&e1**4)/32);
+    double c3 = 151.0 * std::pow(e1, 3.0)/96.0; // c3=(151*(&e1**3)/96);
+    double c4 = 1097.0 * std::pow(e1, 4.0)/512.0; // c4=(1097*(&e1**4)/512);
+
+    // Intermediate variables below follow the use by Steven Dutch. CN = corrected northing, EP = east prime, AL = arc length, 
+    // mu and phi are greek letters, others have no specific reference;
+    double CN, EP, AL, mu, phi, C1, T1, N1, R1, D, Q1, Q2, Q3, Q4, Q5, Q6, Q7, DL;
+    if (hemisphere == 'N')
+        CN = northing;
+    else CN = 10000000.0 - northing;
+    EP = 500000.0 - easting;
+    AL = CN / k0;
+    mu = AL / (a * ((1.0 - std::pow(e, 2.0)/4.0) - (3.0 * std::pow(e, 4.0)/64.0) - (5.0 * std::pow(e, 6.0)/256.0))); // mu=AL/(&a*((1-&e**2/4)-(3*&e**4/64)-(5*&e**6/256)));
+    phi = mu + c1 * std::sin(2.0 * mu) + c2 * std::sin(4.0 * mu) + c3 * std::sin(6.0 * mu) + c4 * std::sin(8.0 * mu); // phi=mu+&c1*sin(2*mu)+&c2*sin(4*mu)+&c3*sin(6*mu)+&c4*sin(8*mu);
+    C1 = ep2 * std::pow(std::cos(phi), 2.0); // C1=&ep2*cos(phi)**2;
+    T1 = std::pow(std::tan(phi), 2.0); // T1=tan(phi)**2;
+    N1 = a/std::pow(1.0 -std::pow(e * std::sin(phi), 2.0), 0.5); // N1=&a/(1-(&e*sin(phi))**2)**0.5;
+    R1 = a * (1.0 - e * e)/std::pow(1.0 - std::pow(e * std::sin(phi), 2.0), 1.5); // R1=&a*(1-&e*&e)/(1-(&e*sin(phi))**2)**1.5;
+    D = EP / ( N1 * k0); // D=EP/(N1*&k0);
+    Q1 = N1 * std::tan(phi) / R1; // Q1=N1*tan(phi)/R1;
+    Q2 = std::pow(D, 2.0) / 2.0; // Q2=D**2/2;
+    Q3 = (5.0 + (3.0 * T1) + (10.0 * C1) - (4 * std::pow(C1, 2.0)) - (9.0 * ep2)) * std::pow(D, 4.0) / 24.0; // Q3=(5+(3*T1)+(10*C1)-(4*C1**2)-(9*&ep2))*(D**4)/24;
+    Q4 = (61.0 + (90.0 * T1) + (298.0 * C1) + (45.0 * std::pow(T1,2.0)) - (252.0 * ep2) - (3.0 * std::pow(C1,2.0))) * std::pow(D, 6.0)/720.0; // Q4=(61+(90*T1)+(298*C1)+(45*T1**2)-(252*&ep2)-(3*C1**2))*(D**6)/720;
+    Q5 = D;
+    Q6 = (1.0 + (2.0 * T1) + C1) * std::pow(D, 3.0)/6.0; //Q6 = (1+(2*T1)+C1)*(D**3)/6;
+    Q7 = (5.0 - (2.0 * C1) + (28.0 * T1) - (3.0 * std::pow(C1,2.0) + (8.0 * ep2) + (24.0 * std::pow(T1,2.0)))) * std::pow(D, 5.0)/120.0; // Q7=(5-(2*C1)+(28*T1)-(3*C1**2)+(8*&ep2)+(24*T1**2))*(D**5)/120;
+    DL = (Q5 - Q6 + Q7)/std::cos(phi); // DL=(Q5-Q6+Q7)/cos(phi);
+    latitude = 180.0 * (phi - Q1 * (Q2 + Q3 + Q4))/PI;
+    if (hemisphere == 'S')
+        latitude = latitude * -1.0; 
+    longitude = ((6.0 * static_cast<double>(zone)) - 183.0) - DL * 180.0/PI;
+}
+
+/* Convert Latitude/Longitude to UTM - algorithm at http://www.sascommunity.org/wiki/Latitude/longitude_to_UTM_conversion_%28and_vice-versa%29 */
+void LatitudeLongitude_To_UTM(double lat, double lon, char& hemisphere, unsigned int& zone, double& northing, double& easting) {
+    double a = 6378137; //equatorial radius (default is for WGS84 datum);
+    double b = 6356752.314; //polar radius (default is for WGS84 datum);
+    double k0 = 0.9996; //scale along central meridian;
+    double e =  std::pow(1.0 - std::pow(b, 2.0)/std::pow(a, 2.0), 0.5); // eccentricity; e=(1-(&b**2/&a**2))**0.5;
+    double ep2 = std::pow(e, 2.0)/(1.0 - std::pow(e, 2.0)); // e prime squared; // ep2=&e**2/(1-&e**2); *e prime squared;
+    double n = (a - b) / (a + b);
+    double A0 = a * ((1.0 - n) + ((1.0 - n) * (5.0 * std::pow(n,2.0)) / 4.0) + ((1.0 - n) * (81.0/64.0 * std::pow(n,4.0)))); // &a*((1-&n)+((1-&n)*(5*&n**2)/4)+((1-&n)*(81/64*&n**4)))
+    double B0 = (3.0/2.0 * a * n) * ((1.0 - n) - ((1.0 - n) * 7.0/8.0 * std::pow(n,2.0)) + (55.0/64.0 * std::pow(n,4.0))); // (3/2*&a*&n)*((1-&n)-((1-&n)*7/8*&n**2)+(55/64*&n**4))
+    double C0 = (15.0/16.0 * a * std::pow(n,2.0)) * ((1.0 - n) + ((1.0 - n) * (3.0 / 4.0 * std::pow(n,2.0)))); // (15/16*&a*&n**2)*((1-&n)+((1-&n)*(3/4*&n**2)))
+    double D0 = (35.0 /48.0 * a * std::pow(n,3.0)) * ((1.0 - n) + (11.0/16.0 * std::pow(n,2.0))); // (35/48*&a*&n**3)*((1-&n)+(11/16*&n**2))
+    double E0 = (315.0 / 51.0 * a * std::pow(n,4.0)) * (1.0 - n); // (315/51*&a*&n**4)*(1-&n)
+    // LM = longitude central meridian, MA = meridianal arc, RN = raw northing
+    //rho, nu are greek letters;
+    //all others are intermediate unnamed constants;;
+ 
+    double LM, deltalon, latr, lonr, rho, nu, MA, Ki, Kii, Kiii, Kiv, Kv, A6, RN;
+    if (lat < 0)
+        hemisphere = 'S';
+    else 
+        hemisphere = 'N';
+    zone = static_cast<unsigned int>(31.0 + std::floor(lon/6.0));
+    LM = 6.0 * static_cast<double>(zone) - 183.0;
+    deltalon = (lon - LM) * PI/180.0;
+    latr = lat * PI/180.0;
+    lonr = lon * PI/180.0;
+    rho = a * (1.0 - std::pow(e,2.0)) / std::pow(1.0 - std::pow(e * std::sin(latr), 2.0), 1.5); //&a*(1-&e**2)/((1-(&e*sin(latr))**2)**1.5);
+    nu = a / std::pow(std::pow(1.0 - (e * std::sin(latr)), 2.0), 0.5); // nu = &a/((1-(&e*sin(latr))**2)**0.5);
+    MA = (A0 * latr) - (B0 * std::sin(2.0 * latr)) + (C0 * std::sin(4.0 * latr)) - (D0 * std::sin(6.0 * latr)) + (E0 * std::sin(8.0 * latr)); // MA = (&A0*latr)-(&B0*sin(2*latr))+(&C0*sin(4*latr))-(&D0*sin(6*latr))+(&E0*sin(8*latr));
+    Ki = MA * k0;
+    Kii = nu * std::sin(latr) * std::cos(latr)/2.0; // Kii = nu*sin(latr)*cos(latr)/2;
+    Kiii = ((nu * std::sin(latr) * std::pow(std::cos(latr), 3.0))/24.0) * (5.0 - std::pow(std::tan(latr), 2.0) + 9.0 * ep2 * std::pow(std::cos(latr), 2.0) + 4.0 * std::pow(ep2, 2.0) * std::pow(std::cos(latr),4.0)) * k0; // Kiii = ((nu*sin(latr)*cos(latr)**3)/24)*(5-tan(latr)**2+9*&ep2*cos(latr)**2+4*&ep2**2*cos(latr)**4)*&k0;
+    Kiv = nu * std::cos(latr) * k0; // Kiv = nu*cos(latr)*&k0;
+    Kv = std::pow(std::cos(latr), 3.0) * nu / 6.0 * (1.0 - std::pow(tan(latr), 2.0) + ep2 * std::pow(cos(latr), 2.0)) * k0; // Kv = cos(latr)**3*nu/6*(1-tan(latr)**2+&ep2*cos(latr)**2)*&k0;
+    A6 = ( std::pow(deltalon,6.0) * nu * std::sin(latr) * std::pow(std::cos(latr),5.0) / 720.0 ) * (61.0 - 58.0 * std::pow(std::tan(latr),2.0) + std::pow(std::tan(latr), 4.0) + 270.0 * ep2 * std::pow(std::cos(latr), 2.0) - 330.0 * ep2 * std::pow(std::sin(latr), 2.0)) * k0; // A6 = ((deltalon)**6*nu*sin(latr)*cos(latr)**5/720)*(61-58*tan(latr)**2+tan(latr)**4+270*&ep2*cos(latr)**2-330*&ep2*sin(latr)**2)*&k0;
+    RN = Ki + Kii * std::pow(deltalon,2.0) + Kiii * std::pow(deltalon, 4.0);
+    if (RN < 0)
+        northing = 10000000.0 + RN;
+    else 
+        northing = RN;
+    easting = 500000.0 + (Kiv * deltalon + Kv * std::pow(deltalon,3.0));
+}
+
+/* test function for conversions between UMT -> latitude/longitiude and reverse.
+    see http://www.sascommunity.org/wiki/Latitude/longitude_to_UTM_conversion_%28and_vice-versa%29 */
+void UTM_conversion_test() {
+    double longitude, latitude, northing, easting;
+    unsigned int zone;
+    char hemisphere;
+
+    //Eiffel Tower  N 31 5411949 448231
+    UTM_To_LatitudeLongitude(latitude, longitude, 'N', 31, 5411949, 448231);
+    printf("Eiffel Tower: %g / %g\n", latitude, longitude);
+    //Eiffel Tower  48.8583 2.2942
+    LatitudeLongitude_To_UTM(48.8583, 2.2942, hemisphere, zone, northing, easting);
+    printf("Eiffel Tower: %c %u %g %g\n", hemisphere, zone, northing, easting);
+
+    //Sydney Opera House  S 56 6252309 334897
+    UTM_To_LatitudeLongitude(latitude, longitude, 'S', 56, 6252309, 334897);
+    printf("Sydney Opera House: %g / %g\n", latitude, longitude);
+    //Sydney Opera House  -33.8566 151.2153
+    LatitudeLongitude_To_UTM(-33.8566, 151.2153, hemisphere, zone, northing, easting);
+    printf("Sydney Opera House: %c %u %g %g\n", hemisphere, zone, northing, easting);
+
+    //Buenos Aires Obelisk  S 21 6170000 373315
+    UTM_To_LatitudeLongitude(latitude, longitude, 'S', 21, 6170000, 373315);
+    printf("Buenos Aires Obelisk: %g / %g\n", latitude, longitude);
+    //Buenos Aires Obelisk  -34.6040 -58.3816
+    LatitudeLongitude_To_UTM(-34.6040, -58.3816, hemisphere, zone, northing, easting);
+    printf("Buenos Aires Obelisk: %c %u %g %g\n", hemisphere, zone, northing, easting);
+
+    //Statue of Liberty  N 18 4504682 580720
+    UTM_To_LatitudeLongitude(latitude, longitude, 'N', 18, 4504682, 580720);
+    printf("Statue of Liberty: %g / %g\n", latitude, longitude);
+    //Statue of Liberty  40.6890 -74.0447
+    LatitudeLongitude_To_UTM(40.6890, -74.0447, hemisphere, zone, northing, easting);
+    printf("Statue of Liberty: %c %u %g %g\n", hemisphere, zone, northing, easting);
+
+    //Bozeman, Montana  N 12 495019 5055755
+    UTM_To_LatitudeLongitude(latitude, longitude, 'N', 12, 5055755, 495019);
+    printf("Bozeman, Montana: %g / %g\n", latitude, longitude);
+    //Bozeman, Montana  45.65533, -111.06393
+    LatitudeLongitude_To_UTM(45.65533, -111.06393, hemisphere, zone, northing, easting);
+    printf("Bozeman, Montana: %c %u %g %g\n", hemisphere, zone, northing, easting);
+}
+
 /** Return non-compactness penalty coefficient for specified elliptic shape and
     compactness penalty power. */
 double CalculateNonCompactnessPenalty(double dEllipseShape, double dPower) {
@@ -197,9 +327,10 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
 }
 
 /** Trims leading and trailing 't' strings from source, inplace. */
-void trimString(std::string &source, const char * t) {
+std::string & trimString(std::string &source, const char * t) {
   source.erase(0, source.find_first_not_of(t));
   source.erase(source.find_last_not_of(t)+1);
+  return source;
 }
 
 /** Converts string to lower case. */

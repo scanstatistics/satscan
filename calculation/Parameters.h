@@ -33,8 +33,76 @@ class CParameters {
             return !(*this == other);
         }
     };
+    class InputSource {
+        public:
+            enum ShapeCoordinatesType {LATLONG_DATA=0, UTM_CONVERSION, CARTESIAN_DATA};
+
+        private:
+            SourceType _source_type;
+            FieldMapContainer_t _fields_map;
+            // CSV specific options
+            std::string _delimiter;
+            std::string _grouper;
+            unsigned int _skip;
+            bool _first_row_headers;
+            // shapefile specific options
+            ShapeCoordinatesType _coordinatesType;
+            std::string _hemisphere;
+            unsigned int _zone;
+            double _northing;
+            double _easting;
+
+        public:
+            InputSource() : _skip(0), _coordinatesType(LATLONG_DATA) {}
+
+            InputSource(SourceType type, FieldMapContainer_t map):
+                _source_type(type), _fields_map(map), 
+                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false),
+                _coordinatesType(LATLONG_DATA), _hemisphere("N"), _zone(1), _northing(0.0), _easting(500000.0) {}
+
+            InputSource(SourceType type, FieldMapContainer_t map, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers):
+                _source_type(type), _fields_map(map), 
+                _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers),
+                _coordinatesType(LATLONG_DATA), _hemisphere("N"), _zone(1), _northing(0.0), _easting(500000.0) {}
+
+            InputSource(SourceType type, FieldMapContainer_t map, ShapeCoordinatesType coordType, std::string hemisphere, unsigned int zone, double northing, double easting):
+                _source_type(type), _fields_map(map), 
+                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false),
+                _coordinatesType(coordType), _hemisphere(hemisphere), _zone(zone), _northing(northing), _easting(easting) {}
+
+            SourceType getSourceType() const {return _source_type;}
+            void setSourceType(SourceType e) {_source_type = e;}
+            const FieldMapContainer_t & getFieldsMap() const {return _fields_map;}
+            void setFieldsMap(const FieldMapContainer_t& m) {_fields_map = m;}
+            void clearFieldsMap() {_fields_map.clear();}
+            // CSV specific options
+            const std::string & getDelimiter() const {return _delimiter;}
+            void setDelimiter(const std::string& s) {_delimiter = s;}
+            const std::string & getGroup() const {return _grouper;}
+            void setGroup(const std::string& s) {_grouper = s;}
+            unsigned int getSkip() const {return _skip;}
+            void setSkip(unsigned int u) {_skip = u;}
+            bool getFirstRowHeader() const {return _first_row_headers;}
+            void setFirstRowHeader(bool b) {_first_row_headers = b;}
+            // shapefile specific options
+            ShapeCoordinatesType getShapeCoordinatesType() const {return _coordinatesType;}
+            void setShapeCoordinatesType(ShapeCoordinatesType e) {_coordinatesType = e;}
+            const std::string & getHemisphere() const {return _hemisphere;}
+            void setHemisphere(const std::string& s) {_hemisphere = s;}
+            unsigned int getZone() const {return _zone;}
+            void setZone(unsigned int u) {_zone = u;}
+            double getNorthing() const {return _northing;}
+            void setNorthing(double d) {_northing = d;}
+            double getEasting() const {return _easting;}
+            void setEasting(double d) {_easting = d;}
+    };
+
+  public:
+    typedef std::pair<ParameterType, unsigned int> InputSourceKey_t; // ParameterType , data set index
+    typedef std::map<InputSourceKey_t, InputSource> InputSourceContainer_t;
 
   private:
+    InputSourceContainer_t              _input_sources;                         /** input parameter source */
     MultipleCoordinatesType             geMultipleCoordinatesType;              /** multiple locations type */
     unsigned int                        giNumRequestedParallelProcesses;        /** number of parallel processes to run */
     ExecutionType                       geExecutionType;                        /** execution process type */
@@ -215,6 +283,7 @@ class CParameters {
     void                                AddEllipsoidRotations(int iRotations, bool bEmptyFirst);
     void                                AddObservableRegion(const char * sRegions, size_t iIndex, bool bEmptyFirst);
     void                                AddSpatialWindowStop(double windowStop, bool bEmptyFirst);
+    void                                defineInputSource(ParameterType e, InputSource source, unsigned int dataset=1) {_input_sources[std::make_pair(e,dataset)] = source;}
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     bool                                getAdjustForWeeklyTrends() const {return _adjustWeeklyTrends;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
@@ -224,6 +293,11 @@ class CParameters {
     unsigned int                        GetExecuteEarlyTermThreshold() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
+    const InputSourceContainer_t      & getInputSources() const {return _input_sources;}
+    const InputSource                 * getInputSource(ParameterType e, unsigned int dataset=1) const {
+                                            InputSourceContainer_t::const_iterator itr = _input_sources.find(std::make_pair(e,dataset));
+                                            return itr == _input_sources.end() ? (const InputSource*)0 : &(itr->second);
+                                        }
     bool                                getReportHierarchicalClusters() const {return _reportHierarchicalClusters;}
     bool                                getReportGiniOptimizedClusters() const {return _reportGiniOptimizedClusters;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;

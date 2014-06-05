@@ -44,6 +44,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private final Parameters _parameters;
     private String gsProgramErrorCallPath = "";
     private final int MAXLINES = 999;
+    private boolean _warning_errors_encountered = false;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -138,6 +139,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      * Prints warning/error string to output textarea.
      */
     synchronized public void PrintIssuesWindndow(final String ProgressString) {
+        _warning_errors_encountered = true;
         final String progress = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -286,7 +288,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      *
      */
     public void CancelJob() {
-        if (getErrorsEncountered() == false) {
+        if (getWarningsErrorsEncountered() == false) {
             _progressTextArea.append("Job cancelled. Please review 'Warnings/Errors' window below.");
         } else {
             _progressTextArea.append("Job cancelled.");
@@ -319,10 +321,8 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     /**
      *
      */
-    public boolean getErrorsEncountered() {
-        try {
-            return _warningsErrorsTextArea.getText().length() > 0;
-        } catch (Throwable t) {return false;}
+    public boolean getWarningsErrorsEncountered() {
+        return _warning_errors_encountered;
     }
 
     /** This method is called from within the constructor to

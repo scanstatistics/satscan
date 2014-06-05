@@ -293,7 +293,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gParameters.getInputSource(POPFILE, DataSet.getSetIndex()), gPrint));
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;

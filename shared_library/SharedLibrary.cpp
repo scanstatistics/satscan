@@ -24,11 +24,14 @@
 #include "org_satscan_gui_ParameterSettingsFrame.h"
 #include "org_satscan_gui_OberservableRegionsFrame.h"
 #include "org_satscan_app_AppConstants.h"
+#include "org_satscan_importer_ShapefileDataSource.h"
 #include "FileName.h"
 #include "JNIException.h"
 #include "ObservableRegion.h"
 #include "PrintCallback.h"
 #include "ParameterFileAccess.h"
+#include "ShapeFile.h"
+#include "DataSource.h"
 
 //#pragma argsused
 
@@ -107,6 +110,118 @@ void _runAnalysis(const CParameters& Parameters, BasePrint& Console) {
 }
 
 ///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////
+
+/*
+ * Class:     org_satscan_importer_ShapefileDataSource
+ * Method:    isSupportedProjection
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_satscan_importer_ShapefileDataSource_isSupportedProjection(JNIEnv * pEnv, jclass, jstring filename) {
+    jboolean iscopy;
+    const char *temp = pEnv->GetStringUTFChars(filename, &iscopy);
+    std::string file(temp);
+    if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(filename, temp);
+    std::pair<bool, std::string> isSupported = ShapeFileDataSource::isSupportedProjection(file);
+    return pEnv->NewStringUTF((isSupported.first == false ? isSupported.second.c_str() : ""));
+}
+
+/*
+ * Class:     org_satscan_importer_ShapefileDataSource
+ * Method:    isSupportedShapeType
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_satscan_importer_ShapefileDataSource_isSupportedShapeType(JNIEnv * pEnv, jclass, jstring filename) {
+    jboolean iscopy;
+    const char *temp = pEnv->GetStringUTFChars(filename, &iscopy);
+    std::string file(temp);
+    if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(filename, temp);
+    std::pair<bool, std::string> isSupported = ShapeFileDataSource::isSupportedShapeType(file);
+    return pEnv->NewStringUTF((isSupported.first == false ? isSupported.second.c_str() : ""));
+}
+
+/*
+ * Class:     org_satscan_importer_ShapefileDataSource
+ * Method:    getNumberOfShapes
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_satscan_importer_ShapefileDataSource_getNumberOfShapes(JNIEnv * pEnv, jobject, jstring filename) {
+  try {
+    jboolean iscopy;
+    const char *temp = pEnv->GetStringUTFChars(filename, &iscopy);
+    std::string file(temp);
+    if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(filename, temp);
+
+    ShapeFile shapefile(file.c_str(), "r", false);
+    return (jint)shapefile.getEntityCount();
+  }
+  catch (jni_error & x) {
+    return (jint)-1; // let the Java exception to be handled in the caller of JNI function
+  }
+  catch (std::exception& x) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    return (jint)-1;
+  }
+  catch (...) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    return (jint)-1;
+  }
+}
+
+/*
+ * Class:     org_satscan_importer_ShapefileDataSource
+ * Method:    getCoordinates
+ * Signature: (J)[D
+ */
+JNIEXPORT jdoubleArray JNICALL Java_org_satscan_importer_ShapefileDataSource_getCoordinates(JNIEnv * pEnv, jobject, jstring filename, jlong row, jboolean convertUTM, jstring hemisphere, jint zone, jdouble northing, jdouble easting) {
+  printf("getting coordinates ...\n");
+  try {
+    jboolean iscopy;
+    const char *temp = pEnv->GetStringUTFChars(filename, &iscopy);
+    std::string file(temp);
+    if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(filename, temp);
+    printf("file ...\n");
+
+    ShapeFile shapefile(file.c_str(), "r", false);
+    printf("shapefile ... with %d entities\n", shapefile.getEntityCount());
+    if (row >= shapefile.getEntityCount())
+        return (jdoubleArray)NULL;
+
+    printf("about to get x,y ...\n");
+    double x, y;
+    shapefile.getShapeAsXY(row, x, y);
+    printf("about to test conversion\n");
+    if (convertUTM) {
+        printf("yes, conversion from UTM\n");
+        jboolean iscopy;
+        const char *temp = pEnv->GetStringUTFChars(hemisphere, &iscopy);
+        std::string hemisphereCopy(temp);
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(hemisphere, temp);
+        UTM_To_LatitudeLongitude(y, x, hemisphereCopy.at(0), static_cast<unsigned int>(zone), y, x);
+        printf("conversion done\n");
+    }
+
+    jdoubleArray coordinates = pEnv->NewDoubleArray(2);
+    if (coordinates) {
+        jdouble outCArray[] = {y, x};
+        pEnv->SetDoubleArrayRegion(coordinates, 0 , 2, outCArray);
+    }
+    return coordinates;
+  }
+  catch (jni_error & x) {
+      printf("jni_error: %s",x.what());
+    return (jdoubleArray)NULL; // let the Java exception to be handled in the caller of JNI function
+  }
+  catch (std::exception& x) {
+      printf("exception: %s",x.what());
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    return (jdoubleArray)NULL;
+  }
+  catch (...) {
+      printf("... exception");
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    return (jdoubleArray)NULL;
+  }
+}
 
 JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getVersion(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(AppToolkit::getToolkit().GetVersion());

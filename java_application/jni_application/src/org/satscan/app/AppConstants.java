@@ -22,7 +22,17 @@ public final class AppConstants {
     public static final int VERSION_MINOR = 4;
     public static final int VERSION_RELEASE = 0;
     public static final String VERSION_PHASE = "";
-
+    public static final String CASEFILE_HELPID = "Case File";
+    public static final String CONTROLFILE_HELPID = "Control File";
+    public static final String POPULTIONFILE_HELPID = "Population File";
+    public static final String COORDINATESFILE_HELPID = "Coordinates File";
+    public static final String GRIDFILE_HELPID = "Grid File";
+    public static final String MAXCIRCLEFILE_HELPID = "Max Circle Size File";
+    public static final String NONEUCLIDIANFILE_HELPID = "Non-Euclidian Neighbors File";
+    public static final String METALOCATIONSFILE_HELPID = "Meta Location File";
+    public static final String ADJUSTMENTSFILE_HELPID = "Adjustments File";
+    public static final String ALTERNATIVEHYPOTHESIS_HELPID = "Alternative Hypothesis File";
+    
     public static final String getSoftwareTitle() {
         return APP_TITLE;
     }

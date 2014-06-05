@@ -66,7 +66,7 @@ public class CalculationThread extends Thread {
             AnalysisRun.setCanClose(true);
             AnalysisRun.setCloseButton();
             AnalysisRun.setPrintEnabled();
-            if (!AnalysisRun.getErrorsEncountered()) {
+            if (!AnalysisRun.getWarningsErrorsEncountered()) {
                 AnalysisRun.PrintIssuesWindndow("No Warnings or Errors.");
             }
         } catch (Throwable t) {

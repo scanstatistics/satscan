@@ -144,7 +144,7 @@ void BernoulliDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Si
 bool BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()), gPrint));
     return ReadCounts(DataSet, *Source);
   }
   catch (prg_exception& x) {

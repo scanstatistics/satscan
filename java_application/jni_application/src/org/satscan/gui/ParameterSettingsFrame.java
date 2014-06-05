@@ -5,8 +5,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -18,6 +23,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import org.satscan.app.AdvFeaturesExpection;
+import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
 import org.satscan.importer.FileImporter;
 import org.satscan.app.ParameterHistory;
@@ -29,6 +35,7 @@ import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.Utils;
+import org.satscan.importer.InputSourceSettings;
 
 /**
  * Parameter settings window.
@@ -47,6 +54,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     final static String STUDY_GENERIC = "study_generic";
     private DateComponentsGroup _startDateComponentsGroup;
     private DateComponentsGroup _endDateComponentsGroup;
+    Map _input_source_map = new HashMap();
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -61,6 +69,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         setUp(sParameterFilename);
     }
 
+     /** Returns final reference to Parameters object. */
+    final Parameters getParameters() {
+        return _parameters;
+    }
+    
     /**
      * Returns whether the associated AdvancedParameterSettingsFrame object is visible.
      */
@@ -101,8 +114,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     public boolean saveAs() {
         boolean bSaved = true;
-
-        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("prm", "Settings Files (*.prm)")};
+        List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+        filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
         FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), "Select Parameters File", filters, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);
         File file = select.browse_saveas();
         if (file != null) {
@@ -202,7 +215,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * sets precision of times type control for DatePrecisionType
      */
-    private void setPrecisionOfTimesControl(Parameters.DatePrecisionType eDatePrecisionType) {
+    public void setPrecisionOfTimesControl(Parameters.DatePrecisionType eDatePrecisionType) {
         switch (eDatePrecisionType) {
             case YEAR:
                 _timePrecisionYear.setSelected(true);
@@ -225,7 +238,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * sets precision of times type control for DatePrecisionType
      */
-    private void setCoordinatesType(Parameters.CoordinatesType eCoordinatesType) {
+    public void setCoordinatesType(Parameters.CoordinatesType eCoordinatesType) {
         switch (eCoordinatesType) {
             case CARTESIAN:
                 _cartesianRadioButton.setSelected(true);
@@ -239,7 +252,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * sets probaiity model type control for ProbabilityModelType
      */
-    private void setModelControl(Parameters.ProbabilityModelType eProbabilityModelType) {
+    public void setModelControl(Parameters.ProbabilityModelType eProbabilityModelType) {
         switch (eProbabilityModelType) {
             case BERNOULLI:
                 if (_bernoulliModelRadioButton.isEnabled()) {
@@ -298,7 +311,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /** 
-     * Enables/diables area scan rate controls.
+     * Enables/disables area scan rate controls.
      */
     private void setEnableAreaScanRateControl() {
         Boolean bEnable = getModelControlType() != Parameters.ProbabilityModelType.CATEGORICAL;
@@ -769,6 +782,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clusterCaseInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterCaseDBase());
         _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
         _reportShapefile.setSelected(parameters.getOutputShapeFiles());
+        
+        _input_source_map.clear();
+        for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
+            InputSourceSettings iss = parameters.getInputSourceSettings().get(i);
+            _input_source_map.put(iss.getInputFileType().toString() + iss.getDataSetIndex(), iss);
+        }
+        
         enableSettingsForAnalysisModelCombination();
         enableAdvancedButtons();
     }
@@ -875,6 +895,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setOutputShapeFiles(_reportShapefile.isEnabled() && _reportShapefile.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
+        
+        parameters.clearInputSourceSettings();
+        Iterator it = _input_source_map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry)it.next();
+            InputSourceSettings iss = (InputSourceSettings)pairs.getValue();
+            if (iss.isSet()) {
+                parameters.addInputSourceSettings((InputSourceSettings)pairs.getValue());
+            }
+        }
     }
 
     /**
@@ -1311,7 +1341,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /** sets coordinate type */
-    private void setCoordinateType(Parameters.CoordinatesType eCoordinatesType) {
+    public void setCoordinateType(Parameters.CoordinatesType eCoordinatesType) {
         switch (eCoordinatesType) {
             case CARTESIAN:
                 _cartesianRadioButton.setSelected(true);
@@ -1320,41 +1350,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 _latLongRadioButton.setSelected(true);
                 break;
             default:
-        }
-    }
-
-    /** Modally shows import dialog. */
-    public void launchImporter(String sFileName, FileImporter.InputFileType eFileType) {
-        //try {
-        ImportWizardDialog wizard = new ImportWizardDialog(SaTScanApplication.getInstance(), sFileName, eFileType, getModelControlType(), getCoordinatesType());
-        wizard.setVisible(true);
-        if (!wizard.getCancelled()) {
-            switch (eFileType) {  // set parameters
-                case Case:
-                    _caseFileTextField.setText(wizard.getDestinationFilename());
-                    setPrecisionOfTimesControl(wizard.getDateFieldImported() ? (getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.NONE ? Parameters.DatePrecisionType.YEAR : getPrecisionOfTimesControlType()) : Parameters.DatePrecisionType.NONE);
-                    setModelControl(wizard.getModelControlType());
-                    break;
-                case Control:
-                    _controlFileTextField.setText(wizard.getDestinationFilename());
-                    setPrecisionOfTimesControl(wizard.getDateFieldImported() ? (getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.NONE ? Parameters.DatePrecisionType.YEAR : getPrecisionOfTimesControlType()) : Parameters.DatePrecisionType.NONE);
-                    setModelControl(Parameters.ProbabilityModelType.BERNOULLI);
-                    break;
-                case Population:
-                    _populationFileTextField.setText(wizard.getDestinationFilename());
-                    setModelControl(Parameters.ProbabilityModelType.POISSON);
-                    break;
-                case Coordinates:
-                    _coordiantesFileTextField.setText(wizard.getDestinationFilename());
-                    setCoordinateType(wizard.getCoorinatesControlType());
-                    break;
-                case SpecialGrid:
-                    _gridFileTextField.setText(wizard.getDestinationFilename());
-                    setCoordinateType(wizard.getCoorinatesControlType());
-                    break;
-                default:
-                    throw new UnknownEnumException(eFileType);
-            }
         }
     }
 
@@ -1376,10 +1371,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane = new javax.swing.JTabbedPane();
         _inputTab = new javax.swing.JPanel();
         _caseInputPanel = new javax.swing.JPanel();
-        _caseFileLabel = new HelpLinkedLabel("Case Files:","Case File");
+        _caseFileLabel = new HelpLinkedLabel("Case Files:", AppConstants.CASEFILE_HELPID);
         _caseFileTextField = new javax.swing.JTextField();
         _caseFileBrowseButton = new javax.swing.JButton();
-        _caseFileImportButton = new javax.swing.JButton();
         _timePrecisionGroup = new javax.swing.JPanel();
         _timePrecisionNone = new javax.swing.JRadioButton();
         _timePrecisionYear = new javax.swing.JRadioButton();
@@ -1409,29 +1403,25 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _endDateLabel1 = new javax.swing.JLabel();
         _studyPeriodEndDateGenericTextField = new javax.swing.JTextField();
         _endDateYearLabel1 = new javax.swing.JLabel();
-        _controlFileLabel = new HelpLinkedLabel("Control Files:","Control File");
+        _controlFileLabel = new HelpLinkedLabel("Control Files:",AppConstants.CONTROLFILE_HELPID);
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileBrowseButton = new javax.swing.JButton();
-        _controlFileImportButton = new javax.swing.JButton();
         _bernoulliModelHintLabel = new javax.swing.JLabel();
         _populationInputPanel = new javax.swing.JPanel();
-        _populationFileLabel = new HelpLinkedLabel("Population File:","Population File");
+        _populationFileLabel = new HelpLinkedLabel("Population File:",AppConstants.POPULTIONFILE_HELPID);
         _populationFileTextField = new javax.swing.JTextField();
         _populationFileBrowseButton = new javax.swing.JButton();
-        _populationFileImportButton = new javax.swing.JButton();
         _poissionModelHintLabel = new javax.swing.JLabel();
         _geographicalInputPanel = new javax.swing.JPanel();
-        _coordinatesFileLabel = new HelpLinkedLabel("Coordinates File:","Coordinates File");
+        _coordinatesFileLabel = new HelpLinkedLabel("Coordinates File:",AppConstants.COORDINATESFILE_HELPID);
         _coordiantesFileTextField = new javax.swing.JTextField();
         _coordinatesFileBrowseButton = new javax.swing.JButton();
-        _coodrinatesFileImportButton = new javax.swing.JButton();
         _coordinateTypeGroup = new javax.swing.JPanel();
         _cartesianRadioButton = new javax.swing.JRadioButton();
         _latLongRadioButton = new javax.swing.JRadioButton();
-        _gridFileLabel = new HelpLinkedLabel("Grid File:","Grid File");
+        _gridFileLabel = new HelpLinkedLabel("Grid File:",AppConstants.GRIDFILE_HELPID);
         _gridFileTextField = new javax.swing.JTextField();
         _gridFileBrowseButton = new javax.swing.JButton();
-        _gridFileImportButton = new javax.swing.JButton();
         _gridFileHintLabel = new javax.swing.JLabel();
         _advancedInputButton = new javax.swing.JButton();
         _analysisTab = new javax.swing.JPanel();
@@ -1541,35 +1531,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _caseFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Case File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _caseFileTextField.setText(file.getAbsolutePath());
+                String key = InputSourceSettings.InputFileType.Case.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
                 }
-            }
-        });
-
-        _caseFileImportButton.setText("..."); // NOI18N
-        _caseFileImportButton.setToolTipText("Import case file ..."); // NOI18N
-        _caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("cas","Case Files (*.cas)")};
-                    FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Case File Import Source", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
-                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _caseFileTextField, inputSourceSettings);
+                sourcesetting.setVisible(true);
             }
         });
 
@@ -1861,35 +1829,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _controlFileBrowseButton.setToolTipText("Browse for control file ..."); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("ctl","Control Files (*.ctl)")};
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Control File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _controlFileTextField.setText(file.getAbsolutePath());
+                String key = InputSourceSettings.InputFileType.Control.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
                 }
-            }
-        });
-
-        _controlFileImportButton.setText("..."); // NOI18N
-        _controlFileImportButton.setToolTipText("Import control file ..."); // NOI18N
-        _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("ctl","Control Files (*.ctl)")};
-                    FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Control File Import Source", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Control);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
-                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _controlFileTextField, inputSourceSettings);
+                sourcesetting.setVisible(true);
             }
         });
 
@@ -1905,25 +1851,22 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_studyPeriodGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_caseInputPanelLayout.createSequentialGroup()
                         .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_caseFileLabel)
-                            .addGroup(_caseInputPanelLayout.createSequentialGroup()
-                                .addComponent(_controlFileLabel)
-                                .addGap(60, 60, 60)
-                                .addComponent(_bernoulliModelHintLabel))
                             .addGroup(_caseInputPanelLayout.createSequentialGroup()
                                 .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(_caseFileLabel)
+                                    .addGroup(_caseInputPanelLayout.createSequentialGroup()
+                                        .addComponent(_controlFileLabel)
+                                        .addGap(60, 60, 60)
+                                        .addComponent(_bernoulliModelHintLabel)))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _caseInputPanelLayout.createSequentialGroup()
+                                .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(_controlFileTextField)
                                     .addComponent(_caseFileTextField))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(_caseInputPanelLayout.createSequentialGroup()
-                                        .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_caseFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(_caseInputPanelLayout.createSequentialGroup()
-                                        .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(_controlFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -1938,7 +1881,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(0, 0, 0)
                         .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_caseFileBrowseButton)
-                            .addComponent(_caseFileImportButton)
                             .addComponent(_caseFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1947,7 +1889,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(0, 0, 0)
                         .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_controlFileBrowseButton)
-                            .addComponent(_controlFileImportButton)
                             .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1961,35 +1902,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("pop","Population Files (*.pop)")};
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Population File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _populationFileTextField.setText(file.getAbsolutePath());
+                String key = InputSourceSettings.InputFileType.Population.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
                 }
-            }
-        });
-
-        _populationFileImportButton.setToolTipText("Import population file ...");
-        _populationFileImportButton.setLabel("...");
-        _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("pop","Population Files (*.pop)")};
-                    FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Population File Import Source", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Population);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
-                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _populationFileTextField, inputSourceSettings);
+                sourcesetting.setVisible(true);
             }
         });
 
@@ -2007,11 +1926,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(50, 50, 50)
                         .addComponent(_poissionModelHintLabel))
                     .addGroup(_populationInputPanelLayout.createSequentialGroup()
-                        .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_populationFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _populationInputPanelLayout.setVerticalGroup(
@@ -2023,8 +1940,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGap(0, 0, 0)
                 .addGroup(_populationInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_populationFileBrowseButton)
-                    .addComponent(_populationFileImportButton))
+                    .addComponent(_populationFileBrowseButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2036,35 +1952,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ..."); // NOI18N
         _coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("geo","Coordinates Files (*.geo)")};
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Cooridnate File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _coordiantesFileTextField.setText(file.getAbsolutePath());
+                String key = InputSourceSettings.InputFileType.Coordinates.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Coordinates));
                 }
-            }
-        });
-
-        _coodrinatesFileImportButton.setText("..."); // NOI18N
-        _coodrinatesFileImportButton.setToolTipText("Import coordinates file ..."); // NOI18N
-        _coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("geo","Coordinates Files (*.geo)")};
-                    FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Coordinates File Import Source", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Coordinates);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
-                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _coordiantesFileTextField, inputSourceSettings);
+                sourcesetting.setVisible(true);
             }
         });
 
@@ -2109,7 +2003,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_coordinateTypeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_latLongRadioButton)
                     .addComponent(_cartesianRadioButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         _coordinateTypeGroupLayout.setVerticalGroup(
             _coordinateTypeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2126,35 +2020,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileBrowseButton.setToolTipText("Browse for grid file ..."); // NOI18N
         _gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("grd","Grid Files (*.grd)")};
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Grid File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _gridFileTextField.setText(file.getAbsolutePath());
+                String key = InputSourceSettings.InputFileType.SpecialGrid.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.SpecialGrid));
                 }
-            }
-        });
-
-        _gridFileImportButton.setText("..."); // NOI18N
-        _gridFileImportButton.setToolTipText("Import grid file ..."); // NOI18N
-        _gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("grd","Grid Files (*.grd)")};
-                    FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Grid File Import Source", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        launchImporter(file.getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
-                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _gridFileTextField, inputSourceSettings);
+                sourcesetting.setVisible(true);
             }
         });
 
@@ -2167,25 +2039,24 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_coordinatesFileLabel)
                     .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
-                        .addComponent(_coordiantesFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_coordinatesFileLabel)
+                            .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
+                                .addComponent(_gridFileLabel)
+                                .addGap(83, 83, 83)
+                                .addComponent(_gridFileHintLabel)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _geographicalInputPanelLayout.createSequentialGroup()
+                        .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_gridFileTextField)
+                            .addComponent(_coordiantesFileTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_coordinatesFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_coodrinatesFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
-                        .addComponent(_gridFileLabel)
-                        .addGap(83, 83, 83)
-                        .addComponent(_gridFileHintLabel))
-                    .addGroup(_geographicalInputPanelLayout.createSequentialGroup()
-                        .addComponent(_gridFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_gridFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_gridFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_coordinatesFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_gridFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_coordinateTypeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_coordinateTypeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         _geographicalInputPanelLayout.setVerticalGroup(
@@ -2199,8 +2070,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(0, 0, 0)
                         .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_coordiantesFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_coordinatesFileBrowseButton)
-                            .addComponent(_coodrinatesFileImportButton))
+                            .addComponent(_coordinatesFileBrowseButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_gridFileLabel)
@@ -2208,8 +2078,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGap(0, 0, 0)
                         .addGroup(_geographicalInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(_gridFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_gridFileBrowseButton)
-                            .addComponent(_gridFileImportButton))))
+                            .addComponent(_gridFileBrowseButton))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2243,7 +2112,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2718,7 +2587,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2869,7 +2738,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton.setText("..."); // NOI18N
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Results Files (*.txt)")};
+                List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+                filters.add(new InputFileFilter("txt","Results Files (*.txt)"));
                 FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Results File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
                 File file = select.browse_saveas();
                 if (file != null) {
@@ -2967,7 +2837,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 116, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2982,7 +2852,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
         );
 
         pack();
@@ -3002,7 +2872,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _bernoulliModelRadioButton;
     private javax.swing.JRadioButton _cartesianRadioButton;
     private javax.swing.JButton _caseFileBrowseButton;
-    private javax.swing.JButton _caseFileImportButton;
     private javax.swing.JLabel _caseFileLabel;
     private javax.swing.JTextField _caseFileTextField;
     private javax.swing.JPanel _caseInputPanel;
@@ -3018,10 +2887,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _clustersInColumnFormatLabel;
     private javax.swing.ButtonGroup _clustersReportedButtonGroup;
     private javax.swing.JButton _controlFileBrowseButton;
-    private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
-    private javax.swing.JButton _coodrinatesFileImportButton;
     private javax.swing.JTextField _coordiantesFileTextField;
     private javax.swing.JPanel _coordinateTypeGroup;
     private javax.swing.ButtonGroup _coordinatesButtonGroup;
@@ -3039,7 +2906,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JPanel _geographicalOutputGroup;
     private javax.swing.JButton _gridFileBrowseButton;
     private javax.swing.JLabel _gridFileHintLabel;
-    private javax.swing.JButton _gridFileImportButton;
     private javax.swing.JLabel _gridFileLabel;
     private javax.swing.JTextField _gridFileTextField;
     private javax.swing.JRadioButton _highOrLowRatesRadioButton;
@@ -3055,7 +2921,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _poissionModelHintLabel;
     private javax.swing.JRadioButton _poissonModelRadioButton;
     private javax.swing.JButton _populationFileBrowseButton;
-    private javax.swing.JButton _populationFileImportButton;
     private javax.swing.JLabel _populationFileLabel;
     private javax.swing.JTextField _populationFileTextField;
     private javax.swing.JPanel _populationInputPanel;

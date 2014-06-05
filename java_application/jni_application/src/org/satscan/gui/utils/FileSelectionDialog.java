@@ -9,6 +9,7 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.List;
 import javax.swing.JFileChooser;
 
 /**
@@ -21,7 +22,7 @@ public class FileSelectionDialog {
     private File _lastBrowseDirectory;
     private Component _parent;
     
-    public FileSelectionDialog(final Component parent, final String title, final InputFileFilter[] filters, final File lastBrowseDirectory) {
+    public FileSelectionDialog(final Component parent, final String title, final List<InputFileFilter> filters, final File lastBrowseDirectory) {
         _lastBrowseDirectory = lastBrowseDirectory;
         if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
             System.setProperty("apple.awt.fileDialogForDirectories", "false");
@@ -30,8 +31,8 @@ public class FileSelectionDialog {
             _file_dialog.setFilenameFilter(new FilenameFilter(){
                     @Override
                     public boolean accept(File dir, String name) {
-                        for (int f=0; f < filters.length; f++) {                        
-                            if (name.endsWith("." + filters[f].getFilter())) {
+                        for (int f=0; f < filters.size(); f++) {                        
+                            if (name.endsWith("." + filters.get(f).getFilter())) {
                                 return true;
                             }
                         }
@@ -41,8 +42,8 @@ public class FileSelectionDialog {
         } else {
             _file_chooser = new JFileChooser(lastBrowseDirectory);
             _file_chooser.setDialogTitle(title);
-            for (int f=0; f < filters.length; f++) {
-                _file_chooser.addChoosableFileFilter(filters[f]);
+            for (int f=0; f < filters.size(); f++) {
+                _file_chooser.addChoosableFileFilter(filters.get(f));
             }
         }
     }
