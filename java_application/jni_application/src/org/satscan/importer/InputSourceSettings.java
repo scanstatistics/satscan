@@ -13,11 +13,11 @@ import org.satscan.app.UnknownEnumException;
  * @author hostovic
  */
 public class InputSourceSettings implements Cloneable  {
-    public enum SourceDataFileType {SPACE_DELIMITED, CSV, dBase, Shapefile, Excel};
+    public enum SourceDataFileType {CSV, dBase, Shapefile, Excel};
     public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR, Neighbors, MetaLocations, AlternativeHypothesis};
     public enum ShapeCoordinatesType {LATLONG_DATA, UTM_CONVERSION, CARTESIAN_DATA};
     
-    private SourceDataFileType _source_type=SourceDataFileType.SPACE_DELIMITED;
+    private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;
     private int _data_set_index=1;
     private Vector<String> _mappings = new Vector<String>();
@@ -78,7 +78,6 @@ public class InputSourceSettings implements Cloneable  {
                 if (_northing != other._northing) return false;
                 if (_easting != other._easting) return false;
                 break;
-            case SPACE_DELIMITED : 
             case dBase : 
             case Excel : 
                 break;

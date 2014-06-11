@@ -795,9 +795,9 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
                                                                       BasePrint& PrintDirection) {
     try {
         // set defaults
-        source.setSourceType(SPACE_DELIMITED);
+        source.setSourceType(CSV);
         source.clearFieldsMap();
-        source.setDelimiter(",");
+        source.setDelimiter(" ");
         source.setGroup("\"");
         source.setSkip(0);
         source.setFirstRowHeader(false);
@@ -807,8 +807,8 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
             int type;
             if (!string_to_type<int>(typeStr.c_str(), type))
                 throw resolvable_error("Unable to read parameter value '%s' as %s.", typeStr.c_str(), IniParameterSpecification::SourceType);
-            if (type < SPACE_DELIMITED || type > SHAPE)
-                throw resolvable_error("Parameter value '%d' out of range [%d,%d] for %s.", type, SPACE_DELIMITED, SHAPE, IniParameterSpecification::SourceType);
+            if (type < CSV || type > SHAPE)
+                throw resolvable_error("Parameter value '%d' out of range [%d,%d] for %s.", type, CSV, SHAPE, IniParameterSpecification::SourceType);
             source.setSourceType((SourceType)type);
         }
         // fields map
@@ -826,11 +826,23 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
                 } else if (token == IniParameterSpecification::SourceFieldMapShapeY) {
                     fields_map.push_back(ShapeFileDataSource::POINTY);
                 } else if (token == IniParameterSpecification::SourceFieldMapOneCount) {
-                    fields_map.push_back(ShapeFileDataSource::ONECOUNT);
+                    fields_map.push_back(DataSource::ONECOUNT);
                 } else if (token == IniParameterSpecification::SourceFieldMapGeneratedId) {
-                    fields_map.push_back(ShapeFileDataSource::GENERATEDID);
+                    fields_map.push_back(DataSource::GENERATEDID);
+                } else if (token == IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate) {
+                    fields_map.push_back(DataSource::DEFAULT_DATE);
                 } else if (string_to_type<int>(token.c_str(), column)) {
+
+                    //printf("map: %s\n", token.c_str());
+                    //if (column == 0) {
+                    //    printf("yes\n");
+                    //    fields_map.push_back(DataSource::DEFAULT_DATE);
+                    //} else {
+                    //    fields_map.push_back((long)column);
+                    //}
+
                     fields_map.push_back((long)column);
+
                 } else {
                     throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceFieldMap);
                 }

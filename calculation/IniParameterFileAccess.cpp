@@ -471,7 +471,7 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType 
             if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
                 IniSection *  pSection = WriteFile.GetSection(sSectionName);
 
-                pSection->AddComment("source type (SPACE_DELIMITED=0, CSV=1, DBASE=2, SHAPE=3)");
+                pSection->AddComment("source type (CSV=0, DBASE=1, SHAPE=2)");
                 printString(key, "%s-%s", sKey, IniParameterSpecification::SourceType);
                 pSection->AddLine(key.c_str(), AsString(buffer, source->getSourceType()).c_str());
 
@@ -486,13 +486,18 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType 
                     for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
                         if (itr->type() == typeid(long)) {
                             s << boost::any_cast<long>(*itr);
-                        } else if (itr->type() == typeid(ShapeFileDataSource::ShapeFieldType)) {
-                            switch (boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr)) {
-                                case ShapeFileDataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
-                                case ShapeFileDataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
-                                case ShapeFileDataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
-                                case ShapeFileDataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
-                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
+                        } else if (itr->type() == typeid(DataSource::FieldType)) {
+                            switch (boost::any_cast<DataSource::FieldType>(*itr)) {
+                                case DataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
+                                case DataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
+                                case DataSource::DEFAULT_DATE : s << IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate; break;
+                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
+                            }
+                        } else if (itr->type() == typeid(DataSource::ShapeFieldType)) {
+                            switch (boost::any_cast<DataSource::ShapeFieldType>(*itr)) {
+                                case DataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
+                                case DataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
+                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
                             }
                         } else {
                             throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());

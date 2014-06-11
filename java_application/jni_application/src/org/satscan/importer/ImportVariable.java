@@ -9,10 +9,6 @@
 package org.satscan.importer;
 
 /**
- *
- * @author Hostovic
- */
-/**
  * Import variable.
  */
 public class ImportVariable implements Cloneable {
@@ -23,12 +19,13 @@ public class ImportVariable implements Cloneable {
     private int gwInputFileVariableIndex;
     private String gsHelpText;
     private boolean _showing=true;
+    private String _default=null;
 
     public ImportVariable() {
         initialize();
     }
 
-    public ImportVariable(String sVariableName, int wTargetFieldIndex, boolean bRequiredVariable, String sHelpText) {
+    public ImportVariable(String sVariableName, int wTargetFieldIndex, boolean bRequiredVariable, String sHelpText, String default_value) {
         initialize();
         gbRequiredVariable = bRequiredVariable;
         gsVariableName = sVariableName;
@@ -38,6 +35,7 @@ public class ImportVariable implements Cloneable {
         } else if (gsHelpText == null) {
             gsHelpText = sHelpText;
         }
+        _default = default_value;
     }
 
     private void initialize() {
@@ -52,6 +50,7 @@ public class ImportVariable implements Cloneable {
             ImportVariable newObject = (ImportVariable) super.clone();
             newObject.gsVariableName = new String(gsVariableName);
             newObject.gsHelpText = new String(gsHelpText);
+            newObject._default = _default == null ? _default : new String(_default);
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
@@ -71,6 +70,14 @@ public class ImportVariable implements Cloneable {
         return gsHelpText;
     }
 
+    public final String getDefault() {
+        return _default;
+    }
+    
+    public final boolean hasDefault() {
+        return _default != null;
+    }    
+    
     public int getInputFileVariableIndex() {
         return gwInputFileVariableIndex;
     }

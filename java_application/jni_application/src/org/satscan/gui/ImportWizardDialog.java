@@ -110,6 +110,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         // set initial import variable mappings from input source
         int next_v=0;
         for (int s=0; s < _initial_inputSourceSettings.getFieldMaps().size(); ++s) {
+            
+            // translate field map index into input file variable index
             int s_index = Integer.parseInt(_initial_inputSourceSettings.getFieldMaps().get(s));
             for (int v=0; v < _importVariables.size(); ++v) {
                 if (_importVariables.get(v).getTargetFieldIndex() == s) {
@@ -250,7 +252,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         inputsource.getFieldMaps().clear();
         for (int t=0; t < _importVariables.size(); ++t) {
             if (_importVariables.get(t).getShowing()) {
-                if (_importVariables.get(t).getIsMappedToInputFileVariable()) {
+                if (_importVariables.get(t).getIsMappedToInputFileVariable() || _importVariables.get(t).getDefault() != null) {
                     inputsource.getFieldMaps().add(Integer.toString(_importVariables.get(t).getInputFileVariableIndex()));
                 } else {
                     inputsource.getFieldMaps().add("");
@@ -319,7 +321,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setPanelsToShow(InputSourceSettings.SourceDataFileType eType) {
         _basePanel.removeAll();
-        if (eType == InputSourceSettings.SourceDataFileType.SPACE_DELIMITED || eType == InputSourceSettings.SourceDataFileType.CSV) {
+        if (eType == InputSourceSettings.SourceDataFileType.CSV) {
             _basePanel.add(_fileFormatPanel, _fileFormatCardName);
         } else if (eType == InputSourceSettings.SourceDataFileType.Shapefile) {
             _basePanel.add(_shapeFileOptionsPanel, _shapeFileOptionsCardName);
@@ -1060,22 +1062,22 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setCaseFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Number of Cases", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null));
-        _importVariables.addElement(new ImportVariable("Censored", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Weight", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate1", 5, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate2", 6, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate3", 7, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate4", 8, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate5", 9, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate6", 10, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate7", 11, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate8", 12, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate9", 13, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate10", 14, false, null));    
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Number of Cases", 1, true, null, null));
+        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
+        _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null));
+        _importVariables.addElement(new ImportVariable("Censored", 4, false, null, null));
+        _importVariables.addElement(new ImportVariable("Weight", 4, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate1", 5, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate2", 6, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate3", 7, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate4", 8, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate5", 9, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate6", 10, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate7", 11, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate8", 12, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate9", 13, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate10", 14, false, null, null));    
     }
 
     /**
@@ -1083,9 +1085,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setControlFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Number of Controls", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null));
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Number of Controls", 1, true, null, null));
+        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
     }
 
     /**
@@ -1093,19 +1095,19 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setGeoFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Latitude", 1, true, "y-axis"));
-        _importVariables.addElement(new ImportVariable("Longitude", 2, true, "x-axis"));
-        _importVariables.addElement(new ImportVariable("X", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Y", 2, true, null));
-        _importVariables.addElement(new ImportVariable("Z1", 3, false, null));
-        _importVariables.addElement(new ImportVariable("Z2", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Z3", 5, false, null));
-        _importVariables.addElement(new ImportVariable("Z4", 6, false, null));
-        _importVariables.addElement(new ImportVariable("Z5", 7, false, null));
-        _importVariables.addElement(new ImportVariable("Z6", 8, false, null));
-        _importVariables.addElement(new ImportVariable("Z7", 9, false, null));
-        _importVariables.addElement(new ImportVariable("Z8", 10, false, null));
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null));
+        _importVariables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null));
+        _importVariables.addElement(new ImportVariable("X", 1, true, null, null));
+        _importVariables.addElement(new ImportVariable("Y", 2, true, null, null));
+        _importVariables.addElement(new ImportVariable("Z1", 3, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z2", 4, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z3", 5, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z4", 6, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z5", 7, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z6", 8, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z7", 9, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z8", 10, false, null, null));
     }
 
     /**
@@ -1113,18 +1115,18 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setGridFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Latitude", 0, true, "y-axis"));
-        _importVariables.addElement(new ImportVariable("Longitude", 1, true, "x-axis"));
-        _importVariables.addElement(new ImportVariable("X", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Y", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Z1", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Z2", 3, false, null));
-        _importVariables.addElement(new ImportVariable("Z3", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Z4", 5, false, null));
-        _importVariables.addElement(new ImportVariable("Z5", 6, false, null));
-        _importVariables.addElement(new ImportVariable("Z6", 7, false, null));
-        _importVariables.addElement(new ImportVariable("Z7", 8, false, null));
-        _importVariables.addElement(new ImportVariable("Z8", 9, false, null));
+        _importVariables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null));
+        _importVariables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null));
+        _importVariables.addElement(new ImportVariable("X", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Y", 1, true, null, null));
+        _importVariables.addElement(new ImportVariable("Z1", 2, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z2", 3, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z3", 4, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z4", 5, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z5", 6, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z6", 7, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z7", 8, false, null, null));
+        _importVariables.addElement(new ImportVariable("Z8", 9, false, null, null));
     }
 
     /**
@@ -1132,8 +1134,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setMaxCirclePopFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Population", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Population", 1, true, null, null));
     }
 
     /**
@@ -1141,19 +1143,25 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setPopFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Date/Time", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Population", 2, true, null));
-        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified");
+        /* Set the variable index to below the one-based variables -- variables less than one
+         * are considered special and are not actually a data source column option. 
+         * In this case, the population date will be set to 'unspecified'. 
+         */
+        variable.setInputFileVariableIndex(0);
+        _importVariables.addElement(variable);
+        _importVariables.addElement(new ImportVariable("Population", 2, true, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null, null));
+        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null, null));
     }
 
     /**
@@ -1161,10 +1169,10 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void setRelativeRisksFileVariables() {
         _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Relative Risk", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Start Date", 2, false, null));
-        _importVariables.addElement(new ImportVariable("End Date", 3, false, null));
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _importVariables.addElement(new ImportVariable("Relative Risk", 1, true, null, null));
+        _importVariables.addElement(new ImportVariable("Start Date", 2, false, null, null));
+        _importVariables.addElement(new ImportVariable("End Date", 3, false, null, null));
     }
 
     /**

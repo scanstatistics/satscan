@@ -63,10 +63,10 @@ public class FileImporter {
         //Attempt to open file writer and buffer ...
         FileWriter writer = new FileWriter(_destinationFile);
         BufferedWriter buffer = new BufferedWriter(writer);
-        //initialize record and determine which field are actually imported
+        //initialize record and determine which field are actually imported or have a default
         for (int i=0; i < _importVariables.size(); ++i) {
             record.add(new String());
-            if (_importVariables.get(i).getIsMappedToInputFileVariable())
+            if (_importVariables.get(i).getIsMappedToInputFileVariable() || _importVariables.get(i).hasDefault())
                 mappedVariables.add(_importVariables.get(i));
         }
         //initialize progress ...
@@ -77,20 +77,26 @@ public class FileImporter {
             if (iRow >= skipCount) {
                 iColumn = 0;
                 for (int i=0; i < mappedVariables.size(); ++i) {
+                    //get the zero based column index from mapping variables
                     iColumn = mappedVariables.get(i).getInputFileVariableIndex() - 1;
-                    if (iColumn + 1 > values.length) {
-                        throw new ImportException(String.format("Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
-                                                                _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", iColumn +1));
+                    //retrieve value from current data row or the default 
+                    if (_importVariables.get(i).getIsMappedToInputFileVariable()) {
+                        if (iColumn + 1 > values.length)
+                            throw new ImportException(String.format("Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
+                                                                    _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", iColumn +1));
+                        value = (String)values[iColumn];
+                        if (_dataSource.isColumnDate(iColumn))
+                            value = formatDateField(value);
+                    } else {
+                        value = new String(_importVariables.get(i).getDefault());
                     }
-                    value = (String)values[iColumn];
-                    if (_dataSource.isColumnDate(iColumn))
-                        value = formatDateField(value);
                     value = StringUtils.trimToEmpty(value);
                     if (StringUtils.isEmpty(value) || StringUtils.isBlank(value)) {
                         throw new ImportException(String.format("Record %d contains a 'Source File Variable' that is blank.\nSaTScan does not permit blank variables in data.", _dataSource.getCurrentRecordNum()));
-                    } else if (StringUtils.contains(value, " ")) {
-                        throw new ImportException(String.format("Record %d contains a 'Source File Variable' that contains whitespace.\nSaTScan does not permit variable data to contain whitespace.", _dataSource.getCurrentRecordNum()));
                     } else {
+                        if (StringUtils.contains(value, " ")) {
+                            value = "\"" + value + "\"";
+                        }
                         record.set(mappedVariables.get(i).getTargetFieldIndex(), new String(value));
                     }
                 }

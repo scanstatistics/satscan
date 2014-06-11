@@ -55,10 +55,10 @@ public class ShapefileDataSource implements ImportDataSource {
     
     public Object[] getColumnNames() {
         Vector<Object> names = new Vector<Object>();
+        names.add("Generated Id");
+        names.add("One Count");
         names.add("Latitude / Y");
         names.add("Longitude / X");
-        names.add("One Count");
-        names.add("Generated Id");
         if (_dbase_data_source != null) {
            names.addAll(java.util.Arrays.asList(_dbase_data_source.getColumnNames()));
         }
@@ -117,6 +117,8 @@ public class ShapefileDataSource implements ImportDataSource {
         if (_current_row_number > getNumRecords())
             return null;
         Vector<Object> values = new Vector<Object>();
+        values.add("location" + _current_row_number);
+        values.add("1");
         double[] coordinates = getCoordinates(_current_row_number - 1);
         if (coordinates == null) {
             values.add("");
@@ -125,8 +127,6 @@ public class ShapefileDataSource implements ImportDataSource {
             for (int i=0; i < coordinates.length; ++i)
                 values.add(Double.toString(coordinates[i]));
         }
-        values.add("1");
-        values.add("location" + _current_row_number);
         if (_dbase_data_source != null) {
             Object[] dbase_values = _dbase_data_source.readRow();
             if (dbase_values != null)

@@ -12,6 +12,10 @@
 
 /** Input data source abstraction. */
 class DataSource {
+    public:
+        enum FieldType {ONECOUNT, GENERATEDID, DEFAULT_DATE};
+        enum ShapeFieldType {POINTX=0, POINTY};
+
     protected:
         bool _blank_record_flag;
         FieldMapContainer_t _fields_map;
@@ -70,6 +74,7 @@ class AsciiFileDataSource : public DataSource {
      std::ifstream                      gSourceFile;
      BasePrint                        & gPrint;
      std::string                        gsReadBuffer;
+     std::string                        _read_buffer;
 
     void                                ThrowUnicodeException();
 
@@ -83,7 +88,7 @@ class AsciiFileDataSource : public DataSource {
                                            long words = gStringParser->GetNumberWords();
                                            return _fields_map.size() > 0 ? std::min(static_cast<long>(_fields_map.size()), words) : words;
                                         }
-     virtual const char               * GetValueAt(long iFieldIndex) {return gStringParser->GetWord(tranlateFieldIndex(iFieldIndex));}
+     virtual const char               * GetValueAt(long iFieldIndex);
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
@@ -122,6 +127,7 @@ class CsvFileDataSource : public DataSource {
         bool _ignore_empty_fields;
         std::vector<std::string> _values;
         BasePrint & _print;
+        std::string _read_buffer;
 
         bool  parse(const std::string& s);
         void  ThrowUnicodeException();
@@ -140,9 +146,6 @@ class CsvFileDataSource : public DataSource {
 
 /** dBase file data source. */
 class ShapeFileDataSource : public DataSource {
-    public:
-        enum ShapeFieldType {POINTX=0, POINTY, ONECOUNT, GENERATEDID};
-
     private:
         std::auto_ptr<dBaseFile>           _dbase_file;
         std::auto_ptr<ShapeFile>           _shape_file;

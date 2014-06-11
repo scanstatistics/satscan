@@ -525,13 +525,18 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
       for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
           std::stringstream s;
           if (itrMap->type() == typeid(long)) {
-            s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == ::SHAPE ? 4 : 0));
-          } else if (itrMap->type() == typeid(ShapeFileDataSource::ShapeFieldType)) {
-              switch (boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itrMap)) {
-                case ShapeFileDataSource::POINTX   : s << 1; break;
-                case ShapeFileDataSource::POINTY   : s << 2; break;
-                case ShapeFileDataSource::ONECOUNT : s << 3; break;
-                case ShapeFileDataSource::GENERATEDID : s << 4; break;
+              s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == SHAPE ? 4 : 0));
+          } else if (itrMap->type() == typeid(DataSource::FieldType)) {
+              switch (boost::any_cast<DataSource::FieldType>(*itrMap)) {
+                case DataSource::GENERATEDID : s << 1; break;
+                case DataSource::ONECOUNT : s << 2; break;
+                case DataSource::DEFAULT_DATE : s << 0; break;
+                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
+              }
+          } else if (itrMap->type() == typeid(DataSource::ShapeFieldType)) {
+              switch (boost::any_cast<DataSource::ShapeFieldType>(*itrMap)) {
+                case DataSource::POINTX   : s << 3; break;
+                case DataSource::POINTY   : s << 4; break;
                 default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
               }
           } else {
@@ -1101,18 +1106,24 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
         sFilename = Env.GetStringUTFChars(str_object, &iscopy);
         std::string buffer(sFilename);
         if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+
         int column;
         if (!string_to_type<int>(buffer.c_str(), column))
             throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
-        if (inputsource.getSourceType() == SHAPE) {
+        // The field mappings will be a collection of integers. The position of element is relative to the input fields order.
+        if (column == 0) {
+            // Columns less than zero represent 'special' data that are not actually present in the data source.
+            // In this case, the value at column zero represents the default population date.
+            map.push_back(DataSource::DEFAULT_DATE);
+        } else if (inputsource.getSourceType() == SHAPE) {
             if (column == 1) {
-                map.push_back(ShapeFileDataSource::POINTX);
+                map.push_back(DataSource::GENERATEDID);
             } else if (column == 2) {
-                map.push_back(ShapeFileDataSource::POINTY);
+                map.push_back(DataSource::ONECOUNT);
             } else if (column == 3) {
-                map.push_back(ShapeFileDataSource::ONECOUNT);
+                map.push_back(ShapeFileDataSource::POINTX);
             } else if (column == 4) {
-                map.push_back(ShapeFileDataSource::GENERATEDID);
+                map.push_back(ShapeFileDataSource::POINTY);
             } else {
                 map.push_back((long)column - 4);
             }

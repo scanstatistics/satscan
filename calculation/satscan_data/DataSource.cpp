@@ -5,6 +5,7 @@
 #include "DataSource.h"
 #include "SSException.h"
 #include "FileName.h"
+#include "DateStringParser.h"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -12,7 +13,7 @@
 DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, const CParameters::InputSource * source, BasePrint& Print) {
     // if a InputSource is not defined, default to space delimited ascii source
     if (!source)
-        return new AsciiFileDataSource(sSourceFilename, Print);
+        return new CsvFileDataSource(sSourceFilename, Print, " ");
     // return data source object by input source type
     DataSource * dataSource=0;
     switch (source->getSourceType()) {
@@ -22,8 +23,7 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
                                  ((ShapeFileDataSource*)dataSource)->setUTMConversionInformation(source->getHemisphere().at(0), source->getZone(), source->getNorthing(), source->getEasting());
                                break;
         case CSV             : dataSource = new CsvFileDataSource(sSourceFilename, Print, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
-        case SPACE_DELIMITED :
-        default              : dataSource = new AsciiFileDataSource(sSourceFilename, Print); break;
+        default              : dataSource = new CsvFileDataSource(sSourceFilename, Print, " ");
     }
     dataSource->setFieldsMap(source->getFieldsMap());
     return dataSource;
@@ -37,6 +37,33 @@ long AsciiFileDataSource::StringParser::GetNumberWords() {
 
   while (GetWord(iWords) != 0) ++iWords;
   return iWords;
+}
+
+const char * AsciiFileDataSource::GetValueAt(long iFieldIndex) {
+    // check whether the field at this index is mapped to another field
+    if (iFieldIndex < static_cast<long>(_fields_map.size())) {
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+            // This field is one of the FieldType values, which are not actually fields in the data source.
+            _read_buffer.clear();
+            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
+                case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
+                case ONECOUNT: _read_buffer = "1"; break;
+                case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+            }
+            return _read_buffer.c_str();
+        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            // AsciiFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
+            throw prg_error("AsciiFileDataSource::GetValueAt() not supported with ShapeFieldType.","AsciiFileDataSource::GetValueAt()");
+        } else {
+            // This field is mapped to another column of the data source.
+            return gStringParser->GetWord(tranlateFieldIndex(iFieldIndex));
+        }
+    } else {
+        // This field is not mapped to another field type or column -- just get the value.
+        return gStringParser->GetWord(iFieldIndex);
+    }
 }
 
 /** Returns wWordIndex + 1 'th word in associated string.
@@ -202,10 +229,33 @@ long dBaseFileDataSource::GetNumValues() {
   return gSourceFile->GetNumFields();
 }
 
+
 /** Returns iFieldIndex'th field value from current record. */
 const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
-    iFieldIndex = tranlateFieldIndex(iFieldIndex);
+    gsValue.clear();
 
+    // check whether the field at this index is mapped to another field
+    if (iFieldIndex < static_cast<long>(_fields_map.size())) {
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+            // This field is one of the FieldType values, which are not actually fields in the data source.
+            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
+                case GENERATEDID: printString(gsValue, "location%u", getNonBlankRecordsRead()); break;
+                case ONECOUNT: gsValue = "1"; break;
+                case DEFAULT_DATE: gsValue = DateStringParser::UNSPECIFIED; break;
+                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+            }
+            return gsValue.c_str();
+        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            // dBaseFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
+            throw prg_error("dBaseFileDataSource::GetValueAt() not supported with ShapeFieldType.","dBaseFileDataSource::GetValueAt()");
+        } else {
+            // This field is mapped to another column of the data source.
+            iFieldIndex = tranlateFieldIndex(iFieldIndex);
+        }
+    }
+
+    // else we'll translate field index and retrieve value
     if (gwCurrentFieldIndex != iFieldIndex) {
         if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
             return 0;
@@ -247,7 +297,7 @@ bool dBaseFileDataSource::ReadRecord() {
 CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
                   :DataSource(), _readCount(0), _blankReadCount(0), _print(print), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
     // special processing for 'whitespace' delimiter string
-    if (_delimiter == "") {
+    if (_delimiter == "" || _delimiter == " ") {
         _delimiter = "\t\v\f\r\n ";
         _ignore_empty_fields = true;
     }
@@ -330,7 +380,26 @@ long CsvFileDataSource::GetNumValues() {
 }
 
 const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
-    iFieldIndex = tranlateFieldIndex(iFieldIndex);
+    // see if value at field index is mapped FieldType
+    if (iFieldIndex < static_cast<long>(_fields_map.size())) {  
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+            _read_buffer.clear();
+            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
+                case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
+                case ONECOUNT: _read_buffer = "1"; break;
+                case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+            }
+            return _read_buffer.c_str();
+        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
+            throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.","CsvFileDataSource::GetValueAt()");
+        } else {
+            // This field is mapped to another column of the data source.
+            iFieldIndex = tranlateFieldIndex(iFieldIndex);
+        }
+    }
     if (iFieldIndex > static_cast<long>(_values.size()) - 1)
         return 0;
     return _values.at(static_cast<size_t>(iFieldIndex)).c_str();
@@ -416,22 +485,27 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
     _read_buffer.clear();
 
     if (iFieldIndex < static_cast<long>(_fields_map.size())) {
-        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-            ShapeFieldType type  = boost::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
-            if (type == ONECOUNT) {
-                _read_buffer = "1";
-            } else if (type == GENERATEDID) {
-                _read_buffer = printString(_read_buffer, "location%u", _current_record);
-            } else {
-                double x, y;
-                printf("shape record %u\n", _current_record);
-                _shape_file->getShapeAsXY(static_cast<int>(_current_record - 1), x, y);
-                printf("X: %g, Y: %g\n", x,y);
-                if (_convert_utm) {
-                    UTM_To_LatitudeLongitude(y, x, _hemisphere, _zone, y, x);
-                    printf("Post X: %g, Y: %g\n", x,y);
-                }
-                printString(_read_buffer, "%lf", (type == POINTX ? y : x));
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
+                case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", _current_record); break;
+                case ONECOUNT: _read_buffer = "1"; break;
+                case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+            }
+        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            ShapeFieldType type = boost::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
+                case POINTX:
+                case POINTY: {
+                    double x, y;
+                    _shape_file->getShapeAsXY(static_cast<int>(_current_record - 1), x, y);
+                    if (_convert_utm) {
+                        UTM_To_LatitudeLongitude(y, x, _hemisphere, _zone, y, x);
+                    }
+                    printString(_read_buffer, "%lf", (type == POINTX ? y : x));
+                } break;
+                default : throw prg_error("Unknown ShapeFieldType enumeration %d.","GetValueAt()", type);
             }
         } else {
             iFieldIndex = boost::any_cast<long>(_fields_map.at(static_cast<size_t>(iFieldIndex)));

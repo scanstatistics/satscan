@@ -108,9 +108,8 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 #define MIN_SIMULATION_RPT_PVALUE 99
 /** interval range type */
 typedef boost::tuple<int,int,int,int>  IntervalRange_t;
-/* The SPACE_DELIMITED data source is the original SaTScan file type - that is a space limited ASCII file 
-   without support for embeded spaces in field value. */
-enum SourceType {SPACE_DELIMITED=0, CSV, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
+/* DateSource types */
+enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
 //*****************************************************************************

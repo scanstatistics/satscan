@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "DateStringParser.h"
 #include "SSException.h"
+#include "UtilityFunctions.h"
 #include <cstring>
 
 const unsigned int DateStringParser::DEFAULT_DAY                       = 1;
@@ -11,6 +12,7 @@ const unsigned int DateStringParser::DEFAULT_MONTH                     = 1;
 const unsigned int DateStringParser::POP_PRECISION_MONTH_DEFAULT_DAY   = 15;
 const unsigned int DateStringParser::POP_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const unsigned int DateStringParser::POP_PRECISION_YEAR_DEFAULT_MONTH  = 7;
+const char * DateStringParser::UNSPECIFIED = "unspecified";
 
 /** constructor */
 DateStringParser::DateStringParser(DatePrecisionType eTimePrecision) : geTimePrecision(eTimePrecision) {}
@@ -213,41 +215,50 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
                                                                           const Julian& PeriodEnd,
                                                                           Julian& theDate,
                                                                           DatePrecisionType& eReadPrecision) {
-  ParserStatus          eParserStatus;
-  unsigned int          iOne, iTwo, iThree;
-  DateFormat            eDateFormat;
+    ParserStatus  eParserStatus;
+    unsigned int  iOne, iTwo, iThree;
+    DateFormat    eDateFormat;
 
-  _lastError = "";
-  if (geTimePrecision == GENERIC) {
-      try {
-        theDate = relativeDateToJulian(sDateString);
-      } catch (resolvable_error& r) {
-          _lastError = r.what();
-          return INVALID_DATE;
-      }
-      eReadPrecision = GENERIC;
-      return VALID_DATE;
-  }
+    // Check whether date string matches the 'unspecified' keyword. This keyword is a place holder indicating that the data record does not define population.
+    std::string date_string(sDateString);
+    trimString(date_string);
+    if (date_string == UNSPECIFIED) {
+        theDate = PeriodStart;
+        eReadPrecision = (geTimePrecision == GENERIC ? GENERIC : DAY);
+        return VALID_DATE;
+    } else {
+        // Parse population date either as generic date or standard date format.
+        _lastError = "";
+        if (geTimePrecision == GENERIC) {
+            try {
+                theDate = relativeDateToJulian(sDateString);
+            } catch (resolvable_error& r) {
+                _lastError = r.what();
+                return INVALID_DATE;
+            }
+            eReadPrecision = GENERIC;
+            return VALID_DATE;
+        }
 
-  eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, eReadPrecision, eDateFormat);
-  if (eParserStatus != VALID_DATE)
-    return eParserStatus;
-  if (eDateFormat == MDY) {
-    switch (eReadPrecision) {
-      case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
-      case MONTH : return GetAsJulian(iOne, POP_PRECISION_MONTH_DEFAULT_DAY, iTwo, theDate);
-      case DAY   : return GetAsJulian(iOne, iTwo, iThree, theDate);
-      default    : return INVALID_DATE;
-    };
-  }
-  else {
-    switch (eReadPrecision) {
-      case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
-      case MONTH : return GetAsJulian(iTwo, POP_PRECISION_MONTH_DEFAULT_DAY, iOne, theDate);
-      case DAY   : return GetAsJulian(iTwo, iThree, iOne, theDate);
-      default    : return INVALID_DATE;
-    };
-  }
+        eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, eReadPrecision, eDateFormat);
+        if (eParserStatus != VALID_DATE)
+            return eParserStatus;
+        if (eDateFormat == MDY) {
+            switch (eReadPrecision) {
+                case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
+                case MONTH : return GetAsJulian(iOne, POP_PRECISION_MONTH_DEFAULT_DAY, iTwo, theDate);
+                case DAY   : return GetAsJulian(iOne, iTwo, iThree, theDate);
+                default    : return INVALID_DATE;
+            };
+        } else {
+            switch (eReadPrecision) {
+                case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
+                case MONTH : return GetAsJulian(iTwo, POP_PRECISION_MONTH_DEFAULT_DAY, iOne, theDate);
+                case DAY   : return GetAsJulian(iTwo, iThree, iOne, theDate);
+                default    : return INVALID_DATE;
+            };
+        }
+    }
 }
 
 /** Converts date string to Julian given precision of times parameter. */

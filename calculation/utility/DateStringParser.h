@@ -19,6 +19,7 @@ class DateStringParser {
   public:
     enum                                ParserStatus {VALID_DATE=0, INVALID_DATE, AMBIGUOUS_YEAR, LESSER_PRECISION};
     enum                                DateFormat {MDY=0, YMD};
+    static const char                 * UNSPECIFIED;
 
   protected:
     DatePrecisionType                   geTimePrecision;

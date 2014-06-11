@@ -259,7 +259,9 @@ public class FileSourceSetting extends javax.swing.JDialog {
         switch (_input_source_settings.getSourceDataFileType()) {
             case CSV : 
                 builder.append("<tr><th>File Type:</th><td>CSV</td></tr>");
-                builder.append("<tr><th>Field Delimiter Character:</th><td>" + _input_source_settings.getDelimiter() + "</td></tr>");
+                builder.append("<tr><th>Field Delimiter Character:</th><td>");
+                builder.append((_input_source_settings.getDelimiter().equals("") || _input_source_settings.getDelimiter().equals(" ") ? "<space>" : _input_source_settings.getDelimiter()));
+                builder.append("</td></tr>");
                 builder.append("<tr><th>Field Group Character:</th><td>" + _input_source_settings.getGroup() + "</td></tr>");
                 builder.append("<tr><th>Lines Skipped:</th><td>" + _input_source_settings.getSkiplines() + "</td></tr>");
                 builder.append("<tr><th>Header First Column:</th><td>" + (_input_source_settings.getFirstRowHeader() ? "Yes" : "No") + "</td></tr>");
@@ -285,7 +287,7 @@ public class FileSourceSetting extends javax.swing.JDialog {
         builder.append("<td valign=\"top\"><table><tr><th valign=\"top\">Field Mapping:</th><td><table>");        
         for (int i=0; i < _input_source_settings.getFieldMaps().size(); ++i) {
             builder.append("<tr><td>Field " + (i + 1) + "</td><td> &#8667;</td> <td>");
-            if (_input_source_settings.getFieldMaps().get(i).isEmpty()) {
+            if (_input_source_settings.getFieldMaps().get(i).isEmpty() || Integer.parseInt(_input_source_settings.getFieldMaps().get(i)) < 1) {
                 builder.append("---");
             } else {
                 builder.append("Data Column " + (_input_source_settings.getFieldMaps().get(i)));
