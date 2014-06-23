@@ -45,30 +45,17 @@ class CParameters {
             std::string _grouper;
             unsigned int _skip;
             bool _first_row_headers;
-            // shapefile specific options
-            ShapeCoordinatesType _coordinatesType;
-            std::string _hemisphere;
-            unsigned int _zone;
-            double _northing;
-            double _easting;
 
         public:
-            InputSource() : _skip(0), _coordinatesType(LATLONG_DATA) {}
+            InputSource() : _skip(0) {}
 
             InputSource(SourceType type, FieldMapContainer_t map):
                 _source_type(type), _fields_map(map), 
-                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false),
-                _coordinatesType(LATLONG_DATA), _hemisphere("N"), _zone(1), _northing(0.0), _easting(500000.0) {}
+                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false) {}
 
             InputSource(SourceType type, FieldMapContainer_t map, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers):
                 _source_type(type), _fields_map(map), 
-                _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers),
-                _coordinatesType(LATLONG_DATA), _hemisphere("N"), _zone(1), _northing(0.0), _easting(500000.0) {}
-
-            InputSource(SourceType type, FieldMapContainer_t map, ShapeCoordinatesType coordType, std::string hemisphere, unsigned int zone, double northing, double easting):
-                _source_type(type), _fields_map(map), 
-                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false),
-                _coordinatesType(coordType), _hemisphere(hemisphere), _zone(zone), _northing(northing), _easting(easting) {}
+                _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers) {}
 
             SourceType getSourceType() const {return _source_type;}
             void setSourceType(SourceType e) {_source_type = e;}
@@ -84,17 +71,6 @@ class CParameters {
             void setSkip(unsigned int u) {_skip = u;}
             bool getFirstRowHeader() const {return _first_row_headers;}
             void setFirstRowHeader(bool b) {_first_row_headers = b;}
-            // shapefile specific options
-            ShapeCoordinatesType getShapeCoordinatesType() const {return _coordinatesType;}
-            void setShapeCoordinatesType(ShapeCoordinatesType e) {_coordinatesType = e;}
-            const std::string & getHemisphere() const {return _hemisphere;}
-            void setHemisphere(const std::string& s) {_hemisphere = s;}
-            unsigned int getZone() const {return _zone;}
-            void setZone(unsigned int u) {_zone = u;}
-            double getNorthing() const {return _northing;}
-            void setNorthing(double d) {_northing = d;}
-            double getEasting() const {return _easting;}
-            void setEasting(double d) {_easting = d;}
     };
 
   public:

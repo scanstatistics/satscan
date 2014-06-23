@@ -37,7 +37,7 @@ JNIEXPORT jstring JNICALL Java_org_satscan_importer_ShapefileDataSource_isSuppor
  * Signature: (Ljava/lang/String;JZLjava/lang/String;IDD)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_org_satscan_importer_ShapefileDataSource_getCoordinates
-  (JNIEnv *, jobject, jstring, jlong, jboolean, jstring, jint, jdouble, jdouble);
+  (JNIEnv *, jobject, jstring, jlong);
 
 #ifdef __cplusplus
 }

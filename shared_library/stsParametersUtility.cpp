@@ -501,25 +501,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
       Env.CallVoidMethod(issobject, mid, (jboolean)iss.getFirstRowHeader());
       jni_error::_detectError(Env);
 
-      mid = _getMethodId_Checked(Env, issclazz, "setShapeCoordinatesType", "(I)V");
-      Env.CallVoidMethod(issobject, mid, (jint)iss.getShapeCoordinatesType());
-
-      mid = _getMethodId_Checked(Env, issclazz, "setHemisphere", "(Ljava/lang/String;)V");
-      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getHemisphere().c_str()));
-      jni_error::_detectError(Env);
-
-      mid = _getMethodId_Checked(Env, issclazz, "setZone", "(I)V");
-      Env.CallVoidMethod(issobject, mid, (jint)iss.getZone());
-      jni_error::_detectError(Env);
-
-      mid = _getMethodId_Checked(Env, issclazz, "setNorthing", "(D)V");
-      Env.CallVoidMethod(issobject, mid, (jdouble)iss.getNorthing());
-      jni_error::_detectError(Env);
-
-      mid = _getMethodId_Checked(Env, issclazz, "setEasting", "(D)V");
-      Env.CallVoidMethod(issobject, mid, (jdouble)iss.getEasting());
-      jni_error::_detectError(Env);
-
       mid = _getMethodId_Checked(Env, issclazz, "addFieldMapping", "(Ljava/lang/String;)V");
       FieldMapContainer_t::const_iterator itrMap=iss.getFieldsMap().begin();
       for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
@@ -531,6 +512,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
                 case DataSource::GENERATEDID : s << 1; break;
                 case DataSource::ONECOUNT : s << 2; break;
                 case DataSource::DEFAULT_DATE : s << 0; break;
+                case DataSource::BLANK : s << ""; break;
                 default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
               }
           } else if (itrMap->type() == typeid(DataSource::ShapeFieldType)) {
@@ -1106,29 +1088,32 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
         sFilename = Env.GetStringUTFChars(str_object, &iscopy);
         std::string buffer(sFilename);
         if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
-
-        int column;
-        if (!string_to_type<int>(buffer.c_str(), column))
-            throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
-        // The field mappings will be a collection of integers. The position of element is relative to the input fields order.
-        if (column == 0) {
-            // Columns less than zero represent 'special' data that are not actually present in the data source.
-            // In this case, the value at column zero represents the default population date.
-            map.push_back(DataSource::DEFAULT_DATE);
-        } else if (inputsource.getSourceType() == SHAPE) {
-            if (column == 1) {
-                map.push_back(DataSource::GENERATEDID);
-            } else if (column == 2) {
-                map.push_back(DataSource::ONECOUNT);
-            } else if (column == 3) {
-                map.push_back(ShapeFileDataSource::POINTX);
-            } else if (column == 4) {
-                map.push_back(ShapeFileDataSource::POINTY);
-            } else {
-                map.push_back((long)column - 4);
-            }
+        if (buffer.size() == 0) {
+            map.push_back(DataSource::BLANK);
         } else {
-            map.push_back((long)column);
+            int column;
+            if (!string_to_type<int>(buffer.c_str(), column))
+                throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
+            // The field mappings will be a collection of integers. The position of element is relative to the input fields order.
+            if (column == 0) {
+                // Columns less than zero represent 'special' data that are not actually present in the data source.
+                // In this case, the value at column zero represents the default population date.
+                map.push_back(DataSource::DEFAULT_DATE);
+            } else if (inputsource.getSourceType() == SHAPE) {
+                if (column == 1) {
+                    map.push_back(DataSource::GENERATEDID);
+                } else if (column == 2) {
+                    map.push_back(DataSource::ONECOUNT);
+                } else if (column == 3) {
+                    map.push_back(ShapeFileDataSource::POINTX);
+                } else if (column == 4) {
+                    map.push_back(ShapeFileDataSource::POINTY);
+                } else {
+                    map.push_back((long)column - 4);
+                }
+            } else {
+                map.push_back((long)column);
+            }
         }
       }
       inputsource.setFieldsMap(map);
@@ -1153,27 +1138,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
       mid = _getMethodId_Checked(Env, issclazz, "getFirstRowHeader", "()Z");
       inputsource.setFirstRowHeader(Env.CallBooleanMethod(iss_object, mid));
-      jni_error::_detectError(Env);
-
-      inputsource.setShapeCoordinatesType((CParameters::InputSource::ShapeCoordinatesType)(getEnumTypeOrdinalIndex(Env, iss_object, "getShapeCoordinatesType", "Lorg/satscan/importer/InputSourceSettings$ShapeCoordinatesType;")));
-
-      mid = _getMethodId_Checked(Env, issclazz, "getHemisphere", "()Ljava/lang/String;");
-      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
-      jni_error::_detectError(Env);
-      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-      inputsource.setHemisphere(std::string(sFilename));
-      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-      mid = _getMethodId_Checked(Env, issclazz, "getZone", "()I");
-      inputsource.setZone(static_cast<unsigned int>(Env.CallIntMethod(iss_object, mid)));
-      jni_error::_detectError(Env);
-
-      mid = _getMethodId_Checked(Env, issclazz, "getNorthing", "()D");
-      inputsource.setNorthing(Env.CallDoubleMethod(iss_object, mid));
-      jni_error::_detectError(Env);
-
-      mid = _getMethodId_Checked(Env, issclazz, "getEasting", "()D");
-      inputsource.setEasting(Env.CallDoubleMethod(iss_object, mid));
       jni_error::_detectError(Env);
 
       unsigned int datasetIdx;

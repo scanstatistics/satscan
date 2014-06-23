@@ -16,11 +16,6 @@ public class ShapefileDataSource implements ImportDataSource {
     private File _source_file;
     private DBaseImportDataSource _dbase_data_source=null;
     private long _current_row_number = 0;
-    private boolean _convertUTM = false;
-    private String _hemisphere = "N";
-    private int _zone = 1;
-    private double _northing = 0;
-    private double _easting = 500000;
     
     public ShapefileDataSource(File file, boolean formatDates) {
         try {
@@ -36,23 +31,9 @@ public class ShapefileDataSource implements ImportDataSource {
             if (FileAccess.ValidateFileAccess(dBaseFilename, false)) {
                 _dbase_data_source = new DBaseImportDataSource(new File(dBaseFilename), formatDates);
             }
-            //File file = new File("mayshapefile.shp");
-            //ShapefileDataStore ds = new ShapefileDataStore(file.toURI().toURL());
-            //ContentFeatureSource fs = (FeatureSource) ds.getFeatureSource();
-            //FeatureCollection fc = fs.getFeatures();            
-            //FileDataStore store = FileDataStoreFinder.getDataStore(file);
         } catch (Throwable e) {}   
     }
      
-    public ShapefileDataSource(File file, boolean formatDates, boolean convertUTM, String hemisphere, int zone, double northing, double easting) {
-        this(file, formatDates);
-        _convertUTM = convertUTM;
-        _hemisphere = hemisphere;
-        _zone = zone;
-        _northing = northing;
-        _easting = easting;  
-    }   
-    
     public Object[] getColumnNames() {
         Vector<Object> names = new Vector<Object>();
         names.add("Generated Id");
@@ -82,11 +63,6 @@ public class ShapefileDataSource implements ImportDataSource {
     private native int getNumberOfShapes(String filename);    
     
     /**
-     * Native method which returns if associated projection is supported.
-     */
-    public static native String isSupportedProjection(String filename);
-    
-    /**
      * Native method which returns file shape type is supported.
      */
     public static native String isSupportedShapeType(String filename);    
@@ -104,11 +80,11 @@ public class ShapefileDataSource implements ImportDataSource {
     /*
      * native call to get the longitude / latitude of shape.
      */
-    public native double[] getCoordinates(String filename, long shapeIdx, boolean convertUTM, String hemisphere, int zone, double northing, double easting);
+    public native double[] getCoordinates(String filename, long shapeIdx);
 
     /* Retrieves coordinates for shape at shapeIdx. */
     public double[] getCoordinates(long shapeIdx) {
-        return getCoordinates(_source_file.getAbsolutePath(), shapeIdx, _convertUTM, _hemisphere, _zone, _northing, _easting);
+        return getCoordinates(_source_file.getAbsolutePath(), shapeIdx);
     }
     
     @Override

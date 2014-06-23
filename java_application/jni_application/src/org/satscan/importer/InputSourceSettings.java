@@ -5,7 +5,6 @@
 package org.satscan.importer;
 
 import java.util.Vector;
-import org.satscan.app.Parameters;
 import org.satscan.app.UnknownEnumException;
 
 /**
@@ -15,7 +14,6 @@ import org.satscan.app.UnknownEnumException;
 public class InputSourceSettings implements Cloneable  {
     public enum SourceDataFileType {CSV, dBase, Shapefile, Excel};
     public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR, Neighbors, MetaLocations, AlternativeHypothesis};
-    public enum ShapeCoordinatesType {LATLONG_DATA, UTM_CONVERSION, CARTESIAN_DATA};
     
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;
@@ -26,17 +24,12 @@ public class InputSourceSettings implements Cloneable  {
     private String _grouper="\"";
     private int _skip_lines=0;
     private boolean _first_row_headers=false;
-    // shapefile specific options
-    ShapeCoordinatesType _coordinatesType=ShapeCoordinatesType.LATLONG_DATA;
-    String _hemisphere="";
-    int _zone=1;
-    double _northing=0.0;
-    double _easting=500000.0;        
         
     public InputSourceSettings() {}
     public InputSourceSettings(InputFileType filetype) {
         _file_type = filetype;
     }
+    
     public InputSourceSettings(InputSourceSettings inputsource) {
         _source_type = inputsource._source_type;
         _file_type = inputsource._file_type;
@@ -46,15 +39,25 @@ public class InputSourceSettings implements Cloneable  {
         _grouper = inputsource._grouper;
         _skip_lines = inputsource._skip_lines;
         _first_row_headers = inputsource._first_row_headers;
-        _coordinatesType = inputsource._coordinatesType;
-        _hemisphere = inputsource._hemisphere;
-        _zone = inputsource._zone;
-        _northing = inputsource._northing;
-        _easting = inputsource._easting;
     }
     
     public InputSourceSettings clone() throws CloneNotSupportedException {
-        return new InputSourceSettings(this);
+        InputSourceSettings iss = (InputSourceSettings) super.clone();
+        iss._mappings = (Vector<String>)_mappings.clone();
+        iss._delimiter = new String(_delimiter);
+        iss._grouper = new String(_grouper);
+        return iss;
+    }
+    
+    public void copy(InputSourceSettings other) {
+        _source_type = other._source_type;
+        _file_type = other._file_type;
+        _data_set_index = other._data_set_index;
+        _mappings = other._mappings;
+        _delimiter = other._delimiter;
+        _grouper = other._grouper;
+        _skip_lines = other._skip_lines;
+        _first_row_headers = other._first_row_headers;        
     }
     
     @Override
@@ -72,15 +75,8 @@ public class InputSourceSettings implements Cloneable  {
                 if (_first_row_headers != other._first_row_headers) return false;
                 break;
             case Shapefile : 
-                if (_coordinatesType != other._coordinatesType) return false;
-                if (_hemisphere != other._hemisphere) return false;
-                if (_zone != other._zone) return false;
-                if (_northing != other._northing) return false;
-                if (_easting != other._easting) return false;
-                break;
             case dBase : 
-            case Excel : 
-                break;
+            case Excel : break;
            default: throw new UnknownEnumException(_file_type);
         }                
         return true;
@@ -125,27 +121,14 @@ public class InputSourceSettings implements Cloneable  {
     
     public boolean getFirstRowHeader() {return _first_row_headers;}
     public void setFirstRowHeader(boolean b) {_first_row_headers = b;}
-
-    public ShapeCoordinatesType getShapeCoordinatesType() {return _coordinatesType;}
-    public void setShapeCoordinatesType(int iOrdinal) {
-        try { setShapeCoordinatesType(ShapeCoordinatesType.values()[iOrdinal]);
-        } catch (ArrayIndexOutOfBoundsException e) { 
-            ThrowOrdinalIndexException(iOrdinal, ShapeCoordinatesType.values()); 
-        }
-    }
-    public void setShapeCoordinatesType(ShapeCoordinatesType e) {_coordinatesType = e;}
-    
-    public String getHemisphere() {return _hemisphere;}
-    public void setHemisphere(String s) {_hemisphere = s;}    
-    
-    public int getZone() {return _zone;}
-    public void setZone(int i) {_zone = i;}    
-    
-    public double getNorthing() {return _northing;}
-    public void setNorthing(double d) {_northing = d;}    
-    
-    public double getEasting() {return _easting;}
-    public void setEasting(double d) {_easting = d;}       
     
     public boolean isSet() {return _mappings.size() > 0;}
+    public void reset() {
+        _source_type=SourceDataFileType.CSV;
+        _mappings.clear();
+        _delimiter=",";
+        _grouper="\"";
+        _skip_lines=0;
+        _first_row_headers=false;        
+    }
 }

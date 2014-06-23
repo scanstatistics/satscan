@@ -172,33 +172,19 @@ JNIEXPORT jint JNICALL Java_org_satscan_importer_ShapefileDataSource_getNumberOf
  * Method:    getCoordinates
  * Signature: (J)[D
  */
-JNIEXPORT jdoubleArray JNICALL Java_org_satscan_importer_ShapefileDataSource_getCoordinates(JNIEnv * pEnv, jobject, jstring filename, jlong row, jboolean convertUTM, jstring hemisphere, jint zone, jdouble northing, jdouble easting) {
-  printf("getting coordinates ...\n");
+JNIEXPORT jdoubleArray JNICALL Java_org_satscan_importer_ShapefileDataSource_getCoordinates(JNIEnv * pEnv, jobject, jstring filename, jlong row) {
   try {
     jboolean iscopy;
     const char *temp = pEnv->GetStringUTFChars(filename, &iscopy);
     std::string file(temp);
     if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(filename, temp);
-    printf("file ...\n");
 
     ShapeFile shapefile(file.c_str(), "r", false);
-    printf("shapefile ... with %d entities\n", shapefile.getEntityCount());
     if (row >= shapefile.getEntityCount())
         return (jdoubleArray)NULL;
 
-    printf("about to get x,y ...\n");
     double x, y;
     shapefile.getShapeAsXY(row, x, y);
-    printf("about to test conversion\n");
-    if (convertUTM) {
-        printf("yes, conversion from UTM\n");
-        jboolean iscopy;
-        const char *temp = pEnv->GetStringUTFChars(hemisphere, &iscopy);
-        std::string hemisphereCopy(temp);
-        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(hemisphere, temp);
-        UTM_To_LatitudeLongitude(y, x, hemisphereCopy.at(0), static_cast<unsigned int>(zone), y, x);
-        printf("conversion done\n");
-    }
 
     jdoubleArray coordinates = pEnv->NewDoubleArray(2);
     if (coordinates) {

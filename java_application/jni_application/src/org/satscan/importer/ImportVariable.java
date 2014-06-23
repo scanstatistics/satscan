@@ -90,6 +90,10 @@ public class ImportVariable implements Cloneable {
         return gbRequiredVariable;
     }
 
+    public void setTargetFieldIndex(int i) {
+        gwTargetFieldIndex = i;
+    }
+        
     public int getTargetFieldIndex() {
         return gwTargetFieldIndex;
     }

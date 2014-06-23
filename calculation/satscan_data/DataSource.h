@@ -13,7 +13,7 @@
 /** Input data source abstraction. */
 class DataSource {
     public:
-        enum FieldType {ONECOUNT, GENERATEDID, DEFAULT_DATE};
+        enum FieldType {ONECOUNT, GENERATEDID, DEFAULT_DATE, BLANK};
         enum ShapeFieldType {POINTX=0, POINTY};
 
     protected:
@@ -129,11 +129,12 @@ class CsvFileDataSource : public DataSource {
         BasePrint & _print;
         std::string _read_buffer;
 
-        bool  parse(const std::string& s);
+        bool  parse(const std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
         void  ThrowUnicodeException();
 
    public:
      CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, const std::string& delimiter=",", const std::string& grouper="\"", unsigned long skip=0, bool firstRowHeaders=false);
+     CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, unsigned long skip=0, bool firstRowHeaders=false);
      virtual ~CsvFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const {return _readCount;}
@@ -155,7 +156,6 @@ class ShapeFileDataSource : public DataSource {
         unsigned long                      _num_records;
         unsigned long                      _current_record;
 
-        // UTM conversion information -- probably set from input datasource object
         bool                               _convert_utm;
         char                               _hemisphere;
         unsigned int                       _zone;

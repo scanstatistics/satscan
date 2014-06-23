@@ -171,6 +171,7 @@ const char * ShapeFile::getTypeAsString(int type) {
 /* Returns the number of entities defined in shapefile. */
 int ShapeFile::getEntityCount() const {
     SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    if (!shp) throw prg_error("Unable to open file.","getEntityCount()");
     int entities;
     SHPGetInfo(shp, &entities, NULL, NULL, NULL);
     SHPClose(shp);
@@ -180,15 +181,9 @@ int ShapeFile::getEntityCount() const {
 /* Attempts to read entity as X/Y values, performing any necessary calculations to get geometric centroid. */
 void ShapeFile::getShapeAsXY(int entityIdx, double& x, double& y) {
     // The contrib c files will likley be useful here.
-
-    printf("getShapeAsXY\n");
-
     SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    if (!shp) throw prg_error("Unable to open file.","getShapeAsXY()");
     SHPObject * pShape = SHPReadObject(shp, entityIdx);
-
-    printf("got object\n");
-
-/*
     switch (getType()) {
         case SHPT_POINT : 
             assert(pShape->nVertices == 1);
@@ -201,23 +196,6 @@ void ShapeFile::getShapeAsXY(int entityIdx, double& x, double& y) {
             x = pt.x;
             y = pt.y;
     }
-    */
-
-    if (getType() == SHPT_POINT) {
-    printf("is point\n");
-
-        assert(pShape->nVertices == 1);
-        x = pShape->padfX[0];
-        y = pShape->padfY[0];
-    } else {
-    printf("is other\n");
-        PT pt = SHPCentrd_2d(pShape);
-        x = pt.x;
-        y = pt.y;
-    }
-
-    printf("about to destroy\n");
-
     SHPDestroyObject(pShape);
     SHPClose(shp);
 }
@@ -226,6 +204,7 @@ int ShapeFile::getType() const {
     int shapeType;
 
     SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    if (!shp) throw prg_error("Unable to open file.","getType()");
     SHPGetInfo(shp, NULL, &shapeType, NULL, NULL);
     SHPClose(shp);
 
@@ -237,6 +216,7 @@ void ShapeFile::writePoint(double x, double y) {
         throw prg_error("File type (%d) does not match SHPT_POINT!","writePoint()",getType());
 
     SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    if (!shp) throw prg_error("Unable to open file.","writePoint()");
     SHPObject * pShape = SHPCreateSimpleObject(SHPT_POINT, 1, (double*)&(x), (double*)&(y), NULL);
     SHPWriteObject(shp, -1, pShape);
     SHPDestroyObject(pShape);
@@ -254,6 +234,7 @@ void ShapeFile::writePolygon(const std::vector<double>& polygonX, const std::vec
         throw prg_error("File type (%d) does not match SHPT_POLYGON!","writePolygon()",getType());
 
     SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+    if (!shp) throw prg_error("Unable to open file.","writePolygon()");
     SHPObject * pShape = SHPCreateSimpleObject(SHPT_POLYGON, polygonX.size(), const_cast<double*>(&(polygonX[0])), const_cast<double*>(&(polygonY[0])), NULL);
     SHPWriteObject(shp, -1, pShape);
     SHPDestroyObject(pShape);

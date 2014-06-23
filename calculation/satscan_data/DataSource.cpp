@@ -18,10 +18,7 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
     DataSource * dataSource=0;
     switch (source->getSourceType()) {
         case DBASE           : dataSource = new dBaseFileDataSource(sSourceFilename); break;
-        case SHAPE           : dataSource = new ShapeFileDataSource(sSourceFilename);
-                               if (source->getShapeCoordinatesType() == CParameters::InputSource::UTM_CONVERSION)
-                                 ((ShapeFileDataSource*)dataSource)->setUTMConversionInformation(source->getHemisphere().at(0), source->getZone(), source->getNorthing(), source->getEasting());
-                               break;
+        case SHAPE           : dataSource = new ShapeFileDataSource(sSourceFilename); break;
         case CSV             : dataSource = new CsvFileDataSource(sSourceFilename, Print, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
         default              : dataSource = new CsvFileDataSource(sSourceFilename, Print, " ");
     }
@@ -50,6 +47,7 @@ const char * AsciiFileDataSource::GetValueAt(long iFieldIndex) {
                 case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: _read_buffer = "1"; break;
                 case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                case BLANK: break;
                 default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
             }
             return _read_buffer.c_str();
@@ -243,6 +241,7 @@ const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
                 case GENERATEDID: printString(gsValue, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: gsValue = "1"; break;
                 case DEFAULT_DATE: gsValue = DateStringParser::UNSPECIFIED; break;
+                case BLANK : break;
                 default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
             }
             return gsValue.c_str();
@@ -320,6 +319,49 @@ CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePri
     if (_firstRowHeaders) ++_skip;
 }
 
+/** constructor */
+CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, unsigned long skip, bool firstRowHeaders)
+                  :DataSource(), _readCount(0), _blankReadCount(0), _print(print), _delimiter("\t\v\f\r\n "), _grouper("\""), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
+    _sourceFile.open(sSourceFilename.c_str());
+    if (!_sourceFile)
+        throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
+    // Get the byte-order mark, if there is one
+    unsigned char bom[4];
+    _sourceFile.read(reinterpret_cast<char*>(bom), 4);
+    //Since we don't know what the endian was on the machine that created the file we
+    //are reading, we'll need to check both ways.
+    if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
+        (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
+        (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
+      ThrowUnicodeException();
+    _sourceFile.seekg(0L, std::ios::beg);
+    // if first row is header, increment number of rows to skip
+    if (_firstRowHeaders) ++_skip;
+
+    // read first record and try to guess the format
+    bool isBlank = true;
+    std::string readbuffer;
+    getlinePortable(_sourceFile, readbuffer);
+    while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
+        trimString(readbuffer);
+        isBlank = readbuffer.size() == 0;
+    }
+    if (readbuffer.size()) {
+        // whitespace delimited
+        parse(readbuffer, "\t\v\f\r\n ", _grouper);
+        std::vector<std::string> whitespace_values(_values);
+        // comma delimited
+        parse(readbuffer, ",", _grouper);
+        std::vector<std::string> comma_values(_values);
+        // This is poor but their isn't really a good method for guessing. The field types of input fields are generally: string, integer, double, formatted date
+        // The identifier field is basically the only place we might reasonably expect a comma (e.g. identifier = Baltimore,MD). In that situation, this routine will
+        // guess wrong for a record like: Baltimore,MD  5 2014/06/17
+        if (comma_values.size() > 1) _delimiter = ",";
+    }
+}
+
 /** Re-positions file cursor to beginning of file. */
 void CsvFileDataSource::GotoFirstRecord() {
     _readCount = 0;
@@ -332,10 +374,10 @@ void CsvFileDataSource::GotoFirstRecord() {
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
-bool CsvFileDataSource::parse(const std::string& s) {
+bool CsvFileDataSource::parse(const std::string& s, const std::string& delimiter, const std::string& grouper) {
     _values.clear();
     std::string e("\\");
-    boost::escaped_list_separator<char> separator(e, _delimiter, _grouper);
+    boost::escaped_list_separator<char> separator(e, delimiter, grouper);
     boost::tokenizer<boost::escaped_list_separator<char> > values(s, separator);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=values.begin(); itr != values.end(); ++itr) {
         _values.push_back(*itr);
@@ -360,7 +402,7 @@ bool CsvFileDataSource::ReadRecord() {
         getlinePortable(_sourceFile, readbuffer);
 
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
-        isBlank = !parse(readbuffer);
+        isBlank = !parse(readbuffer, _delimiter, _grouper);
         if (isBlank) {
             tripBlankRecordFlag();
             ++_readCount;
@@ -389,6 +431,7 @@ const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
                 case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: _read_buffer = "1"; break;
                 case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                case BLANK: break;
                 default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
             }
             return _read_buffer.c_str();
@@ -491,6 +534,7 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
                 case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", _current_record); break;
                 case ONECOUNT: _read_buffer = "1"; break;
                 case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                case BLANK: break;
                 default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
             }
         } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {

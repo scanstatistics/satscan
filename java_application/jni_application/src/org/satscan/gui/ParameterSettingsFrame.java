@@ -67,7 +67,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
      /** Returns final reference to Parameters object. */
-    final Parameters getParameters() {
+    public final Parameters getParameters() {
         return _parameters;
     }
     
@@ -1533,8 +1533,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
                 }
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _caseFileTextField, inputSourceSettings);
-                sourcesetting.setVisible(true);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
             }
         });
 
@@ -1831,8 +1832,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
                 }
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _controlFileTextField, inputSourceSettings);
-                sourcesetting.setVisible(true);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
             }
         });
 
@@ -1904,8 +1906,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
                 }
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _populationFileTextField, inputSourceSettings);
-                sourcesetting.setVisible(true);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
             }
         });
 
@@ -1954,8 +1957,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Coordinates));
                 }
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _coordiantesFileTextField, inputSourceSettings);
-                sourcesetting.setVisible(true);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_coordiantesFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
             }
         });
 
@@ -2022,8 +2026,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.SpecialGrid));
                 }
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                FileSourceSetting sourcesetting = new FileSourceSetting(SaTScanApplication.getInstance(), ParameterSettingsFrame.this, _gridFileTextField, inputSourceSettings);
-                sourcesetting.setVisible(true);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_gridFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
             }
         });
 
@@ -2109,7 +2114,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2584,7 +2589,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 182, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2834,7 +2839,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 116, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 124, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2849,7 +2854,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
         );
 
         pack();

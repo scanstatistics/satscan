@@ -231,7 +231,7 @@ bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, c
     long lSectionIndex, lKeyIndex=-1;
     std::string key, buffer;
     bool anykeys=false;
-    std::string type, map, delimiter, group, skip, header, coordinatetype, hemisphere, zone, northing, easting;
+    std::string type, map, delimiter, group, skip, header;
 
     if ((lSectionIndex = SourceFile.GetSectionIndex(sectionName)) > -1) {
         const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
@@ -272,41 +272,8 @@ bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, c
             anykeys=true;
             header = pSection->GetLine(lKeyIndex)->GetValue();
         }
-        // shape coordinate source file type
-        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceShapeCoordinatesType);
-        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
-            anykeys=true;
-            coordinatetype = pSection->GetLine(lKeyIndex)->GetValue();
-        }
-        // hemisphere
-        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceHemisphere);
-        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
-            anykeys=true;
-            hemisphere = pSection->GetLine(lKeyIndex)->GetValue();
-        }
-        // zone
-        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceZone);
-        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
-            anykeys=true;
-            zone = pSection->GetLine(lKeyIndex)->GetValue();
-        }
-        // northing
-        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceNorthing);
-        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
-            anykeys=true;
-            northing = pSection->GetLine(lKeyIndex)->GetValue();
-        }
-        // easting
-        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceEasting);
-        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
-            anykeys=true;
-            easting = pSection->GetLine(lKeyIndex)->GetValue();
-        }
         if (anykeys) {
-            setInputSource(source, trimString(type), trimString(map), 
-                           trimString(delimiter), trimString(group), trimString(skip), trimString(header), 
-                           trimString(coordinatetype), trimString(hemisphere), trimString(zone), trimString(northing), trimString(easting), 
-                           gPrintDirection);
+            setInputSource(source, trimString(type), trimString(map), trimString(delimiter), trimString(group), trimString(skip), trimString(header), gPrintDirection);
         }
     }
     return anykeys;
@@ -491,7 +458,8 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType 
                                 case DataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
                                 case DataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
                                 case DataSource::DEFAULT_DATE : s << IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate; break;
-                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
+                                case DataSource::BLANK : break;
+                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
                             }
                         } else if (itr->type() == typeid(DataSource::ShapeFieldType)) {
                             switch (boost::any_cast<DataSource::ShapeFieldType>(*itr)) {
@@ -525,25 +493,7 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType 
                     pSection->AddComment("csv source first row column header");
                     printString(key, "%s-%s", sKey, IniParameterSpecification::SourceFirstRowHeader);
                     pSection->AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
-                } else if (source->getSourceType() == SHAPE) {
-                    pSection->AddComment("shape coordinate type (LATLONG_DATA=0, UTM_CONVERSION, CARTESIAN_DATA)");
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceShapeCoordinatesType);
-                    pSection->AddLine(key.c_str(), AsString(buffer, source->getShapeCoordinatesType()).c_str());
-                    if (source->getShapeCoordinatesType() == CParameters::InputSource::UTM_CONVERSION) {
-                        pSection->AddComment("UTM conversion hemisphere ('N' or 'S')");
-                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceHemisphere);
-                        pSection->AddLine(key.c_str(), source->getHemisphere().c_str());
-                        pSection->AddComment("UTM conversion zone (1 - 60)");
-                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceZone);
-                        pSection->AddLine(key.c_str(), AsString(buffer, source->getZone()).c_str());
-                        pSection->AddComment("UTM conversion northing (0 - 500,000)");
-                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceNorthing);
-                        pSection->AddLine(key.c_str(), AsString(buffer, source->getNorthing()).c_str());
-                        pSection->AddComment("UTM conversion easting (0 - 500,000)");
-                        printString(key, "%s-%s", sKey, IniParameterSpecification::SourceEasting);
-                        pSection->AddLine(key.c_str(), AsString(buffer, source->getEasting()).c_str());
-                    }
-                }
+                } 
             } else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
         }
     } catch (prg_exception& x) {
