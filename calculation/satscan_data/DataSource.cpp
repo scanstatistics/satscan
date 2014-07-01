@@ -436,7 +436,7 @@ const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
             }
             return _read_buffer.c_str();
         } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-            // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
+            // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- they are only for shapefiles.
             throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.","CsvFileDataSource::GetValueAt()");
         } else {
             // This field is mapped to another column of the data source.

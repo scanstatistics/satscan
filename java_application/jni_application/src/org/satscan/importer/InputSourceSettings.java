@@ -69,8 +69,8 @@ public class InputSourceSettings implements Cloneable  {
         if (!_mappings.equals(other._mappings)) return false;
         switch (_source_type) {
             case CSV : 
-                if (_delimiter != other._delimiter) return false;
-                if (_grouper != other._grouper) return false;
+                if (!_delimiter.equals(other._delimiter)) return false;
+                if (!_grouper.equals(other._grouper)) return false;
                 if (_skip_lines != other._skip_lines) return false;
                 if (_first_row_headers != other._first_row_headers) return false;
                 break;

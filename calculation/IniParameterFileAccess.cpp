@@ -428,7 +428,6 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
     }
 }
 
-/** Write InputSource object to ini file. */
 void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType eParameterType, const CParameters::InputSource * source) {
     const char  * sSectionName, * sKey;
     std::string buffer, key;
@@ -436,65 +435,77 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, ParameterType 
     try {
         if (source) {
             if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
-                IniSection *  pSection = WriteFile.GetSection(sSectionName);
+                IniSection * pSection = WriteFile.GetSection(sSectionName);
+                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), sKey, source);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WriteInputSource()","IniParameterFileAccess");
+        throw;
+    }
+}
 
-                pSection->AddComment("source type (CSV=0, DBASE=1, SHAPE=2)");
-                printString(key, "%s-%s", sKey, IniParameterSpecification::SourceType);
-                pSection->AddLine(key.c_str(), AsString(buffer, source->getSourceType()).c_str());
+/** Write InputSource object to ini file. */
+void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& section, const std::string& basekey, const CParameters::InputSource * source) {
+    std::string buffer, key;
 
-                if (source->getFieldsMap().size()) {
-                    printString(buffer, "source field map (comma separated list of integers, %s, %s, %s, %s)", 
-                                IniParameterSpecification::SourceFieldMapShapeX, 
-                                IniParameterSpecification::SourceFieldMapShapeY, 
-                                IniParameterSpecification::SourceFieldMapOneCount,
-                                IniParameterSpecification::SourceFieldMapGeneratedId);
-                    pSection->AddComment(buffer.c_str());
-                    std::stringstream s;
-                    for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
-                        if (itr->type() == typeid(long)) {
-                            s << boost::any_cast<long>(*itr);
-                        } else if (itr->type() == typeid(DataSource::FieldType)) {
-                            switch (boost::any_cast<DataSource::FieldType>(*itr)) {
-                                case DataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
-                                case DataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
-                                case DataSource::DEFAULT_DATE : s << IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate; break;
-                                case DataSource::BLANK : break;
-                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
-                            }
-                        } else if (itr->type() == typeid(DataSource::ShapeFieldType)) {
-                            switch (boost::any_cast<DataSource::ShapeFieldType>(*itr)) {
-                                case DataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
-                                case DataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
-                                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
-                            }
-                        } else {
-                            throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());
+    try {
+        if (source) {
+            section.AddComment("source type (CSV=0, DBASE=1, SHAPE=2)");
+            printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceType);
+            section.AddLine(key.c_str(), AsString(buffer, source->getSourceType()).c_str());
+
+            if (source->getFieldsMap().size()) {
+                printString(buffer, "source field map (comma separated list of integers, %s, %s, %s, %s)",
+                            IniParameterSpecification::SourceFieldMapShapeX,
+                            IniParameterSpecification::SourceFieldMapShapeY,
+                            IniParameterSpecification::SourceFieldMapOneCount,
+                            IniParameterSpecification::SourceFieldMapGeneratedId);
+                section.AddComment(buffer.c_str());
+                std::stringstream s;
+                for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
+                    if (itr->type() == typeid(long)) {
+                        s << boost::any_cast<long>(*itr);
+                    } else if (itr->type() == typeid(DataSource::FieldType)) {
+                        switch (boost::any_cast<DataSource::FieldType>(*itr)) {
+                            case DataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
+                            case DataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
+                            case DataSource::DEFAULT_DATE : s << IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate; break;
+                            case DataSource::BLANK : break;
+                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
                         }
-                        if ((itr+1) != source->getFieldsMap().end())
-                            s << ",";
+                    } else if (itr->type() == typeid(DataSource::ShapeFieldType)) {
+                        switch (boost::any_cast<DataSource::ShapeFieldType>(*itr)) {
+                            case DataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
+                            case DataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
+                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
+                        }
+                    } else {
+                        throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());
                     }
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceFieldMap);
-                    pSection->AddLine(key.c_str(), s.str().c_str());
-                }                
+                    if ((itr+1) != source->getFieldsMap().end()) {s << ",";}
+                }
+                    printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceFieldMap);
+                    section.AddLine(key.c_str(), s.str().c_str());
+            }
 
-                if (source->getSourceType() == CSV) {
-                    pSection->AddComment("csv source delimiter (leave empty for space or tab delimiter)");
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceDelimiter);
-                    pSection->AddLine(key.c_str(), source->getDelimiter().c_str());
+            if (source->getSourceType() == CSV) {
+                section.AddComment("csv source delimiter (leave empty for space or tab delimiter)");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceDelimiter);
+                section.AddLine(key.c_str(), source->getDelimiter().c_str());
 
-                    pSection->AddComment("csv source group character");
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceGrouper);
-                    pSection->AddLine(key.c_str(), source->getGroup().c_str());
+                section.AddComment("csv source group character");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceGrouper);
+                section.AddLine(key.c_str(), source->getGroup().c_str());
 
-                    pSection->AddComment("csv source skip initial lines (i.e. meta data)");
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceSkip);
-                    pSection->AddLine(key.c_str(), AsString(buffer, source->getSkip()).c_str());
+                section.AddComment("csv source skip initial lines (i.e. meta data)");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceSkip);
+                section.AddLine(key.c_str(), AsString(buffer, source->getSkip()).c_str());
 
-                    pSection->AddComment("csv source first row column header");
-                    printString(key, "%s-%s", sKey, IniParameterSpecification::SourceFirstRowHeader);
-                    pSection->AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
-                } 
-            } else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
+                section.AddComment("csv source first row column header");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+                section.AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
+            }
         }
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSource()","IniParameterFileAccess");
@@ -532,6 +543,8 @@ void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const ch
 /** Writes parameter settings grouped under 'Input'. */
 void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     std::string  s;
+    const char  * sSectionName, * sKey;
+
     try {
         WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s).c_str(), GetParameterComment(CASEFILE));
         WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE));
@@ -567,19 +580,19 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " case data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE, t+1));
+                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CASEFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(CONTROLFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " control data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetControlFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, CONTROLFILE, gParameters.getInputSource(CONTROLFILE, t+1));
+                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CONTROLFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(POPFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " population data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, POPFILE, gParameters.getInputSource(POPFILE, t+1));
+                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(POPFILE, t+1));
             }
         }
     } catch (prg_exception& x) {

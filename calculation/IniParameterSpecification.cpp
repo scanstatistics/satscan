@@ -50,7 +50,7 @@ const char * IniParameterSpecification::SourceFieldMapShapeX      = "shapeX";
 const char * IniParameterSpecification::SourceFieldMapShapeY      = "shapeY";
 const char * IniParameterSpecification::SourceFieldMapOneCount    = "oneCount";
 const char * IniParameterSpecification::SourceFieldMapGeneratedId = "generatedId";
-const char * IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate = "unspecifiedPopulationDate";
+const char * IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate = "unspecifiedPopDate";
 
 const char * IniParameterSpecification::SourceShapeCoordinatesType= "SourceShapeCoordinatesType";
 const char * IniParameterSpecification::SourceHemisphere          = "SourceHemisphere";

@@ -487,7 +487,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         builder.append("<div style=\"margin-top:5px;\"><table><tr><td valign=\"top\"><table >");
         switch (_inputSourceSettings.getSourceDataFileType()) {
             case CSV :
-                builder.append("<tr><th>File Type:</th><td>CSV</td></tr>");
+                builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>CSV</td></tr>");
                 builder.append("<tr><th>Delimiter:</th><td>");
                 if (_inputSourceSettings.getDelimiter().equals("") || _inputSourceSettings.getDelimiter().equals(" ")) {
                     builder.append("Whitespace");
@@ -498,7 +498,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 } else {
                     builder.append(_inputSourceSettings.getDelimiter());
                 }
-                builder.append("</td></tr><tr><th>Group By:</th><td style=\"white-space:nowrap;\">");
+                builder.append("</td></tr><tr><th style=\"white-space:nowrap;\">Group By:</th><td style=\"white-space:nowrap;\">");
                 if (_inputSourceSettings.getGroup().equals("\"")) {
                     builder.append("Double Quote");
                 } else if (_inputSourceSettings.getGroup().equals("'")) {
@@ -506,15 +506,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 } else {
                     builder.append(_inputSourceSettings.getGroup());
                 }
-                builder.append("</td></tr><tr><th>Lines Skipped:</th><td>" + _inputSourceSettings.getSkiplines() + "</td></tr>");
-                builder.append("<tr><th>Column Header:</th><td>" + (_inputSourceSettings.getFirstRowHeader() ? "Yes" : "No") + "</td></tr>");
+                builder.append("</td></tr><tr><th style=\"white-space:nowrap;\">Lines Skipped:</th><td>" + _inputSourceSettings.getSkiplines() + "</td></tr>");
+                builder.append("<tr><th style=\"white-space:nowrap;\">Column Header:</th><td>" + (_inputSourceSettings.getFirstRowHeader() ? "Yes" : "No") + "</td></tr>");
                 break;
-            case dBase : builder.append("<tr><th>File Type:</th><td>dBase</td></tr>"); break;
-            case Excel : builder.append("<tr><th>File Type:</th><td>Excel</td></tr>"); break;
-            case Shapefile : builder.append("<tr><th>File Type:</th><td>Shapefile</td></tr>"); break;
+            case dBase : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>dBase</td></tr>"); break;
+            case Excel : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Excel</td></tr>"); break;
+            case Shapefile : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Shapefile</td></tr>"); break;
         }
         builder.append("</table></td>");
-        builder.append("<td valign=\"top\"><table><tr><th valign=\"top\">Field Mapping:</th><td><table>");
+        builder.append("<td valign=\"top\"><table><tr><th valign=\"top\" style=\"white-space:nowrap;\">Field Mapping:</th><td><table>");
         for (int i=0; i < _inputSourceSettings.getFieldMaps().size(); ++i) {
             ImportVariable variable = getShowingImportVariableAt(i);
             if (variable != null && variable.getInputFileVariableIndex() > 0) {
@@ -539,67 +539,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return builder.toString();
     }
 
-    /** Builds html which details the input source type and variable mappings to source file's columns. */
-    private String getMappingsHtml_alternative() {
-        Vector<String> columnNames = getSourceColumnNames();
-        StringBuilder builder = new StringBuilder();
-        builder.append("<html><head><style>th {font-weight: bold;text-align:right;}</style></head><body>");
-        builder.append(getFileExpectedFormatParagraphs());
-        builder.append("<p style=\"margin-top: 10px;\"> The ").append(FileSelectionDialog.getFileTypeAsString(_inputSourceSettings.getInputFileType()).toLowerCase());
-        builder.append(" data will be read from the specified file according to the following settings:</p>");
-        builder.append("<div style=\"margin-top:5px;\"><table >");
-        switch (_inputSourceSettings.getSourceDataFileType()) {
-            case CSV :
-                builder.append("<tr><th>File Type:</th><td>CSV (");
-                builder.append("Delimiter=");
-                if (_inputSourceSettings.getDelimiter().equals("") || _inputSourceSettings.getDelimiter().equals(" ")) {
-                    builder.append("Whitespace");
-                } else if (_inputSourceSettings.getDelimiter().equals(",")) {
-                    builder.append("Comma");
-                } else if (_inputSourceSettings.getDelimiter().equals(";")) {
-                    builder.append("Semicolon");
-                } else {
-                    builder.append(_inputSourceSettings.getDelimiter());
-                }
-                builder.append(", Group=");
-                if (_inputSourceSettings.getGroup().equals("\"")) {
-                    builder.append("Double Quote");
-                } else if (_inputSourceSettings.getGroup().equals("'")) {
-                    builder.append("Single Quote");
-                } else {
-                    builder.append(_inputSourceSettings.getGroup());
-                }
-                builder.append(", Lines Skipped=" + _inputSourceSettings.getSkiplines());
-                builder.append(", Column Header=" + (_inputSourceSettings.getFirstRowHeader() ? "Yes" : "No") + ")</td></tr>");
-                break;
-            case dBase : builder.append("<tr><th>File Type:</th><td>dBase</td></tr>"); break;
-            case Excel : builder.append("<tr><th>File Type:</th><td>Excel</td></tr>"); break;
-            case Shapefile : builder.append("<tr><th>File Type:</th><td>Shapefile</td></tr>"); break;
-        }
-        builder.append("<tr><th valign=\"top\">Field Mapping:</th><td><table>");
-        for (int i=0; i < _inputSourceSettings.getFieldMaps().size(); ++i) {
-            ImportVariable variable = getShowingImportVariableAt(i);
-            if (variable != null && variable.getInputFileVariableIndex() > 0) {
-                builder.append("<tr><td>" + variable.getVariableDisplayName() + "</td><td> &#8667;</td> <td>");
-                if (_inputSourceSettings.getFieldMaps().get(i).isEmpty() || Integer.parseInt(_inputSourceSettings.getFieldMaps().get(i)) < 1) {
-                    builder.append("---");
-                } else {
-                    if (i < columnNames.size()) {
-                      String name = columnNames.elementAt(i);
-                      if (name.length() > 15) {
-                          name = name.substring(0, 14) + " ...";
-                      }
-                      builder.append(columnNames.elementAt(Integer.parseInt(_inputSourceSettings.getFieldMaps().get(i)) - 1));
-                    } else {
-                        builder.append("Column " + (_inputSourceSettings.getFieldMaps().get(i)));
-                    }
-                }
-            }
-        }
-        builder.append("</table></td></tr></table></div></body></html>");
-        return builder.toString();
-    }
-    
     /** Returns the probability model type selected by user. */
     public Parameters.ProbabilityModelType getModelControlType() {
         switch (_displayVariablesComboBox.getSelectedIndex()) {
@@ -640,12 +579,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
                     DBaseImportDataSource source = new DBaseImportDataSource(file, true);
                     names = source.getColumnNames();
-                } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV && this._inputSourceSettings.getFirstRowHeader()) {
-                    CSVImportDataSource source = new CSVImportDataSource(file, false, '\n', _inputSourceSettings.getDelimiter().charAt(0), _inputSourceSettings.getGroup().charAt(0));
-                    for (int i=0; i < _inputSourceSettings.getSkiplines(); ++i) {
-                        Object[] values = source.readRow();
-                    }
-                    names = source.readRow();
+                } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV && _inputSourceSettings.getFirstRowHeader()) {
+                    CSVImportDataSource source = new CSVImportDataSource(file, true, '\n', _inputSourceSettings.getDelimiter().charAt(0), _inputSourceSettings.getGroup().charAt(0));
+                    names = source.getColumnNames();
                 }
                 for (int i=0; names != null && i < names.length; ++i) {
                     column_names.add((String)names[i]);

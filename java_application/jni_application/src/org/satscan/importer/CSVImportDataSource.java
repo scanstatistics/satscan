@@ -21,25 +21,39 @@ public class CSVImportDataSource implements ImportDataSource {
     private int _currentRowNumber = 0;
     private int _totalRows = 0;
     private boolean _hasHeader;
+    private Object[] _column_names = null;
 
     public CSVImportDataSource(File file, boolean hasHeader, char rowDelimiter, char colDelimiter, char groupDelimiter) throws FileNotFoundException {
         _sourceFile = file;
         _totalRows = countLines(_sourceFile);
         _inputStream = new FileInputStream(_sourceFile);
-        /*Set defaults*/
         _hasHeader = hasHeader;
         _rowDelimiter = rowDelimiter;
         _colDelimiter = colDelimiter;
         _groupDelimiter = groupDelimiter;
+        if (hasHeader) {
+            // try to read the column names
+            try {
+                String line = readLine();
+                if (line != null) {
+                    _currentRowNumber++;
+                    Vector row = ImportUtils.parseLine(line, Character.toString(_colDelimiter), Character.toString(_groupDelimiter));
+                    _column_names = row.toArray();                    
+                }
+            } catch (Exception e) {}    
+        }
     }
 
-    /**
-     * Returns number of records in file.
-     */
+    /** Returns number of records in file. */
     public int getNumRecords() {
         return _totalRows;
     }
 
+    /** Returns column names, if any.*/
+    public Object[] getColumnNames() {
+        return _column_names;
+    }
+    
     public static int countLines(File file) {
         int lineCount = 0;
         try {
