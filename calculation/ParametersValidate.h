@@ -23,6 +23,7 @@ class ParametersValidate {
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
     bool                ValidateInferenceParameters(BasePrint & PrintDirection) const;
+    bool                ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;

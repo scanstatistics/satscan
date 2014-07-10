@@ -506,7 +506,9 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
       for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
           std::stringstream s;
           if (itrMap->type() == typeid(long)) {
-              s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == SHAPE ? 4 : 0));
+              long c = boost::any_cast<long>(*itrMap);
+              if (c == 0) s << c;
+              else s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == SHAPE ? 4 : 2));
           } else if (itrMap->type() == typeid(DataSource::FieldType)) {
               switch (boost::any_cast<DataSource::FieldType>(*itrMap)) {
                 case DataSource::GENERATEDID : s << 1; break;
@@ -1099,12 +1101,12 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
                 // Columns less than zero represent 'special' data that are not actually present in the data source.
                 // In this case, the value at column zero represents the default population date.
                 map.push_back(DataSource::DEFAULT_DATE);
+            } else if (column == 1) {
+                map.push_back(DataSource::GENERATEDID);
+            } else if (column == 2) {
+                map.push_back(DataSource::ONECOUNT);
             } else if (inputsource.getSourceType() == SHAPE) {
-                if (column == 1) {
-                    map.push_back(DataSource::GENERATEDID);
-                } else if (column == 2) {
-                    map.push_back(DataSource::ONECOUNT);
-                } else if (column == 3) {
+                if (column == 3) {
                     map.push_back(ShapeFileDataSource::POINTX);
                 } else if (column == 4) {
                     map.push_back(ShapeFileDataSource::POINTY);
@@ -1112,7 +1114,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
                     map.push_back((long)column - 4);
                 }
             } else {
-                map.push_back((long)column);
+                map.push_back((long)column - 2);
             }
         }
       }

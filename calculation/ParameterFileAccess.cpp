@@ -848,10 +848,10 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
             throw resolvable_error("The %s is required for a shapefile source type but a mapping was not defined.", IniParameterSpecification::SourceFieldMap);
         }
         if (source.getSourceType() == CSV) {
-            source.setDelimiter(delimiterStr);
+            source.setDelimiter(delimiterStr.size() == 0 ? " " : delimiterStr);
             if (source.getDelimiter().size() > 1)
                 throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getDelimiter().c_str());
-            source.setGroup(groupStr);
+            source.setGroup(groupStr.size() == 0 ? "\"" : groupStr);
             if (source.getGroup().size() > 1)
                 throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getGroup().c_str());
             unsigned int skip;

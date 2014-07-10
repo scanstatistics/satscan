@@ -173,8 +173,9 @@ public class FileSelectionDialog {
                 if (wizard.getNeedsImportSourceSave())
                     inputSourceSettings.copy(wizard.getInputSourceSettings());
                 inputSourceFilename.setText(wizard.getSourceFilename());
+                //inputSourceSettings.setSourceDataFileType(wizard.getSourceFileType(inputSourceFilename.getText()));
             }
-            if (wizard.getExecutedImport() || wizard.getNeedsImportSourceSave()) {
+            if (wizard.needsSettingsRefresh()) {
                 // update parameter settings back in the settings window to reflect users selection in wizard
                 switch (inputSourceSettings.getInputFileType()) {
                     case Case:

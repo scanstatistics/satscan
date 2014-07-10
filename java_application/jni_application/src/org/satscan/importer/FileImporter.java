@@ -66,7 +66,7 @@ public class FileImporter {
         //initialize record and determine which field are actually imported or have a default
         for (int i=0; i < _importVariables.size(); ++i) {
             record.add(new String());
-            if (_importVariables.get(i).getIsMappedToInputFileVariable() || _importVariables.get(i).hasDefault())
+            if (_importVariables.get(i).isMappedToSourceField() || _importVariables.get(i).hasDefault())
                 mappedVariables.add(_importVariables.get(i));
         }
         //initialize progress ...
@@ -78,9 +78,9 @@ public class FileImporter {
                 iColumn = 0;
                 for (int i=0; i < mappedVariables.size(); ++i) {
                     //get the zero based column index from mapping variables
-                    iColumn = mappedVariables.get(i).getInputFileVariableIndex() - 1;
+                    iColumn = mappedVariables.get(i).getSourceFieldIndex() - 1;
                     //retrieve value from current data row or the default 
-                    if (_importVariables.get(i).getIsMappedToInputFileVariable()) {
+                    if (_importVariables.get(i).isMappedToSourceField()) {
                         if (iColumn + 1 > values.length)
                             throw new ImportException(String.format("Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
                                                                     _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", iColumn +1));
@@ -97,7 +97,7 @@ public class FileImporter {
                         if (StringUtils.contains(value, " ")) {
                             value = "\"" + value + "\"";
                         }
-                        record.set(mappedVariables.get(i).getTargetFieldIndex(), new String(value));
+                        record.set(mappedVariables.get(i).getVariableIndex(), new String(value));
                     }
                 }
                 //append string to end of output file and clear input vector at the same time...

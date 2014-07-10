@@ -18,6 +18,10 @@ public interface ImportDataSource {
 
     public long getCurrentRecordNum();
 
+    public Object[] getColumnNames();
+    
+    public int getColumnIndex(String name);
+    
     public int getNumRecords();
 
     public Object[] readRow();

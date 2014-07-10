@@ -203,7 +203,7 @@ void AsciiFileDataSource::ThrowUnicodeException() {
 
 /** constructor */
 dBaseFileDataSource::dBaseFileDataSource(const std::string& sSourceFilename)
-                 :DataSource(), gwCurrentFieldIndex(-1), gbFirstRead(true), glCurrentRecord(0) {
+                 :DataSource(), gwCurrentFieldIndex(-1), glCurrentRecord(0) {
   try {
     gSourceFile.reset(new dBaseFile());
     gSourceFile->Open(sSourceFilename.c_str());
@@ -224,47 +224,49 @@ long dBaseFileDataSource::GetCurrentRecordIndex() const {
 
 /** Returns the number of fields in record buffer. */
 long dBaseFileDataSource::GetNumValues() {
-  return gSourceFile->GetNumFields();
+    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : gSourceFile->GetNumFields();
 }
-
 
 /** Returns iFieldIndex'th field value from current record. */
 const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
     gsValue.clear();
 
-    // check whether the field at this index is mapped to another field
-    if (iFieldIndex < static_cast<long>(_fields_map.size())) {
-        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
-            // This field is one of the FieldType values, which are not actually fields in the data source.
-            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
-            switch (type) {
-                case GENERATEDID: printString(gsValue, "location%u", getNonBlankRecordsRead()); break;
-                case ONECOUNT: gsValue = "1"; break;
-                case DEFAULT_DATE: gsValue = DateStringParser::UNSPECIFIED; break;
-                case BLANK : break;
-                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+    // The available fields are either defined by the fields map or by the columns of file.
+    if (_fields_map.size()) {
+        // check whether the field at this index is mapped to another field
+        if (iFieldIndex < static_cast<long>(_fields_map.size())) {
+            if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+                // This field is one of the FieldType values, which are not actually fields in the data source.
+                FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+                switch (type) {
+                    case GENERATEDID: printString(gsValue, "location%u", getNonBlankRecordsRead()); break;
+                    case ONECOUNT: gsValue = "1"; break;
+                    case DEFAULT_DATE: gsValue = DateStringParser::UNSPECIFIED; break;
+                    case BLANK : break;
+                    default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+                }
+                return gsValue.c_str();
+            } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+                // dBaseFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
+                throw prg_error("dBaseFileDataSource::GetValueAt() not supported with ShapeFieldType.","dBaseFileDataSource::GetValueAt()");
+            } else {
+                // This field is mapped to another column of the data source.
+                iFieldIndex = tranlateFieldIndex(iFieldIndex);
             }
-            return gsValue.c_str();
-        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-            // dBaseFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
-            throw prg_error("dBaseFileDataSource::GetValueAt() not supported with ShapeFieldType.","dBaseFileDataSource::GetValueAt()");
         } else {
-            // This field is mapped to another column of the data source.
-            iFieldIndex = tranlateFieldIndex(iFieldIndex);
+            // index beyond defined mappings
+            return 0;
         }
     }
 
-    // else we'll translate field index and retrieve value
-    if (gwCurrentFieldIndex != iFieldIndex) {
-        if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
-            return 0;
-        gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
-        if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
-            //format date fields -- read process currently expects yyyy/mm/dd
-            gsValue.insert(4, "/");
-            gsValue.insert(7, "/");
-        }
-        gwCurrentFieldIndex = iFieldIndex;
+    // now retrieve value
+    if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
+        return 0;
+    gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
+    if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
+        //format date fields -- read process currently expects yyyy/mm/dd
+        gsValue.insert(4, "/");
+        gsValue.insert(7, "/");
     }
     return gsValue.c_str();
 }
@@ -273,8 +275,7 @@ const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
 void dBaseFileDataSource::GotoFirstRecord() {
     if (glNumRecords) {
         gSourceFile->GotoRecord(1);
-        glCurrentRecord = 1;
-        gbFirstRead = false;
+        glCurrentRecord = 0;
         gwCurrentFieldIndex=-1;
     }  
 }
@@ -283,10 +284,7 @@ void dBaseFileDataSource::GotoFirstRecord() {
 bool dBaseFileDataSource::ReadRecord() {
     if (glCurrentRecord >= glNumRecords) return false;
     gwCurrentFieldIndex=-1;
-    if (gbFirstRead)
-        GotoFirstRecord();
-    else
-        gSourceFile->GotoRecord(++glCurrentRecord);
+    gSourceFile->GotoRecord(++glCurrentRecord);
     return true;  
 }
 
@@ -416,31 +414,35 @@ bool CsvFileDataSource::ReadRecord() {
 
 /** Returns number of values */
 long CsvFileDataSource::GetNumValues() {
-    // Field maps are all or nothing. This means that all fields are defined
-    // in mapping or straight from record parse.
+    // Field maps are all or nothing. This means that all fields are defined in mapping or straight from record parse.
     return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_values.size());
 }
 
 const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
     // see if value at field index is mapped FieldType
-    if (iFieldIndex < static_cast<long>(_fields_map.size())) {  
-        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
-            _read_buffer.clear();
-            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
-            switch (type) {
-                case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
-                case ONECOUNT: _read_buffer = "1"; break;
-                case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
-                case BLANK: break;
-                default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+    if (_fields_map.size()) {
+        if (iFieldIndex < static_cast<long>(_fields_map.size())) {  
+            if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+                _read_buffer.clear();
+                FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+                switch (type) {
+                    case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
+                    case ONECOUNT: _read_buffer = "1"; break;
+                    case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                    case BLANK: break;
+                    default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+                }
+                return _read_buffer.c_str();
+            } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+                // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- they are only for shapefiles.
+                throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.","CsvFileDataSource::GetValueAt()");
+            } else {
+                // This field is mapped to another column of the data source.
+                iFieldIndex = tranlateFieldIndex(iFieldIndex);
             }
-            return _read_buffer.c_str();
-        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-            // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- they are only for shapefiles.
-            throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.","CsvFileDataSource::GetValueAt()");
         } else {
-            // This field is mapped to another column of the data source.
-            iFieldIndex = tranlateFieldIndex(iFieldIndex);
+            // index beyond defined mappings
+            return 0;
         }
     }
     if (iFieldIndex > static_cast<long>(_values.size()) - 1)
@@ -490,7 +492,7 @@ std::pair<bool, std::string> ShapeFileDataSource::isSupportedShapeType(const std
 }
 
 ShapeFileDataSource::ShapeFileDataSource(const std::string& sSourceFilename)
-                :DataSource(), _current_field_idx(-1), _first_read(false), _current_record(0), _convert_utm(false) {
+                :DataSource(), _current_field_idx(-1), _current_record(0), _convert_utm(false) {
     // check that shape type is supported
     std::pair<bool, std::string> supportedType = isSupportedShapeType(sSourceFilename);
     if (!supportedType.first)
@@ -517,10 +519,10 @@ long ShapeFileDataSource::GetCurrentRecordIndex() const {
 
 /** Returns the number of fields in record buffer. */
 long ShapeFileDataSource::GetNumValues() {
-    long count=2; /* the latitude/longitude coordinates are implicit in the count */
-    if (_dbase_file.get())
-        count += _dbase_file->GetNumFields();
-    return _fields_map.size() > 0 ? std::min(static_cast<long>(_fields_map.size()), count) : count;
+    //long count=4; /* the generatedid, onecount, latitude/longitude coordinates are implicit in the count */
+    //if (_dbase_file.get())
+    //    count += _dbase_file->GetNumFields();
+    return static_cast<long>(_fields_map.size());
 }
 
 /** Returns iFieldIndex'th field value from current record. */
@@ -570,10 +572,7 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
 /** Positions read cursor to first record. */
 void ShapeFileDataSource::GotoFirstRecord() {
     if (_num_records) {
-        if (_dbase_file.get())
-            _dbase_file->GotoRecord(1);
         _current_record = 0;
-        _first_read = false;
         _current_field_idx=-1;
     }  
 }
@@ -582,9 +581,7 @@ void ShapeFileDataSource::GotoFirstRecord() {
 bool ShapeFileDataSource::ReadRecord() {
     if (_current_record >= _num_records) return false;
     _current_field_idx=-1;
-    if (_first_read)
-        GotoFirstRecord();
-    else
+    if (_dbase_file.get())
         _dbase_file->GotoRecord(++_current_record);
-    return true;  
+    return true;
 }

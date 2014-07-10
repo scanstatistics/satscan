@@ -384,7 +384,13 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
            continue;
          }
          //add the tract identifier and coordinates to trac handler
-         gTractHandler.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
+         const char * identifier = Source.GetValueAt(uLocationIndex);
+         if (!identifier) {
+            gPrint.Printf("Error: Missing location id in record %ld of coordinates file.\n", BasePrint::P_ERROR, Source.GetCurrentRecordIndex());
+            bValid = false;
+            continue;
+         }
+         gTractHandler.addLocation(identifier, vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -434,7 +440,13 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
            continue;
         }
         //add the tract identifier and coordinates to trac handler
-        gTractHandler.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
+        const char * identifier = Source.GetValueAt(uLocationIndex);
+        if (!identifier) {
+            gPrint.Printf("Error: Missing location id in record %ld of coordinates file.\n", BasePrint::P_ERROR, Source.GetCurrentRecordIndex());
+            bValid = false;
+            continue;
+        }
+        gTractHandler.addLocation(identifier, vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -1061,7 +1073,14 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
         NeighborsSet.reset();
         while (Source->GetValueAt(uLocation0ffset)) {
           //find location identifer internal index
-          if ((tLocationIndex = gTractHandler.getLocationIndex(Source->GetValueAt(uLocation0ffset))) > -1) {
+          const char * identifier = Source->GetValueAt(uLocation0ffset);
+          if (!identifier) {
+              bValid = false;
+              gPrint.Printf("Error: Location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
+                            Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+              continue;
+          }
+          if ((tLocationIndex = gTractHandler.getLocationIndex(identifier)) > -1) {
             if (NeighborsSet.test(tLocationIndex)) {
               bValid = false;
               gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
@@ -1073,7 +1092,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
             }
           }
           else {
-            tLocationIndex = gTractHandler.getMetaLocations().getMetaLocationIndex(Source->GetValueAt(uLocation0ffset));
+            tLocationIndex = gTractHandler.getMetaLocations().getMetaLocationIndex(identifier);
             gTractHandler.getMetaLocations().getAtomicIndexes(tLocationIndex, AtomicIndexes);
             for (size_t t=0; t < AtomicIndexes.size(); ++t) {
               if (NeighborsSet.test(AtomicIndexes[t])) {
@@ -1118,21 +1137,27 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     - else returns SaTScanDataReader::Accepted */
 SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
    //Validate that tract identifer is one of those defined in the coordinates file.
-   if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(Source.GetValueAt(guLocationIndex))) == -1) {
-     if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-       gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
-                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
-                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+    const char * identifier = Source.GetValueAt(guLocationIndex);
+    if (!identifier) {
+       gPrint.Printf("Error: Location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
+                     Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return SaTScanDataReader::Rejected;
-     }
-     if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
-                     "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
-                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
-       gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
-     }
-     return SaTScanDataReader::Ignored;
-  }
-  return SaTScanDataReader::Accepted;
+    }
+    if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(identifier)) == -1) {
+        if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+            gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
+                          gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
+                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+            return SaTScanDataReader::Rejected;
+        }
+        if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
+            gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
+                          "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
+                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+            gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
+        }
+        return SaTScanDataReader::Ignored;
+    }
+    return SaTScanDataReader::Accepted;
 }
 

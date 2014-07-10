@@ -18,12 +18,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-import org.satscan.app.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- *
- * @author Hostovic
- */
 public class DBaseImportDataSource implements ImportDataSource {
 
     private final File _sourceFile;
@@ -31,15 +28,23 @@ public class DBaseImportDataSource implements ImportDataSource {
     private int _currentRowNumber = 0;
     private boolean _formatDates;
     private final String _libDateFormat = "EEE MMM dd HH:mm:ss z yyyy"; //"Fri Aug 30 00:00:00 EDT 2002"
+    private boolean _show_generateid=true;
+    private boolean _show_onecont=true;
+    private Vector<Object> _column_names = new Vector<Object>();    
 
     /** Creates a new instance of DBaseImportDataSource */
     public DBaseImportDataSource(File file, boolean formatDates) {
         _sourceFile = file;
         _formatDates = formatDates;
-
         try {
             InputStream inputStream = new FileInputStream(_sourceFile);
             _reader = new DBFReader(inputStream);
+            _column_names.add("Generated Id");
+            _column_names.add("One Count");
+            for (int i=0; i < _reader.getFieldCount(); ++i) {
+                String name = _reader.getField(i).getName();
+                _column_names.add(name.isEmpty() ? ("Column " + (i + 1)) : name);
+            }            
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -57,49 +62,43 @@ public class DBaseImportDataSource implements ImportDataSource {
      */
     public boolean isColumnDate(int iColumn) {
         try {
-            return _reader.getField(iColumn).getDataType() == DBFField.FIELD_TYPE_D;
+            if (iColumn <= 1) return false; // generatedId, oneCount columns are not date field
+            return _reader.getField(iColumn - 2).getDataType() == DBFField.FIELD_TYPE_D;
         } catch (DBFException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    /**
-     * Returns whether column at index is a numeric field.
-     */
+    /* Returns whether column at index is a numeric field. */
     public boolean isColumnNumeric(int iColumn) {
         try {
-            return _reader.getField(iColumn).getDataType() == DBFField.FIELD_TYPE_N;
+            if (iColumn <= 1) return false; // custom columns aren't numeric field
+            return _reader.getField(iColumn - 2).getDataType() == DBFField.FIELD_TYPE_N;
         } catch (DBFException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    /**
-     * Returns current row index.
-     */
+    /** Returns current row index. */
     public long getCurrentRecordNum() {
         return _currentRowNumber;
     }
 
-    /**
-     * Returns array of objects that define the column names of table.
-     */
+    /** Returns array of objects that define the column names of table. */
     public Object[] getColumnNames() {
-        Vector<Object> names = new Vector<Object>();
-        try {
-            for (int i = 0; i < _reader.getFieldCount(); ++i) {
-                names.add(_reader.getField(i).getName());
-            }
-        } catch (DBFException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        return names.toArray();
+        return _column_names.toArray();
     }
 
-    /**
-     * Advances row index and reads data into object array. Returns array of objects
-     * if not end of file, otherwise returns null.
-     */
+    public int getColumnIndex(String name) {
+        for (int i=0; i < _column_names.size(); ++i) {
+            String column_name = (String)_column_names.elementAt(i);
+            if (column_name.equals(name)) {
+                return i + 1;
+            }
+        } return 0;
+    }
+    
+    /** Advances row index and reads data into object array. Returns array of objects if not end of file, otherwise returns null. */
     public Object[] readRow() {
         Vector<Object> values = new Vector<Object>();
         try {
@@ -107,11 +106,12 @@ public class DBaseImportDataSource implements ImportDataSource {
             if (record == null) {
                 return null;
             }
-            for (int i = 0; i < record.length; ++i) {
-                if (record[i] == null) //replace null values with empty string
-                {
+            values.add("location" + (_currentRowNumber + 1));
+            values.add("1");
+            for (int i=0; i < record.length; ++i) {
+                if (record[i] == null) {//replace null values with empty string
                     values.add("");
-                } else if (isColumnDate(i)) {
+                } else if (isColumnDate(i + 2)) {
                     //reformat date to format that we want either YYYYMMDD or YYYY/MM/DD
                     GregorianCalendar date = new GregorianCalendar();
                     date.setTime(new SimpleDateFormat(_libDateFormat).parse(record[i].toString()));
@@ -134,15 +134,14 @@ public class DBaseImportDataSource implements ImportDataSource {
                     }
                     str.append(day);
                     values.add(str.toString());
-                } else if (isColumnNumeric(i)) {
+                } else if (isColumnNumeric(i + 2)) {
                     //reformat numeric fields with zero precision to have no decimal
                     String value = record[i].toString();
                     if (_reader.getField(i).getDecimalCount() == 0 && value.indexOf('.') != -1) {
                         value = value.substring(0, value.indexOf('.'));
                     }
                     values.add(value);
-                } else //otherwise, accept value as it is
-                {
+                } else {//otherwise, accept value as it is
                     values.add(record[i].toString());
                 }
             }

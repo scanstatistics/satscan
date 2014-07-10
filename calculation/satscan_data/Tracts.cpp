@@ -62,11 +62,11 @@ void TractHandler::Coordinates::retrieve(std::vector<double>& Repository) const 
 //////////////// TractHandler::LocationIdentifier class ////////////////////////
 
 /** constructor */
-TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aCoordinates)
-                       :gsIndentifier(0) {
-  gsIndentifier = new char[strlen(sIdentifier) + 1];
-  strcpy(gsIndentifier, sIdentifier);
-  gvCoordinatesContainer.add(&aCoordinates, true);
+TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aCoordinates) : gsIndentifier(0) {
+    if (!sIdentifier) throw prg_error("Null location pointer.", "Location()");
+    gsIndentifier = new char[strlen(sIdentifier) + 1];
+    strcpy(gsIndentifier, sIdentifier);
+    gvCoordinatesContainer.add(&aCoordinates, true);
 }
 
 TractHandler::Location::~Location() {try {delete[] gsIndentifier;}catch(...){}}
@@ -155,6 +155,8 @@ void TractHandler::addLocation(const char *sIdentifier) {
   try {
     if (gbAggregatingTracts) return;//when aggregating locations, insertion process always succeeds
 
+    if (!sIdentifier) throw prg_error("Null location pointer.", "addLocation()");
+
     tract_t tLocationIndex=gMetaLocationsManager.getMetaLocationPool().getMetaLocationIndex(sIdentifier);
     if (tLocationIndex > -1) {
       gMetaLocationsManager.addReferenced(tLocationIndex); return;
@@ -180,6 +182,8 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
 
     if (vCoordinates.size() != giCoordinateDimensions)
       throw prg_error("Coordinate dimension is %u, expected %d.", "addLocation()", vCoordinates.size(), giCoordinateDimensions);
+
+    if (!sIdentifier) throw prg_error("Null location pointer.", "addLocation()");
 
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
@@ -258,6 +262,8 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
     if (gbAggregatingTracts)
       //when aggregation locations, all tract identifiers refer to the same index
       return 0;
+
+    if (!sIdentifier) throw prg_error("Null location pointer.", "getLocationIndex()");
 
     std::string _identifier;
 

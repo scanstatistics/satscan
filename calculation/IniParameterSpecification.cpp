@@ -52,12 +52,6 @@ const char * IniParameterSpecification::SourceFieldMapOneCount    = "oneCount";
 const char * IniParameterSpecification::SourceFieldMapGeneratedId = "generatedId";
 const char * IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate = "unspecifiedPopDate";
 
-const char * IniParameterSpecification::SourceShapeCoordinatesType= "SourceShapeCoordinatesType";
-const char * IniParameterSpecification::SourceHemisphere          = "SourceHemisphere";
-const char * IniParameterSpecification::SourceZone                = "SourceZone";
-const char * IniParameterSpecification::SourceNorthing            = "SourceNorthing";
-const char * IniParameterSpecification::SourceEasting             = "SourceEasting";
-
 /** constructor - builds specification to current version */
 IniParameterSpecification::IniParameterSpecification() {
     // default to current version

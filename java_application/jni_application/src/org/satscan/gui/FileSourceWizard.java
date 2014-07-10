@@ -17,6 +17,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -54,9 +56,6 @@ import org.satscan.importer.InputSourceSettings.SourceDataFileType;
 import org.satscan.importer.ShapefileDataSource;
 import org.satscan.utils.FileAccess;
 
-/**
- * @author  Hostovic
- */
 public class FileSourceWizard extends javax.swing.JDialog implements PropertyChangeListener {
 
     private Preferences _prefs = Preferences.userNodeForPackage(getClass());
@@ -65,25 +64,22 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private final String _fileFormatCardName = "File Format";
     private final String _dataMappingCardName = "Mapping Panel";
     private final String _outPutSettingsCardName = "Output Settings";
-    private final String _fileFormatDelimitedCardName = "cvsPanel";
-    private final String _fileFormatFixedColumnCardName = "fixedPanel";
-    private final String _unAssignedVariableName = "unassigned";
-    private final String _importFilePrefix = "import";
+    public static final String _unassigned_variable = "unassigned";
     private final int _dateVariableColumn = 2;
     private final int _sourceFileLineSample = 200;
     private final UndoManager undo = new UndoManager();
-    private Vector<ImportVariable> _importVariables = new Vector<ImportVariable>();
-    private String _sourceFile;
+    private Vector<ImportVariable> _import_variables = new Vector<ImportVariable>();
     private final Parameters.ProbabilityModelType _startingModelType;
     private Parameters.CoordinatesType _coordinatesType;
     private String _showingCard;
     private boolean _errorSamplingSourceFile = true;
-    private PreviewTableModel _previewTableModel = null;
+    private PreviewTableModel _preview_table_model = null;
     private File _destinationFile = null;
     private File _suggested_import_filename;
-    private final InputSourceSettings _inputSourceSettings;
+    private final InputSourceSettings _input_source_settings;
     private boolean _executed_import=false;
     private boolean _needs_import_save=false;
+    private boolean _refresh_related_settings=false;
 
     /** Creates new form FileSourceWizard */
     public FileSourceWizard(java.awt.Frame parent,
@@ -95,21 +91,23 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         super(parent, true);
         setSuggestedImportName(sourceFile, suggested_filename, inputSourceSettings.getInputFileType());
         initComponents();
-        _inputSourceSettings = new InputSourceSettings(inputSourceSettings);
-        _inputSourceSettings.setSourceDataFileType(getSourceFileType(sourceFile));
-        _sourceFile = sourceFile;
+        _source_filename.setText(sourceFile);
+        _input_source_settings = new InputSourceSettings(inputSourceSettings);
+        if (!_input_source_settings.isSet())
+            _input_source_settings.setSourceDataFileType(getSourceFileType(sourceFile));
         _startingModelType = modelType;
         _coordinatesType = coordinatesType;
         _progressBar.setVisible(false);
         configureForDestinationFileType();
         setShowingVariables();
-        initializeImportVariableMappings();
-        if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            // live read not implemented for Excel files.
+        initializeVariableMappings();
+        if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+            _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
+            // live read not implemented for Excel97_2003 files.
             _execute_import_now.setSelected(true);
             _save_import_settings.setEnabled(false);
         } else {
-            _save_import_settings.setSelected(_inputSourceSettings.isSet());
+            _save_import_settings.setSelected(_input_source_settings.isSet());
         }
         setLocationRelativeTo(parent);
     }
@@ -130,9 +128,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private boolean checkForRequiredVariables() {
         StringBuilder message = new StringBuilder();
         Vector<ImportVariable> missing = new Vector<ImportVariable>();
-        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
-        for (ImportVariable variable : _importVariables) {
-            if (variable.getIsRequiredField() && model.isShowing(variable.getVariableName()) && !variable.getIsMappedToInputFileVariable()) {
+        VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
+        for (ImportVariable variable : _import_variables) {
+            if (variable.getIsRequiredField() && 
+                model.isShowing(variable.getVariableName()) && 
+                (!variable.isMappedToSourceField() || ((String)model.getValueAt(variable.getVariableIndex(), 1)).equals(FileSourceWizard.this._unassigned_variable) )) {
                 missing.add(variable);
             }
         }
@@ -149,9 +149,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             return true;
         }
         // Special case for adjustments file: We need to ensure that either both or neither dates are assigned.
-        if (_inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.AdjustmentsByRR) {
-            if ((model.variables_visible.get(2).getIsMappedToInputFileVariable() && !model.variables_visible.get(3).getIsMappedToInputFileVariable()) ||
-                (!model.variables_visible.get(2).getIsMappedToInputFileVariable() && model.variables_visible.get(3).getIsMappedToInputFileVariable())) {
+        if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.AdjustmentsByRR) {
+            if ((model._visible_variables.get(2).isMappedToSourceField() && !model._visible_variables.get(3).isMappedToSourceField()) ||
+                (!model._visible_variables.get(2).isMappedToSourceField() && model._visible_variables.get(3).isMappedToSourceField())) {
                 message.append("For the " + getInputFileTypeString());
                 message.append(", the dates are required to be selected or omitted as a pair.\n");
                 JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
@@ -163,15 +163,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
    
     /** Clears field mapping between input variables and field name choices. */
     private void clearSaTScanVariableFieldIndexes() {
-        for (ImportVariable variable : _importVariables) {
-            variable.setInputFileVariableIndex(0);
+        for (ImportVariable variable : _import_variables) {
+            variable.setSourceFieldIndex(0);
         }
-        ((VariableMappingTableModel) _fieldMapTable.getModel()).fireTableDataChanged();
+        ((VariableMappingTableModel) _mapping_table.getModel()).fireTableDataChanged();
     }
 
     /** Configures the combo-box which changes what variables are displayed. */
     private void configureDisplayVariablesComboBox() {
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case:
                 _displayVariablesComboBox.removeAllItems();
                 _displayVariablesComboBox.addItem("discrete Poisson model");
@@ -212,7 +212,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Configures the variables vector based upon the source file type. */
     private void configureForDestinationFileType() {
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case: setCaseFileVariables(); break;
             case Control: setControlFileVariables(); break;
             case Population: setPopulationFileVariables(); break;
@@ -223,7 +223,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Neighbors:
             case MetaLocations:
             case AlternativeHypothesis: break;
-            default: throw new UnknownEnumException(_inputSourceSettings.getInputFileType());
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         configureDisplayVariablesComboBox();
     }
@@ -250,10 +250,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             nextButtonCSV.setEnabled(!_errorSamplingSourceFile && (_otherRadioButton.isSelected() ? _otherFieldSeparatorTextField.getText().length() > 0 : true));
         } else if (_showingCard.equals(_dataMappingCardName)) {
             // Require there is at least one record to import and at least one variable is mapped - we'll verify the mappings later.
-            if (_importTableDataTable.getModel().getRowCount() > 0) {
-                VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
-                for (int i=0; i < model.variables_visible.size() && !nextButtonSource.isEnabled(); ++i) {
-                    nextButtonMapping.setEnabled(model.variables_visible.get(i).getIsMappedToInputFileVariable());
+            if (_source_data_table.getModel().getRowCount() > 0) {
+                VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
+                for (int i=0; i < model._visible_variables.size() && !nextButtonSource.isEnabled(); ++i) {
+                    nextButtonMapping.setEnabled(model._visible_variables.get(i).isMappedToSourceField());
                 }
             }
         } else if (_showingCard.equals(_outPutSettingsCardName)) {
@@ -290,18 +290,18 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Used to determine whether user is importing to a date field. */
     public boolean getDateFieldImported() {
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case:
-            case Control: return _importVariables.get(_dateVariableColumn).getIsMappedToInputFileVariable();
-            case Population: return _importVariables.get(1).getIsMappedToInputFileVariable();
+            case Control: return _import_variables.get(_dateVariableColumn).isMappedToSourceField();
+            case Population: return _import_variables.get(1).isMappedToSourceField();
             case Coordinates:
             case SpecialGrid:
             case MaxCirclePopulation: 
             case Neighbors:
             case MetaLocations:
             case AlternativeHypothesis: return false;
-            case AdjustmentsByRR: return _importVariables.get(_dateVariableColumn).getIsMappedToInputFileVariable();
-            default: throw new UnknownEnumException(_inputSourceSettings.getInputFileType());
+            case AdjustmentsByRR: return _import_variables.get(_dateVariableColumn).isMappedToSourceField();
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
     }
     
@@ -315,12 +315,17 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return _executed_import;
     }    
     
+    /** Returned whether the user chose to execute import now -- creating an imported file. */
+    public boolean needsSettingsRefresh() {
+        return _refresh_related_settings;
+    }      
+    
     /** Builds html which details the fields expected in the input file. */
     private String getFileExpectedFormatHtml() {
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>th {font-weight:bold;text-align:right;}</style></head><body>");
         builder.append(getFileExpectedFormatParagraphs());
-        if (isImportableFileType(_inputSourceSettings.getInputFileType())) {
+        if (isImportableFileType(_input_source_settings.getInputFileType())) {
             builder.append("<p>If the selected file is not SaTScan formatted (whitespace delimited) or fields are not in the expected order, select the 'Next' button to specify how to read this file.</p>");
         }
         builder.append("</body></html>");
@@ -332,15 +337,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         String heplID="";
         StringBuilder builder = new StringBuilder();
         builder.append("<p style=\"margin-top: 0;\">The expected format of the ");
-        builder.append(FileSelectionDialog.getFileTypeAsString(_inputSourceSettings.getInputFileType()).toLowerCase()).append(" file");
-        if (_inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Case) {
+        builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file");
+        if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Case) {
             builder.append(", using the ").append(Parameters.GetProbabilityModelTypeAsString(getModelControlType())).append(" probability model");
-        } else if (_inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates ||
-                   _inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
+        } else if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates ||
+                   _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
             builder.append(", using ").append(getCoorinatesControlType() == Parameters.CoordinatesType.LATLON ? "Latitude/Longitude" : "Cartesian").append(" coordinates");
         }
         builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case :
                 heplID = AppConstants.CASEFILE_HELPID;
                 switch (getModelControlType()) {
@@ -411,7 +416,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 heplID = AppConstants.ALTERNATIVEHYPOTHESIS_HELPID;
                 builder.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
-            default: throw new UnknownEnumException(_inputSourceSettings.getInputFileType());
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");
         //builder.append("<span style=\"padding-left:20px;\">(<a style=\"font-weight:bold;color:black;font-size:smaller;\" href=\"").append(heplID).append("\">More Information</a>)</span>");
@@ -429,22 +434,24 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
     
-    /** Return the ImportSource object -- based upon the source file type. */
+    /** Return the ImportDataSource object -- based upon the source file type. */
     private ImportDataSource getImportSource() throws FileNotFoundException {
-        if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
-            return new ShapefileDataSource(new File(_sourceFile), true);
-        } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
-            return new DBaseImportDataSource(new File(_sourceFile), false);
-        } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            return new XLSImportDataSource(new File(_sourceFile), true);
+        if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
+            return new ShapefileDataSource(new File(getSourceFilename()), true);
+        } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
+            return new DBaseImportDataSource(new File(getSourceFilename()), false);
+        } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+                   _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
+            return new XLSImportDataSource(new File(getSourceFilename()));
         } else {
-            return new CSVImportDataSource(new File(_sourceFile), _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker());
+            int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
+            return new CSVImportDataSource(new File(getSourceFilename()), _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows);
         }
     }
     
     /** Returns InputSourceSettings.InputFileType as string. */
     private String getInputFileTypeString() {
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case: return "Case File";
             case Control: return "Control File";
             case Population: return "Population File";
@@ -455,7 +462,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Neighbors: return "Non-Euclidian Neighbors";
             case MetaLocations: return "Meta Locations";
             case AlternativeHypothesis: return "Alternative Hypothesis";
-            default: throw new UnknownEnumException(_inputSourceSettings.getInputFileType());
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
     }    
     
@@ -464,7 +471,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // define file filters supported by import wizard
         ArrayList<InputFileFilter> filters = new ArrayList<InputFileFilter>();
         filters.add(new InputFileFilter("csv","Delimited Files (*.csv)"));
-        filters.add(new InputFileFilter("xls","Excel Files (*.xls)"));
+        filters.add(new InputFileFilter("xlsx","Excel Files (*.xlsx)"));
+        filters.add(new InputFileFilter("xls","Excel 97-2003 Files (*.xls)"));
         filters.add(new InputFileFilter("dbf","dBase Files (*.dbf)"));
         filters.add(new InputFileFilter("txt","Text Files (*.txt)"));
         filters.add(new InputFileFilter("shp","Shape Files (*.shp)"));
@@ -473,63 +481,65 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Returns InputSourceSettings object from user selections in wizard. */
     public final InputSourceSettings getInputSourceSettings() {
-        return _inputSourceSettings;
+        return _input_source_settings;
     }
     
-    /** Builds html which details the input source type and variable mappings to source file's columns. */
+    /** Builds html which details the input source type and variable mappings to source file'variableIdx columns. */
     private String getMappingsHtml() {
         Vector<String> columnNames = getSourceColumnNames();
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>th {font-weight: bold;text-align:right;}</style></head><body>");
         builder.append(getFileExpectedFormatParagraphs());
-        builder.append("<p style=\"margin-top: 10px;\"> The ").append(FileSelectionDialog.getFileTypeAsString(_inputSourceSettings.getInputFileType()).toLowerCase());
+        builder.append("<p style=\"margin-top: 10px;\"> The ").append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase());
         builder.append(" data will be read from the specified file according to the following settings:</p>");
         builder.append("<div style=\"margin-top:5px;\"><table><tr><td valign=\"top\"><table >");
-        switch (_inputSourceSettings.getSourceDataFileType()) {
+        switch (_input_source_settings.getSourceDataFileType()) {
             case CSV :
                 builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>CSV</td></tr>");
                 builder.append("<tr><th>Delimiter:</th><td>");
-                if (_inputSourceSettings.getDelimiter().equals("") || _inputSourceSettings.getDelimiter().equals(" ")) {
+                if (_input_source_settings.getDelimiter().equals("") || _input_source_settings.getDelimiter().equals(" ")) {
                     builder.append("Whitespace");
-                } else if (_inputSourceSettings.getDelimiter().equals(",")) {
+                } else if (_input_source_settings.getDelimiter().equals(",")) {
                     builder.append("Comma");
-                } else if (_inputSourceSettings.getDelimiter().equals(";")) {
+                } else if (_input_source_settings.getDelimiter().equals(";")) {
                     builder.append("Semicolon");
                 } else {
-                    builder.append(_inputSourceSettings.getDelimiter());
+                    builder.append(_input_source_settings.getDelimiter());
                 }
                 builder.append("</td></tr><tr><th style=\"white-space:nowrap;\">Group By:</th><td style=\"white-space:nowrap;\">");
-                if (_inputSourceSettings.getGroup().equals("\"")) {
+                if (_input_source_settings.getGroup().equals("\"")) {
                     builder.append("Double Quote");
-                } else if (_inputSourceSettings.getGroup().equals("'")) {
+                } else if (_input_source_settings.getGroup().equals("'")) {
                     builder.append("Single Quote");
                 } else {
-                    builder.append(_inputSourceSettings.getGroup());
+                    builder.append(_input_source_settings.getGroup());
                 }
-                builder.append("</td></tr><tr><th style=\"white-space:nowrap;\">Lines Skipped:</th><td>" + _inputSourceSettings.getSkiplines() + "</td></tr>");
-                builder.append("<tr><th style=\"white-space:nowrap;\">Column Header:</th><td>" + (_inputSourceSettings.getFirstRowHeader() ? "Yes" : "No") + "</td></tr>");
+                builder.append("</td></tr><tr><th style=\"white-space:nowrap;\">Lines Skipped:</th><td>" + _input_source_settings.getSkiplines() + "</td></tr>");
+                builder.append("<tr><th style=\"white-space:nowrap;\">Column Header:</th><td>" + (_input_source_settings.getFirstRowHeader() ? "Yes" : "No") + "</td></tr>");
                 break;
             case dBase : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>dBase</td></tr>"); break;
+            case Excel97_2003 : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Excel 97-2003</td></tr>"); break;
             case Excel : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Excel</td></tr>"); break;
             case Shapefile : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Shapefile</td></tr>"); break;
         }
         builder.append("</table></td>");
         builder.append("<td valign=\"top\"><table><tr><th valign=\"top\" style=\"white-space:nowrap;\">Field Mapping:</th><td><table>");
-        for (int i=0; i < _inputSourceSettings.getFieldMaps().size(); ++i) {
+        for (int i=0; i < _input_source_settings.getFieldMaps().size(); ++i) {
             ImportVariable variable = getShowingImportVariableAt(i);
-            if (variable != null && variable.getInputFileVariableIndex() > 0) {
-                builder.append("<tr><td>" + variable.getVariableDisplayName() + "</td><td> &#8667;</td> <td>");
-                if (_inputSourceSettings.getFieldMaps().get(i).isEmpty() || Integer.parseInt(_inputSourceSettings.getFieldMaps().get(i)) < 1) {
+            if (variable != null && variable.getSourceFieldIndex() > 0) {
+                builder.append("<tr><td>" + variable.getDisplayLabel() + "</td><td> &#8667;</td> <td>");
+                int col_idx = Integer.parseInt(_input_source_settings.getFieldMaps().get(i));
+                if (_input_source_settings.getFieldMaps().get(i).isEmpty() || col_idx < 1) {
                     builder.append("---");
                 } else {
-                    if (i < columnNames.size()) {
-                      String name = columnNames.elementAt(i);
+                    if (col_idx <= columnNames.size()) {
+                      String name = columnNames.elementAt(col_idx - 1);
                       if (name.length() > 15) {
                           name = name.substring(0, 14) + " ...";
                       }
-                      builder.append(columnNames.elementAt(Integer.parseInt(_inputSourceSettings.getFieldMaps().get(i)) - 1));
+                      builder.append(name);
                     } else {
-                        builder.append("Column " + (_inputSourceSettings.getFieldMaps().get(i)));
+                        builder.append("---");
                     }
                 }
                 builder.append("</td></tr>");
@@ -539,7 +549,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return builder.toString();
     }
 
-    /** Returns the probability model type selected by user. */
+    /** Returns the probability mapping_model type selected by user. */
     public Parameters.ProbabilityModelType getModelControlType() {
         switch (_displayVariablesComboBox.getSelectedIndex()) {
             case 1: return Parameters.ProbabilityModelType.BERNOULLI;
@@ -560,8 +570,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Returns the first showing import variable with a target field index == idx. */
     private ImportVariable getShowingImportVariableAt(int idx) {
-        for (ImportVariable variable : _importVariables) {
-            if (variable.getShowing() && variable.getTargetFieldIndex() == idx)
+        for (ImportVariable variable : _import_variables) {
+            if (variable.getShowing() && variable.getVariableIndex() == idx)
                 return variable;
         } return null;
     }    
@@ -570,55 +580,63 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private Vector<String> getSourceColumnNames() {
         Vector<String> column_names = new Vector<String>();
         try {
-            File file = new File(_sourceFile);
+            File file = new File(getSourceFilename());
             if (file.exists()) {
                 Object[] names=null;
-                if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
+                if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
                     ShapefileDataSource source = new ShapefileDataSource(file, true);
                     names = source.getColumnNames();
-                } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
+                } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
                     DBaseImportDataSource source = new DBaseImportDataSource(file, true);
                     names = source.getColumnNames();
-                } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV && _inputSourceSettings.getFirstRowHeader()) {
-                    CSVImportDataSource source = new CSVImportDataSource(file, true, '\n', _inputSourceSettings.getDelimiter().charAt(0), _inputSourceSettings.getGroup().charAt(0));
+                } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV) {
+                    CSVImportDataSource source = new CSVImportDataSource(file, _input_source_settings.getFirstRowHeader(), '\n', _input_source_settings.getDelimiter().charAt(0), _input_source_settings.getGroup().charAt(0), _input_source_settings.getSkiplines());
+                    names = source.getColumnNames();
+                } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+                           _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
+                    XLSImportDataSource source = new XLSImportDataSource(file);
                     names = source.getColumnNames();
                 }
+                
                 for (int i=0; names != null && i < names.length; ++i) {
                     column_names.add((String)names[i]);
                 }
             }
-        } catch (Exception e){}
+        } catch (Exception ex){
+            Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return column_names;
     }
     
     /** Returns source file type given source file extension. */
-    private InputSourceSettings.SourceDataFileType getSourceFileType(final String filename) {
+    static public InputSourceSettings.SourceDataFileType getSourceFileType(final String filename) {
         int pos = filename.lastIndexOf('.');
         if (pos != -1 && filename.substring(pos + 1).equalsIgnoreCase("shp")) {
             return InputSourceSettings.SourceDataFileType.Shapefile;
         } else if (pos != -1 && filename.substring(pos + 1).equalsIgnoreCase("dbf")) {
             return InputSourceSettings.SourceDataFileType.dBase;
-        } else if (pos != -1 && (filename.substring(pos + 1).equalsIgnoreCase("xls") || filename.substring(pos + 1).equalsIgnoreCase("xlsx"))) {
+        } else if (pos != -1 && filename.substring(pos + 1).equalsIgnoreCase("xls")) {
+            return InputSourceSettings.SourceDataFileType.Excel97_2003;
+        } else if (pos != -1 && filename.substring(pos + 1).equalsIgnoreCase("xlsx")) {
             return InputSourceSettings.SourceDataFileType.Excel;
-        }
+        }        
         return InputSourceSettings.SourceDataFileType.CSV;
     }
     
     /** Returns source filename. */
     public String getSourceFilename() {
-        return _sourceFile;
+        return _source_filename.getText();
     }
     
     /** Sets initial import variable mappings from input source. */
-    private void initializeImportVariableMappings() {
-        for (int s=0; s < _inputSourceSettings.getFieldMaps().size(); ++s) {
-            // translate field map index into input file variable index
-            String targetfieldStr = _inputSourceSettings.getFieldMaps().get(s).trim();
-            if (!targetfieldStr.isEmpty()) {
-                int s_index = Integer.parseInt(_inputSourceSettings.getFieldMaps().get(s));
-                for (ImportVariable variable : _importVariables) {
-                    if (variable.getTargetFieldIndex() == s) {
-                        variable.setInputFileVariableIndex(s_index);
+    private void initializeVariableMappings() {
+        for (int variableIdx=0; variableIdx < _input_source_settings.getFieldMaps().size(); ++variableIdx) {
+            String fieldStr = _input_source_settings.getFieldMaps().get(variableIdx).trim();
+            if (!fieldStr.isEmpty()) {
+                int source_index = Integer.parseInt(fieldStr);
+                for (ImportVariable variable : _import_variables) {
+                    if (variable.getVariableIndex() == variableIdx) {
+                        variable.setSourceFieldIndex(source_index);
                     }
                 }
             }
@@ -662,16 +680,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (_showingCard == _startCardName) {
                 /* The user might have changed the filename on the File Options panel.
                  * We need to check the SourceDataFileType for specified filename. */
-                _sourceFile = _source_filename.getText();
-                if (FileAccess.ValidateFileAccess(_sourceFile, false)) {
-                    _inputSourceSettings.setSourceDataFileType(getSourceFileType(_sourceFile));
-                    if (_inputSourceSettings.getSourceDataFileType() == SourceDataFileType.CSV) {
+                if (FileAccess.ValidateFileAccess(getSourceFilename(), false)) {
+                    _input_source_settings.setSourceDataFileType(getSourceFileType(getSourceFilename()));
+                    if (_input_source_settings.getSourceDataFileType() == SourceDataFileType.CSV) {
                         makeActivePanel(_fileFormatCardName);
                     } else {
                         makeActivePanel(_dataMappingCardName);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(this, _sourceFile + " could not be opened for reading.", "Note", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, getSourceFilename() + " could not be opened for reading.", "Note", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (_showingCard == _fileFormatCardName) {
                 makeActivePanel(_dataMappingCardName);
@@ -689,21 +706,21 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             readDataFileIntoRawDisplayField();
-            if (_inputSourceSettings.isSet()) {
+            if (_input_source_settings.isSet()) {
                 // define settings given input source settings
-                _ignoreRowsTextField.setText(Integer.toString(_inputSourceSettings.getSkiplines()));
-                _firstRowColumnHeadersCheckBox.setSelected(_inputSourceSettings.getFirstRowHeader());
-                if (_inputSourceSettings.getDelimiter().isEmpty() || _inputSourceSettings.getDelimiter().equalsIgnoreCase(" ")) {
+                _ignoreRowsTextField.setText(Integer.toString(_input_source_settings.getSkiplines()));
+                _firstRowColumnHeadersCheckBox.setSelected(_input_source_settings.getFirstRowHeader());
+                if (_input_source_settings.getDelimiter().isEmpty() || _input_source_settings.getDelimiter().equalsIgnoreCase(" ")) {
                     _whitespaceRadioButton.setSelected(true);
-                } else if (_inputSourceSettings.getDelimiter().equalsIgnoreCase(",")) {
+                } else if (_input_source_settings.getDelimiter().equalsIgnoreCase(",")) {
                     _commaRadioButton.setSelected(true);
-                } else if (_inputSourceSettings.getDelimiter().equalsIgnoreCase(";")) {
+                } else if (_input_source_settings.getDelimiter().equalsIgnoreCase(";")) {
                     _semiColonRadioButton.setSelected(true);
                 } else {
                     _otherRadioButton.setSelected(true);
-                    _otherFieldSeparatorTextField.setText("" + _inputSourceSettings.getDelimiter().charAt(0));
+                    _otherFieldSeparatorTextField.setText("" + _input_source_settings.getDelimiter().charAt(0));
                 }
-                if (_inputSourceSettings.getGroup().equalsIgnoreCase("'")) {
+                if (_input_source_settings.getGroup().equalsIgnoreCase("'")) {
                     _singleQuotesRadioButton.setSelected(true);
                 } else {
                     _doubleQuotesRadioButton.setSelected(true);
@@ -720,9 +737,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             // set the file input fields label for file type
-            _file_selection_label.setText(FileSelectionDialog.getFileTypeAsString(_inputSourceSettings.getInputFileType()) + " File:");
-            _source_filename.setText(_sourceFile);
-            if (!_inputSourceSettings.isSet()) {
+            _file_selection_label.setText(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()) + " File:");
+            if (!_input_source_settings.isSet()) {
                 _expectedFormatTextPane.setText(getFileExpectedFormatHtml());
                 _expectedFormatTextPane.setCaretPosition(0);
                 nextButtonSource.setText("Next >");
@@ -741,7 +757,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     }
                 }
             });
-            clearInputSettigs.setEnabled(_inputSourceSettings.isSet());
+            clearInputSettigs.setEnabled(_input_source_settings.isSet());
         } finally {
             waitCursor.restore();
         }
@@ -752,7 +768,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             previewSource();
+            // clear any variables that have source field mappings which are greater than the number of choices
+            for (ImportVariable variable: _import_variables) {
+                if (variable.getSourceFieldIndex() >  _preview_table_model.getDataSourceColumnNameCount())
+                    variable.setSourceFieldIndex(-1);
+            }
             setMappingTableComboCells();
+            setInputSourceSettings();
             enableNavigationButtons();
         } finally {
             waitCursor.restore();
@@ -761,116 +783,70 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Preparation for viewing the output settings panel. */
     private void prepOutputSettingsPanel() {
-        if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            // We don't have code yet that allows reading from Excel in the C++ code (caculation engine).
+        if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+            _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
+            // We don't have code yet that allows reading from Excel97_2003 in the C++ code (calculation engine).
             _execute_import_now.setSelected(true);
             _save_import_settings.setEnabled(false);
         }
-        _importTableDataTable.setModel(new DefaultTableModel());
+        _source_data_table.setModel(new DefaultTableModel());
         setInputSourceSettings();
     }
     
     /** Opening source as specified by file type. */
     private void previewSource() throws Exception {
-        //set the import tables model to default until we have an instance of the native model avaiable
-        _importTableDataTable.setModel(new DefaultTableModel());
+        //set the import tables mapping_model to default until we have an instance of the native mapping_model avaiable
+        _source_data_table.setModel(new DefaultTableModel());
 
-        //create the table model
-        if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
-            previewSourceAsShapeFile();
-        } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
-            previewSourceAsDBaseFile();
-        } else if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            previewSourceAsExcelFile();
-        } else {
-            previewSourceAsCSVFile();
+        boolean show_generatedId=false;
+        boolean show_oneCount=false;
+        switch (_input_source_settings.getInputFileType()) {
+            case Case: show_generatedId=true; show_oneCount=true; break;
+            case Control: show_generatedId=true; show_oneCount=true; break;
+            case Population: show_generatedId=true; show_oneCount=false; break;
+            case Coordinates: show_generatedId=true; show_oneCount=false; break;
+            case SpecialGrid: show_generatedId=false; show_oneCount=false; break;
+            case MaxCirclePopulation: show_generatedId=true; show_oneCount=false; break;
+            case AdjustmentsByRR: show_generatedId=true; show_oneCount=false; break;
+            case Neighbors: show_generatedId=true; show_oneCount=false; break;
+            case MetaLocations: show_generatedId=false; show_oneCount=false; break;
+            case AlternativeHypothesis: show_generatedId=true; show_oneCount=false; break;
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
+        }        
+        //create the table mapping_model
+        File file = new File(getSourceFilename());
+        if (file.exists()) {
+            if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile) {
+                String supportedType = ShapefileDataSource.isSupportedShapeType(getSourceFilename());
+                if (supportedType.length() > 0) {
+                    throw new DataSourceException(supportedType);
+                }            
+                _preview_table_model = new PreviewTableModel(new ShapefileDataSource(file, true), show_generatedId, show_oneCount);
+            } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase) {
+                _preview_table_model = new PreviewTableModel(new DBaseImportDataSource(new File(getSourceFilename()), true), show_generatedId, show_oneCount);
+            } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+                       _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
+                _preview_table_model = new PreviewTableModel(new XLSImportDataSource(new File(getSourceFilename())), show_generatedId, show_oneCount);
+            } else {
+                int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
+                _preview_table_model = new PreviewTableModel(new CSVImportDataSource(file, _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows), show_generatedId, show_oneCount);
+            }
         }
-        //now assign model to table object
-        if (_previewTableModel != null) {
-            _importTableDataTable.setModel(_previewTableModel);
+        //now assign mapping_model to table object
+        if (_preview_table_model != null) {
+            _source_data_table.setModel(_preview_table_model);
         }
 
         int widthTotal = 0;
         //calculate the column widths to fit header/data
         Vector<Integer> colWidths = new Vector<Integer>();
-        for (int c=0; c < _importTableDataTable.getColumnCount(); ++c) {
-            colWidths.add(AutofitTableColumns.getMaxColumnWidth(_importTableDataTable, c, true, 20));
+        for (int c=0; c < _source_data_table.getColumnCount(); ++c) {
+            colWidths.add(AutofitTableColumns.getMaxColumnWidth(_source_data_table, c, true, 20));
             widthTotal += colWidths.lastElement();
         }
         int additional = Math.max(0, _importTableScrollPane.getViewport().getSize().width - widthTotal - 20/*scrollbar width?*/)/colWidths.size();
         for (int c=0; c < colWidths.size(); ++c) {
-            _importTableDataTable.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);
-        }
-    }
-    
-    /** Opens source file as character delimited source file. */
-    private void previewSourceAsCSVFile() throws FileNotFoundException {
-        File file = new File(_sourceFile);
-        CSVImportDataSource source = new CSVImportDataSource(file, false, '\n', getColumnDelimiter(), getGroupMarker());
-        _previewTableModel = new PreviewTableModel(_firstRowColumnHeadersCheckBox.isSelected());
-        int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
-        for (int i = 0; i < _previewTableModel.getPreviewLength() + skipRows; ++i) {
-            Object[] values = source.readRow();
-            if (values != null && i >= skipRows) {
-                _previewTableModel.addRow(values);
-            }
-        }
-    }
-    
-    /** Opens source file as dBase file. */
-    private void previewSourceAsDBaseFile() throws Exception {
-        try {
-            DBaseImportDataSource source = new DBaseImportDataSource(new File(_sourceFile), true);
-            _previewTableModel = new PreviewTableModel(true);
-            _previewTableModel.addRow(source.getColumnNames());
-            for (int i = 0; i < _previewTableModel.getPreviewLength(); ++i) {
-                Object[] values = source.readRow();
-                if (values != null) {
-                    _previewTableModel.addRow(values);
-                }
-            }
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-    
-    /** Opens source file as dBase file. */
-    private void previewSourceAsExcelFile() throws Exception {
-        try {
-            XLSImportDataSource source = new XLSImportDataSource(new File(_sourceFile), false);
-            _previewTableModel = new PreviewTableModel(true);
-            for (int i = 0; i < _previewTableModel.getPreviewLength(); ++i) {
-                Object[] values = source.readRow();
-                if (values != null) {
-                    _previewTableModel.addRow(values);
-                }
-            }
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-    
-    /** Opens source file as shapefile. */
-    private void previewSourceAsShapeFile() throws Exception {
-        try {
-            _previewTableModel = new PreviewTableModel(true);
-            File file = new File(_sourceFile);
-            if (file.exists()) {
-                String supportedType = ShapefileDataSource.isSupportedShapeType(_sourceFile);
-                if (supportedType.length() > 0) {
-                    throw new DataSourceException(supportedType);
-                }
-                ShapefileDataSource source = new ShapefileDataSource(file, true);
-                _previewTableModel.addRow(source.getColumnNames());
-                for (int i = 0; i < _previewTableModel.getPreviewLength(); ++i) {
-                    Object[] values = source.readRow();
-                    if (values != null) {
-                        _previewTableModel.addRow(values);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw e;
+            _source_data_table.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);
         }
     }
     
@@ -880,7 +856,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (_showingCard == _fileFormatCardName) {
                makeActivePanel(_startCardName);
             } else if (_showingCard == _dataMappingCardName) {
-                switch (_inputSourceSettings.getSourceDataFileType()) {
+                switch (_input_source_settings.getSourceDataFileType()) {
                     case CSV: makeActivePanel(_fileFormatCardName); break;
                     default : makeActivePanel(_startCardName);
                 }
@@ -892,7 +868,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
     
-    /**Invoked when task's progress property changes. */
+    /**Invoked when task'variableIdx progress property changes. */
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getNewValue() instanceof Integer) {
             _progressBar.setValue(((Integer) evt.getNewValue()).intValue());
@@ -907,7 +883,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         //Attempt to open source file reader...
         FileReader fileSample = null;
         try {
-            fileSample = new FileReader(_sourceFile);
+            fileSample = new FileReader(getSourceFilename());
         } catch (FileNotFoundException e) {
             _fileContentsTextArea.append("* Unable to view source file. *");
             _fileContentsTextArea.append("* File does not exist. *");
@@ -949,216 +925,221 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Setup field descriptors for case file. */
     private void setCaseFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Number of Cases", 1, true, null, null));
-        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
-        _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null));
-        _importVariables.addElement(new ImportVariable("Censored", 4, false, null, null));
-        _importVariables.addElement(new ImportVariable("Weight", 4, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate1", 5, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate2", 6, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate3", 7, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate4", 8, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate5", 9, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate6", 10, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate7", 11, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate8", 12, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate9", 13, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate10", 14, false, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
+        _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null));
+        _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null));
+        _import_variables.addElement(new ImportVariable("Weight", 4, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate1", 5, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate2", 6, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate3", 7, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate4", 8, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate5", 9, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate6", 10, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate7", 11, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate8", 12, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate9", 13, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate10", 14, false, null, null));
     }
     
     /** Setup field descriptors for control file. */
     private void setControlFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Number of Controls", 1, true, null, null));
-        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Number of Controls", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
     }
     
     /** Setup field descriptors for coordinates file. */
     private void setGeoFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null));
-        _importVariables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null));
-        _importVariables.addElement(new ImportVariable("X", 1, true, null, null));
-        _importVariables.addElement(new ImportVariable("Y", 2, true, null, null));
-        _importVariables.addElement(new ImportVariable("Z1", 3, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z2", 4, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z3", 5, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z4", 6, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z5", 7, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z6", 8, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z7", 9, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z8", 10, false, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null));
+        _import_variables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null));
+        _import_variables.addElement(new ImportVariable("X", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Y", 2, true, null, null));
+        _import_variables.addElement(new ImportVariable("Z1", 3, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z2", 4, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z3", 5, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z4", 6, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z5", 7, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z6", 8, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z7", 9, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z8", 10, false, null, null));
     }
     
     /** Setup field descriptors for special grid file. */
     private void setGridFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null));
-        _importVariables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null));
-        _importVariables.addElement(new ImportVariable("X", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Y", 1, true, null, null));
-        _importVariables.addElement(new ImportVariable("Z1", 2, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z2", 3, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z3", 4, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z4", 5, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z5", 6, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z6", 7, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z7", 8, false, null, null));
-        _importVariables.addElement(new ImportVariable("Z8", 9, false, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null));
+        _import_variables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null));
+        _import_variables.addElement(new ImportVariable("X", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Y", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Z1", 2, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z2", 3, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z3", 4, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z4", 5, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z5", 6, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z6", 7, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z7", 8, false, null, null));
+        _import_variables.addElement(new ImportVariable("Z8", 9, false, null, null));
     }
     
     /** Sets InputSourceSettings object from user selections in wizard. */
     private void setInputSourceSettings() {
-        if (_inputSourceSettings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV) {
-            _inputSourceSettings.setDelimiter(Character.toString(getColumnDelimiter()));
-            _inputSourceSettings.setGroup(Character.toString(getGroupMarker()));
-            _inputSourceSettings.setSkiplines(Integer.parseInt(_ignoreRowsTextField.getText()));
-            _inputSourceSettings.setFirstRowHeader(_firstRowColumnHeadersCheckBox.isSelected());
+        if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV) {
+            // update CSV options
+            _input_source_settings.setDelimiter(Character.toString(getColumnDelimiter()));
+            _input_source_settings.setGroup(Character.toString(getGroupMarker()));
+            _input_source_settings.setSkiplines(Integer.parseInt(_ignoreRowsTextField.getText()));
+            _input_source_settings.setFirstRowHeader(_firstRowColumnHeadersCheckBox.isSelected());
         }
-        _inputSourceSettings.getFieldMaps().clear();
-        for (int t=0; t < _importVariables.size(); ++t) {
-            if (_importVariables.get(t).getShowing()) {
-                if (_importVariables.get(t).getIsMappedToInputFileVariable() || _importVariables.get(t).getDefault() != null) {
-                    _inputSourceSettings.getFieldMaps().add(Integer.toString(_importVariables.get(t).getInputFileVariableIndex()));
+        // update variable to source field mappings
+        _input_source_settings.getFieldMaps().clear();
+        for (ImportVariable variable: _import_variables) {
+            if (variable.getShowing()) {
+                if (variable.isMappedToSourceField() || variable.hasDefault()) {
+                    _input_source_settings.getFieldMaps().add(Integer.toString(variable.getSourceFieldIndex()));
                 } else {
-                    _inputSourceSettings.getFieldMaps().add("");
+                    _input_source_settings.getFieldMaps().add("");
                 }
             }
         }
-        for (int i=_inputSourceSettings.getFieldMaps().size() - 1; i >= 0; --i) {
-            if (!_inputSourceSettings.getFieldMaps().get(i).isEmpty()) break;
-            else _inputSourceSettings.getFieldMaps().remove(i);
+        // remove any mappings that are blank -- from end to first none blank
+        for (int i=_input_source_settings.getFieldMaps().size() - 1; i >= 0; --i) {
+            if (!_input_source_settings.getFieldMaps().get(i).isEmpty()) break;
+            else _input_source_settings.getFieldMaps().remove(i);
         }
     }
     
     /** Assigns the field name choices in the drop-down menu of the variable mapping table. */
     private void setMappingTableComboCells() {
-        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
-        model.comboBox.removeAllItems();
-        model.comboBox.addItem(_unAssignedVariableName);
-        for (int i = 0; i < _importTableDataTable.getModel().getColumnCount(); ++i) {
-            model.comboBox.addItem(_importTableDataTable.getModel().getColumnName(i));
+        VariableMappingTableModel mapping_model = (VariableMappingTableModel) _mapping_table.getModel();
+        // assign the combo-box choices from column names of source data table
+        mapping_model._combo_box.removeAllItems();
+        mapping_model._combo_box.addItem(_unassigned_variable);
+        for (int i=0; i < _source_data_table.getModel().getColumnCount(); ++i) {
+            mapping_model._combo_box.addItem(((PreviewTableModel)_source_data_table.getModel()).getNonSuffixedColumnName(i));
         }
-        _fieldMapTable.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(model.comboBox));
-        model.fireTableDataChanged();
+        // re-assign the cell editor for the second column of mapping table
+        _mapping_table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(mapping_model._combo_box));
+        mapping_model.fireTableDataChanged();
     }
     
     /** Setup field descriptors for maximum circle population file. */
     private void setMaxCirclePopFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Population", 1, true, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Population", 1, true, null, null));
     }
     
     /** Setup field descriptors for population file. */
     private void setPopulationFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
         ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified");
         /* Set the variable index to below the one-based variables -- variables less than one
          * are considered special and are not actually a data source column option.
          * In this case, the population date will be set to 'unspecified'. */
-        variable.setInputFileVariableIndex(0);
-        _importVariables.addElement(variable);
-        _importVariables.addElement(new ImportVariable("Population", 2, true, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null, null));
-        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null, null));
+        variable.setSourceFieldIndex(0);
+        _import_variables.addElement(variable);
+        _import_variables.addElement(new ImportVariable("Population", 2, true, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate1", 3, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate2", 4, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate3", 5, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate4", 6, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate5", 7, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate6", 8, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate7", 9, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate8", 10, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate9", 11, false, null, null));
+        _import_variables.addElement(new ImportVariable("Covariate10", 12, false, null, null));
     }
     
     /** Setup field descriptors for relative risks file. */
     private void setRelativeRisksFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _importVariables.addElement(new ImportVariable("Relative Risk", 1, true, null, null));
-        _importVariables.addElement(new ImportVariable("Start Date", 2, false, null, null));
-        _importVariables.addElement(new ImportVariable("End Date", 3, false, null, null));
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Relative Risk", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Start Date", 2, false, null, null));
+        _import_variables.addElement(new ImportVariable("End Date", 3, false, null, null));
     }
     
-    /** Shows/hides variables based upon destination file type and model/coordinates type. */
+    /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
     private void setShowingVariables() {
-        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+        VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
         Parameters.ProbabilityModelType _modelType = getModelControlType();
         Parameters.CoordinatesType _coordindatesType = getCoorinatesControlType();
 
-        switch (_inputSourceSettings.getInputFileType()) {
+        switch (_input_source_settings.getInputFileType()) {
             case Case:
                 model.hideAll();
-                for (int t = 0; t < _importVariables.size(); ++t) {
-                    _importVariables.get(t).setShowing(false);
+                for (int t = 0; t < _import_variables.size(); ++t) {
+                    _import_variables.get(t).setShowing(false);
                 }
-                for (int t = 0; t < _importVariables.size(); ++t) {
+                for (int t = 0; t < _import_variables.size(); ++t) {
                     if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables
-                        _importVariables.get(t).setShowing(true);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(true);
+                        model.setShowing(_import_variables.get(t));
                     } else if (t >= 6 && t <= 15) {//show 'covariate' variables for Poisson,space-time permutation and normal models only
-                        _importVariables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.POISSON ||
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.POISSON ||
                                                            _modelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ||
                                                            _modelType == Parameters.ProbabilityModelType.NORMAL);
-                        model.setShowing(_importVariables.get(t));
+                        model.setShowing(_import_variables.get(t));
                     } else if (t == 3) { //show 'attribute' variable for ordinal, exponential, normal and rank models only
-                        _importVariables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.ORDINAL ||
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.ORDINAL ||
                                                            _modelType == Parameters.ProbabilityModelType.CATEGORICAL ||
                                                            _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
                                                            _modelType == Parameters.ProbabilityModelType.NORMAL ||
                                                            _modelType == Parameters.ProbabilityModelType.RANK);
-                        model.setShowing(_importVariables.get(t));
-                    } else if (t == 4) { //show 'censored' variable for exponential model only
-                        _importVariables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
-                        model.setShowing(_importVariables.get(t));
-                    } else if (t == 5) { //show 'weight' variable for normal model only
-                        _importVariables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.NORMAL);
-                        model.setShowing(_importVariables.get(t));
+                        model.setShowing(_import_variables.get(t));
+                    } else if (t == 4) { //show 'censored' variable for exponential mapping_model only
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
+                        model.setShowing(_import_variables.get(t));
+                    } else if (t == 5) { //show 'weight' variable for normal mapping_model only
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.NORMAL);
+                        model.setShowing(_import_variables.get(t));
                     } else { //default - show variable
-                        _importVariables.get(t).setShowing(true);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(true);
+                        model.setShowing(_import_variables.get(t));
                     }
                 } break;
             case Coordinates:
-                for (int t = 0; t < _importVariables.size(); ++t) {
+                for (int t = 0; t < _import_variables.size(); ++t) {
                     if (t == 1 || t == 2) { //show 'lat/long' variables for lat/long system
-                        _importVariables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.LATLON);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.LATLON);
+                        model.setShowing(_import_variables.get(t));
                     } else if (t >= 3) { //show 'X/Y/Zn' variables for Cartesian system
-                        _importVariables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.CARTESIAN);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.CARTESIAN);
+                        model.setShowing(_import_variables.get(t));
                     } else {
-                        _importVariables.get(t).setShowing(true);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(true);
+                        model.setShowing(_import_variables.get(t));
                     }
                 } break;
             case SpecialGrid:
-                for (int t = 0; t < _importVariables.size(); ++t) {
+                for (int t = 0; t < _import_variables.size(); ++t) {
                     if (t == 0 || t == 1) { //show 'lat/long' variables for lat/long system
-                        _importVariables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.LATLON);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.LATLON);
+                        model.setShowing(_import_variables.get(t));
                     } else { //show 'X/Y/Zn' variables for Cartesian system
-                        _importVariables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.CARTESIAN);
-                        model.setShowing(_importVariables.get(t));
+                        _import_variables.get(t).setShowing(_coordindatesType == Parameters.CoordinatesType.CARTESIAN);
+                        model.setShowing(_import_variables.get(t));
                     }
                 } break;
             default:
-                for (ImportVariable variable : _importVariables) {
+                for (ImportVariable variable : _import_variables) {
                     variable.setShowing(true);
                     model.setShowing(variable);
                 }
         }
         // ensure that the input variable index values are sequential
         int showingIdx=0;
-        for (ImportVariable variable : _importVariables) {
+        for (ImportVariable variable : _import_variables) {
             if (variable.getShowing()) {
-                variable.setTargetFieldIndex(showingIdx);
+                variable.setVariableIndex(showingIdx);
                 showingIdx++;
             }
         }
@@ -1206,7 +1187,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 // Add the panels we're showing for file type.
                 _basePanel.removeAll();
                 _basePanel.add(_fileSourceSettingsPanel, _startCardName);
-                if (!isImportableFileType(_inputSourceSettings.getInputFileType())) {
+                if (!isImportableFileType(_input_source_settings.getInputFileType())) {
                     // Some input files do not support importing. Only show the start panel.
                     nextButtonSource.setVisible(false);
                 } else {
@@ -1270,11 +1251,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _displayVariablesLabel = new javax.swing.JLabel();
         _displayVariablesComboBox = new javax.swing.JComboBox();
         jScrollPane2 = new javax.swing.JScrollPane();
-        _fieldMapTable = new javax.swing.JTable();
+        _mapping_table = new javax.swing.JTable();
         _clearSelectionButton = new javax.swing.JButton();
         _dataMappingBottomPanel = new javax.swing.JPanel();
         _importTableScrollPane = new javax.swing.JScrollPane();
-        _importTableDataTable = new javax.swing.JTable();
+        _source_data_table = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
         _fileSourceButtonPanel4 = new javax.swing.JPanel();
         previousButtonMapping = new javax.swing.JButton();
         nextButtonMapping = new javax.swing.JButton();
@@ -1553,7 +1535,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _basePanel.add(_fileFormatPanel, "File Format");
 
-        jSplitPane1.setDividerLocation(175);
+        jSplitPane1.setDividerLocation(170);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
 
@@ -1562,7 +1544,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (_inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates || _inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
+                if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates || _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
                     if (_displayVariablesComboBox.getSelectedIndex() == 0) {
                         _coordinatesType = Parameters.CoordinatesType.LATLON;
                     } else {
@@ -1574,9 +1556,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         });
 
-        _fieldMapTable.setRowSelectionAllowed(false);
-        _fieldMapTable.setModel(new VariableMappingTableModel(_importVariables));
-        jScrollPane2.setViewportView(_fieldMapTable);
+        _mapping_table.setRowSelectionAllowed(false);
+        _mapping_table.setModel(new VariableMappingTableModel(_import_variables));
+        jScrollPane2.setViewportView(_mapping_table);
 
         _clearSelectionButton.setText("Clear"); // NOI18N
         _clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1608,13 +1590,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_clearSelectionButton)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         jSplitPane1.setTopComponent(_dataMappingTopPanel);
 
-        _importTableDataTable.setModel(new javax.swing.table.DefaultTableModel(
+        _source_data_table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -1625,19 +1607,25 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        _importTableDataTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        _importTableDataTable.setRowSelectionAllowed(false);
-        _importTableScrollPane.setViewportView(_importTableDataTable);
+        _source_data_table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        _source_data_table.setRowSelectionAllowed(false);
+        _importTableScrollPane.setViewportView(_source_data_table);
+
+        jLabel2.setText("# = Column is not actually defined in file but can be used as SaTScan variable.");
 
         javax.swing.GroupLayout _dataMappingBottomPanelLayout = new javax.swing.GroupLayout(_dataMappingBottomPanel);
         _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
         _dataMappingBottomPanelLayout.setHorizontalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addGroup(_dataMappingBottomPanelLayout.createSequentialGroup()
+                .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2))
         );
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
@@ -1655,8 +1643,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1)
-                .addContainerGap())
+                .addComponent(jSplitPane1))
         );
 
         previousButtonMapping.setText("< Previous"); // NOI18N
@@ -1736,6 +1723,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         task.execute();
                     } else {
                         _needs_import_save = true;
+                        _refresh_related_settings = true;
                         setVisible(false);
                     }
                 } catch (Throwable t) {
@@ -1745,6 +1733,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         });
 
         cancelButton.setText("Cancel");
+        cancelButton.setEnabled(false);
 
         javax.swing.GroupLayout _fileSourceButtonPanel5Layout = new javax.swing.GroupLayout(_fileSourceButtonPanel5);
         _fileSourceButtonPanel5.setLayout(_fileSourceButtonPanel5Layout);
@@ -1753,7 +1742,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileSourceButtonPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 276, Short.MAX_VALUE)
                 .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1812,7 +1801,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
-                        .addComponent(_outputDirectoryTextField)
+                        .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_changeSaveDirectoryButton))
                     .addComponent(_save_import_settings, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
@@ -1873,8 +1862,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         clearInputSettigs.setText("Clear Import"); // NOI18N
         clearInputSettigs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                _inputSourceSettings.reset();
-                clearInputSettigs.setEnabled(_inputSourceSettings.isSet());
+                _input_source_settings.reset();
+                clearInputSettigs.setEnabled(_input_source_settings.isSet());
                 clearSaTScanVariableFieldIndexes();
                 _execute_import_now.setSelected(true);
                 _needs_import_save = true;
@@ -1925,7 +1914,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _browse_source.setPreferredSize(new java.awt.Dimension(45, 20));
         _browse_source.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), _inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), _input_source_settings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
                 File file = selectionDialog.browse_load(true);
                 if (file != null) {
                     SaTScanApplication.getInstance().lastBrowseDirectory = selectionDialog.getDirectory();
@@ -1943,7 +1932,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(_source_filename)
+                        .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 535, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_file_selection_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -2009,7 +1998,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JRadioButton _execute_import_now;
     private javax.swing.JScrollPane _expectedFormatScrollPane;
     private javax.swing.JTextPane _expectedFormatTextPane;
-    private javax.swing.JTable _fieldMapTable;
     private javax.swing.ButtonGroup _fieldSeparatorButtonGroup;
     private javax.swing.JTextArea _fileContentsTextArea;
     private javax.swing.JPanel _fileFormatButtonPanel;
@@ -2023,9 +2011,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.ButtonGroup _groupIndicatorButtonGroup;
     private javax.swing.JPanel _groupIndiocatorGroup;
     private javax.swing.JTextField _ignoreRowsTextField;
-    private javax.swing.JTable _importTableDataTable;
     private javax.swing.JScrollPane _importTableScrollPane;
     private javax.swing.ButtonGroup _import_operation_buttonGroup;
+    private javax.swing.JTable _mapping_table;
     private javax.swing.JTextField _otherFieldSeparatorTextField;
     private javax.swing.JRadioButton _otherRadioButton;
     private javax.swing.JTextField _outputDirectoryTextField;
@@ -2036,6 +2024,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JRadioButton _semiColonRadioButton;
     private javax.swing.JRadioButton _singleQuotesRadioButton;
     private javax.swing.JPanel _sourceFileTypeOptions;
+    private javax.swing.JTable _source_data_table;
     private javax.swing.JTextField _source_filename;
     private javax.swing.JRadioButton _whitespaceRadioButton;
     private javax.swing.JButton acceptButton;
@@ -2044,6 +2033,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JButton executeButton;
     private javax.swing.JPanel fieldSeparatorGroup;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
@@ -2060,28 +2050,27 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JButton previousButtonMapping;
     private javax.swing.JButton previousButtonOutSettings;
     // End of variables declaration//GEN-END:variables
-    /**
-     *
-     */
+    
+    /** Table mapping_model used to assign import variables to source file fields.  */
     class VariableMappingTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 1L;
-        private String[] columnNames = {"SaTScan Variable", "Source File Variable"};
-        private final Vector<ImportVariable> variables_static;
-        private Vector<ImportVariable> variables_visible;
-        public JComboBox comboBox = new JComboBox();
+        private String[] _column_names = {"SaTScan Variable", "Source File Variable"};
+        private final Vector<ImportVariable> _static_variables;
+        private Vector<ImportVariable> _visible_variables;
+        public JComboBox _combo_box = new JComboBox();
 
         public VariableMappingTableModel(Vector<ImportVariable> variables) {
-            this.variables_static = variables;
-            variables_visible = (Vector) this.variables_static.clone();
+            _static_variables = variables;
+            _visible_variables = (Vector)_static_variables.clone();
         }
 
         public int getColumnCount() {
-            return columnNames.length;
+            return _column_names.length;
         }
 
         public int getRowCount() {
-            return variables_visible.size();
+            return _visible_variables.size();
         }
 
         @Override
@@ -2091,19 +2080,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         @Override
         public String getColumnName(int col) {
-            return columnNames[col];
+            return _column_names[col];
         }
 
         public Object getValueAt(int row, int col) {
             if (col == 0) {
-                return variables_visible.get(row).getVariableDisplayName();
+                return _visible_variables.get(row).getDisplayLabel();
             } else {
-                Object obj = comboBox.getItemAt(variables_visible.get(row).getInputFileVariableIndex());
-                if (obj != null) {
-                    return obj;
-                } else {
-                    return "";
-                }
+                if (_visible_variables.get(row).getSourceFieldIndex() < 1) return _unassigned_variable;
+                String name = _preview_table_model.getDataSourceColumnName(_visible_variables.get(row).getSourceFieldIndex() - 1);
+                return name == null || name.isEmpty() ? _unassigned_variable : name;
             }
         }
 
@@ -2121,8 +2107,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
 
         public boolean isShowing(final String variableName) {
-            for (int i = 0; i < variables_visible.size(); ++i) {
-                if (variableName.equals(variables_visible.get(i).getVariableName())) {
+            for (int i = 0; i < _visible_variables.size(); ++i) {
+                if (variableName.equals(_visible_variables.get(i).getVariableName())) {
                     return true;
                 }
             }
@@ -2131,15 +2117,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         public void showVariable(final String variableName) {
             //first search to see if aleady showing
-            for (int i = 0; i < variables_visible.size(); ++i) {
-                if (variableName.equals(variables_visible.get(i).getVariableName())) {
+            for (int i = 0; i < _visible_variables.size(); ++i) {
+                if (variableName.equals(_visible_variables.get(i).getVariableName())) {
                     return; //already showing
                 }
             }
             //find index in variables vector
-            for (int i = 0; i < variables_static.size(); ++i) {
-                if (variableName.equals(variables_static.get(i).getVariableName())) {
-                    variables_visible.add(variables_static.get(i));
+            for (int i = 0; i < _static_variables.size(); ++i) {
+                if (variableName.equals(_static_variables.get(i).getVariableName())) {
+                    _visible_variables.add(_static_variables.get(i));
                     return; //already showing
                 }
             }
@@ -2147,16 +2133,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
 
         public void hideVariable(final String variableName) {
-            for (int i = 0; i < variables_visible.size(); ++i) {
-                if (variableName.equals(variables_visible.get(i).getVariableName())) {
-                    variables_visible.remove(i);
+            for (int i=0; i < _visible_variables.size(); ++i) {
+                if (variableName.equals(_visible_variables.get(i).getVariableName())) {
+                    _visible_variables.remove(i);
                     return;
                 }
             }
         }
 
         public void hideAll() {
-            variables_visible.clear();
+            _visible_variables.clear();
         }
 
         @Override
@@ -2164,9 +2150,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (value == null) {
                 return;
             }
-            for (int i = 0; i < comboBox.getItemCount(); ++i) {
-                if (comboBox.getItemAt(i).equals(value)) {
-                    variables_visible.get(row).setInputFileVariableIndex(i);
+            for (int i=0; i < _combo_box.getItemCount(); ++i) {
+                if (_combo_box.getItemAt(i).equals(value)) {
+                    _visible_variables.get(row).setSourceFieldIndex(_preview_table_model.getDataSourceColumnIndex((String)value));
                     enableNavigationButtons();
                     fireTableCellUpdated(row, col);
                     return;
@@ -2175,9 +2161,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
 
-    /*
-     * Import worker; executed in background thread.
-     */
+    /** Import worker; executed in background thread. */
     class ImportTask extends SwingWorker<Void, Void> implements ActionListener {
 
         private WaitCursor waitCursor = new WaitCursor(FileSourceWizard.this);
@@ -2193,16 +2177,17 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 executeButton.setEnabled(false);
                 _progressBar.setVisible(true);
                 _progressBar.setValue(0);
-                VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+                VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
                 _importer = new FileImporter(getImportSource(),
-                        model.variables_static,
-                        _inputSourceSettings.getInputFileType(),
-                        _inputSourceSettings.getSourceDataFileType(),
+                        model._static_variables,
+                        _input_source_settings.getInputFileType(),
+                        _input_source_settings.getSourceDataFileType(),
                         _destinationFile,
                         _progressBar);
-                _importer.importFile(Integer.parseInt(_ignoreRowsTextField.getText()));
+                _importer.importFile(0);
                 if (!_importer.getCancelled()) {
                     _executed_import = true;
+                    _refresh_related_settings = true;
                     setVisible(false);
                 }
             } catch (IOException e) {

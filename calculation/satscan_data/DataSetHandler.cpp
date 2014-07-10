@@ -351,23 +351,29 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
       and returns SaTScanDataReader::Ignored; reports only first occurance
     - else returns SaTScanDataReader::Accepted */
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
-   //Validate that tract identifer is one of those defined in the coordinates file.
-   if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(Source.GetValueAt(guLocationIndex))) == -1) {
-     if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-       gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
-                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
-                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
-       return DataSetHandler::Rejected;
-     }
-     if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
-                     "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
-                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
-       gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
-     }
-     return DataSetHandler::Ignored;
-  }
-  return DataSetHandler::Accepted;
+    //Validate that tract identifer is one of those defined in the coordinates file.
+    const char * identifier = Source.GetValueAt(guLocationIndex);
+    if (!identifier) {
+        gPrint.Printf("Error: Missing location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
+    }
+    if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(identifier)) == -1) {
+        if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+            gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
+                          gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
+                         (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+            return DataSetHandler::Rejected;
+        }
+        if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
+            gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
+                          "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
+                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+            gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
+        }
+        return DataSetHandler::Ignored;
+    }
+    return DataSetHandler::Accepted;
 }
 
 /** Sets purely temporal measure array of RealDataSet object. */

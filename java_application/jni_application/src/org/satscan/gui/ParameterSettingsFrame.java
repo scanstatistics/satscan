@@ -7,6 +7,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,7 +33,12 @@ import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.Utils;
+import org.satscan.importer.CSVImportDataSource;
+import org.satscan.importer.DBaseImportDataSource;
+import org.satscan.importer.ImportDataSource;
 import org.satscan.importer.InputSourceSettings;
+import org.satscan.importer.ShapefileDataSource;
+import org.satscan.importer.XLSImportDataSource;
 
 /**
  * Parameter settings window.
@@ -493,9 +499,68 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                                _studyPeriodEndDateGenericTextField.getText());
     }
 
-    /**
-     * Validates 'Input Files' tab
-     */
+    /** Return the ImportDataSource object -- based upon the source file type. */
+    public int getNumImportSourceColumns(InputSourceSettings iss, String filename) {
+        try {
+            ImportDataSource source=null;
+            switch (iss.getSourceDataFileType()) {
+                case Shapefile : source = new ShapefileDataSource(new File(filename), true); break;
+                case dBase : source = new DBaseImportDataSource(new File(filename), false); break;
+                case Excel97_2003 : 
+                case Excel : source = new XLSImportDataSource(new File(filename)); break;
+                case CSV :
+                default : source = new CSVImportDataSource(new File(filename), iss.getFirstRowHeader(), '\n', iss.getDelimiter().charAt(0), iss.getGroup().charAt(0), iss.getSkiplines());
+            }
+            return source.getColumnNames().length;
+        } catch (Exception e) {}
+        return 0;
+    }    
+    
+    /* Validates the source data file against restrictions on source and InputSourceSettings settings. */
+    public String validateInputSourceDataFile(String filepath, String mapKey, String verbosename) {
+        // First exclude file types that are not readable - namely, Excel97_2003;
+        String extension = FileAccess.getExtension(new File(filepath));
+        extension = extension == null ? "" : extension;
+        if (extension.equals("xls") || extension.equals("xlsx")) {
+            return "Excel files (.xls and  xlsx extensions) can only be read using the import wizard.\nYou must import this " + verbosename + " file.";
+        }        
+        boolean iss_exists = _input_source_map.containsKey(mapKey);
+        // If file type is dBase or shapefile, then require an input source setting which defines how to read the file.
+        if ((extension.equals("dbf") || extension.equals("shp")) && !iss_exists) {
+            return "Both dBase files (.dbf) and shapefiles (.shp) require you to define how the file is read.\nPlease use the import feature for this " + verbosename + " file.";
+        }
+        if (iss_exists) {
+            InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(mapKey);
+            // Verify that the input source settings's source data file type matches extension.
+            boolean correct_filetype=true;
+            switch (inputSourceSettings.getSourceDataFileType()) {
+                case CSV : correct_filetype = !(extension.equals("dbf") || extension.equals("shp") || extension.equals("xls") || extension.equals("xlsx")); break;
+                case dBase : correct_filetype = extension.equals("dbf"); break;
+                case Shapefile : correct_filetype = extension.equals("shp"); break;
+                case Excel97_2003 :
+                case Excel :  correct_filetype = extension.equals("xls") || extension.equals("xlsx"); break;
+                default:    throw new UnknownEnumException(inputSourceSettings.getSourceDataFileType());
+            }
+            if (!correct_filetype) {
+                return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file type.";
+            }
+            // Verify that the mappings align with the data source available options.
+            // Safely get the number of columns in datasource, if mapping references column index greater than # columns, then display error.
+            if (inputSourceSettings.isSet()) {
+                int num_cols = getNumImportSourceColumns(inputSourceSettings, filepath);
+                int max = 0;
+                for (String stdIdx : inputSourceSettings.getFieldMaps()) {
+                    max = Math.max(Integer.parseInt(stdIdx), max);
+                }
+                if (max > num_cols) {
+                    return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file structure.";
+                }                    
+            }
+        }
+        return null;
+    }
+    
+    /* Validates 'Input Files' tab */
     private void validateInputFiles() {
         //validate study period dates
         if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON && 
@@ -511,6 +576,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",
                         (Component) _caseFileTextField);
             }
+            String validationString = validateInputSourceDataFile(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case.toString() + "1", "case");
+            if (validationString != null) throw new SettingsException(validationString, (Component) _caseFileTextField);
         }
         //validate the control file - Bernoulli model only
         if (getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI) {
@@ -521,6 +588,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The control file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from\nthis directory and file.",
                         (Component) _controlFileTextField);
             }
+            String validationString = validateInputSourceDataFile(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control.toString() + "1", "control");
+            if (validationString != null) throw new SettingsException(validationString, (Component) _controlFileTextField);
         }
         //validate the population file -  Poisson model only
         if (getModelControlType() == Parameters.ProbabilityModelType.POISSON) {
@@ -534,6 +603,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The population file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _populationFileTextField);
             }
+            String validationString = validateInputSourceDataFile(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population.toString() + "1", "population");
+            if (validationString != null) throw new SettingsException(validationString, (Component) _populationFileTextField);
         }
         Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
         boolean bCheckCoordinatesFile = true;
@@ -551,10 +622,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _coordiantesFileTextField);
             }
+            String validationString = validateInputSourceDataFile(_coordiantesFileTextField.getText(), InputSourceSettings.InputFileType.Coordinates.toString() + "1", "coordinates");
+            if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             //validate special grid file -- optional
-            if (_gridFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false)) {
-                throw new SettingsException("The grid file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
-                        (Component) _gridFileTextField);
+            if (_gridFileTextField.getText().length() > 0) {
+                if (!FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false))
+                    throw new SettingsException("The grid file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.", (Component) _gridFileTextField);
+                validationString = validateInputSourceDataFile(_gridFileTextField.getText(), InputSourceSettings.InputFileType.SpecialGrid.toString() + "1", "grid");
+                if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             }
         }
     }
@@ -1525,7 +1600,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _caseFileLabel.setText("Case File:"); // NOI18N
 
         _caseFileBrowseButton.setText("..."); // NOI18N
-        _caseFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
+        _caseFileBrowseButton.setToolTipText("Open file wizard for case file ..."); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Case.toString() + "1";
@@ -1824,7 +1899,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _controlFileLabel.setText("Control File:"); // NOI18N
 
         _controlFileBrowseButton.setText("..."); // NOI18N
-        _controlFileBrowseButton.setToolTipText("Browse for control file ..."); // NOI18N
+        _controlFileBrowseButton.setToolTipText("Open file wizard for control file ..."); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Control.toString() + "1";
@@ -1898,7 +1973,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileLabel.setText("Population File:"); // NOI18N
 
         _populationFileBrowseButton.setText("..."); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Open file wizard for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Population.toString() + "1";
@@ -1949,7 +2024,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinatesFileLabel.setText("Coordinates File:"); // NOI18N
 
         _coordinatesFileBrowseButton.setText("..."); // NOI18N
-        _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ..."); // NOI18N
+        _coordinatesFileBrowseButton.setToolTipText("Open file wizard for coordinates file ..."); // NOI18N
         _coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Coordinates.toString() + "1";
@@ -2018,7 +2093,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileLabel.setText("Grid File:"); // NOI18N
 
         _gridFileBrowseButton.setText("..."); // NOI18N
-        _gridFileBrowseButton.setToolTipText("Browse for grid file ..."); // NOI18N
+        _gridFileBrowseButton.setToolTipText("Open file wizard for grid file ..."); // NOI18N
         _gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.SpecialGrid.toString() + "1";
@@ -2114,7 +2189,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2589,7 +2664,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 182, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2839,7 +2914,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 124, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2854,7 +2929,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
+            .addComponent(_tabbedPane)
         );
 
         pack();

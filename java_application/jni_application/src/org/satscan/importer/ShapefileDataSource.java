@@ -6,6 +6,9 @@ package org.satscan.importer;
 
 import java.io.File;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.satscan.gui.SaTScanApplication;
 import org.satscan.utils.FileAccess;
 
 /**
@@ -13,15 +16,16 @@ import org.satscan.utils.FileAccess;
  * @author hostovic
  */
 public class ShapefileDataSource implements ImportDataSource {
-    private File _source_file;
+    private final File _source_file;
     private DBaseImportDataSource _dbase_data_source=null;
     private long _current_row_number = 0;
+    private Vector<Object> _column_names = new Vector<Object>();    
     
-    public ShapefileDataSource(File file, boolean formatDates) {
+    public ShapefileDataSource(File source_file, boolean formatDates) {
+        _source_file = source_file;
         try {
-            _source_file = file;
             // check for existance of dBase file
-            String dBaseFilename = file.getAbsolutePath();
+            String dBaseFilename = source_file.getAbsolutePath();
             int lastDot = dBaseFilename.lastIndexOf(".");
             if (lastDot != -1) {
                  dBaseFilename = dBaseFilename.substring(0, lastDot) + ".dbf";
@@ -31,40 +35,43 @@ public class ShapefileDataSource implements ImportDataSource {
             if (FileAccess.ValidateFileAccess(dBaseFilename, false)) {
                 _dbase_data_source = new DBaseImportDataSource(new File(dBaseFilename), formatDates);
             }
-        } catch (Throwable e) {}   
+            _column_names.add("Generated Id");
+            _column_names.add("One Count");
+            _column_names.add("Latitude / Y");
+            _column_names.add("Longitude / X");
+            if (_dbase_data_source != null) {
+                _column_names.addAll(java.util.Arrays.asList(_dbase_data_source.getColumnNames()).subList(2, _dbase_data_source.getColumnNames().length));
+            }
+        } catch (Throwable ex) {
+            Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
+        }   
     }
      
     public Object[] getColumnNames() {
-        Vector<Object> names = new Vector<Object>();
-        names.add("Generated Id");
-        names.add("One Count");
-        names.add("Latitude / Y");
-        names.add("Longitude / X");
-        if (_dbase_data_source != null) {
-           names.addAll(java.util.Arrays.asList(_dbase_data_source.getColumnNames()));
-        }
-        return names.toArray();
+        return _column_names.toArray();
     }   
     
-    /**
-     * Returns whether column at index is date field.
-     */
+    public int getColumnIndex(String name) {
+        for (int i=0; i < _column_names.size(); ++i) {
+            String column_name = (String)_column_names.elementAt(i);
+            if (column_name.equals(name)) {
+                return i + 1;
+            }
+        } return 0;        
+    }
+    
+    /** Returns whether column at index is date field. */
     @Override
     public boolean isColumnDate(int iColumn) {
         // first 4 columns are always the X coordinate, Y coordinate, one count and generated id
-        if (iColumn >= 0 && iColumn <= 3)
-            return false;
-        return _dbase_data_source == null ? false : _dbase_data_source.isColumnDate(iColumn - 4);
+        if (iColumn >= 0 && iColumn <= 3) return false;
+        return _dbase_data_source == null ? false : _dbase_data_source.isColumnDate(iColumn - 2);
     }
 
-    /**
-     * Native method that will return the number of shapes in file.
-     */
+    /** Native method that will return the number of shapes in file. */
     private native int getNumberOfShapes(String filename);    
     
-    /**
-     * Native method which returns file shape type is supported.
-     */
+    /** Native method which returns file shape type is supported. */
     public static native String isSupportedShapeType(String filename);    
     
     @Override
@@ -77,9 +84,7 @@ public class ShapefileDataSource implements ImportDataSource {
         return getNumberOfShapes(_source_file.getAbsolutePath());
     }
 
-    /*
-     * native call to get the longitude / latitude of shape.
-     */
+    /* native call to get the longitude / latitude of shape. */
     public native double[] getCoordinates(String filename, long shapeIdx);
 
     /* Retrieves coordinates for shape at shapeIdx. */
@@ -106,7 +111,7 @@ public class ShapefileDataSource implements ImportDataSource {
         if (_dbase_data_source != null) {
             Object[] dbase_values = _dbase_data_source.readRow();
             if (dbase_values != null)
-                values.addAll(java.util.Arrays.asList(dbase_values));
+                values.addAll(java.util.Arrays.asList(dbase_values).subList(2, dbase_values.length));
         }
         return values.toArray();
     }

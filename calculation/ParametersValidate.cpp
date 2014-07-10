@@ -304,6 +304,38 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
     return true;
 }
 
+bool ParametersValidate::ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const {
+    FileName file(filename.c_str());
+
+    // First exclude file types that are not readable - namely, Excel;
+    if (file.getExtension() == ".xls" || file.getExtension() == ".xlsx") {
+        PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.SaTScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+        return false;
+    }
+
+    // If file type is dBase or shapefile, then require an input source setting which defines how to read the file.
+    if ((file.getExtension() == ".dbf" || file.getExtension() == ".shp") && !source) {
+        PrintDirection.Printf("%s:\nThe file '%s' cannot be read as an input source. Both dBase files (.dbf) and shapefiles (.shp) require an input source mapping definition.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+        return false;
+    }
+
+    if (source) {
+        // Verify that the input source settings's source data file type matches extension.
+        bool correct_filetype=true;
+        switch (source->getSourceType()) {
+            case CSV : correct_filetype = !(file.getExtension() == ".dbf" || file.getExtension() == ".shp" || file.getExtension() == ".xls"); break;
+            case DBASE : correct_filetype = file.getExtension() == ".dbf"; break;
+            case SHAPE : correct_filetype = file.getExtension() == ".shp"; break;
+            case EXCEL : correct_filetype = file.getExtension() == ".xls" || file.getExtension() == ".xlsx"; break;
+            default : throw prg_error("Unknown  source type: %d.", "ValidateInputSource()", source->getSourceType());
+        }
+        if (!correct_filetype) {
+            PrintDirection.Printf("%s:\nThe file '%s' cannot be read as an input source. The specified source type does not match the file type.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+            return false;
+        }
+    } return true;
+}
+
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const {
   bool          bValid=true;
@@ -318,7 +350,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
             PrintDirection.Printf("%s:\nNo case file was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         for (t=0; t < gParameters.GetCaseFileNames().size(); ++t) {
-            bValid &= checkFileExists(gParameters.GetCaseFileNames()[t], "case", PrintDirection);
+            bool exists = checkFileExists(gParameters.GetCaseFileNames()[t], "case", PrintDirection);
+            bValid &= exists;
+            if (exists) {
+                bValid &= ValidateInputSource(gParameters.getInputSource(CASEFILE, t+1), gParameters.GetCaseFileNames()[t], "case", PrintDirection);
+            }
         }
     }
     //validate population file for a poisson model.
@@ -339,7 +375,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
          else if (!iNumDataSetsWithoutPopFile) {
            const_cast<CParameters&>(gParameters).SetPopulationFile(true);
            for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
-              bValid &= checkFileExists(gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+              bool exists = checkFileExists(gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+              bValid &= exists;
+              if (exists) {
+                bValid &= ValidateInputSource(gParameters.getInputSource(POPFILE, t+1), gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+              }
            }
          }
       }
@@ -351,7 +391,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                                 "is purely temporal. In which case the population file is optional.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
-          bValid &= checkFileExists(gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+            bool exists = checkFileExists(gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+            bValid &= exists;
+            if (exists) {
+              bValid &= ValidateInputSource(gParameters.getInputSource(POPFILE, t+1), gParameters.GetPopulationFileNames()[t], "population", PrintDirection);
+            }
         }
       }
     }
@@ -361,21 +405,40 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         PrintDirection.Printf("%s:\nFor the Bernoulli model, a control file must be specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
       } else {
-        for (t=0; t < gParameters.GetControlFileNames().size(); ++t)
-            bValid &= checkFileExists(gParameters.GetControlFileNames()[t], "control", PrintDirection);
+        for (t=0; t < gParameters.GetControlFileNames().size(); ++t) {
+            bool exists = checkFileExists(gParameters.GetControlFileNames()[t], "control", PrintDirection);
+            bValid &= exists;
+            if (exists) {
+              bValid &= ValidateInputSource(gParameters.getInputSource(CONTROLFILE, t+1), gParameters.GetControlFileNames()[t], "control", PrintDirection);
+            }
+        }
       }
     }
     //validate coordinates file
-    if (gParameters.UseCoordinatesFile())
-        bValid &= checkFileExists(gParameters.GetCoordinatesFileName(), "coordinates", PrintDirection);
+    if (gParameters.UseCoordinatesFile()) {
+        bool exists = checkFileExists(gParameters.GetCoordinatesFileName(), "coordinates", PrintDirection);
+        bValid &= exists;
+        if (exists) {
+            bValid &= ValidateInputSource(gParameters.getInputSource(COORDFILE), gParameters.GetCoordinatesFileName(), "coordinates", PrintDirection);
+        }
+    }
     //validate special grid file
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
-    else if (gParameters.UseSpecialGrid())
-        bValid &= checkFileExists(gParameters.GetSpecialGridFileName(), "grid", PrintDirection);
+    else if (gParameters.UseSpecialGrid()) {
+        bool exists = checkFileExists(gParameters.GetSpecialGridFileName(), "grid", PrintDirection);
+        bValid &= exists;
+        if (exists) {
+            bValid &= ValidateInputSource(gParameters.getInputSource(GRIDFILE), gParameters.GetSpecialGridFileName(), "grid", PrintDirection);
+        }
+    }
     // validate adjustment for known relative risks file
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
-        bValid &= checkFileExists(gParameters.GetAdjustmentsByRelativeRisksFilename(), "adjustments", PrintDirection);
+        bool exists = checkFileExists(gParameters.GetAdjustmentsByRelativeRisksFilename(), "adjustments", PrintDirection);
+        bValid &= exists;
+        if (exists) {
+            bValid &= ValidateInputSource(gParameters.getInputSource(ADJ_BY_RR_FILE), gParameters.GetAdjustmentsByRelativeRisksFilename(), "adjustments", PrintDirection);
+        }
     } 
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
@@ -406,7 +469,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                               "when restricting the maximum reported spatial cluster size by a population defined "
                               "in that maximum circle file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       } else {
-          bValid &= checkFileExists(gParameters.GetMaxCirclePopulationFileName(), "max circle size", PrintDirection);
+          bool exists = checkFileExists(gParameters.GetMaxCirclePopulationFileName(), "max circle size", PrintDirection);
+          bValid &= exists;
+          if (exists) {
+            bValid &= ValidateInputSource(gParameters.getInputSource(MAXGEOPOPFILE), gParameters.GetMaxCirclePopulationFileName(), "max circle size", PrintDirection);
+          }
       }
     }
     //validate neighbor array file

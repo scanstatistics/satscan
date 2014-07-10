@@ -457,10 +457,10 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
 
             if (source->getFieldsMap().size()) {
                 printString(buffer, "source field map (comma separated list of integers, %s, %s, %s, %s)",
-                            IniParameterSpecification::SourceFieldMapShapeX,
-                            IniParameterSpecification::SourceFieldMapShapeY,
                             IniParameterSpecification::SourceFieldMapOneCount,
-                            IniParameterSpecification::SourceFieldMapGeneratedId);
+                            IniParameterSpecification::SourceFieldMapGeneratedId,
+                            IniParameterSpecification::SourceFieldMapShapeX,
+                            IniParameterSpecification::SourceFieldMapShapeY);
                 section.AddComment(buffer.c_str());
                 std::stringstream s;
                 for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
@@ -546,20 +546,32 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     const char  * sSectionName, * sKey;
 
     try {
-        WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s).c_str(), GetParameterComment(CASEFILE));
-        WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE));
-        WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s).c_str(), GetParameterComment(CONTROLFILE));
-        WriteInputSource(WriteFile, CONTROLFILE, gParameters.getInputSource(CONTROLFILE));
+        GetParameterString(CASEFILE, s);
+        WriteIniParameter(WriteFile, CASEFILE, s.c_str(), GetParameterComment(CASEFILE));
+        if (s.size()) WriteInputSource(WriteFile, CASEFILE, gParameters.getInputSource(CASEFILE));
+
+        GetParameterString(CONTROLFILE, s);
+        WriteIniParameter(WriteFile, CONTROLFILE, s.c_str(), GetParameterComment(CONTROLFILE));
+        if (s.size()) WriteInputSource(WriteFile, CONTROLFILE, gParameters.getInputSource(CONTROLFILE));
+
         WriteIniParameter(WriteFile, PRECISION, GetParameterString(PRECISION, s).c_str(), GetParameterComment(PRECISION));
         WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s).c_str(), GetParameterComment(STARTDATE));
         WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s).c_str(), GetParameterComment(ENDDATE));
-        WriteIniParameter(WriteFile, POPFILE, GetParameterString(POPFILE, s).c_str(), GetParameterComment(POPFILE));
-        WriteInputSource(WriteFile, POPFILE, gParameters.getInputSource(POPFILE));
-        WriteIniParameter(WriteFile, COORDFILE, GetParameterString(COORDFILE, s).c_str(), GetParameterComment(COORDFILE));
-        WriteInputSource(WriteFile, COORDFILE, gParameters.getInputSource(COORDFILE));
+
+        GetParameterString(POPFILE, s);
+        WriteIniParameter(WriteFile, POPFILE, s.c_str(), GetParameterComment(POPFILE));
+        if (s.size()) WriteInputSource(WriteFile, POPFILE, gParameters.getInputSource(POPFILE));
+
+        GetParameterString(COORDFILE, s);
+        WriteIniParameter(WriteFile, COORDFILE, s.c_str(), GetParameterComment(COORDFILE));
+        if (s.size()) WriteInputSource(WriteFile, COORDFILE, gParameters.getInputSource(COORDFILE));
+
         WriteIniParameter(WriteFile, SPECIALGRID, GetParameterString(SPECIALGRID, s).c_str(), GetParameterComment(SPECIALGRID));
-        WriteIniParameter(WriteFile, GRIDFILE, GetParameterString(GRIDFILE, s).c_str(), GetParameterComment(GRIDFILE));
-        WriteInputSource(WriteFile, GRIDFILE, gParameters.getInputSource(GRIDFILE));
+
+        GetParameterString(GRIDFILE, s);
+        WriteIniParameter(WriteFile, GRIDFILE, s.c_str(), GetParameterComment(GRIDFILE));
+        if (s.size()) WriteInputSource(WriteFile, GRIDFILE, gParameters.getInputSource(GRIDFILE));
+
         WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s).c_str(), GetParameterComment(COORDTYPE));
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSettings()","IniParameterFileAccess");
@@ -580,19 +592,19 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " case data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CASEFILE, t+1));
+                if (gParameters.GetCaseFileName(t + 1).size()) WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CASEFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(CONTROLFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " control data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetControlFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CONTROLFILE, t+1));
+                if (gParameters.GetControlFileName(t + 1).size()) WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(CONTROLFILE, t+1));
             }
             if (GetSpecifications().GetMultipleParameterIniInfo(POPFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " population data filename (additional data set %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.c_str());
-                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(POPFILE, t+1));
+                if (gParameters.GetPopulationFileName(t + 1).size()) WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, gParameters.getInputSource(POPFILE, t+1));
             }
         }
     } catch (prg_exception& x) {
@@ -712,8 +724,9 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
         WriteIniParameter(WriteFile, ADJUST_WEEKLY_TRENDS, GetParameterString(ADJUST_WEEKLY_TRENDS, s).c_str(), GetParameterComment(ADJUST_WEEKLY_TRENDS));
         WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
         WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
-        WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(ADJ_BY_RR_FILE));
-        WriteInputSource(WriteFile, ADJ_BY_RR_FILE, gParameters.getInputSource(ADJ_BY_RR_FILE));
+        GetParameterString(ADJ_BY_RR_FILE, s);
+        WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, s.c_str(), GetParameterComment(ADJ_BY_RR_FILE));
+        if (s.size()) WriteInputSource(WriteFile, ADJ_BY_RR_FILE, gParameters.getInputSource(ADJ_BY_RR_FILE));
     } catch (prg_exception& x) {
         x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
         throw;
@@ -742,8 +755,9 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s).c_str(), GetParameterComment(MAXGEOPOPATRISK));
         WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE));
         WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s).c_str(), GetParameterComment(MAXGEOPOPFILE));
-        WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s).c_str(), GetParameterComment(MAXCIRCLEPOPFILE));
-        WriteInputSource(WriteFile, MAXCIRCLEPOPFILE, gParameters.getInputSource(MAXCIRCLEPOPFILE));
+        GetParameterString(MAXCIRCLEPOPFILE, s);
+        WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, s.c_str(), GetParameterComment(MAXCIRCLEPOPFILE));
+        if (s.size()) WriteInputSource(WriteFile, MAXCIRCLEPOPFILE, gParameters.getInputSource(MAXCIRCLEPOPFILE));
         WriteIniParameter(WriteFile, USE_MAXGEODISTANCE, GetParameterString(USE_MAXGEODISTANCE, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE));
         WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s).c_str(), GetParameterComment(MAXGEODISTANCE));
         WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s).c_str(), GetParameterComment(PURETEMPORAL));

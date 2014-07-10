@@ -125,11 +125,6 @@ class IniParameterSpecification {
     static const char         * SourceFieldMapOneCount;
     static const char         * SourceFieldMapGeneratedId;
     static const char         * SourceFieldMapUnspecifiedPopulationDate;
-    static const char         * SourceShapeCoordinatesType;
-    static const char         * SourceHemisphere;
-    static const char         * SourceZone;
-    static const char         * SourceNorthing;
-    static const char         * SourceEasting;
 
     void                        setup(CParameters::CreationVersion version);
 

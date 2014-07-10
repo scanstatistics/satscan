@@ -13,43 +13,34 @@ package org.satscan.importer;
  */
 public class ImportVariable implements Cloneable {
 
-    private String gsVariableName;
-    private int gwTargetFieldIndex;
-    private boolean gbRequiredVariable;
-    private int gwInputFileVariableIndex;
-    private String gsHelpText;
+    private String _variable_name="";
+    private int _variable_index=-1;
+    private boolean _variable_required=true;
+    private int _source_field_index=0;
+    private String _help_text=null;
     private boolean _showing=true;
     private String _default=null;
 
-    public ImportVariable() {
-        initialize();
-    }
+    public ImportVariable() {}
 
-    public ImportVariable(String sVariableName, int wTargetFieldIndex, boolean bRequiredVariable, String sHelpText, String default_value) {
-        initialize();
-        gbRequiredVariable = bRequiredVariable;
-        gsVariableName = sVariableName;
-        gwTargetFieldIndex = wTargetFieldIndex;
-        if (!gbRequiredVariable) {
-            gsHelpText = "optional";
-        } else if (gsHelpText == null) {
-            gsHelpText = sHelpText;
+    public ImportVariable(String display_name, int variable_idx, boolean required, String help_text, String default_value) {
+        _variable_required = required;
+        _variable_name = display_name;
+        _variable_index = variable_idx;
+        if (!_variable_required) {
+            _help_text = "optional";
+        } else if (_help_text == null) {
+            _help_text = help_text;
         }
         _default = default_value;
-    }
-
-    private void initialize() {
-        gwTargetFieldIndex = -1;
-        gbRequiredVariable = true;
-        gwInputFileVariableIndex = 0;
     }
 
     @Override
     public Object clone() {
         try {
             ImportVariable newObject = (ImportVariable) super.clone();
-            newObject.gsVariableName = new String(gsVariableName);
-            newObject.gsHelpText = new String(gsHelpText);
+            newObject._variable_name = new String(_variable_name);
+            newObject._help_text = new String(_help_text);
             newObject._default = _default == null ? _default : new String(_default);
             return newObject;
         } catch (CloneNotSupportedException e) {
@@ -66,10 +57,6 @@ public class ImportVariable implements Cloneable {
         return _showing;
     }
     
-    public final String getHelpText() {
-        return gsHelpText;
-    }
-
     public final String getDefault() {
         return _default;
     }
@@ -78,41 +65,40 @@ public class ImportVariable implements Cloneable {
         return _default != null;
     }    
     
-    public int getInputFileVariableIndex() {
-        return gwInputFileVariableIndex;
+    public void setSourceFieldIndex(int idx) {
+        _source_field_index = idx;
     }
 
-    public boolean getIsMappedToInputFileVariable() {
-        return gwInputFileVariableIndex > 0;
+    public int getSourceFieldIndex() {
+        return _source_field_index;
+    }
+
+    public boolean isMappedToSourceField() {
+        return _source_field_index > 0;
     }
 
     public boolean getIsRequiredField() {
-        return gbRequiredVariable;
+        return _variable_required;
     }
 
-    public void setTargetFieldIndex(int i) {
-        gwTargetFieldIndex = i;
+    public void setVariableIndex(int idx) {
+        _variable_index = idx;
     }
         
-    public int getTargetFieldIndex() {
-        return gwTargetFieldIndex;
+    public int getVariableIndex() {
+        return _variable_index;
     }
 
-    public String getVariableDisplayName() {
-        String Value;
-        if (gsHelpText != null && gsHelpText.length() > 0) {
-            Value = gsVariableName + " (" + gsHelpText + ")";
-        } else {
-            Value = gsVariableName;
+    public String getDisplayLabel() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(_variable_name);
+        if (_help_text != null && _help_text.length() > 0) {
+            builder.append(" (").append(_help_text).append(")");
         }
-        return Value;
+        return builder.toString();
     }
 
     public final String getVariableName() {
-        return gsVariableName;
-    }
-
-    public void setInputFileVariableIndex(int wInputFileVariableIndex) {
-        gwInputFileVariableIndex = wInputFileVariableIndex;
+        return _variable_name;
     }
 }

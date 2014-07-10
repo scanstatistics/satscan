@@ -99,7 +99,6 @@ class dBaseFileDataSource : public DataSource {
      std::auto_ptr<dBaseFile>           gSourceFile;
      std::string                        gsValue;
      long                               gwCurrentFieldIndex;
-     bool                               gbFirstRead;
      unsigned long                      glNumRecords;
      unsigned long                      glCurrentRecord;
 
@@ -152,7 +151,6 @@ class ShapeFileDataSource : public DataSource {
         std::auto_ptr<ShapeFile>           _shape_file;
         std::string                        _read_buffer;
         long                               _current_field_idx;
-        bool                               _first_read;
         unsigned long                      _num_records;
         unsigned long                      _current_record;
 

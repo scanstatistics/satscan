@@ -63,7 +63,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="514" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="526" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -107,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="66" max="32767" attributes="0"/>
+                      <EmptySpace pref="78" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -210,7 +210,7 @@
                 <Component class="javax.swing.JButton" name="_caseFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for case file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});&#xa;"/>
@@ -663,7 +663,7 @@
                 <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for control file ..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for control file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
@@ -730,7 +730,7 @@
                 <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for population file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
@@ -831,7 +831,7 @@
                 <Component class="javax.swing.JButton" name="_coordinatesFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for coordinates file ..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for coordinates file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Coordinates.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Coordinates));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_coordiantesFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
@@ -922,7 +922,7 @@
                 <Component class="javax.swing.JButton" name="_gridFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for grid file ..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for grid file ..." noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.SpecialGrid.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.SpecialGrid));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_gridFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
@@ -991,7 +991,7 @@
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="182" max="32767" attributes="0"/>
+                      <EmptySpace pref="194" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1700,7 +1700,7 @@
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="124" max="32767" attributes="0"/>
+                      <EmptySpace pref="136" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
