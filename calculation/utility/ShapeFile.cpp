@@ -37,7 +37,8 @@ Projection::keyword_info_t& Projection::readKeyWordInfo(const std::string& sourc
                 } 
                 isSingular |= (source.at(pos) == ']'); // found closing bracket, so don't expect meta data
         }
-        info.first.pop_back();
+        //info.first.pop_back();
+        info.first.erase(info.first.size() - 1);
         if (!isSingular) {
             // try to read the meta data for this keyword
             int leftBracket=1/* opening bracket of keyword */, rightBracket=0;
@@ -47,9 +48,11 @@ Projection::keyword_info_t& Projection::readKeyWordInfo(const std::string& sourc
                 if (source.at(pos) == '[') ++leftBracket;
                 if (source.at(pos) == ']') ++rightBracket;
             }
-            if (info.second.size() > 0 && info.second.back() == ']') {
+            //if (info.second.size() > 0 && info.second.back() == ']') {
+            if (info.second.size() > 0 && *(info.second.end() - 1) == ']') {
                 // remove last bracket -- it belongs to the keyword
-                info.second.pop_back();
+                //info.second.pop_back();
+                info.second.erase(info.second.size() - 1);
             }
         }
     }
@@ -79,7 +82,8 @@ Projection::keyword_info_t & Projection::readKeyWordInfoWithIdentifier(const std
                 } 
                 isSingular |= (source.at(pos) == ']'); // found closing bracket, so don't expect value
             }
-            searchIdentifier.pop_back();
+            //searchIdentifier.pop_back();
+            searchIdentifier.erase(searchIdentifier.size() - 1);
             found = (searchIdentifier == identifier);
         }
         if (found && !isSingular) {
@@ -92,9 +96,11 @@ Projection::keyword_info_t & Projection::readKeyWordInfoWithIdentifier(const std
                 if (source.at(pos) == '[') ++leftBracket;
                 if (source.at(pos) == ']') ++rightBracket;
             }
-            if (info.second.size() > 0 && info.second.back() == ']') {
+            if (info.second.size() > 0 && *(info.second.end() - 1) == ']') {
+            //if (info.second.size() > 0 && info.second.back() == ']') {
                 // remove last bracket -- it belongs to the keyword
-                info.second.pop_back();
+                info.second.erase(info.second.size() - 1);
+                //info.second.pop_back();
             }
         }
     }
