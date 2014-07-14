@@ -307,14 +307,16 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
 bool ParametersValidate::ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const {
     FileName file(filename.c_str());
 
+    std::string extension(file.getExtension());
+    lowerString(extension);
     // First exclude file types that are not readable - namely, Excel;
-    if (file.getExtension() == ".xls" || file.getExtension() == ".xlsx") {
+    if (extension == ".xls" || extension == ".xlsx") {
         PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.SaTScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
         return false;
     }
 
     // If file type is dBase or shapefile, then require an input source setting which defines how to read the file.
-    if ((file.getExtension() == ".dbf" || file.getExtension() == ".shp") && !source) {
+    if ((extension == ".dbf" || extension == ".shp") && !source) {
         PrintDirection.Printf("%s:\nThe file '%s' cannot be read as an input source. Both dBase files (.dbf) and shapefiles (.shp) require an input source mapping definition.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
         return false;
     }
@@ -323,10 +325,10 @@ bool ParametersValidate::ValidateInputSource(const CParameters::InputSource * so
         // Verify that the input source settings's source data file type matches extension.
         bool correct_filetype=true;
         switch (source->getSourceType()) {
-            case CSV : correct_filetype = !(file.getExtension() == ".dbf" || file.getExtension() == ".shp" || file.getExtension() == ".xls"); break;
-            case DBASE : correct_filetype = file.getExtension() == ".dbf"; break;
-            case SHAPE : correct_filetype = file.getExtension() == ".shp"; break;
-            case EXCEL : correct_filetype = file.getExtension() == ".xls" || file.getExtension() == ".xlsx"; break;
+            case CSV : correct_filetype = !(extension == ".dbf" || extension == ".shp" || extension == ".xls"); break;
+            case DBASE : correct_filetype = extension == ".dbf"; break;
+            case SHAPE : correct_filetype = extension == ".shp"; break;
+            case EXCEL : correct_filetype = extension == ".xls" || extension == ".xlsx"; break;
             default : throw prg_error("Unknown  source type: %d.", "ValidateInputSource()", source->getSourceType());
         }
         if (!correct_filetype) {

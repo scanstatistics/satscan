@@ -732,8 +732,8 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelButton" min="-2" pref="85" max="-2" attributes="0"/>
-                          <EmptySpace pref="276" max="32767" attributes="0"/>
-                          <Component id="previousButtonOutSettings" min="-2" pref="100" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="previousButtonOutSettings" min="-2" pref="93" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="executeButton" min="-2" pref="100" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -792,7 +792,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_save_import_settings" alignment="1" pref="566" max="32767" attributes="0"/>
+                              <Component id="_save_import_settings" alignment="1" min="-2" pref="566" max="-2" attributes="0"/>
                               <Component id="_execute_import_now" max="32767" attributes="0"/>
                               <Component id="_progressBar" alignment="0" max="32767" attributes="0"/>
                           </Group>
@@ -811,8 +811,8 @@
                               <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="_save_import_settings" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="206" max="32767" attributes="0"/>
+                          <Component id="_save_import_settings" pref="51" max="32767" attributes="0"/>
+                          <EmptySpace pref="178" max="32767" attributes="0"/>
                           <Component id="_progressBar" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -853,6 +853,7 @@
                       <ComponentRef name="_import_operation_buttonGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Save these settings and read directly from file source when running the analysis."/>
+                    <Property name="verticalAlignment" type="int" value="1"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_save_import_settings.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            executeButton.setText(&quot;Ok&quot;);&#xa;    }&#xa;});"/>
@@ -993,6 +994,9 @@
                 </Component>
                 <Container class="javax.swing.JScrollPane" name="_expectedFormatScrollPane">
                   <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="null"/>
+                    </Property>
                     <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
                   </Properties>
                   <AuxValues>

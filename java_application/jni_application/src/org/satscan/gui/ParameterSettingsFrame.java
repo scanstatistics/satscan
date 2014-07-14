@@ -520,19 +520,20 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public String validateInputSourceDataFile(String filepath, String mapKey, String verbosename) {
         // First exclude file types that are not readable - namely, Excel97_2003;
         String extension = FileAccess.getExtension(new File(filepath));
-        extension = extension == null ? "" : extension;
+        extension = extension == null ? "" : extension.toLowerCase();
         if (extension.equals("xls") || extension.equals("xlsx")) {
-            return "Excel files (.xls and  xlsx extensions) can only be read using the import wizard.\nYou must import this " + verbosename + " file.";
+            return "Excel files (.xls and  xlsx extensions) can only be read directly by SaTScan.\nYou must import this " + verbosename + " file.";
         }        
         boolean iss_exists = _input_source_map.containsKey(mapKey);
         // If file type is dBase or shapefile, then require an input source setting which defines how to read the file.
         if ((extension.equals("dbf") || extension.equals("shp")) && !iss_exists) {
-            return "Both dBase files (.dbf) and shapefiles (.shp) require you to define how the file is read.\nPlease use the import feature for this " + verbosename + " file.";
+            return "dBase files (.dbf) and shapefiles (.shp) require you to define how the file is read.\nPlease use the import feature for this " + verbosename + " file.";
         }
         if (iss_exists) {
             InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(mapKey);
             // Verify that the input source settings's source data file type matches extension.
             boolean correct_filetype=true;
+            InputSourceSettings.SourceDataFileType extensionType=FileSourceWizard.getSourceFileType(filepath);
             switch (inputSourceSettings.getSourceDataFileType()) {
                 case CSV : correct_filetype = !(extension.equals("dbf") || extension.equals("shp") || extension.equals("xls") || extension.equals("xlsx")); break;
                 case dBase : correct_filetype = extension.equals("dbf"); break;
@@ -542,7 +543,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 default:    throw new UnknownEnumException(inputSourceSettings.getSourceDataFileType());
             }
             if (!correct_filetype) {
-                return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file type.";
+                return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings indicate a " + inputSourceSettings.getSourceDataFileType().toString() + " file but the specified file is a " + extensionType.toString() + " file.";
             }
             // Verify that the mappings align with the data source available options.
             // Safely get the number of columns in datasource, if mapping references column index greater than # columns, then display error.

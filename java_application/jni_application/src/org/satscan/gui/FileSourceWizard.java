@@ -1742,8 +1742,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileSourceButtonPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 276, Short.MAX_VALUE)
-                .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1785,6 +1785,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _import_operation_buttonGroup.add(_save_import_settings);
         _save_import_settings.setText("Save these settings and read directly from file source when running the analysis.");
+        _save_import_settings.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         _save_import_settings.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
@@ -1804,7 +1805,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_changeSaveDirectoryButton))
-                    .addComponent(_save_import_settings, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .addComponent(_save_import_settings, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_execute_import_now, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -1819,8 +1820,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_changeSaveDirectoryButton))
                 .addGap(18, 18, 18)
-                .addComponent(_save_import_settings)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 206, Short.MAX_VALUE)
+                .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
                 .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1900,6 +1901,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _file_selection_label.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         _file_selection_label.setText("Case File:");
 
+        _expectedFormatScrollPane.setBorder(null);
         _expectedFormatScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         _expectedFormatScrollPane.setBorder(null);
 
