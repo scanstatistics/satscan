@@ -57,7 +57,7 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) const {
   for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTCases [%u] = %i\n", i, gDataSets->GetDataSet(j).getCaseData_PT()[i]);
+        fprintf(pFile, "PTCases [%u] = %li\n", i, gDataSets->GetDataSet(j).getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
   fflush(pFile);
@@ -87,7 +87,7 @@ void CPurelyTemporalData::DisplaySimCases(SimulationDataContainer_t& Container, 
   for (size_t j=0; j < Container.size(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (int i=0; i < m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTSimCases [%u] = %i\n", i, Container.at(j)->getCaseData_PT()[i]);
+        fprintf(pFile, "PTSimCases [%u] = %li\n", i, Container.at(j)->getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
   fflush(pFile);

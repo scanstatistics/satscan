@@ -56,13 +56,13 @@ void CSVTTData::DisplayCounts(FILE* pFile,
   for (int i = 0; i < m_nTimeIntervals; i++)
     for (int j = 0; j < m_nTracts; j++)
     {
-      fprintf(pFile, "%s [%i][%i] = %6i     ", szVarName, i,j,pCounts[i][j]);
-      fprintf(pFile, "%s [%i][%i] = %6i\n", szVarNameNC, i,j,pCountsNC[i][j]);
+      fprintf(pFile, "%s [%i][%i] = %6li     ", szVarName, i,j,pCounts[i][j]);
+      fprintf(pFile, "%s [%i][%i] = %6li\n", szVarNameNC, i,j,pCountsNC[i][j]);
     }
 
   fprintf(pFile, "\nCounts Accumulated by Time Interval\n\n");
   for (int i=0; i<m_nTimeIntervals; i++)
-    fprintf(pFile, "%s [%i] = %6i\n", szVarNameTI, i, pCountsTI[i]);
+    fprintf(pFile, "%s [%i] = %6li\n", szVarNameTI, i, pCountsTI[i]);
   fprintf(pFile, "\n");
   fflush(pFile);
 }

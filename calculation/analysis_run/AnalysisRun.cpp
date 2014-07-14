@@ -463,7 +463,7 @@ double AnalysisRunner::GetAvailablePhysicalMemory() const {
   MEMORYSTATUS stat;
   GlobalMemoryStatus (&stat);
   //dTotalPhysicalMemory = stat.dwTotalPhys;
-  dAvailablePhysicalMemory = stat.dwAvailPhys;
+  dAvailablePhysicalMemory = static_cast<double>(stat.dwAvailPhys);
 #elif defined(__APPLE__)
     int physmem;
     size_t len = sizeof physmem;
@@ -539,13 +539,13 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
   //1 when scanning for high rates only or low rates only, R=2 when scanning for either high or low rates
   double R = (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2 : 1);
   //number of data sets
-  double D = gpDataHub->GetDataSetHandler().GetNumDataSets();
+  double D = static_cast<double>(gpDataHub->GetDataSetHandler().GetNumDataSets());
   //number of processors available on the computer for SaTScan use
   double P = gParameters.GetNumParallelProcessesToExecute();
   //is the number of Monte Carlo simulations
   double MC = gParameters.GetNumReplicationsRequested();
   //sort array data type size
-  double SortedDataTypeSize(gpDataHub->GetNumTracts() < (int)std::numeric_limits<unsigned short>::max() ? sizeof(unsigned short) : sizeof(int));
+  double SortedDataTypeSize(gpDataHub->GetNumTracts() < (int)std::numeric_limits<unsigned short>::max() ? static_cast<double>(sizeof(unsigned short)) : static_cast<double>(sizeof(int)));
   //size of sorted array -- this formula deviates from the user guide slightly
   double SortedNeighborsArray = (gParameters.GetIsPurelyTemporalAnalysis() ? 0 :
                                  (double)sizeof(void**) * (gParameters.GetNumTotalEllipses()+1) +

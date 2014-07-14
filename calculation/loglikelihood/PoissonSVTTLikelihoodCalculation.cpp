@@ -17,6 +17,10 @@ bool IncreasingTrend(const AbstractTimeTrend& InsideTrend, const AbstractTimeTre
     case AbstractTimeTrend::UNDEFINED         : return false;
     case AbstractTimeTrend::NEGATIVE_INFINITY : return false;
     case AbstractTimeTrend::POSITIVE_INFINITY : return true;
+    case AbstractTimeTrend::CONVERGED :
+    case AbstractTimeTrend::NOT_CONVERGED :
+    case AbstractTimeTrend::SINGULAR_MATRIX :
+    default: break;
   };
   return macro_less_than(GlobalTrend.GetBeta(), InsideTrend.GetBeta(), DBL_CMP_TOLERANCE);
 }
@@ -27,6 +31,10 @@ bool DecreasingTrend(const AbstractTimeTrend& InsideTrend, const AbstractTimeTre
     case AbstractTimeTrend::UNDEFINED         : return false;
     case AbstractTimeTrend::NEGATIVE_INFINITY : return true;
     case AbstractTimeTrend::POSITIVE_INFINITY : return false;
+    case AbstractTimeTrend::CONVERGED :
+    case AbstractTimeTrend::NOT_CONVERGED :
+    case AbstractTimeTrend::SINGULAR_MATRIX :
+    default: break;
   };
   return macro_less_than(InsideTrend.GetBeta(), GlobalTrend.GetBeta(), DBL_CMP_TOLERANCE);
 }

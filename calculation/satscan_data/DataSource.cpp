@@ -581,7 +581,8 @@ void ShapeFileDataSource::GotoFirstRecord() {
 bool ShapeFileDataSource::ReadRecord() {
     if (_current_record >= _num_records) return false;
     _current_field_idx=-1;
+    ++_current_record;
     if (_dbase_file.get())
-        _dbase_file->GotoRecord(++_current_record);
+        _dbase_file->GotoRecord(_current_record);
     return true;
 }

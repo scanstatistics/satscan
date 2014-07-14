@@ -524,10 +524,10 @@ void PopulationData::Display(FILE* pFile) const {
     else
       nPEndIndex = (int)gvPopulationDates.size()-1;
 
-    fprintf(pFile, "DISPLAY: Number of categories = %i\n", gvCovariateCategories.size());
+    fprintf(pFile, "DISPLAY: Number of categories = %u\n", gvCovariateCategories.size());
     fprintf(pFile, "\n#   Category Combination\n");
     for (t=0; t < gvCovariateCategories.size(); t++) {
-       fprintf(pFile, "%d     ", t);
+       fprintf(pFile, "%u     ", t);
        for (j=0; j < gvCovariateCategories[t].size(); j++) {
           fprintf(pFile, "%s  ", gvCovariateNames[gvCovariateCategories[t][j]].c_str());
        }
@@ -535,7 +535,7 @@ void PopulationData::Display(FILE* pFile) const {
     }
     fprintf(pFile, "\n");
 
-    fprintf(pFile, "DISPLAY: Number of Population Dates = %i (%d,%d, %u)\n", gvPopulationDates.size(), nPStartIndex, nPEndIndex, gCovariateCategoriesPerLocation.size());
+    fprintf(pFile, "DISPLAY: Number of Population Dates = %u (%d,%d, %u)\n", gvPopulationDates.size(), nPStartIndex, nPEndIndex, gCovariateCategoriesPerLocation.size());
     for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
        pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
        std::vector<float> PopTotalsArray(gvPopulationDates.size(), 0);

@@ -1189,14 +1189,14 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       }
       //validate maximum as pecentage of population at risk
       double dPercentPopValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
-      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dPercentPopValue <= 0.0 || dPercentPopValue > 100.0/*50.0*/) {
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && (dPercentPopValue <= 0.0 || dPercentPopValue > 100.0/*50.0*/)) {
         bValid = false;
         PrintDirection.Printf("%s:\nThe maximum spatial cluster size, defined as percentage of population at risk, is invalid. "
                               "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dPercentPopValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file
       double dPercentMaxFileValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
-      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && dPercentMaxFileValue <= 0.0 || dPercentMaxFileValue > 100.0/*50.0*/) {
+      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && (dPercentMaxFileValue <= 0.0 || dPercentMaxFileValue > 100.0/*50.0*/)) {
         bValid = false;
         PrintDirection.Printf("%s:\nThe maximum spatial cluster size, defined as percentage of population in max circle file, is invalid. "
                               "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dPercentMaxFileValue, 100/*50*/);
@@ -1322,6 +1322,7 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
           return false;
         }
       case DAY   :
+      case GENERIC :
       case NONE  : break;
     };
   } catch (prg_exception& x) {
@@ -1379,6 +1380,7 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
             return false;
          }
       case DAY   :
+      case GENERIC :
       case NONE  : break;
     };
   } catch (prg_exception& x) {

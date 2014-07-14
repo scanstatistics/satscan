@@ -200,7 +200,7 @@ void printDateRange(FILE * pFile) {
     Julian maxDay = maxDate.julian_day();
 
     for (Julian j=minDay; j <= maxDay; ++j)
-       fprintf(pFile, "Julian %u: %s\n", j, JulianToString(sBuffer, j, DAY).c_str());
+       fprintf(pFile, "Julian %lu: %s\n", j, JulianToString(sBuffer, j, DAY).c_str());
   } catch (prg_exception& x) {
     x.addTrace("printDateRange()","JulianDate.cpp");
     throw;

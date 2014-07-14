@@ -12,7 +12,7 @@ void printCountArray(const TwoDimCountArray_t& arrayClass, FILE * stream) {
     count_t ** pp = arrayClass.GetArray();
     for (unsigned int i=0; i < arrayClass.Get1stDimension(); ++i)
         for (unsigned int t=0; t < arrayClass.Get2ndDimension(); ++t)
-            fprintf(stream, "Count [%i][%i] = %i\n", i, t, pp[i][t]);
+            fprintf(stream, "Count [%i][%i] = %li\n", i, t, pp[i][t]);
     fprintf(stream, "\n");
     fflush(stream);
 }

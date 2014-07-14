@@ -408,6 +408,9 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
                    Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
                 case AbstractTimeTrend::POSITIVE_INFINITY :
                    Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+                case AbstractTimeTrend::NOT_CONVERGED :
+                case AbstractTimeTrend::SINGULAR_MATRIX :
+                default : break;
              }
              switch (pClusterData->getOutsideTrend().GetStatus()) {
                 case AbstractTimeTrend::UNDEFINED         : break;
@@ -417,6 +420,9 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
                    Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
                 case AbstractTimeTrend::POSITIVE_INFINITY :
                    Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+                case AbstractTimeTrend::NOT_CONVERGED :
+                case AbstractTimeTrend::SINGULAR_MATRIX :
+                default : break;
              }
           }
           const AbstractTimeTrend * pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getInsideTrend());

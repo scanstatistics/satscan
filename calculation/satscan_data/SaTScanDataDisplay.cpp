@@ -20,7 +20,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) const {
      count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
      for (int i=0; i < m_nTimeIntervals; ++i)
         for (int t=0; t < m_nTracts; ++t)
-           fprintf(pFile, "Case [%i][%i] = %i\n", i, j, ppCases[i][t]);
+           fprintf(pFile, "Case [%i][%i] = %li\n", i, j, ppCases[i][t]);
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");
@@ -37,7 +37,7 @@ void CSaTScanData::DisplayControls(FILE* pFile) const {
      count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
      for (int i=0; i < m_nTimeIntervals; ++i)
        for (int t=0; t < m_nTracts; ++t)
-         fprintf(pFile, "Controls [%i][%i] = %i\n", i, t, ppControls[i][t]);
+         fprintf(pFile, "Controls [%i][%i] = %li\n", i, t, ppControls[i][t]);
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");
@@ -54,7 +54,7 @@ void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* p
      count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
      for (int i=0; i < m_nTimeIntervals; ++i)
        for (int t=0; t < m_nTracts; ++t)
-         fprintf(pFile, "Cases [%i][%i] = %i\n", i, t, ppSimCases[i][t]);
+         fprintf(pFile, "Cases [%i][%i] = %li\n", i, t, ppSimCases[i][t]);
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");

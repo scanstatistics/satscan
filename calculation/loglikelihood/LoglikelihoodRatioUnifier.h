@@ -12,7 +12,7 @@ class AbstractLikelihoodCalculator; /** forward class declaration */
 class AbstractLoglikelihoodRatioUnifier {
   public:
     AbstractLoglikelihoodRatioUnifier() {}
-    ~AbstractLoglikelihoodRatioUnifier() {}
+    virtual ~AbstractLoglikelihoodRatioUnifier() {}
 
     virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
 
@@ -48,7 +48,7 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
 
   public:
     MultivariateUnifier(AreaRateType eScanningArea, ProbabilityModelType eProbabilityModelType);
-    ~MultivariateUnifier() {}
+    virtual ~MultivariateUnifier() {}
 
     virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new MultivariateUnifier(*this);};
 
@@ -95,7 +95,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
 
   public:
     AdjustmentUnifier(AreaRateType eScanningArea);
-    ~AdjustmentUnifier() {}
+    virtual ~AdjustmentUnifier() {}
 
     virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
 

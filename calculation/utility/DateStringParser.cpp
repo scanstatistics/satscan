@@ -100,6 +100,8 @@ DateStringParser::ParserStatus DateStringParser::GetInParts(const char * sDateSt
       case DAY   : if (sscanf(sDateString, sFormat.c_str(), &iOne, &iTwo, &iThree) != 3)
                      return INVALID_DATE;
                    break;
+      case GENERIC :
+      default :return INVALID_DATE;
   };
   //determine format - Y/M/D or M/D/Y
   //Format Y/M/D supports 2 digit years (no longer encouraged, but still supported),
@@ -110,6 +112,7 @@ DateStringParser::ParserStatus DateStringParser::GetInParts(const char * sDateSt
       case YEAR  : eDateFormat = YMD; break;
       case MONTH : eDateFormat = iTwo > 999 ? MDY : YMD; break;
       case DAY   : eDateFormat = iThree > 999 ? MDY : YMD; break;
+      case GENERIC :
       default    : return INVALID_DATE;
   };
   return (eDateFormat == YMD ? Ensure4DigitYear(iOne, PeriodStart, PeriodEnd) : VALID_DATE);

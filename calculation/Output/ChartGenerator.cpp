@@ -645,7 +645,7 @@ void GiniChartGenerator::generateChart() const {
             double gini = itrMLC->getGiniCoefficient(_dataHub, _simVars, _dataHub.GetParameters().getGiniIndexPValueCutoff());
             getValueAsString(gini, buffer, 4).c_str();
             gini_data << (itrMLC == _mlc.begin() ? "" : ",");
-            if ((maximizedCollection == &(*itrMLC))) {
+            if (maximizedCollection == &(*itrMLC)) {
                 gini_data << "{y: " << buffer.c_str() << ", name: 'Optimal Gini coefficient', marker: {symbol: 'circle', radius: 6, fillColor: 'red', states: {hover: {fillColor: 'red', radius: 8}}} }";
             } else {
                 gini_data << buffer.c_str();

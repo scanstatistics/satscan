@@ -155,8 +155,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
              if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
                Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
              if (gParameters.GetNumDataSets() > 1)
-               Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
-             Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = j + 1;
+               Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(i + 1);
+             Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = static_cast<double>(j + 1);
              Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
              dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumOrdinalCategoryCases(j) / DataSet.getTotalPopulation();
              Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;

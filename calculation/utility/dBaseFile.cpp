@@ -64,8 +64,6 @@ dBaseRecord::~dBaseRecord() {
 
 void dBaseRecord::ResizeChunk(unsigned long lNewSize, unsigned long& ulCurrentSize, unsigned char ** pChunk) {
   if (lNewSize == ulCurrentSize) return;
-  if (lNewSize < 0)
-    throw prg_error("lNewSize, value %d, must be non-negative.", "ResizeChunk", lNewSize);
   *pChunk = reinterpret_cast<unsigned char *> ( std::realloc(*pChunk, (size_t)lNewSize) );
    if (!*pChunk && lNewSize)
      throw std::bad_alloc();
