@@ -60,10 +60,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     private Preferences _prefs = Preferences.userNodeForPackage(getClass());
     private static final String _prefLastBackup = new String("import.destination");
-    private final String _startCardName = "Source Settings";
-    private final String _fileFormatCardName = "File Format";
-    private final String _dataMappingCardName = "Mapping Panel";
-    private final String _outPutSettingsCardName = "Output Settings";
+    private final String _source_settings_cardname = "source-settings";
+    private final String _file_format_cardname = "file-format";
+    private final String _data_mapping_cardname = "data-mapping";
+    private final String _output_settings_cardname = "output-settings";
+    private final String _source_settings_buttons_cardname = "source-settings-buttons";
+    private final String _file_format_buttons_cardname = "file-format-buttons";
+    private final String _data_mapping_buttons_cardname = "data-mapping-buttons";
+    private final String _output_settings_buttons_cardname = "output-settings-buttons";
     public static final String _unassigned_variable = "unassigned";
     private final int _dateVariableColumn = 2;
     private final int _sourceFileLineSample = 200;
@@ -71,7 +75,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private Vector<ImportVariable> _import_variables = new Vector<ImportVariable>();
     private final Parameters.ProbabilityModelType _startingModelType;
     private Parameters.CoordinatesType _coordinatesType;
-    private String _showingCard;
+    private String _showing_maincontent_cardname;
     private boolean _errorSamplingSourceFile = true;
     private PreviewTableModel _preview_table_model = null;
     private File _destinationFile = null;
@@ -113,9 +117,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     }
 
     /** Causes showCard to be the active card. */
-    private void bringPanelToFront(String showCard) {
-        ((CardLayout) _basePanel.getLayout()).show(_basePanel, showCard);
-        _showingCard = showCard;
+    private void bringPanelToFront(String main_cardname, String buttons_cardname) {
+        ((CardLayout) _main_content_panel.getLayout()).show(_main_content_panel, main_cardname);
+        _showing_maincontent_cardname = main_cardname;
+        ((CardLayout) _button_cards_panel.getLayout()).show(_button_cards_panel, buttons_cardname);       
         enableNavigationButtons();
         if (executeButton.isEnabled()) {
             executeButton.requestFocus();
@@ -240,15 +245,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Enables navigation buttons based upon active panel and current settings. */
     private void enableNavigationButtons() {
-        if (_showingCard == null) {
+        if (_showing_maincontent_cardname == null) {
             return;
-        } else if (_showingCard.equals(_startCardName)) {
+        } else if (_showing_maincontent_cardname.equals(_source_settings_cardname)) {
             // Require a source file to be specified -- we'll verified that it exists and is readable later.
             nextButtonSource.setEnabled(!_source_filename.getText().isEmpty());
-        } else if (_showingCard.equals(_fileFormatCardName)) {
+        } else if (_showing_maincontent_cardname.equals(_file_format_cardname)) {
             // Require that were able to read file sampling and necessary inputs were specified.
             nextButtonCSV.setEnabled(!_errorSamplingSourceFile && (_otherRadioButton.isSelected() ? _otherFieldSeparatorTextField.getText().length() > 0 : true));
-        } else if (_showingCard.equals(_dataMappingCardName)) {
+        } else if (_showing_maincontent_cardname.equals(_data_mapping_cardname)) {
             // Require there is at least one record to import and at least one variable is mapped - we'll verify the mappings later.
             if (_source_data_table.getModel().getRowCount() > 0) {
                 VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
@@ -256,7 +261,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     nextButtonMapping.setEnabled(model._visible_variables.get(i).isMappedToSourceField());
                 }
             }
-        } else if (_showingCard.equals(_outPutSettingsCardName)) {
+        } else if (_showing_maincontent_cardname.equals(_output_settings_cardname)) {
             if (_execute_import_now.isSelected()) {
                 executeButton.setEnabled(_outputDirectoryTextField.getText().length() > 0);
             } else {
@@ -662,39 +667,42 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Calls appropriate preparation methods then shows panel. */
     private void makeActivePanel(String targetCardName) throws Exception {
-        if (targetCardName.equals(_startCardName)) {
+        if (targetCardName.equals(_source_settings_cardname)) {
             prepFileSourceOptionsPanel();
-        } else if (targetCardName.equals(_fileFormatCardName)) {
+            bringPanelToFront(targetCardName, _source_settings_buttons_cardname);
+        } else if (targetCardName.equals(_file_format_cardname)) {
             prepFileFormatPanel();
-        } else if (targetCardName.equals(_dataMappingCardName)) {
+            bringPanelToFront(targetCardName, _file_format_buttons_cardname);
+        } else if (targetCardName.equals(_data_mapping_cardname)) {
             prepMappingPanel();
-        } else if (targetCardName.equals(_outPutSettingsCardName)) {
+            bringPanelToFront(targetCardName, _data_mapping_buttons_cardname);
+        } else if (targetCardName.equals(_output_settings_cardname)) {
             prepOutputSettingsPanel();
-        }
-        bringPanelToFront(targetCardName);
+            bringPanelToFront(targetCardName, _output_settings_buttons_cardname);
+        }        
     }
     
     /** Attempts to advance wizard to the next panel. */
     private void nextPanel() {
         try {
-            if (_showingCard == _startCardName) {
+            if (_showing_maincontent_cardname == _source_settings_cardname) {
                 /* The user might have changed the filename on the File Options panel.
                  * We need to check the SourceDataFileType for specified filename. */
                 if (FileAccess.ValidateFileAccess(getSourceFilename(), false)) {
                     _input_source_settings.setSourceDataFileType(getSourceFileType(getSourceFilename()));
                     if (_input_source_settings.getSourceDataFileType() == SourceDataFileType.CSV) {
-                        makeActivePanel(_fileFormatCardName);
+                        makeActivePanel(_file_format_cardname);
                     } else {
-                        makeActivePanel(_dataMappingCardName);
+                        makeActivePanel(_data_mapping_cardname);
                     }
                 } else {
                     JOptionPane.showMessageDialog(this, getSourceFilename() + " could not be opened for reading.", "Note", JOptionPane.INFORMATION_MESSAGE);
                 }
-            } else if (_showingCard == _fileFormatCardName) {
-                makeActivePanel(_dataMappingCardName);
-            } else if (_showingCard == _dataMappingCardName) {
+            } else if (_showing_maincontent_cardname == _file_format_cardname) {
+                makeActivePanel(_data_mapping_cardname);
+            } else if (_showing_maincontent_cardname == _data_mapping_cardname) {
                 if (checkForRequiredVariables()) return;
-                makeActivePanel(_outPutSettingsCardName);
+                makeActivePanel(_output_settings_cardname);
             }
         } catch (Throwable t) {
             new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
@@ -853,15 +861,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Attempts to reverse wizard to the previous panel. */    
     public void previousPanel() {
         try {
-            if (_showingCard == _fileFormatCardName) {
-               makeActivePanel(_startCardName);
-            } else if (_showingCard == _dataMappingCardName) {
+            if (_showing_maincontent_cardname == _file_format_cardname) {
+               makeActivePanel(_source_settings_cardname);
+            } else if (_showing_maincontent_cardname == _data_mapping_cardname) {
                 switch (_input_source_settings.getSourceDataFileType()) {
-                    case CSV: makeActivePanel(_fileFormatCardName); break;
-                    default : makeActivePanel(_startCardName);
+                    case CSV: makeActivePanel(_file_format_cardname); break;
+                    default : makeActivePanel(_source_settings_cardname);
                 }
-            } else if (_showingCard == _outPutSettingsCardName) {
-                makeActivePanel(_dataMappingCardName);
+            } else if (_showing_maincontent_cardname == _output_settings_cardname) {
+                makeActivePanel(_data_mapping_cardname);
             }
         } catch (Throwable t) {
             new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
@@ -1185,17 +1193,17 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         try {
             if (value) {
                 // Add the panels we're showing for file type.
-                _basePanel.removeAll();
-                _basePanel.add(_fileSourceSettingsPanel, _startCardName);
+                _main_content_panel.removeAll();
+                _main_content_panel.add(_fileSourceSettingsPanel, _source_settings_cardname);
                 if (!isImportableFileType(_input_source_settings.getInputFileType())) {
                     // Some input files do not support importing. Only show the start panel.
                     nextButtonSource.setVisible(false);
                 } else {
-                    _basePanel.add(_fileFormatPanel, _fileFormatCardName);
-                    _basePanel.add(_dataMappingPanel, _dataMappingCardName);
-                    _basePanel.add(_outputSettingsPanel, _outPutSettingsCardName);
+                    _main_content_panel.add(_fileFormatPanel, _file_format_cardname);
+                    _main_content_panel.add(_dataMappingPanel, _data_mapping_cardname);
+                    _main_content_panel.add(_outputSettingsPanel, _output_settings_cardname);
                 }
-                makeActivePanel(_startCardName);
+                makeActivePanel(_source_settings_cardname);
             }
             getRootPane().setDefaultButton( acceptButton );
             _source_filename.requestFocusInWindow();
@@ -1220,9 +1228,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _groupIndicatorButtonGroup = new javax.swing.ButtonGroup();
         _import_operation_buttonGroup = new javax.swing.ButtonGroup();
         _projectionButtonGroup = new javax.swing.ButtonGroup();
-        _basePanel = new javax.swing.JPanel();
+        _dialog_base_panel = new javax.swing.JPanel();
+        _main_content_panel = new javax.swing.JPanel();
+        _fileSourceSettingsPanel = new javax.swing.JPanel();
+        _file_selection_label = new javax.swing.JLabel();
+        _source_filename = new javax.swing.JTextField();
+        _browse_source = new javax.swing.JButton();
+        _expectedFormatScrollPane = new javax.swing.JScrollPane();
+        _expectedFormatTextPane = new javax.swing.JTextPane();
         _fileFormatPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         _fileContentsTextArea = new javax.swing.JTextArea();
@@ -1230,8 +1244,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _ignoreRowsTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         _firstRowColumnHeadersCheckBox = new javax.swing.JCheckBox();
-        _sourceFileTypeOptions = new javax.swing.JPanel();
-        _cSVDefsPanel = new javax.swing.JPanel();
         fieldSeparatorGroup = new javax.swing.JPanel();
         _commaRadioButton = new javax.swing.JRadioButton();
         _semiColonRadioButton = new javax.swing.JRadioButton();
@@ -1241,11 +1253,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _groupIndiocatorGroup = new javax.swing.JPanel();
         _doubleQuotesRadioButton = new javax.swing.JRadioButton();
         _singleQuotesRadioButton = new javax.swing.JRadioButton();
-        _fileFormatButtonPanel = new javax.swing.JPanel();
-        previousButtonCSV = new javax.swing.JButton();
-        nextButtonCSV = new javax.swing.JButton();
         _dataMappingPanel = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         _dataMappingTopPanel = new javax.swing.JPanel();
         _displayVariablesLabel = new javax.swing.JLabel();
@@ -1257,31 +1265,27 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _importTableScrollPane = new javax.swing.JScrollPane();
         _source_data_table = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
-        _fileSourceButtonPanel4 = new javax.swing.JPanel();
-        previousButtonMapping = new javax.swing.JButton();
-        nextButtonMapping = new javax.swing.JButton();
         _outputSettingsPanel = new javax.swing.JPanel();
-        _fileSourceButtonPanel5 = new javax.swing.JPanel();
-        previousButtonOutSettings = new javax.swing.JButton();
-        executeButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
+        _execute_import_now = new javax.swing.JRadioButton();
         _outputDirectoryTextField = new javax.swing.JTextField();
         _changeSaveDirectoryButton = new javax.swing.JButton();
-        _progressBar = new javax.swing.JProgressBar();
-        _execute_import_now = new javax.swing.JRadioButton();
         _save_import_settings = new javax.swing.JRadioButton();
-        _fileSourceSettingsPanel = new javax.swing.JPanel();
-        _fileSourceButtonPanel = new javax.swing.JPanel();
+        _progressBar = new javax.swing.JProgressBar();
+        _button_cards_panel = new javax.swing.JPanel();
+        _file_source_buttons_panel = new javax.swing.JPanel();
         acceptButton = new javax.swing.JButton();
         nextButtonSource = new javax.swing.JButton();
         clearInputSettigs = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        _file_selection_label = new javax.swing.JLabel();
-        _source_filename = new javax.swing.JTextField();
-        _expectedFormatScrollPane = new javax.swing.JScrollPane();
-        _expectedFormatTextPane = new javax.swing.JTextPane();
-        _browse_source = new javax.swing.JButton();
+        _file_format_buttons_panel = new javax.swing.JPanel();
+        previousButtonCSV = new javax.swing.JButton();
+        nextButtonCSV = new javax.swing.JButton();
+        _data_mapping_buttons_panel = new javax.swing.JPanel();
+        previousButtonMapping = new javax.swing.JButton();
+        nextButtonMapping = new javax.swing.JButton();
+        _output_settings_buttons_panel = new javax.swing.JPanel();
+        previousButtonOutSettings = new javax.swing.JButton();
+        executeButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         _fieldSeparatorButtonGroup.add(_commaRadioButton);
         _fieldSeparatorButtonGroup.add(_semiColonRadioButton);
@@ -1294,9 +1298,70 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("File Wizard"); // NOI18N
         setModal(true);
-        setResizable(false);
+        setPreferredSize(new java.awt.Dimension(550, 450));
 
-        _basePanel.setLayout(new java.awt.CardLayout());
+        _dialog_base_panel.setLayout(new javax.swing.BoxLayout(_dialog_base_panel, javax.swing.BoxLayout.Y_AXIS));
+
+        _main_content_panel.setPreferredSize(new java.awt.Dimension(580, 500));
+        _main_content_panel.setLayout(new java.awt.CardLayout());
+
+        _file_selection_label.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        _file_selection_label.setText("Case File:");
+
+        _browse_source.setText("..."); // NOI18N
+        _browse_source.setToolTipText("Browse for source file ..."); // NOI18N
+        _browse_source.setPreferredSize(new java.awt.Dimension(45, 20));
+        _browse_source.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), _input_source_settings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                File file = selectionDialog.browse_load(true);
+                if (file != null) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = selectionDialog.getDirectory();
+                    _source_filename.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        _expectedFormatScrollPane.setBorder(null);
+        _expectedFormatScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        _expectedFormatScrollPane.setBorder(null);
+
+        _expectedFormatTextPane.setEditable(false);
+        _expectedFormatTextPane.setBackground(new java.awt.Color(240, 240, 240));
+        _expectedFormatTextPane.setContentType("text/html"); // NOI18N
+        _expectedFormatTextPane.setText("<html>\r\n  <head>\r</head>\r\n  <body>\r\n    <p style=\"margin-top: 0;\">\r\rThe expected format of the case file, for the current settings, is:</p>\r\n    <p style=\"margin: 5px 0 0 5px;font-style:italic;font-size:1.01em;font-weight:bold;\">&lt;indentifier&gt;  &lt;count&gt; &lt;date&gt; &lt;covariate 1&gt; ... &lt;covariate N&gt;</p>\n  </body>\r\n</html>\r\n");
+        _expectedFormatScrollPane.setViewportView(_expectedFormatTextPane);
+
+        javax.swing.GroupLayout _fileSourceSettingsPanelLayout = new javax.swing.GroupLayout(_fileSourceSettingsPanel);
+        _fileSourceSettingsPanel.setLayout(_fileSourceSettingsPanelLayout);
+        _fileSourceSettingsPanelLayout.setHorizontalGroup(
+            _fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_fileSourceSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_file_selection_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_fileSourceSettingsPanelLayout.createSequentialGroup()
+                        .addComponent(_source_filename)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _fileSourceSettingsPanelLayout.setVerticalGroup(
+            _fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_fileSourceSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_file_selection_label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        _main_content_panel.add(_fileSourceSettingsPanel, "source-settings");
 
         jLabel1.setText("Sampling of File Contents:"); // NOI18N
 
@@ -1330,8 +1395,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _firstRowColumnHeadersCheckBox.setText("First row is column name"); // NOI18N
         _firstRowColumnHeadersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _firstRowColumnHeadersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        _sourceFileTypeOptions.setLayout(new java.awt.CardLayout());
 
         fieldSeparatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Field Separator"));
 
@@ -1380,7 +1443,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(_otherRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addContainerGap(186, Short.MAX_VALUE))
         );
         fieldSeparatorGroupLayout.setVerticalGroup(
             fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1425,116 +1488,52 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout _cSVDefsPanelLayout = new javax.swing.GroupLayout(_cSVDefsPanel);
-        _cSVDefsPanel.setLayout(_cSVDefsPanelLayout);
-        _cSVDefsPanelLayout.setHorizontalGroup(
-            _cSVDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        _cSVDefsPanelLayout.setVerticalGroup(
-            _cSVDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_cSVDefsPanelLayout.createSequentialGroup()
-                .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
-
-        _sourceFileTypeOptions.add(_cSVDefsPanel, "cvsPanel");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout _fileFormatPanelLayout = new javax.swing.GroupLayout(_fileFormatPanel);
+        _fileFormatPanel.setLayout(_fileFormatPanelLayout);
+        _fileFormatPanelLayout.setHorizontalGroup(
+            _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileFormatPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _fileFormatPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _fileFormatPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(5, 5, 5)
                         .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(5, 5, 5)
                         .addComponent(jLabel5)
                         .addGap(18, 18, 18)
-                        .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(164, 164, 164))
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5)
-                    .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_firstRowColumnHeadersCheckBox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(61, 61, 61))
-        );
-
-        _fileFormatButtonPanel.setPreferredSize(new java.awt.Dimension(438, 40));
-
-        previousButtonCSV.setText("< Previous"); // NOI18N
-        previousButtonCSV.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                previousPanel();
-            }
-        });
-
-        nextButtonCSV.setText("Next >"); // NOI18N
-        nextButtonCSV.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                nextPanel();
-            }
-        });
-
-        javax.swing.GroupLayout _fileFormatButtonPanelLayout = new javax.swing.GroupLayout(_fileFormatButtonPanel);
-        _fileFormatButtonPanel.setLayout(_fileFormatButtonPanelLayout);
-        _fileFormatButtonPanelLayout.setHorizontalGroup(
-            _fileFormatButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileFormatButtonPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(previousButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nextButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        _fileFormatButtonPanelLayout.setVerticalGroup(
-            _fileFormatButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileFormatButtonPanelLayout.createSequentialGroup()
-                .addGroup(_fileFormatButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(previousButtonCSV)
-                    .addComponent(nextButtonCSV))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _fileFormatPanelLayout = new javax.swing.GroupLayout(_fileFormatPanel);
-        _fileFormatPanel.setLayout(_fileFormatPanelLayout);
-        _fileFormatPanelLayout.setHorizontalGroup(
-            _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(_fileFormatButtonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
         );
         _fileFormatPanelLayout.setVerticalGroup(
             _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_fileFormatPanelLayout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 342, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_fileFormatButtonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_firstRowColumnHeadersCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(66, Short.MAX_VALUE))
         );
 
-        _basePanel.add(_fileFormatPanel, "File Format");
+        _main_content_panel.add(_fileFormatPanel, "file-format");
 
+        jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(170);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
@@ -1576,8 +1575,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
                         .addComponent(_displayVariablesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_displayVariablesComboBox, 0, 353, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
+                        .addComponent(_displayVariablesComboBox, 0, 316, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_clearSelectionButton))
         );
@@ -1590,7 +1589,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_clearSelectionButton)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1611,40 +1610,211 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _source_data_table.setRowSelectionAllowed(false);
         _importTableScrollPane.setViewportView(_source_data_table);
 
-        jLabel2.setText("# = Column is not actually defined in file but can be used as SaTScan variable.");
-
         javax.swing.GroupLayout _dataMappingBottomPanelLayout = new javax.swing.GroupLayout(_dataMappingBottomPanel);
         _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
         _dataMappingBottomPanelLayout.setHorizontalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_dataMappingBottomPanelLayout.createSequentialGroup()
-                .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2))
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        jLabel2.setText("# = Column is not actually defined in file but can be used as SaTScan variable.");
+
+        javax.swing.GroupLayout _dataMappingPanelLayout = new javax.swing.GroupLayout(_dataMappingPanel);
+        _dataMappingPanel.setLayout(_dataMappingPanelLayout);
+        _dataMappingPanelLayout.setHorizontalGroup(
+            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addGroup(_dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSplitPane1)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        _dataMappingPanelLayout.setVerticalGroup(
+            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1))
+                .addComponent(jSplitPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2))
         );
+
+        _main_content_panel.add(_dataMappingPanel, "data-mapping");
+
+        _import_operation_buttonGroup.add(_execute_import_now);
+        _execute_import_now.setSelected(true);
+        _execute_import_now.setText("Save imported input file as:");
+        _execute_import_now.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                executeButton.setText("Import");
+            }
+        });
+
+        _outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());
+
+        _changeSaveDirectoryButton.setText("Change"); // NOI18N
+        _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), "Select directory to save imported file", org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_saveas();
+                if (file != null) {
+                    org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _outputDirectoryTextField.setText(file.getAbsolutePath());
+                    _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());
+                }
+            }
+        });
+
+        _import_operation_buttonGroup.add(_save_import_settings);
+        _save_import_settings.setText("Save these settings and read directly from file source when running the analysis.");
+        _save_import_settings.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        _save_import_settings.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                executeButton.setText("Ok");
+            }
+        });
+
+        javax.swing.GroupLayout _outputSettingsPanelLayout = new javax.swing.GroupLayout(_outputSettingsPanel);
+        _outputSettingsPanel.setLayout(_outputSettingsPanelLayout);
+        _outputSettingsPanelLayout.setHorizontalGroup(
+            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(_outputDirectoryTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_changeSaveDirectoryButton))
+                    .addComponent(_execute_import_now, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _outputSettingsPanelLayout.setVerticalGroup(
+            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
+                .addGap(27, 27, 27)
+                .addComponent(_execute_import_now)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_changeSaveDirectoryButton))
+                .addGap(18, 18, 18)
+                .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(234, 234, 234)
+                .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        _main_content_panel.add(_outputSettingsPanel, "output-settings");
+
+        _dialog_base_panel.add(_main_content_panel);
+
+        _button_cards_panel.setLayout(new java.awt.CardLayout());
+
+        acceptButton.setText("Ok"); // NOI18N
+        acceptButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // set close status = Closed?
+                setVisible(false);
+            }
+        });
+
+        nextButtonSource.setText("Next >"); // NOI18N
+        nextButtonSource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                nextPanel();
+            }
+        });
+
+        clearInputSettigs.setText("Clear Import"); // NOI18N
+        clearInputSettigs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                _input_source_settings.reset();
+                clearInputSettigs.setEnabled(_input_source_settings.isSet());
+                clearSaTScanVariableFieldIndexes();
+                _execute_import_now.setSelected(true);
+                _needs_import_save = true;
+                _expectedFormatTextPane.setText(getFileExpectedFormatHtml());
+                _expectedFormatTextPane.setCaretPosition(0);
+                nextButtonSource.setText("Next >");
+                acceptButton.requestFocus();
+            }
+        });
+
+        javax.swing.GroupLayout _file_source_buttons_panelLayout = new javax.swing.GroupLayout(_file_source_buttons_panel);
+        _file_source_buttons_panel.setLayout(_file_source_buttons_panelLayout);
+        _file_source_buttons_panelLayout.setHorizontalGroup(
+            _file_source_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_file_source_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(acceptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE)
+                .addComponent(clearInputSettigs, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nextButtonSource, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        _file_source_buttons_panelLayout.setVerticalGroup(
+            _file_source_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _file_source_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_file_source_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(acceptButton)
+                    .addComponent(nextButtonSource)
+                    .addComponent(clearInputSettigs))
+                .addContainerGap())
+        );
+
+        _button_cards_panel.add(_file_source_buttons_panel, "source-settings-buttons");
+
+        _file_format_buttons_panel.setPreferredSize(new java.awt.Dimension(438, 40));
+
+        previousButtonCSV.setText("< Previous"); // NOI18N
+        previousButtonCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                previousPanel();
+            }
+        });
+
+        nextButtonCSV.setText("Next >"); // NOI18N
+        nextButtonCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                nextPanel();
+            }
+        });
+
+        javax.swing.GroupLayout _file_format_buttons_panelLayout = new javax.swing.GroupLayout(_file_format_buttons_panel);
+        _file_format_buttons_panel.setLayout(_file_format_buttons_panelLayout);
+        _file_format_buttons_panelLayout.setHorizontalGroup(
+            _file_format_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_file_format_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(334, Short.MAX_VALUE)
+                .addComponent(previousButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nextButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        _file_format_buttons_panelLayout.setVerticalGroup(
+            _file_format_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _file_format_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_file_format_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nextButtonCSV)
+                    .addComponent(previousButtonCSV))
+                .addContainerGap())
+        );
+
+        _button_cards_panel.add(_file_format_buttons_panel, "file-format-buttons");
 
         previousButtonMapping.setText("< Previous"); // NOI18N
         previousButtonMapping.addActionListener(new java.awt.event.ActionListener() {
@@ -1660,42 +1830,28 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         });
 
-        javax.swing.GroupLayout _fileSourceButtonPanel4Layout = new javax.swing.GroupLayout(_fileSourceButtonPanel4);
-        _fileSourceButtonPanel4.setLayout(_fileSourceButtonPanel4Layout);
-        _fileSourceButtonPanel4Layout.setHorizontalGroup(
-            _fileSourceButtonPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileSourceButtonPanel4Layout.createSequentialGroup()
-                .addContainerGap(371, Short.MAX_VALUE)
+        javax.swing.GroupLayout _data_mapping_buttons_panelLayout = new javax.swing.GroupLayout(_data_mapping_buttons_panel);
+        _data_mapping_buttons_panel.setLayout(_data_mapping_buttons_panelLayout);
+        _data_mapping_buttons_panelLayout.setHorizontalGroup(
+            _data_mapping_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _data_mapping_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(334, Short.MAX_VALUE)
                 .addComponent(previousButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        _fileSourceButtonPanel4Layout.setVerticalGroup(
-            _fileSourceButtonPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileSourceButtonPanel4Layout.createSequentialGroup()
-                .addGroup(_fileSourceButtonPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(previousButtonMapping)
-                    .addComponent(nextButtonMapping))
-                .addGap(0, 11, Short.MAX_VALUE))
+        _data_mapping_buttons_panelLayout.setVerticalGroup(
+            _data_mapping_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_data_mapping_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_data_mapping_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nextButtonMapping)
+                    .addComponent(previousButtonMapping))
+                .addContainerGap())
         );
 
-        javax.swing.GroupLayout _dataMappingPanelLayout = new javax.swing.GroupLayout(_dataMappingPanel);
-        _dataMappingPanel.setLayout(_dataMappingPanelLayout);
-        _dataMappingPanelLayout.setHorizontalGroup(
-            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(_fileSourceButtonPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        _dataMappingPanelLayout.setVerticalGroup(
-            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_dataMappingPanelLayout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_fileSourceButtonPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        _basePanel.add(_dataMappingPanel, "Mapping Panel");
+        _button_cards_panel.add(_data_mapping_buttons_panel, "data-mapping-buttons");
 
         previousButtonOutSettings.setText("< Previous"); // NOI18N
         previousButtonOutSettings.addActionListener(new java.awt.event.ActionListener() {
@@ -1735,265 +1891,58 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         cancelButton.setText("Cancel");
         cancelButton.setEnabled(false);
 
-        javax.swing.GroupLayout _fileSourceButtonPanel5Layout = new javax.swing.GroupLayout(_fileSourceButtonPanel5);
-        _fileSourceButtonPanel5.setLayout(_fileSourceButtonPanel5Layout);
-        _fileSourceButtonPanel5Layout.setHorizontalGroup(
-            _fileSourceButtonPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileSourceButtonPanel5Layout.createSequentialGroup()
+        javax.swing.GroupLayout _output_settings_buttons_panelLayout = new javax.swing.GroupLayout(_output_settings_buttons_panel);
+        _output_settings_buttons_panel.setLayout(_output_settings_buttons_panelLayout);
+        _output_settings_buttons_panelLayout.setHorizontalGroup(
+            _output_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _output_settings_buttons_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 246, Short.MAX_VALUE)
                 .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        _fileSourceButtonPanel5Layout.setVerticalGroup(
-            _fileSourceButtonPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileSourceButtonPanel5Layout.createSequentialGroup()
-                .addGroup(_fileSourceButtonPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        _output_settings_buttons_panelLayout.setVerticalGroup(
+            _output_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _output_settings_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_output_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(previousButtonOutSettings)
                     .addComponent(executeButton)
                     .addComponent(cancelButton))
-                .addGap(0, 11, Short.MAX_VALUE))
-        );
-
-        _outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());
-
-        _changeSaveDirectoryButton.setText("Change"); // NOI18N
-        _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), "Select directory to save imported file", org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_saveas();
-                if (file != null) {
-                    org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _outputDirectoryTextField.setText(file.getAbsolutePath());
-                    _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());
-                }
-            }
-        });
-
-        _import_operation_buttonGroup.add(_execute_import_now);
-        _execute_import_now.setSelected(true);
-        _execute_import_now.setText("Save imported input file as:");
-        _execute_import_now.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                executeButton.setText("Import");
-            }
-        });
-
-        _import_operation_buttonGroup.add(_save_import_settings);
-        _save_import_settings.setText("Save these settings and read directly from file source when running the analysis.");
-        _save_import_settings.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        _save_import_settings.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                executeButton.setText("Ok");
-            }
-        });
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(15, 15, 15)
-                        .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_changeSaveDirectoryButton))
-                    .addComponent(_save_import_settings, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_execute_import_now, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(22, 22, 22)
-                .addComponent(_execute_import_now)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_changeSaveDirectoryButton))
-                .addGap(18, 18, 18)
-                .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
-                .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout _outputSettingsPanelLayout = new javax.swing.GroupLayout(_outputSettingsPanel);
-        _outputSettingsPanel.setLayout(_outputSettingsPanelLayout);
-        _outputSettingsPanelLayout.setHorizontalGroup(
-            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 1, Short.MAX_VALUE))
-            .addComponent(_fileSourceButtonPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        _outputSettingsPanelLayout.setVerticalGroup(
-            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
-                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_fileSourceButtonPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        _button_cards_panel.add(_output_settings_buttons_panel, "output-settings-buttons");
 
-        _basePanel.add(_outputSettingsPanel, "Output Settings");
-
-        acceptButton.setText("Ok"); // NOI18N
-        acceptButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                // set close status = Closed?
-                setVisible(false);
-            }
-        });
-
-        nextButtonSource.setText("Next >"); // NOI18N
-        nextButtonSource.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                nextPanel();
-            }
-        });
-
-        clearInputSettigs.setText("Clear Import"); // NOI18N
-        clearInputSettigs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                _input_source_settings.reset();
-                clearInputSettigs.setEnabled(_input_source_settings.isSet());
-                clearSaTScanVariableFieldIndexes();
-                _execute_import_now.setSelected(true);
-                _needs_import_save = true;
-                _expectedFormatTextPane.setText(getFileExpectedFormatHtml());
-                _expectedFormatTextPane.setCaretPosition(0);
-                nextButtonSource.setText("Next >");
-                acceptButton.requestFocus();
-            }
-        });
-
-        javax.swing.GroupLayout _fileSourceButtonPanelLayout = new javax.swing.GroupLayout(_fileSourceButtonPanel);
-        _fileSourceButtonPanel.setLayout(_fileSourceButtonPanelLayout);
-        _fileSourceButtonPanelLayout.setHorizontalGroup(
-            _fileSourceButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileSourceButtonPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(acceptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 249, Short.MAX_VALUE)
-                .addComponent(clearInputSettigs, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nextButtonSource, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        _fileSourceButtonPanelLayout.setVerticalGroup(
-            _fileSourceButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileSourceButtonPanelLayout.createSequentialGroup()
-                .addGroup(_fileSourceButtonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(acceptButton)
-                    .addComponent(nextButtonSource)
-                    .addComponent(clearInputSettigs))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _file_selection_label.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        _file_selection_label.setText("Case File:");
-
-        _expectedFormatScrollPane.setBorder(null);
-        _expectedFormatScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        _expectedFormatScrollPane.setBorder(null);
-
-        _expectedFormatTextPane.setEditable(false);
-        _expectedFormatTextPane.setBackground(new java.awt.Color(240, 240, 240));
-        _expectedFormatTextPane.setContentType("text/html"); // NOI18N
-        _expectedFormatTextPane.setText("<html>\r\n  <head>\r</head>\r\n  <body>\r\n    <p style=\"margin-top: 0;\">\r\rThe expected format of the case file, for the current settings, is:</p>\r\n    <p style=\"margin: 5px 0 0 5px;font-style:italic;font-size:1.01em;font-weight:bold;\">&lt;indentifier&gt;  &lt;count&gt; &lt;date&gt; &lt;covariate 1&gt; ... &lt;covariate N&gt;</p>\n  </body>\r\n</html>\r\n");
-        _expectedFormatScrollPane.setViewportView(_expectedFormatTextPane);
-
-        _browse_source.setText("..."); // NOI18N
-        _browse_source.setToolTipText("Browse for source file ..."); // NOI18N
-        _browse_source.setPreferredSize(new java.awt.Dimension(45, 20));
-        _browse_source.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), _input_source_settings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = selectionDialog.browse_load(true);
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = selectionDialog.getDirectory();
-                    _source_filename.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 535, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_file_selection_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_file_selection_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout _fileSourceSettingsPanelLayout = new javax.swing.GroupLayout(_fileSourceSettingsPanel);
-        _fileSourceSettingsPanel.setLayout(_fileSourceSettingsPanelLayout);
-        _fileSourceSettingsPanelLayout.setHorizontalGroup(
-            _fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(_fileSourceButtonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        _fileSourceSettingsPanelLayout.setVerticalGroup(
-            _fileSourceSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileSourceSettingsPanelLayout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_fileSourceButtonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        _basePanel.add(_fileSourceSettingsPanel, "Source Settings");
+        _dialog_base_panel.add(_button_cards_panel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_basePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 587, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_basePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel _basePanel;
     private javax.swing.JButton _browse_source;
-    private javax.swing.JPanel _cSVDefsPanel;
+    private javax.swing.JPanel _button_cards_panel;
     private javax.swing.JButton _changeSaveDirectoryButton;
     private javax.swing.JButton _clearSelectionButton;
     private javax.swing.JRadioButton _commaRadioButton;
     private javax.swing.JPanel _dataMappingBottomPanel;
     private javax.swing.JPanel _dataMappingPanel;
     private javax.swing.JPanel _dataMappingTopPanel;
+    private javax.swing.JPanel _data_mapping_buttons_panel;
+    private javax.swing.JPanel _dialog_base_panel;
     private javax.swing.JComboBox _displayVariablesComboBox;
     private javax.swing.JLabel _displayVariablesLabel;
     private javax.swing.JRadioButton _doubleQuotesRadioButton;
@@ -2002,30 +1951,29 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JTextPane _expectedFormatTextPane;
     private javax.swing.ButtonGroup _fieldSeparatorButtonGroup;
     private javax.swing.JTextArea _fileContentsTextArea;
-    private javax.swing.JPanel _fileFormatButtonPanel;
     private javax.swing.JPanel _fileFormatPanel;
-    private javax.swing.JPanel _fileSourceButtonPanel;
-    private javax.swing.JPanel _fileSourceButtonPanel4;
-    private javax.swing.JPanel _fileSourceButtonPanel5;
     private javax.swing.JPanel _fileSourceSettingsPanel;
+    private javax.swing.JPanel _file_format_buttons_panel;
     private javax.swing.JLabel _file_selection_label;
+    private javax.swing.JPanel _file_source_buttons_panel;
     private javax.swing.JCheckBox _firstRowColumnHeadersCheckBox;
     private javax.swing.ButtonGroup _groupIndicatorButtonGroup;
     private javax.swing.JPanel _groupIndiocatorGroup;
     private javax.swing.JTextField _ignoreRowsTextField;
     private javax.swing.JScrollPane _importTableScrollPane;
     private javax.swing.ButtonGroup _import_operation_buttonGroup;
+    private javax.swing.JPanel _main_content_panel;
     private javax.swing.JTable _mapping_table;
     private javax.swing.JTextField _otherFieldSeparatorTextField;
     private javax.swing.JRadioButton _otherRadioButton;
     private javax.swing.JTextField _outputDirectoryTextField;
     private javax.swing.JPanel _outputSettingsPanel;
+    private javax.swing.JPanel _output_settings_buttons_panel;
     private javax.swing.JProgressBar _progressBar;
     private javax.swing.ButtonGroup _projectionButtonGroup;
     private javax.swing.JRadioButton _save_import_settings;
     private javax.swing.JRadioButton _semiColonRadioButton;
     private javax.swing.JRadioButton _singleQuotesRadioButton;
-    private javax.swing.JPanel _sourceFileTypeOptions;
     private javax.swing.JTable _source_data_table;
     private javax.swing.JTextField _source_filename;
     private javax.swing.JRadioButton _whitespaceRadioButton;
@@ -2038,10 +1986,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
