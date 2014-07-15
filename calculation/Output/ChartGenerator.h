@@ -37,9 +37,13 @@ class ChartSeries {
 
         std::stringstream & datastream() {return _data_stream;}
         std::string & toString(std::string& r) const {
-            return printString(r, 
-                               "{ id: '%s', zIndex: %u, type: '%s', name: '%s', color: '#%s', yAxis: %u, marker: { enabled: true, symbol: '%s', radius: 0 }, data: [%s] }", 
-                               _id.c_str(), _zindex, _type.c_str(), _name.c_str(), _color.c_str(), _y_axis, _symbol.c_str(), _data_stream.str().c_str());
+            std::stringstream s;
+
+            s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
+              << "', color: '#" << _color.c_str() << "', yAxis: " << _y_axis << ", marker: { enabled: true, symbol: '" << _symbol.c_str()
+              << "', radius: 0 }, data: [" << _data_stream.str().c_str() << "] }";
+            r = s.str();
+            return r;
         }
 };
 
