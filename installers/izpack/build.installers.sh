@@ -70,12 +70,30 @@ cp $build/binaries/mac/libsatscan.jnilib $build/satscan/installers/izpack/mac/sa
 # copy additional Java libraries into app directory
 cp $build/satscan/java_application/jni_application/dist/lib/* $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Resources/Java/lib/
 
+# prompt user to sign the SaTScan.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
+echo
+echo "1) Copy SaTScan.app folder to the Mac with Developer ID certificated installed."
+echo "2) Run the script .../satscan/scripts/mac/signSaTScanApp.sh on that directly"
+echo "3) Replace the signed app back on NFS share"
+echo "4) Hit <enter> once done ..."
+read dummy
+
 # Build the IzPack Java installer for Mac OS X.
 $IzPack/bin/compile $build/satscan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-9_4_mac.jar -k standard
 
 # Build Mac OS X Application Bundle from IzPack Java Installer
 rm -rf $installer_version/install-9_4_mac.zip
+rm -rf $build/satscan/installers/izpack/mac/Install.app
 python $build/satscan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-9_4_mac.jar $build/satscan/installers/izpack/mac/Install.app
+
+# prompt user to sign the Install.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
+echo
+echo "1) Copy Install.app folder to the Mac with Developer ID certificated installed."
+echo "2) Run the script .../satscan/scripts/mac/signInstallApp.sh on that directly"
+echo "3) Replace the signed app back on NFS share"
+echo "4) Hit <enter> once done ..."
+read dummy
+
 cd $build/satscan/installers/izpack/mac
 zip $installer_version/install-9_4_mac.zip -r ./Install.app/*
 rm $installer_version/install-9_4_mac.jar

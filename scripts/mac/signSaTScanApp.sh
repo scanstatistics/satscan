@@ -1,0 +1,14 @@
+#!/bin/sh
+
+REQUIRED_ARGS=1
+if [ $# -lt "$REQUIRED_ARGS" ]
+then
+echo "Usage: `basename $0` <app>"
+echo "   example: `basename $0` ./SaTScan.app"
+exit 1
+fi
+
+codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $1
+
+
+spctl --assess --verbose=4 --raw $1
