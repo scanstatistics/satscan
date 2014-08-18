@@ -153,7 +153,12 @@ int main(int argc, char *argv[]) {
                                    "Please review above message(s) and modify parameter settings accordingly.");
     }
     /* apply parameter overrides*/
-    parameterOptions.setParameterOverrides(vm);
+    if (!parameterOptions.setParameterOverrides(vm)) {
+        if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
+            throw resolvable_error("\nThe parameter settings that prevent SaTScan from continuing.\n"
+                                   "Please review above message(s) and modify parameter settings accordingly.");
+    }
+
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY);
     if (allOut) Parameters.requestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);

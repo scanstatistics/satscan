@@ -76,7 +76,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
 }
 
 /** Overrides settings  */
-void ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
+bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
     IniParameterSpecification::ParameterInfoCollection_t parameter_collection;
     _specifications.getParameterInfoCollection(parameter_collection);
     IniParameterSpecification::ParameterInfoCollection_t::iterator itr=parameter_collection.begin(), end=parameter_collection.end();
@@ -112,6 +112,7 @@ void ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
             gParameters.SetNumDataSets(std::max(t+2,numSets));
         }
     }
+    return !gbReadStatusError;
 }
 
 void ParameterProgramOptions::listOptions(FILE * fp) {

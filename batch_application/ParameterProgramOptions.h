@@ -29,7 +29,7 @@ class ParameterProgramOptions: public AbtractParameterFileAccess {
         ParameterProgramOptions(CParameters& Parameters, CParameters::CreationVersion version, BasePrint& Print);
 
         ParamOptContainer_t& getOptions(ParamOptContainer_t& opt_descriptions);
-        void setParameterOverrides(const po::variables_map& vm);
+        bool setParameterOverrides(const po::variables_map& vm);
 
         void listOptions(FILE * fp=stdout);
 
