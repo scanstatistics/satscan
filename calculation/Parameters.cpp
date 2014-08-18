@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 131;
+const int CParameters::giNumParameters                = 132;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -133,6 +133,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbReportRank                           != rhs.gbReportRank) return false;
   if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
   if (gvSpatialWindowStops                   != rhs.gvSpatialWindowStops) return false;
+  if (gsTitleName                            != rhs.gsTitleName) return false;
   if (_giniIndexPValueCutoff                 != rhs._giniIndexPValueCutoff) return false;
   if (_reportHierarchicalClusters            != rhs._reportHierarchicalClusters) return false;
   if (_reportGiniOptimizedClusters           != rhs._reportGiniOptimizedClusters) return false;
@@ -347,6 +348,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gbReportRank                           = rhs.gbReportRank;
   gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
   gvSpatialWindowStops                   = rhs.gvSpatialWindowStops; _executeSpatialWindowStops.clear();
+  gsTitleName                            = rhs.gsTitleName;
   _giniIndexPValueCutoff                 = rhs._giniIndexPValueCutoff;
   _reportHierarchicalClusters            = rhs._reportHierarchicalClusters;
   _reportGiniOptimizedClusters           = rhs._reportGiniOptimizedClusters;
@@ -842,6 +844,7 @@ void CParameters::SetAsDefaulted() {
   gbPrintAsciiHeaders = false;
   gvSpatialWindowStops.clear();
   gvSpatialWindowStops += 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
+  gsTitleName = "";
   _giniIndexPValueCutoff = 0.05;
   _reportHierarchicalClusters = true;
   _reportGiniOptimizedClusters = true;
@@ -1222,6 +1225,11 @@ void CParameters::setTimeTrendType(TimeTrendType eTimeTrendType) {
 /** Set version number that indicates what version of SaTScan created these parameters. */
 void CParameters::SetVersion(const CreationVersion& vVersion) {
   gCreationVersion = vVersion;
+}
+
+/** Sets user defined title. */
+void CParameters::SetTitleName(const char * sTitleName) {
+  gsTitleName = sTitleName;
 }
 
 /** Returns indication of whether to use coordinates file. */

@@ -631,6 +631,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalGraphMostLikelyCount());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "SetTitleName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetTitleName().c_str()));
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1256,6 +1260,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphMostLikelyCount", "()I");
   Parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "GetTitleName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.SetTitleName(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return Parameters;
 }

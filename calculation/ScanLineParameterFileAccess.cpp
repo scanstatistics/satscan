@@ -151,7 +151,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 129)";
     case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 130)";
     case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 131)";
-    default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
+	case USER_DEFINED_TITLE                 : return "user defined title (line 132)";
+	default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }
 

@@ -593,8 +593,10 @@ void IniParameterSpecification::Build_9_4_x_ParameterList() {
     _parameter_info[TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(TEMPORAL_GRAPH_REPORT_TYPE, "TemporalGraphReportType", 2, _temporal_output_section);
     _parameter_info[TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(TEMPORAL_GRAPH_MLC_COUNT, "TemporalGraphMostMLC", 3, _temporal_output_section);
     _parameter_info[TEMPORAL_GRAPH_CUTOFF] = ParamInfo(TEMPORAL_GRAPH_CUTOFF, "TemporalGraphSignificanceCutoff", 4, _temporal_output_section);
+	
+	_parameter_info[USER_DEFINED_TITLE] = ParamInfo(USER_DEFINED_TITLE, "ResultsTitle",4, _other_output_section);
 
-    assert(_parameter_info.size() == 131);
+    assert(_parameter_info.size() == 132);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

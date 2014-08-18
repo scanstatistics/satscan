@@ -114,6 +114,8 @@ void AnalysisRunner::CreateReport() {
     OpenReportFile(fp, false);
     AsciiPrintFormat::PrintVersionHeader(fp);
     sStartTime = ctime(&gStartTime);
+	if (gParameters.GetTitleName() != "")
+		fprintf(fp,"%s\n", gParameters.GetTitleName().c_str());
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.c_str());
     ParametersPrint(gParameters).PrintAnalysisSummary(fp);
     ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());

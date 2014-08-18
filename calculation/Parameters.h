@@ -207,6 +207,7 @@ class CParameters {
     bool                                gbReportRank;                           /** report cluster rank */
     bool                                gbPrintAsciiHeaders;                    /** print headers in ascii output files */
     std::vector<double>                 gvSpatialWindowStops;                   /** spatial window stops */
+	std::string                         gsTitleName;
     double                              _giniIndexPValueCutoff;                 /* P-Value used to limit clusters in gini index calcuation */
     bool                                _reportHierarchicalClusters;
     bool                                _reportGiniOptimizedClusters;
@@ -410,6 +411,7 @@ class CParameters {
     bool                                getIsReportingIndexBasedCoefficents() const;
     bool                                getIsReportingGumbelPValue() const;
     bool                                getIsReportingStandardPValue() const;
+	const std::string                 & GetTitleName() const {return gsTitleName;}
     void                                requestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                setAdjustForWeeklyTrends(bool b) {_adjustWeeklyTrends = b;}
@@ -535,6 +537,7 @@ class CParameters {
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
+	void                                SetTitleName(const char * sTitleName);
 };
 //*****************************************************************************
 #endif
