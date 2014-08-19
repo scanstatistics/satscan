@@ -41,8 +41,8 @@ jni="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Develo
 
 echo building SaTScan binary ...
 cd $2
-make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/satscan2app/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
-make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/satscan2app/sharedlibrary-info.plist" CC="$6 $8 $9 -dynamiclib" ${10} M_CFLAGS=-fPIC JNI=$jni
+make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
+make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9 -dynamiclib" ${10} M_CFLAGS=-fPIC JNI=$jni
 strip libsatscan.jnilib
 mv libsatscan.jnilib $1
 
