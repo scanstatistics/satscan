@@ -198,6 +198,7 @@ public class Parameters implements Cloneable {
     private TimeTrendType                   geTimeTrendType=TimeTrendType.LINEAR;                        /** time trend type */
     private boolean                         gbReportRank=false;  /** report cluster rank */
     private boolean                         gbPrintAsciiHeaders=false;  /** print ASCII column headers */
+    private String                          gsTitleName="";
     private double                          _giniIndexPValueCutoff=0.05; /* P-Value used to limit clusters in gini index coefficients calcuation */
 
     private boolean                         _reportHierarchicalClusters=true;  /** print ASCII column headers */
@@ -270,6 +271,7 @@ public class Parameters implements Cloneable {
             newObject.gsLocationNeighborsFilename = new String(gsLocationNeighborsFilename);
             newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
             newObject.gvObservableRegions = new Vector<String>(gvObservableRegions);
+            newObject.gsTitleName = new String(gsTitleName);
             newObject._input_sources = new Vector<InputSourceSettings>();
             for (InputSourceSettings iss : _input_sources) {
                 newObject._input_sources.addElement(iss.clone());
@@ -430,6 +432,7 @@ public class Parameters implements Cloneable {
         if (geTimeTrendType != rhs.geTimeTrendType) return false;
         if (gbReportRank != rhs.gbReportRank) return false;
         if (gbPrintAsciiHeaders != rhs.gbPrintAsciiHeaders) return false;
+        if (!gsTitleName.equals(rhs.gsTitleName)) return false;
         if (_giniIndexPValueCutoff != rhs._giniIndexPValueCutoff) return false;
         if (_reportHierarchicalClusters != rhs._reportHierarchicalClusters) return false;
         if (_reportGiniOptimizedClusters != rhs._reportGiniOptimizedClusters) return false;
@@ -497,6 +500,8 @@ public class Parameters implements Cloneable {
     public void setReportGiniIndexCoefficents(boolean b) {_outputGiniIndexCoefficients = b;}
     public boolean getPrintAsciiHeaders() {return gbPrintAsciiHeaders;}
     public void setPrintAsciiHeaders(boolean b) {gbPrintAsciiHeaders = b;}
+    public final String GetTitleName() {return gsTitleName;}
+    public void SetTitleName(final String sTitleName) {gsTitleName = sTitleName;}
     public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
     public String GetAdjustmentsByRelativeRisksFilename() {return gsAdjustmentsByRelativeRisksFileName;}
     public AnalysisType GetAnalysisType() {return geAnalysisType;}
