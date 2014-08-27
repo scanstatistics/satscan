@@ -584,6 +584,9 @@
                       </SubComponents>
                     </Container>
                     <Container class="javax.swing.JPanel" name="_dataMappingBottomPanel">
+                      <Properties>
+                        <Property name="toolTipText" type="java.lang.String" value=""/>
+                      </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
                           <JSplitPaneConstraints position="right"/>
@@ -620,6 +623,7 @@
                                     <Column editable="true" title="Title 4" type="java.lang.Object"/>
                                   </Table>
                                 </Property>
+                                <Property name="toolTipText" type="java.lang.String" value="Displaying at most 50 rows from data file."/>
                                 <Property name="autoResizeMode" type="int" value="0"/>
                                 <Property name="rowSelectionAllowed" type="boolean" value="false"/>
                               </Properties>
