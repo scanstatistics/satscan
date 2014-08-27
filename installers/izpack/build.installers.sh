@@ -73,7 +73,7 @@ cp $build/satscan/java_application/jni_application/dist/lib/* $build/satscan/ins
 # prompt user to sign the SaTScan.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
 echo
 echo "1) Copy SaTScan.app folder to the Mac with Developer ID certificated installed."
-echo "2) Run the script .../satscan/scripts/mac/signSaTScanApp.sh on that directly"
+echo "2) Run the script .../satscan/scripts/mac/codesign.sh on that directly"
 echo "3) Replace the signed app back on NFS share"
 echo "4) Hit <enter> once done ..."
 read dummy
