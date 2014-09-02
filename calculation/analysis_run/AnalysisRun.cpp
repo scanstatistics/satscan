@@ -107,15 +107,19 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     header summary information is printed. File pointer does not remain open. */
 void AnalysisRunner::CreateReport() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-  FILE       * fp=0;
-  std::string  sStartTime;
+  FILE              * fp=0;
+  std::string         sStartTime;
+  std::string         sTitleName;
+  AsciiPrintFormat    PrintFormat;
 
   try {
     OpenReportFile(fp, false);
     AsciiPrintFormat::PrintVersionHeader(fp);
+	if (gParameters.GetTitleName() != "") {
+		sTitleName = gParameters.GetTitleName().c_str();
+		PrintFormat.PrintAlignedMarginsDataString(fp,sTitleName);
+	}
     sStartTime = ctime(&gStartTime);
-	if (gParameters.GetTitleName() != "")
-		fprintf(fp,"%s\n", gParameters.GetTitleName().c_str());
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.c_str());
     ParametersPrint(gParameters).PrintAnalysisSummary(fp);
     ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());
