@@ -4,8 +4,8 @@ REQUIRED_ARGS=3
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
 echo "Usage: `basename $0` <app nfs location> <app bundlename> <project directory>"
-echo "   example: `basename $0` /Users/satscan/prj/satscan.development/satscan.home/build/satscan/installers/izpack/mac/satscan2app/ SaTScan.app /Users/satscan/prj/satscan.development/"
-echo "   example: `basename $0` /Users/satscan/prj/satscan.development/satscan.home/build/satscan/installers/izpack/mac/ Install.app /Users/satscan/prj/satscan.development/"
+echo "   example: `basename $0` /Users/satscsvc/prj/satscan.development/satscan.home/build.area/satscan/installers/izpack/mac/satscan2app/ SaTScan.app /Users/satscsvc/prj/satscan.development/"
+echo "   example: `basename $0` /Users/satscsvc/prj/satscan.development/satscan.home/build.area/satscan/installers/izpack/mac/ Install.app /Users/satscsvc/prj/satscan.development/"
 exit 1
 fi
 

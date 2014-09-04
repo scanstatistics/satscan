@@ -4,7 +4,7 @@ REQUIRED_ARGS=2
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
 echo "Usage: `basename $0` <nfsf username> <username>"
-echo "   example: `basename $0` hostovic treescan"
+echo "   example: `basename $0` hostovic satscsvc"
 exit 1
 fi
 
