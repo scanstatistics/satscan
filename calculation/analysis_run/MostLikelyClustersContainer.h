@@ -157,7 +157,7 @@ class MostLikelyClustersContainer {
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
     Cluster_t                 & GetClusterRef(tract_t tClusterIndex);
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
-    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
+    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, unsigned int limit=0) const;
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);

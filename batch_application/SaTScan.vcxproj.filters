@@ -678,6 +678,12 @@
     <ClCompile Include="..\calculation\Output\GisUtils.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1165,6 +1171,12 @@
     </ClInclude>
     <ClInclude Include="..\calculation\Output\GisUtils.h">
       <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

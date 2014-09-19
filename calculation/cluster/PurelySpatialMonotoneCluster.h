@@ -5,6 +5,7 @@
 #include "cluster.h"
 #include "ClusterData.h"
 #include "IntermediateClustersContainer.h"
+#include "ClusterLocationsWriter.h"
 
 /** Purely spatial monotone cluster */
 class CPSMonotoneCluster : public CCluster {
@@ -48,8 +49,11 @@ class CPSMonotoneCluster : public CCluster {
     virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     void                        SetTotalTracts();
-    virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
-                                      unsigned int iClusterNumber, const SimulationVariables& simVars) const;
+    virtual void                Write(LocationInformationWriter& LocationWriter, 
+                                      const CSaTScanData& Data,
+                                      unsigned int iClusterNumber,
+                                      const SimulationVariables& simVars,
+                                      const Relevance_Container_t& location_relevance) const;
 };
 //*****************************************************************************
 #endif

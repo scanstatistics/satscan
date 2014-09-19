@@ -21,6 +21,7 @@ const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                  = "OUT
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_IN_FIELD              = "IN_FUNC_A";
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_OUT_FIELD             = "OUT_FUNC_A";
 const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD        = "W_MEAN";
+const char * LocationRiskEstimateWriter::OLIVIERA_F_FIELD             = "OLIVIERA_F";
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub)
@@ -47,51 +48,52 @@ LocationRiskEstimateWriter::~LocationRiskEstimateWriter() {}
 // pre: none
 // post : returns through reference a vector of FieldDef to determine the structure of the data
 void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
-  unsigned short uwOffset = 0;
+    unsigned short uwOffset = 0;
 
-  try {
-    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
-        gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || 
-        gParameters.GetProbabilityModelType() == ORDINAL || 
-        gParameters.GetProbabilityModelType() == CATEGORICAL /*|| gParameters.GetAnalysisType() == SPATIALVARTEMPTREND*/)
-      throw prg_error("Risk estimates file not implemented for %s model.",
-                      "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset, 0);
-    if (gParameters.GetNumDataSets() > 1)
-      CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
-      CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
-        if (!gParameters.getIsWeightedNormal()) {
-            CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+    try {
+        if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || 
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL /*|| gParameters.GetAnalysisType() == SPATIALVARTEMPTREND*/)
+            throw prg_error("Risk estimates file not implemented for %s model.", "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
+        CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset, 0);
+        if (gParameters.GetNumDataSets() > 1)
+            CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
+            CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        if (gParameters.GetProbabilityModelType() == NORMAL) {
+            if (!gParameters.getIsWeightedNormal()) {
+                CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+                CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            } else {
+                CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+                CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);      
+            }
         } else {
-            CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);      
+            CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
-    } else {
-      CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-      CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+            CreateField(vFieldDefinitions, TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(vFieldDefinitions, TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(vFieldDefinitions, ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+        }
+        if (gParameters.getCalculateOlivierasF()) {
+            std::string buffer;
+            printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets());
+            CreateField(vFieldDefinitions, OLIVIERA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("DefineFields()","LocationRiskEstimateWriter");
+        throw;
     }
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      CreateField(vFieldDefinitions, TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      CreateField(vFieldDefinitions, TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      CreateField(vFieldDefinitions, ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      CreateField(vFieldDefinitions, BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      CreateField(vFieldDefinitions, BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      CreateField(vFieldDefinitions, ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      CreateField(vFieldDefinitions, BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      CreateField(vFieldDefinitions, BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-      //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("DefineFields()","LocationRiskEstimateWriter");
-    throw;
-  }
 }
 
 /** Returns location identifier for tract at tTractIndex. If tTractIndex refers
@@ -109,7 +111,7 @@ std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_
 }
 
 /** writes relative risk data to record and appends to internal buffer of records */
-void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
+void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance) {
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       RecordRelativeRiskDataAsOrdinal(DataHub);
@@ -117,7 +119,7 @@ void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
       RecordRelativeRiskDataAsWeightedNormal(DataHub);
     }
     else
-      RecordRelativeRiskDataStandard(DataHub);
+      RecordRelativeRiskDataStandard(DataHub, location_relevance);
   }
   catch (prg_exception& x) {
     x.addTrace("RecordRelativeRiskData()","LocationRiskEstimateWriter");
@@ -180,26 +182,25 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
 }
 
 /** Writes obvserved, expected, observed/expected and relative risk to record.*/
-void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub) {
-  unsigned int          i;
-  tract_t               t;
+void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance) {
   std::string           sBuffer;
-  count_t             * pCases;
-  measure_t           * pMeasure, * pMeasureAux(0);
-  double                dExpected, dDenominator, dNumerator;
   RecordBuffer          Record(vFieldDefinitions);
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
 
   try {
-    for (i=0; i < Handler.GetNumDataSets(); ++i) {
-       pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
-       pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
+    for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
+       count_t * pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
+       measure_t * pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
+       measure_t * pMeasureAux(0);
        if (gParameters.GetProbabilityModelType() == NORMAL)
          pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
-       for (t=0; t < tTotalLocations; ++t) {
+       for (tract_t t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
+          if (gParameters.getCalculateOlivierasF() && location_relevance.size() > t) {
+            Record.GetFieldValue(OLIVIERA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[t]) / static_cast<double>(gParameters.getNumRequestedOlivieraSets());
+          }
           if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
@@ -211,6 +212,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             }  
           } else {
             Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
+            double dExpected, dDenominator, dNumerator;
             dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
             if (dExpected) {

@@ -162,6 +162,14 @@ IterativeScanMaxIterations=10
 ;max p-value for iterative scan before cutoff (0.000-1.000)
 IterativeScanMaxPValue=0.05
 
+[Border Analysis]
+;calculate Oliviera's F and report in Location Information file
+CalculateOliviera=n
+;number of data sets for Oliviera calculation (minimum=100, multiple of 100)
+NumOlivieraSets=1000
+;p-value cutoff for cluster's in Oliviera calculation (0.000-1.000)
+OlivieraPvalueCutoff=0.05
+
 [Power Evaluation]
 ;perform power evaluation - Poisson only (y/n)
 PerformPowerEvaluation=n
@@ -245,6 +253,8 @@ CriticalValue=n
 ReportClusterRank=n
 ;print ascii headers in output files (y/n)
 PrintAsciiColumnHeaders=n
+;user-defined title for results file
+ResultsTitle=
 
 [Elliptic Scan]
 ;elliptic shapes - one value for each ellipse (comma separated decimal values)

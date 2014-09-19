@@ -10,7 +10,7 @@ class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
 
 class ClusterInformationWriter : public AbstractDataFileWriter {
-  protected:
+  public:
       static const char       * CLUSTER_FILE_EXT;
       static const char       * CLUSTERCASE_FILE_EXT;
       static const char       * START_DATE_FLD;
@@ -52,6 +52,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * WEIGHT_INSIDE_FIELD;
       static const char       * GINI_CLUSTER_FIELD;
 
+  protected:
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
       DBaseDataFileWriter     * gpDBaseFileDataWriter;

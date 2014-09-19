@@ -35,12 +35,7 @@ class RecordBuffer {
 class CSaTScanData;
 /** Abstract base class for writing record based data to files. */
 class AbstractDataFileWriter {
-  protected:
-    const CParameters         & gParameters;             /** reference to parameters object */
-    ASCIIDataFileWriter       * gpASCIIFileWriter;       /** ASCII file writer              */
-    DBaseDataFileWriter       * gpDBaseFileWriter;       /** dBase file writer              */
-    ptr_vector<FieldDef>        vFieldDefinitions;       /** field definitions              */
-
+  public:
     static const char         * CLUST_NUM_FIELD;
     static const char         * LOC_ID_FIELD;
     static const char         * P_VALUE_FLD;
@@ -62,6 +57,12 @@ class AbstractDataFileWriter {
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * RECURRENCE_INTERVAL_FLD;
     static const char         * PERCENTAGE_CASES_FIELD;
+
+  protected:
+    const CParameters         & gParameters;             /** reference to parameters object */
+    ASCIIDataFileWriter       * gpASCIIFileWriter;       /** ASCII file writer              */
+    DBaseDataFileWriter       * gpDBaseFileWriter;       /** dBase file writer              */
+    ptr_vector<FieldDef>        vFieldDefinitions;       /** field definitions              */
 
     size_t                      GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
 

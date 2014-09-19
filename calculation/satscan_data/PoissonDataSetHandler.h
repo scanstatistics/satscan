@@ -34,7 +34,9 @@ class PoissonDataSetHandler : public DataSetHandler {
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const;
+    virtual const RealDataContainer_t & buildOlivieraDataSets();
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway    & GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual bool                        ReadData();

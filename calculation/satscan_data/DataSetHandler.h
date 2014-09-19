@@ -28,6 +28,7 @@ class DataSetHandler {
     BasePrint                         & gPrint;                    /** pointer to print direction */
     CSaTScanData                      & gDataHub;                  /** reference to data hub */
     RealDataContainer_t                 gvDataSets;                /** collection of data sets */
+    RealDataContainer_t                 _oliviera_data_sets;       /** collection of data sets for Oliviera feature */
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
     std::deque<void*>                   gmSourceDateWarned;        /** indicates whether user has already been warned that records are being ignored */
     std::deque<void*>                   gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
@@ -44,12 +45,14 @@ class DataSetHandler {
 
   public:
     DataSetHandler(CSaTScanData& DataHub, BasePrint& pPrint);
-    virtual ~DataSetHandler();
+    virtual ~DataSetHandler() {}
 
     //pure virtual public functions
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const = 0;
     virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const = 0;
+    virtual const RealDataContainer_t & buildOlivieraDataSets();
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const = 0;
+    virtual AbstractDataSetGateway    & GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const = 0;
     virtual bool                        ReadData() = 0;
 

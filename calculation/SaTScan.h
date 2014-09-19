@@ -58,7 +58,7 @@
 #define VERSION_MAJOR   "9"
 #define VERSION_MINOR   "4"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Alpha 3" /** testing phase name - leave blank for release */
+#define VERSION_PHASE   "Alpha 4" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Yet Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
@@ -112,5 +112,7 @@ typedef boost::tuple<int,int,int,int>  IntervalRange_t;
 enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
+/* location relevance container typedef */
+typedef std::vector<unsigned int> Relevance_Container_t;
 //*****************************************************************************
 #endif

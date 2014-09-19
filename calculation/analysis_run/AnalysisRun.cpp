@@ -14,7 +14,6 @@
 #include "stsRunHistoryFile.h"
 #include "LoglikelihoodRatioWriter.h"
 #include "ClusterInformationWriter.h"
-#include "ClusterLocationsWriter.h"
 #include "PurelySpatialAnalysis.h"
 #include "PurelySpatialMonotoneAnalysis.h"
 #include "PurelyTemporalAnalysis.h"
@@ -41,6 +40,8 @@
 #include "ClusterKML.h"
 #include "ChartGenerator.h"
 #include "PoissonRandomizer.h"
+#include "OlivieraJobSource.h"
+#include "OlivieraFunctor.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
@@ -61,29 +62,132 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
   }
 }
 
+/** If the user requested gini clusters, add those clusters to passed MLC container. */
+void AnalysisRunner::addGiniClusters(const MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff, unsigned int limit) {
+    if (gParameters.getReportGiniOptimizedClusters() && mlc_collections.size() > 0) {
+        // cluster reporting for index based cluster collections can either be only the optimal collection or all collections
+        if (gParameters.getGiniIndexReportType() == OPTIMAL_ONLY) {
+            // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
+            const MostLikelyClustersContainer* maximizedCollection = 0;
+            double maximizedGINI = mlc_collections.front().getGiniCoefficient(*gpDataHub, gSimVars, p_value_cutoff, limit);
+            for (MLC_Collections_t::const_iterator itrMLC=mlc_collections.begin() + 1; itrMLC != mlc_collections.end(); ++itrMLC) {
+                double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, p_value_cutoff, limit);
+                if (maximizedGINI < thisGini) {
+                    maximizedCollection = &(*itrMLC);
+                    maximizedGINI = thisGini;
+                }
+            }
+            // combine clusters from maximized GINI collection with reporting collection
+            if (maximizedCollection) 
+                mlc.combine(*maximizedCollection, *gpDataHub, gSimVars, true);
+            else if (_reportClusters.GetNumClustersRetained() == 0) {
+                /* When reporting only Gini coefficients (optimal only) then if no significant gini collection found, 
+                   then report cluster collection from largest maxima with clusters. */
+                MLC_Collections_t::const_reverse_iterator rev(mlc_collections.end()), rev_end(mlc_collections.begin());
+                for (; rev != rev_end; rev++) {
+                    if (rev->GetNumClustersRetained()) {
+                        mlc.combine(*rev, *gpDataHub, gSimVars, true);
+                        break;
+                    }
+                }
+            }
+        } else {
+            // combine clusters from each maxima collection with reporting collection
+            for (MLC_Collections_t::const_iterator itrMLC=mlc_collections.begin(); itrMLC != mlc_collections.end(); ++itrMLC)
+                mlc.combine(*itrMLC, *gpDataHub, gSimVars, true);
+        }
+        // now sort combined cluster collection by LLR
+        mlc.sort();
+    }
+}
+
 /** calculates most likely clusters in real data */
 void AnalysisRunner::CalculateMostLikelyClusters() {
-  try {
-    //display process heading
-    PrintFindClusterHeading();
-    //allocate date gateway object
-    std::auto_ptr<AbstractDataSetGateway> pDataSetGateway(gpDataHub->GetDataSetHandler().GetNewDataGatewayObject());
-    gpDataHub->GetDataSetHandler().GetDataGateway(*pDataSetGateway);
-    //get analysis object
-    std::auto_ptr<CAnalysis> pAnalysis(GetNewAnalysisObject());
-    //allocate objects used in 'FindTopClusters()' process
-    pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
-    //calculate most likely clusters
-    gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::REPORTED);
-    pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainers);
-    //display the loglikelihood of most likely cluster
-    if (!gPrintDirection.GetIsCanceled()) {
-      rankClusterCollections();
+    try {
+        //display process heading
+        PrintFindClusterHeading();
+        //allocate date gateway object
+        std::auto_ptr<AbstractDataSetGateway> pDataSetGateway(gpDataHub->GetDataSetHandler().GetNewDataGatewayObject());
+        gpDataHub->GetDataSetHandler().GetDataGateway(*pDataSetGateway);
+        //get analysis object
+        std::auto_ptr<CAnalysis> pAnalysis(GetNewAnalysisObject());
+        //allocate objects used in 'FindTopClusters()' process
+        pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
+        //calculate most likely clusters
+        gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::REPORTED);
+        pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainers);
+        //display the loglikelihood of most likely cluster
+        if (!gPrintDirection.GetIsCanceled()) {
+            rankClusterCollections(gTopClustersContainers, _reportClusters, &_clusterRanker, gPrintDirection);
+            // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
+            //       We can't perform index based ordering here since we need to perform simulations first ... correct?
+            PrintTopClusterLogLikelihood(getLargestMaximaClusterCollection());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("CalculateMostLikelyClusters()","AnalysisRunner");
+        throw;
     }
-  } catch (prg_exception& x) {
-    x.addTrace("CalculateMostLikelyClusters()","AnalysisRunner");
-    throw;
-  }
+}
+
+/* Finds the collections of clusters about requested number of data sets for Oliviera's F calculation. */
+void AnalysisRunner::CalculateOlivieraClusters() {
+    {
+        gPrintDirection.Printf("Finding the most likely clusters for Oliviera's F\n", BasePrint::P_STDOUT);
+        // create oliviera data sets -- the cases from real data set are used as the measure in these sets
+        const RealDataContainer_t& oliviera_datasets = gpDataHub->GetDataSetHandler().buildOlivieraDataSets();
+        _oliviera_mlc_collections.clear();
+
+        PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
+        OlivieraJobSource jobSource(*this, ::GetCurrentTime_HighResolution(), lclPrintDirection);
+        typedef contractor<OlivieraJobSource> contractor_type;
+        contractor_type theContractor(jobSource);
+
+        //run threads:
+        boost::thread_group tg;
+        boost::mutex thread_mutex;
+        unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.getNumRequestedOlivieraSets());
+        for (unsigned u=0; u < ulParallelProcessCount; ++u) {
+            try {
+                OlivieraFunctor olivieraf(oliviera_datasets, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
+                tg.create_thread(subcontractor<contractor_type,OlivieraFunctor>(theContractor, olivieraf));
+            } catch (std::bad_alloc &b) {             
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                gPrintDirection.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", 
+                                        BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
+            } catch (prg_exception& x) {
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                gPrintDirection.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", 
+                                        BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
+                break;
+            } catch (...) {
+                if (u == 0) throw prg_error("Unknown program error occurred.\n","PerformSuccessiveSimulations_Parallel()"); // if this is the first thread, throw exception
+                gPrintDirection.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", 
+                                        BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
+            }
+        }
+        tg.join_all();
+
+        //propagate exceptions if needed:
+        theContractor.throw_unhandled_exception();
+        jobSource.Assert_NoExceptionsCaught();
+        if (jobSource.GetUnregisteredJobCount() > 0)
+            throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
+    }
+
+    // now rank each cluster collection and define reporting/ranking structures
+    if (!gPrintDirection.GetIsCanceled()) {
+        gPrintDirection.Printf("Ranking clusters for Oliviera's F\n", BasePrint::P_STDOUT);
+        _oliviera_report_Clusters.clear();
+        _oliviera_report_Clusters.resize(_oliviera_mlc_collections.size(), MostLikelyClustersContainer(0));
+        PrintNull noPrint;
+        boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+        for (size_t t=0; t < _oliviera_mlc_collections.size(); ++t) {
+            rankClusterCollections(*_oliviera_mlc_collections[t], _oliviera_report_Clusters[t], 0, noPrint);
+            if (t == 9) ReportTimeEstimate(StartTime, _oliviera_mlc_collections.size(), t, gPrintDirection);
+        }
+    }
 }
 
 /** Returns indication of whether analysis is to be cancelled.
@@ -146,14 +250,6 @@ void AnalysisRunner::Execute() {
        if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
          throw resolvable_error("Error: No cases found in data set %u.\n", i);
     macroRunTimeStopSerial();
-    if (gPrintDirection.GetIsCanceled()) return;
-    // report relative risk estimates for each location
-    if (gParameters.GetOutputRelativeRisksFiles()) {
-        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-        gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
-        gpDataHub->DisplayRelativeRisksForEachTract();
-        macroRunTimeStopSerial();
-    }
     if (gPrintDirection.GetIsCanceled()) return;
     //calculation approxiate amount of memory required to run analysis
     std::pair<double, double> prMemory = GetMemoryApproxiation();
@@ -364,6 +460,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
       macroRunTimeStopSerial();
+      if (gParameters.getCalculateOlivierasF())
+        CalculateOlivieraClusters();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled()) return;
       gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
@@ -374,8 +472,18 @@ void AnalysisRunner::ExecuteSuccessively() {
       if (gPrintDirection.GetIsCanceled()) return;
       // report clusters to output files
       reportClusters();
+
       //log history for first analysis run
-      if (giAnalysisCount == 1) LogRunHistory();
+      if (giAnalysisCount == 1) {
+        // report relative risk estimates for each location
+        if (gParameters.GetOutputRelativeRisksFiles()) {
+            macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+            gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+            gpDataHub->DisplayRelativeRisksForEachTract(_oliviera_relevance);
+            macroRunTimeStopSerial();
+        }
+        LogRunHistory();
+      }
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis()); //repeat analysis - iterative scan
   } catch (prg_exception& x) {
@@ -801,7 +909,10 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       if (gPrintDirection.GetIsCanceled())
         return;
       //rank top clusters and apply criteria for reporting secondary clusters
-      rankClusterCollections();
+      rankClusterCollections(gTopClustersContainers, _reportClusters, &_clusterRanker, gPrintDirection);
+      // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
+      //       We can't perform index based ordering here since we need to perform simulations first ... correct?
+      PrintTopClusterLogLikelihood(getLargestMaximaClusterCollection());
       //report calculated simulation llr values
       if (SimulationRatios) {
         if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->initialize();
@@ -824,6 +935,13 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       reportClusters();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
+        // report relative risk estimates for each location
+        if (gParameters.GetOutputRelativeRisksFiles()) {
+            macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+            gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+            gpDataHub->DisplayRelativeRisksForEachTract(_oliviera_relevance);
+            macroRunTimeStopSerial();
+        }
         LogRunHistory();
       }
       //report additional output file: 'relative risks for each location'
@@ -1007,7 +1125,7 @@ void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
     is performing. */
 void AnalysisRunner::PrintFindClusterHeading() {
   if (!gParameters.GetIsIterativeScanning())
-    gPrintDirection.Printf("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
+    gPrintDirection.Printf("Finding the most likely clusters\n", BasePrint::P_STDOUT);
   else {
     switch(giAnalysisCount) {
       case  1: gPrintDirection.Printf("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
@@ -1175,16 +1293,16 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
     //open result output file
     OpenReportFile(fp, true);
-	// determine how many clusters are being reported and define supplement information for each
+    // determine how many clusters are being reported and define supplement information for each
     // if no replications requested, attempt to display up to top 10 clusters
     tract_t maxDisplay = gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained();
-	for (int i=0; i < maxDisplay; ++i) {
-		const CCluster& cluster = mlc.GetCluster(i);
-		if (i == 0 || (cluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || cluster.GetRank() <= gSimVars.get_sim_count())))
-			clusterSupplement.addCluster(cluster, i+1);
-	}
-	// calculate geographical overlap of clusters
-	calculateOverlappingClusters(mlc, clusterSupplement);
+    for (int i=0; i < maxDisplay; ++i) {
+        const CCluster& cluster = mlc.GetCluster(i);
+        if (i == 0 || (cluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || cluster.GetRank() <= gSimVars.get_sim_count())))
+            clusterSupplement.addCluster(cluster, i+1);
+    }
+    // calculate geographical overlap of clusters
+    calculateOverlappingClusters(mlc, clusterSupplement);
     for (size_t i=0; i < clusterSupplement.size(); ++i) {
         gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, clusterSupplement.size());
         if (i==9) //report estimate of time to report all clusters
@@ -1209,7 +1327,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
             ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
-            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars);
+            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars, _oliviera_relevance);
         _clustersReported = true;
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
@@ -1269,7 +1387,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
         LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
-        TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars);
+        TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars, _oliviera_relevance);
       }
       //check track of whether this cluster was significant in top five percentage
       if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
@@ -1293,36 +1411,36 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 }
 
 /** Performs ranking on each collection of clusters. */
-void AnalysisRunner::rankClusterCollections() {
+void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) {
+    mlc.Empty();
+    if (ranker) ranker->clear();
+
     if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()) || gParameters.GetIsPurelyTemporalAnalysis()) {
         // Not performing heirarchacal nor gini clusters, then we're only grabbing the top ranked cluster.
-        _reportClusters = gTopClustersContainers.back();
-        _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection, 1);
+        mlc = mlc_collection.back();
+        mlc.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), print, 1);
         // don't need to add clusters to cluster ranker if not performing simulations
-        if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
+        if (gParameters.GetNumReplicationsRequested() && ranker) ranker->add(mlc);
     } else {
         // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
         // We need to maintain a copy since geographical overlap might be different than index based ranking (no overlap).
         if (gParameters.getReportHierarchicalClusters()) {
-            _reportClusters = gTopClustersContainers.back();
-            _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
+            mlc = mlc_collection.back();
+            mlc.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), print);
             // don't need to add clusters to cluster ranker if not performing simulations
-            if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
+            if (gParameters.GetNumReplicationsRequested() && ranker) ranker->add(mlc);
         }
         if (gParameters.getReportGiniOptimizedClusters()) {
             // Index based clusters always use 'No Geographical Overlap'.
-            for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr) {
-                itr->rankClusters(*gpDataHub, NOGEOOVERLAP, gPrintDirection);
+            for (MLC_Collections_t::iterator itr=mlc_collection.begin(); itr != mlc_collection.end(); ++itr) {
+                itr->rankClusters(*gpDataHub, NOGEOOVERLAP, print);
                 // don't need to add clusters to cluster ranker if not performing simulations
-                if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(*itr);
+                if (gParameters.GetNumReplicationsRequested() && ranker) ranker->add(*itr);
             }
         }
     }
     // cause the cluster ranker to sort clusters by LLR for ranking during simulations
-    _clusterRanker.sort();
-    // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
-    //       We can't perform index based ordering here since we need to perform simulations first ... correct?
-    PrintTopClusterLogLikelihood(getLargestMaximaClusterCollection());
+    if (ranker) ranker->sort();
 }
 
 /** Returns indication of whether analysis repeats.
@@ -1433,42 +1551,54 @@ void AnalysisRunner::reportClusters() {
     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
     try {
         gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
+        // once the simulations have been completed, we can calculate the gini index and add to collections
         if (gParameters.getReportGiniOptimizedClusters()) {
-            // cluster reporting for index based cluster collections can either be only the optimal collection or all collections
-            if (gParameters.getGiniIndexReportType() == OPTIMAL_ONLY) {
-                // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
-                const MostLikelyClustersContainer* maximizedCollection = 0;
-                double maximizedGINI = gTopClustersContainers.front().getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getGiniIndexPValueCutoff());
-                for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin() + 1; itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-                    double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getGiniIndexPValueCutoff());
-                    if (maximizedGINI < thisGini) {
-                        maximizedCollection = &(*itrMLC);
-                        maximizedGINI = thisGini;
+            addGiniClusters(gTopClustersContainers, _reportClusters, gParameters.getGiniIndexPValueCutoff());
+        }
+        // calculate Oliviera's F, if requested
+        if (gParameters.getCalculateOlivierasF()) {
+            // first calculate number of real clusters within ovliviera p-value cutoff
+            unsigned int max_oliviera=0;
+            for (tract_t t=0; t < _reportClusters.GetNumClustersRetained(); ++t) {
+                if  (_reportClusters.GetCluster(t).getReportingPValue(gParameters, gSimVars, t == 0) <= gParameters.getOlivieraPvalueCutoff())
+                    ++max_oliviera;
+            }
+
+            // initialize the collection of location counters
+            _oliviera_relevance.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
+            std::fill(_oliviera_relevance.begin(), _oliviera_relevance.end(), 0);
+
+            // skip if max_oliviera == 0
+            if (max_oliviera > 0) {
+                if (gParameters.getReportGiniOptimizedClusters()) {
+                    // calculate the gini index and add to collections for oliviera clusters
+                    for (size_t t=0; t < _oliviera_mlc_collections.size(); ++t) {
+                        addGiniClusters(*_oliviera_mlc_collections[t], _oliviera_report_Clusters[t], 1.0, max_oliviera);
                     }
                 }
-                // combine clusters from maximized GINI collection with reporting collection
-                if (maximizedCollection) 
-                    _reportClusters.combine(*maximizedCollection, *gpDataHub, gSimVars, true);
-                else if (_reportClusters.GetNumClustersRetained() == 0) {
-                    /* When reporting only Gini coefficients (optimal only) then if no significant gini collection found, 
-                       then report cluster collection from largest maxima with clusters. */
-                    MLC_Collections_t::reverse_iterator rev(gTopClustersContainers.end()), rev_end(gTopClustersContainers.begin());
-                    for (; rev != rev_end; rev++) {
-                        if (rev->GetNumClustersRetained()) {
-                            _reportClusters.combine(*rev, *gpDataHub, gSimVars, true);
-                            break;
+
+                boost::dynamic_bitset<> location_presence(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
+                for (size_t m=0; m < _oliviera_report_Clusters.size(); ++m) {
+                    // determine whether each location is present in this collection of clusters
+                    MostLikelyClustersContainer& mlc = _oliviera_report_Clusters[m];
+                    location_presence.reset();
+                    for (tract_t c=0; c < mlc.GetNumClustersRetained(); ++c) {
+                    MostLikelyClustersContainer::Cluster_t& cluster = mlc.GetClusterRef(c);
+                        for (tract_t t=1; t <= cluster->GetNumTractsInCluster(); ++t) {
+                            tract_t tTract = gpDataHub->GetNeighbor(cluster->GetEllipseOffset(), cluster->GetCentroidIndex(), t, cluster->GetCartesianRadius());
+                            if (!gpDataHub->GetIsNullifiedLocation(tTract)) {
+                                location_presence.set(tTract);
+                            }
                         }
                     }
+                    // update location counters
+                    for (boost::dynamic_bitset<>::size_type b=location_presence.find_first(); b != boost::dynamic_bitset<>::npos; b=location_presence.find_next(b)) {
+                        ++_oliviera_relevance[b];
+                    }
                 }
-            } else {
-                // combine clusters from each maxima collection with reporting collection
-                for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-                    _reportClusters.combine(*itrMLC, *gpDataHub, gSimVars, true);
             }
-            // now sort combined cluster collection by LLR
-            _reportClusters.sort();
         }
-
+        // report clusters accordingly
         if (gParameters.GetIsIterativeScanning()) {
             PrintTopIterativeScanCluster(_reportClusters);
         } else {
@@ -1479,19 +1609,15 @@ void AnalysisRunner::reportClusters() {
                 generator.generateChart();
             }
         }
-
+        // create a KML if requested and other settings collectively permit the option
         bool generateKML = gParameters.getOutputKMLFile() && 
                            _reportClusters.GetNumClustersRetained() && 
                            gParameters.GetCoordinatesType() == LATLON &&
                            !gParameters.GetIsPurelyTemporalAnalysis() && 
                            !gParameters.UseLocationNeighborsFile() &&
                            (!gParameters.GetIsIterativeScanning() || (gParameters.GetIsIterativeScanning() && giAnalysisCount == 1));
-
-        // Google Earth file
-        if (generateKML) {
-            ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
-            kmlOut.generateKML();
-        }
+        if (generateKML)
+            ClusterKML(*gpDataHub, _reportClusters, gSimVars).generateKML();
     } catch (prg_exception& x) {
         x.addTrace("reportClusters()","AnalysisRunner");
         throw;

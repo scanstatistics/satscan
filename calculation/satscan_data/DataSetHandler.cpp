@@ -15,19 +15,19 @@ const short DataSetHandler::guCountCategoryIndexNone    = 2;
 const short DataSetHandler::guCountCategoryIndex        = 3;
 
 /** constructor */
-DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-               :gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print) {
-  try {
-    Setup();
-  }
-  catch(prg_exception& x) {
-    x.addTrace("constructor()","DataSetHandler");
-    throw;
-  }
+DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print) {
+    try {
+        Setup();
+    } catch(prg_exception& x) {
+        x.addTrace("constructor()","DataSetHandler");
+        throw;
+    }
 }
 
-/** destructor */
-DataSetHandler::~DataSetHandler() {}
+/* virtual method which builds Oliviera data sets. */
+const RealDataContainer_t & DataSetHandler::buildOlivieraDataSets() {
+    throw prg_error("buildOlivieraDataSets() is not implemented.", "DataSetHandler::buildOlivieraDataSets()");
+}
 
 /** Returns new data gateway. Caller is responsible for deleting object.
     If number of data sets is more than one, a MultipleDataSetGateway
@@ -37,6 +37,10 @@ AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
     return new MultipleDataSetGateway();
   else
     return new DataSetGateway();
+}
+
+AbstractDataSetGateway & DataSetHandler::GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+    throw prg_error("GetOliveraDataGateway() is not implemented.", "DataSetHandler::GetOliveraDataGateway()");
 }
 
 /** Returns const pointer to randomizer object associated with data set at iSetIndex. */
@@ -388,13 +392,11 @@ void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& 
 
 /** internal initialization - allocates RealDataSet object for each data set. */
 void DataSetHandler::Setup() {
-  try {
-    for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
-		gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Setup()","DataSetHandler");
-    throw;
-  }
+    try {
+        for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
+            gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+    } catch (prg_exception& x) {
+        x.addTrace("Setup()","DataSetHandler");
+        throw;
+    }
 }
-

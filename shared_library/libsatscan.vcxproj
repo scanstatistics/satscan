@@ -224,6 +224,8 @@
     <ClCompile Include="..\calculation\utility\Ini.cpp" />
     <ClCompile Include="..\calculation\utility\JulianDates.cpp" />
     <ClCompile Include="..\calculation\utility\MultipleDimensionArrayHandler.cpp" />
+    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp" />
+    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp" />
     <ClCompile Include="..\calculation\utility\RandomDistribution.cpp" />
     <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
     <ClCompile Include="..\calculation\utility\ShapeFile.cpp" />
@@ -459,6 +461,8 @@
     <ClInclude Include="..\calculation\utility\Ini.h" />
     <ClInclude Include="..\calculation\utility\JulianDates.h" />
     <ClInclude Include="..\calculation\utility\MultipleDimensionArrayHandler.h" />
+    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h" />
+    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />
     <ClInclude Include="..\calculation\utility\RandomDistribution.h" />
     <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />

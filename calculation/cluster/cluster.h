@@ -12,6 +12,7 @@
 #include "SimulationVariables.h"
 #include "boost/tuple/tuple.hpp"
 #include "boost/logic/tribool.hpp"
+#include "ClusterLocationsWriter.h"
 
 class LocationInformationWriter; /** forward class declaration */
 class ClusterSupplementInfo;
@@ -144,8 +145,11 @@ class CCluster {
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
-    virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
-                                        unsigned int iReportedCluster, const SimulationVariables& simVars) const;
+    virtual void                  Write(LocationInformationWriter& LocationWriter, 
+                                        const CSaTScanData& DataHub,
+                                        unsigned int iReportedCluster,
+                                        const SimulationVariables& simVars,
+                                        const Relevance_Container_t& location_relevance) const;
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.

@@ -11,6 +11,7 @@
 #include "ptr_vector.h"
 #include "SimulationVariables.h"
 #include "ClusterSupplement.h"
+#include "ClusterLocationsWriter.h"
 
 class ClusterRankHelper {
     private:
@@ -60,6 +61,7 @@ class ClusterRankHelper {
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
   friend class stsMCSimJobSource;
+  friend class OlivieraJobSource;
 
   private:
     const CParameters                 & gParameters;
@@ -75,15 +77,24 @@ class AnalysisRunner {
     bool                                _clustersReported;
     MLC_Collections_t                   gTopClustersContainers;
     MostLikelyClustersContainer         _reportClusters;
-    ExecutionType                       geExecutingType;
-	SimulationVariables                 gSimVars;
     ClusterRankHelper                   _clusterRanker;
+    ExecutionType                       geExecutingType;
+    SimulationVariables                 gSimVars;
 
+    typedef std::vector<boost::shared_ptr<MLC_Collections_t> > MLC_Collections_Container_t;
+    typedef std::vector<ClusterRankHelper> ClusterRankHelper_Container_t;
+
+    MLC_Collections_Container_t         _oliviera_mlc_collections;
+    MLC_Collections_t                   _oliviera_report_Clusters;
+    Relevance_Container_t               _oliviera_relevance;
+
+    void                                addGiniClusters(const MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff, unsigned int limit=0);
     void                                Execute();
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
     void                                ExecutePowerEvaluations();
     void                                CalculateMostLikelyClusters();
+    void                                CalculateOlivieraClusters();
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
@@ -101,12 +112,12 @@ class AnalysisRunner {
     void                                PrintTopClusters(const MostLikelyClustersContainer& mlc);
     void                                PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
     void                                PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
-    void                                rankClusterCollections();
+    void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print);
     bool                                RepeatAnalysis();
     void                                reportClusters();
     void                                Setup();
     void                                UpdateSignificantRatiosList(double dRatio);
-	void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
+    void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);

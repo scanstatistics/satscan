@@ -32,7 +32,7 @@ class CSVTTData : public CSaTScanData {
     virtual void        DisplayCases(FILE* pFile) const;
     virtual void        DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const;
     virtual void        DisplayMeasures(FILE* pFile) const;
-    virtual void        DisplayRelativeRisksForEachTract() const;
+    virtual void        DisplayRelativeRisksForEachTract(const Relevance_Container_t& location_relevance) const;
     virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                       SimulationDataContainer_t& SimDataContainer,
                                       unsigned int iSimulationNumber) const;

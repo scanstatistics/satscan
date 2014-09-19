@@ -657,6 +657,12 @@
     <ClCompile Include="..\calculation\Output\GisUtils.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1168,6 +1174,12 @@
     </ClInclude>
     <ClInclude Include="org_satscan_importer_ShapefileDataSource.h">
       <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -194,6 +194,8 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(UTILITY)/stsMonteCarloSimFunctor.cpp \
                $(UTILITY)/stsCentricAlgoFunctor.cpp \
                $(UTILITY)/stsCentricAlgoJobSource.cpp \
+               $(UTILITY)/OlivieraFunctor.cpp \
+               $(UTILITY)/OlivieraJobSource.cpp \
                $(UTILITY)/DateStringParser.cpp \
                $(UTILITY)/stsMCSimJobSource.cpp \
                $(UTILITY)/FileName.cpp \

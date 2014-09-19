@@ -42,6 +42,35 @@ void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Containe
     }
 }
 
+/* virtual method which builds Oliviera data sets. */
+const RealDataContainer_t & PoissonDataSetHandler::buildOlivieraDataSets() {
+    try {
+        if (gParameters.GetAnalysisType() != PURELYSPATIAL)
+            throw prg_error("buildOlivieraDataSets() is not implemented for analysis type '%d'.", "DataSetHandler::buildOlivieraDataSets()", gParameters.GetAnalysisType());
+        _oliviera_data_sets.killAll();
+        for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i) {
+            _oliviera_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+            // allocate measure data and initialize from case data in real data set
+            RealDataSet & oliviera_dataset = *_oliviera_data_sets.back();
+            oliviera_dataset.allocateMeasureData();
+            RealDataSet & real_dataset = *gvDataSets.at(i);
+            TwoDimCountArray_t& caseArray = real_dataset.getCaseData();
+            TwoDimMeasureArray_t& measureArray = oliviera_dataset.getMeasureData();
+            for (unsigned int a=0; a < caseArray.Get1stDimension(); ++a) {
+                for (unsigned int b=0; b < caseArray.Get2ndDimension(); ++b) {
+                    measureArray.GetArray()[a][b] = static_cast<double>(caseArray.GetArray()[a][b]);
+                }
+            }
+            oliviera_dataset.setTotalCases(real_dataset.getTotalCases());
+            oliviera_dataset.setTotalMeasure(real_dataset.getTotalMeasure());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("buildOlivieraDataSets()","PoissonDataSetHandler");
+        throw;
+    }
+    return _oliviera_data_sets;
+}
+
 /** Converts passed string specifiying a population date to a julian date using
     DateStringParser object. Since we accumulate errors/warnings when reading
     input files, indication of a bad date is returned as false and message
@@ -164,6 +193,46 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
     throw;
   }  
   return DataGatway;
+}
+
+/** Returns newly allocated data gateway object that references structures
+    utilized in calculating most likely clusters in conjunction with Olivera's
+    location relavance for locations and the Poisson probablity model.
+    Caller is responsible for destructing returned object. */
+AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+    DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+
+    try {
+        DataGatway.Clear();
+        for (size_t t=0; t < gvDataSets.size(); ++t) {
+            //get reference to dataset
+            const RealDataSet& real_DataSet = *gvDataSets.at(t);
+            const DataSet& SimDataSet = *Container.at(t);
+
+            //set total cases and measure
+            Interface.SetTotalCasesCount(real_DataSet.getTotalCases());
+            Interface.SetTotalMeasureCount(real_DataSet.getTotalMeasure());
+            //set pointers to data structures
+            switch (gParameters.GetAnalysisType()) {
+                case PURELYSPATIAL             :
+                    Interface.SetCaseArray(SimDataSet.getCaseData().GetArray());
+                    Interface.SetMeasureArray(real_DataSet.getMeasureData().GetArray());
+                    break;
+                case PROSPECTIVEPURELYTEMPORAL :
+                case PURELYTEMPORAL            :
+                case SPACETIME                 :
+                case PROSPECTIVESPACETIME      :
+                case SPATIALVARTEMPTREND       : 
+                    throw prg_error("GetOliveraDataGateway() is not implemented for analysis type '%d'.","GetOliveraDataGateway()",gParameters.GetAnalysisType());
+                default : throw prg_error("Unknown analysis type '%d'.","GetOliveraDataGateway()",gParameters.GetAnalysisType());
+            };
+            DataGatway.AddDataSetInterface(Interface);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("GetOliveraDataGateway()","PoissonDataSetHandler");
+        throw;
+    }
+    return DataGatway;
 }
 
 /** Returns newly allocated data gateway object that references structures

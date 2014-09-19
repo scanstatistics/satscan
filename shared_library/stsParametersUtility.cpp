@@ -635,6 +635,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetTitleName().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setCalculateOlivierasF", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCalculateOlivierasF());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setNumRequestedOlivieraSets", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumRequestedOlivieraSets());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1267,6 +1275,14 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.SetTitleName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getCalculateOlivierasF", "()Z");
+  Parameters.setCalculateOlivierasF(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getNumRequestedOlivieraSets", "()I");
+  Parameters.setNumRequestedOlivieraSets(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   return Parameters;
 }

@@ -81,13 +81,15 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
                     (*itrOther)->GetNumTractsInCluster() == (*itrThis)->GetNumTractsInCluster()) {
                     if (!otherSet.get()) {
                         // allocate and set 'other' clusters bitset
-                        otherSet.reset(new boost::dynamic_bitset<>(DataHub.GetNumTracts()));
+                        otherSet.reset(new boost::dynamic_bitset<>(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()));
                         getClusterLocationsSet(DataHub, **itrOther, *otherSet.get());
                     }
-                    boost::dynamic_bitset<> thisSet(DataHub.GetNumTracts());
+                    boost::dynamic_bitset<> thisSet(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
                     getClusterLocationsSet(DataHub, **itrThis, thisSet);
-                    thisSet &= *otherSet;
-                    isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
+                    //thisSet &= *otherSet;
+                    //isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
+                    //thisSet &= *otherSet;
+                    isDuplicate = thisSet == *otherSet;
                     if (isDuplicate && markAsGini) {
                         // if these are duplicate clusters, we still want to ensure that existing one is marked as a gini cluster
                         if (markAlwaysOn || macro_less_than((*itrThis)->getReportingPValue(params, simVars, false), p_cutoff, DBL_CMP_TOLERANCE)) {
@@ -175,7 +177,7 @@ double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataH
     return -2.0 * totalLLR + log(totalPopulation) * numClusters;
 }
 
-double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
+double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, unsigned int limit) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
     unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();
@@ -184,8 +186,8 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
     ClusterList_t sortClusters;
     for (size_t t=0; t < gvTopClusterList.size(); ++t) {
         double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
-        if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || 
-            macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE))
+        if ((params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || 
+            macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE)) || (limit != 0 && t < limit))
             sortClusters.push_back(gvTopClusterList[t]);
     }
     if (numDataSets > 1 && params.GetMultipleDataSetPurposeType() != ADJUSTMENT)
@@ -287,7 +289,7 @@ void MostLikelyClustersContainer::getClusterLocationsSet(const CSaTScanData& Dat
             theSet.set(loc_id);
         else {
             std::vector<tract_t> indexes;
-            DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(loc_id, indexes);
+            DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(loc_id - DataHub.GetNumTracts(), indexes);
             for (std::vector<tract_t>::const_iterator itr=indexes.begin(); itr != indexes.end(); ++itr) theSet.set(*itr);
         }
     }

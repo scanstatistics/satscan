@@ -137,7 +137,10 @@ enum ParameterType
     LAUNCH_KML_VIEWER,              /* whether to launch kml/kmz viewer - gui only */
     ADJUST_WEEKLY_TRENDS,           /* adjust for weekly trends, nonparametric */
     MIN_TEMPORAL_CLUSTER,           /* minimum temporal cluster size */
-	USER_DEFINED_TITLE              /* user defined title */
+    USER_DEFINED_TITLE,             /* user defined title */
+    CALCULATE_OLIVIERA,             /* whether to calculate Oliviera's F*/
+    NUM_OLIVIERA_SETS,              /* number of Oliviera sets to calculate */
+    OLIVIERA_CUTOFF                 /* max p-value for clusters used with Oliviera's F (numeric) */
 };
 /** analysis and cluster types */
 enum AnalysisType

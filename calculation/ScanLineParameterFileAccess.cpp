@@ -151,8 +151,11 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 129)";
     case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 130)";
     case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 131)";
-	case USER_DEFINED_TITLE                 : return "user defined title (line 132)";
-	default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
+    case USER_DEFINED_TITLE                 : return "user defined title (line 132)";
+    case CALCULATE_OLIVIERA                 : return "whether to calculate Oliviera's F (line 133)";
+    case NUM_OLIVIERA_SETS                  : return "number of data sets with Oliviera's F calculation (line 134)";
+    case OLIVIERA_CUTOFF                    : return "p-value cutoff with Oliviera's F calculation (line 135)";
+    default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }
 

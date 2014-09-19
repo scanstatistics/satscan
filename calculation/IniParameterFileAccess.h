@@ -29,6 +29,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteDataCheckingSettings(IniFile& WriteFile);
     void                                WriteEllipticScanSettings(IniFile& WriteFile);
     void                                WriteInferenceSettings(IniFile& WriteFile);
+    void                                WriteBorderAnalysisSettings(IniFile& WriteFile);
     void                                WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
     void                                WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
     void                                WriteInputSettings(IniFile& WriteFile);

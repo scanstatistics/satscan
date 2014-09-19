@@ -815,14 +815,12 @@ int CSaTScanData::CalculateProspectiveIntervalStart() const {
 
 /** For all datasets, causes temporal structures to be allocated and set. */
 void CSaTScanData::SetPurelyTemporalCases() {
-  size_t        t;
-
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
-      for (t=0; t < gDataSets->GetNumDataSets(); ++t)
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT_Cat();
     else
-      for (t=0; t < gDataSets->GetNumDataSets(); ++t)
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT();
   }
   catch (prg_exception& x) {

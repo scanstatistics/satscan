@@ -63,6 +63,7 @@ class IniParameterSpecification {
     SectionInfo                 _temporal_window_section;
     SectionInfo                 _space_time_adjustments_section;
     SectionInfo                 _inference_section;
+    SectionInfo                 _border_analysis_section;
     SectionInfo                 _power_evaluation_section;
     SectionInfo                 _clusters_reported_section;
     SectionInfo                 _spatial_output_section;
@@ -92,6 +93,7 @@ class IniParameterSpecification {
     static const char         * Polygons;
     static const char         * SpaceAndTimeAdjustments;
     static const char         * Inference;
+    static const char         * BorderAnalysis;
     static const char         * Output;
     static const char         * ClustersReported;
     static const char         * AdditionalOutput;

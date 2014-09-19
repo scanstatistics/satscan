@@ -298,6 +298,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteTemporalWindowSettings(ini);
         WriteSpaceAndTimeAdjustmentSettings(ini);
         WriteInferenceSettings(ini);
+        WriteBorderAnalysisSettings(ini);
         WritePowerEvaluationsSettings(ini);
         WriteSpatialOutputSettings(ini);
         WriteTemporalGraphSettings(ini);
@@ -334,12 +335,25 @@ void IniParameterFileAccess::Write(const char* sFilename) {
 void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
-		WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
+        WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
         WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
         WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
         WriteIniParameter(WriteFile, USER_DEFINED_TITLE, GetParameterString(USER_DEFINED_TITLE, s).c_str(), GetParameterComment(USER_DEFINED_TITLE));
     } catch (prg_exception& x) {
         x.addTrace("WriteOtherOutputSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Border Analysis'. */
+void IniParameterFileAccess::WriteBorderAnalysisSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, CALCULATE_OLIVIERA, GetParameterString(CALCULATE_OLIVIERA, s).c_str(), GetParameterComment(CALCULATE_OLIVIERA));
+        WriteIniParameter(WriteFile, NUM_OLIVIERA_SETS, GetParameterString(NUM_OLIVIERA_SETS, s).c_str(), GetParameterComment(NUM_OLIVIERA_SETS));
+        WriteIniParameter(WriteFile, OLIVIERA_CUTOFF, GetParameterString(OLIVIERA_CUTOFF, s).c_str(), GetParameterComment(OLIVIERA_CUTOFF));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteBorderAnalysisSettings()","IniParameterFileAccess");
         throw;
     }
 }

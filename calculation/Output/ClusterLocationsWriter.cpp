@@ -38,6 +38,7 @@ const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD   = "CLU_TT_DI
 //const char * LocationInformationWriter::CLU_FUNC_ALPHA_IN_FIELD     = "IN_FUNC_A";
 //const char * LocationInformationWriter::CLU_FUNC_ALPHA_OUT_FIELD    = "OUT_FUNC_A";
 const char * LocationInformationWriter::GINI_CLUSTER_FIELD           = "GINI_CLUST";
+const char * LocationInformationWriter::OLIVIERA_F_FIELD             = "OLIVIERA_F";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -131,6 +132,10 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
         CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
+    if (gParameters.getCalculateOlivierasF()) {
+        printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets());
+        CreateField(vFieldDefinitions, OLIVIERA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+    }
     CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
   }
   catch (prg_exception& x) {
@@ -142,7 +147,12 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScanData& DataHub, int iClusterNumber, tract_t tTract, const SimulationVariables& simVars) {
+void LocationInformationWriter::Write(const CCluster& theCluster, 
+                                      const CSaTScanData& DataHub, 
+                                      int iClusterNumber, 
+                                      tract_t tTract, 
+                                      const SimulationVariables& simVars,
+                                      const Relevance_Container_t& location_relevance) {
   TractHandler::Location::StringContainer_t     vIdentifiers;
   double                                        dRelativeRisk;
   RecordBuffer                                  Record(vFieldDefinitions);
@@ -158,7 +168,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
          Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-	   Record.GetFieldValue(GINI_CLUSTER_FIELD).AsBool() = theCluster.isGiniCluster();
+       Record.GetFieldValue(GINI_CLUSTER_FIELD).AsBool() = theCluster.isGiniCluster();
        if (theCluster.reportablePValue(gParameters,simVars))
            Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, gParameters.GetIsIterativeScanning() || iClusterNumber == 1);
        if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue()) {
@@ -167,6 +177,10 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        }
        if (theCluster.reportableRecurrenceInterval(gParameters, simVars))
            Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(DataHub, iClusterNumber, simVars).second;
+
+       if (gParameters.getCalculateOlivierasF() && location_relevance.size() > tTract) {
+           Record.GetFieldValue(OLIVIERA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[tTract]) / static_cast<double>(gParameters.getNumRequestedOlivieraSets());
+       }
 
        //location information fields are only present for one dataset and not ordinal model
        if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {

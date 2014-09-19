@@ -205,6 +205,8 @@ public class Parameters implements Cloneable {
     private boolean                         _reportGiniOptimizedClusters=true;  /** print ASCII column headers */
     GiniIndexReportType                     _giniIndexReportType=GiniIndexReportType.OPTIMAL_ONLY; /* type for the gini index cluster reporting */
     boolean                                 _outputGiniIndexCoefficients=false; /* output gini index coefficents */
+    private boolean                         _calculate_oliviera_f=false;
+    private int                             _num_oliviera_sets=1000;
 
     /* Power Evaluation variables */
     private boolean                         _performPowerEvaluation=false; /** indicator of whether to perform power calculations */
@@ -456,9 +458,15 @@ public class Parameters implements Cloneable {
         if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
         if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
         if (!_input_sources.equals(rhs._input_sources)) return false;
+        if (_calculate_oliviera_f != rhs._calculate_oliviera_f) return false;
+        if (_num_oliviera_sets != rhs._num_oliviera_sets) return false;
         
         return true;
     }
+    public boolean getCalculateOlivierasF() {return _calculate_oliviera_f;}
+    public void setCalculateOlivierasF(boolean b) {_calculate_oliviera_f = b;}
+    public int getNumRequestedOlivieraSets() {return _num_oliviera_sets;}
+    public void setNumRequestedOlivieraSets(int i) {_num_oliviera_sets = i;}    
     public boolean getAdjustForWeeklyTrends() {return _adjustWeeklyTrends;}
     public void setAdjustForWeeklyTrends(boolean b) {_adjustWeeklyTrends = b;}
     public boolean getPerformPowerEvaluation() {return _performPowerEvaluation;}

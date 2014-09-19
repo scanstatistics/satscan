@@ -10,7 +10,7 @@ class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
 
 class LocationInformationWriter : public AbstractDataFileWriter {
-  protected:
+  public:
       static const char       * AREA_SPECIFIC_FILE_EXT;
       static const char       * LOC_OBS_FIELD;
       static const char       * LOC_EXP_FIELD;
@@ -43,7 +43,9 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
       //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
       static const char        * GINI_CLUSTER_FIELD;
+      static const char        * OLIVIERA_F_FIELD;
 
+  protected:
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 
       void                      DefineFields(const CSaTScanData& DataHub);
@@ -52,8 +54,12 @@ class LocationInformationWriter : public AbstractDataFileWriter {
     LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
-      virtual void              Write(const CCluster& theCluster, const CSaTScanData& theData,
-                                      int iClusterNumber, tract_t tTract, const SimulationVariables& simVars);
+      virtual void              Write(const CCluster& theCluster, 
+                                      const CSaTScanData& theData,
+                                      int iClusterNumber, 
+                                      tract_t tTract, 
+                                      const SimulationVariables& simVars,
+                                      const Relevance_Container_t& location_relevance);
       void                      WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************

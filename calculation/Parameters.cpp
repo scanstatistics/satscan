@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 132;
+const int CParameters::giNumParameters                = 135;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -85,7 +85,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsEndRangeEndDate                      != rhs.gsEndRangeEndDate) return false;
   if (gsStartRangeStartDate                  != rhs.gsStartRangeStartDate) return false;
   if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
-  if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
+  if (gdTimeTrendConverge                    != rhs.gdTimeTrendConverge) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
   if (_simulationType                        != rhs._simulationType) return false;
   if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
@@ -164,6 +164,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
   if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
   if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
+  if (_calculate_oliviera_f != rhs._calculate_oliviera_f) return false;
+  if (_num_oliviera_sets != rhs._num_oliviera_sets) return false;
+  if (_oliviera_pvalue_cutoff != rhs._oliviera_pvalue_cutoff) return false;
 
   return true;
 }
@@ -376,6 +379,9 @@ void CParameters::Copy(const CParameters &rhs) {
   _launch_kml_viewer = rhs._launch_kml_viewer;
   _adjustWeeklyTrends = rhs._adjustWeeklyTrends;
   _minimum_temporal_cluster_size = rhs._minimum_temporal_cluster_size;
+  _calculate_oliviera_f = rhs._calculate_oliviera_f;
+  _num_oliviera_sets = rhs._num_oliviera_sets;
+  _oliviera_pvalue_cutoff = rhs._oliviera_pvalue_cutoff;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -872,6 +878,9 @@ void CParameters::SetAsDefaulted() {
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
   _minimum_temporal_cluster_size = 1;
+  _calculate_oliviera_f = false;
+  _num_oliviera_sets = 1000;
+  _oliviera_pvalue_cutoff = 0.05;
 }
 
 /** Sets start range start date. Throws exception. */

@@ -315,8 +315,11 @@ void CPSMonotoneCluster::SetTotalTracts() {
 }
 
 /** Writes cluster data to passed record buffer. */
-void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
-                     unsigned int iClusterNumber, const SimulationVariables& simVars) const {
+void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter,
+                               const CSaTScanData& Data,
+                               unsigned int iClusterNumber,
+                               const SimulationVariables& simVars,
+                               const Relevance_Container_t& location_relevance) const {
   tract_t       t, tTract;
   int           i;
 
@@ -324,7 +327,7 @@ void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter, const 
     for (i=0; i < gpClusterData->m_nSteps; ++i) {
        for (t=gpClusterData->gvFirstNeighborList[i]; t <= gpClusterData->gvLastNeighborList[i]; t++) {
          tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
-         LocationWriter.Write(*this, Data, iClusterNumber, tTract, simVars);
+         LocationWriter.Write(*this, Data, iClusterNumber, tTract, simVars, location_relevance);
        }
     }
   }

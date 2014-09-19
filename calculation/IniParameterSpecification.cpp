@@ -18,6 +18,7 @@ const char * IniParameterSpecification::TemporalWindow            = "Temporal Wi
 const char * IniParameterSpecification::Polygons                  = "Polygons";
 const char * IniParameterSpecification::SpaceAndTimeAdjustments   = "Space and Time Adjustments";
 const char * IniParameterSpecification::Inference                 = "Inference";
+const char * IniParameterSpecification::BorderAnalysis            = "Border Analysis";
 const char * IniParameterSpecification::Output                    = "Output";
 const char * IniParameterSpecification::ClustersReported          = "Clusters Reported";
 const char * IniParameterSpecification::AdditionalOutput          = "Additional Output";
@@ -143,6 +144,7 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
     _inference_section = SectionInfo(Inference, 560);
+    _border_analysis_section = SectionInfo(BorderAnalysis, 561);
     _power_evaluation_section = SectionInfo(PowerEvaluations, 564);
     _clusters_reported_section = SectionInfo(ClustersReported, 570);
     _temporal_output_section = SectionInfo(TemporalOutput, 572);
@@ -593,10 +595,13 @@ void IniParameterSpecification::Build_9_4_x_ParameterList() {
     _parameter_info[TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(TEMPORAL_GRAPH_REPORT_TYPE, "TemporalGraphReportType", 2, _temporal_output_section);
     _parameter_info[TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(TEMPORAL_GRAPH_MLC_COUNT, "TemporalGraphMostMLC", 3, _temporal_output_section);
     _parameter_info[TEMPORAL_GRAPH_CUTOFF] = ParamInfo(TEMPORAL_GRAPH_CUTOFF, "TemporalGraphSignificanceCutoff", 4, _temporal_output_section);
-	
-	_parameter_info[USER_DEFINED_TITLE] = ParamInfo(USER_DEFINED_TITLE, "ResultsTitle",4, _other_output_section);
 
-    assert(_parameter_info.size() == 132);
+    _parameter_info[USER_DEFINED_TITLE] = ParamInfo(USER_DEFINED_TITLE, "ResultsTitle", 4, _other_output_section);
+    _parameter_info[CALCULATE_OLIVIERA] = ParamInfo(CALCULATE_OLIVIERA, "CalculateOliviera", 1, _border_analysis_section);
+    _parameter_info[NUM_OLIVIERA_SETS] = ParamInfo(NUM_OLIVIERA_SETS, "NumOlivieraSets", 2, _border_analysis_section);
+    _parameter_info[OLIVIERA_CUTOFF] = ParamInfo(OLIVIERA_CUTOFF, "OlivieraPvalueCutoff", 3, _border_analysis_section);
+
+    assert(_parameter_info.size() == 135);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

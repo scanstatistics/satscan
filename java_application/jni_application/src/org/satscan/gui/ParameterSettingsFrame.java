@@ -749,6 +749,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _resultsFileTextField);
         }
+        if (getAdvancedParameterInternalFrame()._calculate_olivieras_f.isEnabled() && getAdvancedParameterInternalFrame()._calculate_olivieras_f.isSelected()) {
+            if (!(_censusAreasReportedClustersAsciiCheckBox.isSelected() || _censusAreasReportedClustersDBaseCheckBox.isSelected() ||
+                  _relativeRiskEstimatesAreaAsciiCheckBox.isSelected() || _relativeRiskEstimatesAreaDBaseCheckBox.isSelected()))
+            throw new SettingsException("Oliviera's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n" +
+                                        "One of these optional files must be requested to report results of Oliviiera's F.", (Component) _censusAreasReportedClustersAsciiCheckBox);
+        }
     }
 
     /**
@@ -1185,7 +1191,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         enableDatesByTimePrecisionUnits();
         enableTimeAggregationGroup(eAnalysisType != Parameters.AnalysisType.PURELYSPATIAL);        
-        enableAdditionalOutFilesOptionsGroup(eModelType != Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
+        enableAdditionalOutFilesOptionsGroup(
+                eModelType != Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
                 eModelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
                 eModelType != Parameters.ProbabilityModelType.ORDINAL &&
                 eModelType != Parameters.ProbabilityModelType.CATEGORICAL &&

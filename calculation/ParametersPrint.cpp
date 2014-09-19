@@ -133,6 +133,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintTemporalWindowParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
+        PrintBorderAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
@@ -148,24 +149,38 @@ void ParametersPrint::Print(FILE* fp) const {
     }
 }
 
-/** Print parameters of 'Additional Output' tab/section. */
+/** Print parameters of 'Other Output' tab/section. */
 void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
 
     try {
-		if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
+        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
             settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
         }
         if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
             gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
             settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
-		if (gParameters.GetTitleName() != "")
-        	settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
+        if (gParameters.GetTitleName() != "")
+            settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
         WriteSettingsContainer(settings, "Other Output", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintOtherOutputParameters()","ParametersPrint");
         throw;
+    }
+}
+
+/** Print parameters of 'Border Analysis' tab/section. */
+void ParametersPrint::PrintBorderAnalysisParameters(FILE* fp) const {
+    SettingContainer_t settings;
+
+    if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() == PURELYSPATIAL) {
+        settings.push_back(std::make_pair("Report Oliviera's F", (gParameters.getCalculateOlivierasF() ? "Yes" : "No")));
+        if (gParameters.getCalculateOlivierasF()) {
+            std::string buffer;
+            settings.push_back(std::make_pair("Number of Oliviera Data Sets", printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets())));
+        }
+        WriteSettingsContainer(settings, "Border Analysis", fp);
     }
 }
 

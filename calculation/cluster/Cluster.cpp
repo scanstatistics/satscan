@@ -1268,8 +1268,11 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
 
 /** Writes location information to stsAreaSpecificData object for each tract
     contained in cluster. */
-void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
-                     unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+void CCluster::Write(LocationInformationWriter& LocationWriter,
+                     const CSaTScanData& DataHub,
+                     unsigned int iReportedCluster,
+                     const SimulationVariables& simVars,
+                     const Relevance_Container_t& location_relevance) const {
   tract_t       tTract;
   int           i;
 
@@ -1283,10 +1286,10 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
          std::vector<tract_t> indexes;
          DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - DataHub.GetNumTracts(), indexes);
          for (size_t t=0; t < indexes.size(); ++t)
-            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], simVars);
+            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], simVars, location_relevance);
        }
        else
-         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, simVars);
+         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, simVars, location_relevance);
     }   
   }
   catch (prg_exception& x) {
