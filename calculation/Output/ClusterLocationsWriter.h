@@ -5,6 +5,7 @@
 #include "AbstractDataFileWriter.h"
 #include "WeightedNormalRandomizer.h"
 #include "SimulationVariables.h"
+#include "ShapeFileWriter.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -49,6 +50,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 
       void                      DefineFields(const CSaTScanData& DataHub);
+      ShapeDataFileWriter     * gpShapeDataFileWriter;
 
   public:
     LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);

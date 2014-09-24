@@ -1286,7 +1286,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
 
   try {
     //if creating 'location information' files, create record data buffers
-    if (gParameters.GetOutputAreaSpecificFiles())
+    if (gParameters.GetOutputAreaSpecificFiles() || gParameters.getOutputShapeFiles())
       ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giAnalysisCount > 1));
     //if creating 'cluster information' files, create record data buffers
     if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles() || gParameters.getOutputShapeFiles())
@@ -1326,7 +1326,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
         if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
             ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
-        if (gParameters.GetOutputAreaSpecificFiles())
+        if (gParameters.GetOutputAreaSpecificFiles() || gParameters.getOutputShapeFiles())
             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars, _oliviera_relevance);
         _clustersReported = true;
     }
@@ -1385,7 +1385,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
       if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
         ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giAnalysisCount, gSimVars);
       //print cluster definition to 'location information' record buffer
-      if (gParameters.GetOutputAreaSpecificFiles()) {
+      if (gParameters.GetOutputAreaSpecificFiles() || gParameters.getOutputShapeFiles()) {
         LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
         TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars, _oliviera_relevance);
       }

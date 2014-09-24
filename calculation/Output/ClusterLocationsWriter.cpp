@@ -42,13 +42,17 @@ const char * LocationInformationWriter::OLIVIERA_F_FIELD             = "OLIVIERA
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
-                          :AbstractDataFileWriter(DataHub.GetParameters()) {
+                          :AbstractDataFileWriter(DataHub.GetParameters()), gpShapeDataFileWriter(0) {
   try {
     DefineFields(DataHub);
     if (gParameters.GetOutputAreaSpecificAscii())
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
-    if (gParameters.GetOutputAreaSpecificDBase())
-      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
+    if (gParameters.GetOutputAreaSpecificDBase()) {
+        gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
+        if (gParameters.getOutputShapeFiles()) {
+            gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, AREA_SPECIFIC_FILE_EXT, SHPT_POINT, bAppend);
+        }
+    }
   }
   catch (prg_exception& x) {
     delete gpASCIIFileWriter; gpASCIIFileWriter=0;
@@ -59,7 +63,12 @@ LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub
 }
 
 /** class destructor */
-LocationInformationWriter::~LocationInformationWriter() {}
+LocationInformationWriter::~LocationInformationWriter() {
+  try {
+      delete gpShapeDataFileWriter;
+  }
+  catch (...){}
+}
 
 // sets up the vector of field structs so that the FieldDef Vector can be created
 void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
@@ -157,11 +166,16 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
   double                                        dRelativeRisk;
   RecordBuffer                                  Record(vFieldDefinitions);
   const DataSetHandler                        & Handler = DataHub.GetDataSetHandler();
+  std::vector<double>                           vCoordinates;
+  std::pair<double, double>                     prLatitudeLongitude;
 
   try {
     //do not report locations for which iterative scan has nullified its data
     if (DataHub.GetIsNullifiedLocation(tTract)) return;
     DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
+    CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
+    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+    if (gpShapeDataFileWriter) gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
     for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
        Record.SetAllFieldsBlank(true);
        Record.GetFieldValue(LOC_ID_FIELD).AsString() = vIdentifiers[i].c_str();
