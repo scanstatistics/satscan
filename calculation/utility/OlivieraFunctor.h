@@ -1,6 +1,6 @@
 //******************************************************************************
-#ifndef __OlivieraFunctor_H
-#define __OlivieraFunctor_H
+#ifndef __OliveiraFunctor_H
+#define __OliveiraFunctor_H
 //******************************************************************************
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
@@ -10,15 +10,15 @@
 #include "AbstractBruteForceAnalysis.h"
 
 //runs jobs for the "successive" algorithm
-class OlivieraFunctor
+class OliveiraFunctor
 {
 public:
   typedef unsigned int param_type;
-  typedef OlivieraJobSource::result_type result_type;
+  typedef OliveiraJobSource::result_type result_type;
 
 private:
   CSaTScanData const & _data_hub;
-  const RealDataContainer_t& _oliviera_sets;
+  const RealDataContainer_t& _oliveira_sets;
 
   boost::shared_ptr<AbstractDataSetGateway> _data_gateway;
   boost::shared_ptr<CAnalysis> _analysis;
@@ -27,8 +27,8 @@ private:
   boost::shared_ptr<RandomizerContainer_t> _randomization_container;
 
 public:
-  OlivieraFunctor(const RealDataContainer_t& oliviera_sets, CSaTScanData const & theDataHub, boost::shared_ptr<CAnalysis> pAnalysis) 
-      : _oliviera_sets(oliviera_sets), _data_hub(theDataHub), _analysis(pAnalysis) {
+  OliveiraFunctor(const RealDataContainer_t& oliveira_sets, CSaTScanData const & theDataHub, boost::shared_ptr<CAnalysis> pAnalysis) 
+      : _oliveira_sets(oliveira_sets), _data_hub(theDataHub), _analysis(pAnalysis) {
 
     // create data gateway
     _data_gateway.reset(_data_hub.GetDataSetHandler().GetNewDataGatewayObject());
@@ -41,7 +41,7 @@ public:
     _randomization_container.reset(new RandomizerContainer_t());
     _data_hub.GetDataSetHandler().GetRandomizerContainer(*_randomization_container);
 
-    // set data gateway given dataset handler's oliviera data and simulated data structures
+    // set data gateway given dataset handler's oliveira data and simulated data structures
     _data_hub.GetDataSetHandler().GetOliveraDataGateway(*_data_gateway, *_simulation_data_container);
 
     // allocate objects used in 'FindTopClusters()' process

@@ -148,9 +148,9 @@ class CParameters {
     unsigned int                        _locations_threshold_kml;               /** threshold before cluster locations are put into separate kml files */
     bool                                _compress_kml_output;                   /** compress kml output into kmz format */
     bool                                _launch_kml_viewer;                     /** compress kml output into kmz format */
-    bool                                _calculate_oliviera_f;                  /** whether to calculate Oliviera's F */
-    unsigned int                        _num_oliviera_sets;                     /** number of data sets to evaluate for Oliviera's F */
-    double                              _oliviera_pvalue_cutoff;                /** P-Value used to limit clusters in Oliviera's F calcuation */
+    bool                                _calculate_oliveira_f;                  /** whether to calculate Oliveira's F */
+    unsigned int                        _num_oliveira_sets;                     /** number of data sets to evaluate for Oliveira's F */
+    double                              _oliveira_pvalue_cutoff;                /** P-Value used to limit clusters in Oliveira's F calcuation */
 
     /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
@@ -269,7 +269,7 @@ class CParameters {
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
-    bool                                getCalculateOlivierasF() const {return _calculate_oliviera_f;}
+    bool                                getCalculateOliveirasF() const {return _calculate_oliveira_f;}
     AreaRateType                        GetExecuteScanRateType() const;
     unsigned int                        GetExecuteEarlyTermThreshold() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
@@ -324,7 +324,7 @@ class CParameters {
     double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
     NonCompactnessPenaltyType           GetNonCompactnessPenaltyType() const {return geNonCompactnessPenaltyType;}
     unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
-    unsigned int                        getNumRequestedOlivieraSets() const {return _num_oliviera_sets;}
+    unsigned int                        getNumRequestedOliveiraSets() const {return _num_oliveira_sets;}
     unsigned int                        GetNumRequestedParallelProcesses() const {return giNumRequestedParallelProcesses;}
     unsigned int                        GetNumParallelProcessesToExecute() const;
     int                                 GetNumReadParameters() const {return giNumParameters;}
@@ -334,7 +334,7 @@ class CParameters {
     unsigned int                        GetNumIterativeScansRequested() const {return giNumIterativeRuns;}
     long                                GetNumTotalEllipses() const {return (gbUseLocationNeighborsFile || geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
     const std::vector<std::string>    & getObservableRegions() const {return gvObservableRegions;}
-    double                              getOlivieraPvalueCutoff() const {return _oliviera_pvalue_cutoff;}
+    double                              getOliveiraPvalueCutoff() const {return _oliveira_pvalue_cutoff;}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
     bool                                GetOutputAreaSpecificFiles() const;
@@ -425,7 +425,7 @@ class CParameters {
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetAsDefaulted();
-    void                                setCalculateOlivierasF(bool b) {_calculate_oliviera_f = b;}
+    void                                setCalculateOliveirasF(bool b) {_calculate_oliveira_f = b;}
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
     void                                SetEarlyTermThreshold(unsigned int i) {giEarlyTermThreshold = i;}
@@ -461,12 +461,12 @@ class CParameters {
     void                                SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType);
     void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
     void                                SetNumDataSets(size_t iNumDataSets);
-    void                                setNumRequestedOlivieraSets(unsigned int i) {_num_oliviera_sets = i;}
+    void                                setNumRequestedOliveiraSets(unsigned int i) {_num_oliveira_sets = i;}
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);
     void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_power_replica = r;}
     void                                SetNumIterativeScans(int iNumIterativeScans);
-    void                                setOlivieraPvalueCutoff(double d) {_oliviera_pvalue_cutoff = d;}
+    void                                setOliveiraPvalueCutoff(double d) {_oliveira_pvalue_cutoff = d;}
     void                                setOutputKMLFile(bool b) {_output_kml = b;}
     void                                setOutputTemporalGraphFile(bool b) {_output_temporal_graph = b;}
     void                                setOutputShapeFiles(bool b) {_output_shapefiles = b;}

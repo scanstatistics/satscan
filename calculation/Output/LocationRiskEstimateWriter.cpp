@@ -21,7 +21,7 @@ const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                  = "OUT
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_IN_FIELD              = "IN_FUNC_A";
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_OUT_FIELD             = "OUT_FUNC_A";
 const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD        = "W_MEAN";
-const char * LocationRiskEstimateWriter::OLIVIERA_F_FIELD             = "OLIVIERA_F";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_FIELD                 = "OLIVEIRA_F";
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub)
@@ -85,10 +85,10 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
             //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
             //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
         }
-        if (gParameters.getCalculateOlivierasF()) {
+        if (gParameters.getCalculateOliveirasF()) {
             std::string buffer;
-            printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets());
-            CreateField(vFieldDefinitions, OLIVIERA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets());
+            CreateField(vFieldDefinitions, OLIVEIRA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
         }
     } catch (prg_exception& x) {
         x.addTrace("DefineFields()","LocationRiskEstimateWriter");
@@ -198,8 +198,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
        for (tract_t t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
-          if (gParameters.getCalculateOlivierasF() && location_relevance.size() > t) {
-            Record.GetFieldValue(OLIVIERA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[t]) / static_cast<double>(gParameters.getNumRequestedOlivieraSets());
+          if (gParameters.getCalculateOliveirasF() && location_relevance.size() > t) {
+            Record.GetFieldValue(OLIVEIRA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
           }
           if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());

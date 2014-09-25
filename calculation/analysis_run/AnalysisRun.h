@@ -61,7 +61,7 @@ class ClusterRankHelper {
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
   friend class stsMCSimJobSource;
-  friend class OlivieraJobSource;
+  friend class OliveiraJobSource;
 
   private:
     const CParameters                 & gParameters;
@@ -84,9 +84,9 @@ class AnalysisRunner {
     typedef std::vector<boost::shared_ptr<MLC_Collections_t> > MLC_Collections_Container_t;
     typedef std::vector<ClusterRankHelper> ClusterRankHelper_Container_t;
 
-    MLC_Collections_Container_t         _oliviera_mlc_collections;
-    MLC_Collections_t                   _oliviera_report_Clusters;
-    Relevance_Container_t               _oliviera_relevance;
+    MLC_Collections_Container_t         _oliveira_mlc_collections;
+    MLC_Collections_t                   _oliveira_report_Clusters;
+    Relevance_Container_t               _oliveira_relevance;
 
     void                                addGiniClusters(const MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff, unsigned int limit=0);
     void                                Execute();
@@ -94,7 +94,7 @@ class AnalysisRunner {
     void                                ExecuteSuccessively();
     void                                ExecutePowerEvaluations();
     void                                CalculateMostLikelyClusters();
-    void                                CalculateOlivieraClusters();
+    void                                CalculateOliveiraClusters();
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;

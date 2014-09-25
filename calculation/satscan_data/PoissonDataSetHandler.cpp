@@ -42,33 +42,33 @@ void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Containe
     }
 }
 
-/* virtual method which builds Oliviera data sets. */
-const RealDataContainer_t & PoissonDataSetHandler::buildOlivieraDataSets() {
+/* virtual method which builds Oliveira data sets. */
+const RealDataContainer_t & PoissonDataSetHandler::buildOliveiraDataSets() {
     try {
         if (gParameters.GetAnalysisType() != PURELYSPATIAL)
-            throw prg_error("buildOlivieraDataSets() is not implemented for analysis type '%d'.", "DataSetHandler::buildOlivieraDataSets()", gParameters.GetAnalysisType());
-        _oliviera_data_sets.killAll();
+            throw prg_error("buildOliveiraDataSets() is not implemented for analysis type '%d'.", "DataSetHandler::buildOliveiraDataSets()", gParameters.GetAnalysisType());
+        _oliveira_data_sets.killAll();
         for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i) {
-            _oliviera_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+            _oliveira_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
             // allocate measure data and initialize from case data in real data set
-            RealDataSet & oliviera_dataset = *_oliviera_data_sets.back();
-            oliviera_dataset.allocateMeasureData();
+            RealDataSet & oliveira_dataset = *_oliveira_data_sets.back();
+            oliveira_dataset.allocateMeasureData();
             RealDataSet & real_dataset = *gvDataSets.at(i);
             TwoDimCountArray_t& caseArray = real_dataset.getCaseData();
-            TwoDimMeasureArray_t& measureArray = oliviera_dataset.getMeasureData();
+            TwoDimMeasureArray_t& measureArray = oliveira_dataset.getMeasureData();
             for (unsigned int a=0; a < caseArray.Get1stDimension(); ++a) {
                 for (unsigned int b=0; b < caseArray.Get2ndDimension(); ++b) {
                     measureArray.GetArray()[a][b] = static_cast<double>(caseArray.GetArray()[a][b]);
                 }
             }
-            oliviera_dataset.setTotalCases(real_dataset.getTotalCases());
-            oliviera_dataset.setTotalMeasure(real_dataset.getTotalMeasure());
+            oliveira_dataset.setTotalCases(real_dataset.getTotalCases());
+            oliveira_dataset.setTotalMeasure(real_dataset.getTotalMeasure());
         }
     } catch (prg_exception& x) {
-        x.addTrace("buildOlivieraDataSets()","PoissonDataSetHandler");
+        x.addTrace("buildOliveiraDataSets()","PoissonDataSetHandler");
         throw;
     }
-    return _oliviera_data_sets;
+    return _oliveira_data_sets;
 }
 
 /** Converts passed string specifiying a population date to a julian date using

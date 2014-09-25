@@ -216,9 +216,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       case MIN_TEMPORAL_CLUSTER         : return "minimum temporal cluster size (in time aggregation units)";
       case USER_DEFINED_TITLE           : return "user-defined title for results file";
-      case CALCULATE_OLIVIERA           : return "calculate Oliviera's F and report in Location Information file";
-      case NUM_OLIVIERA_SETS            : return "number of data sets for Oliviera calculation (minimum=100, multiple of 100)";
-      case OLIVIERA_CUTOFF              : return "p-value cutoff for cluster's in Oliviera calculation (0.000-1.000)";
+      case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F and report in Location Information file";
+      case NUM_OLIVEIRA_SETS            : return "number of data sets for Oliveira calculation (minimum=100, multiple of 100)";
+      case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -380,9 +380,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case ADJUST_WEEKLY_TRENDS         : return AsString(s, gParameters.getAdjustForWeeklyTrends());
       case MIN_TEMPORAL_CLUSTER         : return AsString(s, gParameters.getMinimumTemporalClusterSize());
       case USER_DEFINED_TITLE           : s = gParameters.GetTitleName().c_str(); return s;
-      case CALCULATE_OLIVIERA           : return AsString(s, gParameters.getCalculateOlivierasF());
-      case NUM_OLIVIERA_SETS            : return AsString(s, gParameters.getNumRequestedOlivieraSets());
-      case OLIVIERA_CUTOFF              : return AsString(s, gParameters.getOlivieraPvalueCutoff());
+      case CALCULATE_OLIVEIRA           : return AsString(s, gParameters.getCalculateOliveirasF());
+      case NUM_OLIVEIRA_SETS            : return AsString(s, gParameters.getNumRequestedOliveiraSets());
+      case OLIVEIRA_CUTOFF              : return AsString(s, gParameters.getOliveiraPvalueCutoff());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -777,9 +777,9 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case ADJUST_WEEKLY_TRENDS         : gParameters.setAdjustForWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
       case MIN_TEMPORAL_CLUSTER         : gParameters.setMinimumTemporalClusterSize(ReadUnsignedInt(sParameter, eParameterType)); break;
       case USER_DEFINED_TITLE           : gParameters.SetTitleName(sParameter.c_str()); break;
-      case CALCULATE_OLIVIERA           : gParameters.setCalculateOlivierasF(ReadBoolean(sParameter, eParameterType)); break;
-      case NUM_OLIVIERA_SETS            : gParameters.setNumRequestedOlivieraSets(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case OLIVIERA_CUTOFF              : gParameters.setOlivieraPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
+      case CALCULATE_OLIVEIRA           : gParameters.setCalculateOliveirasF(ReadBoolean(sParameter, eParameterType)); break;
+      case NUM_OLIVEIRA_SETS            : gParameters.setNumRequestedOliveiraSets(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case OLIVEIRA_CUTOFF              : gParameters.setOliveiraPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

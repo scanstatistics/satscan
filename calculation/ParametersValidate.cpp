@@ -100,35 +100,35 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
 bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirection) const {
     bool bValid=true;
 
-    if (gParameters.getCalculateOlivierasF()) {
-        // Oliviera's F only reported to 'Location Information' and 'Risk Estimates for Each Location' files.
+    if (gParameters.getCalculateOliveirasF()) {
+        // Oliveira's F only reported to 'Location Information' and 'Risk Estimates for Each Location' files.
         if (!(gParameters.GetOutputAreaSpecificFiles() || gParameters.GetOutputRelativeRisksFiles())) {
-            const_cast<CParameters&>(gParameters).setCalculateOlivierasF(false);
-            printDirection.Printf("%s:\nOliviera's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n"
-                                  "The Oliviera's F calculation has been disabled since neither optional file has been requested.", BasePrint::P_NOTICE, "Note");
+            const_cast<CParameters&>(gParameters).setCalculateOliveirasF(false);
+            printDirection.Printf("%s:\nOliveira's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n"
+                                  "The Oliveira's F calculation has been disabled since neither optional file has been requested.", BasePrint::P_NOTICE, "Note");
             return true;
         }
 
         if (!(gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetProbabilityModelType() == POISSON)) {
             bValid = false;
-            printDirection.Printf("%s:\nOliviera's F is only implemented for purely spatial analyses using the Poisson model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            printDirection.Printf("%s:\nOliveira's F is only implemented for purely spatial analyses using the Poisson model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         if (gParameters.GetNumReplicationsRequested() < 99) {
             bValid = false;
-            printDirection.Printf("%s:\nThe Oliviera's F calculation requires a minimum of 99 monte carlo replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            printDirection.Printf("%s:\nThe Oliveira's F calculation requires a minimum of 99 monte carlo replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.getNumRequestedOlivieraSets() < 100 || gParameters.getNumRequestedOlivieraSets() % 100 > 0) {
+        if (gParameters.getNumRequestedOliveiraSets() < 100 || gParameters.getNumRequestedOliveiraSets() % 100 > 0) {
             bValid = false;
-            printDirection.Printf("%s:\nThe number of data sets for Oliviera's F must be at least 100 and a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            printDirection.Printf("%s:\nThe number of data sets for Oliveira's F must be at least 100 and a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.getOlivieraPvalueCutoff() < 0 || gParameters.getOlivieraPvalueCutoff() > 1) {
+        if (gParameters.getOliveiraPvalueCutoff() < 0 || gParameters.getOliveiraPvalueCutoff() > 1) {
             bValid = false;
-            printDirection.Printf("%s:\nThe Oliviera cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
-                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getOlivieraPvalueCutoff());
+            printDirection.Printf("%s:\nThe Oliveira cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getOliveiraPvalueCutoff());
         }
         if (gParameters.GetExecutionType() == CENTRICALLY) {
             bValid = false;
-            printDirection.Printf("%s:\nOliviera's F is not implemented with the alternative memory allocation algorithm.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            printDirection.Printf("%s:\nOliveira's F is not implemented with the alternative memory allocation algorithm.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
     }
     return bValid;

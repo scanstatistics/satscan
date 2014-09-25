@@ -44,7 +44,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
       //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
       static const char        * GINI_CLUSTER_FIELD;
-      static const char        * OLIVIERA_F_FIELD;
+      static const char        * OLIVEIRA_F_FIELD;
 
   protected:
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;

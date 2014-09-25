@@ -164,9 +164,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
   if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
   if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
-  if (_calculate_oliviera_f != rhs._calculate_oliviera_f) return false;
-  if (_num_oliviera_sets != rhs._num_oliviera_sets) return false;
-  if (_oliviera_pvalue_cutoff != rhs._oliviera_pvalue_cutoff) return false;
+  if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
+  if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
+  if (_oliveira_pvalue_cutoff != rhs._oliveira_pvalue_cutoff) return false;
 
   return true;
 }
@@ -379,9 +379,9 @@ void CParameters::Copy(const CParameters &rhs) {
   _launch_kml_viewer = rhs._launch_kml_viewer;
   _adjustWeeklyTrends = rhs._adjustWeeklyTrends;
   _minimum_temporal_cluster_size = rhs._minimum_temporal_cluster_size;
-  _calculate_oliviera_f = rhs._calculate_oliviera_f;
-  _num_oliviera_sets = rhs._num_oliviera_sets;
-  _oliviera_pvalue_cutoff = rhs._oliviera_pvalue_cutoff;
+  _calculate_oliveira_f = rhs._calculate_oliveira_f;
+  _num_oliveira_sets = rhs._num_oliveira_sets;
+  _oliveira_pvalue_cutoff = rhs._oliveira_pvalue_cutoff;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -878,9 +878,9 @@ void CParameters::SetAsDefaulted() {
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
   _minimum_temporal_cluster_size = 1;
-  _calculate_oliviera_f = false;
-  _num_oliviera_sets = 1000;
-  _oliviera_pvalue_cutoff = 0.05;
+  _calculate_oliveira_f = false;
+  _num_oliveira_sets = 1000;
+  _oliveira_pvalue_cutoff = 0.05;
 }
 
 /** Sets start range start date. Throws exception. */

@@ -604,11 +604,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public void enableBorderAnalysisGroup(boolean enable) {
-        _olivieras_f_group.setEnabled(enable);
-        _calculate_olivieras_f.setEnabled(enable);
-        _number_oliviera_data_sets_label.setEnabled(enable);
-        _number_oliviera_data_sets.setEnabled(enable);
-        _olivieras_f_instruction.setEnabled(enable);
+        _oliveiras_f_group.setEnabled(enable);
+        _calculate_oliveiras_f.setEnabled(enable);
+        _number_oliveira_data_sets_label.setEnabled(enable);
+        _number_oliveira_data_sets.setEnabled(enable);
+        _oliveiras_f_instruction.setEnabled(enable);
     }
     
     public void enableAdjustDayOfWeek(boolean enable) {
@@ -1085,8 +1085,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setLaunchKMLViewer(_launchKMLViewer.isSelected());
 
         // border analysis tab
-        parameters.setCalculateOlivierasF(_calculate_olivieras_f.isEnabled() && _calculate_olivieras_f.isSelected());
-        parameters.setNumRequestedOlivieraSets(Integer.parseInt(_number_oliviera_data_sets.getText()));
+        parameters.setCalculateOliveirasF(_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected());
+        parameters.setNumRequestedOliveiraSets(Integer.parseInt(_number_oliveira_data_sets.getText()));
         
         // Power Evaluations tab
         parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
@@ -1306,18 +1306,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.AnalysisType analysis = _settings_window.getAnalysisControlType();
         Parameters.ProbabilityModelType model = _settings_window.getModelControlType();
 
-        if (_calculate_olivieras_f.isEnabled() && _calculate_olivieras_f.isSelected()) {                    
+        if (_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected()) {                    
             // sanity check -- GUI should already be preventing other combinations
             if (!(analysis == Parameters.AnalysisType.PURELYSPATIAL && model == Parameters.ProbabilityModelType.POISSON))
-                throw new AdvFeaturesExpection("The option to calculate Oliviera's is only implemented with purely spatial poisson.", FocusedTabSet.ANALYSIS, (Component) _calculate_olivieras_f);
+                throw new AdvFeaturesExpection("The option to calculate Oliveira's is only implemented with purely spatial poisson.", FocusedTabSet.ANALYSIS, (Component) _calculate_oliveiras_f);
             
             int monte_carlos = Integer.parseInt(_montCarloReplicationsTextField.getText());
-            int olivier_sets = Integer.parseInt(_number_oliviera_data_sets.getText());
+            int oliveira_sets = Integer.parseInt(_number_oliveira_data_sets.getText());
             if (monte_carlos < 99)
-                throw new AdvFeaturesExpection("The Oliviera's F calculation requires at least 999 Monte Carlo replications.", FocusedTabSet.ANALYSIS, (Component)_montCarloReplicationsTextField);
-            int oliviera_sets = Integer.parseInt(_number_oliviera_data_sets.getText());
-            if (oliviera_sets < 100 || oliviera_sets % 100 > 0) {
-                throw new AdvFeaturesExpection("The Oliviera's F calculation requires a minimum of 100 data sets. The number of sets must be a multiple of 100.", FocusedTabSet.ANALYSIS, (Component)_calculate_olivieras_f);
+                throw new AdvFeaturesExpection("The Oliveira's F calculation requires at least 999 Monte Carlo replications.", FocusedTabSet.ANALYSIS, (Component)_montCarloReplicationsTextField);
+            if (oliveira_sets < 100 || oliveira_sets % 100 > 0) {
+                throw new AdvFeaturesExpection("The Oliveira's F calculation requires a minimum of 100 data sets. The number of sets must be a multiple of 100.", FocusedTabSet.ANALYSIS, (Component)_calculate_oliveiras_f);
             }
         }
     }
@@ -1821,8 +1820,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includeClusterLocationsInKML.setSelected(true);
         _createCompressedKMZ.setSelected(false);
         _launchKMLViewer.setSelected(true);
-        _calculate_olivieras_f.setSelected(false);
-        _number_oliviera_data_sets.setText("1000");
+        _calculate_oliveiras_f.setSelected(false);
+        _number_oliveira_data_sets.setText("1000");
     }
 
     /**
@@ -2386,8 +2385,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.GetNumReplicationsRequested()));
 
         // border analysis tab
-        _calculate_olivieras_f.setSelected(parameters.getCalculateOlivierasF());
-        _number_oliviera_data_sets.setText(Integer.toString(parameters.getNumRequestedOlivieraSets()));
+        _calculate_oliveiras_f.setSelected(parameters.getCalculateOliveirasF());
+        _number_oliveira_data_sets.setText(Integer.toString(parameters.getNumRequestedOliveiraSets()));
         
         // Spatial Output tab
         _mostLikelyClustersHierarchically.setSelected(parameters.getReportHierarchicalClusters());
@@ -2735,11 +2734,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalGraphSignificant = new javax.swing.JRadioButton();
         _temporalGraphPvalueCutoff = new javax.swing.JTextField();
         _border_analysis_tab = new javax.swing.JPanel();
-        _olivieras_f_group = new javax.swing.JPanel();
-        _calculate_olivieras_f = new javax.swing.JCheckBox();
-        _number_oliviera_data_sets_label = new javax.swing.JLabel();
-        _number_oliviera_data_sets = new javax.swing.JTextField();
-        _olivieras_f_instruction = new javax.swing.JLabel();
+        _oliveiras_f_group = new javax.swing.JPanel();
+        _calculate_oliveiras_f = new javax.swing.JCheckBox();
+        _number_oliveira_data_sets_label = new javax.swing.JLabel();
+        _number_oliveira_data_sets = new javax.swing.JTextField();
+        _oliveiras_f_instruction = new javax.swing.JLabel();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -3124,7 +3123,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(260, Short.MAX_VALUE))
+                .addContainerGap(268, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3240,7 +3239,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(316, Short.MAX_VALUE))
+                .addContainerGap(324, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3415,7 +3414,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(251, Short.MAX_VALUE))
+                .addContainerGap(259, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3701,7 +3700,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(217, Short.MAX_VALUE))
+                .addContainerGap(225, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4141,7 +4140,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4394,7 +4393,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(146, Short.MAX_VALUE))
+                .addContainerGap(154, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4807,7 +4806,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5110,7 +5109,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(123, Short.MAX_VALUE))
+                .addContainerGap(131, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5252,7 +5251,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(228, Short.MAX_VALUE))
+                .addContainerGap(236, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5510,7 +5509,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(184, Short.MAX_VALUE))
+                .addContainerGap(192, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -5645,19 +5644,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(368, Short.MAX_VALUE))
+                .addContainerGap(376, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
 
-        _olivieras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliviera's F"));
-        _olivieras_f_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_olivieras_f_group, "--todo--olivieras-f"));
+        _oliveiras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliveira's F"));
+        _oliveiras_f_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_oliveiras_f_group, "--todo--oliveiras-f"));
 
-        _calculate_olivieras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
+        _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
 
-        _number_oliviera_data_sets_label.setText("Number of date sets (minimum 100, multiple of 100):"); // NOI18N
+        _number_oliveira_data_sets_label.setText("Number of date sets (minimum 100, multiple of 100):"); // NOI18N
 
-        _number_oliviera_data_sets.setText("1000"); // NOI18N
+        _number_oliveira_data_sets.setText("1000"); // NOI18N
         _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_montCarloReplicationsTextField.getText().length() == 0)
@@ -5677,36 +5676,36 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _olivieras_f_instruction.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        _olivieras_f_instruction.setText("<html>Oliviera's F in written to the optional \"Location Information\" and \"Risk Estimates for Each Location\" files.");
+        _oliveiras_f_instruction.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        _oliveiras_f_instruction.setText("<html>Oliveira's F in written to the optional \"Location Information\" and \"Risk Estimates for Each Location\" files.");
 
-        javax.swing.GroupLayout _olivieras_f_groupLayout = new javax.swing.GroupLayout(_olivieras_f_group);
-        _olivieras_f_group.setLayout(_olivieras_f_groupLayout);
-        _olivieras_f_groupLayout.setHorizontalGroup(
-            _olivieras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_olivieras_f_groupLayout.createSequentialGroup()
+        javax.swing.GroupLayout _oliveiras_f_groupLayout = new javax.swing.GroupLayout(_oliveiras_f_group);
+        _oliveiras_f_group.setLayout(_oliveiras_f_groupLayout);
+        _oliveiras_f_groupLayout.setHorizontalGroup(
+            _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
                 .addGap(10, 10, 10)
-                .addGroup(_olivieras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_calculate_olivieras_f, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_olivieras_f_instruction, javax.swing.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE)
-                    .addGroup(_olivieras_f_groupLayout.createSequentialGroup()
+                .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_calculate_oliveiras_f, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_oliveiras_f_instruction, javax.swing.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE)
+                    .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
                         .addGap(21, 21, 21)
-                        .addComponent(_number_oliviera_data_sets_label)
+                        .addComponent(_number_oliveira_data_sets_label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_number_oliviera_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        _olivieras_f_groupLayout.setVerticalGroup(
-            _olivieras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_olivieras_f_groupLayout.createSequentialGroup()
-                .addComponent(_calculate_olivieras_f)
+        _oliveiras_f_groupLayout.setVerticalGroup(
+            _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
+                .addComponent(_calculate_oliveiras_f)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_olivieras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_number_oliviera_data_sets_label)
-                    .addComponent(_number_oliviera_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_number_oliveira_data_sets_label)
+                    .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_olivieras_f_instruction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_oliveiras_f_instruction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -5716,15 +5715,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _border_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_olivieras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _border_analysis_tabLayout.setVerticalGroup(
             _border_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_olivieras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(405, Short.MAX_VALUE))
+                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(413, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
@@ -5758,7 +5757,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5790,7 +5789,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JRadioButton _atLeastOneRadioButton;
     private javax.swing.JPanel _border_analysis_tab;
-    protected javax.swing.JCheckBox _calculate_olivieras_f;
+    protected javax.swing.JCheckBox _calculate_oliveiras_f;
     private javax.swing.JButton _caseFileBrowseButton;
     private javax.swing.JLabel _caseFileLabel;
     private javax.swing.JTextField _caseFileTextField;
@@ -5887,10 +5886,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _numMostLikelyClustersGraphLabel;
     private javax.swing.JTextField _numberPowerReplications;
     private javax.swing.JLabel _numberPowerReplicationsLabel;
-    private javax.swing.JTextField _number_oliviera_data_sets;
-    private javax.swing.JLabel _number_oliviera_data_sets_label;
-    private javax.swing.JPanel _olivieras_f_group;
-    private javax.swing.JLabel _olivieras_f_instruction;
+    private javax.swing.JTextField _number_oliveira_data_sets;
+    private javax.swing.JLabel _number_oliveira_data_sets_label;
+    private javax.swing.JPanel _oliveiras_f_group;
+    private javax.swing.JLabel _oliveiras_f_instruction;
     private javax.swing.JRadioButton _onePerLocationIdRadioButton;
     private javax.swing.JPanel _otherOutputTab;
     private javax.swing.ButtonGroup _pValueButtonGroup;

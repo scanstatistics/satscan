@@ -129,27 +129,27 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     }
 }
 
-/* Finds the collections of clusters about requested number of data sets for Oliviera's F calculation. */
-void AnalysisRunner::CalculateOlivieraClusters() {
+/* Finds the collections of clusters about requested number of data sets for Oliveira's F calculation. */
+void AnalysisRunner::CalculateOliveiraClusters() {
     {
-        gPrintDirection.Printf("Finding the most likely clusters for Oliviera's F\n", BasePrint::P_STDOUT);
-        // create oliviera data sets -- the cases from real data set are used as the measure in these sets
-        const RealDataContainer_t& oliviera_datasets = gpDataHub->GetDataSetHandler().buildOlivieraDataSets();
-        _oliviera_mlc_collections.clear();
+        gPrintDirection.Printf("Finding the most likely clusters for Oliveira's F\n", BasePrint::P_STDOUT);
+        // create oliveira data sets -- the cases from real data set are used as the measure in these sets
+        const RealDataContainer_t& oliveira_datasets = gpDataHub->GetDataSetHandler().buildOliveiraDataSets();
+        _oliveira_mlc_collections.clear();
 
         PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-        OlivieraJobSource jobSource(*this, ::GetCurrentTime_HighResolution(), lclPrintDirection);
-        typedef contractor<OlivieraJobSource> contractor_type;
+        OliveiraJobSource jobSource(*this, ::GetCurrentTime_HighResolution(), lclPrintDirection);
+        typedef contractor<OliveiraJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
         //run threads:
         boost::thread_group tg;
         boost::mutex thread_mutex;
-        unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.getNumRequestedOlivieraSets());
+        unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.getNumRequestedOliveiraSets());
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
             try {
-                OlivieraFunctor olivieraf(oliviera_datasets, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
-                tg.create_thread(subcontractor<contractor_type,OlivieraFunctor>(theContractor, olivieraf));
+                OliveiraFunctor oliveiraf(oliveira_datasets, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
+                tg.create_thread(subcontractor<contractor_type,OliveiraFunctor>(theContractor, oliveiraf));
             } catch (std::bad_alloc &b) {             
                 if (u == 0) throw; // if this is the first thread, re-throw exception
                 gPrintDirection.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", 
@@ -178,14 +178,14 @@ void AnalysisRunner::CalculateOlivieraClusters() {
 
     // now rank each cluster collection and define reporting/ranking structures
     if (!gPrintDirection.GetIsCanceled()) {
-        gPrintDirection.Printf("Ranking clusters for Oliviera's F\n", BasePrint::P_STDOUT);
-        _oliviera_report_Clusters.clear();
-        _oliviera_report_Clusters.resize(_oliviera_mlc_collections.size(), MostLikelyClustersContainer(0));
+        gPrintDirection.Printf("Ranking clusters for Oliveira's F\n", BasePrint::P_STDOUT);
+        _oliveira_report_Clusters.clear();
+        _oliveira_report_Clusters.resize(_oliveira_mlc_collections.size(), MostLikelyClustersContainer(0));
         PrintNull noPrint;
         boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-        for (size_t t=0; t < _oliviera_mlc_collections.size(); ++t) {
-            rankClusterCollections(*_oliviera_mlc_collections[t], _oliviera_report_Clusters[t], 0, noPrint);
-            if (t == 9) ReportTimeEstimate(StartTime, _oliviera_mlc_collections.size(), t, gPrintDirection);
+        for (size_t t=0; t < _oliveira_mlc_collections.size(); ++t) {
+            rankClusterCollections(*_oliveira_mlc_collections[t], _oliveira_report_Clusters[t], 0, noPrint);
+            if (t == 9) ReportTimeEstimate(StartTime, _oliveira_mlc_collections.size(), t, gPrintDirection);
         }
     }
 }
@@ -460,8 +460,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
       macroRunTimeStopSerial();
-      if (gParameters.getCalculateOlivierasF())
-        CalculateOlivieraClusters();
+      if (gParameters.getCalculateOliveirasF())
+        CalculateOliveiraClusters();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled()) return;
       gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
@@ -479,7 +479,7 @@ void AnalysisRunner::ExecuteSuccessively() {
         if (gParameters.GetOutputRelativeRisksFiles()) {
             macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
             gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
-            gpDataHub->DisplayRelativeRisksForEachTract(_oliviera_relevance);
+            gpDataHub->DisplayRelativeRisksForEachTract(_oliveira_relevance);
             macroRunTimeStopSerial();
         }
         LogRunHistory();
@@ -939,7 +939,7 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
         if (gParameters.GetOutputRelativeRisksFiles()) {
             macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
             gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
-            gpDataHub->DisplayRelativeRisksForEachTract(_oliviera_relevance);
+            gpDataHub->DisplayRelativeRisksForEachTract(_oliveira_relevance);
             macroRunTimeStopSerial();
         }
         LogRunHistory();
@@ -1327,7 +1327,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
             ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
-            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars, _oliviera_relevance);
+            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i+1, gSimVars, _oliveira_relevance);
         _clustersReported = true;
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
@@ -1387,7 +1387,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
         LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
-        TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars, _oliviera_relevance);
+        TopCluster.Write(Writer, *gpDataHub, giAnalysisCount, gSimVars, _oliveira_relevance);
       }
       //check track of whether this cluster was significant in top five percentage
       if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
@@ -1555,35 +1555,39 @@ void AnalysisRunner::reportClusters() {
         if (gParameters.getReportGiniOptimizedClusters()) {
             addGiniClusters(gTopClustersContainers, _reportClusters, gParameters.getGiniIndexPValueCutoff());
         }
-        // calculate Oliviera's F, if requested
-        if (gParameters.getCalculateOlivierasF()) {
+        // calculate Oliveira's F, if requested
+        if (gParameters.getCalculateOliveirasF()) {
             // first calculate number of real clusters within ovliviera p-value cutoff
-            unsigned int max_oliviera=0;
+            unsigned int max_oliveira=0;
             for (tract_t t=0; t < _reportClusters.GetNumClustersRetained(); ++t) {
-                if  (_reportClusters.GetCluster(t).getReportingPValue(gParameters, gSimVars, t == 0) <= gParameters.getOlivieraPvalueCutoff())
-                    ++max_oliviera;
+                if  (_reportClusters.GetCluster(t).getReportingPValue(gParameters, gSimVars, t == 0) <= gParameters.getOliveiraPvalueCutoff())
+                    ++max_oliveira;
             }
 
             // initialize the collection of location counters
-            _oliviera_relevance.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
-            std::fill(_oliviera_relevance.begin(), _oliviera_relevance.end(), 0);
+            _oliveira_relevance.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
+            std::fill(_oliveira_relevance.begin(), _oliveira_relevance.end(), 0);
 
-            // skip if max_oliviera == 0
-            if (max_oliviera > 0) {
+            // TODO: What if there are not significant clusters in real data?
+
+            // skip if max_oliveira == 0
+            if (max_oliveira > 0) {
                 if (gParameters.getReportGiniOptimizedClusters()) {
-                    // calculate the gini index and add to collections for oliviera clusters
-                    for (size_t t=0; t < _oliviera_mlc_collections.size(); ++t) {
-                        addGiniClusters(*_oliviera_mlc_collections[t], _oliviera_report_Clusters[t], 1.0, max_oliviera);
+                    // calculate the gini index and add to collections for oliveira clusters
+                    for (size_t t=0; t < _oliveira_mlc_collections.size(); ++t) {
+                        addGiniClusters(*_oliveira_mlc_collections[t], _oliveira_report_Clusters[t], 1.0, max_oliveira);
                     }
                 }
 
+                // TODO -- fix later
+
                 boost::dynamic_bitset<> location_presence(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
-                for (size_t m=0; m < _oliviera_report_Clusters.size(); ++m) {
+                for (size_t m=0; m < _oliveira_report_Clusters.size(); ++m) {
                     // determine whether each location is present in this collection of clusters
-                    MostLikelyClustersContainer& mlc = _oliviera_report_Clusters[m];
+                    MostLikelyClustersContainer& mlc = _oliveira_report_Clusters[m];
                     location_presence.reset();
-                    for (tract_t c=0; c < mlc.GetNumClustersRetained(); ++c) {
-                    MostLikelyClustersContainer::Cluster_t& cluster = mlc.GetClusterRef(c);
+                    for (tract_t c=0; c < mlc.GetNumClustersRetained() && c < max_oliveira /* limit to same # of significant clusters in real data */; ++c) {
+                        MostLikelyClustersContainer::Cluster_t& cluster = mlc.GetClusterRef(c);
                         for (tract_t t=1; t <= cluster->GetNumTractsInCluster(); ++t) {
                             tract_t tTract = gpDataHub->GetNeighbor(cluster->GetEllipseOffset(), cluster->GetCentroidIndex(), t, cluster->GetCartesianRadius());
                             if (!gpDataHub->GetIsNullifiedLocation(tTract)) {
@@ -1593,7 +1597,7 @@ void AnalysisRunner::reportClusters() {
                     }
                     // update location counters
                     for (boost::dynamic_bitset<>::size_type b=location_presence.find_first(); b != boost::dynamic_bitset<>::npos; b=location_presence.find_next(b)) {
-                        ++_oliviera_relevance[b];
+                        ++_oliveira_relevance[b];
                     }
                 }
             }

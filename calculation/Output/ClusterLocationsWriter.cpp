@@ -38,7 +38,7 @@ const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD   = "CLU_TT_DI
 //const char * LocationInformationWriter::CLU_FUNC_ALPHA_IN_FIELD     = "IN_FUNC_A";
 //const char * LocationInformationWriter::CLU_FUNC_ALPHA_OUT_FIELD    = "OUT_FUNC_A";
 const char * LocationInformationWriter::GINI_CLUSTER_FIELD           = "GINI_CLUST";
-const char * LocationInformationWriter::OLIVIERA_F_FIELD             = "OLIVIERA_F";
+const char * LocationInformationWriter::OLIVEIRA_F_FIELD             = "OLIVEIRA_F";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -141,9 +141,9 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
         CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
-    if (gParameters.getCalculateOlivierasF()) {
-        printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets());
-        CreateField(vFieldDefinitions, OLIVIERA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+    if (gParameters.getCalculateOliveirasF()) {
+        printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets());
+        CreateField(vFieldDefinitions, OLIVEIRA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
     }
     CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
   }
@@ -192,8 +192,8 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
        if (theCluster.reportableRecurrenceInterval(gParameters, simVars))
            Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(DataHub, iClusterNumber, simVars).second;
 
-       if (gParameters.getCalculateOlivierasF() && location_relevance.size() > tTract) {
-           Record.GetFieldValue(OLIVIERA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[tTract]) / static_cast<double>(gParameters.getNumRequestedOlivieraSets());
+       if (gParameters.getCalculateOliveirasF() && location_relevance.size() > tTract) {
+           Record.GetFieldValue(OLIVEIRA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
        }
 
        //location information fields are only present for one dataset and not ordinal model

@@ -349,9 +349,9 @@ void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteBorderAnalysisSettings(IniFile& WriteFile) {
     std::string s;
     try {
-        WriteIniParameter(WriteFile, CALCULATE_OLIVIERA, GetParameterString(CALCULATE_OLIVIERA, s).c_str(), GetParameterComment(CALCULATE_OLIVIERA));
-        WriteIniParameter(WriteFile, NUM_OLIVIERA_SETS, GetParameterString(NUM_OLIVIERA_SETS, s).c_str(), GetParameterComment(NUM_OLIVIERA_SETS));
-        WriteIniParameter(WriteFile, OLIVIERA_CUTOFF, GetParameterString(OLIVIERA_CUTOFF, s).c_str(), GetParameterComment(OLIVIERA_CUTOFF));
+        WriteIniParameter(WriteFile, CALCULATE_OLIVEIRA, GetParameterString(CALCULATE_OLIVEIRA, s).c_str(), GetParameterComment(CALCULATE_OLIVEIRA));
+        WriteIniParameter(WriteFile, NUM_OLIVEIRA_SETS, GetParameterString(NUM_OLIVEIRA_SETS, s).c_str(), GetParameterComment(NUM_OLIVEIRA_SETS));
+        WriteIniParameter(WriteFile, OLIVEIRA_CUTOFF, GetParameterString(OLIVEIRA_CUTOFF, s).c_str(), GetParameterComment(OLIVEIRA_CUTOFF));
     } catch (prg_exception& x) {
         x.addTrace("WriteBorderAnalysisSettings()","IniParameterFileAccess");
         throw;

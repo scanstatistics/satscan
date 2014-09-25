@@ -24,9 +24,9 @@ DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : gDataH
     }
 }
 
-/* virtual method which builds Oliviera data sets. */
-const RealDataContainer_t & DataSetHandler::buildOlivieraDataSets() {
-    throw prg_error("buildOlivieraDataSets() is not implemented.", "DataSetHandler::buildOlivieraDataSets()");
+/* virtual method which builds Oliveira data sets. */
+const RealDataContainer_t & DataSetHandler::buildOliveiraDataSets() {
+    throw prg_error("buildOliveiraDataSets() is not implemented.", "DataSetHandler::buildOliveiraDataSets()");
 }
 
 /** Returns new data gateway. Caller is responsible for deleting object.

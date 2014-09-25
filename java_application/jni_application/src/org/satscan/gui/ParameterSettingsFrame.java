@@ -749,7 +749,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _resultsFileTextField);
         }
-        if (getAdvancedParameterInternalFrame()._calculate_olivieras_f.isEnabled() && getAdvancedParameterInternalFrame()._calculate_olivieras_f.isSelected()) {
+        if (getAdvancedParameterInternalFrame()._calculate_oliveiras_f.isEnabled() && getAdvancedParameterInternalFrame()._calculate_oliveiras_f.isSelected()) {
             if (!(_censusAreasReportedClustersAsciiCheckBox.isSelected() || _censusAreasReportedClustersDBaseCheckBox.isSelected() ||
                   _relativeRiskEstimatesAreaAsciiCheckBox.isSelected() || _relativeRiskEstimatesAreaDBaseCheckBox.isSelected()))
             throw new SettingsException("Oliviera's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n" +

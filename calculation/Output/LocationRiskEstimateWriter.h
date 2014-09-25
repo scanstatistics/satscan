@@ -21,7 +21,7 @@ class LocationRiskEstimateWriter : public AbstractDataFileWriter {
       //static const char       * FUNC_ALPHA_IN_FIELD;
       //static const char       * FUNC_ALPHA_OUT_FIELD;
       static const char       * WEIGHTED_MEAN_VALUE_FIELD;
-      static const char        * OLIVIERA_F_FIELD;
+      static const char       * OLIVEIRA_F_FIELD;
 
   protected:
       void                      DefineFields(const CSaTScanData& DataHub);

@@ -138,9 +138,9 @@ enum ParameterType
     ADJUST_WEEKLY_TRENDS,           /* adjust for weekly trends, nonparametric */
     MIN_TEMPORAL_CLUSTER,           /* minimum temporal cluster size */
     USER_DEFINED_TITLE,             /* user defined title */
-    CALCULATE_OLIVIERA,             /* whether to calculate Oliviera's F*/
-    NUM_OLIVIERA_SETS,              /* number of Oliviera sets to calculate */
-    OLIVIERA_CUTOFF                 /* max p-value for clusters used with Oliviera's F (numeric) */
+    CALCULATE_OLIVEIRA,             /* whether to calculate Oliveira's F*/
+    NUM_OLIVEIRA_SETS,              /* number of Oliveira sets to calculate */
+    OLIVEIRA_CUTOFF                 /* max p-value for clusters used with Oliveira's F (numeric) */
 };
 /** analysis and cluster types */
 enum AnalysisType

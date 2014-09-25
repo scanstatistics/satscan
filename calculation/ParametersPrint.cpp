@@ -175,10 +175,10 @@ void ParametersPrint::PrintBorderAnalysisParameters(FILE* fp) const {
     SettingContainer_t settings;
 
     if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() == PURELYSPATIAL) {
-        settings.push_back(std::make_pair("Report Oliviera's F", (gParameters.getCalculateOlivierasF() ? "Yes" : "No")));
-        if (gParameters.getCalculateOlivierasF()) {
+        settings.push_back(std::make_pair("Report Oliveira's F", (gParameters.getCalculateOliveirasF() ? "Yes" : "No")));
+        if (gParameters.getCalculateOliveirasF()) {
             std::string buffer;
-            settings.push_back(std::make_pair("Number of Oliviera Data Sets", printString(buffer, "%u", gParameters.getNumRequestedOlivieraSets())));
+            settings.push_back(std::make_pair("Number of Oliveira Data Sets", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
         }
         WriteSettingsContainer(settings, "Border Analysis", fp);
     }

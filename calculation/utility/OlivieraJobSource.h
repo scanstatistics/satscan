@@ -1,6 +1,6 @@
 //******************************************************************************
-#ifndef OlivieraJobSource_H
-#define OlivieraJobSource_H
+#ifndef OliveiraJobSource_H
+#define OliveiraJobSource_H
 //******************************************************************************
 
 #include <utility>
@@ -23,7 +23,7 @@
 #include "PrintQueue.h"
 #include "SSException.h"
 
-class OlivieraJobSource
+class OliveiraJobSource
 {
 public://types/enums
   typedef boost::shared_ptr<MLC_Collections_t> successful_result_type;
@@ -43,7 +43,7 @@ public://types/enums
   typedef std::pair<job_id_type, param_type>  job_info_type;
 
 private://types/enums
-  typedef void (OlivieraJobSource::*result_registration_fn_type)(job_id_type const &, param_type const &, result_type const &);
+  typedef void (OliveiraJobSource::*result_registration_fn_type)(job_id_type const &, param_type const &, result_type const &);
   typedef std::map<job_id_type,std::pair<param_type,result_type> >   overflow_jobs_container_type;
   typedef std::pair<job_id_type,std::pair<param_type,result_type> >  exception_type;
   typedef std::deque<exception_type>                                 exception_sequence_type;
@@ -77,7 +77,7 @@ private://functions
   static void               DynamicBitsetPopFrontN(boost::dynamic_bitset<> & operand, unsigned long N);
 
 public:
-  OlivieraJobSource(AnalysisRunner & rRunner, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection);
+  OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection);
 
   bool                      is_exhausted() const;
   void                      acquire(job_id_type & dst_job_id, param_type & dst_param);
@@ -86,9 +86,9 @@ public:
   unsigned int              GetSuccessfullyCompletedJobCount() const;
   unsigned int              GetUnregisteredJobCount() const;
   std::deque<unsigned int>  GetUnregisteredJobs() const;
-  bool                      AutoAbortConditionExists() const { return gfnRegisterResult == &OlivieraJobSource::RegisterResult_AutoAbortConditionExists; }
-  bool                      CancelConditionExists() const { return gfnRegisterResult == &OlivieraJobSource::RegisterResult_CancelConditionExists; }
-  bool                      ExceptionConditionExists() const { return gfnRegisterResult == &OlivieraJobSource::RegisterResult_ExceptionConditionExists; }
+  bool                      AutoAbortConditionExists() const { return gfnRegisterResult == &OliveiraJobSource::RegisterResult_AutoAbortConditionExists; }
+  bool                      CancelConditionExists() const { return gfnRegisterResult == &OliveiraJobSource::RegisterResult_CancelConditionExists; }
+  bool                      ExceptionConditionExists() const { return gfnRegisterResult == &OliveiraJobSource::RegisterResult_ExceptionConditionExists; }
   unsigned int              GetExceptionCount() const;
   exception_sequence_type   GetExceptions() const;
   void                      Assert_NoExceptionsCaught() const;

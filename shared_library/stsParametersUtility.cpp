@@ -635,12 +635,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetTitleName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setCalculateOlivierasF", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCalculateOlivierasF());
+  mid = _getMethodId_Checked(Env, clazz, "setCalculateOliveirasF", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCalculateOliveirasF());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setNumRequestedOlivieraSets", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumRequestedOlivieraSets());
+  mid = _getMethodId_Checked(Env, clazz, "setNumRequestedOliveiraSets", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumRequestedOliveiraSets());
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -1276,12 +1276,12 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetTitleName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getCalculateOlivierasF", "()Z");
-  Parameters.setCalculateOlivierasF(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getCalculateOliveirasF", "()Z");
+  Parameters.setCalculateOliveirasF(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getNumRequestedOlivieraSets", "()I");
-  Parameters.setNumRequestedOlivieraSets(Env.CallIntMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getNumRequestedOliveiraSets", "()I");
+  Parameters.setNumRequestedOliveiraSets(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;
