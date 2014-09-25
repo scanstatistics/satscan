@@ -163,12 +163,12 @@ IterativeScanMaxIterations=10
 IterativeScanMaxPValue=0.05
 
 [Border Analysis]
-;calculate Oliviera's F and report in Location Information file
-CalculateOliviera=n
-;number of data sets for Oliviera calculation (minimum=100, multiple of 100)
-NumOlivieraSets=1000
-;p-value cutoff for cluster's in Oliviera calculation (0.000-1.000)
-OlivieraPvalueCutoff=0.05
+;calculate oliveira's F and report in Location Information file
+Calculateoliveira=n
+;number of data sets for oliveira calculation (minimum=100, multiple of 100)
+NumoliveiraSets=1000
+;p-value cutoff for cluster's in oliveira calculation (0.000-1.000)
+oliveiraPvalueCutoff=0.05
 
 [Power Evaluation]
 ;perform power evaluation - Poisson only (y/n)
