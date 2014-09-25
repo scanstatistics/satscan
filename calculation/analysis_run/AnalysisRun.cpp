@@ -40,8 +40,8 @@
 #include "ClusterKML.h"
 #include "ChartGenerator.h"
 #include "PoissonRandomizer.h"
-#include "OlivieraJobSource.h"
-#include "OlivieraFunctor.h"
+#include "OliveiraJobSource.h"
+#include "OliveiraFunctor.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;

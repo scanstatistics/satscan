@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //******************************************************************************
-#include "OlivieraFunctor.h"
+#include "OliveiraFunctor.h"
 #include "Toolkit.h"
 #include "SSException.h"
                                   

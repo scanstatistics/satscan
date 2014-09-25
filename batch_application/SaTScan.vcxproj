@@ -244,8 +244,8 @@
     <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp" />
     <ClCompile Include="..\calculation\Output\GisUtils.cpp" />
-    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp" />
-    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp" />
+    <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp" />
+    <ClCompile Include="..\calculation\utility\OliveiraJobSource.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
@@ -553,8 +553,8 @@
     <ClInclude Include="..\calculation\utility\Ini.h" />
     <ClInclude Include="..\calculation\utility\JulianDates.h" />
     <ClInclude Include="..\calculation\utility\MultipleDimensionArrayHandler.h" />
-    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h" />
-    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h" />
+    <ClInclude Include="..\calculation\utility\OliveiraFunctor.h" />
+    <ClInclude Include="..\calculation\utility\OliveiraJobSource.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />
     <ClInclude Include="..\calculation\utility\RandomDistribution.h" />
     <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />

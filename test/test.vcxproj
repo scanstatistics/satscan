@@ -242,8 +242,8 @@
     <ClInclude Include="..\calculation\utility\Ini.h" />
     <ClInclude Include="..\calculation\utility\JulianDates.h" />
     <ClInclude Include="..\calculation\utility\MultipleDimensionArrayHandler.h" />
-    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h" />
-    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h" />
+    <ClInclude Include="..\calculation\utility\OliveiraFunctor.h" />
+    <ClInclude Include="..\calculation\utility\OliveiraJobSource.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />
     <ClInclude Include="..\calculation\utility\RandomDistribution.h" />
     <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />
@@ -439,8 +439,8 @@
     <ClCompile Include="..\calculation\utility\Ini.cpp" />
     <ClCompile Include="..\calculation\utility\JulianDates.cpp" />
     <ClCompile Include="..\calculation\utility\MultipleDimensionArrayHandler.cpp" />
-    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp" />
-    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp" />
+    <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp" />
+    <ClCompile Include="..\calculation\utility\OliveiraJobSource.cpp" />
     <ClCompile Include="..\calculation\utility\RandomDistribution.cpp" />
     <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
     <ClCompile Include="..\calculation\utility\ShapeFile.cpp" />
@@ -452,7 +452,7 @@
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
-    <ClCompile Include="integrationtest_oliviera.cpp" />
+    <ClCompile Include="integrationtest_oliveira.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
     <ClCompile Include="unittest_JulianDates.cpp" />

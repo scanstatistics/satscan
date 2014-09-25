@@ -5,7 +5,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 #include "AnalysisRun.h"
-#include "OlivieraJobSource.h"
+#include "OliveiraJobSource.h"
 #include "DataSetWriter.h"
 #include "AbstractBruteForceAnalysis.h"
 

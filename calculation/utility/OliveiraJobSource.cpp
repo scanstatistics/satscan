@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //******************************************************************************
-#include "OlivieraJobSource.h"
+#include "OliveiraJobSource.h"
 
 //constructor
 OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection)

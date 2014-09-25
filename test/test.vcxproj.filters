@@ -576,10 +576,10 @@
     <ClInclude Include="..\calculation\utility\MultipleDimensionArrayHandler.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\utility\OlivieraFunctor.h">
+    <ClInclude Include="..\calculation\utility\OliveiraFunctor.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\utility\OlivieraJobSource.h">
+    <ClInclude Include="..\calculation\utility\OliveiraJobSource.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\utility\ptr_vector.h">
@@ -830,10 +830,10 @@
     <ClCompile Include="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp">
       <Filter>Source Files\source\calculation\loglikelihood</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\utility\OlivieraFunctor.cpp">
+    <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp">
       <Filter>Source Files\source\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\utility\OlivieraJobSource.cpp">
+    <ClCompile Include="..\calculation\utility\OliveiraJobSource.cpp">
       <Filter>Source Files\source\calculation\utility</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp">
@@ -1217,7 +1217,7 @@
     <ClCompile Include="unittest_ParametersValidate.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
-    <ClCompile Include="integrationtest_oliviera.cpp">
+    <ClCompile Include="integrationtest_oliveira.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
   </ItemGroup>
