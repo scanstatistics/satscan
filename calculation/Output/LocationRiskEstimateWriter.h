@@ -3,6 +3,7 @@
 #define LocationRiskEstimateWriterH
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
+#include "LocationRelevance.h"
 
 class CSaTScanData;  /** forward class declaration */
 class CSVTTData;     /** forward class declaration */
@@ -21,20 +22,25 @@ class LocationRiskEstimateWriter : public AbstractDataFileWriter {
       //static const char       * FUNC_ALPHA_IN_FIELD;
       //static const char       * FUNC_ALPHA_OUT_FIELD;
       static const char       * WEIGHTED_MEAN_VALUE_FIELD;
-      static const char       * OLIVEIRA_F_FIELD;
+      static const char       * OLIVEIRA_F_MLC_FIELD;
+      static const char       * OLIVEIRA_F_HIERARCHICAL_FIELD;
+      static const char       * OLIVEIRA_F_GINI_OPTIMAL_FIELD;
+      static const char       * OLIVEIRA_F_GINI_MAXIMA_FIELD;
+      static const char       * OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD;
+      static const char       * OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD;
 
   protected:
       void                      DefineFields(const CSaTScanData& DataHub);
       std::string             & getLocationId(std::string& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const;
       void                      RecordRelativeRiskDataAsOrdinal(const CSaTScanData& DataHub);
-      void                      RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance);
+      void                      RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const LocationRelevance& location_relevance);
       void                      RecordRelativeRiskDataAsWeightedNormal(const CSaTScanData& DataHub);
 
   public:
     LocationRiskEstimateWriter(const CSaTScanData& DataHub);
     virtual ~LocationRiskEstimateWriter();
     
-      void                      Write(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance);
+      void                      Write(const CSaTScanData& DataHub, const LocationRelevance& location_relevance);
       void                      Write(const CSVTTData& DataHub);
 };
 //******************************************************************************

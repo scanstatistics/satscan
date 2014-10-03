@@ -319,7 +319,7 @@ void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter,
                                const CSaTScanData& Data,
                                unsigned int iClusterNumber,
                                const SimulationVariables& simVars,
-                               const Relevance_Container_t& location_relevance) const {
+                               const LocationRelevance& location_relevance) const {
   tract_t       t, tTract;
   int           i;
 

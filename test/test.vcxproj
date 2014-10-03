@@ -317,6 +317,7 @@
     <ClCompile Include="..\calculation\analysis\SVTTAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SVTTCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis_run\AnalysisRun.cpp" />
+    <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp" />
     <ClCompile Include="..\calculation\analysis_run\MostLikelyClustersContainer.cpp" />
     <ClCompile Include="..\calculation\cluster\AbstractClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\AbstractClusterDataFactory.cpp" />

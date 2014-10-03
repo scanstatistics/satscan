@@ -148,6 +148,7 @@
     <ClCompile Include="..\boost\boost_1_52_0\libs\regex\src\wide_posix_api.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\regex\src\winstances.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp" />

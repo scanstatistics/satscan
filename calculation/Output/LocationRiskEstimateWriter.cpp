@@ -9,19 +9,24 @@
 #include "ParametersPrint.h"
 #include "WeightedNormalRandomizer.h"
 
-const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
-const char * LocationRiskEstimateWriter::TREND_IN_FIELD                   = "IN_TREND";
-const char * LocationRiskEstimateWriter::TREND_OUT_FIELD                  = "OUT_TREND";
-const char * LocationRiskEstimateWriter::ALPHA_IN_FIELD                   = "IN_ITRCPT";
-const char * LocationRiskEstimateWriter::BETA1_IN_FIELD                   = "IN_LINEAR";
-const char * LocationRiskEstimateWriter::BETA2_IN_FIELD                   = "IN_QUAD";
-const char * LocationRiskEstimateWriter::ALPHA_OUT_FIELD                  = "OUT_ITRCPT";
-const char * LocationRiskEstimateWriter::BETA1_OUT_FIELD                  = "OUT_LINEAR";
-const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                  = "OUT_QUAD";
+const char * LocationRiskEstimateWriter::REL_RISK_EXT                                   = ".rr";
+const char * LocationRiskEstimateWriter::TREND_IN_FIELD                                 = "IN_TREND";
+const char * LocationRiskEstimateWriter::TREND_OUT_FIELD                                = "OUT_TREND";
+const char * LocationRiskEstimateWriter::ALPHA_IN_FIELD                                 = "IN_ITRCPT";
+const char * LocationRiskEstimateWriter::BETA1_IN_FIELD                                 = "IN_LINEAR";
+const char * LocationRiskEstimateWriter::BETA2_IN_FIELD                                 = "IN_QUAD";
+const char * LocationRiskEstimateWriter::ALPHA_OUT_FIELD                                = "OUT_ITRCPT";
+const char * LocationRiskEstimateWriter::BETA1_OUT_FIELD                                = "OUT_LINEAR";
+const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                                = "OUT_QUAD";
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_IN_FIELD              = "IN_FUNC_A";
 //const char * LocationRiskEstimateWriter::FUNC_ALPHA_OUT_FIELD             = "OUT_FUNC_A";
-const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD        = "W_MEAN";
-const char * LocationRiskEstimateWriter::OLIVEIRA_F_FIELD                 = "OLIVEIRA_F";
+const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD                      = "W_MEAN";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_MLC_FIELD                           = "F_MLC";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_FIELD                  = "F_HIERARCH";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_GINI_OPTIMAL_FIELD                  = "F_GINI_OPT";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_GINI_MAXIMA_FIELD                   = "F_GINI_MAX";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD     = "F_H_G_OPT";
+const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD      = "F_H_G_MAX";
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub)
@@ -88,7 +93,18 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
         if (gParameters.getCalculateOliveirasF()) {
             std::string buffer;
             printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets());
-            CreateField(vFieldDefinitions, OLIVEIRA_F_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()))
+                CreateField(vFieldDefinitions, OLIVEIRA_F_MLC_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            if (gParameters.getReportHierarchicalClusters())
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            if (gParameters.getReportGiniOptimizedClusters()) {
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            }
+            if (gParameters.getReportHierarchicalClusters() && gParameters.getReportGiniOptimizedClusters()) {
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+            }
         }
     } catch (prg_exception& x) {
         x.addTrace("DefineFields()","LocationRiskEstimateWriter");
@@ -111,7 +127,7 @@ std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_
 }
 
 /** writes relative risk data to record and appends to internal buffer of records */
-void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance) {
+void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       RecordRelativeRiskDataAsOrdinal(DataHub);
@@ -182,56 +198,66 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
 }
 
 /** Writes obvserved, expected, observed/expected and relative risk to record.*/
-void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const Relevance_Container_t& location_relevance) {
-  std::string           sBuffer;
-  RecordBuffer          Record(vFieldDefinitions);
-  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
+    std::string sBuffer;
+    RecordBuffer Record(vFieldDefinitions);
+    const DataSetHandler& Handler = DataHub.GetDataSetHandler();
 
-  try {
-    for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
-       count_t * pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
-       measure_t * pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
-       measure_t * pMeasureAux(0);
-       if (gParameters.GetProbabilityModelType() == NORMAL)
-         pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
-       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
-       for (tract_t t=0; t < tTotalLocations; ++t) {
-          Record.SetAllFieldsBlank(true);
-          Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
-          if (gParameters.getCalculateOliveirasF() && location_relevance.size() > t) {
-            Record.GetFieldValue(OLIVEIRA_F_FIELD).AsDouble() = static_cast<double>(location_relevance[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
-          }
-          if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
-            Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-          if (gParameters.GetNumDataSets() > 1)
-            Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
-          if (gParameters.GetProbabilityModelType() == NORMAL) {
-            if (pCases[t]) {
-              Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
-              Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(GetUnbiasedVariance(pCases[t], pMeasure[t], pMeasureAux[t]));
-            }  
-          } else {
-            Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
-            double dExpected, dDenominator, dNumerator;
-            dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
-            Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
-            if (dExpected) {
-              Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
-              dDenominator = Handler.GetDataSet(i).getTotalCases() - dExpected;
-              dNumerator = Handler.GetDataSet(i).getTotalCases() - pCases[t];
-              if (dDenominator && dNumerator/dDenominator)
-                Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+    try {
+        for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
+            count_t * pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
+            measure_t * pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
+            measure_t * pMeasureAux(0);
+            if (gParameters.GetProbabilityModelType() == NORMAL)
+                pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
+            tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+            for (tract_t t=0; t < tTotalLocations; ++t) {
+                Record.SetAllFieldsBlank(true);
+                Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
+                if (gParameters.getCalculateOliveirasF()) {
+                    if (location_relevance._most_likely_only.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_MLC_FIELD).AsDouble() = static_cast<double>(location_relevance._most_likely_only[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    if (location_relevance._hierarchical.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    if (location_relevance._gini_optimal.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._gini_optimal[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    if (location_relevance._gini_maxima.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_GINI_MAXIMA_FIELD).AsDouble() = static_cast<double>(location_relevance._gini_maxima[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    if (location_relevance._hierarchical_gini_optimal.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_optimal[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    if (location_relevance._hierarchical_gini_maxima.size() > t)
+                        Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_maxima[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                }
+                if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+                    Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+                if (gParameters.GetNumDataSets() > 1)
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+                if (gParameters.GetProbabilityModelType() == NORMAL) {
+                    if (pCases[t]) {
+                        Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
+                        Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(GetUnbiasedVariance(pCases[t], pMeasure[t], pMeasureAux[t]));
+                    }
+                } else {
+                    Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
+                    double dExpected, dDenominator, dNumerator;
+                    dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
+                    Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
+                    if (dExpected) {
+                        Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
+                        dDenominator = Handler.GetDataSet(i).getTotalCases() - dExpected;
+                        dNumerator = Handler.GetDataSet(i).getTotalCases() - pCases[t];
+                        if (dDenominator && dNumerator/dDenominator)
+                            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+                    }
+                }
+                if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
+                if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
             }
-          }
-          if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
-          if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-       }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
-    throw;
-  }
 }
 
 /** writes relative risk data to record and appends to internal buffer of records */

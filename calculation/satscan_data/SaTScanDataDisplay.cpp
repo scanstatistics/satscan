@@ -9,6 +9,7 @@
 #include "SSException.h"
 #include "WeightedNormalRandomizer.h"
 #include "HomogeneousPoissonDataSetHandler.h"
+#include "LocationRelevance.h"
 
 /** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
@@ -394,7 +395,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
 // formats the information necessary in the relative risk output file and prints to the specified format
 // pre: none
 // post: prints the relative risk data to the output file
-void CSaTScanData::DisplayRelativeRisksForEachTract(const Relevance_Container_t& location_relevance) const {
+void CSaTScanData::DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const {
   try {
     LocationRiskEstimateWriter(*this).Write(*this, location_relevance);
   }

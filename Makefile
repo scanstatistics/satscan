@@ -81,6 +81,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(ANALYSIS)/PurelySpatialBruteForceAnalysis.cpp \
                $(ANALYSIS)_run/AnalysisRun.cpp \
                $(ANALYSIS)_run/MostLikelyClustersContainer.cpp \
+               $(ANALYSIS)_run/LocationRelevance.cpp \
                $(CLUSTER)/Cluster.cpp \
                $(CLUSTER)/IncidentRate.cpp \
                $(CLUSTER)/PurelySpatialCluster.cpp \

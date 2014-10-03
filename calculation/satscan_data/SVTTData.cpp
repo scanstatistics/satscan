@@ -98,7 +98,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) const {
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
-void CSVTTData::DisplayRelativeRisksForEachTract(const Relevance_Container_t& location_relevance) const {
+void CSVTTData::DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const {
   try {
     LocationRiskEstimateWriter(*this).Write(*this);
   }

@@ -1220,5 +1220,8 @@
     <ClCompile Include="integrationtest_oliveira.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp">
+      <Filter>Source Files\source\calculation\analysis_run</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -177,17 +177,34 @@ double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataH
     return -2.0 * totalLLR + log(totalPopulation) * numClusters;
 }
 
-double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, unsigned int limit) const {
+/* Returns significant clusters for p-value cutoff. */
+MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, ClusterList_t & clusters) const {
+    const CParameters & params(DataHub.GetParameters());
+    clusters.clear();
+    for (ClusterList_t::const_iterator itr=gvTopClusterList.begin(); itr != gvTopClusterList.end(); ++itr) {
+        double p_value = (*itr)->getReportingPValue(params, simVars, itr == gvTopClusterList.begin());
+        if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || macro_less_than(p_value, p_cutoff, DBL_CMP_TOLERANCE))
+            clusters.push_back((*itr));
+    }
+    return clusters;
+}
+
+/* Calculates the GINI coefficient for the current collection of clusters. */
+double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff, boost::optional<unsigned int> atmost) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
     unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();
     //create a copy of top cluster pointers
     ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
     ClusterList_t sortClusters;
-    for (size_t t=0; t < gvTopClusterList.size(); ++t) {
-        double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
-        if ((params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || 
-            macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE)) || (limit != 0 && t < limit))
+    size_t tMax = atmost ? std::min(*atmost, static_cast<unsigned int>(gvTopClusterList.size())) : gvTopClusterList.size();
+    for (size_t t=0; t < tMax; ++t) {
+        // optionally restricting clusters by p-value
+        if (p_value_cutoff) {
+            double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
+            if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE && macro_less_than(p_value, *p_value_cutoff, DBL_CMP_TOLERANCE))
+                sortClusters.push_back(gvTopClusterList[t]);
+        } else
             sortClusters.push_back(gvTopClusterList[t]);
     }
     if (numDataSets > 1 && params.GetMultipleDataSetPurposeType() != ADJUSTMENT)

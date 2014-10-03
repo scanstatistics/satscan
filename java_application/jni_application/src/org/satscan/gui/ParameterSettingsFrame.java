@@ -738,9 +738,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
-    /**
-     * Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid.
-     */
+    /* Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid. */
     private void validateOutputParams() {
         if (_resultsFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _resultsFileTextField);
@@ -748,12 +746,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (!FileAccess.ValidateFileAccess(_resultsFileTextField.getText(), true)) {
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _resultsFileTextField);
-        }
-        if (getAdvancedParameterInternalFrame()._calculate_oliveiras_f.isEnabled() && getAdvancedParameterInternalFrame()._calculate_oliveiras_f.isSelected()) {
-            if (!(_censusAreasReportedClustersAsciiCheckBox.isSelected() || _censusAreasReportedClustersDBaseCheckBox.isSelected() ||
-                  _relativeRiskEstimatesAreaAsciiCheckBox.isSelected() || _relativeRiskEstimatesAreaDBaseCheckBox.isSelected()))
-            throw new SettingsException("Oliviera's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n" +
-                                        "One of these optional files must be requested to report results of Oliviiera's F.", (Component) _censusAreasReportedClustersAsciiCheckBox);
         }
     }
 
@@ -764,9 +756,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         checkTimeAggregationLength();
     }
 
-    /**
-     *
-     */
+    /* Validate parameters settings and their inter-relationships. */
     public boolean validateParameters() {
         try {
             validateInputFiles();

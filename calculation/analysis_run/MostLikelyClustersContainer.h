@@ -7,6 +7,7 @@
 #include "SSException.h"
 #include "boost/shared_ptr.hpp"
 #include <boost/dynamic_bitset.hpp>
+#include <boost/optional.hpp>
 
 class stsClusterCentroidGeometry
 {
@@ -157,7 +158,8 @@ class MostLikelyClustersContainer {
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
     Cluster_t                 & GetClusterRef(tract_t tClusterIndex);
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
-    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, unsigned int limit=0) const;
+    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff = boost::optional<double>(), boost::optional<unsigned int> atmost = boost::optional<unsigned int>()) const;
+    ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, ClusterList_t & clusters) const;
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);

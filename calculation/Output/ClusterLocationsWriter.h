@@ -6,6 +6,7 @@
 #include "WeightedNormalRandomizer.h"
 #include "SimulationVariables.h"
 #include "ShapeFileWriter.h"
+#include "LocationRelevance.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -44,7 +45,12 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
       //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
       static const char        * GINI_CLUSTER_FIELD;
-      static const char        * OLIVEIRA_F_FIELD;
+      static const char        * OLIVEIRA_F_MLC_FIELD;
+      static const char        * OLIVEIRA_F_HIERARCHICAL_FIELD;
+      static const char        * OLIVEIRA_F_GINI_OPTIMAL_FIELD;
+      static const char        * OLIVEIRA_F_GINI_MAXIMA_FIELD;
+      static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD;
+      static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD;
 
   protected:
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
@@ -61,7 +67,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
                                       int iClusterNumber, 
                                       tract_t tTract, 
                                       const SimulationVariables& simVars,
-                                      const Relevance_Container_t& location_relevance);
+                                      const LocationRelevance& location_relevance);
       void                      WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************

@@ -1272,7 +1272,7 @@ void CCluster::Write(LocationInformationWriter& LocationWriter,
                      const CSaTScanData& DataHub,
                      unsigned int iReportedCluster,
                      const SimulationVariables& simVars,
-                     const Relevance_Container_t& location_relevance) const {
+                     const LocationRelevance& location_relevance) const {
   tract_t       tTract;
   int           i;
 

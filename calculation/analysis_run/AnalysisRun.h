@@ -12,6 +12,8 @@
 #include "SimulationVariables.h"
 #include "ClusterSupplement.h"
 #include "ClusterLocationsWriter.h"
+#include "LocationRelevance.h"
+#include <boost/optional.hpp>
 
 class ClusterRankHelper {
     private:
@@ -86,9 +88,9 @@ class AnalysisRunner {
 
     MLC_Collections_Container_t         _oliveira_mlc_collections;
     MLC_Collections_t                   _oliveira_report_Clusters;
-    Relevance_Container_t               _oliveira_relevance;
+    std::auto_ptr<LocationRelevance>    _relevance_tracker;
 
-    void                                addGiniClusters(const MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff, unsigned int limit=0);
+    void                                addGiniClusters(MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff);
     void                                Execute();
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
@@ -99,6 +101,8 @@ class AnalysisRunner {
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
     std::pair<double, double>           GetMemoryApproxiation() const;
+    MostLikelyClustersContainer       * getOptimalGiniContainerByPValue(MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
+    MostLikelyClustersContainer       * getOptimalGiniContainerByLimit(MLC_Collections_t& mlc_collections, std::vector<unsigned int> atmost) const;
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                ExecuteCentricEvaluation();

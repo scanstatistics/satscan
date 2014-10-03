@@ -66,13 +66,12 @@ BOOST_FIXTURE_TEST_CASE( test_oliveira_additional_output_files, new_mexico_fixtu
     // set oliveira parameter to true -- still should validate but validation should be reset of off since
     // we're not requesting either "Location Information" and "Risk Estimates for Each Location" files -- feature disabled otherwise
     _parameters.setCalculateOliveirasF(true);
-    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
-    BOOST_CHECK_EQUAL( _parameters.getCalculateOliveirasF(), false );
-    // request "Risk Estimates for Each Location" files
-    _parameters.SetOutputRelativeRisksAscii(true);
-    _parameters.setCalculateOliveirasF(true);
+    // ensure assumption that we're not already requesting neither "Location Information" nor "Risk Estimates for Each Location" files
+    BOOST_REQUIRE(_parameters.GetOutputAreaSpecificFiles() == false && _parameters.GetOutputRelativeRisksFiles() == false);
     BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
     BOOST_CHECK_EQUAL( _parameters.getCalculateOliveirasF(), true );
+    // validation process should have turned on "Risk Estimates for Each Location" for ascii file
+    BOOST_CHECK_EQUAL( _parameters.GetOutputRelativeRisksAscii(), true );
 }
 
 /* Tests parameters validation of oliveira -- test number of monte carlo replications and oliveira data sets. */

@@ -112,7 +112,5 @@ typedef boost::tuple<int,int,int,int>  IntervalRange_t;
 enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
-/* location relevance container typedef */
-typedef std::vector<unsigned int> Relevance_Container_t;
 //*****************************************************************************
 #endif

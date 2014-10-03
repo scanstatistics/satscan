@@ -663,6 +663,9 @@
     <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp">
+      <Filter>Source Files\calculation\analysis_run</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">

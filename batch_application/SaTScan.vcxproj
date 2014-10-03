@@ -242,6 +242,7 @@
     <ClCompile Include="..\boost\boost_1_52_0\libs\regex\src\winstances.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp" />
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp" />
     <ClCompile Include="..\calculation\Output\GisUtils.cpp" />
     <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp" />
@@ -405,6 +406,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp" />
+    <ClInclude Include="..\calculation\analysis_run\LocationRelevance.h" />
     <ClInclude Include="..\calculation\cluster\ClusterSupplement.h" />
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\IniParameterSpecification.h" />

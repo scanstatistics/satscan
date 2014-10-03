@@ -149,7 +149,7 @@ class CCluster {
                                         const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster,
                                         const SimulationVariables& simVars,
-                                        const Relevance_Container_t& location_relevance) const;
+                                        const LocationRelevance& location_relevance) const;
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.

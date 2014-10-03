@@ -17,6 +17,7 @@
 #include "AdjustmentHandler.h"
 #include "SaTScanDataRead.h"
 #include "ClusterLocationsWriter.h"
+#include "LocationRelevance.h"
 
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
@@ -104,7 +105,7 @@ class CSaTScanData {
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
     virtual void                                DisplayNeighbors(FILE* pFile) const;
-    virtual void                                DisplayRelativeRisksForEachTract(const Relevance_Container_t& location_relevance) const;
+    virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}

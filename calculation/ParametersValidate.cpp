@@ -101,14 +101,6 @@ bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirect
     bool bValid=true;
 
     if (gParameters.getCalculateOliveirasF()) {
-        // Oliveira's F only reported to 'Location Information' and 'Risk Estimates for Each Location' files.
-        if (!(gParameters.GetOutputAreaSpecificFiles() || gParameters.GetOutputRelativeRisksFiles())) {
-            const_cast<CParameters&>(gParameters).setCalculateOliveirasF(false);
-            printDirection.Printf("%s:\nOliveira's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n"
-                                  "The Oliveira's F calculation has been disabled since neither optional file has been requested.", BasePrint::P_NOTICE, "Note");
-            return true;
-        }
-
         if (!(gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetProbabilityModelType() == POISSON)) {
             bValid = false;
             printDirection.Printf("%s:\nOliveira's F is only implemented for purely spatial analyses using the Poisson model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -129,6 +121,14 @@ bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirect
         if (gParameters.GetExecutionType() == CENTRICALLY) {
             bValid = false;
             printDirection.Printf("%s:\nOliveira's F is not implemented with the alternative memory allocation algorithm.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+
+        // If oliveira is requested, one of the 'Risk Estimates for Each Location' files must be requested -- this is the preferred format for reporting this information.
+        if (!gParameters.GetOutputRelativeRisksFiles()) {
+            const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(true);
+            printDirection.Printf("%s:\nOliveira's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n"
+                                  "The option has been enabled for the 'Risk Estimates for Each Location' file.", BasePrint::P_NOTICE, "Note");
+            return true;
         }
     }
     return bValid;

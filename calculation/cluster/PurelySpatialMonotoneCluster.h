@@ -53,7 +53,7 @@ class CPSMonotoneCluster : public CCluster {
                                       const CSaTScanData& Data,
                                       unsigned int iClusterNumber,
                                       const SimulationVariables& simVars,
-                                      const Relevance_Container_t& location_relevance) const;
+                                      const LocationRelevance& location_relevance) const;
 };
 //*****************************************************************************
 #endif
