@@ -20,12 +20,12 @@
     <jdkPreference>preferJre</jdkPreference>
   </jre>
   <versionInfo>
-    <fileVersion>9.3.0.0</fileVersion>
-    <txtFileVersion>Version 9.3.0</txtFileVersion>
+    <fileVersion>9.3.1.0</fileVersion>
+    <txtFileVersion>Version 9.3.1</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>9.3.0.0</productVersion>
-    <txtProductVersion>Version 9.3.0</txtProductVersion>
+    <productVersion>9.3.1.0</productVersion>
+    <txtProductVersion>Version 9.3.1</txtProductVersion>
     <productName>SaTScan</productName>
     <companyName>SaTscan.org</companyName>
     <internalName>install-9_3</internalName>
