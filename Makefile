@@ -33,6 +33,7 @@ SHAPELIB       := $(SATSCAN)/shapelib/shapelib_1.2.10
 ZLIB           := $(SATSCAN)/zlib/zlib-1.2.7
 ZLIB_MINIZIP   := $(SATSCAN)/zlib/zlib-1.2.7/contrib/minizip
 #JNI           :=
+INFOPLIST_FILE :=
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(SHAPELIB) -I$(ZLIB) -I$(ZLIB_MINIZIP)\
@@ -53,8 +54,8 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-dynamic -lxbase -lnewmat -lshape -lz -lstdc++ -lm
-M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
+M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-dynamic -lxbase -lnewmat -lshape -lz -lstdc++ -lm
+M_DLFLAGS     := -shared -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(ANALYSIS)/Analysis.cpp \
                $(ANALYSIS)/MeasureList.cpp \
