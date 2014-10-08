@@ -55,7 +55,6 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
   try {
     macroRunTimeManagerInit();
     Setup();
-    Execute();
   } catch (prg_exception& x) {
     x.addTrace("constructor()","AnalysisRunner");
     throw;
@@ -1518,7 +1517,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
          for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
             if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != AbstractTimeTrend::CONVERGED)
-              return false;   
+              return false;
       }
 
       //does the minimum number of cases remain in all data sets?

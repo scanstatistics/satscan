@@ -291,33 +291,35 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
 
 /** Returns population as defined in CCluster object. */
 double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
-  tract_t               T, t;
-  int                   c, ncats, nPops;
-  std::vector<double>   vAlpha;
-  const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getPopulationData();
-  double                nPopulation = 0.0;
+    std::vector<double> vAlpha;
+    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getPopulationData();
+    double nPopulation = 0.0;
 
-  try {
-    ncats = Population.GetNumCovariateCategories();
-    nPops = Population.GetNumPopulationDates();
-    Population.CalculateAlpha(vAlpha, DataHub.GetStudyPeriodStartDate(), DataHub.GetStudyPeriodEndDate());
-    for (T = 1; T <= Cluster.GetNumTractsInCluster(); T++) {
-       t = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), T, Cluster.GetCartesianRadius());
-       if ((size_t)t < DataHub.GetTInfo()->getLocations().size())
-         for (c = 0; c < ncats; c++) Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
-       else {
-         std::vector<tract_t> AtomicIndexes;
-         DataHub.GetTInfo()->getMetaLocations().getLocations().at((size_t)t - DataHub.GetTInfo()->getLocations().size())->getAtomicIndexes(AtomicIndexes);
-         for (size_t a=0; a < AtomicIndexes.size(); ++a)
-           for (c = 0; c < ncats; c++) Population.GetAlphaAdjustedPopulation(nPopulation, AtomicIndexes[a], c, 0, nPops, vAlpha);
-       }
+    try {
+        int ncats = Population.GetNumCovariateCategories();
+        int nPops = static_cast<int>(Population.GetNumPopulationDates());
+        Population.CalculateAlpha(vAlpha, DataHub.GetStudyPeriodStartDate(), DataHub.GetStudyPeriodEndDate());
+        for (tract_t tIdx=1; tIdx <= Cluster.GetNumTractsInCluster(); ++tIdx) {
+            tract_t t = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), tIdx, Cluster.GetCartesianRadius());
+            if ((size_t)t < DataHub.GetTInfo()->getLocations().size()) {
+                if (!DataHub.GetIsNullifiedLocation(t))
+                    for (int c=0; c < ncats; c++) 
+                        Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
+            } else {
+                std::vector<tract_t> AtomicIndexes;
+                DataHub.GetTInfo()->getMetaLocations().getLocations().at((size_t)t - DataHub.GetTInfo()->getLocations().size())->getAtomicIndexes(AtomicIndexes);
+                for (size_t a=0; a < AtomicIndexes.size(); ++a) {
+                    if (!DataHub.GetIsNullifiedLocation(AtomicIndexes[a]))
+                        for (int c=0; c < ncats; c++) 
+                            Population.GetAlphaAdjustedPopulation(nPopulation, AtomicIndexes[a], c, 0, nPops, vAlpha);
+                }
+            }
+        }
+    } catch (prg_exception & x) {
+        x.addTrace("GetPopulation()", "CPoissonModel");
+        throw;
     }
-  }
-  catch (prg_exception & x) {
-    x.addTrace("GetPopulation()", "CPoissonModel");
-    throw;
-  }
-  return nPopulation;
+    return nPopulation;
 }
 
 /** Adjusts passed non-cumulative measure in a stratified spatial manner.

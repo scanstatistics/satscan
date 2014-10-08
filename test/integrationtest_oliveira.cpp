@@ -30,7 +30,7 @@ struct new_mexico_analysis_fixture : new_mexico_fixture {
         time_t startTime;
         time(&startTime);
         AppToolkit::ToolKitCreate(boost::unit_test::framework::master_test_suite().argv[0]);
-        AnalysisRunner(_parameters, startTime, _print);
+        AnalysisRunner(_parameters, startTime, _print).Execute();
         AppToolkit::ToolKitDestroy();
     }
 

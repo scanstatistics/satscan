@@ -1223,5 +1223,8 @@
     <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp">
       <Filter>Source Files\source\calculation\analysis_run</Filter>
     </ClCompile>
+    <ClCompile Include="squish66406.cpp">
+      <Filter>Source Files\regression_tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis
-    AnalysisRunner(Parameters, RunTime, Console);
+    AnalysisRunner(Parameters, RunTime, Console).Execute();
     //report completion
     Console.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",  BasePrint::P_STDOUT, Parameters.GetOutputFileName().c_str());
     __SaTScanExit();

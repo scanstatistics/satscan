@@ -65,7 +65,7 @@ class AnalysisRunner {
   friend class stsMCSimJobSource;
   friend class OliveiraJobSource;
 
-  private:
+  protected:
     const CParameters                 & gParameters;
     BasePrint                         & gPrintDirection;
     std::auto_ptr<CSaTScanData>         gpDataHub;
@@ -91,7 +91,6 @@ class AnalysisRunner {
     std::auto_ptr<LocationRelevance>    _relevance_tracker;
 
     void                                addGiniClusters(MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff);
-    void                                Execute();
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
     void                                ExecutePowerEvaluations();
@@ -117,7 +116,7 @@ class AnalysisRunner {
     void                                PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
     void                                PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
     void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print);
-    bool                                RepeatAnalysis();
+    virtual bool                        RepeatAnalysis();
     void                                reportClusters();
     void                                Setup();
     void                                UpdateSignificantRatiosList(double dRatio);
@@ -125,9 +124,11 @@ class AnalysisRunner {
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);
+    virtual ~AnalysisRunner() {}
 
     virtual bool                        CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const;
 
+    void                                Execute();
     //const MLC_Collections_t           & GetClusterContainer() const {return gTopClustersContainers;}
     const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
