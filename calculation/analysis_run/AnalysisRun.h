@@ -97,7 +97,7 @@ class AnalysisRunner {
     void                                ExecuteSuccessively();
     void                                ExecutePowerEvaluations();
     void                                CalculateMostLikelyClusters();
-    void                                CalculateOliveiraClusters();
+    void                                CalculateOliveirasF();
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
@@ -117,7 +117,6 @@ class AnalysisRunner {
     void                                PrintTopClusters(const MostLikelyClustersContainer& mlc);
     void                                PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
     void                                PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
-    void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print);
     virtual bool                        RepeatAnalysis();
     void                                reportClusters();
     void                                Setup();
@@ -144,6 +143,7 @@ class AnalysisRunner {
     double                              GetSimRatio05() const;
     const SimulationVariables         & GetSimVariables() const {return gSimVars;}
     const time_t                      * GetStartTime() const {return &gStartTime;}
+    void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) const;
 };
 
 

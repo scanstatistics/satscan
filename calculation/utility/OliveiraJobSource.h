@@ -26,7 +26,7 @@
 class OliveiraJobSource
 {
 public://types/enums
-  typedef boost::shared_ptr<MLC_Collections_t> successful_result_type;
+  typedef std::pair< boost::shared_ptr<MostLikelyClustersContainer>, boost::shared_ptr<MLC_Collections_t> > successful_result_type;
 
   struct job_result {
     enum                        exception_type {unknown=0, std, prg, memory};
@@ -63,6 +63,14 @@ private://data members
   std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   AnalysisRunner                          & grRunner;
   boost::posix_time::ptime StartTime;
+
+  boost::dynamic_bitset<>                   _presence_hierarchical;
+  boost::dynamic_bitset<>                   _presence_gini_optimal;
+  boost::dynamic_bitset<>                   _presence_gini_maxima;
+  size_t                                    _numSignificantMLC; // significant clusters for neither hierarchical nor gini
+  size_t                                    _numSignificantHierarchical; // significant clusters for hierarchical
+  std::vector<unsigned int>                 _optimalSignificantCluster; // significant clusters for optimal gini
+  std::vector<unsigned int>                 _maximaSignificantCluster; // significant clusters for each gini maxima
 
 private://functions
   void                      RegisterResult_NoAutoAbort(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult);

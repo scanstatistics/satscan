@@ -16,19 +16,21 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
     for (size_t t=0; t < _oliveira_sets.size(); ++t)
         _randomization_container->at(t)->RandomizeData(*_oliveira_sets.at(t), *_simulation_data_container->at(t), param);
     // update meta location structures as necessary
-    if (_data_hub.GetParameters().UseMetaLocationsFile() || _data_hub.GetParameters().UsingMultipleCoordinatesMetaLocations())
+    if (_runner.GetDataHub().GetParameters().UseMetaLocationsFile() || _runner.GetDataHub().GetParameters().UsingMultipleCoordinatesMetaLocations())
         for (SimulationDataContainer_t::iterator itr=_simulation_data_container->begin(); itr != _simulation_data_container->end(); ++itr)
-            (*itr)->setCaseData_MetaLocations(_data_hub.GetTInfo()->getMetaManagerProxy());
+            (*itr)->setCaseData_MetaLocations(_runner.GetDataHub().GetTInfo()->getMetaManagerProxy());
     macroRunTimeStopSerial();
 
     //calculate most likely clusters
     boost::shared_ptr<MLC_Collections_t> topClustersContainer(new MLC_Collections_t());
-    for (std::vector<double>::const_iterator itr=_data_hub.GetParameters().getExecuteSpatialWindowStops().begin(); itr != _data_hub.GetParameters().getExecuteSpatialWindowStops().end(); ++itr)
+    for (std::vector<double>::const_iterator itr=_runner.GetDataHub().GetParameters().getExecuteSpatialWindowStops().begin(); itr != _runner.GetDataHub().GetParameters().getExecuteSpatialWindowStops().end(); ++itr)
         topClustersContainer->push_back(MostLikelyClustersContainer(*itr));
 
     _analysis->FindTopClusters(*_data_gateway, *topClustersContainer);
-    temp_result.dSuccessfulResult = topClustersContainer;
+    boost::shared_ptr<MostLikelyClustersContainer> reportClusters(new MostLikelyClustersContainer(0));
+    _runner.rankClusterCollections(*topClustersContainer, *reportClusters, 0, PrintNull());
 
+    temp_result.dSuccessfulResult = std::make_pair(reportClusters, topClustersContainer);
     temp_result.bUnExceptional = true;
   }
   catch (memory_exception & e)

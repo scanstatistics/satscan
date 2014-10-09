@@ -173,9 +173,9 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
 }
 
 /* Finds the collections of clusters about requested number of data sets for Oliveira's F calculation. */
-void AnalysisRunner::CalculateOliveiraClusters() {
+void AnalysisRunner::CalculateOliveirasF() {
     {
-        gPrintDirection.Printf("Finding the most likely clusters for Oliveira's F\n", BasePrint::P_STDOUT);
+        gPrintDirection.Printf("Calculating Oliveira's F ...\n", BasePrint::P_STDOUT);
         // create oliveira data sets -- the cases from real data set are used as the measure in these sets
         const RealDataContainer_t& oliveira_datasets = gpDataHub->GetDataSetHandler().buildOliveiraDataSets();
         _oliveira_mlc_collections.clear();
@@ -191,7 +191,7 @@ void AnalysisRunner::CalculateOliveiraClusters() {
         unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.getNumRequestedOliveiraSets());
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
             try {
-                OliveiraFunctor oliveiraf(oliveira_datasets, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
+                OliveiraFunctor oliveiraf(oliveira_datasets, *this, boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
                 tg.create_thread(subcontractor<contractor_type,OliveiraFunctor>(theContractor, oliveiraf));
             } catch (std::bad_alloc &b) {             
                 if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -217,19 +217,6 @@ void AnalysisRunner::CalculateOliveiraClusters() {
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
             throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
-    }
-
-    // now rank each cluster collection and define reporting/ranking structures
-    if (!gPrintDirection.GetIsCanceled()) {
-        gPrintDirection.Printf("Ranking clusters for Oliveira's F\n", BasePrint::P_STDOUT);
-        _oliveira_report_Clusters.clear();
-        _oliveira_report_Clusters.resize(_oliveira_mlc_collections.size(), MostLikelyClustersContainer(0));
-        PrintNull noPrint;
-        boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-        for (size_t t=0; t < _oliveira_mlc_collections.size(); ++t) {
-            rankClusterCollections(*_oliveira_mlc_collections[t], _oliveira_report_Clusters[t], 0, noPrint);
-            if (t == 9) ReportTimeEstimate(StartTime, _oliveira_mlc_collections.size(), t, gPrintDirection);
-        }
     }
 }
 
@@ -1452,7 +1439,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 }
 
 /** Performs ranking on each collection of clusters. */
-void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) {
+void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) const {
     mlc.Empty();
     if (ranker) ranker->clear();
 
@@ -1591,73 +1578,10 @@ void AnalysisRunner::Setup() {
 void AnalysisRunner::reportClusters() {
     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
     try {
-        if (gParameters.getCalculateOliveirasF()) {
-            CalculateOliveiraClusters();
-
-            // define location relevance tracker and bitsets to track presence in a particular data set
-            _relevance_tracker.reset(new LocationRelevance(*gpDataHub));
-            boost::dynamic_bitset<> presence_hierarchical, presence_gini_optimal, presence_gini_maxima;
-
-            MostLikelyClustersContainer::ClusterList_t significantClusters;
-            // _reportClusters contains either most likely cluster or hierarchical clusters, so calculate the number of significant clusters at oliveira cutoff
-            _reportClusters.getSignificantClusters(*gpDataHub, gSimVars, gParameters.getOliveiraPvalueCutoff(), significantClusters);
-            size_t numSignificantMLC = numSignificantMLC = std::min(static_cast<size_t>(1), significantClusters.size()); // significant clusters for neither hierarchical nor gini
-            size_t numSignificantHierarchical = significantClusters.size(); // significant clusters for hierarchical
-            std::vector<unsigned int> optimalSignificantCluster(gParameters.getExecuteSpatialWindowStops().size(), 0); // significant clusters for optimal gini
-            std::vector<unsigned int> maximaSignificantCluster; // significant clusters for each gini maxima
-
-            // initialize variables based on which parameter settings are requested
-            if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()) || gParameters.getReportHierarchicalClusters())
-                presence_hierarchical.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
-            if (gParameters.getReportGiniOptimizedClusters()) { // gini clusters
-                presence_gini_optimal.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
-                presence_gini_maxima.resize(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
-                // gini clusters are derived from gTopClustersContainers -- calculate the optimal gini collection
-                const MostLikelyClustersContainer * optimal = getOptimalGiniContainerByPValue(gTopClustersContainers, gParameters.getGiniIndexPValueCutoff());
-                if (optimal) {
-                    MostLikelyClustersContainer::ClusterList_t clusterList;
-                    // calculate the number of significant clusters in optimal gini collection at oliveira cutoff
-                    optimal->getSignificantClusters(*gpDataHub, gSimVars, gParameters.getOliveiraPvalueCutoff(), clusterList);
-                    // when calculating the gini coefficient, use the same limit for all maxima
-                    std::fill(optimalSignificantCluster.begin(), optimalSignificantCluster.end(), clusterList.size());
-                }
-                for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-                    MostLikelyClustersContainer::ClusterList_t clusterList;
-                    // calculate the number of significant clusters for this maxima collection at oliveira cutoff
-                    itrMLC->getSignificantClusters(*gpDataHub, gSimVars, gParameters.getOliveiraPvalueCutoff(), clusterList);
-                    // when calculating the gini coefficient at this maxima, use same # of significant clusters at real data
-                    maximaSignificantCluster.push_back(clusterList.size());
-                }
-            }
-
-            // iterate through data sets, testings each cluster collection and updating relevance counters
-            for (unsigned int setIdx=0; setIdx < gParameters.getNumRequestedOliveiraSets(); ++setIdx) {
-                if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters())) // most likely cluster
-                    _relevance_tracker->update(*gpDataHub, _oliveira_report_Clusters[setIdx], numSignificantMLC, presence_hierarchical, _relevance_tracker->_most_likely_only);
-                if (gParameters.getReportHierarchicalClusters()) // hierarachical clusters
-                    _relevance_tracker->update(*gpDataHub, _oliveira_report_Clusters[setIdx], numSignificantHierarchical, presence_hierarchical, _relevance_tracker->_hierarchical);
-                if (gParameters.getReportGiniOptimizedClusters()) { // gini clusters
-                    // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant in optimal collection for real data
-                    OptimalGiniByLimit_t optimalOliveira = getOptimalGiniContainerByLimit(*_oliveira_mlc_collections[setIdx], optimalSignificantCluster);
-                    if (optimalOliveira.first) _relevance_tracker->update(*gpDataHub, *(optimalOliveira.first), optimalOliveira.second, presence_gini_optimal, _relevance_tracker->_gini_optimal);
-                    // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant at corresponding maxima of real data
-                    optimalOliveira = getOptimalGiniContainerByLimit(*_oliveira_mlc_collections[setIdx], maximaSignificantCluster);
-                    if (optimalOliveira.first) _relevance_tracker->update(*gpDataHub, *(optimalOliveira.first), optimalOliveira.second, presence_gini_maxima, _relevance_tracker->_gini_maxima);
-
-                }
-                if (gParameters.getReportHierarchicalClusters() && gParameters.getReportGiniOptimizedClusters()) { // both hierarachical and gini clusters
-                    boost::dynamic_bitset<> location_presence(gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTracts());
-                    location_presence = presence_hierarchical | presence_gini_optimal;
-                    _relevance_tracker->updateRelevance(location_presence, _relevance_tracker->_hierarchical_gini_optimal);
-                    location_presence.reset();
-                    location_presence = presence_hierarchical | presence_gini_maxima;
-                    _relevance_tracker->updateRelevance(location_presence, _relevance_tracker->_hierarchical_gini_maxima);
-                }
-            }
-        }
+        if (gParameters.getCalculateOliveirasF())
+            CalculateOliveirasF();
 
         gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
-
         // since the simulations have been completed, we can calculate the gini index and add to collections
         if (gParameters.getReportGiniOptimizedClusters())
             addGiniClusters(gTopClustersContainers, _reportClusters, gParameters.getGiniIndexPValueCutoff());

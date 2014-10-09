@@ -17,7 +17,42 @@ OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time
  , guiJobsReported(0)
  , StartTime(::GetCurrentTime_HighResolution())
 {
-   gfnRegisterResult = &OliveiraJobSource::RegisterResult_NoAutoAbort;
+    gfnRegisterResult = &OliveiraJobSource::RegisterResult_NoAutoAbort;
+
+    // define location relevance tracker and bitsets to track presence in a particular data set
+    grRunner._relevance_tracker.reset(new LocationRelevance(grRunner.GetDataHub()));
+
+    // determine the number of significant clusters present in cluster collections
+    MostLikelyClustersContainer::ClusterList_t significantClusters;
+    // _reportClusters contains either most likely cluster or hierarchical clusters, so calculate the number of significant clusters at oliveira cutoff
+    grRunner._reportClusters.getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), significantClusters);
+    _numSignificantMLC = std::min(static_cast<size_t>(1), significantClusters.size()); // significant clusters for neither hierarchical nor gini
+    _numSignificantHierarchical = significantClusters.size(); // significant clusters for hierarchical
+    _optimalSignificantCluster.resize(grRunner.gParameters.getExecuteSpatialWindowStops().size(), 0); // significant clusters for optimal gini
+
+    // initialize variables based on which parameter settings are requested
+    if (!(grRunner.gParameters.getReportHierarchicalClusters() || grRunner.gParameters.getReportGiniOptimizedClusters()) || grRunner.gParameters.getReportHierarchicalClusters())
+        _presence_hierarchical.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
+    if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
+        _presence_gini_optimal.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
+        _presence_gini_maxima.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
+        // gini clusters are derived from gTopClustersContainers -- calculate the optimal gini collection
+        const MostLikelyClustersContainer * optimal = grRunner.getOptimalGiniContainerByPValue(grRunner.gTopClustersContainers, grRunner.gParameters.getGiniIndexPValueCutoff());
+        if (optimal) {
+            MostLikelyClustersContainer::ClusterList_t clusterList;
+            // calculate the number of significant clusters in optimal gini collection at oliveira cutoff
+            optimal->getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), clusterList);
+            // when calculating the gini coefficient, use the same limit for all maxima
+            std::fill(_optimalSignificantCluster.begin(), _optimalSignificantCluster.end(), clusterList.size());
+        }
+        for (MLC_Collections_t::const_iterator itrMLC=grRunner.gTopClustersContainers.begin(); itrMLC != grRunner.gTopClustersContainers.end(); ++itrMLC) {
+            MostLikelyClustersContainer::ClusterList_t clusterList;
+            // calculate the number of significant clusters for this maxima collection at oliveira cutoff
+            itrMLC->getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), clusterList);
+            // when calculating the gini coefficient at this maxima, use same # of significant clusters at real data
+            _maximaSignificantCluster.push_back(clusterList.size());
+        }
+    }
 }
 
 
@@ -288,16 +323,31 @@ void OliveiraJobSource::ReleaseAutoAbortCheckResources()
   gmapOverflowResults.clear();
 }
 
-void OliveiraJobSource::WriteResultToStructures(successful_result_type const & rResult)
-{
-  try
-  {
-    // add cluster collection to master collection
-    grRunner._oliveira_mlc_collections.push_back(rResult);
-  }
-  catch (prg_exception & e)
-  {
-    e.addTrace("WriteResultToStructures()", "OliveiraJobSource");
-    throw;
-  }
+void OliveiraJobSource::WriteResultToStructures(successful_result_type const & rResult) {
+    try {
+        LocationRelevance& relevance(*grRunner._relevance_tracker);
+        if (!(grRunner.gParameters.getReportHierarchicalClusters() || grRunner.gParameters.getReportGiniOptimizedClusters())) // most likely cluster
+            relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantMLC, _presence_hierarchical, relevance._most_likely_only);
+        if (grRunner.gParameters.getReportHierarchicalClusters()) // hierarachical clusters
+            relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantHierarchical, _presence_hierarchical, relevance._hierarchical);
+        if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
+            // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant in optimal collection for real data
+            AnalysisRunner::OptimalGiniByLimit_t optimalOliveira = grRunner.getOptimalGiniContainerByLimit(*rResult.second, _optimalSignificantCluster);
+            if (optimalOliveira.first) relevance.update(grRunner.GetDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_optimal, relevance._gini_optimal);
+            // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant at corresponding maxima of real data
+            optimalOliveira = grRunner.getOptimalGiniContainerByLimit(*rResult.second, _maximaSignificantCluster);
+            if (optimalOliveira.first) relevance.update(grRunner.GetDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_maxima, relevance._gini_maxima);
+        }
+        if (grRunner.gParameters.getReportHierarchicalClusters() && grRunner.gParameters.getReportGiniOptimizedClusters()) { // both hierarachical and gini clusters
+            boost::dynamic_bitset<> location_presence(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
+            location_presence = _presence_hierarchical | _presence_gini_optimal;
+            relevance.updateRelevance(location_presence, relevance._hierarchical_gini_optimal);
+            location_presence.reset();
+            location_presence = _presence_hierarchical | _presence_gini_maxima;
+            relevance.updateRelevance(location_presence, relevance._hierarchical_gini_maxima);
+        }
+    } catch (prg_exception & e) {
+        e.addTrace("WriteResultToStructures()", "OliveiraJobSource");
+        throw;
+    }
 }
