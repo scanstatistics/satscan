@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( test_oliveira_risk_estimates_output ) {
     itr = std::find(headers.begin(), headers.end(), std::string(LocationRiskEstimateWriter::OLIVEIRA_F_GINI_MAXIMA_FIELD));
     if (itr == headers.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(headers.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.9700, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira, 0.8630, 0.001 );
 
     itr = std::find(headers.begin(), headers.end(), std::string(LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD));
     if (itr == headers.end()) BOOST_FAIL( "Oliveira'F column not found" );
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( test_oliveira_risk_estimates_output ) {
     itr = std::find(headers.begin(), headers.end(), std::string(LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD));
     if (itr == headers.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(headers.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.9700, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira, 0.8630, 0.001 );
 
     stream.close();
 }
@@ -210,22 +210,22 @@ BOOST_AUTO_TEST_CASE( test_oliveira_location_information_output ) {
     itr = std::find(header.begin(), header.end(), std::string(LocationInformationWriter::OLIVEIRA_F_GINI_OPTIMAL_FIELD));
     if (itr == header.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(header.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.7610, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira, 0.7220, 0.001 );
 
     itr = std::find(header.begin(), header.end(), std::string(LocationInformationWriter::OLIVEIRA_F_GINI_MAXIMA_FIELD));
     if (itr == header.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(header.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.7790, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira, 0.7220, 0.001 );
 
     itr = std::find(header.begin(), header.end(), std::string(LocationInformationWriter::OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD));
     if (itr == header.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(header.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.7610, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira,0.7220, 0.001 );
 
     itr = std::find(header.begin(), header.end(), std::string(LocationInformationWriter::OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD));
     if (itr == header.end()) BOOST_FAIL( "Oliveira'F column not found" );
     BOOST_CHECK( string_to_type<double>(data.at(std::distance(header.begin(), itr)).c_str(), oliveira) );
-    BOOST_REQUIRE_CLOSE( oliveira, 0.7790, 0.001 );
+    BOOST_REQUIRE_CLOSE( oliveira, 0.7220, 0.001 );
 
     stream.close();
 }

@@ -517,6 +517,7 @@ bool CParameters::GetPermitsCentricExecution(bool excludePValue) const {
  if (!excludePValue && GetPValueReportingType() == TERMINATION_PVALUE && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) return false;
  if (UseLocationNeighborsFile()) return false;
  if (UsingMultipleCoordinatesMetaLocations()) return false;
+ if (getCalculateOliveirasF()) return false;
  return true;
 }
 

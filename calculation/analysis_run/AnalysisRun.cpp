@@ -503,8 +503,6 @@ void AnalysisRunner::ExecuteSuccessively() {
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
       macroRunTimeStopSerial();
-      if (gParameters.getCalculateOliveirasF())
-        CalculateOliveiraClusters();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled()) return;
       gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
@@ -1593,9 +1591,9 @@ void AnalysisRunner::Setup() {
 void AnalysisRunner::reportClusters() {
     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
     try {
-        gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
-
         if (gParameters.getCalculateOliveirasF()) {
+            CalculateOliveiraClusters();
+
             // define location relevance tracker and bitsets to track presence in a particular data set
             _relevance_tracker.reset(new LocationRelevance(*gpDataHub));
             boost::dynamic_bitset<> presence_hierarchical, presence_gini_optimal, presence_gini_maxima;
@@ -1657,6 +1655,8 @@ void AnalysisRunner::reportClusters() {
                 }
             }
         }
+
+        gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
 
         // since the simulations have been completed, we can calculate the gini index and add to collections
         if (gParameters.getReportGiniOptimizedClusters())
