@@ -82,28 +82,23 @@ class AnalysisRunner {
     ClusterRankHelper                   _clusterRanker;
     ExecutionType                       geExecutingType;
     SimulationVariables                 gSimVars;
-
-    typedef std::vector<boost::shared_ptr<MLC_Collections_t> > MLC_Collections_Container_t;
-    typedef std::vector<ClusterRankHelper> ClusterRankHelper_Container_t;
-
-    MLC_Collections_Container_t         _oliveira_mlc_collections;
-    MLC_Collections_t                   _oliveira_report_Clusters;
     std::auto_ptr<LocationRelevance>    _relevance_tracker;
 
-    typedef std::pair<MostLikelyClustersContainer*,unsigned int> OptimalGiniByLimit_t;
+    typedef std::pair<const MostLikelyClustersContainer*,unsigned int> OptimalGiniByLimit_t;
 
     void                                addGiniClusters(MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff);
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
     void                                ExecutePowerEvaluations();
     void                                CalculateMostLikelyClusters();
-    void                                CalculateOliveirasF();
+    void                                calculateOliveirasF();
+    void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
     std::pair<double, double>           GetMemoryApproxiation() const;
-    MostLikelyClustersContainer       * getOptimalGiniContainerByPValue(MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
-    OptimalGiniByLimit_t                getOptimalGiniContainerByLimit(MLC_Collections_t& mlc_collections, std::vector<unsigned int> atmost) const;
+    const MostLikelyClustersContainer * getOptimalGiniContainerByPValue(const MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
+    OptimalGiniByLimit_t                getOptimalGiniContainerByLimit(const MLC_Collections_t& mlc_collections, const std::vector<unsigned int>& atmost) const;
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                ExecuteCentricEvaluation();
@@ -121,7 +116,6 @@ class AnalysisRunner {
     void                                reportClusters();
     void                                Setup();
     void                                UpdateSignificantRatiosList(double dRatio);
-    void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);

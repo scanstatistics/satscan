@@ -63,11 +63,11 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
 
 /* Calculates the optimal cluster collection, limiting GINI coefficient by passed cutoff value. When no optimal collection is found,
    returns the collection with the largest maxima and have any clusters. Otherwise returns null. */
-MostLikelyClustersContainer * AnalysisRunner::getOptimalGiniContainerByPValue(MLC_Collections_t& mlc_collections, double p_value_cutoff) const {
+const MostLikelyClustersContainer * AnalysisRunner::getOptimalGiniContainerByPValue(const MLC_Collections_t& mlc_collections, double p_value_cutoff) const {
     // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
-    MostLikelyClustersContainer* maximizedCollection =  &(mlc_collections.front());
+    const MostLikelyClustersContainer* maximizedCollection =  &(mlc_collections.front());
     double maximizedGINI = mlc_collections.front().getGiniCoefficient(*gpDataHub, gSimVars, p_value_cutoff);
-    for (MLC_Collections_t::iterator itrMLC=mlc_collections.begin() + 1; itrMLC != mlc_collections.end(); ++itrMLC) {
+    for (MLC_Collections_t::const_iterator itrMLC=mlc_collections.begin() + 1; itrMLC != mlc_collections.end(); ++itrMLC) {
         double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, p_value_cutoff);
         if (maximizedGINI < thisGini) {
             maximizedCollection = &(*itrMLC);
@@ -81,7 +81,7 @@ MostLikelyClustersContainer * AnalysisRunner::getOptimalGiniContainerByPValue(ML
     else { //if (_reportClusters.GetNumClustersRetained() == 0) {
         /* When reporting only Gini coefficients (optimal only) when no significant gini collection found,
            then report cluster collection from largest maxima with clusters. */
-        MLC_Collections_t::reverse_iterator rev(mlc_collections.end()), rev_end(mlc_collections.begin());
+        MLC_Collections_t::const_reverse_iterator rev(mlc_collections.end()), rev_end(mlc_collections.begin());
         for (; rev != rev_end; rev++) {
             if (rev->GetNumClustersRetained()) {
                 return &(*rev);
@@ -92,16 +92,14 @@ MostLikelyClustersContainer * AnalysisRunner::getOptimalGiniContainerByPValue(ML
 }
 
 /* Returns optimal gini cluster collection -- limiting the number of clusters used in gini coefficient calculation by passed collection vector -- not p-value. */
-AnalysisRunner::OptimalGiniByLimit_t AnalysisRunner::getOptimalGiniContainerByLimit(MLC_Collections_t& mlc_collections, std::vector<unsigned int> atmost) const {
-    // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
-
+AnalysisRunner::OptimalGiniByLimit_t AnalysisRunner::getOptimalGiniContainerByLimit(const MLC_Collections_t& mlc_collections, const std::vector<unsigned int>& atmost) const {
     assert(atmost.size() == mlc_collections.size());
-
     OptimalGiniByLimit_t maximized(&(mlc_collections.front()), atmost.front());
     //MostLikelyClustersContainer* maximizedCollection =  &(mlc_collections.front());
     double maximizedGINI = mlc_collections.front().getGiniCoefficient(*gpDataHub, gSimVars, boost::optional<double>(), atmost.front());
-    MLC_Collections_t::iterator itrMLC=mlc_collections.begin() + 1;
-    std::vector<unsigned int>::iterator itrMost=atmost.begin() + 1;
+    MLC_Collections_t::const_iterator itrMLC=mlc_collections.begin() + 1;
+    std::vector<unsigned int>::const_iterator itrMost=atmost.begin() + 1;
+    // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
     for (; itrMLC != mlc_collections.end(); ++itrMLC, ++itrMost) {
         double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, boost::optional<double>(), *itrMost);
         if (maximizedGINI < thisGini) {
@@ -116,8 +114,8 @@ AnalysisRunner::OptimalGiniByLimit_t AnalysisRunner::getOptimalGiniContainerByLi
     else { //if (_reportClusters.GetNumClustersRetained() == 0) {
         /* When reporting only Gini coefficients (optimal only) when no significant gini collection found,
            then report cluster collection from largest maxima with clusters. */
-        MLC_Collections_t::reverse_iterator rev(mlc_collections.end()), rev_end(mlc_collections.begin());
-        std::vector<unsigned int>::reverse_iterator itrMost(atmost.end());
+        MLC_Collections_t::const_reverse_iterator rev(mlc_collections.end()), rev_end(mlc_collections.begin());
+        std::vector<unsigned int>::const_reverse_iterator itrMost(atmost.end());
         for (; rev != rev_end; rev++, ++itrMost) {
             if (rev->GetNumClustersRetained()) {
                 return std::make_pair(&(*rev), *itrMost);
@@ -173,12 +171,11 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
 }
 
 /* Finds the collections of clusters about requested number of data sets for Oliveira's F calculation. */
-void AnalysisRunner::CalculateOliveirasF() {
+void AnalysisRunner::calculateOliveirasF() {
     {
         gPrintDirection.Printf("Calculating Oliveira's F ...\n", BasePrint::P_STDOUT);
         // create oliveira data sets -- the cases from real data set are used as the measure in these sets
         const RealDataContainer_t& oliveira_datasets = gpDataHub->GetDataSetHandler().buildOliveiraDataSets();
-        _oliveira_mlc_collections.clear();
 
         PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
         OliveiraJobSource jobSource(*this, ::GetCurrentTime_HighResolution(), lclPrintDirection);
@@ -1579,7 +1576,7 @@ void AnalysisRunner::reportClusters() {
     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
     try {
         if (gParameters.getCalculateOliveirasF())
-            CalculateOliveirasF();
+            calculateOliveirasF();
 
         gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
         // since the simulations have been completed, we can calculate the gini index and add to collections
