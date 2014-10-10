@@ -128,7 +128,7 @@ class AnalysisRunner {
     const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
     bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios.get() != 0;}
-    CAnalysis                         * GetNewAnalysisObject() const;
+    CAnalysis                         * GetNewAnalysisObject(BasePrint& print) const;
     AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
                                                                     const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}

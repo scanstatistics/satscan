@@ -151,7 +151,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
         std::auto_ptr<AbstractDataSetGateway> pDataSetGateway(gpDataHub->GetDataSetHandler().GetNewDataGatewayObject());
         gpDataHub->GetDataSetHandler().GetDataGateway(*pDataSetGateway);
         //get analysis object
-        std::auto_ptr<CAnalysis> pAnalysis(GetNewAnalysisObject());
+        std::auto_ptr<CAnalysis> pAnalysis(GetNewAnalysisObject(gPrintDirection));
         //allocate objects used in 'FindTopClusters()' process
         pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
         //calculate most likely clusters
@@ -181,6 +181,7 @@ void AnalysisRunner::calculateOliveirasF() {
         OliveiraJobSource jobSource(*this, ::GetCurrentTime_HighResolution(), lclPrintDirection);
         typedef contractor<OliveiraJobSource> contractor_type;
         contractor_type theContractor(jobSource);
+        PrintNull nullPrint;
 
         //run threads:
         boost::thread_group tg;
@@ -188,7 +189,7 @@ void AnalysisRunner::calculateOliveirasF() {
         unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.getNumRequestedOliveiraSets());
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
             try {
-                OliveiraFunctor oliveiraf(oliveira_datasets, *this, boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()));
+                OliveiraFunctor oliveiraf(oliveira_datasets, *this, boost::shared_ptr<CAnalysis>(GetNewAnalysisObject(nullPrint)));
                 tg.create_thread(subcontractor<contractor_type,OliveiraFunctor>(theContractor, oliveiraf));
             } catch (std::bad_alloc &b) {             
                 if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -698,33 +699,33 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
 }
 
 /** returns new CAnalysis object */
-CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
+CAnalysis * AnalysisRunner::GetNewAnalysisObject(BasePrint& print) const {
   try {
     switch (gParameters.GetAnalysisType()) {
       case PURELYSPATIAL :
           if (gParameters.GetRiskType() == STANDARDRISK) {
               if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)
-                return new CPurelySpatialBruteForceAnalysis(gParameters, *gpDataHub, gPrintDirection);
+                return new CPurelySpatialBruteForceAnalysis(gParameters, *gpDataHub, print);
               else
-                return new CPurelySpatialAnalysis(gParameters, *gpDataHub, gPrintDirection);
+                return new CPurelySpatialAnalysis(gParameters, *gpDataHub, print);
           }
           else
-            return new CPSMonotoneAnalysis(gParameters, *gpDataHub, gPrintDirection);
+            return new CPSMonotoneAnalysis(gParameters, *gpDataHub, print);
       case PURELYTEMPORAL :
       case PROSPECTIVEPURELYTEMPORAL :
-          return new CPurelyTemporalAnalysis(gParameters, *gpDataHub, gPrintDirection);
+          return new CPurelyTemporalAnalysis(gParameters, *gpDataHub, print);
       case SPACETIME :
       case PROSPECTIVESPACETIME :
           if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
-            return new C_ST_PS_PT_Analysis(gParameters, *gpDataHub, gPrintDirection);
+            return new C_ST_PS_PT_Analysis(gParameters, *gpDataHub, print);
           else if (gParameters.GetIncludePurelySpatialClusters())
-            return new C_ST_PS_Analysis(gParameters, *gpDataHub, gPrintDirection);
+            return new C_ST_PS_Analysis(gParameters, *gpDataHub, print);
           else if (gParameters.GetIncludePurelyTemporalClusters())
-            return new C_ST_PT_Analysis(gParameters, *gpDataHub, gPrintDirection);
+            return new C_ST_PT_Analysis(gParameters, *gpDataHub, print);
           else
-            return new CSpaceTimeAnalysis(gParameters, *gpDataHub, gPrintDirection);
+            return new CSpaceTimeAnalysis(gParameters, *gpDataHub, print);
       case SPATIALVARTEMPTREND :
-          return new CSpatialVarTempTrendAnalysis(gParameters, *gpDataHub, gPrintDirection);
+          return new CSpatialVarTempTrendAnalysis(gParameters, *gpDataHub, print);
       default :
         throw prg_error("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
@@ -994,13 +995,15 @@ void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContai
       stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica, isPowerStep);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
+      PrintNull nullPrint;
+
       //run threads:
       boost::thread_group tg;
       boost::mutex thread_mutex;
       unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), num_relica);
       for (unsigned u=0; u < ulParallelProcessCount; ++u) {
          try {
-            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u==0);
+            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject(nullPrint)), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u==0);
             tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
          } catch (std::bad_alloc &b) {             
              if (u == 0) throw; // if this is the first thread, re-throw exception
