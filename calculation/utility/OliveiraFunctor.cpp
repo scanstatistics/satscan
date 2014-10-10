@@ -28,7 +28,8 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
 
     _analysis->FindTopClusters(*_data_gateway, *topClustersContainer);
     boost::shared_ptr<MostLikelyClustersContainer> reportClusters(new MostLikelyClustersContainer(0));
-    _runner.rankClusterCollections(*topClustersContainer, *reportClusters, 0, PrintNull());
+    PrintNull nullPrint;
+    _runner.rankClusterCollections(*topClustersContainer, *reportClusters, 0, nullPrint);
 
     temp_result.dSuccessfulResult = std::make_pair(reportClusters, topClustersContainer);
     temp_result.bUnExceptional = true;
