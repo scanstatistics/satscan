@@ -454,6 +454,7 @@
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="integrationtest_oliveira.cpp" />
+    <ClCompile Include="integrationtest_points.cpp" />
     <ClCompile Include="squish66406.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />

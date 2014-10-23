@@ -1226,5 +1226,8 @@
     <ClCompile Include="squish66406.cpp">
       <Filter>Source Files\regression_tests</Filter>
     </ClCompile>
+    <ClCompile Include="integrationtest_points.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
