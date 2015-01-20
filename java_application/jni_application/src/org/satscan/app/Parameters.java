@@ -9,7 +9,7 @@ public class Parameters implements Cloneable {
 
     /** analysis and cluster types */
     public enum AnalysisType                  {PURELYSPATIAL, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
-                                               SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
+                                               SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, SEASONALTEMPORAL};
     /** cluster types */
     public enum ClusterType                   {PURELYSPATIALCLUSTER, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
                                                SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER,

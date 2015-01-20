@@ -53,7 +53,7 @@ void CSVTTData::DisplayCounts(FILE* pFile,
 
   fprintf(pFile, "Counts                         Counts - Not Accumulated\n\n");
 
-  for (int i = 0; i < m_nTimeIntervals; i++)
+  for (int i = 0; i < GetNumTimeIntervals(); i++)
     for (int j = 0; j < m_nTracts; j++)
     {
       fprintf(pFile, "%s [%i][%i] = %6li     ", szVarName, i,j,pCounts[i][j]);
@@ -61,7 +61,7 @@ void CSVTTData::DisplayCounts(FILE* pFile,
     }
 
   fprintf(pFile, "\nCounts Accumulated by Time Interval\n\n");
-  for (int i=0; i<m_nTimeIntervals; i++)
+  for (int i=0; i < GetNumTimeIntervals(); i++)
     fprintf(pFile, "%s [%i] = %6li\n", szVarNameTI, i, pCountsTI[i]);
   fprintf(pFile, "\n");
   fflush(pFile);
@@ -80,7 +80,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) const {
      fprintf(pFile, "Data Set %u:\n", k);
      ppMeasure = gDataSets->GetDataSet(k).getMeasureData().GetArray();
      ppMeasureNC = gDataSets->GetDataSet(k).getMeasureData_NC().GetArray();
-     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+     for (i=0; i < (unsigned int)GetNumTimeIntervals(); ++i)
         for (j=0; j < (unsigned int)m_nTracts; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
            fprintf(pFile, "ppMeasure_NC [%i][%i] = %12.5f\n", i, j, ppMeasureNC[i][j]);
@@ -90,7 +90,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) const {
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
   for (k=0; k < gDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Set %u:\n", k);
-     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+     for (i=0; i < (unsigned int)GetNumTimeIntervals(); ++i)
        fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gDataSets->GetDataSet(k).getMeasureData_PT()[i]);
      fprintf(pFile, "\n");
   }
@@ -131,7 +131,7 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
        //calculate time trend for entire randomized data set
        SimDataContainer[t]->getTimeTrend().CalculateAndSet(SimDataContainer[t]->getCaseData_PT_NC(),
                                                            gDataSets->GetDataSet(t).getMeasureData_PT_NC(),
-                                                           m_nTimeIntervals,
+                                                           GetNumTimeIntervals(),
                                                            gParameters.GetTimeTrendConvergence());
       if (SimDataContainer[t]->getTimeTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
         throw prg_error("Randomized data set time trend does not converge.\n", "RandomizeData()");
@@ -154,7 +154,7 @@ void CSVTTData::ReadDataFromFiles() {
     for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
       //calculate time trend for dataset data set
       (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
-                                             m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
+                                             GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
        switch ((*itr)->getTimeTrend().GetStatus()) {
           case AbstractTimeTrend::UNDEFINED         :
             if (gParameters.getTimeTrendType() == QUADRATIC) {
@@ -203,7 +203,7 @@ void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
   for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
      //calculate time trend for dataset data set
     (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
-                                           m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
+                                           GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
     if ((*itr)->getTimeTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
     throw prg_error("The time trend does not converge after removing cluster data.\n", "RemoveClusterSignificance()");
   }

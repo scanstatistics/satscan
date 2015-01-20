@@ -104,6 +104,7 @@ void stsRunHistoryFile::GetAnalysisTypeString(std::string& sTempValue, AnalysisT
     case PROSPECTIVESPACETIME      : sTempValue = "Prospective Space Time"; break;
     case SPATIALVARTEMPTREND       : sTempValue = "Spatial Variation/Temporal Trend"; break;
     case PROSPECTIVEPURELYTEMPORAL : sTempValue = "Prospective Purely Temporal"; break;
+    case SEASONALTEMPORAL          : sTempValue = "Seasonal Temporal"; break;
     default : throw prg_error("Invalid analysis type in the run history file.", "stsRunHistoryFile");
   }
 }

@@ -1044,8 +1044,7 @@ void PopulationData::SetPopulationDates(PopulationDateContainer_t& PopulationDat
          bEndFound = true;
      }
   }
-  //Calculate number of population dates retained from original list and total
-  //number of population dates.                                                                                                                   
+  //Calculate number of population dates retained from original list and total number of population dates.
   iTotalPopulationDates = iRetainedDates = iLastIndexedDateIndex - iDateIndexOffset + 1;
   gbEndAsPopDt = !bEndFound && (iLastIndexedDateIndex == PopulationDates.size() - 1);
   if (gbStartAsPopDt)
@@ -1060,7 +1059,7 @@ void PopulationData::SetPopulationDates(PopulationDateContainer_t& PopulationDat
   for (n=0; n < iRetainedDates; ++n)
      gvPopulationDates.push_back(PopulationDates[n + iDateIndexOffset].first);
   if (gbEndAsPopDt)
-    gvPopulationDates.push_back(EndDate + 1);                                         
+    gvPopulationDates.push_back(EndDate + 1);
 }
 
 /** Finds the date of the smallest PopDate > Date. If none exist return -1. */

@@ -32,20 +32,43 @@ class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
     virtual void randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet);
 };
 
+class CSaTScanData; /** forward class declaration */
+
 /** Poisson randomizer for null hypothesis. Optimized for purely temporal analyses. */
-class PoissonPurelyTemporalNullHypothesisRandomizer : public PoissonRandomizer {
-  protected:
-     void  randomize(const RealDataSet& RealSet, const measure_t * pPTMeasure, DataSet& SimSet);
+class AbstractPoissonPurelyTemporalNullHypothesisRandomizer : public PoissonRandomizer {
+    protected:
+        void  randomize_data(count_t * pSimCases, const measure_t * pMeasure, unsigned int num_intervals, count_t totalcases, measure_t totalmeasure);
 
-  public:
-    PoissonPurelyTemporalNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
-       : PoissonRandomizer(Parameters, lInitialSeed) {}
-    virtual ~PoissonPurelyTemporalNullHypothesisRandomizer() {}
+    public:
+        AbstractPoissonPurelyTemporalNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        virtual ~AbstractPoissonPurelyTemporalNullHypothesisRandomizer() {}
 
-    virtual PoissonPurelyTemporalNullHypothesisRandomizer * Clone() const {return new PoissonPurelyTemporalNullHypothesisRandomizer(*this);}
+        virtual void RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
+};
 
-    virtual void RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
-    virtual void randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet);
+/** Poisson randomizer for null hypothesis. Optimized for purely temporal analyses. */
+class PoissonPurelyTemporalNullHypothesisRandomizer : public AbstractPoissonPurelyTemporalNullHypothesisRandomizer {
+    public:
+        PoissonPurelyTemporalNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        virtual ~PoissonPurelyTemporalNullHypothesisRandomizer() {}
+
+        virtual PoissonPurelyTemporalNullHypothesisRandomizer * Clone() const {return new PoissonPurelyTemporalNullHypothesisRandomizer(*this);}
+
+        virtual void randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet);
+};
+
+/** Poisson randomizer for null hypothesis. Optimized for purely temporal analyses and closed loop analysis performed during power estimation replications. */
+class ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer : public AbstractPoissonPurelyTemporalNullHypothesisRandomizer {
+    protected:
+        const CSaTScanData & _data_hub;
+
+    public:
+        ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer(const CSaTScanData& datahub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        virtual ~ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer() {}
+
+        virtual ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer * Clone() const {return new ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer(*this);}
+
+        virtual void randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet);
 };
 
 /** Poisson randomizer for null hypothesis applying the time stratified adjustment. */
@@ -75,7 +98,6 @@ class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
     virtual void randomize(const RealDataSet& RealSet, const TwoDimMeasureArray_t& measure, DataSet& SimSet);
 };
 
-class CSaTScanData; /** forward class declaration */
 class RelativeRiskAdjustmentHandler;
 
 /** Poisson randomizer for known relative risks adjustments. */

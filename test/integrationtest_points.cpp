@@ -5,9 +5,6 @@
 #include "Toolkit.h"
 #include "dBaseFile.h"
 #include "ShapeFile.h"
-#include <fstream>
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
 
 struct points_analysis_fixture : new_mexico_fixture {
     points_analysis_fixture() : new_mexico_fixture() { 
@@ -20,30 +17,9 @@ struct points_analysis_fixture : new_mexico_fixture {
     }
     virtual ~points_analysis_fixture() { /*BOOST_TEST_MESSAGE( "teardown fixture -- points_analysis_fixture" );*/ }
 
-    void run_analysis(const std::string& analysis_name) {
-        // set results file to the user document directory
-        std::stringstream filename;
-        filename << GetUserDocumentsDirectory(_results_user_directory, "").c_str() << "\\" << analysis_name.c_str() << ".txt";
-        _parameters.SetOutputFileName(filename.str().c_str());
-
-        time_t startTime;
-        time(&startTime);
-        AppToolkit::ToolKitCreate(boost::unit_test::framework::master_test_suite().argv[0]);
-        AnalysisRunner(_parameters, startTime, _print).Execute();
-        AppToolkit::ToolKitDestroy();
-    }
-
-    std::ifstream & getFileStream(std::ifstream& stream, const std::string& filename) {
-        std::stringstream rr_filename;
-        rr_filename << GetUserDocumentsDirectory(_results_user_directory, "").c_str() << "\\" << filename.c_str();
-        stream.open(rr_filename.str().c_str());
-        if (!stream) throw std::exception("could not file");
-        return stream;
-    }
-
     dBaseFile& getDBaseFile(dBaseFile& dbfile, const std::string& filename) {
         std::stringstream rr_filename;
-        rr_filename << GetUserDocumentsDirectory(_results_user_directory, "").c_str() << "\\" << filename.c_str();
+        rr_filename << GetUserTemporaryDirectory(_results_user_directory).c_str() << "\\" << filename.c_str();
         dbfile.Open(rr_filename.str().c_str(), "rb");
         if (!dbfile.GetIsOpen()) throw std::exception("could not file");
         return dbfile;
@@ -51,25 +27,10 @@ struct points_analysis_fixture : new_mexico_fixture {
 
     SHPHandle& getShapeFile(SHPHandle& shp, const std::string& filename) {
         std::stringstream rr_filename;
-        rr_filename << GetUserDocumentsDirectory(_results_user_directory, "").c_str() << "\\" << filename.c_str();
+        rr_filename << GetUserTemporaryDirectory(_results_user_directory).c_str() << "\\" << filename.c_str();
         shp = SHPOpen(rr_filename.str().c_str(), "rb");
         if (!shp) throw prg_error("Unable to open file.","getShapeFile()");
         return shp;
-    }
-
-    typedef std::vector<std::string> File_Row_t;
-    File_Row_t& getRow(std::ifstream& stream, File_Row_t& row) {
-        row.clear();
-        std::string line;
-        std::getline(stream, line);
-        boost::escaped_list_separator<char> separator("\\", "\t\v\f\r\n ", "\"");
-        boost::tokenizer<boost::escaped_list_separator<char> > headers(line, separator);
-        for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=headers.begin(); itr != headers.end(); ++itr) {
-            row.push_back(*itr);
-            boost::trim(row.back());
-            if (!row.back().size()) row.pop_back();
-        }
-        return row;
     }
 
     std::string _results_user_directory;
@@ -80,7 +41,7 @@ BOOST_FIXTURE_TEST_SUITE( integration_points_suite, points_analysis_fixture )
 
 /* Tests *.dbf and *.shp files for points */
 BOOST_AUTO_TEST_CASE( test_point_shapefiles_output ) {
-    run_analysis("test");
+    run_analysis("test", _results_user_directory, _parameters, _print);
 
     // check that dBase file is created
     dBaseFile dbfile;

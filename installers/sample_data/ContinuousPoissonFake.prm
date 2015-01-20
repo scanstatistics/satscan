@@ -252,7 +252,7 @@ CriticalValue=n
 ;report cluster rank (y/n)
 ReportClusterRank=n
 ;print ascii headers in output files (y/n)
-PrintAsciiColumnHeaders=n
+PrintAsciiColumnHeaders=y
 ;user-defined title for results file
 ResultsTitle=
 

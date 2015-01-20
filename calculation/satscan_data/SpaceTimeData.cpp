@@ -83,7 +83,7 @@ void CSpaceTimeData::ReadDataFromFiles() {
 void CSpaceTimeData::SetIntervalCut() {
   try {
     CSaTScanData::SetIntervalCut();
-    if (gParameters.GetIncludePurelySpatialClusters() && m_nTimeIntervals == m_nIntervalCut)
+    if (gParameters.GetIncludePurelySpatialClusters() && GetNumTimeIntervals() == m_nIntervalCut)
       //This code supposedly prevents calculating a purely temporal cluster twice, once
       //expliciatly by user's request; another when the maximum temporal window is equal
       //to the number of time interval slices. I'm not sure if the latter is possible.

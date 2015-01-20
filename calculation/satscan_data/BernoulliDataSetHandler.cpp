@@ -14,7 +14,8 @@ SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(Simul
     case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+    case PROSPECTIVEPURELYTEMPORAL :
+    case SEASONALTEMPORAL          : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
     case SPACETIME                 :
     case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
@@ -57,6 +58,7 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
+        case SEASONALTEMPORAL         :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           break;
@@ -105,6 +107,7 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(Abstr
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
+        case SEASONALTEMPORAL           :
           Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
           Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT());
           break;

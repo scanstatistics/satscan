@@ -19,7 +19,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) const {
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
-     for (int i=0; i < m_nTimeIntervals; ++i)
+     for (int i=0; i < GetNumTimeIntervals(); ++i)
         for (int t=0; t < m_nTracts; ++t)
            fprintf(pFile, "Case [%i][%i] = %li\n", i, j, ppCases[i][t]);
      fprintf(pFile, "\n");
@@ -36,7 +36,7 @@ void CSaTScanData::DisplayControls(FILE* pFile) const {
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
-     for (int i=0; i < m_nTimeIntervals; ++i)
+     for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < m_nTracts; ++t)
          fprintf(pFile, "Controls [%i][%i] = %li\n", i, t, ppControls[i][t]);
      fprintf(pFile, "\n");
@@ -53,7 +53,7 @@ void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* p
   for (size_t j=0; j < Container.size(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
-     for (int i=0; i < m_nTimeIntervals; ++i)
+     for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < m_nTracts; ++t)
          fprintf(pFile, "Cases [%i][%i] = %li\n", i, t, ppSimCases[i][t]);
      fprintf(pFile, "\n");
@@ -72,7 +72,7 @@ void CSaTScanData::DisplayMeasure(FILE* pFile) const {
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
-     for (int i=0; i < m_nTimeIntervals; ++i)
+     for (int i=0; i < GetNumTimeIntervals(); ++i)
         for (int t=0; t < m_nTracts; ++t)
           fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i, t, ppMeasure[i][t]);
      fprintf(pFile, "\n");
@@ -123,7 +123,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
     fprintf(fp,"%s to %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
   }  
-  if (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile()) {
+  if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile())) {
     //print number locations scanned
     PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
     fprintf(fp, "%ld\n", (long)m_nTracts + GetNumMetaTractsReferenced() - GetNumNullifiedLocations());

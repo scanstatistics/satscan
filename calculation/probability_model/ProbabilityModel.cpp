@@ -16,4 +16,3 @@ CModel::~CModel() {}
 double CModel::GetPopulation(size_t, const CCluster&, const CSaTScanData&) const {
   throw prg_error("GetPopulation() not implementated.","CModel");
 }
-

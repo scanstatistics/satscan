@@ -14,7 +14,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_analysisTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSeasonalRadioButton);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
@@ -64,7 +64,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="542" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -108,7 +108,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="94" max="32767" attributes="0"/>
+                      <EmptySpace pref="98" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -961,19 +961,22 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                               <Component id="_analysisTypeGroup" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="_probabilityModelGroup" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                                   <Component id="_scanAreasGroup" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="_advancedAnalysisButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -983,16 +986,18 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="102" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
-                          <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="_analysisTypeGroup" max="32767" attributes="1"/>
+                              <Component id="_probabilityModelGroup" max="32767" attributes="1"/>
+                          </Group>
                       </Group>
-                      <EmptySpace pref="210" max="32767" attributes="0"/>
+                      <EmptySpace pref="203" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1019,13 +1024,12 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                  <Component id="_spatialVariationRadioLabel" max="32767" attributes="0"/>
+                                  <Component id="_spatialVariationRadioLabel" pref="124" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
@@ -1033,8 +1037,7 @@
                                               <Component id="_retrospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_retrospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_spatialVariationRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="_prospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="_prospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_retrospectiveSeasonalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -1042,6 +1045,20 @@
                               </Group>
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_prospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_prospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1055,17 +1072,19 @@
                           <Component id="_retrospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_retrospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_retrospectiveSeasonalRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="11" max="32767" attributes="0"/>
                           <Component id="_spatialVariationRadioButton" min="-2" pref="22" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                           <Component id="_spatialVariationRadioLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace pref="11" max="32767" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1186,6 +1205,22 @@
                     <Property name="text" type="java.lang.String" value="in Temporal Trends"/>
                   </Properties>
                 </Component>
+                <Component class="javax.swing.JRadioButton" name="_retrospectiveSeasonalRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Seasonal" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectiveSeasonalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="_probabilityModelGroup">
@@ -1226,7 +1261,7 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <EmptySpace pref="25" max="32767" attributes="0"/>
+                          <EmptySpace pref="16" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1453,9 +1488,9 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_highRatesRadioButton" alignment="0" pref="123" max="32767" attributes="0"/>
-                              <Component id="_lowRatesRadioButton" alignment="1" pref="123" max="32767" attributes="0"/>
-                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="123" max="32767" attributes="0"/>
+                              <Component id="_highRatesRadioButton" alignment="0" pref="127" max="32767" attributes="0"/>
+                              <Component id="_lowRatesRadioButton" alignment="1" pref="127" max="32767" attributes="0"/>
+                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="127" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1552,7 +1587,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="11" max="32767" attributes="0"/>
+                          <EmptySpace pref="15" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1573,7 +1608,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="22" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1701,7 +1736,7 @@
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="152" max="32767" attributes="0"/>
+                      <EmptySpace pref="156" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

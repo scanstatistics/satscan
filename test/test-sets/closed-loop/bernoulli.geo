@@ -1,0 +1,10 @@
+location1			76.6966			23.9392			
+location2			-70.1657			67.3374			
+location3			44.3045			-24.1842			
+location4			63.8561			96.0248			
+location5			15.2246			-6.18035			
+location6			31.9006			-72.8662			
+location7			-22.6314			-42.6784			
+location8			28.0106			-92.2593			
+location9			48.5819			-95.8949			
+location10			40.4188			-57.8722			

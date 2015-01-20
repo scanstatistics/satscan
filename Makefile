@@ -185,6 +185,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(SATDATA)/MetaTractManager.cpp \
                $(SATDATA)/HomogeneousPoissonDataSetHandler.cpp \
                $(SATDATA)/ObservableRegion.cpp \
+               $(SATDATA)/ClosedLoopData.cpp \
                $(UTILITY)/dBaseFile.cpp \
                $(UTILITY)/JulianDates.cpp \
                $(UTILITY)/RandomDistribution.cpp \
@@ -245,7 +246,14 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/chrono/src/chrono.cpp \
                $(BOOSTDIR)/libs/chrono/src/process_cpu_clocks.cpp \
                $(BOOSTDIR)/libs/chrono/src/thread_clock.cpp \
-               $(BOOSTDIR)/libs/system/src/error_code.cpp
+               $(BOOSTDIR)/libs/system/src/error_code.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/path.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/portability.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/unique_path.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/utf8_codecvt_facet.cpp
 
 APP_SRC     := $(SATSCAN)/batch_application/Main.cpp \
                $(SATSCAN)/batch_application/ParameterProgramOptions.cpp

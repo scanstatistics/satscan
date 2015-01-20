@@ -20,6 +20,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
             case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
             case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
             case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
+            case SEASONALTEMPORAL          : sAnalysisType = "Seasoinal Temporal"; break;
             default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
         }
     } catch (prg_exception& x) {
@@ -276,6 +277,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal"); break;
+      case SEASONALTEMPORAL          : fprintf(fp, "Seasonal Temporal"); break;
       default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }
     if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS) {

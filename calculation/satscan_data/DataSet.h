@@ -97,6 +97,7 @@ class DataSet {
     const AbstractTimeTrend   & getTimeTrend() const {return *gpTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
     virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
+    void                        setCaseDataToCumulative();
     void                        setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setCaseData_NC();
@@ -111,7 +112,6 @@ class DataSet {
     void                        setMeasureData_PT_Aux();
     void                        setMeasureDataToCumulative();
     void                        setMeasureData_Aux(TwoDimMeasureArray_t& other);
-
 };
 
 /** Encapsulates real data of dataset. */
@@ -190,6 +190,8 @@ class RealDataSet : public DataSet {
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
     void                        setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation=0);
     PopulationDataPair_t        getPopulationMeasureData() const;
+
+    void                        reassign(TwoDimCountArray_t& cases, TwoDimMeasureArray_t& measure);
 };
 //*****************************************************************************
 #endif

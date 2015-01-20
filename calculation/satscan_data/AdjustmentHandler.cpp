@@ -36,10 +36,10 @@ void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
 
 /** defines relative risk adjustment for passed data */
 void RelativeRiskAdjustmentHandler::add(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
-  size_t				i, iStartIndex, iEndIndex;
-  Julian                                TempDate;
-  measure_t                             TempRisk;
-  TractContainerIterator_t              itr_Start, itr_End;
+  size_t iStartIndex, iEndIndex;
+  Julian TempDate;
+  measure_t TempRisk;
+  TractContainerIterator_t itr_Start, itr_End;
 
   try {
     //find std::deque for tTractIndex
@@ -114,7 +114,7 @@ void RelativeRiskAdjustmentHandler::add(tract_t tTractIndex, measure_t dRelative
       //create new adjustment periods in existing adjustment period between StartDate and EndDate to cause continious adjustment period
       //ensure two things - the period from StartDate to EndDate is contiguous(i.e. fill 'open' periods between adjustments dates)
       //                  - update relative risk for existing adjustments within new period
-      for (i=iEndIndex; i > iStartIndex; --i) {
+      for (size_t i=iEndIndex; i > iStartIndex; --i) {
          if (Adjustments[i].GetStartDate() - 1 != Adjustments[i - 1].GetEndDate()) {
            Adjustments.insert(Adjustments.begin() + i,
                               RelativeRiskAdjustment(dRelativeRisk, Adjustments[i - 1].GetEndDate() + 1,
@@ -153,15 +153,15 @@ bool RelativeRiskAdjustmentHandler::AdjustMeasure(const TwoDimMeasureArray_t& Me
   count_t ** ppCases = pCases ? pCases->GetArray() : 0;
   measure_t ** pNonCumulativeMeasure = adjustMeasure.GetArray();
 
-  for (int interval=_dataHub.GetTimeIntervalOfDate(StartDate); interval <= _dataHub.GetTimeIntervalOfDate(EndDate); ++interval) {
-     Julian AdjustmentStart = std::max(StartDate, _dataHub.GetTimeIntervalStartTimes()[interval]);
-     Julian AdjustmentEnd = std::min(EndDate, _dataHub.GetTimeIntervalStartTimes()[interval+1] - 1);
+  for (int interval=_dataHub.CSaTScanData::GetTimeIntervalOfDate(StartDate); interval <= _dataHub.CSaTScanData::GetTimeIntervalOfDate(EndDate); ++interval) {
+     Julian AdjustmentStart = std::max(StartDate, _dataHub.CSaTScanData::GetTimeIntervalStartTimes()[interval]);
+     Julian AdjustmentEnd = std::min(EndDate, _dataHub.CSaTScanData::GetTimeIntervalStartTimes()[interval+1] - 1);
      //calculate measure for lower interval date to adjustment start date
-     measure_t MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, _dataHub.GetTimeIntervalStartTimes()[interval], AdjustmentStart);
+     measure_t MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, _dataHub.CSaTScanData::GetTimeIntervalStartTimes()[interval], AdjustmentStart);
      //calculate measure for adjustment period
      measure_t MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
      //calculate measure for adjustment end date to upper interval date
-     measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, _dataHub.GetTimeIntervalStartTimes()[interval+1]);
+     measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, _dataHub.CSaTScanData::GetTimeIntervalStartTimes()[interval+1]);
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (std::numeric_limits<measure_t>::max() - MeasurePre - MeasurePost) / MeasureDuring))
        throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
@@ -229,7 +229,7 @@ measure_t RelativeRiskAdjustmentHandler::CalcMeasureForTimeInterval(const Popula
   measure_t     SumMeasure;
 
   if (StartDate >= NextStartDate )
-    return 0;                            
+    return 0;
 
   SumMeasure = 0;
   iStartUpperIndex = Population.UpperPopIndex(StartDate);
@@ -281,7 +281,7 @@ measure_t RelativeRiskAdjustmentHandler::DateMeasure(const PopulationData & Popu
 /** Returns the number of cases for a specified tract and time interval.
     Note: iInterval and tTract should be valid indexes of the cases array .**/
 count_t RelativeRiskAdjustmentHandler::getCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const {
-  if (iInterval + 1 == _dataHub.GetNumTimeIntervals())
+  if (iInterval + 1 == _dataHub.CSaTScanData::GetNumTimeIntervals())
     return ppCumulativeCases[iInterval][tTract];
   else
     return ppCumulativeCases[iInterval][tTract] - ppCumulativeCases[iInterval + 1][tTract];

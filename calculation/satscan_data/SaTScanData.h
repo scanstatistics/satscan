@@ -61,6 +61,7 @@ class CSaTScanData {
     Julian                                      m_nEndDate;                     /* study period start/end dates */
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
     std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
+    int                                         m_nTimeIntervals;
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
@@ -99,7 +100,6 @@ class CSaTScanData {
     inline void                                 FreeNeighborInfo(tract_t iCentroidIndex) const;
 
     tract_t                                     m_nGridTracts;
-    int                                         m_nTimeIntervals;
 
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
@@ -129,7 +129,7 @@ class CSaTScanData {
     inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
     inline tract_t                              GetNumMetaTractsReferenced() const {return (tract_t)gTractHandler->getMetaLocations().getNumReferencedLocations();}
     size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
-    inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
+    virtual int                                 GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
@@ -138,14 +138,17 @@ class CSaTScanData {
     const RiskAdjustments_t                   & getRiskAdjustments() const {return gRelativeRiskAdjustments;}
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
-    int                                         GetTimeIntervalOfDate(Julian Date) const;
-    int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
+    virtual int                                 GetTimeIntervalOfDate(Julian Date) const;
+    virtual int                                 GetTimeIntervalOfEndDate(Julian EndDate) const;
     int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
     int                                         getMinTimeIntervalCut() const {return _min_iterval_cut;}
-    const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
-    Julian                                      intervalIndexToJulian(unsigned int intervalIdx) const;
+    virtual const std::vector<Julian>         & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
+    virtual Julian                              intervalIndexToJulian(unsigned int intervalIdx) const;
+
+    virtual Julian                              convertToSeasonalDate(Julian j) const {return j;}
+
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual void                                ReadDataFromFiles();
     virtual void                                RemoveClusterSignificance(const CCluster& ClusterObj);

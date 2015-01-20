@@ -103,6 +103,9 @@
     <Filter Include="Source Files\boost\system">
       <UniqueIdentifier>{314c6365-edbe-4407-b39c-3274e4587ffa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\filesystem">
+      <UniqueIdentifier>{5b6e6acb-dc98-4c7a-97ff-f5bbfd4b9bf2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -687,6 +690,33 @@
     <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp">
       <Filter>Header Files\calculation\analysis_run</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1183,6 +1213,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\analysis_run\LocationRelevance.h">
       <Filter>Header Files\calculation\analysis_run</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

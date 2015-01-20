@@ -22,6 +22,7 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
        break;
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL :
+    case SEASONALTEMPORAL          :
        for (; itr != itr_end; ++itr)
          (*itr)->allocateCaseData_PT_Cat(GetDataSet(std::distance(Container.begin(), itr)).getPopulationData().GetNumOrdinalCategories());
        break;
@@ -65,7 +66,8 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
           Interface.SetCategoryCaseArrays(DataSet.getCaseData_Cat());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
-       case PURELYTEMPORAL             :
+        case PURELYTEMPORAL             :
+        case SEASONALTEMPORAL         :
           Interface.SetPTCategoryCaseArray(DataSet.getCaseData_PT_Cat().GetArray());
           break;
         case SPACETIME                  :
@@ -109,6 +111,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
+        case SEASONALTEMPORAL           :
           Interface.SetPTCategoryCaseArray(S_DataSet.getCaseData_PT_Cat().GetArray());
           break;
         case SPACETIME                  :
@@ -195,90 +198,82 @@ void OrdinalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
 bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-  bool                                  bReadSuccessful=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               tLocationIndex;
-  count_t                               tCount, tTotalCases=0, ** ppCategoryCounts;
-  measure_t                             tOrdinalVariable;
-  std::vector<double>                   vReadCategories;
-  DataSetHandler::RecordStatusType      eRecordStatus;
+    bool                                  bReadSuccessful=true, bEmpty=true;
+    Julian                                Date;
+    tract_t                               tLocationIndex;
+    count_t                               tCount, tTotalCases=0, ** ppCategoryCounts;
+    measure_t                             tOrdinalVariable;
+    std::vector<double>                   vReadCategories;
+    DataSetHandler::RecordStatusType      eRecordStatus;
 
-  try {
-    //read, parse, validate and update data structures for each record in data file
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           //parse record into parts: location index, # of cases, date, ordinal catgory
-           eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, tOrdinalVariable);
-           if (eRecordStatus == Accepted) {
-             bEmpty = false;
-             //note each category read from file. since we are ignoring records with zero cases,
-             //we might need this information for error reporting
-             if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
-               vReadCategories.push_back(tOrdinalVariable);
-             if (tCount > 0) { //ignore records with zero cases
-               //add count to cumulative total
-               tTotalCases += tCount;
-               //check that addition did not exceed data type limitations
-               if (tTotalCases < 0)
-                 throw resolvable_error("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
-                                        std::numeric_limits<count_t>::max());
-               //record count and get category's 2-D array pointer
-               ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount, Date).GetArray();
-               //update location case counts such that 'tCount' is reprented cumulatively through
-               //time from start date through specifed date in record
-               ppCategoryCounts[0][tLocationIndex] += tCount;
-               for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                  ppCategoryCounts[i][tLocationIndex] += tCount;
-             }
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else   
-             bReadSuccessful = false;
+    try {
+        //read, parse, validate and update data structures for each record in data file
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            //parse record into parts: location index, # of cases, date, ordinal catgory
+            eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, tOrdinalVariable);
+            if (eRecordStatus == Accepted) {
+                bEmpty = false;
+                //note each category read from file. since we are ignoring records with zero cases,
+                //we might need this information for error reporting
+                if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
+                    vReadCategories.push_back(tOrdinalVariable);
+                if (tCount > 0) { //ignore records with zero cases
+                    //add count to cumulative total
+                    tTotalCases += tCount;
+                    //check that addition did not exceed data type limitations
+                    if (tTotalCases < 0)
+                        throw resolvable_error("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n", std::numeric_limits<count_t>::max());
+
+                    if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+                        Date = gDataHub.convertToSeasonalDate(Date);
+
+                    //record count and get category's 2-D array pointer
+                    ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount, Date).GetArray();
+                    //update location case counts such that 'tCount' is reprented cumulatively through time from start date through specifed date in record
+                    ppCategoryCounts[0][tLocationIndex] += tCount;
+                    for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                        ppCategoryCounts[i][tLocationIndex] += tCount;
+                }
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else
+                bReadSuccessful = false;
+        }
+        //if invalid at this point then read encountered problems with data format, inform user of section to refer to in user guide for assistance
+        if (!bReadSuccessful)
+            gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
+        else if (bEmpty) { //print indication if file contained no data
+            gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+            bReadSuccessful = false;
+        } else if (DataSet.getPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
+            //validate that input data contained minimum number of ordinal categories
+            if (DataSet.getPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
+                gPrint.Printf("Error: Data set case file specifies %i categories with cases but a minimum\n"
+                              "       of %i categories is required.\n", BasePrint::P_ERROR,
+                              DataSet.getPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
+                bReadSuccessful = false;
+            } else {
+                gPrint.Printf("Error: The number of categories with cases is required to be a mimumum of %i.\n"
+                              "       Data set case file specifies %i categories with %i of them containing no cases.\n",
+                              BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(),
+                              vReadCategories.size() - DataSet.getPopulationData().GetNumOrdinalCategories());
+                bReadSuccessful = false;
+            }
+        } else if (tTotalCases < gtMinimumCases) { //validate that data set contains at least minimum number of cases
+            gPrint.Printf("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
+                          BasePrint::P_ERROR, tTotalCases, gtMinimumCases);
+            bReadSuccessful = false;
+        } else { //record total cases and total population to data set object
+            DataSet.setTotalCases(tTotalCases);
+            DataSet.setTotalPopulation(tTotalCases);
+            AbstractOrdinalPermutedDataRandomizer * randomizer = dynamic_cast<AbstractOrdinalPermutedDataRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
+            if (randomizer) randomizer->setPermutedData(DataSet);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCounts()","OrdinalDataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (!bReadSuccessful)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bReadSuccessful = false;
-    }
-    //validate that input data contained minimum number of ordinal categories
-    else if (DataSet.getPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
-      if (DataSet.getPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
-        gPrint.Printf("Error: Data set case file specifies %i categories with cases but a minimum\n"
-                      "       of %i categories is required.\n", BasePrint::P_ERROR,
-                      DataSet.getPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
-        bReadSuccessful = false;
-      }
-      else {
-        gPrint.Printf("Error: The number of categories with cases is required to be a mimumum of %i.\n"
-                      "       Data set case file specifies %i categories with %i of them containing no cases.\n",
-                      BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(),
-                      vReadCategories.size() - DataSet.getPopulationData().GetNumOrdinalCategories());
-        bReadSuccessful = false;
-      }
-    }
-    //validate that data set contains at least minimum number of cases
-    else if (tTotalCases < gtMinimumCases) {
-      gPrint.Printf("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
-                    BasePrint::P_ERROR, tTotalCases, gtMinimumCases);
-      bReadSuccessful = false;
-    }
-    //record total cases and total population to data set object
-    else {
-      DataSet.setTotalCases(tTotalCases);
-      DataSet.setTotalPopulation(tTotalCases);
-      AbstractOrdinalPermutedDataRandomizer * randomizer = dynamic_cast<AbstractOrdinalPermutedDataRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
-      if (randomizer) randomizer->setPermutedData(DataSet);
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCounts()","OrdinalDataSetHandler");
-    throw;
-  }
-  return bReadSuccessful;
+    return bReadSuccessful;
 }
 
 /** Read data that is particular (case file) to 'Ordinal' model into data set(s). */

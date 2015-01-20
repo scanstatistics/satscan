@@ -19,4 +19,3 @@ void CRankModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no acti
 double CRankModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {
   throw prg_error("GetPopulation() not implementated.","CRankModel");
 }
- 

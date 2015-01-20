@@ -591,8 +591,8 @@ ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpat
 /** internal setup function */
 void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterface& Interface) {
   try {
-    giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
-    giNumTimeIntervals = Data.m_nTimeIntervals;
+    giAllocationSize = 1 + Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex();
+    giNumTimeIntervals = Data.GetNumTimeIntervals();
     giProspectiveStart = Data.GetProspectiveStartIndex();
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);

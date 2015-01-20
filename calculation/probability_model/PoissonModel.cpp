@@ -187,7 +187,7 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
 boost::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData) {
     try {
         boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
-        CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
+        CalcMeasure(Set, *pPopMeasure, gDataHub.CSaTScanData::GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
         measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
         for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
             for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
@@ -273,6 +273,34 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
         } else if (cachePopulationMeasureData) {
             Set.setPopulationMeasureData(*pPopMeasure);
             Set.setMeasureData_Aux(Set.getMeasureData());
+        }
+
+        if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+            // At this point, we'll have the measure data (Set.getMeasureData()) and the case data (Set.getCaseData()) in non-seasonal structure.
+            // Compress the measure data to seasonal intervals -- the measure data is currently non-cumulative.
+            Julian date;
+            TwoDimMeasureArray_t measures(DataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts(), 0.0);
+            measure_t ** ppMeasure = measures.GetArray();
+            for (int i=0; i < DataHub.CSaTScanData::GetNumTimeIntervals() - 1; ++i) {
+                measure_t nmeasure = Set.getMeasureData().GetArray()[i][0];
+                if (nmeasure) {
+                    date = DataHub.convertToSeasonalDate(DataHub.CSaTScanData::GetTimeIntervalStartTimes()[i]);
+                    ppMeasure[DataHub.GetTimeIntervalOfDate(date)][0] += nmeasure;
+                }
+            }
+            // Compress the case data to seasonal intervals -- the case data is currently cumulative.
+            TwoDimCountArray_t cases(DataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts(), 0);
+            count_t ** ppCases = cases.GetArray();
+            for (int i=0; i < DataHub.CSaTScanData::GetNumTimeIntervals() - 1; ++i) {
+                count_t ncases = Set.getCaseData().GetArray()[i][0] - Set.getCaseData().GetArray()[i + 1][0];
+                if (ncases) {
+                    date = DataHub.convertToSeasonalDate(DataHub.CSaTScanData::GetTimeIntervalStartTimes()[i]);
+                    ppCases[DataHub.GetTimeIntervalOfDate(date)][0] += ncases;
+                }
+            }
+
+            Set.reassign(cases, measures);
+            Set.setCaseDataToCumulative();
         }
 
         // now we can make the measure data cummulative

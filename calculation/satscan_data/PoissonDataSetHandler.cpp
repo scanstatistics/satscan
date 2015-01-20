@@ -15,6 +15,7 @@ SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(Simulat
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
                                      break;
+    case SEASONALTEMPORAL          :
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
@@ -159,6 +160,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
           Interface.SetCaseArray(DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
+        case SEASONALTEMPORAL           :
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
@@ -218,6 +220,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDa
                     Interface.SetCaseArray(SimDataSet.getCaseData().GetArray());
                     Interface.SetMeasureArray(real_DataSet.getMeasureData().GetArray());
                     break;
+                case SEASONALTEMPORAL          :
                 case PROSPECTIVEPURELYTEMPORAL :
                 case PURELYTEMPORAL            :
                 case SPACETIME                 :
@@ -257,6 +260,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
           Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           break;
+        case SEASONALTEMPORAL           :
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
@@ -314,7 +318,7 @@ bool PoissonDataSetHandler::ReadData() {
                 if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
                 else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
                 if (!ReadPopulationFile(GetDataSet(t))) return false;
-            } else { //create population data without input data
+            } else { //create population data without input data - uniform population
                 if (GetNumDataSets() == 1) gPrint.Printf("Creating the population\n", BasePrint::P_STDOUT);
                 else gPrint.Printf("Creating the population for data set %u\n", BasePrint::P_STDOUT, t + 1);
                 if (!CreatePopulationData(GetDataSet(t))) return false;
@@ -483,4 +487,3 @@ void PoissonDataSetHandler::SetRandomizers() {
     throw;
   }
 }
- 

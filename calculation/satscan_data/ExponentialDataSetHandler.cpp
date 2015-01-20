@@ -16,6 +16,7 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
     case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
                                      break;
+    case SEASONALTEMPORAL          :
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
@@ -63,6 +64,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
           Interface.SetCaseArray(DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
+        case SEASONALTEMPORAL           :
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
@@ -111,6 +113,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(Abs
           Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
           break;
+        case SEASONALTEMPORAL           :
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
@@ -173,6 +176,8 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
            eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
+             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+                Date = gDataHub.convertToSeasonalDate(Date);
              pRandomizer->AddPatients(tPatients, Date, tTractIndex, tContinuousVariable, tCensorAttribute);
              tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
              //check that addition did not exceed data type limitations

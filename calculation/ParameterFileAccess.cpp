@@ -84,7 +84,7 @@ AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
 const char * AbtractParameterFileAccess::GetParameterComment(ParameterType eParameterType) const {
   try {
     switch (eParameterType) {
-      case ANALYSISTYPE                 : return "analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal)";
+      case ANALYSISTYPE                 : return "analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal, 7=Seasonal Temporal)";
       case SCANAREAS                    : return "scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential), 3=Both Areas)";
       case CASEFILE                     : return "case data filename";
       case POPFILE                      : return "population data filename";
@@ -587,7 +587,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
 
   try {
     switch (eParameterType) {
-      case ANALYSISTYPE                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
+      case ANALYSISTYPE                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PURELYSPATIAL, SEASONALTEMPORAL);
                                           gParameters.SetAnalysisType((AnalysisType)iValue); break;
       case SCANAREAS                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, HIGH, HIGHANDLOW);
                                           gParameters.SetAreaRateType((AreaRateType)iValue); break;

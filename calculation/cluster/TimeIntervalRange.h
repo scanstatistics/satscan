@@ -11,107 +11,172 @@ class CSaTScanData; /** forward class declaration */
 class CCluster; /** forward class declaration */
 class AbstractTemporalClusterData; /** forward class declaration */
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering.*/
+/** Temporal window evaluator. */
 class TemporalDataEvaluator : public CTimeIntervals {
-  private:
-    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,size_t) const;
-    MAXIMIZE_FUNCPTR gpCalculationMethod;
-    double gdDefaultMaximizingValue;
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
 
-  public:
-    TemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
-                          IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+    public:
+        TemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                              IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
 
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering. Redefines method CompareClusters()
-    to incorporate multiple data sets in the calculation of a log likelihood
-    ratio. The alogrithm for using the TMeasureList object with multiple data
-    sets is not defined so method CompareMeasures() throws an exception. */
+/** Temporal window evaluator for seasonal analysis. */
+class ClosedLoopTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
+        int _extended_period_start;
+
+    public:
+        ClosedLoopTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                                        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for multiple data sets. */
 class MultiSetTemporalDataEvaluator : public CTimeIntervals {
-  public:
-    MultiSetTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    public:
+        MultiSetTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
 
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering. Redefines method CompareClusters()
-    to incorporate a second measure variable in the calculation of a log
-    likelihood ratio for categorical data. The alogrithm for using the
-    TMeasureList object with this second variable is not defined so method
-    CompareMeasures() throws an exception. */
+/** Temporal window evaluator for seasonal analysis and multiple data sets. */
+class ClosedLoopMultiSetTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        int _extended_period_start;
+
+    public:
+        ClosedLoopMultiSetTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the normal model. */
 class NormalTemporalDataEvaluator : public CTimeIntervals {
-  private:
-    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
-    MAXIMIZE_FUNCPTR gpCalculationMethod;
-    double gdDefaultMaximizingValue;
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
 
-  public:
-    NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
-                                IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+    public:
+        NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                                    IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
 
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering. Redefines method CompareClusters()
-    to incorporate multiple data sets in the calculation of a log likelihood
-    ratio for categorical data. The alogrithm for using the TMeasureList object
-    with multiple data sets is not defined so method CompareMeasures() throws
-    an exception. */
+/** Temporal window evaluator for the normal model and seasonal analysis. */
+class ClosedLoopNormalTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
+        int _extended_period_start;
+
+    public:
+        ClosedLoopNormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                                              IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the normal model and multiple data sets. */
 class MultiSetNormalTemporalDataEvaluator : public CTimeIntervals {
-  public:
-    MultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    public:
+        MultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
 
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering. Redefines method CompareClusters()
-    to calculate log likelihood ratio for categorical data. The alogrithm for
-    using the TMeasureList object with multiple data sets is not defined so
-    method CompareMeasures() throws an exception. */
+/** Temporal window evaluator for the normal model, seasonal analysis and multiple data sets. */
+class ClosedLoopMultiSetNormalTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        int _extended_period_start;
+
+    public:
+        ClosedLoopMultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the categorical model. */
 class CategoricalTemporalDataEvaluator : public CTimeIntervals {
-  private:
-    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (const std::vector<count_t>&,size_t) const;
-    MAXIMIZE_FUNCPTR gpCalculationMethod;
-    double gdDefaultMaximizingValue;
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (const std::vector<count_t>&,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
 
-  public:
-    CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
-                                     IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+    public:
+        CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
+                                         IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
 
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Class which defines methods of iterating through temporal windows,
-    evaluating the strength of a clustering. Redefines method CompareClusters()
-    to incorporate multiple data sets in the calculation of a log likelihood
-    ratio for categorical data. The alogrithm for using the TMeasureList object
-    with multiple data sets is not defined so method CompareMeasures() throws
-    an exception. */
-class MultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals {
-  public:
-    MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+/** Temporal window evaluator for the categorical model and seasona analysis. */
+class ClosedLoopCategoricalTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (const std::vector<count_t>&,size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double gdDefaultMaximizingValue;
+        int _extended_period_start;
 
-    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
-    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    public:
+        ClosedLoopCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
+                                                   IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the categorical model and multiple data sets. */
+class MultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals {
+    public:
+        MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the categorical model, seasonal analysis and multiple data sets. */
+class ClosedLoopMultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals {
+    private:
+        int _extended_period_start;
+
+    public:
+        ClosedLoopMultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 //******************************************************************************
 #endif
-

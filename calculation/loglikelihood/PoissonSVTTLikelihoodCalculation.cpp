@@ -134,12 +134,12 @@ double PoissonLinearTrendLikelihoodCalculator::CalcLogLikelihood(const count_t* 
   } else if (nStatus == AbstractTimeTrend::NEGATIVE_INFINITY) {// All cases in first t.i.
     nLL = CalcLogLikelihoodSpatialOnly(pCases[0], pMeasure[0]);
   } else if (nStatus == AbstractTimeTrend::POSITIVE_INFINITY) {// All cases in last t.i.
-    nLL = CalcLogLikelihoodSpatialOnly(pCases[gDataHub.m_nTimeIntervals-1], pMeasure[gDataHub.m_nTimeIntervals-1]);
+    nLL = CalcLogLikelihoodSpatialOnly(pCases[gDataHub.GetNumTimeIntervals()-1], pMeasure[gDataHub.GetNumTimeIntervals()-1]);
   } else {
     double nSum1 = 0;
     double nSum2 = 0;
 
-    for (int i=0; i < gDataHub.m_nTimeIntervals; ++i) {
+    for (int i=0; i < gDataHub.GetNumTimeIntervals(); ++i) {
       nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i); 
       nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
     }
@@ -162,7 +162,7 @@ double PoissonLinearTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSet
   //calculate time trend inside cluster
   ClusterData.getInsideTrend().CalculateAndSet(ClusterData.gpCasesInsideCluster, 
                                                ClusterData.gpMeasureInsideCluster,
-                                               gDataHub.m_nTimeIntervals, 
+                                               gDataHub.GetNumTimeIntervals(), 
                                                gDataHub.GetParameters().GetTimeTrendConvergence());
                                                
   if (ClusterData.getInsideTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
@@ -175,7 +175,7 @@ double PoissonLinearTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSet
   //calculate time trend outside cluster
   ClusterData.getOutsideTrend().CalculateAndSet(ClusterData.gpCasesOutsideCluster, 
                                                 ClusterData.gpMeasureOutsideCluster,
-                                                gDataHub.m_nTimeIntervals, 
+                                                gDataHub.GetNumTimeIntervals(), 
                                                 gDataHub.GetParameters().GetTimeTrendConvergence());
 
   if (ClusterData.getOutsideTrend().GetStatus() == AbstractTimeTrend::UNDEFINED)
@@ -195,7 +195,7 @@ double PoissonLinearTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSet
 
     nGlobalAlphaIn = ((LinearTimeTrend&)ClusterData.getInsideTrend()).Alpha(ClusterData.gtTotalCasesInsideCluster, 
                                                                             ClusterData.gpMeasureInsideCluster,
-                                                                            gDataHub.m_nTimeIntervals, 
+                                                                            gDataHub.GetNumTimeIntervals(), 
                                                                             GlobalTimeTrend.GetBeta());
     nLogLikelihoodInside -= CalcLogLikelihood(ClusterData.gpCasesInsideCluster, 
                                               ClusterData.gpMeasureInsideCluster,
@@ -217,7 +217,7 @@ double PoissonLinearTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSet
 
     nGlobalAlphaOut = ((LinearTimeTrend&)ClusterData.getOutsideTrend()).Alpha(ClusterData.gtTotalCasesOutsideCluster, 
                                                                               ClusterData.gpMeasureOutsideCluster,
-                                                                              gDataHub.m_nTimeIntervals, 
+                                                                              gDataHub.GetNumTimeIntervals(), 
                                                                               GlobalTimeTrend.GetBeta());
     nLogLikelihoodOutside -= CalcLogLikelihood(ClusterData.gpCasesOutsideCluster, 
                                                ClusterData.gpMeasureOutsideCluster,
@@ -256,12 +256,12 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcLogLikelihood(const count_
   } else if (nStatus == AbstractTimeTrend::NEGATIVE_INFINITY) {// All cases in first t.i.
     nLL = CalcLogLikelihoodSpatialOnly(pCases[0], pMeasure[0]);
   } else if (nStatus == AbstractTimeTrend::POSITIVE_INFINITY) {// All cases in last t.i.
-    nLL = CalcLogLikelihoodSpatialOnly(pCases[gDataHub.m_nTimeIntervals-1], pMeasure[gDataHub.m_nTimeIntervals-1]);
+    nLL = CalcLogLikelihoodSpatialOnly(pCases[gDataHub.GetNumTimeIntervals()-1], pMeasure[gDataHub.GetNumTimeIntervals()-1]);
   } else {
     double nSum1 = 0;
     double nSum2 = 0;
 
-    for (int i=0; i < gDataHub.m_nTimeIntervals; ++i) {
+    for (int i=0; i < gDataHub.GetNumTimeIntervals(); ++i) {
       nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + nBeta * (i + 1) + nBeta2 * std::pow((double)( i + 1), 2.0));
       nSum2 += pMeasure[i] * exp(nAlpha + nBeta * (i+1) + nBeta2 * std::pow((double)(i + 1), 2.0));
     }
@@ -285,7 +285,7 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t t
   //calculate time trend inside cluster
   ClusterData.getInsideTrend().CalculateAndSet(ClusterData.gpCasesInsideCluster, 
                                                ClusterData.gpMeasureInsideCluster,
-                                               gDataHub.m_nTimeIntervals, 
+                                               gDataHub.GetNumTimeIntervals(), 
                                                gDataHub.GetParameters().GetTimeTrendConvergence());
                                                
   if (ClusterData.getInsideTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
@@ -301,7 +301,7 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t t
   //calculate time trend outside cluster
   ClusterData.getOutsideTrend().CalculateAndSet(ClusterData.gpCasesOutsideCluster, 
                                                 ClusterData.gpMeasureOutsideCluster,
-                                                gDataHub.m_nTimeIntervals, 
+                                                gDataHub.GetNumTimeIntervals(), 
                                                 gDataHub.GetParameters().GetTimeTrendConvergence());
 
   if (ClusterData.getOutsideTrend().GetStatus() == AbstractTimeTrend::UNDEFINED)
@@ -326,7 +326,7 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t t
 
     nGlobalAlphaIn = ((QuadraticTimeTrend&)ClusterData.getInsideTrend()).Alpha(ClusterData.gtTotalCasesInsideCluster, 
                                                                                ClusterData.gpMeasureInsideCluster,
-                                                                               gDataHub.m_nTimeIntervals, 
+                                                                               gDataHub.GetNumTimeIntervals(), 
                                                                                GlobalTimeTrend.GetBeta(),
                                                                                ((QuadraticTimeTrend&)GlobalTimeTrend).GetBeta2());
     nLogLikelihoodInside -= CalcLogLikelihood(ClusterData.gpCasesInsideCluster, 
@@ -350,7 +350,7 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t t
                                               ClusterData.getOutsideTrend().GetStatus());
     nGlobalAlphaOut = ((QuadraticTimeTrend&)ClusterData.getOutsideTrend()).Alpha(ClusterData.gtTotalCasesOutsideCluster, 
                                                                                  ClusterData.gpMeasureOutsideCluster,
-                                                                                 gDataHub.m_nTimeIntervals, 
+                                                                                 gDataHub.GetNumTimeIntervals(), 
                                                                                  GlobalTimeTrend.GetBeta(),
                                                                                  ((QuadraticTimeTrend&)GlobalTimeTrend).GetBeta2());
     nLogLikelihoodOutside -= CalcLogLikelihood(ClusterData.gpCasesOutsideCluster, 

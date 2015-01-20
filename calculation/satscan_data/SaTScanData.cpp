@@ -522,8 +522,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          measure_t tAdjustedTotalMeasure=0;
          measure_t tCalibration = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
          measure_t ** ppMeasure = DataSet.getMeasureData().GetArray();
-         for (int i=0; i < m_nTimeIntervals-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
-         for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
+         for (int i=0; i < GetNumTimeIntervals()-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
+         for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[GetNumTimeIntervals() - 1][t] *= tCalibration;
          DataSet.setMeasureDataToCumulative();
          for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
          gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
@@ -613,12 +613,12 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
            ppCases = DataSet.getCaseData().GetArray();
            ppMeasure = DataSet.getMeasureData().GetArray();
            //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
-           tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
-           tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+           tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+           tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
            //zero out cases/measure in clusters defined temporal window
            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i) {
-             ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
-             ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+             ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
            }
            //remove cases/measure from earlier intervals
            for (int i=0; i < Cluster.m_nFirstInterval; ++i) {
@@ -645,10 +645,10 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
             for (size_t c=0; c < DataSet.getCaseData_Cat().size(); ++c) {
              ppCases = DataSet.getCategoryCaseData(c).GetArray();
              //get cases in earliest interval - we'll need to remove these from intervals earlier than cluster window
-             tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
              //zero out cases/measure in clusters defined temporal window
              for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
-               ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+               ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
              //remove cases/measure from earlier intervals
              for (int i=0; i < Cluster.m_nFirstInterval; ++i)
                ppCases[i][tTractIndex] -= tCasesInInterval;
@@ -722,8 +722,7 @@ void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eT
   geActiveNeighborReferenceType = eType;
 }
 
-/* Calculates the number of time aggregation units to include in potential clusters
-   without exceeding the maximum temporal cluster size.*/
+/* Calculates the number of time aggregation units to include in potential clusters without exceeding the maximum temporal cluster size.*/
 void CSaTScanData::SetIntervalCut() {
     double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
@@ -755,8 +754,7 @@ void CSaTScanData::SetIntervalCut() {
 /** Calculates the time interval start times given study period and time interval
     length. Start times are calculated from the study period end date backwards,
     which means that first time interval could possibly not be the requested time
-    interval length. Throws ResolvableException if the time stratified time trend
-    adjustment was requested and the number of calculated time intervals is one.*/
+    interval length. */
 void CSaTScanData::SetIntervalStartTimes() {
   Julian                IntervalStartingDate = m_nEndDate+1;
   DecrementableEndDate  DecrementingDate(m_nEndDate, gParameters.GetTimeAggregationUnitsType());
@@ -968,4 +966,3 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
     throw;
   }
 }
-

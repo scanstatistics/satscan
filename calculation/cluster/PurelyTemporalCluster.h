@@ -33,7 +33,13 @@ class CPurelyTemporalCluster : public CCluster {
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                 GetClusterType() const {return PURELYTEMPORALCLUSTER;}
+
+    virtual std::string               & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
+
     virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+
+    virtual std::string               & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
+
     virtual std::vector<tract_t>      & getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
     tract_t                             GetMostCentralLocationIndex() const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
@@ -42,7 +48,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        SetCartesianRadius(const CSaTScanData& DataHub) {/*nop*/}
     virtual void                        SetMostCentralLocationIndex(const CSaTScanData& DataHub) {/*nop*/}
     virtual void                        SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {/*nop*/}
-    virtual void                        Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data, unsigned int iClusterNumber, const SimulationVariables& simVars) const {/*nop*/}
+    virtual void                        Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data, unsigned int iClusterNumber, const SimulationVariables& simVars, const LocationRelevance& location_relevance) const {/*nop*/}
 };
 //*****************************************************************************
 #endif

@@ -18,4 +18,3 @@ void CNormalModel::CalculateMeasure(RealDataSet&, const CSaTScanData&) {/* no ac
 double CNormalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {
   throw prg_error("GetPopulation() not implementated.","CNormalModel");
 }
-

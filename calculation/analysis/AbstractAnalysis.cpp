@@ -88,20 +88,36 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
-  if (gParameters.GetProbabilityModelType() == NORMAL) {
-    if (gParameters.GetNumDataSets() == 1)
-      return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-    return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
-  }
-  else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
-    if (gParameters.GetNumDataSets() == 1)
-      return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-    return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
-  }
-  else if (gParameters.GetNumDataSets() > 1)
-    return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
-  else
-    return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+    switch (gParameters.GetProbabilityModelType()) {
+        case NORMAL:
+            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (gParameters.GetNumDataSets() == 1)
+                    return new ClosedLoopNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            }
+            if (gParameters.GetNumDataSets() == 1)
+                return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+        case ORDINAL:
+        case CATEGORICAL :
+            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (gParameters.GetNumDataSets() == 1)
+                    return new ClosedLoopCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            }
+            if (gParameters.GetNumDataSets() == 1)
+                return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+        default :
+            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (gParameters.GetNumDataSets() == 1)
+                    return new ClosedLoopTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            }
+            if (gParameters.GetNumDataSets() == 1)
+                return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+    }
 }
 
 /** internal setup function - allocates cluster data factory object and loglikelihood

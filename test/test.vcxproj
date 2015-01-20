@@ -204,6 +204,7 @@
     <ClInclude Include="..\calculation\satscan_data\AdjustmentHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\BernoulliDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\CentroidNeighbors.h" />
+    <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSet.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetGateway.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetHandler.h" />
@@ -261,6 +262,13 @@
     <ClInclude Include="test_helper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\chrono.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\process_cpu_clocks.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\thread_clock.cpp" />
@@ -401,6 +409,7 @@
     <ClCompile Include="..\calculation\satscan_data\AdjustmentHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\BernoulliDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\CentroidNeighbors.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSet.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetGateway.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetHandler.cpp" />
@@ -453,6 +462,7 @@
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
+    <ClCompile Include="integrationtest_closedloop.cpp" />
     <ClCompile Include="integrationtest_oliveira.cpp" />
     <ClCompile Include="integrationtest_points.cpp" />
     <ClCompile Include="squish66406.cpp" />

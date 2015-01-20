@@ -11,6 +11,7 @@
 #include "PurelyTemporalData.h"
 #include "SpaceTimeData.h"
 #include "SVTTData.h"
+#include "ClosedLoopData.h"
 #include "stsRunHistoryFile.h"
 #include "LoglikelihoodRatioWriter.h"
 #include "ClusterInformationWriter.h"
@@ -713,6 +714,7 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject(BasePrint& print) const {
             return new CPSMonotoneAnalysis(gParameters, *gpDataHub, print);
       case PURELYTEMPORAL :
       case PROSPECTIVEPURELYTEMPORAL :
+      case SEASONALTEMPORAL         :
           return new CPurelyTemporalAnalysis(gParameters, *gpDataHub, print);
       case SPACETIME :
       case PROSPECTIVESPACETIME :
@@ -1559,6 +1561,7 @@ void AnalysisRunner::Setup() {
             case SPACETIME                 :
             case PROSPECTIVESPACETIME      : gpDataHub.reset(new CSpaceTimeData(gParameters, gPrintDirection)); break;
             case SPATIALVARTEMPTREND       : gpDataHub.reset(new CSVTTData(gParameters, gPrintDirection)); break;
+            case SEASONALTEMPORAL          : gpDataHub.reset(new ClosedLoopData(gParameters, gPrintDirection)); break;
             default : throw prg_error("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
         };
         if (gParameters.GetReportCriticalValues() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCriticalValueType() == CV_MONTECARLO))

@@ -7,6 +7,7 @@
 #include "DateStringParser.h"
 #include "SSException.h"
 #include "DataSource.h" 
+#include "ClosedLoopData.h"
 
 const short DataSetHandler::guLocationIndex             = 0;
 const short DataSetHandler::guCountIndex                = 1;
@@ -118,8 +119,16 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
              if (ppCounts[0][TractIndex] < 0)
                throw resolvable_error("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
                                       (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-               ppCounts[i][TractIndex] += Count;
+
+             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL && gParameters.GetProbabilityModelType() != POISSON) {
+                Date = gDataHub.convertToSeasonalDate(Date);
+                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                    ppCounts[i][TractIndex] += Count;
+             } else {
+                for (i=1; Date >= gDataHub.CSaTScanData::GetTimeIntervalStartTimes()[i]; ++i)
+                    ppCounts[i][TractIndex] += Count;
+             }
+
              //record count as a case or control
              if (bCaseFile)
                DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
@@ -393,8 +402,11 @@ void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& 
 /** internal initialization - allocates RealDataSet object for each data set. */
 void DataSetHandler::Setup() {
     try {
+        // down cast closed loop data to parent class if Poisson model -- we initially want the number of intervals as non-closed loop
+        bool downCast = dynamic_cast<ClosedLoopData*>(&gDataHub) != 0 && gParameters.GetProbabilityModelType() == POISSON;
+        int intervals = downCast ? gDataHub.CSaTScanData::GetNumTimeIntervals() : gDataHub.GetNumTimeIntervals();
         for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
-            gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+            gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
     } catch (prg_exception& x) {
         x.addTrace("Setup()","DataSetHandler");
         throw;

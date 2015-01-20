@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "PurelyTemporalCluster.h"
 #include "SSException.h"
+#include "ClosedLoopData.h"
 
 /** constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
@@ -88,11 +89,34 @@ measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, 
   return tMeasure;
 }
 
+/** returns end date of defined cluster as formated string */
+std::string& CPurelyTemporalCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
+    DatePrecisionType eDatePrint = DataHub.GetParameters().GetPrecisionOfTimesType();
+    if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
+        const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
+        if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");
+        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint, sep, true);
+    } else
+        return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint, sep);
+}
+
+/** returns start date of defined cluster as formated string */
+std::string& CPurelyTemporalCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
+    DatePrecisionType eDatePrint = DataHub.GetParameters().GetPrecisionOfTimesType();
+    if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
+        const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
+        if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");
+        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep, true);
+    } else
+        return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep);
+}
+
+
 /** Returns collection of location indexes that define this cluster. If 'bAtomize' is true, breaks
     down meta locations into atomic indexes. */
 std::vector<tract_t> & CPurelyTemporalCluster::getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
    indexes.clear();
-   indexes.push_back(0);   
+   indexes.push_back(0);
    return indexes;
 }
 

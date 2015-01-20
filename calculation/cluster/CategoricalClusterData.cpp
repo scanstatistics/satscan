@@ -324,7 +324,7 @@ CategoricalProspectiveSpatialData & CategoricalProspectiveSpatialData::operator=
 /** internal setup function */
 void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterface& Interface) {
   try {
-    giNumTimeIntervals = Data.m_nTimeIntervals;
+    giNumTimeIntervals = Data.GetNumTimeIntervals();
     giProspectiveStart = Data.GetProspectiveStartIndex();
     gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), 1 + giNumTimeIntervals - giProspectiveStart, 0));
     gppCategoryCases = gCategoryCasesHandler->GetArray();

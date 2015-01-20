@@ -53,10 +53,10 @@ void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
 void CPurelyTemporalData::DisplayCases(FILE* pFile) const {
   unsigned int   i, j;
 
-  fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+  fprintf(pFile, "PT Case counts (PTCases)   # TimeIntervals=%i\n\n", GetNumTimeIntervals());
   for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
-     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+     for (i=0; i < (unsigned int)GetNumTimeIntervals(); ++i)
         fprintf(pFile, "PTCases [%u] = %li\n", i, gDataSets->GetDataSet(j).getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
@@ -69,10 +69,10 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) const {
 void CPurelyTemporalData::DisplayMeasure(FILE* pFile) const {
   unsigned int   i, j;
 
-  fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+  fprintf(pFile, "PT Measures (PTMeasure)   # TimeIntervals=%i\n\n", GetNumTimeIntervals());
   for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
-     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+     for (i=0; i < (unsigned int)GetNumTimeIntervals(); ++i)
         fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gDataSets->GetDataSet(j).getMeasureData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
@@ -86,7 +86,7 @@ void CPurelyTemporalData::DisplaySimCases(SimulationDataContainer_t& Container, 
   fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
   for (size_t j=0; j < Container.size(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
-     for (int i=0; i < m_nTimeIntervals; ++i)
+     for (int i=0; i < GetNumTimeIntervals(); ++i)
         fprintf(pFile, "PTSimCases [%u] = %li\n", i, Container.at(j)->getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
@@ -144,5 +144,3 @@ void CPurelyTemporalData::SetProbabilityModel() {
                                gParameters.GetProbabilityModelType());
   }
 }
-
-

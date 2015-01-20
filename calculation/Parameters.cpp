@@ -439,7 +439,7 @@ bool CParameters::GetIsProspectiveAnalysis() const {
 
 /** Returns whether analysis is purely temporal. */
 bool CParameters::GetIsPurelyTemporalAnalysis() const {
-  return (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
+    return (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL || geAnalysisType == SEASONALTEMPORAL);
 }
 
 /** Returns whether analysis is space-time. */
@@ -656,8 +656,8 @@ void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
 
 /** Sets analysis type. Throws exception if out of range. */
 void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
-  if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
+  if (eAnalysisType < PURELYSPATIAL || eAnalysisType > SEASONALTEMPORAL)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, SEASONALTEMPORAL);
   geAnalysisType = eAnalysisType;
 }
 

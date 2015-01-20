@@ -586,6 +586,20 @@ void DataSet::setMeasureData_PT_Aux() {
   }
 }
 
+/** Sets cumulative case data from self, assuming self is currently not cumulative.
+    Repeated calls to this method or calling when data is not in a not cumulative state
+    will produce erroneous data. */
+void DataSet::setCaseDataToCumulative() {
+  if (giIntervalsDimensions < 2) return;
+  count_t ** ppCases = getCaseData().GetArray();
+  for (unsigned int t=0; t < giLocationDimensions + giMetaLocations; ++t) {
+     for (unsigned int i=giIntervalsDimensions-2; ; --i) {
+        ppCases[i][t]= ppCases[i][t] + ppCases[i+1][t];
+        if (i == 0) break;
+     }
+  }
+}
+
 /** Sets cumulative measure data from self, assuming self is currently not cumulative.
     Repeated calls to this method or calling when data is not in a not cumulative state
     will produce erroneous data. */
@@ -814,4 +828,22 @@ RealDataSet::PopulationDataPair_t RealDataSet::getPopulationMeasureData() const 
       populationPair.second = _populationData.second;
   }
   return populationPair;
+}
+
+
+void RealDataSet::reassign(TwoDimCountArray_t& cases, TwoDimMeasureArray_t& measure) {
+    if (giMetaLocations != 0)
+        throw prg_error("reassign() cannot be called with meta locations.","reassign()");
+    if (cases.Get1stDimension() != measure.Get1stDimension())
+        throw prg_error("1st dimension does not match.","reassign()");
+    if (cases.Get2ndDimension() != measure.Get2ndDimension())
+        throw prg_error("2nd dimension does not match.","reassign()");
+    // TODO: check other class arrays?
+    giIntervalsDimensions = cases.Get1stDimension();
+    giLocationDimensions = cases.Get2ndDimension();
+
+    delete gpCaseData; gpCaseData = 0;
+    gpCaseData = new TwoDimensionArrayHandler<count_t>(cases);
+    delete gpMeasureData; gpMeasureData = 0;
+    gpMeasureData = new TwoDimensionArrayHandler<measure_t>(measure);
 }
