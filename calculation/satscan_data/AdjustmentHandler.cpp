@@ -36,9 +36,9 @@ void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
 
 /** defines relative risk adjustment for passed data */
 void RelativeRiskAdjustmentHandler::add(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
-  size_t				i, iStartIndex, iEndIndex;
-  Julian                                TempDate;
-  measure_t                             TempRisk;
+  size_t iStartIndex, iEndIndex;
+  Julian TempDate;
+  measure_t TempRisk;
   TractContainerIterator_t              itr_Start, itr_End;
 
   try {
@@ -114,7 +114,7 @@ void RelativeRiskAdjustmentHandler::add(tract_t tTractIndex, measure_t dRelative
       //create new adjustment periods in existing adjustment period between StartDate and EndDate to cause continious adjustment period
       //ensure two things - the period from StartDate to EndDate is contiguous(i.e. fill 'open' periods between adjustments dates)
       //                  - update relative risk for existing adjustments within new period
-      for (i=iEndIndex; i > iStartIndex; --i) {
+      for (size_t i=iEndIndex; i > iStartIndex; --i) {
          if (Adjustments[i].GetStartDate() - 1 != Adjustments[i - 1].GetEndDate()) {
            Adjustments.insert(Adjustments.begin() + i,
                               RelativeRiskAdjustment(dRelativeRisk, Adjustments[i - 1].GetEndDate() + 1,

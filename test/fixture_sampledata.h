@@ -4,32 +4,32 @@
 // project files
 #include "fixture_prm_source.h"
 
-struct new_mexico_fixture : prm_fixture {
-    new_mexico_fixture() : prm_fixture("nm.prm") { }
+struct new_mexico_fixture : prm_sampledata_fixture {
+    new_mexico_fixture() : prm_sampledata_fixture("nm.prm") { }
     virtual ~new_mexico_fixture() { }
 };
-struct nhumberside_fixture : prm_fixture {
-    nhumberside_fixture() : prm_fixture("NHumberside.prm") { }
+struct nhumberside_fixture : prm_sampledata_fixture {
+    nhumberside_fixture() : prm_sampledata_fixture("NHumberside.prm") { }
     virtual ~nhumberside_fixture() { }
 };
-struct nycfever_fixture : prm_fixture {
-    nycfever_fixture() : prm_fixture("NYCfever.prm") { }
+struct nycfever_fixture : prm_sampledata_fixture {
+    nycfever_fixture() : prm_sampledata_fixture("NYCfever.prm") { }
     virtual ~nycfever_fixture() { }
 };
-struct normalfake_fixture : prm_fixture {
-    normalfake_fixture() : prm_fixture("NormalFake.prm") { }
+struct normalfake_fixture : prm_sampledata_fixture {
+    normalfake_fixture() : prm_sampledata_fixture("NormalFake.prm") { }
     virtual ~normalfake_fixture() { }
 };
-struct survivalfake_fixture : prm_fixture {
-    survivalfake_fixture() : prm_fixture("SurvivalFake.prm") { }
+struct survivalfake_fixture : prm_sampledata_fixture {
+    survivalfake_fixture() : prm_sampledata_fixture("SurvivalFake.prm") { }
     virtual ~survivalfake_fixture() { }
 };
-struct marylandeducation_fixture : prm_fixture {
-    marylandeducation_fixture() : prm_fixture("MarylandEducation.prm") { }
+struct marylandeducation_fixture : prm_sampledata_fixture {
+    marylandeducation_fixture() : prm_sampledata_fixture("MarylandEducation.prm") { }
     virtual ~marylandeducation_fixture() { }
 };
-struct continuouspoissonfake_fixture : prm_fixture {
-    continuouspoissonfake_fixture() : prm_fixture("ContinuousPoissonFake.prm") { }
+struct continuouspoissonfake_fixture : prm_sampledata_fixture {
+    continuouspoissonfake_fixture() : prm_sampledata_fixture("ContinuousPoissonFake.prm") { }
     virtual ~continuouspoissonfake_fixture() { }
 };
 #endif

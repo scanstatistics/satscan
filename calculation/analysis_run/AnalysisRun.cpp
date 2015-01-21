@@ -350,7 +350,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
                 simulation_out = gParameters.GetSimulationDataOutputFilename();
                 remove(simulation_out.c_str());
             }
-            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false);
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false, 1);
         } else 
             AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
         unsigned int numReplicaStep1 = gSimVars.get_sim_count();
@@ -444,7 +444,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
             for (size_t r=1; r < gParameters.GetNumDataSets(); ++r)
                 randomizers->at(r) = randomizers->at(0)->Clone();
             gPrintDirection.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-            runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep(), simulation_out, true);
+            runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep(), simulation_out, true, t + 1);
 
             double power05, power01, power001;
             switch (gParameters.getPowerEstimationType()) {
@@ -942,7 +942,7 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       //report calculated simulation llr values
       if (SimulationRatios) {
         if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->initialize();
-        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1, false));
         std::vector<double>::const_iterator itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
         for (; itr != itr_end; ++itr) {
           //update most likely clusters given latest simulated loglikelihood ratio
@@ -988,11 +988,11 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
     - additional output file(s)
 *****************************************************
 */
-void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep) {
+void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration) {
   try {
     {
       PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica, isPowerStep);
+      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica, isPowerStep, iteration);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
       PrintNull nullPrint;
@@ -1054,7 +1054,7 @@ void AnalysisRunner::ExecuteSuccessiveSimulations() {
                 remove(simulation_out.c_str());
             }
             boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
-            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false);
+            runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested(), simulation_out, false, giAnalysisCount);
         }
     } catch (prg_exception& x) {
         x.addTrace("ExecuteSuccessiveSimulations()","AnalysisRunner");

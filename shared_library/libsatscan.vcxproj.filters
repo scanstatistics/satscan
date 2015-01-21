@@ -106,6 +106,9 @@
     <Filter Include="Source Files\boost\system">
       <UniqueIdentifier>{e2be35d3-9412-4f8f-85a0-557b97965c06}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\filesystem">
+      <UniqueIdentifier>{88d09b98-7500-4b4b-8d43-2bb06d48c926}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\c_regex_traits.cpp">
@@ -665,6 +668,30 @@
     </ClCompile>
     <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp">
       <Filter>Source Files\calculation\analysis_run</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

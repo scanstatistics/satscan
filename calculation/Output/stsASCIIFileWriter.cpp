@@ -99,7 +99,7 @@ void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const ptr_vector<
     gsFileName.setExtension(ext.c_str());
 
     if ((gpFile = fopen(gsFileName.getFullPath(buffer).c_str(), (bAppend ? "a" : "w"))) == NULL)
-      throw resolvable_error("Unable to open/create file %s", "Setup()", gsFileName.getFullPath(buffer).c_str());
+      throw resolvable_error("Unable to open/create file %s", gsFileName.getFullPath(buffer).c_str());
 
     //write column headers when requested
     if (Parameters.getPrintAsciiHeaders()) {

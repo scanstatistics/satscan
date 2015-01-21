@@ -23,18 +23,18 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
   try {
     //before version 3, there were no restrictions for secondary clusters
     if (gParameters.GetCreationVersion().iMajor < 3)
-      const_cast<CParameters&>(gParameters).SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS);
-    //before version 6, critical values were always reported
-    if (gParameters.GetCreationVersion().iMajor < 6)
-      const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
-    if (!ValidateMonotoneRisk(PrintDirection))
-      bValid = false;
-    if (!ValidateSVTTAnalysisSettings(PrintDirection))
-      bValid = false;
-    if ((gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
-        && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
-      bValid = false;
-      PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
+            const_cast<CParameters&>(gParameters).SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS);
+
+        // prevent unintended conflicts
+        if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+            // reporting gini optimized clusters is disabled for all analyses except purely spatial
+            const_cast<CParameters&>(gParameters).setReportGiniOptimizedClusters(false);
+        }
+
+        if ((gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
+            && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
                             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (!gParameters.getPerformPowerEvaluation() && gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
@@ -42,34 +42,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
       bValid = false;
       PrintDirection.Printf("%s:\nWhen using the non-Eucledian neighbors file, the criteria for reporting secondary clusters "
                             "can either be set to 'no restrictions' or 'no geographical overlap'.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-    }
-    if (!ValidateExecutionTypeParameters(PrintDirection))
-      bValid = false;
-    //validate dates
-    if (! ValidateDateParameters(PrintDirection))
-      bValid = false;
-    else {
-      //Validate temporal options only if date parameters are valid. Some
-      //temporal parameters can not be correctly validated if dates are not valid.
-      if (! ValidateTemporalParameters(PrintDirection))
-         bValid = false;
-    }
-
-    //validate spatial options
-    if (! ValidateSpatialParameters(PrintDirection))
-      bValid = false;
-
-    if (!ValidateContinuousPoissonParameters(PrintDirection))
-      bValid = false;
-
-    //validate input/oupt files
-    if (! ValidateFileParameters(PrintDirection))
-      bValid = false;
-
-    if (! ValidateOutputOptionParameters(PrintDirection))
-      bValid = false;
-
-    //validate model parameters
+        }
+        //validate model parameters
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
@@ -77,19 +51,23 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
     }
-    //validate range parameters
-    bValid &= ValidateRangeParameters(PrintDirection);
-    //validate iterative scan parameters
-    bValid &= ValidateIterativeScanParameters(PrintDirection);
-    bValid &= ValidateInferenceParameters(PrintDirection);
-    // validate border analysis parameters
-    bValid &= ValidateBorderAnalysisParameters(PrintDirection);
-    //validate ellipse parameters
-    bValid &= ValidateEllipseParameters(PrintDirection);
-    //validate simulation options
-    bValid &= ValidateSimulationDataParameters(PrintDirection);
-    bValid &= ValidateRandomizationSeed(PrintDirection);
-    bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
+
+        bValid &= ValidateMonotoneRisk(PrintDirection);
+        bValid &= ValidateSVTTAnalysisSettings(PrintDirection);
+        bValid &= ValidateExecutionTypeParameters(PrintDirection);
+        bValid &= ValidateDateParameters(PrintDirection);
+        bValid &= ValidateSpatialParameters(PrintDirection);
+        bValid &= ValidateContinuousPoissonParameters(PrintDirection);
+        bValid &= ValidateFileParameters(PrintDirection);
+        bValid &= ValidateOutputOptionParameters(PrintDirection);
+        bValid &= ValidateRangeParameters(PrintDirection);
+        bValid &= ValidateIterativeScanParameters(PrintDirection);
+        bValid &= ValidateInferenceParameters(PrintDirection);
+        bValid &= ValidateBorderAnalysisParameters(PrintDirection);
+        bValid &= ValidateEllipseParameters(PrintDirection);
+        bValid &= ValidateSimulationDataParameters(PrintDirection);
+        bValid &= ValidateRandomizationSeed(PrintDirection);
+        bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
   } catch (prg_exception& x) {
     x.addTrace("ValidateParameters()","ParametersValidate");
     throw;
@@ -183,7 +161,8 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
     x.addTrace("ValidateDateParameters()","ParametersValidate");
     throw;
   }
-  return bValid;
+  // Validate temporal options only if date parameters are valid. Some temporal parameters can not be correctly validated if dates are not valid.
+  return bValid ? ValidateTemporalParameters(PrintDirection) : false;
 }
 
 /** Validates that date parameter string is in correct format. */
@@ -689,8 +668,6 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
 
 bool ParametersValidate::ValidateSpatialOutputParameters(BasePrint & PrintDirection) const {
   bool  bReturn=true;
-
-  if (gParameters.GetIsPurelyTemporalAnalysis()) return true;
 
   //verify the index based cluster collection option with other settings.
   if (gParameters.getReportGiniOptimizedClusters()) {

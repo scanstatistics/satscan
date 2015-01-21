@@ -33,19 +33,6 @@ struct squish66406_analysis_fixture : new_mexico_fixture {
     }
     virtual ~squish66406_analysis_fixture() {}
 
-    void run_analysis(const std::string& analysis_name) {
-        // set results file to the user document directory
-        std::stringstream filename;
-        filename << GetUserDocumentsDirectory(_results_user_directory, "").c_str() << "\\" << analysis_name.c_str() << ".txt";
-        _parameters.SetOutputFileName(filename.str().c_str());
-
-        time_t startTime;
-        time(&startTime);
-        AppToolkit::ToolKitCreate(boost::unit_test::framework::master_test_suite().argv[0]);
-        testAnalysisRunner(_parameters, startTime, _print).Execute();
-        AppToolkit::ToolKitDestroy();
-    }
-
     std::string _results_user_directory;
 };
 
@@ -54,7 +41,7 @@ BOOST_FIXTURE_TEST_SUITE( squish66406_suite, squish66406_analysis_fixture )
 
 /* Tests for expected oliveira fields in risk estimates file with neither hierarchical nor gini selected. */
 BOOST_AUTO_TEST_CASE( squish66406_testcase ) {
-    run_analysis("test");
+    run_analysis("test", _results_user_directory, _parameters, _print);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

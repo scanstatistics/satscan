@@ -124,6 +124,12 @@
     <Filter Include="Header Files\fixtures\sample_data">
       <UniqueIdentifier>{3b18b94f-8826-439c-9a14-5f6a82c270df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Sets">
+      <UniqueIdentifier>{40894e60-e221-484a-9226-3363b5f80ef0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost\filesystem">
+      <UniqueIdentifier>{8bbd6ba8-f270-4fce-88af-49aba27435ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -1227,6 +1233,30 @@
       <Filter>Source Files\regression_tests</Filter>
     </ClCompile>
     <ClCompile Include="integrationtest_points.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="integrationtest_squish66408.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
   </ItemGroup>

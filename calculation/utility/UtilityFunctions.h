@@ -28,6 +28,7 @@ unsigned int                    getFormatPrecision(double value, unsigned int iS
 std::string                   & getValueAsString(double value, std::string& s, unsigned int iSignificant=2);
 std::string                   & getRoundAsString(double value, std::string& s, unsigned int iRound=2);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
+std::string                   & GetUserTemporaryDirectory(std::string& s);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
 template <typename T>           bool string_to_type(const char * s, T& t) {

@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include "SimulationVariables.h"
+#include <boost/filesystem.hpp>
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -442,6 +443,11 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
   return s;
 }    
 #endif
+
+std::string & GetUserTemporaryDirectory(std::string& s) {
+    s = boost::filesystem::temp_directory_path().string();
+    return s;
+}
 
 /** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
     Returns whether data was read or end of file encountered. */

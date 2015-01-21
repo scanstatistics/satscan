@@ -7,6 +7,7 @@
 #include "SSException.h"
 #include "ObservableRegion.h"
 #include "ChartGenerator.h"
+#include "LoglikelihoodRatioWriter.h"
 
 /** Returns analysis type as string. */
 const char * ParametersPrint::GetAnalysisTypeAsString() const {
@@ -785,6 +786,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
+    FileName AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
 
     try {
         if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
@@ -847,6 +849,15 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                     settings.push_back(std::make_pair("Power Step Simulation Data Filename", gParameters.getPowerEvaluationSimulationDataOutputFilename()));
                 }
             }
+        }
+        // loglikelihood ratio files for power evaluations
+        if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
+            AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
+            settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
+        }
+        if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
+            AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, DBaseDataFileWriter::DBASE_FILE_EXT).c_str());
+            settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
         }
         WriteSettingsContainer(settings, "Power Evaluation", fp);
     } catch (prg_exception& x) {

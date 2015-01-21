@@ -13,13 +13,15 @@ class RecordBuffer;  /** forward class declaration */
 
 /** dBase data writer. */
 class DBaseDataFileWriter {
+   public:
+      static const char * DBASE_FILE_EXT;
+
    private :
       void	          Setup(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension,  bool bAppend);
 
    protected:
       dBaseFile           gFile;
       dBaseRecord       * gpFileRecord;
-      static const char * DBASE_FILE_EXT;
       FileName            gsFileName;        /** output filename */
 
    public :

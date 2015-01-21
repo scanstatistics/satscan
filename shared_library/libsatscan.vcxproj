@@ -126,6 +126,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\chrono.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\process_cpu_clocks.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\thread_clock.cpp" />

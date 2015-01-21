@@ -102,7 +102,7 @@ class AnalysisRunner {
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                ExecuteCentricEvaluation();
-    void                                runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep);
+    void                                runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
     void                                ExecuteSuccessiveSimulations();
     void                                PrintCriticalValuesStatus(FILE* fp);
     void                                PrintEarlyTerminationStatus(FILE* fp);

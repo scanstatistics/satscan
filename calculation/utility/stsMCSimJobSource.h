@@ -84,6 +84,7 @@ public:
    ,AnalysisRunner & rRunner
    ,unsigned int num_replica
    ,bool isPowerStep
+   , unsigned int iteration
   );
 
   bool                      is_exhausted() const;
