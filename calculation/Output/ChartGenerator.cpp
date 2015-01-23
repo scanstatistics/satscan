@@ -67,7 +67,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             var charts = {}; \n \
             $(document).ready(function () { \n \
                 --charts--   \n\n \
-                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.text); }); \n \
+                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
                 $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
                 $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
                 $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
@@ -108,7 +108,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                     exporting: {filename: 'cluster_graph'}, \n \
                     plotOptions: { column: { grouping: false }}, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
-                    legend: { backgroundColor: '#F5F5F5' }, \n \
+                    legend: { backgroundColor: '#F5F5F5', verticalAlign: 'top', y: 40 }, \n \
                     xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }], \n \
                     yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \

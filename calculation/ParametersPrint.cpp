@@ -849,15 +849,15 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                     settings.push_back(std::make_pair("Power Step Simulation Data Filename", gParameters.getPowerEvaluationSimulationDataOutputFilename()));
                 }
             }
-        }
-        // loglikelihood ratio files for power evaluations
-        if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
-            AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
-            settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
-            AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, DBaseDataFileWriter::DBASE_FILE_EXT).c_str());
-            settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
+            // loglikelihood ratio files for power evaluations
+            if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
+                AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
+                settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
+            }
+            if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
+                AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, DBaseDataFileWriter::DBASE_FILE_EXT).c_str());
+                settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
+            }
         }
         WriteSettingsContainer(settings, "Power Evaluation", fp);
     } catch (prg_exception& x) {
@@ -1123,10 +1123,10 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) return;
-
-        // This feature is not present in gui at the moment, so only show if toggled on.
-        if (!gParameters.getOutputTemporalGraphFile()) return; 
+        // The temporal graph is option for purely temporal/space-time analyses with Poisson, Bernoulli, STP and Exponential.
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
+            !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+            gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL)) return;
 
         settings.push_back(std::make_pair("Create Temporal Graph",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
         if (gParameters.getOutputTemporalGraphFile()) {
