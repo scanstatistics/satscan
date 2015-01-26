@@ -466,6 +466,7 @@
     <ClCompile Include="squish66406.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
+    <ClCompile Include="unittest_DataSource.cpp" />
     <ClCompile Include="unittest_JulianDates.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp" />

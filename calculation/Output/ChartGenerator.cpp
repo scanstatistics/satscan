@@ -242,7 +242,7 @@ void TemporalChartGenerator::generateChart() const {
         case MLC_ONLY :
             graphClusters.push_back(&_clusters.GetCluster(0)); break;
         case X_MCL_ONLY :
-            for (int i=0; i < _dataHub.GetParameters().getTemporalGraphMostLikelyCount(); ++i)
+            for (int i=0; i < _dataHub.GetParameters().getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i)
                 graphClusters.push_back(&_clusters.GetCluster(i)); 
             break;
         case SIGNIFICANT_ONLY :

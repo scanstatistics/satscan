@@ -551,7 +551,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 int num_cols = getNumImportSourceColumns(inputSourceSettings, filepath);
                 int max = 0;
                 for (String stdIdx : inputSourceSettings.getFieldMaps()) {
-                    max = Math.max(Integer.parseInt(stdIdx), max);
+                    if (!stdIdx.isEmpty()) {
+                        max = Math.max(Integer.parseInt(stdIdx), max);
+                    }
                 }
                 if (max > num_cols) {
                     return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file structure.";

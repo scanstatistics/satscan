@@ -202,14 +202,14 @@ void IniParameterSpecification::Build_3_0_5_ParameterList() {
     _parameter_info[MODEL] = ParamInfo(MODEL, "ModelType", 2, _analysis_section);
     _parameter_info[SCANAREAS] = ParamInfo(SCANAREAS, "ScanAreas", 3, _analysis_section);
     _parameter_info[REPLICAS] = ParamInfo(REPLICAS, "MonteCarloReps", 5, _analysis_section);
+    _parameter_info[STARTDATE] = ParamInfo(STARTDATE, "StartDate", 6, _analysis_section);
+    _parameter_info[ENDDATE] = ParamInfo(ENDDATE, "EndDate", 7, _analysis_section);
 
     _parameter_info[TIME_AGGREGATION_UNITS] = ParamInfo(TIME_AGGREGATION_UNITS, "IntervalUnits", 1, _time_parameters_section);
     _parameter_info[TIME_AGGREGATION] = ParamInfo(TIME_AGGREGATION, "IntervalLength", 2, _time_parameters_section);
     _parameter_info[TIMETREND] = ParamInfo(TIMETREND, "TimeTrendAdjustmentType", 3, _time_parameters_section);
     _parameter_info[TIMETRENDPERC] = ParamInfo(TIMETRENDPERC, "TimeTrendPercentage", 4, _time_parameters_section);
     _parameter_info[START_PROSP_SURV] = ParamInfo(START_PROSP_SURV, "ProspectiveStartDate", 5, _time_parameters_section);
-    _parameter_info[STARTDATE] = ParamInfo(STARTDATE, "StartDate", 6, _time_parameters_section);
-    _parameter_info[ENDDATE] = ParamInfo(ENDDATE, "EndDate", 7, _time_parameters_section);
 
     _parameter_info[GEOSIZE] = ParamInfo(GEOSIZE, "MaxGeographicSize", 1, _scanning_window_section);
     _parameter_info[MAX_SPATIAL_TYPE] = ParamInfo(MAX_SPATIAL_TYPE, "MaxSpatialSizeInterpretation", 2, _scanning_window_section);

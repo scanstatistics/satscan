@@ -181,17 +181,19 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
     double dRelativeRisk;
     RecordBuffer Record(vFieldDefinitions);
     const DataSetHandler & Handler = DataHub.GetDataSetHandler();
-    std::vector<double> vCoordinates;
-    std::pair<double, double> prLatitudeLongitude;
 
     try {
         //do not report locations for which iterative scan has nullified its data
         if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
         DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
-        CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
-        prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-        if (gpShapeDataFileWriter) gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+        if (gpShapeDataFileWriter) {
+            std::vector<double> vCoordinates;
+            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
+            std::pair<double, double> prLatitudeLongitude;
+            prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+            gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+        }
 
         for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
             Record.SetAllFieldsBlank(true);

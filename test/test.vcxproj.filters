@@ -130,6 +130,9 @@
     <Filter Include="Source Files\source\boost\filesystem">
       <UniqueIdentifier>{8bbd6ba8-f270-4fce-88af-49aba27435ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\unit_tests\satscan_data">
+      <UniqueIdentifier>{75b74751-4d8d-4e82-996d-ea09cda0f39a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -1258,6 +1261,9 @@
     </ClCompile>
     <ClCompile Include="integrationtest_squish66408.cpp">
       <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_DataSource.cpp">
+      <Filter>Source Files\unit_tests\satscan_data</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
