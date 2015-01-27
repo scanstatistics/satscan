@@ -358,6 +358,13 @@ bool CsvFileDataSource::parse(const std::string& s, const std::string& delimiter
         if (!_values.back().size() && _ignore_empty_fields)
             _values.pop_back();
     }
+
+    // if all fields are empty string, then treat this as empty record
+    size_t blanks=0;
+    for (std::vector<std::string>::const_iterator itr=_values.begin(); itr != _values.end(); ++itr)
+        if (itr->empty()) ++blanks;
+    if (blanks == _values.size()) _values.clear();
+
     return _values.size() > 0;
 }
 

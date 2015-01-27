@@ -1,13 +1,17 @@
 This is a bunch of meta data that should be ignored.
 
 LOCATIONID,COUNT,ATTRIBUTE
-location1,5,2
-location2,1,2
-location3,2,2
-location4,5,2
-location5,1,2
-location6,5,2
-location7,4,2
-location8,3,2
-location9,5,2
-location10,2,2
+location1,1,11
+
+location2,2,22
+location3,3,33
+
+location4,4,44
+location5,5,55
+location6,6,66
+location7,7,77
+location8,8,88
+location9,9,99
+
+location10,10,110
+
