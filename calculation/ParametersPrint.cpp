@@ -179,7 +179,7 @@ void ParametersPrint::PrintBorderAnalysisParameters(FILE* fp) const {
         settings.push_back(std::make_pair("Report Oliveira's F", (gParameters.getCalculateOliveirasF() ? "Yes" : "No")));
         if (gParameters.getCalculateOliveirasF()) {
             std::string buffer;
-            settings.push_back(std::make_pair("Number of Oliveira Data Sets", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
+            settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
         }
         WriteSettingsContainer(settings, "Border Analysis", fp);
     }
@@ -717,7 +717,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     bool canReportClusterFiles = (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
 
     try {
-        settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
+        settings.push_back(std::make_pair("Main Results File",gParameters.GetOutputFileName()));
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelAscii()) {
             AdditionalOutputFile.setExtension(".col.txt");
             settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
@@ -755,11 +755,11 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
         // relative risk files
         if (gParameters.GetOutputRelativeRisksAscii()) {
             AdditionalOutputFile.setExtension(".rr.txt");
-            settings.push_back(std::make_pair("Relative Risks File",AdditionalOutputFile.getFullPath(buffer)));
+            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.GetOutputRelativeRisksDBase()) {
             AdditionalOutputFile.setExtension(".rr.dbf");
-            settings.push_back(std::make_pair("Relative Risks File",AdditionalOutputFile.getFullPath(buffer)));
+            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
         }
         // loglikelihood ratio files
         if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {

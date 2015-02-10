@@ -28,11 +28,16 @@ OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time
     grRunner._reportClusters.getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), significantClusters);
     _numSignificantMLC = std::min(static_cast<size_t>(1), significantClusters.size()); // significant clusters for neither hierarchical nor gini
     _numSignificantHierarchical = significantClusters.size(); // significant clusters for hierarchical
+
+    /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
     _optimalSignificantCluster.resize(grRunner.gParameters.getExecuteSpatialWindowStops().size(), 0); // significant clusters for optimal gini
+    */
 
     // initialize variables based on which parameter settings are requested
     if (!(grRunner.gParameters.getReportHierarchicalClusters() || grRunner.gParameters.getReportGiniOptimizedClusters()) || grRunner.gParameters.getReportHierarchicalClusters())
         _presence_hierarchical.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
+
+    /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
     if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
         _presence_gini_optimal.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
         _presence_gini_maxima.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
@@ -53,6 +58,7 @@ OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time
             _maximaSignificantCluster.push_back(clusterList.size());
         }
     }
+    */
 }
 
 
@@ -330,6 +336,8 @@ void OliveiraJobSource::WriteResultToStructures(successful_result_type const & r
             relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantMLC, _presence_hierarchical, relevance._most_likely_only);
         if (grRunner.gParameters.getReportHierarchicalClusters()) // hierarachical clusters
             relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantHierarchical, _presence_hierarchical, relevance._hierarchical);
+
+        /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
         if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
             // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant in optimal collection for real data
             AnalysisRunner::OptimalGiniByLimit_t optimalOliveira = grRunner.getOptimalGiniContainerByLimit(*rResult.second, _optimalSignificantCluster);
@@ -346,6 +354,7 @@ void OliveiraJobSource::WriteResultToStructures(successful_result_type const & r
             location_presence = _presence_hierarchical | _presence_gini_maxima;
             relevance.updateRelevance(location_presence, relevance._hierarchical_gini_maxima);
         }
+        */
     } catch (prg_exception & e) {
         e.addTrace("WriteResultToStructures()", "OliveiraJobSource");
         throw;

@@ -598,7 +598,7 @@ void IniParameterSpecification::Build_9_4_x_ParameterList() {
 
     _parameter_info[USER_DEFINED_TITLE] = ParamInfo(USER_DEFINED_TITLE, "ResultsTitle", 4, _other_output_section);
     _parameter_info[CALCULATE_OLIVEIRA] = ParamInfo(CALCULATE_OLIVEIRA, "CalculateOliveira", 1, _border_analysis_section);
-    _parameter_info[NUM_OLIVEIRA_SETS] = ParamInfo(NUM_OLIVEIRA_SETS, "NumOliveiraSets", 2, _border_analysis_section);
+    _parameter_info[NUM_OLIVEIRA_SETS] = ParamInfo(NUM_OLIVEIRA_SETS, "NumBootstrapReplications", 2, _border_analysis_section);
     _parameter_info[OLIVEIRA_CUTOFF] = ParamInfo(OLIVEIRA_CUTOFF, "OliveiraPvalueCutoff", 3, _border_analysis_section);
 
     assert(_parameter_info.size() == 135);

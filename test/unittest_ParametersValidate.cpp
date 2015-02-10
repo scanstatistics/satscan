@@ -58,14 +58,13 @@ BOOST_FIXTURE_TEST_CASE( test_oliveira_analysis_type, new_mexico_fixture ) {
     BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 }
 
-/* Tests parameters validation of oliveira -- oliveira calculation disabled if known of the additional output files are requested. */
+/* Tests parameters validation of oliveira -- oliveira selected with various selected output files. */
 BOOST_FIXTURE_TEST_CASE( test_oliveira_additional_output_files, new_mexico_fixture ) {
     // nm data set uses the Poisson model and space-time analysis initially - so set to purely spatial analysis
     _parameters.SetAnalysisType(PURELYSPATIAL);
-
-    // set oliveira parameter to true -- still should validate but validation should be reset of off since
-    // we're not requesting either "Location Information" and "Risk Estimates for Each Location" files -- feature disabled otherwise
+    // set oliveira parameter to true
     _parameters.setCalculateOliveirasF(true);
+
     // ensure assumption that we're not already requesting neither "Location Information" nor "Risk Estimates for Each Location" files
     BOOST_REQUIRE(_parameters.GetOutputAreaSpecificFiles() == false && _parameters.GetOutputRelativeRisksFiles() == false);
     BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
@@ -145,4 +144,47 @@ BOOST_FIXTURE_TEST_CASE( test_oliveira_p_value_cutoff, new_mexico_fixture ) {
     _parameters.setOliveiraPvalueCutoff(1.1);
     BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
 }
+
+/* Tests parameters validation of oliveira -- test gini selected. */
+BOOST_FIXTURE_TEST_CASE( test_oliveira_gini_selected, new_mexico_fixture ) {
+    // nm data set uses the Poisson model and space-time analysis initially - so set to purely spatial analysis
+    _parameters.SetAnalysisType(PURELYSPATIAL);
+    _parameters.setCalculateOliveirasF(true);
+    // request "Risk Estimates for Each Location" files
+    _parameters.SetOutputRelativeRisksAscii(true);
+
+    // current parameters should validate
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
+
+    // select gini
+    _parameters.setReportGiniOptimizedClusters(true);
+    // should no longer validate
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+}
+
+/* Tests parameters validation of oliveira -- test hierarchical and secondary clusters selection. */
+BOOST_FIXTURE_TEST_CASE( test_oliveira_secondary_clusters, new_mexico_fixture ) {
+    // nm data set uses the Poisson model and space-time analysis initially - so set to purely spatial analysis
+    _parameters.SetAnalysisType(PURELYSPATIAL);
+    _parameters.setCalculateOliveirasF(true);
+    // select hierarchical
+    _parameters.setReportHierarchicalClusters(true);
+    BOOST_REQUIRE(_parameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP);
+
+    // current parameters should validate
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
+
+    // should fail for all other secondary clusters critierian.
+    _parameters.SetCriteriaForReportingSecondaryClusters(NOCENTROIDSINOTHER);
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+    _parameters.SetCriteriaForReportingSecondaryClusters(NOCENTROIDSINMORELIKE);
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+    _parameters.SetCriteriaForReportingSecondaryClusters(NOCENTROIDSINLESSLIKE);
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+    _parameters.SetCriteriaForReportingSecondaryClusters(NOPAIRSINEACHOTHERS);
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+    _parameters.SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS);
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
+}
+
 BOOST_AUTO_TEST_SUITE_END()

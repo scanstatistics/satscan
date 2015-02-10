@@ -2811,7 +2811,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
         _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "Text Output Format"));
 
-        _resultsFileLabel.setText("Results File:"); // NOI18N
+        _resultsFileLabel.setText("Main Results File:"); // NOI18N
 
         _resultsFileBrowseButton.setText("Browse Results File"); // NOI18N
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -2835,16 +2835,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _textOutputFormatGroup.setLayout(_textOutputFormatGroupLayout);
         _textOutputFormatGroupLayout.setHorizontalGroup(
             _textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _textOutputFormatGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
-                        .addComponent(_resultsFileLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
-                        .addComponent(_resultsFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(_textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_resultsFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_resultsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         _textOutputFormatGroupLayout.setVerticalGroup(

@@ -47,10 +47,12 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char        * GINI_CLUSTER_FIELD;
       static const char        * OLIVEIRA_F_MLC_FIELD;
       static const char        * OLIVEIRA_F_HIERARCHICAL_FIELD;
+      /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
       static const char        * OLIVEIRA_F_GINI_OPTIMAL_FIELD;
       static const char        * OLIVEIRA_F_GINI_MAXIMA_FIELD;
       static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD;
       static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD;
+      */
 
   protected:
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;

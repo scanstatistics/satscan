@@ -7,6 +7,7 @@
 
 #include "AnalysisRun.h"
 #include "Toolkit.h"
+#include "ParametersValidate.h"
 
 po::options_description& addCustomOptions(po::options_description& prg_options) {
     prg_options.add_options()
@@ -64,6 +65,9 @@ void run_analysis(const std::string& analysis_name, std::string& results_user_di
     std::stringstream filename;
     filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\" << analysis_name.c_str() << ".txt";
     parameters.SetOutputFileName(filename.str().c_str());
+
+    // first validate parameters
+    BOOST_CHECK(ParametersValidate(parameters).Validate(print) == true);
 
     time_t startTime;
     time(&startTime);

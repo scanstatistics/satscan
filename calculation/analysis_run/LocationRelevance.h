@@ -16,10 +16,12 @@ class LocationRelevance {
 
         Relevance_Container_t _most_likely_only; // most likely cluster only
         Relevance_Container_t _hierarchical; // hierarchical clusters
+        /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
         Relevance_Container_t _gini_optimal; // optimal gini clusters
         Relevance_Container_t _gini_maxima; // maxima matching gini clusters
         Relevance_Container_t _hierarchical_gini_optimal; // hierarchical or optimal gini clusters
         Relevance_Container_t _hierarchical_gini_maxima; // hierarchical or maxima matching gini clusters
+        */
 
         LocationRelevance() {}
         LocationRelevance(const CSaTScanData& data_hub);

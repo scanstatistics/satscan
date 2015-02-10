@@ -15,6 +15,7 @@ LocationRelevance::LocationRelevance(const CSaTScanData& data_hub) {
     if (parameters.getReportHierarchicalClusters()) {
         _hierarchical.resize(locations, 0);
     }
+    /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
     if (parameters.getReportGiniOptimizedClusters()) {
         _gini_optimal.resize(locations, 0);
         _gini_maxima.resize(locations, 0);
@@ -23,6 +24,7 @@ LocationRelevance::LocationRelevance(const CSaTScanData& data_hub) {
         _hierarchical_gini_optimal.resize(locations, 0);
         _hierarchical_gini_maxima.resize(locations, 0);
     }
+    */
 }
 
 void LocationRelevance::updatePresence(const CSaTScanData& data_hub, const MostLikelyClustersContainer& mlc, unsigned int maximum, boost::dynamic_bitset<>& location_presence) {

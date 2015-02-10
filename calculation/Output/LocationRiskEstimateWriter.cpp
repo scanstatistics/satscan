@@ -23,10 +23,12 @@ const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                        
 const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD                      = "W_MEAN";
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_MLC_FIELD                           = "F_MLC";
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_FIELD                  = "F_HIERARCH";
+/* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_GINI_OPTIMAL_FIELD                  = "F_GINI_OPT";
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_GINI_MAXIMA_FIELD                   = "F_GINI_MAX";
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD     = "F_H_G_OPT";
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD      = "F_H_G_MAX";
+*/
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub)
@@ -70,7 +72,7 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             } else {
                 CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-                CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);      
+                CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             }
         } else {
             CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -91,20 +93,25 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
             //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
         }
         if (gParameters.getCalculateOliveirasF()) {
-            std::string buffer;
-            printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets());
+            short precision;
+            if (gParameters.getNumRequestedOliveiraSets() <= 100) { precision = 2; 
+            } else if (gParameters.getNumRequestedOliveiraSets() <= 1000) { precision = 3;
+            } else if (gParameters.getNumRequestedOliveiraSets() <= 10000) { precision = 4;
+            } else { /* client specificances not provided */ precision = 5; }
             if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()))
-                CreateField(vFieldDefinitions, OLIVEIRA_F_MLC_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_MLC_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             if (gParameters.getReportHierarchicalClusters())
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+            /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
             if (gParameters.getReportGiniOptimizedClusters()) {
-                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
-                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             }
             if (gParameters.getReportHierarchicalClusters() && gParameters.getReportGiniOptimizedClusters()) {
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             }
+            */
         }
     } catch (prg_exception& x) {
         x.addTrace("DefineFields()","LocationRiskEstimateWriter");
@@ -219,6 +226,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
                         Record.GetFieldValue(OLIVEIRA_F_MLC_FIELD).AsDouble() = static_cast<double>(location_relevance._most_likely_only[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                     if (location_relevance._hierarchical.size() > t)
                         Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
                     if (location_relevance._gini_optimal.size() > t)
                         Record.GetFieldValue(OLIVEIRA_F_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._gini_optimal[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                     if (location_relevance._gini_maxima.size() > t)
@@ -227,6 +235,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
                         Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_optimal[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                     if (location_relevance._hierarchical_gini_maxima.size() > t)
                         Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_maxima[t]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                    */
                 }
                 if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
                     Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
