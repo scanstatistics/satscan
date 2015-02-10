@@ -1120,7 +1120,7 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
 /** Prints 'Temporal Ouput' tab parameters to file stream. */
 void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
-    std::string buffer;
+    std::string buffer, buffer2;
 
     try {
         // The temporal graph is option for purely temporal/space-time analyses with Poisson, Bernoulli, STP and Exponential.
@@ -1128,14 +1128,26 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
             !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
             gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL)) return;
 
-        settings.push_back(std::make_pair("Create Temporal Graph",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("Produce Temporal Graphs",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
         if (gParameters.getOutputTemporalGraphFile()) {
+            buffer = "Cluster Graphing";
+            switch (gParameters.getTemporalGraphReportType()) {
+                case MLC_ONLY: settings.push_back(std::make_pair(buffer, "Most likely cluster only")); break;
+                case X_MCL_ONLY: 
+                    printString(buffer2, "%d most likely clusters, one graph for each", gParameters.getTemporalGraphMostLikelyCount());
+                    settings.push_back(std::make_pair(buffer, buffer2)); break;
+                case SIGNIFICANT_ONLY: 
+                    printString(buffer2, "All significant clusters, one graph for each, with p-value less than %g", gParameters.getTemporalGraphSignificantCutoff());
+                    settings.push_back(std::make_pair(buffer, buffer2)); break;
+                default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", gParameters.getOutputTemporalGraphFile());
+            }
+
             FileName outputFile(gParameters.GetOutputFileName().c_str());
             outputFile.setFullPath(gParameters.GetOutputFileName().c_str());
             TemporalChartGenerator::getFilename(outputFile);
             settings.push_back(std::make_pair("Temporal Graph File", outputFile.getFullPath(buffer)));
         }
-        WriteSettingsContainer(settings, "Temporal Output", fp);
+        WriteSettingsContainer(settings, "Temporal Graphs", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintTemporalOutputParameters()","ParametersPrint");
         throw;
