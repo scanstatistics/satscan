@@ -33,7 +33,7 @@ std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& t
 
 /** ------------------- TemporalChartGenerator --------------------------------*/
 
-const char * TemporalChartGenerator::FILE_SUFFIX_EXT = "_temporal";
+const char * TemporalChartGenerator::FILE_SUFFIX_EXT = ".temporal";
 const int TemporalChartGenerator::MAX_INTERVALS = 4000;
 
 const char * TemporalChartGenerator::BASE_TEMPLATE = " \
