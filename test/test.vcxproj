@@ -464,6 +464,7 @@
     <ClCompile Include="integrationtest_points.cpp" />
     <ClCompile Include="integrationtest_squish66408.cpp" />
     <ClCompile Include="squish66406.cpp" />
+    <ClCompile Include="squish66420.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
     <ClCompile Include="unittest_DataSource.cpp" />

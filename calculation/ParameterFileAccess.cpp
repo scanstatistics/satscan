@@ -838,15 +838,8 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
                 } else if (token == IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate) {
                     fields_map.push_back(DataSource::DEFAULT_DATE);
                 } else if (string_to_type<int>(token.c_str(), column)) {
-
-                    //printf("map: %s\n", token.c_str());
-                    //if (column == 0) {
-                    //    printf("yes\n");
-                    //    fields_map.push_back(DataSource::DEFAULT_DATE);
-                    //} else {
-                    //    fields_map.push_back((long)column);
-                    //}
-
+                    if (column < 0)
+                        throw resolvable_error("Unable to read parameter value '%s' as %s item. Column index cannot be less than zero.", token.c_str(), IniParameterSpecification::SourceFieldMap);
                     fields_map.push_back((long)column);
                 } else if (token == "") {
                     fields_map.push_back(DataSource::BLANK);
@@ -866,17 +859,20 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
             source.setGroup(groupStr.size() == 0 ? "\"" : groupStr);
             if (source.getGroup().size() > 1)
                 throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getGroup().c_str());
-            unsigned int skip;
-            if (!string_to_type<unsigned int>(skipStr.c_str(), skip)) {
+            unsigned int skip=0;
+            if (skipStr.size() > 0 && !string_to_type<unsigned int>(skipStr.c_str(), skip)) {
                 throw resolvable_error("Unable to read parameter value '%s' as %s.", skipStr.c_str(), IniParameterSpecification::SourceSkip);
             }
             source.setSkip(skip);
-            if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
-                !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
-                !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
-                throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+            bool rowheader = false;
+            if (headerStr.size()) {
+                if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
+                    !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
+                    !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+                }
+                rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
             }
-            bool rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
             source.setFirstRowHeader(rowheader);
         }
     } catch (resolvable_error &x) {

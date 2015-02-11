@@ -1265,5 +1265,8 @@
     <ClCompile Include="unittest_DataSource.cpp">
       <Filter>Source Files\unit_tests\satscan_data</Filter>
     </ClCompile>
+    <ClCompile Include="squish66420.cpp">
+      <Filter>Source Files\regression_tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
