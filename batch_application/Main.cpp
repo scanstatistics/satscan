@@ -143,19 +143,19 @@ int main(int argc, char *argv[]) {
     }
     /* program options processing */
     if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console); return 0;}
-    if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
+    if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
     if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
     //if (!vm.count("parameter-file")) {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); usage_message(argv[0], opt_descriptions, application, Console); return 1;}
     /* read parameter file */
     if (vm.count("parameter-file")) {
         if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
-            throw resolvable_error("\nThe parameter settings that prevent SaTScan from continuing.\n"
+            throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
                                    "Please review above message(s) and modify parameter settings accordingly.");
     }
     /* apply parameter overrides*/
     if (!parameterOptions.setParameterOverrides(vm)) {
         if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
-            throw resolvable_error("\nThe parameter settings that prevent SaTScan from continuing.\n"
+            throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
                                    "Please review above message(s) and modify parameter settings accordingly.");
     }
 
