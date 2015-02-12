@@ -838,8 +838,6 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
                 } else if (token == IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate) {
                     fields_map.push_back(DataSource::DEFAULT_DATE);
                 } else if (string_to_type<int>(token.c_str(), column)) {
-                    if (column < 0)
-                        throw resolvable_error("Unable to read parameter value '%s' as %s item. Column index cannot be less than zero.", token.c_str(), IniParameterSpecification::SourceFieldMap);
                     fields_map.push_back((long)column);
                 } else if (token == "") {
                     fields_map.push_back(DataSource::BLANK);

@@ -50,7 +50,9 @@ BOOST_AUTO_TEST_CASE( squish66420_testcase ) {
     line->SetValue("1,2,-3");
     inifile.Write(_parameters.GetSourceFileName());
     // re-read parameter file from user directory -- read should fail
-    BOOST_CHECK_EQUAL( IniParameterFileAccess(_parameters, _print).Read(_parameters.GetSourceFileName().c_str()), false );
+    BOOST_CHECK_EQUAL( IniParameterFileAccess(_parameters, _print).Read(_parameters.GetSourceFileName().c_str()), true );
+    //still not should validate
+    BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), false );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
