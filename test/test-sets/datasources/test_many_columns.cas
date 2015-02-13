@@ -1,0 +1,16 @@
+
+
+5	ACUTE	341.43	NewYork	location1	45	2014/2/23	MP	+65	K1
+
+1	OBTUSE	643.1	Baltimore	location2	17	2014/9/26	ER	<10	K9
+
+2	OBTUSE	683.6	WashingtonDC	location3	29	2014/8/17	YT	=40	K3
+5	ACUTE	9483.2	Richmond	location4	53	2014/11/8	DS	<65	K3
+1	ACUTE	4983.0	TampaBay	location5	12	2014/5/7	QK	60+	K1
+5	OBTUSE	39838.9	BatonRouge	location6	85	2014/9/9	TR	<12	K0
+
+4	OBTUSE	29.7	SanFransico	location7	54	2014/12/2	AQ	<65	K5
+3	ACUTE	482.21	Portland	location8	33	2014/11/9	UY	=50	K7
+
+5	OBTUSE	97.98	StLouis	location9	15	2014/1/17	GF	+65	K4
+2	OBTUSE	40.2	Wallkill	location10	6	2014/12/27	PO	<65	K3

@@ -599,7 +599,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _calculate_oliveiras_f.setEnabled(enable);
         _number_oliveira_data_sets_label.setEnabled(enable);
         _number_oliveira_data_sets.setEnabled(enable);
-        _oliveiras_f_instruction.setEnabled(enable);
     }
     
     public void enableAdjustDayOfWeek(boolean enable) {
@@ -1307,7 +1306,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (monte_carlos < 99)
                 throw new AdvFeaturesExpection("The Oliveira's F calculation requires at least 999 Monte Carlo replications.", FocusedTabSet.ANALYSIS, (Component)_montCarloReplicationsTextField);
             if (oliveira_sets < 100 || oliveira_sets % 100 > 0) {
-                throw new AdvFeaturesExpection("The Oliveira's F calculation requires a minimum of 100 data sets. The number of sets must be a multiple of 100.", FocusedTabSet.ANALYSIS, (Component)_calculate_oliveiras_f);
+                throw new AdvFeaturesExpection("The Oliveira's F calculation requires a minimum of 100 bootstrap replications. The number of bootstrap replications must be a multiple of 100.", FocusedTabSet.ANALYSIS, (Component)_calculate_oliveiras_f);
+            }           
+            /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/ */
+            if (_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected()) {
+                throw new AdvFeaturesExpection("The Oliveira's F calculation cannot be performed in conjunction with the Gini optimized clusters collection.", FocusedTabSet.OUTPUT, (Component)_giniOptimizedClusters);
+            }            
+            // only permit non-overlapping clusters when reporting hierarchical clusters with border analysis option
+            if (_mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected() && getCriteriaSecondaryClustersType() != Parameters.CriteriaSecondaryClustersType.NOGEOOVERLAP) {
+                throw new AdvFeaturesExpection("The Oliveira's F calculation can be performed in conjunction with hierarchical clusters only when secondary clusters are not overlapping.", FocusedTabSet.OUTPUT, (Component)_mostLikelyClustersHierarchically);
             }
         }
     }
@@ -2729,7 +2736,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _calculate_oliveiras_f = new javax.swing.JCheckBox();
         _number_oliveira_data_sets_label = new javax.swing.JLabel();
         _number_oliveira_data_sets = new javax.swing.JTextField();
-        _oliveiras_f_instruction = new javax.swing.JLabel();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -2895,7 +2901,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _caseFileBrowseButton.setText("..."); // NOI18N
-        _caseFileBrowseButton.setToolTipText("Open file wizard for case file ..."); // NOI18N
+        _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
@@ -2926,7 +2932,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _controlFileBrowseButton.setText("..."); // NOI18N
-        _controlFileBrowseButton.setToolTipText("Open file wizard for control file ..."); // NOI18N
+        _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
@@ -2957,7 +2963,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _populationFileBrowseButton.setText("..."); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Open file wizard for population file ..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
@@ -3114,7 +3120,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addContainerGap(280, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3230,7 +3236,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(328, Short.MAX_VALUE))
+                .addContainerGap(336, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3255,7 +3261,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _neighborsFileBrowseButton.setText("..."); // NOI18N
-        _neighborsFileBrowseButton.setToolTipText("Open file wizard for neighbors file ..."); // NOI18N
+        _neighborsFileBrowseButton.setToolTipText("Open Neighbors File Import Wizard"); // NOI18N
         _neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.Neighbors);
@@ -3282,7 +3288,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _metaLocationsFileBrowseButton.setText("..."); // NOI18N
-        _metaLocationsFileBrowseButton.setToolTipText("Open file wizard for meta locations file ..."); // NOI18N
+        _metaLocationsFileBrowseButton.setToolTipText("Open Meta Locations File Import Wizard"); // NOI18N
         _metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.MetaLocations);
@@ -3405,7 +3411,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(263, Short.MAX_VALUE))
+                .addContainerGap(271, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3471,7 +3477,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
         _maxCirclePopFileBrowseButton.setText("..."); // NOI18N
-        _maxCirclePopFileBrowseButton.setToolTipText("Open file wizard for max circle size file ..."); // NOI18N
+        _maxCirclePopFileBrowseButton.setToolTipText("Open Maximum Circle File Import Wizard"); // NOI18N
         _maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.MaxCirclePopulation.toString() + "1";
@@ -3691,7 +3697,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addContainerGap(237, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4131,7 +4137,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(172, Short.MAX_VALUE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4312,7 +4318,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _adjustmentsFileBrowseButton.setText("..."); // NOI18N
-        _adjustmentsFileBrowseButton.setToolTipText("Open file wizard for adjustments file ..."); // NOI18N
+        _adjustmentsFileBrowseButton.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
         _adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.AdjustmentsByRR.toString() + "1";
@@ -4384,7 +4390,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(166, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4797,7 +4803,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(167, Short.MAX_VALUE))
+                .addContainerGap(175, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5100,7 +5106,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(143, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5242,7 +5248,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(240, Short.MAX_VALUE))
+                .addContainerGap(248, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5308,7 +5314,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
 
         _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
-        _alternativeHypothesisFilenameButton.setToolTipText("Open file wizard for alternative hypothesis file ..."); // NOI18N
+        _alternativeHypothesisFilenameButton.setToolTipText("Open Alternative Hypothesis File Import Wizard"); // NOI18N
         _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.AlternativeHypothesis);
@@ -5500,15 +5506,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(196, Short.MAX_VALUE))
+                .addContainerGap(204, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
 
-        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Graph Output Format"));
+        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
         _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, "create_additional_output_files_htm"));
 
-        _reportTemporalGraph.setText("Temporal Graph File");
+        _reportTemporalGraph.setText("Produce Temporal Graphs");
         _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
@@ -5635,7 +5641,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(380, Short.MAX_VALUE))
+                .addContainerGap(388, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5645,7 +5651,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
 
-        _number_oliveira_data_sets_label.setText("Number of data sets (minimum 100, multiple of 100):"); // NOI18N
+        _number_oliveira_data_sets_label.setText("Number of bootstrap replications (minimum 100, multiple of 100):"); // NOI18N
 
         _number_oliveira_data_sets.setText("1000"); // NOI18N
         _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -5667,9 +5673,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _oliveiras_f_instruction.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        _oliveiras_f_instruction.setText("<html>Oliveira's F in written to the optional \"Location Information\" and \"Risk Estimates for Each Location\" files.");
-
         javax.swing.GroupLayout _oliveiras_f_groupLayout = new javax.swing.GroupLayout(_oliveiras_f_group);
         _oliveiras_f_group.setLayout(_oliveiras_f_groupLayout);
         _oliveiras_f_groupLayout.setHorizontalGroup(
@@ -5678,13 +5681,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGap(10, 10, 10)
                 .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_calculate_oliveiras_f, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_oliveiras_f_instruction, javax.swing.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE)
                     .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(_number_oliveira_data_sets_label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 217, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _oliveiras_f_groupLayout.setVerticalGroup(
@@ -5695,8 +5697,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_number_oliveira_data_sets_label)
                     .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_oliveiras_f_instruction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -5714,7 +5714,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(417, Short.MAX_VALUE))
+                .addContainerGap(450, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
@@ -5743,7 +5743,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5880,7 +5880,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _number_oliveira_data_sets;
     private javax.swing.JLabel _number_oliveira_data_sets_label;
     private javax.swing.JPanel _oliveiras_f_group;
-    private javax.swing.JLabel _oliveiras_f_instruction;
     private javax.swing.JRadioButton _onePerLocationIdRadioButton;
     private javax.swing.JPanel _otherOutputTab;
     private javax.swing.ButtonGroup _pValueButtonGroup;

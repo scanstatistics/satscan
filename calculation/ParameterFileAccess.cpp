@@ -89,7 +89,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case CASEFILE                     : return "case data filename";
       case POPFILE                      : return "population data filename";
       case COORDFILE                    : return "coordinate data filename";
-      case OUTPUTFILE                   : return "analysis results output filename";
+      case OUTPUTFILE                   : return "analysis main results output filename";
       case PRECISION                    : return "time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)";
       case DIMENSION                    : return "n/a";
       case SPECIALGRID                  : return "use grid file? (y/n)";
@@ -119,7 +119,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case ITERATIVE_NUM                : return "maximum iterations for iterative scan (0-32000)";
       case ITERATIVE_PVAL               : return "max p-value for iterative scan before cutoff (0.000-1.000)";
       case VALIDATE                     : return "validate parameters prior to analysis execution? (y/n)";
-      case OUTPUT_RR_ASCII              : return "output relative risks in ASCII format? (y/n)";
+      case OUTPUT_RR_ASCII              : return "output risk estimates in ASCII format? (y/n)";
       case WINDOW_SHAPE                 : return "window shape (0=Circular, 1=Elliptic)";
       case ESHAPES                      : return "elliptic shapes - one value for each ellipse (comma separated decimal values)";
       case ENUMBERS                     : return "elliptic angles - one value for each ellipse (comma separated integer values)";
@@ -132,7 +132,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case RUN_HISTORY_FILENAME         : return "n/a";
       case OUTPUT_MLC_DBASE             : return "output cluster information in dBase format? (y/n)";
       case OUTPUT_AREAS_DBASE           : return "output location information in dBase format? (y/n)";
-      case OUTPUT_RR_DBASE              : return "output relative risks in dBase format? (y/n)";
+      case OUTPUT_RR_DBASE              : return "output risk estimates in dBase format? (y/n)";
       case OUTPUT_SIM_LLR_DBASE         : return "output simulated log likelihoods ratios in dBase format? (y/n)";
       case NON_COMPACTNESS_PENALTY      : return "elliptic non-compactness penalty (0=NoPenalty, 1=MediumPenalty, 2=StrongPenalty)";
       case INTERVAL_STARTRANGE          : return "flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)";
@@ -216,8 +216,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       case MIN_TEMPORAL_CLUSTER         : return "minimum temporal cluster size (in time aggregation units)";
       case USER_DEFINED_TITLE           : return "user-defined title for results file";
-      case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F and report in Location Information file";
-      case NUM_OLIVEIRA_SETS            : return "number of data sets for Oliveira calculation (minimum=100, multiple of 100)";
+      case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F";
+      case NUM_OLIVEIRA_SETS            : return "number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)";
       case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -838,15 +838,6 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
                 } else if (token == IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate) {
                     fields_map.push_back(DataSource::DEFAULT_DATE);
                 } else if (string_to_type<int>(token.c_str(), column)) {
-
-                    //printf("map: %s\n", token.c_str());
-                    //if (column == 0) {
-                    //    printf("yes\n");
-                    //    fields_map.push_back(DataSource::DEFAULT_DATE);
-                    //} else {
-                    //    fields_map.push_back((long)column);
-                    //}
-
                     fields_map.push_back((long)column);
                 } else if (token == "") {
                     fields_map.push_back(DataSource::BLANK);
@@ -866,17 +857,20 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
             source.setGroup(groupStr.size() == 0 ? "\"" : groupStr);
             if (source.getGroup().size() > 1)
                 throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getGroup().c_str());
-            unsigned int skip;
-            if (!string_to_type<unsigned int>(skipStr.c_str(), skip)) {
+            unsigned int skip=0;
+            if (skipStr.size() > 0 && !string_to_type<unsigned int>(skipStr.c_str(), skip)) {
                 throw resolvable_error("Unable to read parameter value '%s' as %s.", skipStr.c_str(), IniParameterSpecification::SourceSkip);
             }
             source.setSkip(skip);
-            if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
-                !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
-                !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
-                throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+            bool rowheader = false;
+            if (headerStr.size()) {
+                if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
+                    !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
+                    !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+                }
+                rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
             }
-            bool rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
             source.setFirstRowHeader(rowheader);
         }
     } catch (resolvable_error &x) {

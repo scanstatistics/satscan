@@ -41,7 +41,8 @@ class DataSource {
         virtual void                       GotoFirstRecord() = 0;
         virtual bool                       ReadRecord() = 0;
         void                               tripBlankRecordFlag() {_blank_record_flag=true;}
-        void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
+        //void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
+        void                               setFieldsMap(const std::vector<boost::any> map);
 };
 
 /** ASCII file data source. */
@@ -133,7 +134,6 @@ class CsvFileDataSource : public DataSource {
 
    public:
      CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, const std::string& delimiter=",", const std::string& grouper="\"", unsigned long skip=0, bool firstRowHeaders=false);
-     CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, unsigned long skip=0, bool firstRowHeaders=false);
      virtual ~CsvFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const {return _readCount;}

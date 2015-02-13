@@ -7,6 +7,7 @@
 #include "SSException.h"
 #include "ObservableRegion.h"
 #include "ChartGenerator.h"
+#include "LoglikelihoodRatioWriter.h"
 
 /** Returns analysis type as string. */
 const char * ParametersPrint::GetAnalysisTypeAsString() const {
@@ -179,7 +180,7 @@ void ParametersPrint::PrintBorderAnalysisParameters(FILE* fp) const {
         settings.push_back(std::make_pair("Report Oliveira's F", (gParameters.getCalculateOliveirasF() ? "Yes" : "No")));
         if (gParameters.getCalculateOliveirasF()) {
             std::string buffer;
-            settings.push_back(std::make_pair("Number of Oliveira Data Sets", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
+            settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
         }
         WriteSettingsContainer(settings, "Border Analysis", fp);
     }
@@ -718,7 +719,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     bool canReportClusterFiles = (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
 
     try {
-        settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
+        settings.push_back(std::make_pair("Main Results File",gParameters.GetOutputFileName()));
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelAscii()) {
             AdditionalOutputFile.setExtension(".col.txt");
             settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
@@ -756,11 +757,11 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
         // relative risk files
         if (gParameters.GetOutputRelativeRisksAscii()) {
             AdditionalOutputFile.setExtension(".rr.txt");
-            settings.push_back(std::make_pair("Relative Risks File",AdditionalOutputFile.getFullPath(buffer)));
+            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.GetOutputRelativeRisksDBase()) {
             AdditionalOutputFile.setExtension(".rr.dbf");
-            settings.push_back(std::make_pair("Relative Risks File",AdditionalOutputFile.getFullPath(buffer)));
+            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
         }
         // loglikelihood ratio files
         if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
@@ -787,6 +788,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
+    FileName AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
 
     try {
         if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
@@ -848,6 +850,15 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
                 if (gParameters.getOutputPowerEvaluationSimulationData()) {
                     settings.push_back(std::make_pair("Power Step Simulation Data Filename", gParameters.getPowerEvaluationSimulationDataOutputFilename()));
                 }
+            }
+            // loglikelihood ratio files for power evaluations
+            if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
+                AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
+                settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
+            }
+            if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
+                AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, DBaseDataFileWriter::DBASE_FILE_EXT).c_str());
+                settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
             }
         }
         WriteSettingsContainer(settings, "Power Evaluation", fp);
@@ -1111,22 +1122,34 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
 /** Prints 'Temporal Ouput' tab parameters to file stream. */
 void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
-    std::string buffer;
+    std::string buffer, buffer2;
 
     try {
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))) return;
+        // The temporal graph is option for purely temporal/space-time analyses with Poisson, Bernoulli, STP and Exponential.
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
+            !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+            gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL)) return;
 
-        // This feature is not present in gui at the moment, so only show if toggled on.
-        if (!gParameters.getOutputTemporalGraphFile()) return; 
-
-        settings.push_back(std::make_pair("Create Temporal Graph",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("Produce Temporal Graphs",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
         if (gParameters.getOutputTemporalGraphFile()) {
+            buffer = "Cluster Graphing";
+            switch (gParameters.getTemporalGraphReportType()) {
+                case MLC_ONLY: settings.push_back(std::make_pair(buffer, "Most likely cluster only")); break;
+                case X_MCL_ONLY: 
+                    printString(buffer2, "%d most likely clusters, one graph for each", gParameters.getTemporalGraphMostLikelyCount());
+                    settings.push_back(std::make_pair(buffer, buffer2)); break;
+                case SIGNIFICANT_ONLY: 
+                    printString(buffer2, "All significant clusters, one graph for each, with p-value less than %g", gParameters.getTemporalGraphSignificantCutoff());
+                    settings.push_back(std::make_pair(buffer, buffer2)); break;
+                default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", gParameters.getOutputTemporalGraphFile());
+            }
+
             FileName outputFile(gParameters.GetOutputFileName().c_str());
             outputFile.setFullPath(gParameters.GetOutputFileName().c_str());
             TemporalChartGenerator::getFilename(outputFile);
             settings.push_back(std::make_pair("Temporal Graph File", outputFile.getFullPath(buffer)));
         }
-        WriteSettingsContainer(settings, "Temporal Output", fp);
+        WriteSettingsContainer(settings, "Temporal Graphs", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintTemporalOutputParameters()","ParametersPrint");
         throw;

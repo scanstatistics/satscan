@@ -13,7 +13,7 @@
 DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, const CParameters::InputSource * source, BasePrint& Print) {
     // if a InputSource is not defined, default to space delimited ascii source
     if (!source)
-        return new CsvFileDataSource(sSourceFilename, Print, " ");
+        return new CsvFileDataSource(sSourceFilename, Print, " ", "\"", 0, false);
     // return data source object by input source type
     DataSource * dataSource=0;
     switch (source->getSourceType()) {
@@ -25,6 +25,20 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
     dataSource->setFieldsMap(source->getFieldsMap());
     return dataSource;
 }
+
+void DataSource::setFieldsMap(const std::vector<boost::any> map) {
+    _fields_map = map;
+    // Strip out any FieldType::BLANK field maps -- which generally are in place of date fields.
+    // The data set handler classes adjust column indexes when calling GetValueAt(idx) when such fields
+    // are not expected (e.g. date precision of none).
+    for (FieldMapContainer_t::iterator itr=_fields_map.begin(); itr != _fields_map.end();) {
+        if (itr->type() == typeid(FieldType) && boost::any_cast<FieldType>(*itr) == BLANK) {
+            _fields_map.erase(itr);
+            itr = _fields_map.begin();
+        } else ++itr;
+    }
+}
+
 
 //******************* class AsciiFileDataSource ********************************
 
@@ -317,49 +331,6 @@ CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePri
     if (_firstRowHeaders) ++_skip;
 }
 
-/** constructor */
-CsvFileDataSource::CsvFileDataSource(const std::string& sSourceFilename, BasePrint& print, unsigned long skip, bool firstRowHeaders)
-                  :DataSource(), _readCount(0), _blankReadCount(0), _print(print), _delimiter("\t\v\f\r\n "), _grouper("\""), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
-    _sourceFile.open(sSourceFilename.c_str());
-    if (!_sourceFile)
-        throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
-    // Get the byte-order mark, if there is one
-    unsigned char bom[4];
-    _sourceFile.read(reinterpret_cast<char*>(bom), 4);
-    //Since we don't know what the endian was on the machine that created the file we
-    //are reading, we'll need to check both ways.
-    if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
-        (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
-        (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
-        (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
-        (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
-      ThrowUnicodeException();
-    _sourceFile.seekg(0L, std::ios::beg);
-    // if first row is header, increment number of rows to skip
-    if (_firstRowHeaders) ++_skip;
-
-    // read first record and try to guess the format
-    bool isBlank = true;
-    std::string readbuffer;
-    getlinePortable(_sourceFile, readbuffer);
-    while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
-        trimString(readbuffer);
-        isBlank = readbuffer.size() == 0;
-    }
-    if (readbuffer.size()) {
-        // whitespace delimited
-        parse(readbuffer, "\t\v\f\r\n ", _grouper);
-        std::vector<std::string> whitespace_values(_values);
-        // comma delimited
-        parse(readbuffer, ",", _grouper);
-        std::vector<std::string> comma_values(_values);
-        // This is poor but their isn't really a good method for guessing. The field types of input fields are generally: string, integer, double, formatted date
-        // The identifier field is basically the only place we might reasonably expect a comma (e.g. identifier = Baltimore,MD). In that situation, this routine will
-        // guess wrong for a record like: Baltimore,MD  5 2014/06/17
-        if (comma_values.size() > 1) _delimiter = ",";
-    }
-}
-
 /** Re-positions file cursor to beginning of file. */
 void CsvFileDataSource::GotoFirstRecord() {
     _readCount = 0;
@@ -367,8 +338,10 @@ void CsvFileDataSource::GotoFirstRecord() {
     _sourceFile.clear();
     _sourceFile.seekg(0L, std::ios::beg);
     std::string readbuffer;
-    for (int i=0; i < _skip; ++i) 
+    for (int i=0; i < _skip; ++i) {
         getlinePortable(_sourceFile, readbuffer);
+        ++_readCount;
+    }
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
@@ -385,6 +358,13 @@ bool CsvFileDataSource::parse(const std::string& s, const std::string& delimiter
         if (!_values.back().size() && _ignore_empty_fields)
             _values.pop_back();
     }
+
+    // if all fields are empty string, then treat this as empty record
+    size_t blanks=0;
+    for (std::vector<std::string>::const_iterator itr=_values.begin(); itr != _values.end(); ++itr)
+        if (itr->empty()) ++blanks;
+    if (blanks == _values.size()) _values.clear();
+
     return _values.size() > 0;
 }
 
@@ -396,8 +376,10 @@ bool CsvFileDataSource::ReadRecord() {
     std::string readbuffer;
 
     // skip records as necessary
-    for (long i=_readCount; i < _skip; ++i) 
+    for (long i=_readCount; i < _skip; ++i) {
         getlinePortable(_sourceFile, readbuffer);
+        ++_readCount;
+    }
 
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
         isBlank = !parse(readbuffer, _delimiter, _grouper);

@@ -551,7 +551,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 int num_cols = getNumImportSourceColumns(inputSourceSettings, filepath);
                 int max = 0;
                 for (String stdIdx : inputSourceSettings.getFieldMaps()) {
-                    max = Math.max(Integer.parseInt(stdIdx), max);
+                    if (!stdIdx.isEmpty()) {
+                        max = Math.max(Integer.parseInt(stdIdx), max);
+                    }
                 }
                 if (max > num_cols) {
                     return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file structure.";
@@ -1609,7 +1611,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _caseFileLabel.setText("Case File:"); // NOI18N
 
         _caseFileBrowseButton.setText("..."); // NOI18N
-        _caseFileBrowseButton.setToolTipText("Open file wizard for case file ..."); // NOI18N
+        _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Case.toString() + "1";
@@ -1908,7 +1910,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _controlFileLabel.setText("Control File:"); // NOI18N
 
         _controlFileBrowseButton.setText("..."); // NOI18N
-        _controlFileBrowseButton.setToolTipText("Open file wizard for control file ..."); // NOI18N
+        _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Control.toString() + "1";
@@ -1982,7 +1984,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileLabel.setText("Population File:"); // NOI18N
 
         _populationFileBrowseButton.setText("..."); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Open file wizard for population file ..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Population.toString() + "1";
@@ -2033,7 +2035,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinatesFileLabel.setText("Coordinates File:"); // NOI18N
 
         _coordinatesFileBrowseButton.setText("..."); // NOI18N
-        _coordinatesFileBrowseButton.setToolTipText("Open file wizard for coordinates file ..."); // NOI18N
+        _coordinatesFileBrowseButton.setToolTipText("Open Coordinates File Import Wizard"); // NOI18N
         _coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.Coordinates.toString() + "1";
@@ -2102,7 +2104,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileLabel.setText("Grid File:"); // NOI18N
 
         _gridFileBrowseButton.setText("..."); // NOI18N
-        _gridFileBrowseButton.setToolTipText("Open file wizard for grid file ..."); // NOI18N
+        _gridFileBrowseButton.setToolTipText("Open Grid File Import Wizard"); // NOI18N
         _gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String key = InputSourceSettings.InputFileType.SpecialGrid.toString() + "1";
@@ -2844,9 +2846,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
         _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "Text Output Format"));
 
-        _resultsFileLabel.setText("Results File:"); // NOI18N
+        _resultsFileLabel.setText("Main Results File:"); // NOI18N
 
-        _resultsFileBrowseButton.setText("..."); // NOI18N
+        _resultsFileBrowseButton.setText("Browse Results File"); // NOI18N
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 List<InputFileFilter> filters = new ArrayList<InputFileFilter>();

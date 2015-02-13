@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 import javax.swing.JProgressBar;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.satscan.app.*;
 
@@ -80,7 +81,7 @@ public class FileImporter {
                     //get the zero based column index from mapping variables
                     iColumn = mappedVariables.get(i).getSourceFieldIndex() - 1;
                     //retrieve value from current data row or the default 
-                    if (_importVariables.get(i).isMappedToSourceField()) {
+                    if (mappedVariables.get(i).isMappedToSourceField()) {
                         if (iColumn + 1 > values.length)
                             throw new ImportException(String.format("Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
                                                                     _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", iColumn +1));
@@ -88,7 +89,7 @@ public class FileImporter {
                         if (_dataSource.isColumnDate(iColumn))
                             value = formatDateField(value);
                     } else {
-                        value = new String(_importVariables.get(i).getDefault());
+                        value = new String( (String)ObjectUtils.defaultIfNull(mappedVariables.get(i).getDefault(), "") );
                     }
                     value = StringUtils.trimToEmpty(value);
                     if (StringUtils.isEmpty(value) || StringUtils.isBlank(value)) {

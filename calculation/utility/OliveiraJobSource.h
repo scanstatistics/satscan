@@ -65,12 +65,17 @@ private://data members
   boost::posix_time::ptime StartTime;
 
   boost::dynamic_bitset<>                   _presence_hierarchical;
+  /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
   boost::dynamic_bitset<>                   _presence_gini_optimal;
   boost::dynamic_bitset<>                   _presence_gini_maxima;
+  */
   size_t                                    _numSignificantMLC; // significant clusters for neither hierarchical nor gini
   size_t                                    _numSignificantHierarchical; // significant clusters for hierarchical
+
+  /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
   std::vector<unsigned int>                 _optimalSignificantCluster; // significant clusters for optimal gini
   std::vector<unsigned int>                 _maximaSignificantCluster; // significant clusters for each gini maxima
+  */ 
 
 private://functions
   void                      RegisterResult_NoAutoAbort(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult);

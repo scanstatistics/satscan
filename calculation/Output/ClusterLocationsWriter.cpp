@@ -40,11 +40,12 @@ const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD               
 const char * LocationInformationWriter::GINI_CLUSTER_FIELD                              = "GINI_CLUST";
 const char * LocationInformationWriter::OLIVEIRA_F_MLC_FIELD                            = "F_MLC";
 const char * LocationInformationWriter::OLIVEIRA_F_HIERARCHICAL_FIELD                   = "F_HIERARCH";
+/* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
 const char * LocationInformationWriter::OLIVEIRA_F_GINI_OPTIMAL_FIELD                   = "F_GINI_OPT";
 const char * LocationInformationWriter::OLIVEIRA_F_GINI_MAXIMA_FIELD                    = "F_GINI_MAX";
 const char * LocationInformationWriter::OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD      = "F_H_G_OPT";
 const char * LocationInformationWriter::OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD       = "F_H_G_MAX";
-
+*/
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -147,19 +148,25 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
         if (gParameters.getCalculateOliveirasF()) {
-            printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets());
+            short precision;
+            if (gParameters.getNumRequestedOliveiraSets() <= 100) { precision = 2; 
+            } else if (gParameters.getNumRequestedOliveiraSets() <= 1000) { precision = 3;
+            } else if (gParameters.getNumRequestedOliveiraSets() <= 10000) { precision = 4;
+            } else { /* client specificances not provided */ precision = 5; }
             if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()))
-                CreateField(vFieldDefinitions, OLIVEIRA_F_MLC_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_MLC_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             if (gParameters.getReportHierarchicalClusters())
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+            /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
             if (gParameters.getReportGiniOptimizedClusters()) {
-                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
-                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+                CreateField(vFieldDefinitions, OLIVEIRA_F_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             }
             if (gParameters.getReportHierarchicalClusters() && gParameters.getReportGiniOptimizedClusters()) {
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
-                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
+                CreateField(vFieldDefinitions, OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD, FieldValue::NUMBER_FLD, 19, precision, uwOffset, precision);
             }
+            */
         }
         CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
     } catch (prg_exception& x) {
@@ -181,17 +188,19 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
     double dRelativeRisk;
     RecordBuffer Record(vFieldDefinitions);
     const DataSetHandler & Handler = DataHub.GetDataSetHandler();
-    std::vector<double> vCoordinates;
-    std::pair<double, double> prLatitudeLongitude;
 
     try {
         //do not report locations for which iterative scan has nullified its data
         if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
         DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
-        CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
-        prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-        if (gpShapeDataFileWriter) gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+        if (gpShapeDataFileWriter) {
+            std::vector<double> vCoordinates;
+            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
+            std::pair<double, double> prLatitudeLongitude;
+            prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+            gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+        }
 
         for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
             Record.SetAllFieldsBlank(true);
@@ -213,6 +222,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                     Record.GetFieldValue(OLIVEIRA_F_MLC_FIELD).AsDouble() = static_cast<double>(location_relevance._most_likely_only[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                 if (location_relevance._hierarchical.size() > tTract)
                     Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
                 if (location_relevance._gini_optimal.size() > tTract)
                     Record.GetFieldValue(OLIVEIRA_F_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._gini_optimal[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                 if (location_relevance._gini_maxima.size() > tTract)
@@ -221,6 +231,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                     Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_optimal[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
                 if (location_relevance._hierarchical_gini_maxima.size() > tTract)
                     Record.GetFieldValue(OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD).AsDouble() = static_cast<double>(location_relevance._hierarchical_gini_maxima[tTract]) / static_cast<double>(gParameters.getNumRequestedOliveiraSets());
+                */
             }
             //location information fields are only present for one dataset and not ordinal model
             if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {

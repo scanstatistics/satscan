@@ -90,7 +90,7 @@ bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirect
         }
         if (gParameters.getNumRequestedOliveiraSets() < 100 || gParameters.getNumRequestedOliveiraSets() % 100 > 0) {
             bValid = false;
-            printDirection.Printf("%s:\nThe number of data sets for Oliveira's F must be at least 100 and a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            printDirection.Printf("%s:\nThe number of bootstrap replications for Oliveira's F must be at least 100 and a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         if (gParameters.getOliveiraPvalueCutoff() < 0 || gParameters.getOliveiraPvalueCutoff() > 1) {
             bValid = false;
@@ -101,13 +101,20 @@ bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirect
             bValid = false;
             printDirection.Printf("%s:\nOliveira's F is not implemented with the alternative memory allocation algorithm.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-
-        // If oliveira is requested, one of the 'Risk Estimates for Each Location' files must be requested -- this is the preferred format for reporting this information.
+        // If oliveira is requested, the 'Risk Estimates for Each Location' files must be selected -- this is the preferred format for reporting this information.
         if (!gParameters.GetOutputRelativeRisksFiles()) {
             const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(true);
-            printDirection.Printf("%s:\nOliveira's F is written to the optional 'Location Information' and 'Risk Estimates for Each Location' files.\n"
-                                  "The option has been enabled for the 'Risk Estimates for Each Location' file.", BasePrint::P_NOTICE, "Note");
             return true;
+        }
+        /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/ */
+        if (gParameters.getReportGiniOptimizedClusters()) {
+            bValid = false;
+            printDirection.Printf("%s:\nOliveira's F is not implemented with the gini optimized clusters option.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        // only permit non-overlapping clusters when reporting hierarchical clusters with border analysis option
+        if (gParameters.getReportHierarchicalClusters() && gParameters.GetCriteriaSecondClustersType() != NOGEOOVERLAP) {
+            bValid = false;
+            printDirection.Printf("%s:\nOliveira's F can be performed in conjunction with hierarchical clusters only when secondary clusters are not overlapping.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
     }
     return bValid;
@@ -361,7 +368,16 @@ bool ParametersValidate::ValidateInputSource(const CParameters::InputSource * so
         // Verify that the input source settings's source data file type matches extension.
         bool correct_filetype=true;
         switch (source->getSourceType()) {
-            case CSV : correct_filetype = !(extension == ".dbf" || extension == ".shp" || extension == ".xls"); break;
+            case CSV : {
+                FieldMapContainer_t::const_iterator itrMap=source->getFieldsMap().begin();
+                for (;itrMap != source->getFieldsMap().end(); ++itrMap) {
+                     if (itrMap->type() == typeid(long) && boost::any_cast<long>(*itrMap) < 0) {
+                        PrintDirection.Printf("%s:\nThe field mapping column indexes cannot be unless than zero, got value %ld.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, boost::any_cast<long>(*itrMap));
+                        return false;
+                     }
+                }
+                correct_filetype = !(extension == ".dbf" || extension == ".shp" || extension == ".xls"); break;
+            }
             case DBASE : correct_filetype = extension == ".dbf"; break;
             case SHAPE : correct_filetype = extension == ".shp"; break;
             case EXCEL : correct_filetype = extension == ".xls" || extension == ".xlsx"; break;

@@ -130,6 +130,9 @@
     <Filter Include="Source Files\source\boost\filesystem">
       <UniqueIdentifier>{8bbd6ba8-f270-4fce-88af-49aba27435ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\unit_tests\satscan_data">
+      <UniqueIdentifier>{75b74751-4d8d-4e82-996d-ea09cda0f39a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -1264,6 +1267,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
       <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="integrationtest_squish66408.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_DataSource.cpp">
+      <Filter>Source Files\unit_tests\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="squish66420.cpp">
+      <Filter>Source Files\regression_tests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

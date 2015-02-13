@@ -176,9 +176,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Configures the combo-box which changes what variables are displayed. */
     private void configureDisplayVariablesComboBox() {
+        _displayVariablesComboBox.removeAllItems();
         switch (_input_source_settings.getInputFileType()) {
             case Case:
-                _displayVariablesComboBox.removeAllItems();
                 _displayVariablesComboBox.addItem("discrete Poisson model");
                 _displayVariablesComboBox.addItem("Bernoulli model");
                 _displayVariablesComboBox.addItem("space-time permutation model");
@@ -199,7 +199,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Coordinates:
             case SpecialGrid:
                 Parameters.CoordinatesType temp = _coordinatesType;
-                _displayVariablesComboBox.removeAllItems();
                 _displayVariablesComboBox.addItem("Latitude/Longitude Coordinates");
                 _displayVariablesComboBox.addItem("Cartesian (x, y) Coordinates");
                 _coordinatesType = temp;
@@ -208,10 +207,22 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case LATLON    :
                     default        : _displayVariablesComboBox.setSelectedIndex(0);
                 } break;
+            case Control: 
+                _displayVariablesComboBox.addItem("Bernoulli model");
+                _displayVariablesComboBox.setSelectedIndex(0);
+                _displayVariablesLabel.setEnabled(false);
+                _displayVariablesComboBox.setEnabled(false);
+                break;
+            case Population:
+                _displayVariablesComboBox.addItem("discrete Poisson model");
+                _displayVariablesComboBox.setSelectedIndex(0);
+                _displayVariablesLabel.setEnabled(false);
+                _displayVariablesComboBox.setEnabled(false);
+                break;
             default: 
                 _displayVariablesLabel.setEnabled(false);
                 _displayVariablesComboBox.setEnabled(false);
-                _displayVariablesComboBox.removeAllItems();
+                
         }
     }
 
@@ -1197,6 +1208,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _main_content_panel.add(_fileSourceSettingsPanel, _source_settings_cardname);
                 if (!isImportableFileType(_input_source_settings.getInputFileType())) {
                     // Some input files do not support importing. Only show the start panel.
+                    clearInputSettigs.setVisible(false);
                     nextButtonSource.setVisible(false);
                 } else {
                     _main_content_panel.add(_fileFormatPanel, _file_format_cardname);
@@ -1296,7 +1308,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _groupIndicatorButtonGroup.add(_singleQuotesRadioButton);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("File Wizard"); // NOI18N
+        setTitle("Import File Wizard"); // NOI18N
         setModal(true);
         setPreferredSize(new java.awt.Dimension(550, 450));
 
@@ -1543,6 +1555,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Control || _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Population) {
+                    // skip this listener for the control and popuation files
+                    return;
+                }
                 if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates || _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
                     if (_displayVariablesComboBox.getSelectedIndex() == 0) {
                         _coordinatesType = Parameters.CoordinatesType.LATLON;

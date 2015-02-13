@@ -465,9 +465,12 @@
     <ClCompile Include="integrationtest_closedloop.cpp" />
     <ClCompile Include="integrationtest_oliveira.cpp" />
     <ClCompile Include="integrationtest_points.cpp" />
+    <ClCompile Include="integrationtest_squish66408.cpp" />
     <ClCompile Include="squish66406.cpp" />
+    <ClCompile Include="squish66420.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
+    <ClCompile Include="unittest_DataSource.cpp" />
     <ClCompile Include="unittest_JulianDates.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp" />

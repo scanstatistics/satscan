@@ -33,7 +33,7 @@ TimeAggregationUnits=1
 TimeAggregationLength=1
 
 [Output]
-;analysis results output filename
+;analysis main results output filename
 ResultsFile=ContinuousPoissonFake.txt
 ;output Google Earth KML file (y/n)
 OutputGoogleEarthKML=n
@@ -51,9 +51,9 @@ MostLikelyClusterCaseInfoEachCentroidDBase=n
 CensusAreasReportedClustersASCII=n
 ;output location information in dBase format? (y/n)
 CensusAreasReportedClustersDBase=n
-;output relative risks in ASCII format? (y/n)
+;output risks estimates in ASCII format? (y/n)
 IncludeRelativeRisksCensusAreasASCII=n
-;output relative risks in dBase format? (y/n)
+;output risks estimates in dBase format? (y/n)
 IncludeRelativeRisksCensusAreasDBase=n
 ;output simulated log likelihoods ratios in ASCII format? (y/n)
 SaveSimLLRsASCII=n
@@ -163,10 +163,10 @@ IterativeScanMaxIterations=10
 IterativeScanMaxPValue=0.05
 
 [Border Analysis]
-;calculate oliveira's F and report in Location Information file
+;calculate oliveira's F
 Calculateoliveira=n
-;number of data sets for oliveira calculation (minimum=100, multiple of 100)
-NumoliveiraSets=1000
+;number of bootstrap replications for oliveira calculation (minimum=100, multiple of 100)
+NumBootstrapReplications=1000
 ;p-value cutoff for cluster's in oliveira calculation (0.000-1.000)
 oliveiraPvalueCutoff=0.05
 
@@ -252,7 +252,7 @@ CriticalValue=n
 ;report cluster rank (y/n)
 ReportClusterRank=n
 ;print ascii headers in output files (y/n)
-PrintAsciiColumnHeaders=y
+PrintAsciiColumnHeaders=n
 ;user-defined title for results file
 ResultsTitle=
 

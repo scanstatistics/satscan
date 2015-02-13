@@ -75,7 +75,7 @@ public class FileSelectionDialog {
                 filters.add(new InputFileFilter("meta", "Meta Locations Files (*.meta)"));
                 break;
             case AlternativeHypothesis:
-                filters.add(new InputFileFilter("adj", "Alternative Hypothesis Files (*.ha)"));
+                filters.add(new InputFileFilter("ha", "Alternative Hypothesis Files (*.ha)"));
                 break;
            default: throw new UnknownEnumException(fileType);
         }            

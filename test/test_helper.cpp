@@ -7,6 +7,7 @@
 
 #include "AnalysisRun.h"
 #include "Toolkit.h"
+#include "ParametersValidate.h"
 
 po::options_description& addCustomOptions(po::options_description& prg_options) {
     prg_options.add_options()
@@ -55,11 +56,18 @@ std::ifstream & getFileStream(std::ifstream& stream, const std::string& filename
     return stream;
 }
 
+unsigned int getLineCount(std::ifstream& stream) {
+    return static_cast<unsigned int>(std::count(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>(), '\n'));
+}
+
 void run_analysis(const std::string& analysis_name, std::string& results_user_directory, CParameters& parameters, BasePrint& print) {
     // set results file to the user document directory
     std::stringstream filename;
     filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\" << analysis_name.c_str() << ".txt";
     parameters.SetOutputFileName(filename.str().c_str());
+
+    // first validate parameters
+    BOOST_CHECK(ParametersValidate(parameters).Validate(print) == true);
 
     time_t startTime;
     time(&startTime);
