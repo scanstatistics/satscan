@@ -79,4 +79,3 @@ double CPSMonotoneAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGat
   //TODO: refactor for index based cluster reporting
   return CalculateTopClusters(tCenter, DataGateway).back()->m_nRatio;
 }
-

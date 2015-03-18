@@ -216,7 +216,7 @@ void CCluster::DeallocateEvaluationAssistClassMembers() {
 /** Writes cluster properties to file stream in format required by result output file  */
 void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
     try {
-        AsciiPrintFormat PrintFormat;
+        AsciiPrintFormat PrintFormat = getAsciiPrintFormat();
         std::string buffer;
         unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
 
@@ -960,8 +960,7 @@ count_t CCluster::GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryInde
 /** Returns relative risk of cluster.
     NOTE: Currently this only reports the relative risk of first data set. */
 double CCluster::GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex) const {
-  measure_t     tExpected = GetExpectedCount(DataHub, tSetIndex);
-
+  measure_t tExpected = GetExpectedCount(DataHub, tSetIndex);
   return (tExpected ? (double)GetObservedCount(tSetIndex)/tExpected : 0);
 }
 
