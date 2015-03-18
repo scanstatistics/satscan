@@ -715,6 +715,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 if (checkForRequiredVariables()) return;
                 makeActivePanel(_output_settings_cardname);
             }
+        } catch (org.satscan.importer.ImportDataSource.UnsupportedException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Note", JOptionPane.INFORMATION_MESSAGE);    
         } catch (Throwable t) {
             new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
         }
