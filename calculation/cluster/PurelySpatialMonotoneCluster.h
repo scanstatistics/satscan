@@ -43,10 +43,10 @@ class CPSMonotoneCluster : public CCluster {
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
     virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    virtual measure_t           GetExpectedCountForStep(tract_t step, const CSaTScanData& DataHub) const {return gpClusterData->gvMeasureList[nStep] * DataHub.GetMeasureAdjustment(0);}
+    virtual measure_t           GetExpectedCountForStep(tract_t step, const CSaTScanData& DataHub) const {return gpClusterData->gvMeasureList[step] * DataHub.GetMeasureAdjustment(0);}
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gpClusterData->GetCaseCount(tSetIndex);}
-    virtual count_t             GetObservedCountForStep(tract_t step) const {return gpClusterData->gvCasesList[nStep];}
+    virtual count_t             GetObservedCountForStep(tract_t step) const {return gpClusterData->gvCasesList[step];}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual double              GetObservedDivExpectedForStep(tract_t step, const CSaTScanData& DataHub) const;
     double                      GetRelativeRiskForStep(tract_t step, const CSaTScanData& DataHub) const;
