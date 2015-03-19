@@ -24,7 +24,7 @@ class CPSMonotoneCluster : public CCluster {
     CPSMonotoneCluster         & operator=(const CPSMonotoneCluster& rhs);
     virtual CPSMonotoneCluster * Clone() const;
 
-    virtual AsciiPrintFormat    getAsciiPrintFormat() const {AsciiPrintFormat printFormat(true, 4); return printFormat;}
+    virtual AsciiPrintFormat    getAsciiPrintFormat() const {AsciiPrintFormat printFormat(true, 8); return printFormat;}
     void                        AllocateForMaxCircles(tract_t nCircles) {gpClusterData->AllocateForMaxCircles(nCircles);}
     void                        CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                            const CentroidNeighbors& CentroidDef,
@@ -32,6 +32,7 @@ class CPSMonotoneCluster : public CCluster {
                                                                            AbstractLikelihoodCalculator& Calculator);
     virtual bool                ClusterDefined() const {return gpClusterData->m_nSteps > 0;}
     virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
+    virtual void                Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const;
     virtual void                DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
