@@ -548,7 +548,7 @@ const char * GiniChartGenerator::BASE_TEMPLATE = " \
             var charts = {}; \n \
             $(document).ready(function () { \n \
                 --charts--   \n\n \
-                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.text); }); \n \
+                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
                 $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
                 $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
                 $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
