@@ -202,7 +202,7 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
         // optionally restricting clusters by p-value
         if (p_value_cutoff) {
             double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
-            if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE && macro_less_than(p_value, *p_value_cutoff, DBL_CMP_TOLERANCE))
+            if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || macro_less_than(p_value, *p_value_cutoff, DBL_CMP_TOLERANCE))
                 sortClusters.push_back(gvTopClusterList[t]);
         } else
             sortClusters.push_back(gvTopClusterList[t]);

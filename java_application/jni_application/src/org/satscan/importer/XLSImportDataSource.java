@@ -22,10 +22,9 @@ public class XLSImportDataSource implements ImportDataSource {
     protected Workbook _workbook;
     protected Sheet _sheet;
     protected int _current_row;
-    private static final String VERSION_ERRROR = "The Selected Cannot Be Opened.\n\n" +
-            "This error may be caused by opening an unsupported XLS version.\n" +
-            "To test whether you are importing an unsupported version,\n" +
-            "re-save the file to versions 97-2002 and try again.";
+    private static final String VERSION_ERRROR = "The Excel file could not be opened.\n" +
+            "This error may be caused by opening an unsupported XLS version (Excel 5.0/7.0 format).\n" +
+            "To test whether you are importing an unsupported version, re-save the file to versions 97-2003 and try again.";
     private String _file_path;
     private int _sheet_index = 0;
     private Vector<Object> _column_names = new Vector<Object>();
@@ -38,11 +37,13 @@ public class XLSImportDataSource implements ImportDataSource {
             else
                 _workbook = new HSSFWorkbook(new FileInputStream(file));
         } catch (RecordFormatException e) {
-            throw new RuntimeException(VERSION_ERRROR, e);
+            throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(VERSION_ERRROR, e);
-        } catch (Exception e) {
-            throw new RuntimeException(VERSION_ERRROR, e);
+            throw new RuntimeException(e);
+        } catch (org.apache.poi.hssf.OldExcelFormatException e) {
+            throw new ImportDataSource.UnsupportedException(VERSION_ERRROR, e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         _file_path = file.getAbsolutePath();
         //Set the first sheet to be initial default.

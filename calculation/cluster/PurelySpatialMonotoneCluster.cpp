@@ -5,6 +5,7 @@
 #include "PurelySpatialMonotoneCluster.h"
 #include "ClusterLocationsWriter.h"
 #include "SSException.h"
+#include "ClusterSupplement.h"
 
 //**************** class CPSMonotoneCluster ************************************
 
@@ -128,10 +129,10 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
   std::string buffer;
 
   try {
-    PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, true);
-    fprintf(fp, "%i\n", gpClusterData->m_nSteps);
+    PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, false);
+    PrintFormat.PrintAlignedMarginsDataString(fp, printString(buffer, "%i", gpClusterData->m_nSteps));
     for (int i=0; i < gpClusterData->m_nSteps; ++i) {
-       printString(buffer, "  Step %i",i + 1);
+       printString(buffer, "Step %i",i + 1);
        PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
        DisplayCensusTractsInStep(fp, Data, gpClusterData->gvFirstNeighborList[i], gpClusterData->gvLastNeighborList[i], PrintFormat);
     }
@@ -146,31 +147,118 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
     std::vector<double> vCoordinates, vCoodinatesOfStep;
     float nRadius;
-    std::string buffer, work;
+    std::string buffer, work, work2;
 
     try {
         // print coordinates for cluster
         Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
         for (size_t t=0; t < vCoordinates.size() - 1; ++t) {
-        printString(work, "%s%g,", (t == 0 ? "(" : "" ), vCoordinates[t]);
-        buffer += work;
+            printString(work, "%s%g, ", (t == 0 ? "(" : "" ), vCoordinates[t]);
+            buffer += work;
         }
-        printString(work, "%g)", vCoordinates.back());
-        buffer += work;
-        printClusterData(fp, PrintFormat, "Coordinates", buffer, false);
-        // print radius for each step
-        buffer = "";
-        for (int i=0; i < gpClusterData->m_nSteps; ++i) {
-            CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
-            nRadius = (float)sqrt(Data.GetTInfo()->getDistanceSquared(vCoordinates, vCoodinatesOfStep));
-        printString(work, "%s%4.2f", (i > 0 ? ", " : ""), nRadius);
-        buffer += work;
-        }
-        printClusterData(fp, PrintFormat, "Radius for each step", buffer, false);
+        // get coordinates of outer most step to calculate the cluster's radius
+        CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[gpClusterData->m_nSteps - 1]), vCoodinatesOfStep);
+        nRadius = (float)sqrt(Data.GetTInfo()->getDistanceSquared(vCoordinates, vCoodinatesOfStep));
+        buffer += printString(work, "%g) / %s", vCoordinates.back(), getValueAsString(nRadius, work2).c_str());
+        printClusterData(fp, PrintFormat, "Coordinates / radius", buffer, false);
     } catch (prg_exception& x) {
         x.addTrace("DisplayCoordinates()","CPSMonotoneCluster");
         throw;
     }
+}
+
+/* Extends cluster print to include step wise information. */
+void CPSMonotoneCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
+    CCluster::Display(fp, DataHub, supplementInfo, simVars);
+    // now print step-wise information
+    AsciiPrintFormat PrintFormat = getAsciiPrintFormat();
+    PrintFormat.SetMarginsAsClusterSection(supplementInfo.getClusterReportIndex(*this));
+    if (1 < gpClusterData->m_nSteps) {
+        PrintFormat.PrintSectionLabel(fp, "Isotonic step-wise information", false, true);
+        fprintf(fp, "\n");
+
+        std::string buffer, work, work2;
+        std::vector<double> ClusterCenter, vCoodinatesOfStep;
+
+        // print radius for each step
+        DataHub.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);
+        switch (DataHub.GetParameters().GetCoordinatesType()) {
+            case LATLON: {
+                for (int i=0; i < gpClusterData->m_nSteps; ++i) {
+                    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
+                    double dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
+                    printString(work, "%s km%s", getValueAsString(dRadius, work2).c_str(), (i < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+                    buffer += work;
+                } 
+            } break;
+            case CARTESIAN : {
+                for (int i=0; i < gpClusterData->m_nSteps; ++i) {
+                    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
+                    double nRadius = sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep));
+                    printString(work, "%s%s", getValueAsString(nRadius, work2).c_str(), (i < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+                    buffer += work;
+                }
+            } break;
+            default : throw prg_error("Unknown coordinates type (%d)", "Display()", DataHub.GetParameters().GetCoordinatesType());
+        }
+        printClusterData(fp, PrintFormat, "Radius for each step", buffer, false);
+        //print observed cases in each step
+        buffer = "";
+        for (int step=0; 1 < gpClusterData->m_nSteps && step < gpClusterData->m_nSteps; ++step) {
+            printString(work, "%ld%s", GetObservedCountForStep(step), (step < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+            buffer += work;
+        }
+        printClusterData(fp, PrintFormat, "Number of cases by step", buffer, false);
+        //print expected cases in each step
+        buffer = "";
+        for (int step=0; 1 < gpClusterData->m_nSteps && step < gpClusterData->m_nSteps; ++step) {
+            printString(work, "%s%s", getValueAsString(GetExpectedCountForStep(step, DataHub), work2).c_str(), (step < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+            buffer += work;
+        }
+        printClusterData(fp, PrintFormat, "Expected cases by step", buffer, false);
+        //print observed divided by expected in each step
+        buffer = "";
+        for (int step=0; 1 < gpClusterData->m_nSteps && step < gpClusterData->m_nSteps; ++step) {
+            printString(work, "%s%s", getValueAsString(GetObservedDivExpectedForStep(step, DataHub), work2).c_str(), (step < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+            buffer += work;
+        }
+        printClusterData(fp, PrintFormat, "Observed/expected by step", buffer, false);
+        //print relative risks in each step
+        buffer = "";
+        for (int step=0; 1 < gpClusterData->m_nSteps && step < gpClusterData->m_nSteps; ++step) {
+            printString(work, "%s%s", getValueAsString(GetRelativeRiskForStep(step, DataHub), work2).c_str(), (step < gpClusterData->m_nSteps - 1 ? ", " : "" ));
+            buffer += work;
+        }
+        printClusterData(fp, PrintFormat, "Relative risk by step", buffer, false);
+    }
+}
+
+/** Prints population, observed cases, expected cases and relative risk
+    to file stream is in format required by result output file. */
+void CPSMonotoneCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+    std::string buffer, work, work2;
+
+    DisplayPopulation(fp, DataHub, PrintFormat);
+    //print observed cases in entire cluster
+    printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount()), true);
+    //print expected cases in entire cluster
+    printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub), buffer), true);
+    DisplayAnnualCaseInformation(fp, 0, DataHub, PrintFormat);
+    //print expected cases in entire cluster
+    CCluster::DisplayObservedDivExpected(fp, 0, DataHub, PrintFormat);
+    //print relative risks in entire cluster
+    CCluster::DisplayRelativeRisk(fp, 0, DataHub, PrintFormat);
+    if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+        //percent cases in an area
+        double percentCases = 100.0 * GetObservedCount() / DataHub.GetProbabilityModel().GetPopulation(0, *this, DataHub);
+        printClusterData(fp, PrintFormat, "Percent cases in area", getValueAsString(percentCases, buffer,1), true);
+    }
+}
+
+/* Returns observed divided by expected for this step. */
+double CPSMonotoneCluster::GetObservedDivExpectedForStep(tract_t step, const CSaTScanData& DataHub) const {
+    measure_t expected = GetExpectedCountForStep(step, DataHub);
+    return (expected ? static_cast<double>(GetObservedCountForStep(step))/expected : 0.0);
 }
 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
@@ -179,7 +267,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     std::vector<double> ClusterCenter, vCoodinatesOfStep;
     std::pair<double, double> prLatitudeLongitude;
     char cNorthSouth, cEastWest;
-    std::string buffer, work;
+    std::string buffer, work, work2;
 
     try {
         // print coordinates for cluster
@@ -187,34 +275,15 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
         prLatitudeLongitude = ConvertToLatLong(ClusterCenter);
         prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
         prLatitudeLongitude.second >= 0 ? cEastWest = 'W' : cEastWest = 'E';
-        printString(buffer, "(%.6f %c, %.6f %c)\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest);
-        printClusterData(fp, PrintFormat, "Coordinates", buffer, false);
-        // print radius for each step
-        for (int i=0; i < gpClusterData->m_nSteps; ++i) {
-            CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
-            dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
-            printString(work, "%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
-            buffer += work;
-        }
-        printClusterData(fp, PrintFormat, "Radius for each step", buffer, false);
+        printString(buffer, "(%.6f %c, %.6f %c)", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest);
+
+        // get coordinates of outer most step to calculate the cluster's radius
+        CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[gpClusterData->m_nSteps - 1]), vCoodinatesOfStep);
+        dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
+        buffer += printString(work, " / %s km", getValueAsString(dRadius, work2).c_str());
+        printClusterData(fp, PrintFormat, "Coordinates / radius", buffer, false);
     } catch (prg_exception& x) {
         x.addTrace("DisplayLatLongCoords()", "CPSMonotoneCluster");
-        throw;
-    }
-}
-
-/** Prints observed divided by expected and relative risk of cluster to file pointer in ACSII format. */
-void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-    std::string buffer;
-
-    try {
-        CCluster::DisplayObservedDivExpected(fp, iDataSetIndex, DataHub, PrintFormat);
-        if (gpClusterData->m_nSteps == 1)
-            return;
-        printString(buffer, "%.3f", GetRelativeRisk(iDataSetIndex, DataHub));
-        printClusterData(fp, PrintFormat, "Relative risk by step", buffer, false);
-    } catch (prg_exception& x) {
-        x.addTrace("DisplayObservedDivExpected()","CPSMonotoneCluster");
         throw;
     }
 }
@@ -240,9 +309,21 @@ count_t CPSMonotoneCluster::GetObservedCountForTract(tract_t tTractIndex, const 
   return Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray()[0][tTractIndex];
 }
 
-/** no documentation */
-double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const {
-  return ((double)(gpClusterData->gvCasesList[nStep]))/(gpClusterData->gvMeasureList[nStep] * DataHub.GetMeasureAdjustment(0));
+/** Returns the relative risk for this step. */
+double CPSMonotoneCluster::GetRelativeRiskForStep(tract_t nStep, const CSaTScanData& DataHub) const {
+    //ODE inside step divided by ODE outside cluster
+
+    double total_cases = static_cast<double>(DataHub.GetDataSetHandler().GetDataSet(0).getTotalCases());
+    double observed_in_step = static_cast<double>(gpClusterData->gvCasesList[nStep]);
+    double expected_in_step = gpClusterData->gvMeasureList[nStep] * DataHub.GetMeasureAdjustment(0);
+    if (total_cases == observed_in_step) return -1;
+
+    double observed_in_cluster = static_cast<double>(GetObservedCount());
+    double expected_in_cluster = GetExpectedCount(DataHub, 0);
+
+    if (expected_in_step && total_cases - expected_in_step && ((total_cases - observed_in_step)/(total_cases - expected_in_step)))
+        return (observed_in_step/expected_in_step)/((total_cases - observed_in_cluster)/(total_cases - expected_in_cluster));
+    return 0;
 }
 
 /** returns start date of defined cluster as formated string */
@@ -309,9 +390,9 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
 
 /** Returns the total number of tracts in cluster, across all steps. */
 void CPSMonotoneCluster::SetTotalTracts() {
-  m_nTracts = 0;
-  for (int i=0; i < gpClusterData->m_nSteps; ++i)
-    m_nTracts += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
+    m_nTracts = 0;
+    for (int i=0; i < gpClusterData->m_nSteps; ++i)
+        m_nTracts += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
 }
 
 /** Writes cluster data to passed record buffer. */
@@ -320,20 +401,15 @@ void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter,
                                unsigned int iClusterNumber,
                                const SimulationVariables& simVars,
                                const LocationRelevance& location_relevance) const {
-  tract_t       t, tTract;
-  int           i;
-
-  try {
-    for (i=0; i < gpClusterData->m_nSteps; ++i) {
-       for (t=gpClusterData->gvFirstNeighborList[i]; t <= gpClusterData->gvLastNeighborList[i]; t++) {
-         tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
-         LocationWriter.Write(*this, Data, iClusterNumber, tTract, simVars, location_relevance);
-       }
+    try {
+        for (int i=0; i < gpClusterData->m_nSteps; ++i) {
+            for (tract_t t=gpClusterData->gvFirstNeighborList[i]; t <= gpClusterData->gvLastNeighborList[i]; t++) {
+                tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
+                LocationWriter.Write(*this, Data, iClusterNumber, tTract, simVars, location_relevance);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
-    throw;
-  }
 }
-

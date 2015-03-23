@@ -216,7 +216,7 @@ void CCluster::DeallocateEvaluationAssistClassMembers() {
 /** Writes cluster properties to file stream in format required by result output file  */
 void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
     try {
-        AsciiPrintFormat PrintFormat;
+        AsciiPrintFormat PrintFormat = getAsciiPrintFormat();
         std::string buffer;
         unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
 

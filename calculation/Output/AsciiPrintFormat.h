@@ -13,6 +13,7 @@ class AsciiPrintFormat {
      unsigned int               giLeftMargin;
      unsigned int               giDataLeftMargin;
      unsigned int               giLabelWidth;
+     unsigned int               _label_extra;
      bool                       gbOneDataSet;
      static const char *        gsPerDataSetText;
      static const unsigned int  giOneDataSetClusterLabelWidth;
@@ -24,7 +25,7 @@ class AsciiPrintFormat {
      static const unsigned int  giVersionHeaderWidth;
 
    public:
-     AsciiPrintFormat(bool bOneDataSet=true);
+     AsciiPrintFormat(bool bOneDataSet=true, unsigned int labelextra=0);
      virtual ~AsciiPrintFormat();
 
      void                       PrintAlignedMarginsDataString(FILE* fp, std::string& sDataString, unsigned int iPostNewlines=1) const;

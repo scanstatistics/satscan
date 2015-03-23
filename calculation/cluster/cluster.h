@@ -58,6 +58,7 @@ class CCluster {
     int                           m_nFirstInterval;     // Index # of first time interval
     int                           m_nLastInterval;      // Index # of last time interval
 
+    virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
     virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();

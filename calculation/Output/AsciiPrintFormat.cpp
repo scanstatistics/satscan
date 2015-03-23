@@ -26,7 +26,7 @@ const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 const char * AsciiPrintFormat::gsPerDataSetText                      = "per data set";
 
 /** constructor */
-AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet) {
+AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet, unsigned int labelextra) : gbOneDataSet(bOneDataSet), _label_extra(labelextra) {
   SetMarginsAsOverviewSection();
 }
 
@@ -227,8 +227,8 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
       n = (int)floor(((double)n)/10);
   }
   //set margin for data print
-  giDataLeftMargin = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + giLeftMargin + strlen(": ");
-  giLabelWidth = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth);
+  giDataLeftMargin = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + _label_extra + giLeftMargin + strlen(": ");
+  giLabelWidth = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + _label_extra;
 }
 
 /** Adjusts margins for run overview section. The overview section contains

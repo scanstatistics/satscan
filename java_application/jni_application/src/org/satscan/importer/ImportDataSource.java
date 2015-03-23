@@ -13,7 +13,12 @@ package org.satscan.importer;
  * @author Hostovic
  */
 public interface ImportDataSource {
-
+    public class UnsupportedException extends RuntimeException {
+        public UnsupportedException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    
     public boolean isColumnDate(int iColumn);
 
     public long getCurrentRecordNum();
