@@ -85,7 +85,7 @@
               <Component id="_closeButton" min="-2" pref="105" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jTabbedPane1" alignment="0" pref="669" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -136,7 +136,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="280" max="32767" attributes="0"/>
+                      <EmptySpace pref="152" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -503,7 +503,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="336" max="32767" attributes="0"/>
+                      <EmptySpace pref="208" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -708,7 +708,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="271" max="32767" attributes="0"/>
+                      <EmptySpace pref="143" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -978,7 +978,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="237" max="32767" attributes="0"/>
+                      <EmptySpace pref="109" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1334,7 +1334,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="180" max="32767" attributes="0"/>
+                      <EmptySpace pref="52" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1927,7 +1927,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="166" max="32767" attributes="0"/>
+                      <EmptySpace pref="38" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2283,7 +2283,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="175" max="32767" attributes="0"/>
+                      <EmptySpace pref="47" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2819,7 +2819,7 @@
                       <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="143" max="32767" attributes="0"/>
+                      <EmptySpace pref="15" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2943,9 +2943,13 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_restrictReportedClustersCheckBox" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
@@ -2971,7 +2975,6 @@
                                       </Group>
                                   </Group>
                               </Group>
-                              <Component id="_restrictReportedClustersCheckBox" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -3208,7 +3211,7 @@
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_userDefinedRunTitle" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="248" max="32767" attributes="0"/>
+                      <EmptySpace pref="120" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3449,7 +3452,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_powerEvaluationsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="204" max="32767" attributes="0"/>
+                      <EmptySpace pref="76" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3777,7 +3780,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="388" max="32767" attributes="0"/>
+                      <EmptySpace pref="260" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3941,7 +3944,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_oliveiras_f_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="450" max="32767" attributes="0"/>
+                      <EmptySpace pref="322" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
