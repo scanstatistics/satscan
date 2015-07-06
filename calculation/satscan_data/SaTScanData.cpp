@@ -925,7 +925,14 @@ void CSaTScanData::Setup() {
             }
         }
     }
-    gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
+    gTractHandler.reset(new TractHandler(/* We should aggregate locations if this is a purely temporal analysis and either of the following is true:
+                                            1) We are not adjusting for known relative risks.
+                                            2) We are adjusting for known relative risks but a coordinates file was not specified. This means the
+                                               adjustments file cannot detail relative risk adjustments at the location level. */
+                                         gParameters.GetIsPurelyTemporalAnalysis() &&
+                                          (!gParameters.UseAdjustmentForRelativeRisksFile() ||
+                                           (gParameters.UseAdjustmentForRelativeRisksFile() && gParameters.GetCoordinatesFileName().size() == 0)),
+                                         gParameters.GetMultipleCoordinatesType()));
     if (gParameters.UseSpecialGrid())
         gCentroidsHandler.reset(new CentroidHandler());
     else
