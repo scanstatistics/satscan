@@ -1,7 +1,9 @@
-<shortcuts>
+<izpack:shortcuts version="5.0"
+                  xmlns:izpack="http://izpack.org/schema/shortcuts"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://izpack.org/schema/shortcuts http://izpack.org/schema/5.0/izpack-shortcuts-5.0.xsd">
   <skipIfNotSupported/>
-  <programGroup defaultName="SaTScan"
-                location="applications"/>
+  <programGroup defaultName="SaTScan" location="applications"/>
   <shortcut
     name="SaTScan"
     target="$INSTALL_PATH\SaTScan.exe"
@@ -69,4 +71,5 @@
  	  <createForPack name="Base" />
  	 </shortcut>
   -->
-</shortcuts>
+
+</izpack:shortcuts>
