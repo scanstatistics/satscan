@@ -17,7 +17,9 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+	case PROSPECTIVEPURELYTEMPORAL :
+	case SEASONALTEMPORAL          :
+		                             std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
                                      break;
     case SPACETIME                 :
@@ -69,6 +71,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
+		case SEASONALTEMPORAL           :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           Interface.SetPTMeasureAuxArray(DataSet.getMeasureData_PT_Aux());
@@ -124,6 +127,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
+		case SEASONALTEMPORAL           :
           Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
           Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
           Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
@@ -193,6 +197,10 @@ bool NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& 
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
+
+			 if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+				 Date = gDataHub.convertToSeasonalDate(Date);
+
              pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
              tTotalCases += Count;
              //check that addition did not exceed data type limitations

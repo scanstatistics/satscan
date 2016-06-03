@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "BernoulliModel.h"
 #include "SSException.h"
+#include "ClosedLoopData.h"
 
 /** Constructor */
 CBernoulliModel::CBernoulliModel() : CModel() {}
@@ -77,10 +78,18 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
   measure_t           * pPTMeasure, ** ppMeasure;
 
   try {
+    const ClosedLoopData * seasonalhub = dynamic_cast<const ClosedLoopData*>(&DataHub);
+	if (!seasonalhub && DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) throw prg_error("Unable to dynamic cast CSaTScanData to ClosedLoopData.", "GetPopulation()");
+
     switch (Cluster.GetClusterType()) {
      case PURELYTEMPORALCLUSTER            :
           pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT();
-          dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];
+		  if (seasonalhub) {
+			  dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart())];
+			  dPopulation += pPTMeasure[0] - pPTMeasure[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())];
+		  } else {
+			  dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];
+		  }
         break;
      case SPACETIMECLUSTER                 :
         if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {

@@ -668,13 +668,13 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
-      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
+	  double maximum = (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 50.0 : 90.0);
+      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * maximum /100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
         PrintDirection.Printf("%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
                               "Note that current settings limit the maximum to %d %s%s.\n",
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
-                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
-                              (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90),
+                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), maximum,
                               static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
                               static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(),
                               (dMaxTemporalLengthInUnits == 1 ? "" : "s"));

@@ -95,7 +95,9 @@ std::string& CPurelyTemporalCluster::GetEndDate(std::string& sDateString, const 
     if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
         const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
         if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");
-        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint, sep, true);
+
+		int intervalIdx = m_nLastInterval <= closedloop->getExtendedPeriodStart() ? m_nLastInterval : (m_nLastInterval - closedloop->getExtendedPeriodStart());
+        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[intervalIdx] - 1, eDatePrint, sep, true, true);
     } else
         return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint, sep);
 }
@@ -106,7 +108,7 @@ std::string& CPurelyTemporalCluster::GetStartDate(std::string& sDateString, cons
     if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
         const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
         if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");
-        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep, true);
+        return JulianToString(sDateString, closedloop->getExtendedTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep, false, true);
     } else
         return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep);
 }

@@ -21,7 +21,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
             case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
             case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
             case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
-            case SEASONALTEMPORAL          : sAnalysisType = "Seasoinal Temporal"; break;
+            case SEASONALTEMPORAL          : sAnalysisType = "Seasonal Temporal"; break;
             default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
         }
     } catch (prg_exception& x) {

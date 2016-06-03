@@ -148,7 +148,7 @@ char* JulianToChar(char* szDateString, Julian JNum) {
 }
 
 /** Converts Julian into date string. */
-std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep, bool asSeasonal) {
+std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep, bool isEndDate, bool asSeasonal) {
   UInt month, day, year;
 
   JulianToMDY(&month, &day, &year, JNum);
@@ -163,7 +163,15 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
           else printString(sDate, "%u%s%u", year, sep, month);
           break;
       case DAY     :
-          if (asSeasonal) printString(sDate, "%u%s%u", month, sep, day);
+		  if (asSeasonal) {
+			  if (isEndDate && month == 2 && day == 28) {
+				  /* If February 28 is the end date, it should be manually revised to February 29. Note that even if a 2 day maximum
+				     cluster size was specified, a “three day” cluster from Feb 27 to Feb 29 could be detected, as February 29 does 
+					 not count when calculating the maximum. */
+				  day = 29;
+			  }
+			  printString(sDate, "%u%s%u", month, sep, day);
+		  }
           else printString(sDate, "%u%s%u%s%u", year, sep, month, sep, day);
           break;
       case GENERIC : {

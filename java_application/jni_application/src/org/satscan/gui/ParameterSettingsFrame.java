@@ -597,8 +597,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         //validate the population file -  Poisson model only
         if (getModelControlType() == Parameters.ProbabilityModelType.POISSON) {
             if (_populationFileTextField.getText().length() == 0) {
-                if (getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL && getAnalysisControlType() != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL) //for purely temporal analyses, the population file is optional
-                {
+                //for purely temporal analyses, the population file is optional
+                if (!(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL || 
+                      getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                      getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL)) {
                     throw new SettingsException("For the Poisson model, please specify a population file.\n" + "Note that for purely temporal analyses, if the risk does\n" + "not change over time, the population file is optional.",
                             (Component) _populationFileTextField);
                 }
@@ -611,7 +613,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
         Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
         boolean bCheckCoordinatesFile = true;
-        if (eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL) {
+        if (eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || 
+            eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            eAnalysisType == Parameters.AnalysisType.SEASONALTEMPORAL) {
             bCheckCoordinatesFile = getAdvancedParameterInternalFrame().isAdjustedRelativeRisksSelected() &&
                                     _coordiantesFileTextField.getText().length() != 0;
         } else {
@@ -1175,11 +1179,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaDBaseCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaLabel.setEnabled(bRelativeRisks);
         _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
-                                         getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL &&
-                                         getAnalysisControlType() != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+                                         !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+                                           getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                                           getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
         _reportShapefile.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
-                                         getAnalysisControlType() != Parameters.AnalysisType.PURELYTEMPORAL &&
-                                         getAnalysisControlType() != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+                                    !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+                                      getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                                      getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
     }
 
     /**
@@ -1198,7 +1204,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 eModelType != Parameters.ProbabilityModelType.CATEGORICAL &&
                 eAnalysisType != Parameters.AnalysisType.SPATIALVARTEMPTREND &&
                 eAnalysisType != Parameters.AnalysisType.PURELYTEMPORAL &&
-                eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+                eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL &&
+                eAnalysisType != Parameters.AnalysisType.SEASONALTEMPORAL);
         _observableRegionsButton.setEnabled(eModelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
         setEnableAreaScanRateControl();
         getAdvancedParameterInternalFrame().enableSettingsForAnalysisModelCombination();
@@ -1320,6 +1327,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 _retrospectiveSpaceTimeRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
                 _prospectivePurelyTemporalRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
                 _prospectiveSpaceTimeRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
+                _retrospectiveSeasonalRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE || eDatePrecisionType != Parameters.DatePrecisionType.YEAR);
                 break;
             case HOMOGENEOUSPOISSON:
                 _retrospectivePurelySpatialRadioButton.setEnabled(true);
@@ -1330,6 +1338,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 if (!_retrospectivePurelySpatialRadioButton.isSelected()) {
                     _retrospectivePurelySpatialRadioButton.setSelected(true);
                 }
+                _retrospectiveSeasonalRadioButton.setEnabled(false);
                 break;
             case SPACETIMEPERMUTATION:
                 _retrospectivePurelySpatialRadioButton.setEnabled(false);
@@ -1340,6 +1349,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 if (!_retrospectiveSpaceTimeRadioButton.isSelected() && !_prospectiveSpaceTimeRadioButton.isSelected()) {
                     _retrospectiveSpaceTimeRadioButton.setSelected(true);
                 }
+                _retrospectiveSeasonalRadioButton.setEnabled(false);
                 break;
         }
         enableSettingsForAnalysisModelCombination();
