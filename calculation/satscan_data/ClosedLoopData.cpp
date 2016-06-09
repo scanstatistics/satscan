@@ -139,19 +139,22 @@ std::pair<Julian, Julian> ClosedLoopData::getStrictlyPeriod() const {
 
 /* Calculates the number of time aggregation units to include in potential clusters without exceeding the maximum temporal cluster size.*/
 void ClosedLoopData::SetIntervalCut() {
-    try {
-        if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-            /* The maximum and minimum interval cuts are determined from seasonal year or generic range.*/
-            std::pair<Julian, Julian> period = getStrictlyPeriod();
-            double dMaxTemporalLengthInUnits = floor(CalculateNumberOfTimeIntervals(period.first, period.second, gParameters.GetTimeAggregationUnitsType(), 1) * gParameters.GetMaximumTemporalClusterSize()/100.0);
-            //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-            m_nIntervalCut = static_cast<int>(std::floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
-        } else
-            m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
+	try {
+		/* This is a little different for closed loop analysis since we're not creating the time interval start times in the standard manner.
+		   The start times won't involve the time aggregation length -- instead the dates will be every day in 365 year or every month. For
+		   generic dates, this will be every unit from start to end.*/
+		if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+			std::pair<Julian, Julian> period = getStrictlyPeriod();
+			double dMaxTemporalLengthInUnits = floor(CalculateNumberOfTimeIntervals(period.first, period.second, gParameters.GetTimeAggregationUnitsType(), 1) * gParameters.GetMaximumTemporalClusterSize() / 100.0);
+			m_nIntervalCut = static_cast<int>(std::floor(dMaxTemporalLengthInUnits));
+		}
+		else {
+			m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize());
+		}
         if (m_nIntervalCut==0)
             throw prg_error("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
-        // calculate the minimum interval cut -- the absolute minimum being one interval
-        _min_iterval_cut = static_cast<int>(std::ceil(static_cast<double>(gParameters.getMinimumTemporalClusterSize())/static_cast<double>(gParameters.GetTimeAggregationLength())));
+        // Calculate the minimum interval cut -- which is the maximum between the specified minimum and the time aggregation length.
+        _min_iterval_cut = static_cast<int>(std::max( static_cast<int>(gParameters.getMinimumTemporalClusterSize()), static_cast<int>(gParameters.GetTimeAggregationLength()) ));
     } catch (prg_exception& x) {
         x.addTrace("SetIntervalCut()","CSaTScanData");
         throw;

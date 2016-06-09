@@ -147,101 +147,107 @@ bool ParametersValidate::ValidateClosedLoopAnalysisParameters(BasePrint& printDi
 /** Validates date parameters based upon current settings. Error messages
     sent to print direction object and indication of valid settings returned. */
 bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const {
-  bool          bValid=true, bStartDateValid=true, bEndDateValid=true, bProspectiveDateValid=true;
-  Julian        StudyPeriodStartDate, StudyPeriodEndDate, ProspectiveStartDate;
+    bool   bValid=true, bStartDateValid=true, bEndDateValid=true, bProspectiveDateValid=true;
+    Julian StudyPeriodStartDate, StudyPeriodEndDate, ProspectiveStartDate;
 
-  // continuous Poisson does not use date parameters
-  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) return true;
+    // continuous Poisson does not use date parameters
+    if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) return true;
 
-  try {
-    //validate study period start date based upon 'precision of times' parameter setting
-    if (!ValidateStudyPeriodStartDate(PrintDirection)) {
-      bValid = false;
-      bStartDateValid = false;
-    }
-    //validate study period end date based upon precision of times parameter setting
-    if (!ValidateStudyPeriodEndDate(PrintDirection)) {
-      bValid = false;
-      bEndDateValid = false;
-    }
-    //validate prospective start date based upon precision of times parameter setting
-    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() &&
-        !ValidateDateString(PrintDirection, START_PROSP_SURV, gParameters.GetProspectiveStartDate())) {
-      bValid = false;
-      bProspectiveDateValid = false;
-    }
-
-    if (bStartDateValid && bEndDateValid) {
-      //check that study period start and end dates are chronologically correct
-      StudyPeriodStartDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
-      StudyPeriodEndDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
-      if (StudyPeriodStartDate > StudyPeriodEndDate) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nThe study period start date occurs after the end date.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-      }
-      if (bValid && gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && bProspectiveDateValid) {
-        //validate prospective start date
-        ProspectiveStartDate = DateStringParser::getDateAsJulian(gParameters.GetProspectiveStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
-        if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
-          bValid = false;
-          PrintDirection.Printf("%s:\nThe start date of prospective surveillance does not occur within the study period.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    try {
+        //validate study period start date based upon 'precision of times' parameter setting
+        if (!ValidateStudyPeriodStartDate(PrintDirection)) {
+            bValid = false;
+            bStartDateValid = false;
         }
-      }
+        //validate study period end date based upon precision of times parameter setting
+        if (!ValidateStudyPeriodEndDate(PrintDirection)) {
+            bValid = false;
+            bEndDateValid = false;
+        }
+        //validate prospective start date based upon precision of times parameter setting
+        if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() &&
+            !ValidateDateString(PrintDirection, START_PROSP_SURV, gParameters.GetProspectiveStartDate())) {
+            bValid = false;
+            bProspectiveDateValid = false;
+        }
+
+        if (bStartDateValid && bEndDateValid) {
+            //check that study period start and end dates are chronologically correct
+            StudyPeriodStartDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+            StudyPeriodEndDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
+            if (StudyPeriodStartDate > StudyPeriodEndDate) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe study period start date occurs after the end date.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+            if (bValid && gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && bProspectiveDateValid) {
+                //validate prospective start date
+                ProspectiveStartDate = DateStringParser::getDateAsJulian(gParameters.GetProspectiveStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+                if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe start date of prospective surveillance does not occur within the study period.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
+            }
+
+            if (bValid && gParameters.GetAnalysisType() == SEASONALTEMPORAL &&
+                (gParameters.GetPrecisionOfTimesType() == DAY || gParameters.GetPrecisionOfTimesType() == MONTH) &&
+                (StudyPeriodEndDate - StudyPeriodStartDate + 1) < 365) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe study period length must be at least one year for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateDateParameters()","ParametersValidate");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ValidateDateParameters()","ParametersValidate");
-    throw;
-  }
-  // Validate temporal options only if date parameters are valid. Some temporal parameters can not be correctly validated if dates are not valid.
-  return bValid ? ValidateTemporalParameters(PrintDirection) : false;
+    // Validate temporal options only if date parameters are valid. Some temporal parameters can not be correctly validated if dates are not valid.
+    return bValid ? ValidateTemporalParameters(PrintDirection) : false;
 }
 
 /** Validates that date parameter string is in correct format. */
 bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const {
-  bool          bValid=true;
-  const char  * sName = 0;
-  UInt          nYear, nMonth, nDay;
+    bool          bValid=true;
+    const char  * sName = 0;
+    UInt          nYear, nMonth, nDay;
 
-  try {
-      // determine label for date field - in the event that we have to throw an error
-      switch (eParameterType) {
-        case STARTDATE                : sName = "study period start date"; break;
-        case ENDDATE                  : sName = "study period end date"; break;
-        case START_PROSP_SURV         : sName = "prospective surveillance start date"; break;
-        case INTERVAL_STARTRANGE      : sName = "flexible temporal window definition start range date"; break;
-        case INTERVAL_ENDRANGE        : sName = "flexible temporal window definition end range date"; break;
-        default                       :
-            throw prg_error("Unknown parameter enumeration %d.","ValidateDateString()", eParameterType);
-      }
+    try {
+        // determine label for date field - in the event that we have to throw an error
+        switch (eParameterType) {
+            case STARTDATE                : sName = "study period start date"; break;
+            case ENDDATE                  : sName = "study period end date"; break;
+            case START_PROSP_SURV         : sName = "prospective surveillance start date"; break;
+            case INTERVAL_STARTRANGE      : sName = "flexible temporal window definition start range date"; break;
+            case INTERVAL_ENDRANGE        : sName = "flexible temporal window definition end range date"; break;
+            default : throw prg_error("Unknown parameter enumeration %d.","ValidateDateString()", eParameterType);
+        }
 
-      // validate date field conditionally based upon precision of times specification
-      if (gParameters.GetPrecisionOfTimesType() == GENERIC) {
-          try {
-              relativeDateToJulian(value.c_str());
-          } catch (resolvable_error& r) {
-              PrintDirection.Printf("%s:\n%s", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, r.what());
-              return false;
-          }
-      } else {
-        //parse date in parts
-        if (CharToMDY(&nMonth, &nDay, &nYear, value.c_str()) != 3) {
-            PrintDirection.Printf("%s:\nThe %s '%s' is not valid. Please specify as YYYY/MM/DD.\n",
-                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sName, value.c_str());
-            return false;
+        // validate date field conditionally based upon precision of times specification
+        if (gParameters.GetPrecisionOfTimesType() == GENERIC) {
+            try {
+                relativeDateToJulian(value.c_str());
+            } catch (resolvable_error& r) {
+                PrintDirection.Printf("%s:\n%s", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, r.what());
+                return false;
+            }
+        } else {
+            //parse date in parts
+            if (CharToMDY(&nMonth, &nDay, &nYear, value.c_str()) != 3) {
+                PrintDirection.Printf("%s:\nThe %s '%s' is not valid. Please specify as YYYY/MM/DD.\n",
+                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sName, value.c_str());
+                return false;
+            }
+            //validate date
+            if (!IsDateValid(nMonth, nDay, nYear)) {
+                PrintDirection.Printf("%s:\nThe %s '%s' is not a valid date.\n",
+                                      BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sName, value.c_str());
+                return false;
+            }
         }
-        //validate date
-        if (!IsDateValid(nMonth, nDay, nYear)) {
-            PrintDirection.Printf("%s:\nThe %s '%s' is not a valid date.\n",
-                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sName, value.c_str());
-            return false;
-        }
-      }
-  } catch (prg_exception& x) {
-    x.addTrace("ValidateDateParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateDateParameters()","ParametersValidate");
+        throw;
+    }
+    return bValid;
 }
 
 /** Validates ellipse parameters if number of ellipses greater than zero.
@@ -642,19 +648,20 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
                               100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
         return false;
       }
-      //validate the time aggregation length agree with the study period and maximum temporal cluster size
-      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                      DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                      gParameters.GetTimeAggregationUnitsType(), 1));
-      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
-      if (dMaxTemporalLengthInUnits < 1) {
-        GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-        PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
-                              "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
-                              gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
-                              sPrecisionString.c_str(), sPrecisionString.c_str());
-        return false;
-      }
+
+	  //validate the time aggregation length agree with the study period and maximum temporal cluster size
+	  dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+		                                                                   DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+		                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
+	  dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize() / 100.0);
+	  if (dMaxTemporalLengthInUnits < 1) {
+		  GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
+		  PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
+			                    "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
+			                    gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
+			                    sPrecisionString.c_str(), sPrecisionString.c_str());
+		  return false;
+	  }
     } else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
       //validate for maximum specified as time aggregation unit
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
@@ -666,8 +673,8 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
       dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                      DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                      gParameters.GetTimeAggregationUnitsType(), 1));
+                                                                           DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                           gParameters.GetTimeAggregationUnitsType(), 1));
 	  double maximum = (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 50.0 : 90.0);
       dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * maximum /100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
@@ -699,6 +706,31 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
                               static_cast<unsigned int>(dMaxTemporalLengthInUnits), 
                               sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
         return false;
+    }
+
+    if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+        /* Check that time aggregration length is less than defined maximum for unit type. */
+        switch (gParameters.GetTimeAggregationUnitsType()) {
+        case DAY:
+            if (gParameters.getMinimumTemporalClusterSize() > 90) {
+                PrintDirection.Printf("%s:\nThe minimum temporal cluster size may not exceed 90 days for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                return false;
+            } break;
+        case MONTH:
+            if (gParameters.getMinimumTemporalClusterSize() > 3) {
+                PrintDirection.Printf("%s:\nThe minimum temporal cluster size may not exceed 3 months for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                return false;
+            } break;
+        case GENERIC:
+            if (gParameters.getMinimumTemporalClusterSize() > static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits))) {
+                PrintDirection.Printf("%s:\nThe minimum temporal cluster size may not exceed %ld units for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits)));
+                return false;
+            } break;
+        case YEAR:
+            PrintDirection.Printf("%s:\nThe time aggregation in years is not implemented for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits)));
+            return false;
+        default: throw prg_error("Unknown time aggregation type '%d'.", "ValidateTemporalClusterSize()", gParameters.GetTimeAggregationUnitsType());
+        }
     }
   } catch (prg_exception& x) {
     x.addTrace("ValidateTemporalClusterSize()","ParametersValidate");
@@ -1700,6 +1732,31 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
                             dMaxTemporalLengthInUnits, sPrecisionString.c_str(),
                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
     return false;
+  }
+
+  if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+      /* Check that time aggregration length is less than defined maximum for unit type. */
+      switch (gParameters.GetTimeAggregationUnitsType()) {
+        case DAY: 
+            if (gParameters.GetTimeAggregationLength() > 90) {
+                PrintDirection.Printf("%s:\nThe time aggregation may not exceed 90 days for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                return false;
+            } break;
+        case MONTH:
+            if (gParameters.GetTimeAggregationLength() > 3) {
+                PrintDirection.Printf("%s:\nThe time aggregation may not exceed 3 months for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                return false;
+            } break;
+        case GENERIC: 
+            if (gParameters.GetTimeAggregationLength() > static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits))) {
+                PrintDirection.Printf("%s:\nThe time aggregation may not exceed %ld units for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits)));
+                return false;
+            } break;
+        case YEAR :
+            PrintDirection.Printf("%s:\nThe time aggregation in years is not implemented for the Seasonal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<long>(std::floor(0.25 * dStudyPeriodLengthInUnits)));
+            return false;
+        default: throw prg_error("Unknown time aggregation type '%d'.", "ValidateTimeAggregationUnits()", gParameters.GetTimeAggregationUnitsType());
+      }
   }
 
   return true;

@@ -21,6 +21,7 @@ import javax.swing.event.InternalFrameListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
+import java.util.concurrent.TimeUnit;
 import org.satscan.app.AdvFeaturesExpection;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
@@ -564,12 +565,22 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
     
     /* Validates 'Input Files' tab */
-    private void validateInputFiles() {
-        //validate study period dates
+    private void validateInputFiles() {        
+        /* Check that the study period start date comes before the end date. */
         if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON && 
             getStudyPeriodStartDateAsCalender().after(getStudyPeriodEndDateAsCalender())) {
             throw new SettingsException("The study period start time can not be greater than the end time.", (Component) _studyPeriodStartDateYearTextField);
         }
+        /* For the Seasonal analysis with dates that are not generic, the specified study period must be at least 1 year. */
+        if (getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL && 
+            (getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.MONTH || getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.DAY)) {
+            long mseconds = getStudyPeriodEndDateAsCalender().getTime().getTime() - getStudyPeriodStartDateAsCalender().getTime().getTime() + 1;
+            long days = TimeUnit.DAYS.convert(mseconds, TimeUnit.MILLISECONDS) + 1;
+            if (days < 365) {
+                throw new SettingsException("The study period must be at least 1 year long for Seasonal analysis.", (Component) _studyPeriodStartDateYearTextField);
+            }
+        }
+        
         //validate the case file
         if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON && !_advancedParametersSetting.isPowerEvaluationNoCaseFile()) {
             if (_caseFileTextField.getText().length() == 0) {
@@ -739,6 +750,27 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 }
                 if (getAdvancedParameterInternalFrame().getMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.PERCENTAGETYPE) {
                     throw new SettingsException("With the maximum temporal cluster size as " + getAdvancedParameterInternalFrame().getMaxTemporalClusterSizeFromControl() + "% of a " + Math.floor(dStudyPeriodLengthInUnits) + " " + sPrecisionString + " study period,\n" + "the time aggregation as " + _timeAggregationLengthTextField.getText() + " " + sPrecisionString + (Integer.parseInt(_timeAggregationLengthTextField.getText()) == 1 ? "" : "s") + " is greater than the resulting maximum\ntemporal cluster size of " + dMaxTemporalLengthInUnits + " " + sPrecisionString + " " + (dMaxTemporalLengthInUnits == 1 ? "" : "s") + ".\nPlease review settings.", (Component) _timeAggregationLengthTextField);
+                }
+            }
+            /* Check that time aggregration length is less than defined maximum for unit type. */
+            if (getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL) {
+                switch (getTimeAggregationControlType()) {
+                    case DAY:
+                        if (Integer.parseInt(_timeAggregationLengthTextField.getText()) > 90) {
+                            throw new SettingsException("The time aggregation may not exceed 90 days for the Seasonal analysis.\nPlease review settings.", (Component) _timeAggregationLengthTextField);
+                        } break;                        
+                    case MONTH:
+                        if (Integer.parseInt(_timeAggregationLengthTextField.getText()) > 3) {
+                            throw new SettingsException("The time aggregation may not exceed 3 months for the Seasonal analysis.\nPlease review settings.", (Component) _timeAggregationLengthTextField);
+                        } break;                        
+                    case GENERIC:
+                        double maximum = dStudyPeriodLengthInUnits * 0.25;
+                        if (Double.parseDouble(_timeAggregationLengthTextField.getText()) > maximum) {
+                            throw new SettingsException("The time aggregation may not exceed " + maximum + " units for the Seasonal analysis.\nPlease review settings.", (Component) _timeAggregationLengthTextField);
+                        } break;                        
+                    case YEAR:
+                    default: throw new UnknownEnumException(getTimeAggregationControlType());
+                    
                 }
             }
         }

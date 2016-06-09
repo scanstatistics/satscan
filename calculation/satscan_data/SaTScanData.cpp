@@ -762,12 +762,12 @@ void CSaTScanData::SetIntervalStartTimes() {
   gvTimeIntervalStartTimes.clear();
   //latest interval start time is the day after study period end date
   gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
-  IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetTimeAggregationLength());
+  IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 1 : gParameters.GetTimeAggregationLength());
   while (IntervalStartingDate > m_nStartDate) {
       //push interval start time onto vector
       gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
       //find the next prior interval start time from current, given length of time intervals
-      IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetTimeAggregationLength());
+      IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 1 : gParameters.GetTimeAggregationLength());
   }
 
   // If the last calculated interval date is not the start date, remove last added so that the initial interval is at least
