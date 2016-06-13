@@ -454,12 +454,12 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
                     default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintSpatialOutputParameters()", gParameters.getGiniIndexReportType());
                 }
                 settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
-                printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
+                /*printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
                 for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
                     printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
                     buffer += worker;
                 }
-                settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));
+                settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));*/
             }
         }
         settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
