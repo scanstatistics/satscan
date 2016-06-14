@@ -111,9 +111,7 @@ int main(int argc, char *argv[]) {
     po::options_description hidden("Hidden options", 200);
     hidden.add_options()("centric,t", po::bool_switch(&forceCentric), "Centric execution (overrides parameter file)")
                         ("all-out,a", po::bool_switch(&allOut), "All output files (overrides parameter file)")
-                        ("standard-pvalue,d", po::bool_switch(&standardPvalue), "Report standard p-value (overrides parameter file)")
-                        ("RandomSeed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
-                        ("RandomlyGenerateSeed", po::value<std::string>(), "randomly generate seed");
+                        ("standard-pvalue,d", po::bool_switch(&standardPvalue), "Report standard p-value (overrides parameter file)");
 
     // positional options
     po::positional_options_description pd;
@@ -154,9 +152,8 @@ int main(int argc, char *argv[]) {
     }
     /* apply parameter overrides*/
     if (!parameterOptions.setParameterOverrides(vm)) {
-        if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
-            throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
-                                   "Please review above message(s) and modify parameter settings accordingly.");
+		throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
+                               "Please review above message(s) and modify parameter settings accordingly.");
     }
 
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY);
