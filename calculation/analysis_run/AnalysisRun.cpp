@@ -158,7 +158,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
         gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::REPORTED);
         pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainers);
         //display the loglikelihood of most likely cluster
-        if (!gPrintDirection.GetIsCanceled()) {
+        if (!gPrintDirection.GetIsCanceled() && gTopClustersContainers.size() > 0) {
             rankClusterCollections(gTopClustersContainers, _reportClusters, &_clusterRanker, gPrintDirection);
             // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
             //       We can't perform index based ordering here since we need to perform simulations first ... correct?
@@ -520,7 +520,13 @@ void AnalysisRunner::ExecuteSuccessively() {
 
 /** Returns the most likely cluster collection associated with largest spatial maxima. */
 const MostLikelyClustersContainer & AnalysisRunner::getLargestMaximaClusterCollection() const {
-    return _reportClusters.GetNumClustersRetained() ? _reportClusters : gTopClustersContainers.back();
+	if (_reportClusters.GetNumClustersRetained() > 0)
+		return _reportClusters;
+	else if (gTopClustersContainers.size() > 0)
+		return gTopClustersContainers.back();
+	else
+		/* Default to the _reportClusters collection, since we must return a reference to something. */
+		return _reportClusters;
 }
 
 /** Finalizes the reporting to result output file.
@@ -1442,6 +1448,12 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) const {
     mlc.Empty();
     if (ranker) ranker->clear();
+
+	if (mlc_collection.empty()) {
+		// We need to sort the ranker so the object is closed to additions.
+		if (ranker) ranker->sort();
+		return;
+	}
 
     if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()) || gParameters.GetIsPurelyTemporalAnalysis()) {
         // Not performing heirarchacal nor gini clusters, then we're only grabbing the top ranked cluster.

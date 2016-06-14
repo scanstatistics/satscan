@@ -33,6 +33,9 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
        macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
        CentroidCalculator.CalculateNeighborsAboutCentroid(iEllipseIndex, tCentroidIndex, CentroidDef);
        macroRunTimeStopSerial();
+	   // skip this centroid if it doesn't have neighbors
+	   if (CentroidDef.GetNumNeighbors() == 0)
+		   continue;
        // find top cluster about current centroid
        macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
        CalculateTopClusterAboutCentroidDefinition(CentroidDef, RealDataGateway);
