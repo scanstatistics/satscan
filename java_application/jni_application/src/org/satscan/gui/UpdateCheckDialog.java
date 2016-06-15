@@ -17,8 +17,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.prefs.Preferences;
 import javax.swing.SwingWorker;
-import org.satscan.app.AppConstants;
 import org.satscan.gui.utils.WaitCursor;
+import org.satscan.app.AppConstants;
+import org.satscan.utils.BareBonesBrowserLaunch;
+import org.satscan.gui.utils.JHyperLink;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import org.apache.xmlbeans.impl.util.Base64;
 
 /** @author  Hostovic */
 public class UpdateCheckDialog extends javax.swing.JDialog {
@@ -26,6 +32,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private final SaTScanApplication _applicationFrame;
 
     private boolean _updateExists = false;
+    private int _error_code = 0;
     private FileInfo _updateApplication = null;
     private FileInfo _updateArchive = null;
     private String _updateVersion = "";
@@ -36,6 +43,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private static String CARD_UPDATE = "update";
     private static String CARD_NOUPDATE = "noUpdate";
     private static String CARD_DOWNLOAD = "download";
+    private static String CARD_FAILED = "failed";
 
     public static boolean _runUpdateOnTerminate = false;
     public static File _updaterFilename = null;
@@ -63,6 +71,17 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         return new File(System.getProperty("java.io.tmpdir"));
     }
 
+    static public String getErrorText(int errorcode) {
+        StringBuilder text = new StringBuilder();
+        text.append("<html>Unable to check for update. This might be because the update site is temporarily unavailable or your internet connection is down. ");
+        text.append("If this problem persists, you can always download the latest version from the web site directly.");
+        if (errorcode > 0) {
+            text.append(" (code=").append(errorcode).append(")");
+        }
+        text.append("</html>");
+        return text.toString();
+    }
+    
     /**
      * Overrides setVisible() method
      */
@@ -99,12 +118,14 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         try {
             _applicationFrame.softwareUpdateAvailable.setVisible(_updateExists);
             _applicationFrame._versionUpdateToolButton.setVisible(!_updateExists);
+            CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
             if (_updateExists) {
                 _updateLabel.setText("SaTScan " + getNewVersionNumber() + " is available. Do you want to install now?");
-                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
                 cl.show(_cardsPanel, CARD_UPDATE);                
+            } else if (_error_code > 0){
+                errorText.setText(getErrorText(_error_code));
+                cl.show(_cardsPanel, CARD_FAILED);
             } else {
-                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
                 cl.show(_cardsPanel, CARD_NOUPDATE);
             }
         } catch (Exception e) {
@@ -152,6 +173,10 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         _stepLabel = new javax.swing.JLabel();
         _downloadProgressBar = new javax.swing.JProgressBar();
         jButton3 = new javax.swing.JButton();
+        failedPanel = new javax.swing.JPanel();
+        errorText = errorText = new javax.swing.JLabel(getErrorText(0));
+        jLabel6 = new javax.swing.JLabel();
+        webSiteLabel = new JHyperLink(AppConstants.getWebSite());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SaTScan Update");
@@ -168,7 +193,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             _checkingForUpdatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_checkingForUpdatePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _checkingForUpdatePanelLayout.setVerticalGroup(
@@ -201,9 +226,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             .addGroup(_noUpdatePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_noUpdatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .addComponent(_checkFrequency, 0, 300, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                    .addComponent(_checkFrequency, 0, 325, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _noUpdatePanelLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_noUpdateOkButton)))
@@ -249,7 +274,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             .addGroup(_updatePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_updateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addComponent(_updateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                     .addGroup(_updatePanelLayout.createSequentialGroup()
                         .addGap(97, 97, 97)
                         .addComponent(_doUpdateButton)
@@ -282,9 +307,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             .addGroup(_downloadPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_stepLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addComponent(_stepLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _downloadPanelLayout.createSequentialGroup()
-                        .addComponent(_downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                        .addComponent(_downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3)))
                 .addContainerGap())
@@ -302,6 +327,45 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         );
 
         _cardsPanel.add(_downloadPanel, "download");
+
+        errorText.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        errorText.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+
+        jLabel6.setText("Web site:");
+
+        ((JHyperLink)webSiteLabel).addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+                BareBonesBrowserLaunch.openURL(webSiteLabel.getText());
+            }
+        } );
+
+        javax.swing.GroupLayout failedPanelLayout = new javax.swing.GroupLayout(failedPanel);
+        failedPanel.setLayout(failedPanelLayout);
+        failedPanelLayout.setHorizontalGroup(
+            failedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(failedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(failedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(errorText, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(failedPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(webSiteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        failedPanelLayout.setVerticalGroup(
+            failedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(failedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(errorText, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(failedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(webSiteLabel))
+                .addContainerGap())
+        );
+
+        _cardsPanel.add(failedPanel, "failed");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -342,8 +406,6 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
     class CheckUpdateTask extends SwingWorker<Void, Void> {
 
-        private final static String _baseDebugURL = "http://www118.imsweb.com/";
-        private final static String _baseURL = "http://www.satscan.org/";
         private final static String _URLFormat = "%scgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info";
         private final static int _updateTokenCount = 9;
         private final static int _updateIndicatorIndex = 0;
@@ -354,54 +416,86 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         private final static int _updateDataNameIndex = 7;
         private final static int _updateDataUrlIndex = 8;
         private WaitCursor waitCursor = new WaitCursor(UpdateCheckDialog.this);
+        private String _get_params = ("&form_current_version_id=" + AppConstants.getVersionId() + 
+                                     "&form_current_version_number=" + AppConstants.getVersion() +                                    
+                                     "&os=" + System.getProperty("os.name") + 
+                                     "&java.vm.version=" + System.getProperty("java.vm.version") + 
+                                     "&java.runtime.version=" + System.getProperty("java.runtime.version") + 
+                                     "&java.specification.version=" + System.getProperty("java.specification.version") + 
+                                     "&java.vm.vendor=" + System.getProperty("java.vm.vendor") + 
+                                     "&os.arch=" + System.getProperty("os.arch") + 
+                                     "&os.arch.data.model=" + System.getProperty("os.arch.data.model")).replace(" ", "%20");
 
-        protected Void doInBackground() throws Exception {
-            try {
-                String getParams = "&form_current_version_id=" + AppConstants.getVersionId() + 
-                                   "&form_current_version_number=" + AppConstants.getVersion() +                                    
-                                   "&os=" + System.getProperty("os.name") + 
-                                   "&java.vm.version=" + System.getProperty("java.vm.version") + 
-                                   "&java.runtime.version=" + System.getProperty("java.runtime.version") + 
-                                   "&java.specification.version=" + System.getProperty("java.specification.version") + 
-                                   "&java.vm.vendor=" + System.getProperty("java.vm.vendor") + 
-                                   "&os.arch=" + System.getProperty("os.arch") + 
-                                   "&os.arch.data.model=" + System.getProperty("os.arch.data.model");
-                getParams = getParams.replace(" ", "%20");
-                String dir = String.format(_URLFormat, (SaTScanApplication.getDebugURL().booleanValue() ? _baseDebugURL: _baseURL));
-                dir = dir.replace(" ", "%20") + getParams;
-                URL u = new URL(dir);
-                HttpURLConnection huc = (HttpURLConnection) u.openConnection();
-                /*GET will be our method to download a file*/
-                huc.setRequestMethod("GET");
-                /*Stablishing the connection*/
-                huc.connect();
-                /*Input stream to read from our connection*/
-                InputStream is = huc.getInputStream();
-                /* the response code returned by the request*/
-                int code = huc.getResponseCode();
-                /*The served agreed to send us the file*/
-                if (code == HttpURLConnection.HTTP_OK) {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                    String str = in.readLine();
-                    System.out.println(str);
-                    String[] sHTTP_Body = str.split(",");
-                    if (sHTTP_Body.length < _updateTokenCount || sHTTP_Body[0].equals("no")) {
-                        _updateExists = false;
-                    } else if (Integer.parseInt(sHTTP_Body[_updateVersionIdIndex]) > Integer.parseInt(AppConstants.getVersionId())) {
-                        _updateExists = true;
-                        //get update information
-                        _updateVersion = sHTTP_Body[_updateVersionIndex];
-                        _updateApplication = new FileInfo(getFile(sHTTP_Body[_updateAppNameIndex]), new URL(sHTTP_Body[_updateAppUrlIndex] + getParams));
-                        String updateArchiveUrl = sHTTP_Body[_updateDataUrlIndex];
-                        if (updateArchiveUrl.endsWith("\n")) {
-                            updateArchiveUrl = updateArchiveUrl.split("\n")[0];
-                        }
-                        _updateArchive = new FileInfo(getFile(sHTTP_Body[_updateDataNameIndex]), new URL(updateArchiveUrl + getParams));
-                    }
+        protected void readUpdateInfo(HttpURLConnection http) throws IOException {
+            /*Input stream to read from our connection*/
+            InputStream is = http.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            String str = in.readLine();
+            System.out.println(str);
+            String[] httpBody = str.split(",");
+            if (httpBody.length < _updateTokenCount || httpBody[0].equals("no")) {
+                _updateExists = false;
+            } else if (Integer.parseInt(httpBody[_updateVersionIdIndex]) > Integer.parseInt(AppConstants.getVersionId())) {
+                _updateExists = true;
+                //get update information
+                _updateVersion = httpBody[_updateVersionIndex];
+                _updateApplication = new FileInfo(getFile(httpBody[_updateAppNameIndex]), new URL(httpBody[_updateAppUrlIndex] + _get_params));
+                String updateArchiveUrl = httpBody[_updateDataUrlIndex];
+                if (updateArchiveUrl.endsWith("\n")) {
+                    updateArchiveUrl = updateArchiveUrl.split("\n")[0];
                 }
-                huc.disconnect();
+                _updateArchive = new FileInfo(getFile(httpBody[_updateDataNameIndex]), new URL(updateArchiveUrl + _get_params));
+            }
+        }
+                
+        protected Void doInBackground() throws Exception {
+            HttpURLConnection connection=null;
+            try {
+                String baseurl = (SaTScanApplication.getDebugURL().length() > 0 ? SaTScanApplication.getDebugURL(): AppConstants.getWebSite());
+                String updateURL = String.format(_URLFormat, baseurl);
+                updateURL = updateURL.replace(" ", "%20") + _get_params;
+                boolean completed=false;
+                do {
+                    URL u = new URL(updateURL);
+                    connection = (HttpURLConnection)u.openConnection();
+                    connection.setFollowRedirects(true);
+                    
+                    if (SaTScanApplication.getDebugAuth().length() > 0) {
+                        byte[] bytesEncoded = Base64.encode(SaTScanApplication.getDebugAuth().getBytes());
+                        String authEncoded = new String(bytesEncoded);
+                        connection.setRequestProperty("Authorization", "Basic "+authEncoded);
+                    }
+                    
+                    /*GET will be our method to download a file*/
+                    connection.setRequestMethod("GET");
+                    /*Stablishing the connection*/
+                    connection.connect();
+                    /*The served agreed to send us the file*/
+                    switch (connection.getResponseCode()) {
+                        case HttpURLConnection.HTTP_OK:
+                            readUpdateInfo(connection);
+                            completed = true;
+                            break;
+                        case HttpURLConnection.HTTP_MOVED_PERM:
+                        case HttpURLConnection.HTTP_MOVED_TEMP:
+                        case HttpURLConnection.HTTP_SEE_OTHER:
+                            updateURL = connection.getHeaderField("Location");
+                            break;
+                        default: _error_code = connection.getResponseCode(); completed = true;
+                    }
+                    connection.disconnect();
+                } while(!completed);
+            } catch (FileNotFoundException e) {
+                _error_code = HttpURLConnection.HTTP_GONE;
+                System.out.println(e.getMessage());
+            } catch (java.net.UnknownHostException e) {
+                _error_code = HttpURLConnection.HTTP_NOT_FOUND;
+                System.out.println(e.getMessage());
             } catch (IOException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                _error_code = 1;
+                System.out.println(e.getMessage());
+            } finally {
+                if (connection != null) connection.disconnect();
             }
             return null;
         }
@@ -484,10 +578,14 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private javax.swing.JLabel _stepLabel;
     private javax.swing.JLabel _updateLabel;
     private javax.swing.JPanel _updatePanel;
+    private javax.swing.JLabel errorText;
+    private javax.swing.JPanel failedPanel;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel webSiteLabel;
     // End of variables declaration//GEN-END:variables
     /**
      * Download file information.
