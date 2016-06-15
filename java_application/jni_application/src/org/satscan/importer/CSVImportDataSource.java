@@ -2,6 +2,8 @@ package org.satscan.importer;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * CSVImportDataSource acts as a data source for the Importer by reading
@@ -22,9 +24,10 @@ public class CSVImportDataSource implements ImportDataSource {
     private int _currentRowNumber=0;
     private int _totalRows=0;
     private boolean _hasHeader=false;
-    private Vector<Object> _column_names = new Vector<Object>();
+    private ArrayList<Object> _column_names;
 
     public CSVImportDataSource(File file, boolean hasHeader, char rowDelimiter, char colDelimiter, char groupDelimiter, int skip) throws FileNotFoundException {
+        _column_names = new ArrayList<>();
         _sourceFile = file;
         _totalRows = countLines(_sourceFile);
         _pushbackStream = new PushbackInputStream(new FileInputStream(_sourceFile));
@@ -61,7 +64,7 @@ public class CSVImportDataSource implements ImportDataSource {
     
     public int getColumnIndex(String name) {
         for (int i=0; i < _column_names.size(); ++i) {
-            String column_name = (String)_column_names.elementAt(i);
+            String column_name = (String)_column_names.get(i);
             if (column_name.equals(name)) {
                 return i + 1;
             }
@@ -94,12 +97,11 @@ public class CSVImportDataSource implements ImportDataSource {
         return lineCount;
     }
 
-    public void close() {
+    public void close() {        
         try {
-            if (_pushbackStream != null) {
-                _pushbackStream.close();
-            }            
+            if (_pushbackStream != null) {_pushbackStream.close(); _pushbackStream=null;}
         } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -126,7 +128,7 @@ public class CSVImportDataSource implements ImportDataSource {
         if (line == null) {
             return null;
         }
-        Vector row = ImportUtils.parseLine(line, Character.toString(_colDelimiter), Character.toString(_groupDelimiter));
+        ArrayList row = ImportUtils.parseLine(line, Character.toString(_colDelimiter), Character.toString(_groupDelimiter));
         row.add(0, "1");
         row.add(0, "location" + (_currentRowNumber + 1 - _skip));
         _currentRowNumber++;
@@ -165,7 +167,7 @@ public class CSVImportDataSource implements ImportDataSource {
             throw new IOException("Null Stream");
         }
 
-        StringBuffer line = new StringBuffer();
+        StringBuilder line = new StringBuilder();
         int c = _pushbackStream.read();
         if (c < 0) {
             return null;

@@ -2,7 +2,6 @@ package org.satscan.importer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 import org.apache.commons.lang.ArrayUtils;
 import org.satscan.gui.FileSourceWizard;
@@ -15,10 +14,10 @@ public class PreviewTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
     public static final int DEFAULT_PREVIEW_LENGTH = 50;
     private int _previewLength = DEFAULT_PREVIEW_LENGTH;
-    protected ArrayList<Object[]> _previewData = new ArrayList<Object[]>();
+    protected ArrayList<Object[]> _previewData;
     protected int _maxFieldCount = 0;
     protected final ImportDataSource _data_source;
-    Vector<Object> _column_names = new Vector<Object>();
+    ArrayList<Object> _column_names;
     protected boolean _show_generatedId=true;
     protected boolean _show_oneCount=true;
     protected String _non_datasource_column_suffix=" #";
@@ -26,10 +25,12 @@ public class PreviewTableModel extends AbstractTableModel {
     /** Constructs a new PreviewTableModel object. */
     public PreviewTableModel(ImportDataSource data_source, boolean show_generatedId, boolean show_oneCount) {
         super();
+        _previewData = new ArrayList<>();
+        _column_names = new ArrayList<>();
         _data_source = data_source;
         _show_generatedId = show_generatedId;
         _show_oneCount = show_oneCount;
-        _column_names = new Vector(Arrays.asList(_data_source.getColumnNames()));
+        _column_names = new ArrayList(Arrays.asList(_data_source.getColumnNames()));
         if (!_show_oneCount) _column_names.remove(1);
         if (!_show_generatedId) _column_names.remove(0);
         for (int i=0; i < getPreviewLength(); ++i) {
@@ -40,6 +41,10 @@ public class PreviewTableModel extends AbstractTableModel {
         }        
     }
 
+    public void close() {
+        _data_source.close();
+    }
+    
     /** Returns the number of columns in table. */
     public int getColumnCount() {
         return _maxFieldCount;
@@ -72,10 +77,10 @@ public class PreviewTableModel extends AbstractTableModel {
 
     public String getNonSuffixedColumnName(int idx) {
         if (idx < _column_names.size()) {
-           return (String)_column_names.elementAt(idx);
+           return (String)_column_names.get(idx);
         } else {
            return FileSourceWizard._unassigned_variable; 
-        }        
+        }
     }
     
     /** Returns the name of column at index. If a header row is not defined, returns "Column x" as name. */

@@ -1,9 +1,11 @@
 package org.satscan.importer;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -27,15 +29,18 @@ public class XLSImportDataSource implements ImportDataSource {
             "To test whether you are importing an unsupported version, re-save the file to versions 97-2003 and try again.";
     private String _file_path;
     private int _sheet_index = 0;
-    private Vector<Object> _column_names = new Vector<Object>();
+    private ArrayList<Object> _column_names;
+    private InputStream _input_stream=null;
 
     public XLSImportDataSource(File file) {
+        _column_names = new ArrayList<>();
         _current_row = 0;
         try {
+            _input_stream = new FileInputStream(file);
             if (FileAccess.getExtension(file).equals("xlsx"))
-                _workbook = new XSSFWorkbook(new FileInputStream(file));
+                _workbook = new XSSFWorkbook(_input_stream);
             else
-                _workbook = new HSSFWorkbook(new FileInputStream(file));
+                _workbook = new HSSFWorkbook(_input_stream);
         } catch (RecordFormatException e) {
             throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
@@ -57,9 +62,13 @@ public class XLSImportDataSource implements ImportDataSource {
         reset();
     }
 
-    public void close() throws IOException {
-        //does nothing because the HSSF lib does not need the file
-        //after constructing the workbook so I close it right away
+    @Override
+    public void close() {        
+        try {
+            if (_input_stream != null) {_input_stream.close(); _input_stream=null;}
+        } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /* Sets what sheet to read from. */
@@ -86,6 +95,7 @@ public class XLSImportDataSource implements ImportDataSource {
         return sheetList;
     }
 
+    @Override
     public Object[] readRow() {
         if (_sheet == null) { //If _sheet is null then throw IOException so the caller is alerted to an unexpected error.
             throw new RuntimeException("Null Sheet Reference");
@@ -98,7 +108,7 @@ public class XLSImportDataSource implements ImportDataSource {
                 Row row = _sheet.getRow(_current_row);
                 _current_row++;
                 if (row != null && row.getPhysicalNumberOfCells() > 0) {
-                    Vector<Object> obj = new Vector<Object>();
+                    ArrayList<Object> obj = new ArrayList<Object>();
                     obj.add("location" + (_current_row));
                     obj.add("1");
                     
@@ -240,26 +250,31 @@ public class XLSImportDataSource implements ImportDataSource {
         }
     }
 
+    @Override
     public boolean isColumnDate(int iColumn) {
         return false;
     }
 
+    @Override
     public long getCurrentRecordNum() {
         return _current_row;
     }
 
+    @Override
     public int getNumRecords() {
         return _sheet.getLastRowNum();
     }
 
     /** Returns column names, if any.*/
+    @Override
     public Object[] getColumnNames() {
         return _column_names.toArray();
     }
     
+    @Override
     public int getColumnIndex(String name) {
         for (int i=0; i < _column_names.size(); ++i) {
-            String column_name = (String)_column_names.elementAt(i);
+            String column_name = (String)_column_names.get(i);
             if (column_name.equals(name)) {
                 return i + 1;
             }

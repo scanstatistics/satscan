@@ -13,32 +13,35 @@ import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBaseImportDataSource implements ImportDataSource {
 
     private final File _sourceFile;
+    InputStream _inputStream=null;
     private final DBFReader _reader;
     private int _currentRowNumber = 0;
     private boolean _formatDates;
     private final String _libDateFormat = "EEE MMM dd HH:mm:ss z yyyy"; //"Fri Aug 30 00:00:00 EDT 2002"
     private boolean _show_generateid=true;
     private boolean _show_onecont=true;
-    private Vector<Object> _column_names = new Vector<Object>();    
+    private ArrayList<Object> _column_names; 
 
     /** Creates a new instance of DBaseImportDataSource */
     public DBaseImportDataSource(File file, boolean formatDates) {
+        _column_names = new ArrayList<>();
         _sourceFile = file;
         _formatDates = formatDates;
         try {
-            InputStream inputStream = new FileInputStream(_sourceFile);
-            _reader = new DBFReader(inputStream);
+            _inputStream = new FileInputStream(_sourceFile);
+            _reader = new DBFReader(_inputStream);
             _column_names.add("Generated Id");
             _column_names.add("One Count");
             for (int i=0; i < _reader.getFieldCount(); ++i) {
@@ -50,9 +53,19 @@ public class DBaseImportDataSource implements ImportDataSource {
         }
     }
 
+    @Override
+    public void close() {        
+        try {
+            if (_inputStream != null) {_inputStream.close(); _inputStream=null;}
+        } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }   
+    
     /**
      * Returns number of records in file.
      */
+    @Override
     public int getNumRecords() {
         return _reader.getRecordCount();
     }
@@ -60,6 +73,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     /**
      * Returns whether column at index is a date field.
      */
+    @Override
     public boolean isColumnDate(int iColumn) {
         try {
             if (iColumn <= 1) return false; // generatedId, oneCount columns are not date field
@@ -80,18 +94,21 @@ public class DBaseImportDataSource implements ImportDataSource {
     }
 
     /** Returns current row index. */
+    @Override
     public long getCurrentRecordNum() {
         return _currentRowNumber;
     }
 
     /** Returns array of objects that define the column names of table. */
+    @Override
     public Object[] getColumnNames() {
         return _column_names.toArray();
     }
 
+    @Override
     public int getColumnIndex(String name) {
         for (int i=0; i < _column_names.size(); ++i) {
-            String column_name = (String)_column_names.elementAt(i);
+            String column_name = (String)_column_names.get(i);
             if (column_name.equals(name)) {
                 return i + 1;
             }
@@ -99,8 +116,9 @@ public class DBaseImportDataSource implements ImportDataSource {
     }
     
     /** Advances row index and reads data into object array. Returns array of objects if not end of file, otherwise returns null. */
+    @Override
     public Object[] readRow() {
-        Vector<Object> values = new Vector<Object>();
+        ArrayList<Object> values = new ArrayList<>();
         try {
             Object[] record = _reader.nextRecord();
             if (record == null) {
