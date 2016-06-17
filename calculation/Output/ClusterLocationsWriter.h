@@ -38,11 +38,6 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_TIME_TREND_IN_FIELD;
       static const char       * CLU_TIME_TREND_OUT_FIELD;
       static const char       * CLU_TIME_TREND_DIFF_FIELD;
-      static const char       * CLU_COORD_LAT_FIELD;
-      static const char       * CLU_COORD_LONG_FIELD;
-      static const char       * CLU_COORD_X_FIELD;
-      static const char       * CLU_COORD_Y_FIELD;
-      static const char       * CLU_COORD_Z_FIELD;
 
       //static const char       * CLU_ALPHA_IN_FIELD;
       //static const char       * CLU_BETA1_IN_FIELD;
