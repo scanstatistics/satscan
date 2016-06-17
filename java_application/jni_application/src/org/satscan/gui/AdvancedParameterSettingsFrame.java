@@ -1176,6 +1176,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The case file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _caseFileTextField);
             }
+            if (!FileAccess.isValidFilename(_caseFilenames.get(i))) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _caseFilenames.get(i)), FocusedTabSet.INPUT, (Component) _caseFileTextField);
+            }                
             String validationString = _settings_window.validateInputSourceDataFile(_caseFilenames.get(i), InputSourceSettings.InputFileType.Case.toString() + (i + 2), "case");
             if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _caseFileTextField);            
             //validate the control file for this dataset - Bernoulli model only
@@ -1187,6 +1190,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     throw new AdvFeaturesExpection("The control file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                             FocusedTabSet.INPUT, (Component) _controlFileTextField);
                 }
+                if (!FileAccess.isValidFilename(_controlFilenames.get(i))) {                
+                    throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _controlFilenames.get(i)), FocusedTabSet.INPUT, (Component) _controlFileTextField);
+                }                
                 validationString = _settings_window.validateInputSourceDataFile(_controlFilenames.get(i), InputSourceSettings.InputFileType.Control.toString() + (i + 2), "control");
                 if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _controlFileTextField);            
             }
@@ -1210,6 +1216,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             FocusedTabSet.INPUT, (Component) _populationFileTextField);
                 }
                 if (_populationFilenames.get(i).length() > 0) {
+                    if (!FileAccess.isValidFilename(_populationFilenames.get(i))) {                
+                        throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _populationFilenames.get(i)), FocusedTabSet.INPUT, (Component) _populationFileTextField);
+                    }                                    
                     validationString = _settings_window.validateInputSourceDataFile(_populationFilenames.get(i), InputSourceSettings.InputFileType.Population.toString() + (i + 2), "population");
                     if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _populationFileTextField);
                 }
@@ -1237,6 +1246,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The neighbors file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
             }
+            if (!FileAccess.isValidFilename(_neighborsFileTextField.getText())) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _neighborsFileTextField.getText()), FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
+            }                
         }
         if (_specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected() && _specifiyMetaLocationsFileCheckBox.isSelected()) {
             //validate the case file for this dataset
@@ -1247,16 +1259,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The meta locations file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
             }
+            if (!FileAccess.isValidFilename(_metaLocationsFileTextField.getText())) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _metaLocationsFileTextField.getText()), FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
+            }                
         }
     }
 
     private void validateSpatialWindowSettings() {
-        if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected() && _maxCirclePopulationFilenameTextField.getText().length() == 0) {
-            throw new AdvFeaturesExpection("Please specify a maximum circle size file.", FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
-        }
-        if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
-            throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
-                    FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+        if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected()) {
+            if (_maxCirclePopulationFilenameTextField.getText().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify a maximum circle size file.", FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+            }
+            if (!FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
+                throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
+                        FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+            }
+            if (!FileAccess.isValidFilename(_maxCirclePopulationFilenameTextField.getText())) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _maxCirclePopulationFilenameTextField.getText()), FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+            }                
         }
         if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
             if (_maxReportedSpatialClusterSizeTextField.isEnabled() && Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) < Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText())) {
@@ -1350,6 +1370,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The adjustments file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
+            if (!FileAccess.isValidFilename(_adjustmentsByRelativeRisksFileTextField.getText())) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _adjustmentsByRelativeRisksFileTextField.getText()), FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
+            }                            
         }
 
         if (isAdjustingForDayOfWeek()) {
@@ -1599,6 +1622,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
+            if (!FileAccess.isValidFilename(_alternativeHypothesisFilename.getText())) {                
+                throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _alternativeHypothesisFilename.getText()), FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }                                        
         }
     }
 

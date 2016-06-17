@@ -268,6 +268,13 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         WaitCursor waitCursor = new WaitCursor(SaTScanApplication.this);
 
         try {
+            if (!FileAccess.isValidFilename(sFilename)) {
+                JOptionPane.showMessageDialog(SaTScanApplication.this, 
+                                              String.format(AppConstants.FILENAME_ASCII_ERROR, sFilename), 
+                                              "Note", 
+                                              JOptionPane.INFORMATION_MESSAGE);                
+                return;
+            }  
             ParameterSettingsFrame frame = new ParameterSettingsFrame(getRootPane(), sFilename);
             frame.addInternalFrameListener(this);
             frame.setVisible(true);
@@ -276,6 +283,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 frame.setSelected(true);
             } catch (java.beans.PropertyVetoException e) {
             }
+        } catch (Throwable t) {
+            new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
         } finally {
             waitCursor.restore();
         }

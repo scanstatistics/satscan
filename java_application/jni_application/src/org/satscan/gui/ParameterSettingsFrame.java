@@ -581,6 +581,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",
                         (Component) _caseFileTextField);
             }
+            if (!FileAccess.isValidFilename(_caseFileTextField.getText())) {                
+                throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _caseFileTextField.getText()), (Component) _caseFileTextField);
+            }
             String validationString = validateInputSourceDataFile(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case.toString() + "1", "case");
             if (validationString != null) throw new SettingsException(validationString, (Component) _caseFileTextField);
         }
@@ -592,6 +595,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false)) {
                 throw new SettingsException("The control file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from\nthis directory and file.",
                         (Component) _controlFileTextField);
+            }
+            if (!FileAccess.isValidFilename(_controlFileTextField.getText())) {                
+                throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _controlFileTextField.getText()), (Component) _controlFileTextField);
             }
             String validationString = validateInputSourceDataFile(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control.toString() + "1", "control");
             if (validationString != null) throw new SettingsException(validationString, (Component) _controlFileTextField);
@@ -608,6 +614,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The population file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _populationFileTextField);
             }
+            if (!FileAccess.isValidFilename(_populationFileTextField.getText())) {                
+                throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _populationFileTextField.getText()), (Component) _populationFileTextField);
+            }            
             String validationString = validateInputSourceDataFile(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population.toString() + "1", "population");
             if (validationString != null) throw new SettingsException(validationString, (Component) _populationFileTextField);
         }
@@ -627,12 +636,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _coordiantesFileTextField);
             }
+            if (!FileAccess.isValidFilename(_coordiantesFileTextField.getText())) {                
+                throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _coordiantesFileTextField.getText()), (Component) _coordiantesFileTextField);
+            }                        
             String validationString = validateInputSourceDataFile(_coordiantesFileTextField.getText(), InputSourceSettings.InputFileType.Coordinates.toString() + "1", "coordinates");
             if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             //validate special grid file -- optional
             if (_gridFileTextField.getText().length() > 0) {
                 if (!FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false))
                     throw new SettingsException("The grid file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.", (Component) _gridFileTextField);
+                if (!FileAccess.isValidFilename(_gridFileTextField.getText())) {                
+                    throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _gridFileTextField.getText()), (Component) _gridFileTextField);
+                }                                        
                 validationString = validateInputSourceDataFile(_gridFileTextField.getText(), InputSourceSettings.InputFileType.SpecialGrid.toString() + "1", "grid");
                 if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             }
@@ -751,6 +766,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _resultsFileTextField);
         }
+        if (!FileAccess.isValidFilename(_resultsFileTextField.getText())) {                
+            throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _resultsFileTextField.getText()), (Component) _resultsFileTextField);
+        }           
     }
 
     /**
