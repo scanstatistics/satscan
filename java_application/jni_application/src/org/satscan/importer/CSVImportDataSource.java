@@ -27,7 +27,7 @@ public class CSVImportDataSource implements ImportDataSource {
     private ArrayList<Object> _column_names;
 
     public CSVImportDataSource(File file, boolean hasHeader, char rowDelimiter, char colDelimiter, char groupDelimiter, int skip) throws FileNotFoundException {
-        _column_names = new ArrayList<>();
+        _column_names = new ArrayList<Object>();
         _sourceFile = file;
         _totalRows = countLines(_sourceFile);
         _pushbackStream = new PushbackInputStream(new FileInputStream(_sourceFile));

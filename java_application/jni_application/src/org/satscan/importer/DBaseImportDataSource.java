@@ -36,7 +36,7 @@ public class DBaseImportDataSource implements ImportDataSource {
 
     /** Creates a new instance of DBaseImportDataSource */
     public DBaseImportDataSource(File file, boolean formatDates) {
-        _column_names = new ArrayList<>();
+        _column_names = new ArrayList<Object>();
         _sourceFile = file;
         _formatDates = formatDates;
         try {
@@ -118,7 +118,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     /** Advances row index and reads data into object array. Returns array of objects if not end of file, otherwise returns null. */
     @Override
     public Object[] readRow() {
-        ArrayList<Object> values = new ArrayList<>();
+        ArrayList<Object> values = new ArrayList<Object>();
         try {
             Object[] record = _reader.nextRecord();
             if (record == null) {

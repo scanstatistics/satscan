@@ -25,8 +25,8 @@ public class PreviewTableModel extends AbstractTableModel {
     /** Constructs a new PreviewTableModel object. */
     public PreviewTableModel(ImportDataSource data_source, boolean show_generatedId, boolean show_oneCount) {
         super();
-        _previewData = new ArrayList<>();
-        _column_names = new ArrayList<>();
+        _previewData = new ArrayList<Object[]>();
+        _column_names = new ArrayList<Object>();
         _data_source = data_source;
         _show_generatedId = show_generatedId;
         _show_oneCount = show_oneCount;

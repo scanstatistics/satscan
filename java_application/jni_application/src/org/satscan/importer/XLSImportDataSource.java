@@ -33,7 +33,7 @@ public class XLSImportDataSource implements ImportDataSource {
     private InputStream _input_stream=null;
 
     public XLSImportDataSource(File file) {
-        _column_names = new ArrayList<>();
+        _column_names = new ArrayList<Object>();
         _current_row = 0;
         try {
             _input_stream = new FileInputStream(file);

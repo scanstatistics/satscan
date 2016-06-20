@@ -22,7 +22,7 @@ public class ShapefileDataSource implements ImportDataSource {
     private ArrayList<Object> _column_names;   
     
     public ShapefileDataSource(File source_file, boolean formatDates) {
-        _column_names = new ArrayList<>();
+        _column_names = new ArrayList<Object>();
         _source_file = source_file;
         try {
             // check for existance of dBase file
@@ -106,7 +106,7 @@ public class ShapefileDataSource implements ImportDataSource {
         ++_current_row_number;
         if (_current_row_number > getNumRecords())
             return null;
-        ArrayList<Object> values = new ArrayList<>();
+        ArrayList<Object> values = new ArrayList<Object>();
         values.add("location" + _current_row_number);
         values.add("1");
         double[] coordinates = getCoordinates(_current_row_number - 1);
