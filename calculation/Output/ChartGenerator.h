@@ -56,6 +56,7 @@ class TemporalChartGenerator : public AbstractChartGenerator {
     public:
         static const char * FILE_SUFFIX_EXT;
         static const int    MAX_INTERVALS;
+        static const int    MAX_X_AXIS_TICKS;
 
     protected:
         static const char * BASE_TEMPLATE;
