@@ -152,24 +152,24 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
                 CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-
-			/* Define location specific coordinate fields. */
-			if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
-				CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
-					gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
-				CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
-					gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
-
-				//only Cartesian coordinates can have more than two dimensions
-				if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetTInfo()->getCoordinateDimensions() > 2)
-					for (unsigned int i=3; i <= (unsigned int)DataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
-						printString(buffer, "%s%i", LOC_COORD_Z_FIELD, i - 2);
-						CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
-					}
-			}
-
         }
-        if (gParameters.getCalculateOliveirasF()) {
+
+		/* Define location specific coordinate fields. */
+		if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
+				gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
+			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
+				gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
+
+			//only Cartesian coordinates can have more than two dimensions
+			if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetTInfo()->getCoordinateDimensions() > 2)
+				for (unsigned int i=3; i <= (unsigned int)DataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
+					printString(buffer, "%s%i", LOC_COORD_Z_FIELD, i - 2);
+					CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
+				}
+		}
+		
+		if (gParameters.getCalculateOliveirasF()) {
             short precision;
             if (gParameters.getNumRequestedOliveiraSets() <= 100) { precision = 2; 
             } else if (gParameters.getNumRequestedOliveiraSets() <= 1000) { precision = 3;
@@ -266,7 +266,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                 */
             }
 
-			/* Report coordinate fields for both location and cluster. */
+			/* Report coordinate fields for location. */
 			if (theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
 				/* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
 				DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
