@@ -23,6 +23,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  , guiJobCount(num_replica)
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
+ , _frequent_estimations(false)
 {
   if (rParameters.GetTerminateSimulationsEarly()) {
     gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbort;
@@ -269,43 +270,36 @@ void stsMCSimJobSource::RegisterResult_ExceptionConditionExists(job_id_type cons
 
 //register a result when no extended conditions (AutoAbort[early termination],
 //thrown exceptions, cancelation) are active.
-void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, param_type const & rParam, result_type const & rResult)
-{
-  try
-  {
-    //check exception condition first.  Want to report an exception even if
-    //cancel is requested.
-    if (!rResult.bUnExceptional)
-    {
-      //populate stored exceptions:
-      gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
-      gfnRegisterResult = &stsMCSimJobSource::RegisterResult_ExceptionConditionExists;
-      return;
-    }
-    else if (CancelRequested())
-    {
-      gfnRegisterResult = &stsMCSimJobSource::RegisterResult_CancelConditionExists;
-      return;
-    }
+void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, param_type const & rParam, result_type const & rResult) {
+    try {
+        //check exception condition first.  Want to report an exception even if
+        //cancel is requested.
+        if (!rResult.bUnExceptional) {
+            //populate stored exceptions:
+            gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
+            gfnRegisterResult = &stsMCSimJobSource::RegisterResult_ExceptionConditionExists;
+            return;
+        } else if (CancelRequested()) {
+            gfnRegisterResult = &stsMCSimJobSource::RegisterResult_CancelConditionExists;
+            return;
+        }
 
-    //update ratios, significance, etc.
-    WriteResultToStructures(rResult.dSuccessfulResult);
-    ++guiJobsReported;
+        //update ratios, significance, etc.
+        WriteResultToStructures(rResult.dSuccessfulResult);
+        ++guiJobsReported;
 
-    //if appropriate, estimate time required to complete all jobs and report it.
-    unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, rResult.dSuccessfulResult);
-    if (uiJobsProcessedCount==10) {
-      ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, grPrintDirection, true);
-      SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
-      grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+        //if appropriate, estimate time required to complete all jobs and report it.
+        unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size() - gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
+        grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, rResult.dSuccessfulResult);
+        if (uiJobsProcessedCount == 10 || (_frequent_estimations && (uiJobsProcessedCount % SIMULATION_EST_MODULAS == 0))) {
+            _frequent_estimations = ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, grPrintDirection, true, uiJobsProcessedCount != 10) > FREQUENT_ESTIMATES_SECONDS;
+            SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+            grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+        }
+    } catch (prg_exception & e) {
+        e.addTrace("RegisterResult_NoAutoAbort()", "stsMCSimJobSource");
+        throw;
     }
-  }
-  catch (prg_exception & e)
-  {
-    e.addTrace("RegisterResult_NoAutoAbort()", "stsMCSimJobSource");
-    throw;
-  }
 }
 
 //When we're through checking for auto-abort, we want to release any resources

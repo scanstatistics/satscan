@@ -57,6 +57,7 @@ private://data members
   bool gbIsExplicitlyExhausted;
   boost::posix_time::ptime const gConstructionTime;
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
+  bool _frequent_estimations;
 
 private://functions
   void RegisterResult_Simple(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult);

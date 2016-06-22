@@ -219,32 +219,36 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize(const CSaTSc
 /** Calculates neighboring locations about each centroid; storing results in sorted
     array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub) {
-  try {
-    if (gParameters.UseLocationNeighborsFile()) {
-      std::pair<int, std::vector<int> >   prNeighborsCount;
-      boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-      gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
-      //Calculate maximum neighboring locations about each centroid for circular regions
-      for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
-         gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
-         //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
-         for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
-           gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1), 0, 0);
-         CalculateNeighborsForCurrentState(prNeighborsCount);
-         const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
-         if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, gPrintDirection);
-      }
+    try {
+        if (gParameters.UseLocationNeighborsFile()) {
+            std::pair<int, std::vector<int> >   prNeighborsCount;
+            boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+            gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
+
+            bool frequent_estimations = false;
+            int modulas = std::max(1, static_cast<int>(std::floor(dataHub.m_nGridTracts * STANDARD_MODULAS_PERCENT)));
+
+            //Calculate maximum neighboring locations about each centroid for circular regions
+            for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
+                gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
+                //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
+                for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
+                    gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1), 0, 0);
+                CalculateNeighborsForCurrentState(prNeighborsCount);
+                const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
+
+                if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
+                    frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
+            }
+        } else {
+            const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
+            CalculateNeighborsByCircles(dataHub);
+            CalculateNeighborsByEllipses(dataHub);
+        }  
+    } catch (prg_exception& x) {
+        x.addTrace("CalculateNeighbors()", "CentroidNeighborCalculator");
+        throw;
     }
-    else {
-      const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
-      CalculateNeighborsByCircles(dataHub);
-      CalculateNeighborsByEllipses(dataHub);
-    }  
-  }
-  catch (prg_exception& x) {
-    x.addTrace("CalculateNeighbors()", "CentroidNeighborCalculator");
-    throw;
-  }
 }
 
 /** Calculates closest neighbor's distances to all locations from ellipse/centroid, sorted from closest
@@ -326,43 +330,54 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
 /** Calculates neighboring locations about each centroid through expanding circle;
     storing results in sorted array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByCircles(const CSaTScanData& dataHub) {
-  boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  std::pair<int, std::vector<tract_t> >   prNeighborsCount;
+    boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+    std::pair<int, std::vector<tract_t> >   prNeighborsCount;
 
-  gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
-  //Calculate neighboring locations about each centroid for circular regions
-  for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
-     CalculateNeighborsAboutCentroid(0, t);
-     CalculateNeighborsForCurrentState(prNeighborsCount);
-     AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
-     CoupleLocationsAtSameCoordinates(prNeighborsCount);
-     const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
-     if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, gPrintDirection);
-  }
+    bool frequent_estimations = false;
+    int modulas = std::max(1, static_cast<int>(std::floor(dataHub.m_nGridTracts * 0.25)));
+
+    gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
+    //Calculate neighboring locations about each centroid for circular regions
+    for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
+        CalculateNeighborsAboutCentroid(0, t);
+        CalculateNeighborsForCurrentState(prNeighborsCount);
+        AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
+        CoupleLocationsAtSameCoordinates(prNeighborsCount);
+        const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
+
+        if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
+            frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
+    }
 }
 
 /** Calculates neighboring locations about each centroid by distance; storing
     results in multiple dimension arrays contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData& dataHub) {
-  boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  std::pair<int, std::vector<int> >   prNeighborsCount;
+    boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+    std::pair<int, std::vector<int> >   prNeighborsCount;
 
-  //only perform calculation if ellipses requested
-  if (!gParameters.GetSpatialWindowType() == ELLIPTIC)
-    return;
+    //only perform calculation if ellipses requested
+    if (!gParameters.GetSpatialWindowType() == ELLIPTIC)
+        return;
 
-  gPrintDirection.Printf("Constructing the ellipsoids\n", BasePrint::P_STDOUT);
-  //Calculate neighboring locations about each centroid for elliptical regions
-  for (int i=1; i <= gParameters.GetNumTotalEllipses(); ++i) {
-     for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
-        CalculateNeighborsAboutCentroid(i, t);
-        CalculateNeighborsForCurrentState(prNeighborsCount);
-        AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
-        CoupleLocationsAtSameCoordinates(prNeighborsCount);
-        const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
-        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses(), t, gPrintDirection);
-     }
-  }
+    bool frequent_estimations = false;
+    int modulas = std::max(1, static_cast<int>(std::floor((dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses()) * 0.25)));
+
+    gPrintDirection.Printf("Constructing the ellipsoids\n", BasePrint::P_STDOUT);
+    //Calculate neighboring locations about each centroid for elliptical regions
+    for (int i=1; i <= gParameters.GetNumTotalEllipses(); ++i) {
+        for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
+            CalculateNeighborsAboutCentroid(i, t);
+            CalculateNeighborsForCurrentState(prNeighborsCount);
+            AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
+            CoupleLocationsAtSameCoordinates(prNeighborsCount);
+            const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
+
+            if ((i == 1 && t == 9) || (frequent_estimations && ((i * (t + 1)) % modulas == 0)))
+                frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses(), t + 1, gPrintDirection, false, (i != 1 && t != 9)) > FREQUENT_ESTIMATES_SECONDS;
+
+        }
+    }
 }
 
 /** Given current state of class data members, calculates the number of neighbors in real data and simulation data. */

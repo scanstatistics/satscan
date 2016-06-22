@@ -258,39 +258,40 @@ unsigned int GetNumSystemProcessors() {
   return (iNumProcessors > 0 ? iNumProcessors : 1);
 }
 
-/** Calculates an estimate for the time remaining to complete X repetition given Y completed. */
-void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint& printDirection, bool isUpperLimit) {
-  boost::posix_time::ptime StopTime(GetCurrentTime_HighResolution());
-  double dSecondsElapsed;
+/** Calculates an estimate for the time remaining to complete X repetition given Y completed. Returns estimation in seconds. */
+double ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint& printDirection, bool isUpperLimit, bool isUpdate) {
+    boost::posix_time::ptime StopTime(GetCurrentTime_HighResolution());
+    double dSecondsElapsed;
 
-  //nothing to report if number of repetitions less than 2 or none have been completed
-  if (nRepetitions <= 1 || nRepsCompleted <= 0) return;
-  //nothing to report if start time greater than stop time -- error?
-  if (StartTime > StopTime) return;
+    //nothing to report if number of repetitions less than 2 or none have been completed
+    if (nRepetitions <= 1 || nRepsCompleted <= 0) return 0.0;
+    //nothing to report if start time greater than stop time -- error?
+    if (StartTime > StopTime) return 0.0;
 
-  boost::posix_time::time_duration ElapsedTime = StopTime - StartTime;
-  dSecondsElapsed = ElapsedTime.fractional_seconds() / std::pow(static_cast<double>(10), ElapsedTime.num_fractional_digits());
-  dSecondsElapsed += ElapsedTime.seconds();
-  dSecondsElapsed += ElapsedTime.minutes() * 60;
-  dSecondsElapsed += ElapsedTime.hours() * 60 * 60;
-  double dEstimatedSecondsRemaining = dSecondsElapsed/nRepsCompleted * (nRepetitions - nRepsCompleted);
+    boost::posix_time::time_duration ElapsedTime = StopTime - StartTime;
+    dSecondsElapsed = ElapsedTime.fractional_seconds() / std::pow(static_cast<double>(10), ElapsedTime.num_fractional_digits());
+    dSecondsElapsed += ElapsedTime.seconds();
+    dSecondsElapsed += ElapsedTime.minutes() * 60;
+    dSecondsElapsed += ElapsedTime.hours() * 60 * 60;
+    double dEstimatedSecondsRemaining = dSecondsElapsed/nRepsCompleted * (nRepetitions - nRepsCompleted);
 
-  //print an estimation only if estimated time will be 30 seconds or more
-  if (dEstimatedSecondsRemaining >= 30) {
-    if (dEstimatedSecondsRemaining < 60.0) {
-        const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf seconds.\n" : ".... this will take approximately %.0lf seconds.\n";
-        printDirection.Printf(message, BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
-    } else if (dEstimatedSecondsRemaining < 3600.0) {
-      double dMinutes = std::ceil(dEstimatedSecondsRemaining/60.0);
-      const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf minute%s.\n" : ".... this will take approximately %.0lf minute%s.\n";
-      printDirection.Printf(message, BasePrint::P_STDOUT, dMinutes, (dMinutes == 1.0 ? "" : "s"));
-    } else {
-      double dHours = std::floor(dEstimatedSecondsRemaining/3600.0);
-      double dMinutes = std::ceil((dEstimatedSecondsRemaining - dHours * 3600.0)/60.0);
-      const char * message = isUpperLimit ? ".... this will approximately take at most %.0lf hour%s %.0lf minute%s.\n" : ".... this will take approximately %.0lf hour%s %.0lf minute%s.\n";
-      printDirection.Printf(message, BasePrint::P_STDOUT, dHours, (dHours == 1.0 ? "" : "s"), dMinutes, (dMinutes == 1.0 ? "" : "s"));
+    //print an estimation only if estimated time will be 30 seconds or more
+    if (dEstimatedSecondsRemaining >= 30) {
+        if (dEstimatedSecondsRemaining < 60.0) {
+            const char * message = isUpperLimit ? ".... this step will approximately take at most %.0lf seconds%s.\n" : ".... this step will take approximately %.0lf seconds%s.\n";
+            printDirection.Printf(message, BasePrint::P_STDOUT, dEstimatedSecondsRemaining, isUpdate ? " more" : "");
+        } else if (dEstimatedSecondsRemaining < 3600.0) {
+            double dMinutes = std::ceil(dEstimatedSecondsRemaining/60.0);
+            const char * message = isUpperLimit ? ".... this step will approximately take at most %.0lf minute%s%s.\n" : ".... this step will take approximately %.0lf minute%s%s.\n";
+            printDirection.Printf(message, BasePrint::P_STDOUT, dMinutes, (dMinutes == 1.0 ? "" : "s"), isUpdate ? " more" : "");
+        } else {
+            double dHours = std::floor(dEstimatedSecondsRemaining/3600.0);
+            double dMinutes = std::ceil((dEstimatedSecondsRemaining - dHours * 3600.0)/60.0);
+            const char * message = isUpperLimit ? ".... this step will approximately take at most %.0lf hour%s %.0lf minute%s%s.\n" : ".... this step will take approximately %.0lf hour%s %.0lf minute%s%s.\n";
+            printDirection.Printf(message, BasePrint::P_STDOUT, dHours, (dHours == 1.0 ? "" : "s"), dMinutes, (dMinutes == 1.0 ? "" : "s"), isUpdate ? " more" : "");
+        }
     }
-  }
+    return dEstimatedSecondsRemaining;
 }
 
 /** Returns estimated unbiased variance for the entire data set. */

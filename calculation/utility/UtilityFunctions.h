@@ -16,7 +16,7 @@ void                            UTM_conversion_test();
 double                          CalculateNonCompactnessPenalty(double dEllipseShape, double dPower);
 const char                    * GetDatePrecisionAsString(DatePrecisionType eType, std::string& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
 unsigned int                    GetNumSystemProcessors();
-void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint& printDirection, bool isUpperLimit=false);
+double                          ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint& printDirection, bool isUpperLimit = false, bool isUpdate = false);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
 double                          GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumMeasureAux);
 double                          GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tMeasureAux, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalMeasureAux);

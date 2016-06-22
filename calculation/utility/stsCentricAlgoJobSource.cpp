@@ -20,6 +20,7 @@ stsCentricAlgoJobSource::stsCentricAlgoJobSource(
  , gfnRegisterResult(&stsCentricAlgoJobSource::RegisterResult_Simple)
  , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
+ , _frequent_estimations(false)
 {
 }
 
@@ -188,41 +189,34 @@ void stsCentricAlgoJobSource::RegisterResult_ExceptionConditionExists(job_id_typ
 
 //register a result when no extended conditions (thrown exceptions, cancelation)
 //are active.
-void stsCentricAlgoJobSource::RegisterResult_Simple(job_id_type const & rJobID, param_type const & rParam, result_type const & rResult)
-{
-  try
-  {
-    //check exception condition first.  Want to report an exception even if
-    //cancel is requested.
-    if (rResult.bExceptional)
-    {
-      //populate stored exceptions:
-      gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
-      gfnRegisterResult = &stsCentricAlgoJobSource::RegisterResult_ExceptionConditionExists;
-      return;
-    }
-    else if (CancelRequested())
-    {
-      gfnRegisterResult = &stsCentricAlgoJobSource::RegisterResult_CancelConditionExists;
-      return;
-    }
+void stsCentricAlgoJobSource::RegisterResult_Simple(job_id_type const & rJobID, param_type const & rParam, result_type const & rResult) {
+    try {
+        //check exception condition first.  Want to report an exception even if
+        //cancel is requested.
+        if (rResult.bExceptional) {
+            //populate stored exceptions:
+            gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
+            gfnRegisterResult = &stsCentricAlgoJobSource::RegisterResult_ExceptionConditionExists;
+            return;
+        } else if (CancelRequested()) {
+            gfnRegisterResult = &stsCentricAlgoJobSource::RegisterResult_CancelConditionExists;
+            return;
+        }
 
-    //if appropriate, estimate time required to complete all jobs and report it.
-    unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
-    AsynchronouslyAccessible<PrintQueue>::LockWrapper lclLockedPrintQueue(grPrintDirection.Locked());
-    PrintQueue & rPrintQueue = lclLockedPrintQueue.Value();
-    rPrintQueue.Printf("Evaluating centroid %i of %i\n", BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount);
-    if (uiJobsProcessedCount==10) {
-      ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, rPrintQueue, true);
-      SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
-      rPrintQueue.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+        //if appropriate, estimate time required to complete all jobs and report it.
+        unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
+        AsynchronouslyAccessible<PrintQueue>::LockWrapper lclLockedPrintQueue(grPrintDirection.Locked());
+        PrintQueue & rPrintQueue = lclLockedPrintQueue.Value();
+        rPrintQueue.Printf("Evaluating centroid %i of %i\n", BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount);
+        if (uiJobsProcessedCount == 10 || (_frequent_estimations && (uiJobsProcessedCount % SIMULATION_EST_MODULAS == 0))) {
+            _frequent_estimations = ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, rPrintQueue, true, uiJobsProcessedCount != 10) > FREQUENT_ESTIMATES_SECONDS;
+            SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+            rPrintQueue.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+        }
+    } catch (prg_exception & e) {
+        e.addTrace("RegisterResult_Simple()", "stsCentricAlgoJobSource");
+        throw;
     }
-  }
-  catch (prg_exception & e)
-  {
-    e.addTrace("RegisterResult_Simple()", "stsCentricAlgoJobSource");
-    throw;
-  }
 }
 
 

@@ -116,5 +116,12 @@ typedef std::vector<boost::any> FieldMapContainer_t;
 #define SEASONAL_YEAR 2001
 /* arbitrary day of month for seasonal dates */
 #define SEASONAL_DAY 15
+
+/* standard modulas percentage for frequent time estimations */
+#define STANDARD_MODULAS_PERCENT 0.25
+/* modulas for frequent time estimations in simulations */
+#define SIMULATION_EST_MODULAS 50
+/* minimum time for frequent time estimates*/
+#define FREQUENT_ESTIMATES_SECONDS 180.0
 //*****************************************************************************
 #endif

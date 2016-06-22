@@ -63,6 +63,7 @@ private://data members
   std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   AnalysisRunner                          & grRunner;
   boost::posix_time::ptime StartTime;
+  bool _frequent_estimations;
 
   boost::dynamic_bitset<>                   _presence_hierarchical;
   /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
