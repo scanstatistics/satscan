@@ -518,6 +518,11 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 URL url = info._url;
                 // Open a connection
                 URLConnection connection = url.openConnection();
+                if (SaTScanApplication.getDebugAuth().length() > 0) {
+                    byte[] bytesEncoded = Base64.encode(SaTScanApplication.getDebugAuth().getBytes());
+                    String authEncoded = new String(bytesEncoded);
+                    connection.setRequestProperty("Authorization", "Basic "+authEncoded);
+                }                
                 connection.setDoOutput(true);
                 // Read from the connection
                 _downloadProgressBar.setValue(0);
@@ -535,6 +540,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 }
                 out.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
@@ -549,6 +555,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                     _restartRequired = true;
                 }
             } catch (Exception e) {
+                System.out.println(e.getMessage());
                 throw new RuntimeException(e.getMessage(), e);
             }
 
