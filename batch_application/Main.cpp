@@ -152,8 +152,8 @@ int main(int argc, char *argv[]) {
     }
     /* apply parameter overrides*/
     if (!parameterOptions.setParameterOverrides(vm)) {
-            throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
-                                   "Please review above message(s) and modify parameter settings accordingly.");
+		throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
+                               "Please review above message(s) and modify parameter settings accordingly.");
     }
 
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY);

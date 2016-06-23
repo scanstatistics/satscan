@@ -20,6 +20,7 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
         <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
         <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
         </tr></tbody></table> \n \
+		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
         --main-content-- \n";
 
 /** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
@@ -35,6 +36,7 @@ std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& t
 
 const char * TemporalChartGenerator::FILE_SUFFIX_EXT = ".temporal";
 const int TemporalChartGenerator::MAX_INTERVALS = 4000;
+const int TemporalChartGenerator::MAX_X_AXIS_TICKS = 500;
 
 const char * TemporalChartGenerator::BASE_TEMPLATE = " \
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
@@ -66,6 +68,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         <script type='text/javascript'> \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
+			    try { \n \
                 --charts--   \n\n \
                 $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
                 $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
@@ -88,6 +91,10 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                         chart.xAxis[0].removePlotLine('end'); \n \
                     } \n \
                 }); \n \
+				} catch (error) { \n \
+				   $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
+             	   throw( error ); \n \
+                } \n \
             }); \n \
         </script> \n \
     </head> \n \
@@ -109,7 +116,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                     plotOptions: { column: { grouping: false }}, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { backgroundColor: '#F5F5F5', verticalAlign: 'top', y: 40 }, \n \
-                    xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' } }], \n \
+					xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
                     yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0 }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [--series--]\n \
@@ -214,6 +221,8 @@ void TemporalChartGenerator::generateChart() const {
         templateReplace(html, "--body--", TEMPLATE_BODY);
         // site resource link path
         templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
+        // site resource link path
+        templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
         // set margin bottom according to time precision
         int margin_bottom=130;
@@ -326,6 +335,8 @@ void TemporalChartGenerator::generateChart() const {
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
                 templateReplace(chart_js, "--container-id--", buffer);
+				printString(buffer, "%u", static_cast<unsigned int>(std::ceil( static_cast<double>(groups.getGroups().size()) / static_cast<double>(MAX_X_AXIS_TICKS) )));
+				templateReplace(chart_js, "--tickinterval--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());
 
                 // replace the series

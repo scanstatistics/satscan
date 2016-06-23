@@ -75,7 +75,7 @@ void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintD
 /** constructor */
 AbtractParameterFileAccess::AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit)
                            :gParameters(Parameters), gPrintDirection(PrintDirection), gbWriteBooleanAsDigit(bWriteBooleanAsDigit),
-                            gdMaxSpatialClusterSize(50.0), gdMaxReportedSpatialClusterSize(50.0) {}
+                            gdMaxSpatialClusterSize(50.0), gdMaxReportedSpatialClusterSize(50.0), gbReadStatusError(false) {}
 
 /** destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}

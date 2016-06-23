@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import org.apache.commons.lang.SystemUtils;
 
 public class FileAccess {
     
@@ -40,5 +41,13 @@ public class FileAccess {
             ext = s.substring(i + 1).toLowerCase();
         }
         return ext;
+    }
+    
+    /* Checks that filename is valid -- in particular, that fullpath only has ascii characters
+       for the Windows platform. There is a problem with JNI conversion.
+       https://www.squishlist.com/ims/satscan/66273/
+    */
+    public static boolean isValidFilename(String filename) {
+        return !(SystemUtils.IS_OS_WINDOWS && !filename.matches("\\A\\p{ASCII}*\\z"));
     }
 }

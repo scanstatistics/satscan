@@ -5,7 +5,7 @@
 package org.satscan.importer;
 
 import java.io.File;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.satscan.gui.SaTScanApplication;
@@ -19,9 +19,10 @@ public class ShapefileDataSource implements ImportDataSource {
     private final File _source_file;
     private DBaseImportDataSource _dbase_data_source=null;
     private long _current_row_number = 0;
-    private Vector<Object> _column_names = new Vector<Object>();    
+    private ArrayList<Object> _column_names;   
     
     public ShapefileDataSource(File source_file, boolean formatDates) {
+        _column_names = new ArrayList<Object>();
         _source_file = source_file;
         try {
             // check for existance of dBase file
@@ -47,13 +48,21 @@ public class ShapefileDataSource implements ImportDataSource {
         }   
     }
      
+    public void close() {
+        try {
+            if (_dbase_data_source != null) _dbase_data_source.close();
+        } catch (Exception ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public Object[] getColumnNames() {
         return _column_names.toArray();
     }   
     
     public int getColumnIndex(String name) {
         for (int i=0; i < _column_names.size(); ++i) {
-            String column_name = (String)_column_names.elementAt(i);
+            String column_name = (String)_column_names.get(i);
             if (column_name.equals(name)) {
                 return i + 1;
             }
@@ -97,7 +106,7 @@ public class ShapefileDataSource implements ImportDataSource {
         ++_current_row_number;
         if (_current_row_number > getNumRecords())
             return null;
-        Vector<Object> values = new Vector<Object>();
+        ArrayList<Object> values = new ArrayList<Object>();
         values.add("location" + _current_row_number);
         values.add("1");
         double[] coordinates = getCoordinates(_current_row_number - 1);

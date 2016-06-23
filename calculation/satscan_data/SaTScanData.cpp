@@ -121,7 +121,7 @@ void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, 
   if (!gpNeighborCountHandler)
     throw prg_error("Neighbor array not allocated.","setNeighborCounts()");
 
-  if (gpReportedNeighborCountHandler)
+  if (gpReportedNeighborCountHandler && vMaxReported.size())
     gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = vMaxReported.back();
   if (gpReportedMaximumsNeighborCountHandler)
     gpReportedMaximumsNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex].set(vMaxReported);

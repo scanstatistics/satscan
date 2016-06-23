@@ -8,7 +8,7 @@
  */
 package org.satscan.importer;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -16,10 +16,6 @@ import org.apache.commons.lang.StringUtils;
  * @author Hostovic
  */
 public class ImportUtils {
-
-    /** Creates a new instance of ImportUtils */
-    public ImportUtils() {
-    }
 
     /** function called by parseLineToVectorList().  Strips sOpenGroupMarker and sCloseGroupMarker from the
     ends of sLine */
@@ -69,12 +65,12 @@ public class ImportUtils {
 
     /** parseLine() with identical opening & closing group markers,
     always trims whitespace and eats group markers. */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sGroupMarker) {
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sGroupMarker) {
         return parseLine(sLine, sDelimiter, sGroupMarker, sGroupMarker, true, true);
     }
 
     /** calls parseLine, providing sGroupMarker as both opening and closing group markers */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sGroupMarker,
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sGroupMarker,
             boolean bTrimWhitespace, boolean bStripGroupMarkers) {
 
         return parseLine(sLine, sDelimiter, sGroupMarker, sGroupMarker, bTrimWhitespace, bStripGroupMarkers);
@@ -95,13 +91,13 @@ public class ImportUtils {
     False to leave all whitespace between delimiters.
     @param bStripGroupMarkers True to
     Returns a Vector of Cells parsed from sLine. */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
             boolean bTrimWhitespace, boolean bStripGroupMarkers) {
 
         //because we accept strings as delimiter and grouping markers, we have to do overlapping compares
         //to find matches.  We step through the length of sLine character by character.
 
-        Vector<String> vList = new Vector<String>();
+        ArrayList<String> vList = new ArrayList<String>();
         StringBuffer buffer = new StringBuffer(""); //contains the text of our working cell
 
         boolean bGroupOpen = false; //indicates whether we're currently building a group (true
@@ -165,9 +161,9 @@ public class ImportUtils {
                         s = s.trim();
                     }
 
-                    //add s to our Vector of cells and initialize buffer with a new, empty
+                    //add s to our ArrayList of cells and initialize buffer with a new, empty
                     //string.
-                    vList.addElement(s);
+                    vList.add(s);
                     buffer = new StringBuffer("");
 
                 } else {
@@ -208,7 +204,7 @@ public class ImportUtils {
             s = s.trim();
         }
 
-        vList.addElement(s);
+        vList.add(s);
 
         return vList;
     }

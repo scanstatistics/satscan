@@ -85,7 +85,7 @@ void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumN
   gtCentroid = tCentroid;
   gtEllipseOffset = tEllipseOffset;
   giMaxNeighbors = iNumNeighbors;
-  giNeighbors = giMaxReportedNeighbors = maxReportedNeighbors.back();
+  giNeighbors = giMaxReportedNeighbors = maxReportedNeighbors.size() > 0 ? maxReportedNeighbors.back() : 0;
   gvMaxReportedNeighbors = maxReportedNeighbors;
 }
 

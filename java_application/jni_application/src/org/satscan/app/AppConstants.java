@@ -32,6 +32,7 @@ public final class AppConstants {
     public static final String METALOCATIONSFILE_HELPID = "Meta Location File";
     public static final String ADJUSTMENTSFILE_HELPID = "Adjustments File";
     public static final String ALTERNATIVEHYPOTHESIS_HELPID = "Alternative Hypothesis File";
+    public static final String FILENAME_ASCII_ERROR = "The filename %s is invalid.\nIt may contain only standard ASCII characters in the path and filename.";
     
     public static final String getSoftwareTitle() {
         return APP_TITLE;

@@ -2,13 +2,14 @@ package org.satscan.gui;
 
 import java.awt.Desktop;
 import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
@@ -17,7 +18,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -163,7 +163,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             public void run() {
                 _progressTextArea.setText("");
                 try {
-                    _progressTextArea.read(new FileReader(sFileName), null);
+                    Charset charset = Charset.forName("UTF-8");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sFileName), charset));
+                    _progressTextArea.read(reader, null);
+                    reader.close();
                     setTitle(sFileName);
                 } catch (IOException e) {
                     setTitle("Job Completed");
