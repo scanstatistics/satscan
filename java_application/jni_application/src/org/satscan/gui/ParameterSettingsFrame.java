@@ -7,7 +7,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -508,7 +507,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 case Shapefile : source = new ShapefileDataSource(new File(filename), true); break;
                 case dBase : source = new DBaseImportDataSource(new File(filename), false); break;
                 case Excel97_2003 : 
-                case Excel : source = new XLSImportDataSource(new File(filename)); break;
+                case Excel : source = new XLSImportDataSource(new File(filename), false); break;
                 case CSV :
                 default : source = new CSVImportDataSource(new File(filename), iss.getFirstRowHeader(), '\n', iss.getDelimiter().charAt(0), iss.getGroup().charAt(0), iss.getSkiplines());
             }

@@ -84,6 +84,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private boolean _executed_import=false;
     private boolean _needs_import_save=false;
     private boolean _refresh_related_settings=false;
+    private boolean _excel_has_header=true;
 
     /** Creates new form FileSourceWizard */
     public FileSourceWizard(java.awt.Frame parent,
@@ -458,7 +459,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             return new DBaseImportDataSource(new File(getSourceFilename()), false);
         } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                    _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            return new XLSImportDataSource(new File(getSourceFilename()));
+            return new XLSImportDataSource(new File(getSourceFilename()), _excel_has_header);
         } else {
             int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
             return new CSVImportDataSource(new File(getSourceFilename()), _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows);
@@ -613,7 +614,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     source.close();
                 } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                            _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-                    XLSImportDataSource source = new XLSImportDataSource(file);
+                    XLSImportDataSource source = new XLSImportDataSource(file, _excel_has_header);
                     names = source.getColumnNames();
                     source.close();
                 }
@@ -853,7 +854,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _preview_table_model = new PreviewTableModel(new DBaseImportDataSource(new File(getSourceFilename()), true), show_generatedId, show_oneCount);
             } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                        _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-                _preview_table_model = new PreviewTableModel(new XLSImportDataSource(new File(getSourceFilename())), show_generatedId, show_oneCount);
+                 _excel_has_header = JOptionPane.showConfirmDialog(this, "Does the first row in this Excel file contain column headers?", 
+                                                                   "Excel Options", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+                _preview_table_model = new PreviewTableModel(new XLSImportDataSource(new File(getSourceFilename()), _excel_has_header), show_generatedId, show_oneCount);
             } else {
                 int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
                 _preview_table_model = new PreviewTableModel(new CSVImportDataSource(file, _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows), show_generatedId, show_oneCount);

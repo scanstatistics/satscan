@@ -30,11 +30,13 @@ public class XLSImportDataSource implements ImportDataSource {
     private String _file_path;
     private int _sheet_index = 0;
     private ArrayList<Object> _column_names;
+    private boolean _hasHeader=false;
     private InputStream _input_stream=null;
 
-    public XLSImportDataSource(File file) {
+    public XLSImportDataSource(File file, boolean hasHeader) {
         _column_names = new ArrayList<Object>();
         _current_row = 0;
+        _hasHeader = hasHeader;
         try {
             _input_stream = new FileInputStream(file);
             if (FileAccess.getExtension(file).equals("xlsx"))
@@ -55,11 +57,25 @@ public class XLSImportDataSource implements ImportDataSource {
         setSheet(0);
         _column_names.add("Generated Id");
         _column_names.add("One Count");        
-        Object[] row = readRow();
-        for (int i=0; i < row.length - 2; ++i) {
-           _column_names.add("Column " + (i + 1));
+        if (_hasHeader) {
+            Object[] row = readRow();
+            for (int i=2; i < row.length; ++i)
+                _column_names.add(row[i]);
+            _current_row = 1;
+        } else {
+            int sample_count = 0;
+            int maxCols = 0;
+            Object[] row = readRow();
+            while (row != null && sample_count < 200) {
+                sample_count++;
+                maxCols = Math.max(maxCols, row.length);
+                row = readRow();
+            }
+            for (int i=1; i <= maxCols; ++i) {
+                _column_names.add("Column " + i);
+            }
+            reset();
         }
-        reset();
     }
 
     @Override
@@ -152,7 +168,7 @@ public class XLSImportDataSource implements ImportDataSource {
     }
 
     public void reset() {
-        _current_row = 0;
+        _current_row = _hasHeader ? 1 : 0;
     }
 
     public int getCurrentRow() {
