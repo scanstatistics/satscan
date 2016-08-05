@@ -235,6 +235,8 @@ class CParameters {
     PowerEvaluationMethodType           _power_evaluation_method;                /* power evaluation method */
     unsigned int                        _minimum_temporal_cluster_size;          /* mimimum temporal cluster size in time aggregation units */
 
+    bool                                _output_cartesian_graph;                 /** generate KML output file */
+
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -346,7 +348,8 @@ class CParameters {
     bool                                GetOutputClusterLevelFiles() const;
     const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
-    bool                                getOutputKMLFile() const {return _output_kml;}
+    bool                                getOutputCartesianGraph() const {return _output_cartesian_graph;}
+    bool                                getOutputKMLFile() const { return _output_kml; }
     bool                                getOutputTemporalGraphFile() const {return _output_temporal_graph;}
     bool                                getOutputShapeFiles() const {return _output_shapefiles;}
     bool                                GetOutputRelativeRisksAscii() const {return gbOutputRelativeRisksAscii;}
@@ -467,6 +470,7 @@ class CParameters {
     void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_power_replica = r;}
     void                                SetNumIterativeScans(int iNumIterativeScans);
     void                                setOliveiraPvalueCutoff(double d) {_oliveira_pvalue_cutoff = d;}
+    void                                setOutputCartesianGraph(bool b) { _output_cartesian_graph = b; }
     void                                setOutputKMLFile(bool b) {_output_kml = b;}
     void                                setOutputTemporalGraphFile(bool b) {_output_temporal_graph = b;}
     void                                setOutputShapeFiles(bool b) {_output_shapefiles = b;}

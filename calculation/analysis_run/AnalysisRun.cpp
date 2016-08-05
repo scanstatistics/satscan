@@ -43,6 +43,7 @@
 #include "PoissonRandomizer.h"
 #include "OliveiraJobSource.h"
 #include "OliveiraFunctor.h"
+#include "ClusterScatterChart.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
@@ -1604,12 +1605,18 @@ void AnalysisRunner::reportClusters() {
         // report clusters accordingly
         if (gParameters.GetIsIterativeScanning()) {
             PrintTopIterativeScanCluster(_reportClusters);
-        } else {
+        }
+        else {
             PrintTopClusters(_reportClusters);
             // create temporal graph
             if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) && gParameters.getOutputTemporalGraphFile()) {
                 TemporalChartGenerator generator(*gpDataHub, _reportClusters, gSimVars);
                 generator.generateChart();
+            }
+
+            if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
+                gParameters.GetCoordinatesType() == CoordinatesType::CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
+                CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
             }
         }
 

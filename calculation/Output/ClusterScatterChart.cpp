@@ -7,232 +7,305 @@
 #include <fstream>
 #include "UtilityFunctions.h"
 #include "RandomNumberGenerator.h"
+#include "Toolkit.h"
 
+const char * CartesianGraph::HTML_FILE_EXT = ".html";
+const char * CartesianGraph::FILE_SUFFIX_EXT = ".cluster";
 
-/** constructor */
-ClusterScatterChart::ClusterScatterChart(const CSaTScanData& dataHub, 
-                                         const MostLikelyClustersContainer& clusters, 
-                                         const SimulationVariables& simVars) 
-                    :_dataHub(dataHub), _clusters(clusters), _simVars(simVars) {}
+const char * CartesianGraph::TEMPLATE = " \
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
+<html lang=\"en\"> \n \
+    <head> \n \
+        <title>Cluster Graph</title> \n \
+        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
+        <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
+        <style type=\"text/css\"> \n \
+        body {background-color: #f0f8ff;} \n \
+        #chartContainer { overflow: hidden; } \n \
+        .chart-options{ display:none } \n \
+        .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver } \n \
+        .options-row{ margin:0 10px 10px 10px } \n \
+        .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold } \n \
+        .options-row input[type='radio']{ margin:5px } \n \
+        p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; } \n \
+        .main-content{ margin: 5px; } \n \
+        .options-row label{ font-weight: normal; } \n \
+        input[type=checkbox]{ margin-right:5px; } \n \
+        label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100% ; } \n \
+        .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; } \n \
+        .print-section a{ padding-right: 20px; text-decoration: none; } \n \
+        .cluster-selection{ border-bottom: dashed 1px #e6e9eb; } \n \
+        .cluster-selection label{ white-space: nowrap; color: #313030; } \n \
+        @media print{ title, #banner,.chart-options-section{ display: none; } #chartContainer{ margin: 20px; }.chart-column{ border-left: 0; } } \n \
+        </style> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/jQuery.resizeEnd.js'></script> \n \
+        <script type=\"text/javascript\"> \n \
+            jQuery.noConflict(); \n \
+        </script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/canvas-toBlob-2016-05-26.js'></script> \n \
+        <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
+        <script type='text/javascript'> \n \
+            var chart = null; \n \
+            function showGraph() { \n \
+               var row = jQuery('.row'); \n \
+               var options_div = jQuery('.chart-options-section'); \n \
+               var dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50); \n \
+               jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
+               chart = new Chart.Bubble('chartContainer', {zmin:--zmin--,zmax:--zmax--,xsteps:--xsteps--,ysteps:--ysteps--,bubbleSize:--bubbleSize--,xmin:--xmin--,xmax:--xmax--,ymin:--ymin--,ymax:--ymax--,width:dimension,height:dimension,title: jQuery('.title-setter').val() || 'Cluster Graph',points_mouseoveronly: document.getElementById('points_mouseover').checked}); \n \
+               --chart--bubbles-- \n \
+               chart.drawLabels(); \n \
+               chart.redraw(); \n \
+            } \n \
+            window.addEvent('domready', function(){ \n \
+               try { \n \
+                  showGraph(); \n \
+                  jQuery('.cluster-selection input[type=checkbox], #points_mouseover').on('click', function(){ showGraph(); }); \n \
+                  jQuery('.title-setter').keyup(function() { showGraph(); }); \n \
+                  jQuery(window).resizeend(function() { showGraph(); }); \n \
+                  jQuery('#print_png').on('click', function(){ \n \
+                     var filename = chart.options.title || \"cluster-graph\"; \n \
+                     chart.canvas.toBlob(function(blob) { \n \
+                        saveAs(blob, filename + '.png'); \n \
+                     }); \n \
+                     return false; \n \
+                  }); \n \
+               } catch (error) { \n \
+				   jQuery('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
+             	   throw( error ); \n \
+                } \n \
+            }); \n \
+        </script> \n \
+    </head> \n \
+    <body style=\"margin:0;background-color: #fff;\"> \n \
+        <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
+        <tbody><tr> \n \
+        <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"Östersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
+        <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
+        <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
+        </tr></tbody></table> \n \
+		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
+    <div class=\"container-fluid main-content\"> \n \
+    <div class=\"row\"> \n \
+    <div class=\"col-md-3 chart-options-section\"> \n \
+    <fieldset> \n \
+    <h3 style=\"font-size: 13px; font-weight: 700;\">Graph Options : </h3> \n \
+    <div class=\"options-row\"> \n \
+    <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
+    <div><input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cluster Graph\"> \n \
+    <p class=\"help-block\">Title can be updated by editing this text.</p> \n \
+    </div> \n \
+    </div> \n \
+    <div class=\"options-row\"> \n \
+    <label class=\"option-section\" for = \"title_obs\">Print</label> \n \
+    <div class=\"print-section\"> \n \
+    <a href=\"#\" onclick = \"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
+    <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> \n \
+    </div> \n \
+    </div> \n \
+    <div class=\"options-row\"> \n \
+    <label class=\"option-section\">Clusters</label> \n \
+    <p class=\"help-block\">Toggle display of clusters and locations.</p> \n \
+    <div class=\"container-fluid\"> \n \
+    --cluster-sections-- \n \
+    </div> </div> \n \
+    <div class=\"options-row\"> \n \
+    <label class=\"option-section\">Additional</label> \n \
+    <label><input type=\"checkbox\" id=\"points_mouseover\" value=\"points\" />Locations on mouse - over only</label> \n \
+    <p class=\"help-block\">Only display cluster locations when mouse over cluster.</p> \n \
+    </div> \n \
+    </fieldset> \n \
+    </div> \n \
+    <div class=\"col-md-9 chart-column\"> \n \
+    <div id='chartContainer' name='chartContainer'></div> \n \
+    </div> \n \
+    </div> \n \
+    </div> \n \
+    </body> \n \
+</html> \n";
 
-/** Render scatter chart to html page. */
-void ClusterScatterChart::renderScatterChart() {
-  double                   gdMinRatioToReport=0.001;
-  double                   largestXValue=std::numeric_limits<double>::min(), largestYValue=std::numeric_limits<double>::min();
-  double                   smallestXValue=std::numeric_limits<double>::max(), smallestYValue=std::numeric_limits<double>::max();
-  std::vector<std::string> chartClusters, chartPoints;
-  std::string              color,legend;
-  std::vector<double>      vCoordinates;
-  RandomNumberGenerator    rng;
-
-  try {
-    //if  no replications requested, attempt to display up to top 10 clusters
-    tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
-
-    //first iterate through all location coordinates to determine largest X and Y
-    for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
-       //get reference to i'th top cluster
-       const CCluster& cluster = _clusters.GetCluster(i);
-       if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (_simVars.get_sim_count() == 0 || cluster.GetRank() <= _simVars.get_sim_count()))))
-           break;
-       //write cluster details to 'cluster information' file
-       if (cluster.m_nRatio >= gdMinRatioToReport) {
-
-         changeColor(color, i, rng);
-         getClusterLegend(cluster, i, legend);
-         _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
-         chartClusters.resize(chartClusters.size() + 1);
-
-         if (cluster.GetEllipseOffset() == 0) {
-           printString(chartClusters.back(), "myChart.addBubble(%d, %.2lf, %.2lf, %.2lf, '#%s', '%s');", 
-               i, //cluster index
-               vCoordinates.at(0), // X coordinate
-               vCoordinates.at(1), // Y coordinate
-               std::max(cluster.GetCartesianRadius(),1.0), // cluster radius -- TODO: what about decimals values?
-               color.c_str(), // cluster color
-               legend.c_str()); // cluster details for popup
-           largestXValue = std::max(largestXValue, vCoordinates.at(0) + cluster.GetCartesianRadius() + 5);
-           smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - cluster.GetCartesianRadius() - 5/* left-margin buffer*/);
-           largestYValue = std::max(largestYValue, vCoordinates.at(1) + cluster.GetCartesianRadius() + 5);
-           smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - cluster.GetCartesianRadius() - 5/* bottom-margin buffer*/);
-         } else {
-           double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
-           double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
-           degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
-           printString(chartClusters.back(), "myChart.addEllipticBubble(%d, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, '#%s', '%s');",
-               i, //cluster index
-               vCoordinates.at(0), // X coordinate
-               vCoordinates.at(1), // Y coordinate
-               std::max(cluster.GetCartesianRadius(),1.0), // semi-minor axis -- TODO: what about decimals values?
-               std::max(semi_major,1.0), // semi-major axis -- TODO: what about decimals values?
-               degrees, // cluster angle
-               //cluster.ConvertAngleToDegrees(_dataHub.GetEllipseAngle(cluster.GetEllipseOffset())), // cluster angle
-               _dataHub.GetEllipseShape(cluster.GetEllipseOffset()), // cluster shape
-               color.c_str(), // cluster color
-               legend.c_str()); // cluster details for popup
-           // to make it simplier, just pretend that semi-major extends along X and Y axis  
-           largestXValue = std::max(largestXValue, vCoordinates.at(0) + semi_major + 5/* left-margin buffer*/);
-           smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - semi_major - 5/* left-margin buffer*/);
-           largestYValue = std::max(largestYValue, vCoordinates.at(1) + semi_major + 5/* left-margin buffer*/);
-           smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - semi_major - 5/* bottom-margin buffer*/);
-         }
-         for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-             tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-             if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
-                largestXValue = std::max(largestXValue, vCoordinates.at(0));
-                smallestXValue = std::min(smallestXValue, vCoordinates.at(0));
-                largestYValue = std::max(largestYValue, vCoordinates.at(1)); 
-                smallestYValue = std::min(smallestYValue, vCoordinates.at(1));
-                chartPoints.resize(chartPoints.size() + 1);
-                printString(chartPoints.back(), "myChart.addPoint(%d, %.2lf, %.2lf, '#%s');", i, vCoordinates.at(0), vCoordinates.at(1), "FFFFFF");
-             }
-         }
-       }
-    }
-
-    //for (size_t tt=0; tt < _dataHub.GetTInfo()->getCoordinates().size(); ++tt) {
-    //  _dataHub.GetTInfo()->getCoordinates()[tt]->retrieve(vCoordinates);
-    //  chartPoints.resize(chartPoints.size() + 1);
-    //  printString(chartPoints.back(), "myChart.addPoint(%d, %.2lf, %.2lf, '#%s');", 0, vCoordinates.at(0), vCoordinates.at(1), "000000");
-    //}
-
-    std::string src_dir("C:/prj/satscan.development/mootools/");
-
-    std::ofstream HTMLout;
-    //open output file
-    std::string name(_dataHub.GetParameters().GetOutputFileName());
-    name += ".html";
-    HTMLout.open(name.c_str());
-    if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", name.c_str());
-
-    // need to keep x,y ranges equal for proper scaling
-    double xrange = fabs(ceil(largestXValue) - floor(smallestXValue));
-    double yrange = fabs(ceil(largestYValue) - floor(smallestYValue));
-    long xmax = static_cast<long>(std::max(xrange,yrange) + smallestXValue);
-    long ymax = static_cast<long>(std::max(xrange,yrange) + smallestYValue);
-
-    HTMLout << "<html>\n<head>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "mootools-1.2.4-core-nc.js\"></script>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "moochart-0.1b1-nc.js\"></script>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "mootoolsMore.js\"></script>\n";
-    HTMLout << "<script type=\"text/javascript\">\n";
-    HTMLout << "    var myChart = null;\n";
-    HTMLout << "    window.addEvent('domready', function(){\n";
-    HTMLout << "       myChart = new Chart.Bubble('chartContainer', {zmin:" << 0 << ",zmax:" << 1 
-        << ",xsteps:" << 10 << ",ysteps:" << 10 << ",xmin:" << floor(smallestXValue) << ",xmax:" << xmax << ",ymin:" << floor(smallestYValue) 
-        << ",ymax:" << ymax << ",width:" << 800 << ",height:" << 800 << ",bubbleSize:" << 8
-        << ",tipImage:'file:///" << src_dir << "tip-background.png'});\n";
-    HTMLout << "       showPoints(document.getElementById('points').checked);\n";
-    HTMLout << "    });\n";
-
-    HTMLout << "    function showPoints(show) {\n";
-    HTMLout << "       myChart.empty();\n";
-    std::vector<std::string>::const_iterator itr=chartClusters.begin(), itr_end=chartClusters.end();
-    for (;itr != itr_end; ++itr) {
-       HTMLout << "       " << *itr << "\n";
-    }
-    HTMLout << "       if (show) {\n";
-    itr=chartPoints.begin(), itr_end=chartPoints.end();
-    for (;itr != itr_end; ++itr) {
-       HTMLout << "          " << *itr << "\n";
-    }
-    HTMLout << "       }\n";
-    HTMLout << "       myChart.redraw();\n";
-    HTMLout << "    }\n";
-
-    HTMLout << "</script>\n</head>\n";
-    HTMLout << "<body style=\"background-color: #f0f8ff;/*background-image: url('file:///" << src_dir << "bg.png'); background-repeat:repeat-x;*/\">\n";
-    HTMLout << "<!--[if IE]>\n<div id=\"ie\" style=\"z-index:255;border-top:5px solid #fff;border-bottom:5px solid #fff;background-color:#c00; color:#fff;\">\n";
-    HTMLout << "  <div class=\"iewrap\" style=\"border-top:5px solid #e57373;border-bottom:5px solid #e57373;\">\n";
-    HTMLout << "     <div class=\"iehead\" style=\"margin: 14px 14px;font-size: 20px;\">Notice to Internet Explorer users!</div>\n";
-    HTMLout << "     <div class=\"iebody\" style=\"font-size: 14px;line-height: 14px;margin: 14px 28px;\">It appears that you are using Internet Explorer, <strong>this page may not display correctly with versions 8 or earlier of this browser</strong>.<br /><br />\n";
-    HTMLout << "         <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i>\n";
-    HTMLout << "     </div>\n  </div>\n</div>\n<![endif]-->\n";
-    HTMLout << "<div id='chartContainer' name='chartContainer'></div>\n";
-    HTMLout << "<input type=\"checkbox\" id=\"points\" value=\"points\" onclick=\"showPoints(this.checked)\"> Show Points<br>\n";
-    HTMLout << "</body>\n</html>\n";
-	HTMLout.close();
-  } catch (prg_exception& x) {
-    x.addTrace("renderScatterChart()","ClusterScatterChart");
-    throw;
-  }
+/** Alters pass Filename to include suffix and extension. */
+FileName& CartesianGraph::getFilename(FileName& filename) {
+    std::string buffer;
+    printString(buffer, "%s%s", filename.getFileName().c_str(), FILE_SUFFIX_EXT);
+    filename.setFileName(buffer.c_str());
+    filename.setExtension(HTML_FILE_EXT);
+    return filename;
 }
 
-// TODO: How to handle purely temporal output?
-/*
-      |             ___________
- LLR  |             |         |
-      |        _____|_____    |
-      |        |         |    |
-      |        |         |    | 
-      |________|_________|____|__________
-       1990  1992  1994  1996  1998  2000     
-*/
+/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
+std::stringstream & CartesianGraph::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
+    boost::regex to_be_replaced(replaceStub);
+    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
+    templateText.str(std::string());
+    templateText << changed;
+    return templateText;
+}
 
 /** Return legend of cluster information to be used as popup in html page. */
-std::string & ClusterScatterChart::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
-  std::stringstream  lines;
-  CCluster::ReportCache_t::const_iterator itr=cluster.getReportLinesCache().begin(), itr_end=cluster.getReportLinesCache().end();
+std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
+    std::stringstream  lines;
+    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
 
-  lines << "Cluster " << iCluster + 1 << "<br>";
-  for (; itr != itr_end; ++itr) {
-      lines << itr->first << " : " << itr->second.first << "<br>";
-  }
-  legend = lines.str();
-  std::replace(legend.begin(), legend.end(), '\n', ' ');
-  return legend;
+    lines << "<div style=\"text-decoration:underline; \">Cluster " << iCluster + 1 << "</div>";
+    for (; itr != itr_end; ++itr) {
+        lines << itr->first << " : " << itr->second.first << "<br>";
+    }
+    legend = lines.str();
+    std::replace(legend.begin(), legend.end(), '\n', ' ');
+    return legend;
 }
 
-/** Returns random HTML color. */
-std::string& ClusterScatterChart::changeColor(std::string& s, long i, RandomNumberGenerator & rng) {
+/** Render scatter chart to html page. */
+void CartesianGraph::generateChart() {
+    double                   gdMinRatioToReport = 0.001;
+    double                   largestXValue = -std::numeric_limits<double>::max(), largestYValue = -std::numeric_limits<double>::max();
+    double                   smallestXValue = std::numeric_limits<double>::max(), smallestYValue = std::numeric_limits<double>::max();
+    //std::vector<std::string> chartClusters, chartPoints;
+    std::string              color, legend;
+    std::vector<double>      vCoordinates;
+    RandomNumberGenerator    rng;
+    std::string              buffer, buffer2;
+    std::stringstream        html, cluster_html, cluster_sections, worker;
+    FileName fileName;
 
-  static const char * firstColors[] = {"ffd700", "DFDF20", "9ACD32", "DF9020", "DF4020", "DF2020", "008000", "008080", "0000ff", "154890"};
-  //http://www.colorcombos.com/combotester.html?color0=ffd700&color1=DFDF20&color2=9ACD32&color3=DF9020&color4=DF4020&color5=DF2020&color6=008000&color7=008080%20&color8=0000ff%20&color9=154890
+    try {
+        fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+        getFilename(fileName);
 
-  static long border = 360, border2 = 270;
-  long r, g, b; 
-  bool lights, darks;
+        std::ofstream HTMLout;
+        //open output file
+        HTMLout.open(fileName.getFullPath(buffer).c_str());
+        if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
 
-  // switch base color based upon iteration
-  switch (i % 6) {
-    case 1 : r=256; g=40; b=40; lights=false; darks=false; break;
-    case 2 : r=40; g=256; b=40; lights=false; darks=false; break;
-    case 3 : r=40; g=40; b=256; lights=false; darks=false; break;
-    case 4 : r=256; g=256; b=256; lights=true; darks=false; break;
-    case 5 : r=256; g=256; b=256; lights=false; darks=true; break;
-    default : r=256; g=256; b=256; lights=false; darks=false; break;
-  }
+        // read template into stringstream
+        html << TEMPLATE << std::endl;
+        // site resource link path
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
+        // site resource link path
+        templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
-  long r1 = static_cast<long>(floor((rand()/(float(RAND_MAX)+1)) * r));
-  long r2 = static_cast<long>(floor((rand()/(float(RAND_MAX)+1)) * g));
-  long r3 = static_cast<long>(floor((rand()/(float(RAND_MAX)+1)) * b));
-  long sum = r1 + r2 + r3;
-			
-  if (lights) {			
-    while (sum < border) {				
-        long choose = static_cast<long>(floor((rand()/(float(RAND_MAX)+1)) * 3));
-        switch (choose) {
-            case 0: r1 += (border - sum); break;
-            case 1: r3 += (border - sum); break;
-            case 2: r2 += (border - sum); break;
-        }			
-        sum = r1 + r2 + r3;								
+        //if  no replications requested, attempt to display up to top 10 clusters
+        tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
+
+        //first iterate through all location coordinates to determine largest X and Y
+        for (int i = 0; i < _clusters.GetNumClustersRetained(); ++i) {
+            //get reference to i'th top cluster
+            const CCluster& cluster = _clusters.GetCluster(i);
+            if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (_simVars.get_sim_count() == 0 || cluster.GetRank() <= _simVars.get_sim_count()))))
+                break;
+            //write cluster details to 'cluster information' file
+            if (cluster.m_nRatio >= gdMinRatioToReport) {
+
+
+                color = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "F13C3F" : "5F8EBD";
+                //changeColor(color, i, rng);
+
+                getClusterLegend(cluster, i, legend);
+                _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
+                //chartClusters.resize(chartClusters.size() + 1);
+
+                if (cluster.GetEllipseOffset() == 0) {
+                    printString(buffer, "chart.addBubble(%d, %.2lf, %.2lf, %.2lf, '#%s', '%s');",
+                        i + 1, //cluster index
+                        vCoordinates.at(0), // X coordinate
+                        vCoordinates.at(1), // Y coordinate
+                        cluster.GetCartesianRadius(), // cluster radius
+                        color.c_str(), // cluster color
+                        legend.c_str()); // cluster details for popup
+                    largestXValue = std::max(largestXValue, vCoordinates.at(0) + cluster.GetCartesianRadius() + 1);
+                    smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - cluster.GetCartesianRadius() - 1/* left-margin buffer*/);
+                    largestYValue = std::max(largestYValue, vCoordinates.at(1) + cluster.GetCartesianRadius() + 1);
+                    smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - cluster.GetCartesianRadius() - 1/* bottom-margin buffer*/);
+                }
+                else {
+                    double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
+                    double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
+                    degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
+                    printString(buffer, "chart.addEllipticBubble(%d, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, '#%s', '%s');",
+                        i + 1, //cluster index
+                        vCoordinates.at(0), // X coordinate
+                        vCoordinates.at(1), // Y coordinate
+                        cluster.GetCartesianRadius(), // semi-minor axis
+                        semi_major, // semi-major axis
+                        degrees, // cluster angle
+                                 //cluster.ConvertAngleToDegrees(_dataHub.GetEllipseAngle(cluster.GetEllipseOffset())), // cluster angle
+                        _dataHub.GetEllipseShape(cluster.GetEllipseOffset()), // cluster shape
+                        color.c_str(), // cluster color
+                        legend.c_str()); // cluster details for popup
+                                         // to make it simplier, just pretend that semi-major extends along X and Y axis  
+                    largestXValue = std::max(largestXValue, vCoordinates.at(0) + semi_major + 1/* left-margin buffer*/);
+                    smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - semi_major - 1/* left-margin buffer*/);
+                    largestYValue = std::max(largestYValue, vCoordinates.at(1) + semi_major + 1/* left-margin buffer*/);
+                    smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - semi_major - 1/* bottom-margin buffer*/);
+                }
+
+                cluster_sections << "<div class=\"row cluster-selection\">"
+                    << "<div class=\"col-md-6\"><label><input type=\"checkbox\" id=\"cluster_" << (i + 1) << "\" value=\"cluster_" << (i + 1) << "\" checked=checked />Cluster #" << (i + 1) << "</label></div>"
+                    << "<div class=\"col-md-6\"><label><input type=\"checkbox\" id=\"points_" << (i + 1) << "\" value=\"points_" << (i + 1) << "\" checked=checked />#" << (i + 1) << " Locations</label></div>"
+                    << "</div>" << std::endl;
+
+                cluster_html << "if (document.getElementById('cluster_" << (i + 1) << "').checked) " << buffer.c_str() << std::endl;
+                cluster_html << "if (document.getElementById('points_" << (i + 1) << "').checked) ";
+                cluster_html << "chart.addPoints(" << (i + 1) << ",[";
+
+                worker.str("");
+                for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
+                    tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                    if (!_dataHub.GetIsNullifiedLocation(tTract)) {
+                        CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
+                        largestXValue = std::max(largestXValue, vCoordinates.at(0));
+                        smallestXValue = std::min(smallestXValue, vCoordinates.at(0));
+                        largestYValue = std::max(largestYValue, vCoordinates.at(1));
+                        smallestYValue = std::min(smallestYValue, vCoordinates.at(1));
+                        //chartPoints.resize(chartPoints.size() + 1);
+                        worker << printString(buffer2, "[%.2lf, %.2lf]", vCoordinates.at(0), vCoordinates.at(1)).c_str() << ",";
+                    }
+                }                
+                cluster_html << trimString(worker.str(), ",").c_str() << "], '#FFFFFF');" << std::endl;
+
+            }
+        }
+
+        // site resource link path
+        templateReplace(html, "--cluster-sections--", cluster_sections.str().c_str());
+        templateReplace(html, "--chart--bubbles--", cluster_html.str().c_str());
+
+        // need to keep x,y ranges equal for proper scaling
+        double xrange = fabs(ceil(largestXValue) - floor(smallestXValue));
+        double yrange = fabs(ceil(largestYValue) - floor(smallestYValue));
+        long xmax = static_cast<long>(std::max(xrange, yrange) + smallestXValue);
+        long ymax = static_cast<long>(std::max(xrange, yrange) + smallestYValue);
+
+        templateReplace(html, "--bubbleSize--", "8");
+        templateReplace(html, "--zmin--", "0");
+        templateReplace(html, "--zmax--", "1");
+        worker.str(""); worker << floor(smallestXValue);
+        templateReplace(html, "--xmin--", worker.str().c_str());
+        worker.str(""); worker << xmax;
+        templateReplace(html, "--xmax--", worker.str().c_str());
+        worker.str(""); worker << floor(smallestYValue);
+        templateReplace(html, "--ymin--", worker.str().c_str());
+        worker.str(""); worker << ymax;
+        templateReplace(html, "--ymax--", worker.str().c_str());
+
+        long xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(smallestXValue) + 1.0)));
+        worker.str(""); worker << xstep;
+        templateReplace(html, "--xsteps--", worker.str().c_str());
+        long ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(smallestYValue) + 1.0)));
+        worker.str(""); worker << ystep;
+        templateReplace(html, "--ysteps--", worker.str().c_str());
+
+        HTMLout << html.str() << std::endl;
+        HTMLout.close();
     }
-  } else if (darks) {
-    r1 = std::min(r1, (long)170);
-    r2 = std::min(r2, (long)170);
-    r3 = std::min(r3, (long)170);						
-    while (sum >= border2) {
-        long choose = static_cast<long>(floor((rand()/(float(RAND_MAX)+1)) * 3));
-        switch (choose) {
-            case 0:	r1 = std::max(r1 - 10, (long)1); break;
-            case 1: r2 = std::max(r2 - 10, (long)1); break;
-            case 2: r3 = std::max(r3 - 10, (long)1); break;
-        }				
-		sum = r1 + r2 + r3;											
-    }			
-  }
-  printString(s, "%s%x%s%x%s%x", (r1 < 16 ? "0" : ""), r1, (r2 < 16 ? "0" : ""), r2, (r3 < 16 ? "0" : ""), r3);
-  return s;
+    catch (prg_exception& x) {
+        x.addTrace("renderScatterChart()", "ClusterScatterChart");
+        throw;
+    }
 }

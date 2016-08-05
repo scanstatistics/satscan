@@ -155,6 +155,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case CALCULATE_OLIVEIRA                 : return "whether to calculate Oliveira's F (line 133)";
     case NUM_OLIVEIRA_SETS                  : return "number of data sets with Oliveira's F calculation (line 134)";
     case OLIVEIRA_CUTOFF                    : return "p-value cutoff with Oliveira's F calculation (line 135)";
+    case OUTPUT_CARTESIAN_GRAPH             : return "output cartesian graph file (line 136)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

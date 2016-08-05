@@ -908,7 +908,15 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
       PrintDirection.Printf("Parameter Setting Warning:\n"
                             "The shapefiles option requires that the 'Cluster Information' dBase file also be generated.\nThe option was enabled.\n",
                             BasePrint::P_WARNING);
-    }  
+    }
+    if (gParameters.getOutputCartesianGraph() &&
+        (gParameters.GetCoordinatesType() != CARTESIAN || gParameters.GetIsPurelyTemporalAnalysis())) {
+        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+            "The cartesian graph option is not available for purely temporal analyses or latitude/longitude coordinates.\nThe option was disabled.\n",
+            BasePrint::P_WARNING);
+    }
+
     if (gParameters.getOutputTemporalGraphFile() &&
         (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
         !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 

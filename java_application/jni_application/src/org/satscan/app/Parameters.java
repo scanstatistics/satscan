@@ -218,6 +218,8 @@ public class Parameters implements Cloneable {
     private int                             _power_replica=1000; /* number of replications in power step of power evaluations */
     
     private Vector<InputSourceSettings>     _input_sources;
+
+    private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -283,6 +285,9 @@ public class Parameters implements Cloneable {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
+
+    public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
+    public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
 
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}

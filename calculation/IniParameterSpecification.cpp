@@ -183,8 +183,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_9_2_x_ParameterList();
     else if (version.iMajor == 9  && version.iMinor == 3)
         Build_9_3_x_ParameterList();
-    else
+    else if (version.iMajor == 9 && version.iMinor == 4)
         Build_9_4_x_ParameterList();
+    else
+        Build_9_5_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -602,6 +604,15 @@ void IniParameterSpecification::Build_9_4_x_ParameterList() {
     _parameter_info[OLIVEIRA_CUTOFF] = ParamInfo(OLIVEIRA_CUTOFF, "OliveiraPvalueCutoff", 3, _border_analysis_section);
 
     assert(_parameter_info.size() == 135);
+}
+
+/** Version 9.5.x */
+void IniParameterSpecification::Build_9_5_x_ParameterList() {
+    Build_9_4_x_ParameterList();
+
+    _parameter_info[OUTPUT_CARTESIAN_GRAPH] = ParamInfo(OUTPUT_CARTESIAN_GRAPH, "OutputCartesianGraph", 15, _output_section);
+
+    assert(_parameter_info.size() == 136);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

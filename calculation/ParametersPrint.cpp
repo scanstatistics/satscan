@@ -732,6 +732,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             AdditionalOutputFile.setExtension(".col.shp");
             settings.push_back(std::make_pair("Shapefile",AdditionalOutputFile.getFullPath(buffer)));
         }
+        if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
+            AdditionalOutputFile.setExtension(".html");
+            settings.push_back(std::make_pair("Cartesian Graph File", AdditionalOutputFile.getFullPath(buffer)));
+        }
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelDBase()) {
             AdditionalOutputFile.setExtension(".col.dbf");
             settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));

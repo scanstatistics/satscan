@@ -219,6 +219,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F";
       case NUM_OLIVEIRA_SETS            : return "number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)";
       case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)";
+      case OUTPUT_CARTESIAN_GRAPH       : return "output cartesian graph file (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -383,6 +384,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case CALCULATE_OLIVEIRA           : return AsString(s, gParameters.getCalculateOliveirasF());
       case NUM_OLIVEIRA_SETS            : return AsString(s, gParameters.getNumRequestedOliveiraSets());
       case OLIVEIRA_CUTOFF              : return AsString(s, gParameters.getOliveiraPvalueCutoff());
+      case OUTPUT_CARTESIAN_GRAPH       : return AsString(s, gParameters.getOutputCartesianGraph());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -780,6 +782,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case CALCULATE_OLIVEIRA           : gParameters.setCalculateOliveirasF(ReadBoolean(sParameter, eParameterType)); break;
       case NUM_OLIVEIRA_SETS            : gParameters.setNumRequestedOliveiraSets(ReadUnsignedInt(sParameter, eParameterType)); break;
       case OLIVEIRA_CUTOFF              : gParameters.setOliveiraPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
+      case OUTPUT_CARTESIAN_GRAPH       : gParameters.setOutputCartesianGraph(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

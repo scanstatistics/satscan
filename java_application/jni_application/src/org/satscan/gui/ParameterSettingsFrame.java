@@ -908,6 +908,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clusterCaseInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterCaseDBase());
         _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
         _reportShapefile.setSelected(parameters.getOutputShapeFiles());
+        _reportCartesianGraph.setSelected(parameters.getOutputCartesianGraph());
         
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
@@ -1020,6 +1021,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
         parameters.setOutputKMLFile(_reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected());
         parameters.setOutputShapeFiles(_reportShapefile.isEnabled() && _reportShapefile.isSelected());
+        parameters.setOutputCartesianGraph(_reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
         
@@ -1237,6 +1239,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                     !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                       getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                       getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
+        _reportCartesianGraph.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN && 
+                                         !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+                                           getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                                           getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
     }
 
     /**
@@ -1629,6 +1635,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _geographicalOutputGroup = new javax.swing.JPanel();
         _reportGoogleEarthKML = new javax.swing.JCheckBox();
         _reportShapefile = new javax.swing.JCheckBox();
+        _reportCartesianGraph = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -2967,6 +2974,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _reportShapefile.setText("Shapefile for GIS software");
 
+        _reportCartesianGraph.setText("Cartesian Graph in HTML");
+
         javax.swing.GroupLayout _geographicalOutputGroupLayout = new javax.swing.GroupLayout(_geographicalOutputGroup);
         _geographicalOutputGroup.setLayout(_geographicalOutputGroupLayout);
         _geographicalOutputGroupLayout.setHorizontalGroup(
@@ -2975,7 +2984,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap()
                 .addGroup(_geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-                    .addComponent(_reportShapefile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
+                    .addComponent(_reportShapefile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                    .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalOutputGroupLayout.setVerticalGroup(
@@ -2984,7 +2994,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportGoogleEarthKML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportShapefile)
-                .addGap(0, 8, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_reportCartesianGraph)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
@@ -3008,10 +3020,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap()
                 .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3105,6 +3117,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaAsciiCheckBox;
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaDBaseCheckBox;
     private javax.swing.JLabel _relativeRiskEstimatesAreaLabel;
+    private javax.swing.JCheckBox _reportCartesianGraph;
     private javax.swing.JCheckBox _reportGoogleEarthKML;
     private javax.swing.JCheckBox _reportShapefile;
     private javax.swing.JButton _resultsFileBrowseButton;

@@ -1731,10 +1731,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_textOutputFormatGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
+                      <Component id="_geographicalOutputGroup" min="-2" pref="96" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="65" max="32767" attributes="0"/>
+                      <EmptySpace pref="57" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2121,6 +2121,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_reportGoogleEarthKML" alignment="0" pref="513" max="32767" attributes="0"/>
                               <Component id="_reportShapefile" alignment="1" pref="513" max="32767" attributes="0"/>
+                              <Component id="_reportCartesianGraph" alignment="0" pref="513" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2132,7 +2133,9 @@
                           <Component id="_reportGoogleEarthKML" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_reportShapefile" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="8" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="_reportCartesianGraph" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2149,6 +2152,11 @@
                 <Component class="javax.swing.JCheckBox" name="_reportShapefile">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Shapefile for GIS software"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_reportCartesianGraph">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cartesian Graph in HTML"/>
                   </Properties>
                 </Component>
               </SubComponents>

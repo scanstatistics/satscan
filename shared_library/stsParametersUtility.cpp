@@ -643,6 +643,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumRequestedOliveiraSets());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setOutputCartesianGraph", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputCartesianGraph());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1282,6 +1286,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getNumRequestedOliveiraSets", "()I");
   Parameters.setNumRequestedOliveiraSets(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputCartesianGraph", "()Z");
+  Parameters.setOutputCartesianGraph(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

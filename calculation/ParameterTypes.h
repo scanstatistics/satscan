@@ -140,7 +140,8 @@ enum ParameterType
     USER_DEFINED_TITLE,             /* user defined title */
     CALCULATE_OLIVEIRA,             /* whether to calculate Oliveira's F*/
     NUM_OLIVEIRA_SETS,              /* number of Oliveira sets to calculate */
-    OLIVEIRA_CUTOFF                 /* max p-value for clusters used with Oliveira's F (numeric) */
+    OLIVEIRA_CUTOFF,                /* max p-value for clusters used with Oliveira's F (numeric) */
+    OUTPUT_CARTESIAN_GRAPH          /* generate html cartesian graph file */
 };
 /** analysis and cluster types */
 enum AnalysisType

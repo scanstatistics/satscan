@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 135;
+const int CParameters::giNumParameters                = 136;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -167,6 +167,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
   if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
   if (_oliveira_pvalue_cutoff != rhs._oliveira_pvalue_cutoff) return false;
+  if (_output_cartesian_graph != rhs._output_cartesian_graph) return false;  
 
   return true;
 }
@@ -382,6 +383,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _calculate_oliveira_f = rhs._calculate_oliveira_f;
   _num_oliveira_sets = rhs._num_oliveira_sets;
   _oliveira_pvalue_cutoff = rhs._oliveira_pvalue_cutoff;
+  _output_cartesian_graph = rhs._output_cartesian_graph;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -882,6 +884,7 @@ void CParameters::SetAsDefaulted() {
   _calculate_oliveira_f = false;
   _num_oliveira_sets = 1000;
   _oliveira_pvalue_cutoff = 0.05;
+  _output_cartesian_graph = false;
 }
 
 /** Sets start range start date. Throws exception. */
