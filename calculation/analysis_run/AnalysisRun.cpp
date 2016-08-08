@@ -1615,7 +1615,7 @@ void AnalysisRunner::reportClusters() {
             }
 
             if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
-                gParameters.GetCoordinatesType() == CoordinatesType::CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
+                gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
                 CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
             }
         }

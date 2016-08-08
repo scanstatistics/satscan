@@ -15,6 +15,22 @@ class CartesianGraph {
     static const char * FILE_SUFFIX_EXT;
     static const char * TEMPLATE;
 
+    class RegionSettings {
+    public:
+        RegionSettings() :
+            _largestX(-std::numeric_limits<double>::max()), _largestY(-std::numeric_limits<double>::max()),
+            _smallestX(std::numeric_limits<double>::max()), _smallestY(std::numeric_limits<double>::max()) {}
+
+        bool in(double x, double y) {
+            return (y > _smallestY && y < _largestY) && (x > _smallestX && x < _largestX);
+        }
+
+        double  _largestX;
+        double _largestY;
+        double _smallestX; 
+        double _smallestY;
+    };
+
 protected:
     const CSaTScanData                & _dataHub;
     const MostLikelyClustersContainer & _clusters;

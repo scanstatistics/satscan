@@ -52,12 +52,17 @@ const char * CartesianGraph::TEMPLATE = " \
         <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
         <script type='text/javascript'> \n \
             var chart = null; \n \
+            var cluster_region = {zmin:--c-zmin--,zmax:--c-zmax--,xsteps:--c-xsteps--,ysteps:--c-ysteps--,bubbleSize:--c-bubbleSize--,xmin:--c-xmin--,xmax:--c-xmax--,ymin:--c-ymin--,ymax:--c-ymax--}; \n \
+            var entire_region = {zmin:--e-zmin--,zmax:--e-zmax--,xsteps:--e-xsteps--,ysteps:--e-ysteps--,bubbleSize:--e-bubbleSize--,xmin:--e-xmin--,xmax:--e-xmax--,ymin:--e-ymin--,ymax:--e-ymax--}; \n \
             function showGraph() { \n \
+               var region = document.getElementById('id_cluster_region').checked ? cluster_region : entire_region; \n \
                var row = jQuery('.row'); \n \
                var options_div = jQuery('.chart-options-section'); \n \
                var dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50); \n \
                jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
-               chart = new Chart.Bubble('chartContainer', {zmin:--zmin--,zmax:--zmax--,xsteps:--xsteps--,ysteps:--ysteps--,bubbleSize:--bubbleSize--,xmin:--xmin--,xmax:--xmax--,ymin:--ymin--,ymax:--ymax--,width:dimension,height:dimension,title: jQuery('.title-setter').val() || 'Cluster Graph',points_mouseoveronly: document.getElementById('points_mouseover').checked}); \n \
+               chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,title: jQuery('.title-setter').val() || 'Cluster Graph',points_mouseoveronly: document.getElementById('points_mouseover').checked});  \n \
+               --extra-points-cluster-region-- \n \
+               --extra-points-entire-region-- \n \
                --chart--bubbles-- \n \
                chart.drawLabels(); \n \
                chart.redraw(); \n \
@@ -65,7 +70,7 @@ const char * CartesianGraph::TEMPLATE = " \
             window.addEvent('domready', function(){ \n \
                try { \n \
                   showGraph(); \n \
-                  jQuery('.cluster-selection input[type=checkbox], #points_mouseover').on('click', function(){ showGraph(); }); \n \
+                  jQuery('.cluster-selection input[type=checkbox], #points_mouseover, #show_points_outside_clusters, #id_entire_region, #id_cluster_region').on('click', function(){ showGraph(); }); \n \
                   jQuery('.title-setter').keyup(function() { showGraph(); }); \n \
                   jQuery(window).resizeend(function() { showGraph(); }); \n \
                   jQuery('#print_png').on('click', function(){ \n \
@@ -116,8 +121,13 @@ const char * CartesianGraph::TEMPLATE = " \
     </div> </div> \n \
     <div class=\"options-row\"> \n \
     <label class=\"option-section\">Additional</label> \n \
-    <label><input type=\"checkbox\" id=\"points_mouseover\" value=\"points\" />Locations on mouse - over only</label> \n \
-    <p class=\"help-block\">Only display cluster locations when mouse over cluster.</p> \n \
+    <label><input type=\"checkbox\" id=\"points_mouseover\" value=\"points\" />Locations on mouseover only</label> \n \
+    <p class=\"help-block\">Only display cluster locations when mouseover cluster.</p> \n \
+    <label><input type=\"checkbox\" id=\"show_points_outside_clusters\" />Show points outside clusters</label> \n \
+    <p class=\"help-block\">Display points outside reported clusters.</p> \n \
+     <label><input type=\"radio\" name=\"view_region\" id=\"id_entire_region\" value=\"entire\" />Show entire region</label> \n \
+     <label><input type=\"radio\" name=\"view_region\" id=\"id_cluster_region\" value=\"cluster\" checked=checked />Show cluster region</label> \n \
+     <p class=\"help-block\">Display entire coordinates region or focus on reported clusters.</p> \n \
     </div> \n \
     </fieldset> \n \
     </div> \n \
@@ -164,15 +174,14 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
 /** Render scatter chart to html page. */
 void CartesianGraph::generateChart() {
     double                   gdMinRatioToReport = 0.001;
-    double                   largestXValue = -std::numeric_limits<double>::max(), largestYValue = -std::numeric_limits<double>::max();
-    double                   smallestXValue = std::numeric_limits<double>::max(), smallestYValue = std::numeric_limits<double>::max();
-    //std::vector<std::string> chartClusters, chartPoints;
+    RegionSettings           clusterRegion, entireRegion;
     std::string              color, legend;
     std::vector<double>      vCoordinates;
     RandomNumberGenerator    rng;
     std::string              buffer, buffer2;
-    std::stringstream        html, cluster_html, cluster_sections, worker;
+    std::stringstream        html, cluster_html, cluster_sections, worker, worker2;
     FileName fileName;
+    std::vector<tract_t>     clusterLocations;
 
     try {
         fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
@@ -202,7 +211,6 @@ void CartesianGraph::generateChart() {
             //write cluster details to 'cluster information' file
             if (cluster.m_nRatio >= gdMinRatioToReport) {
 
-
                 color = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "F13C3F" : "5F8EBD";
                 //changeColor(color, i, rng);
 
@@ -218,10 +226,10 @@ void CartesianGraph::generateChart() {
                         cluster.GetCartesianRadius(), // cluster radius
                         color.c_str(), // cluster color
                         legend.c_str()); // cluster details for popup
-                    largestXValue = std::max(largestXValue, vCoordinates.at(0) + cluster.GetCartesianRadius() + 1);
-                    smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - cluster.GetCartesianRadius() - 1/* left-margin buffer*/);
-                    largestYValue = std::max(largestYValue, vCoordinates.at(1) + cluster.GetCartesianRadius() + 1);
-                    smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - cluster.GetCartesianRadius() - 1/* bottom-margin buffer*/);
+                    clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + cluster.GetCartesianRadius() + 0.25);
+                    clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - cluster.GetCartesianRadius() - 0.25/* left-margin buffer*/);
+                    clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + cluster.GetCartesianRadius() + 0.25);
+                    clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - cluster.GetCartesianRadius() - 0.25/* bottom-margin buffer*/);
                 }
                 else {
                     double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
@@ -239,10 +247,10 @@ void CartesianGraph::generateChart() {
                         color.c_str(), // cluster color
                         legend.c_str()); // cluster details for popup
                                          // to make it simplier, just pretend that semi-major extends along X and Y axis  
-                    largestXValue = std::max(largestXValue, vCoordinates.at(0) + semi_major + 1/* left-margin buffer*/);
-                    smallestXValue = std::min(smallestXValue, vCoordinates.at(0) - semi_major - 1/* left-margin buffer*/);
-                    largestYValue = std::max(largestYValue, vCoordinates.at(1) + semi_major + 1/* left-margin buffer*/);
-                    smallestYValue = std::min(smallestYValue, vCoordinates.at(1) - semi_major - 1/* bottom-margin buffer*/);
+                    clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + semi_major + 0.25/* left-margin buffer*/);
+                    clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - semi_major - 0.25/* left-margin buffer*/);
+                    clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
+                    clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
                 }
 
                 cluster_sections << "<div class=\"row cluster-selection\">"
@@ -257,12 +265,21 @@ void CartesianGraph::generateChart() {
                 worker.str("");
                 for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
                     tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                    // Track which locations are in reported clusters -- so we can exclude their coordinates in the outside clusters collection.
+                    if (tTract < _dataHub.GetNumTracts()) // is tract atomic?
+                        clusterLocations.push_back(tTract);
+                    else {
+                        std::vector<tract_t> indexes;
+                        _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
+                        for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) 
+                            clusterLocations.push_back(tTract);
+                    }
                     if (!_dataHub.GetIsNullifiedLocation(tTract)) {
                         CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                        largestXValue = std::max(largestXValue, vCoordinates.at(0));
-                        smallestXValue = std::min(smallestXValue, vCoordinates.at(0));
-                        largestYValue = std::max(largestYValue, vCoordinates.at(1));
-                        smallestYValue = std::min(smallestYValue, vCoordinates.at(1));
+                        clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0));
+                        clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0));
+                        clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1));
+                        clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1));
                         //chartPoints.resize(chartPoints.size() + 1);
                         worker << printString(buffer2, "[%.2lf, %.2lf]", vCoordinates.at(0), vCoordinates.at(1)).c_str() << ",";
                     }
@@ -276,30 +293,78 @@ void CartesianGraph::generateChart() {
         templateReplace(html, "--cluster-sections--", cluster_sections.str().c_str());
         templateReplace(html, "--chart--bubbles--", cluster_html.str().c_str());
 
+        entireRegion = clusterRegion;
+        std::sort(clusterLocations.begin(), clusterLocations.end());
+        std::stringstream cluster_region_points, entire_region_points;
+        const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
+        worker.str("");
+        cluster_region_points << "if (document.getElementById('show_points_outside_clusters').checked && document.getElementById('id_cluster_region').checked) ";
+        cluster_region_points << "chart.addPoints(0,[";
+        entire_region_points << "if (document.getElementById('show_points_outside_clusters').checked && document.getElementById('id_entire_region').checked) ";
+        entire_region_points << "chart.addPoints(0,[";
+        for (size_t t = 0; t < locations.size(); ++t) {
+            std::vector<tract_t>::iterator itr = std::lower_bound(clusterLocations.begin(), clusterLocations.end(), t);
+            if (itr == clusterLocations.end() || *itr != t) {
+                double * p = locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->getCoordinates();
+                if (clusterRegion.in(p[0], p[1])) {
+                    worker << printString(buffer2, "[%.2lf, %.2lf]", p[0], p[1]).c_str() << ",";
+                }
+                worker2 << printString(buffer2, "[%.2lf, %.2lf]", p[0], p[1]).c_str() << ",";
+                entireRegion._largestX = std::max(entireRegion._largestX, p[0]);
+                entireRegion._smallestX = std::min(entireRegion._smallestX, p[0]);
+                entireRegion._largestY = std::max(entireRegion._largestY, p[1]);
+                entireRegion._smallestY = std::min(entireRegion._smallestY, p[1]);
+            }
+        }
+        cluster_region_points << trimString(worker.str(), ",").c_str() << "], '#FF9900');" << std::endl;
+        templateReplace(html, "--extra-points-cluster-region--", cluster_region_points.str().c_str());
+        entire_region_points << trimString(worker2.str(), ",").c_str() << "], '#FF9900');" << std::endl;
+        templateReplace(html, "--extra-points-entire-region--", entire_region_points.str().c_str());
+
         // need to keep x,y ranges equal for proper scaling
-        double xrange = fabs(ceil(largestXValue) - floor(smallestXValue));
-        double yrange = fabs(ceil(largestYValue) - floor(smallestYValue));
-        long xmax = static_cast<long>(std::max(xrange, yrange) + smallestXValue);
-        long ymax = static_cast<long>(std::max(xrange, yrange) + smallestYValue);
-
-        templateReplace(html, "--bubbleSize--", "8");
-        templateReplace(html, "--zmin--", "0");
-        templateReplace(html, "--zmax--", "1");
-        worker.str(""); worker << floor(smallestXValue);
-        templateReplace(html, "--xmin--", worker.str().c_str());
+        double xrange = fabs(ceil(clusterRegion._largestX) - floor(clusterRegion._smallestX));
+        double yrange = fabs(ceil(clusterRegion._largestY) - floor(clusterRegion._smallestY));
+        long xmax = static_cast<long>(std::max(xrange, yrange) + clusterRegion._smallestX);
+        long ymax = static_cast<long>(std::max(xrange, yrange) + clusterRegion._smallestY);
+        templateReplace(html, "--c-bubbleSize--", "8");
+        templateReplace(html, "--c-zmin--", "0");
+        templateReplace(html, "--c-zmax--", "1");
+        worker.str(""); worker << floor(clusterRegion._smallestX);
+        templateReplace(html, "--c-xmin--", worker.str().c_str());
         worker.str(""); worker << xmax;
-        templateReplace(html, "--xmax--", worker.str().c_str());
-        worker.str(""); worker << floor(smallestYValue);
-        templateReplace(html, "--ymin--", worker.str().c_str());
+        templateReplace(html, "--c-xmax--", worker.str().c_str());
+        worker.str(""); worker << floor(clusterRegion._smallestY);
+        templateReplace(html, "--c-ymin--", worker.str().c_str());
         worker.str(""); worker << ymax;
-        templateReplace(html, "--ymax--", worker.str().c_str());
-
-        long xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(smallestXValue) + 1.0)));
+        templateReplace(html, "--c-ymax--", worker.str().c_str());
+        long xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(clusterRegion._smallestX) + 1.0)));
         worker.str(""); worker << xstep;
-        templateReplace(html, "--xsteps--", worker.str().c_str());
-        long ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(smallestYValue) + 1.0)));
+        templateReplace(html, "--c-xsteps--", worker.str().c_str());
+        long ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(clusterRegion._smallestY) + 1.0)));
         worker.str(""); worker << ystep;
-        templateReplace(html, "--ysteps--", worker.str().c_str());
+        templateReplace(html, "--c-ysteps--", worker.str().c_str());
+
+        xrange = fabs(ceil(entireRegion._largestX) - floor(entireRegion._smallestX));
+        yrange = fabs(ceil(entireRegion._largestY) - floor(entireRegion._smallestY));
+        xmax = static_cast<long>(std::max(xrange, yrange) + entireRegion._smallestX);
+        ymax = static_cast<long>(std::max(xrange, yrange) + entireRegion._smallestY);
+        templateReplace(html, "--e-bubbleSize--", "8");
+        templateReplace(html, "--e-zmin--", "0");
+        templateReplace(html, "--e-zmax--", "1");
+        worker.str(""); worker << floor(entireRegion._smallestX);
+        templateReplace(html, "--e-xmin--", worker.str().c_str());
+        worker.str(""); worker << xmax;
+        templateReplace(html, "--e-xmax--", worker.str().c_str());
+        worker.str(""); worker << floor(entireRegion._smallestY);
+        templateReplace(html, "--e-ymin--", worker.str().c_str());
+        worker.str(""); worker << ymax;
+        templateReplace(html, "--e-ymax--", worker.str().c_str());
+        xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(entireRegion._smallestX) + 1.0)));
+        worker.str(""); worker << xstep;
+        templateReplace(html, "--e-xsteps--", worker.str().c_str());
+        ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(entireRegion._smallestY) + 1.0)));
+        worker.str(""); worker << ystep;
+        templateReplace(html, "--e-ysteps--", worker.str().c_str());
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();

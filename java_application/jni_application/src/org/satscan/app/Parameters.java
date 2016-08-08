@@ -465,6 +465,7 @@ public class Parameters implements Cloneable {
         if (!_input_sources.equals(rhs._input_sources)) return false;
         if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
         if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
+        if (_output_cartesian_graph != rhs._output_cartesian_graph) return false;
         
         return true;
     }
