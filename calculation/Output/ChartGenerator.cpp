@@ -63,8 +63,8 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.0.4/js/highcharts.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.0.4/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/modules/exporting.js'></script> \n \
         <script type='text/javascript'> \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
@@ -553,8 +553,8 @@ const char * GiniChartGenerator::BASE_TEMPLATE = " \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.0.4/js/highcharts.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.0.4/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/modules/exporting.js'></script> \n \
         <script type='text/javascript'> \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
