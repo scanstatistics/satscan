@@ -176,7 +176,6 @@ class CParameters {
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
     std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
     std::string                         gsOutputFileName;                       /** results output filename */
-    std::string                         gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
     std::string                         gsSimulationDataSourceFileName;         /** simulation data source filename */
     bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
@@ -388,7 +387,6 @@ class CParameters {
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     bool                                GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
-    const std::string                 & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetIterativeCutOffPValue() const {return gbIterativeCutOffPValue;}
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}
     const std::string                 & getPowerEvaluationSimulationDataOutputFilename() const {return _power_simulation_output_filename;}
@@ -510,7 +508,6 @@ class CParameters {
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
-    void                                SetRunHistoryFilename(const std::string& sFilename) {gsRunHistoryFilename = sFilename;}
     void                                SetIterativeScanning(bool b) {gbIterativeRuns = b;}
     void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationSimulationDataOutputFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);

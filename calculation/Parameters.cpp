@@ -78,7 +78,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbOutputAreaSpecificDBase              != rhs.gbOutputAreaSpecificDBase) return false;
   if (gbOutputRelativeRisksDBase             != rhs.gbOutputRelativeRisksDBase) return false;
   if (gbOutputSimLogLikeliRatiosDBase        != rhs.gbOutputSimLogLikeliRatiosDBase) return false;
-  if (gsRunHistoryFilename                   != rhs.gsRunHistoryFilename) return false;
   if (gbLogRunHistory                        != rhs.gbLogRunHistory) return false;
   if (gsParametersSourceFileName             != rhs.gsParametersSourceFileName) return false;
   if (gsEndRangeStartDate                    != rhs.gsEndRangeStartDate) return false;
@@ -297,7 +296,6 @@ void CParameters::Copy(const CParameters &rhs) {
   gbOutputAreaSpecificDBase              = rhs.gbOutputAreaSpecificDBase;
   gbOutputRelativeRisksDBase             = rhs.gbOutputRelativeRisksDBase;
   gbOutputSimLogLikeliRatiosDBase        = rhs.gbOutputSimLogLikeliRatiosDBase;
-  gsRunHistoryFilename                   = rhs.gsRunHistoryFilename;
   gbLogRunHistory                        = rhs.gbLogRunHistory;
   gsParametersSourceFileName             = rhs.gsParametersSourceFileName;
   gsEndRangeStartDate                    = rhs.gsEndRangeStartDate;
@@ -766,7 +764,6 @@ void CParameters::SetAsDefaulted() {
   gbOutputAreaSpecificDBase                = false;
   gbOutputRelativeRisksDBase               = false;
   gbOutputSimLogLikeliRatiosDBase          = false;
-  gsRunHistoryFilename                     = "";
   gbLogRunHistory                          = false;
   geProbabilityModelType                   = POISSON;
   geRiskFunctionType                       = STANDARDRISK;

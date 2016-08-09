@@ -5,11 +5,12 @@
 #include <list>
 #include "RunTimeComponents.h"
 #include "Ini.h"
+#include <boost/filesystem.hpp>
                
 /** Class for managing structure of IniFile object in the context of the toolkit. */               
 class IniSession {
   protected:
-    IniFile     gIniFile;
+    IniFile     _ini_file;
 
   public:
     IniSession() {}
@@ -24,76 +25,51 @@ class IniSession {
 
 /** Application global toolkit. */
 class AppToolkit {
-  public:
-    typedef std::vector<std::string> ParameterHistory_t;
-  
   private:
-    static AppToolkit         * gpToolKit;
+    static AppToolkit         * _tool_kit;
 
-    // system file
-    static const char         * gsSystemIniFileName;
-    static const char         * gsRunHistory;
-    static const char         * gsHistoryFileNameProperty;
-    static const char         * gsParameterHistory;
-    static const char         * gsParameterNameProperty;
-    static const size_t         giMaximumParameterHistoryItems;
-    static const char         * gsLastDirectory;
-    static const char         * gsLastDirectoryPathProperty;
-    static const char         * gsLastImportDestinationDirectoryProperty;
-    static const char         * gsDebugFileName;
+    // ini file
+    static const char         * _ini_filename;
+    static const char         * _run_history;
+    static const char         * _history_filename_property;
+    static const char         * _debug_filename;
 
     // default defines
-    static const char         * gsDefaultRunHistoryFileName;
-    static const char         * gsDefaultSaTScanWebSite;
-    static const char         * gsDefaultSubstantiveSupportEmail;
-    static const char         * gsDefaultTechnicalSupportEmail;
+    static const char         * _default_run_history_filename;
+    static const char         * _webSite;
+    static const char         * _substantive_support_email;
+    static const char         * _technical_support_email;
 
-    std::string                 gsSystemFileName;
-    std::string                 gsApplicationFullPath;
-    ParameterHistory_t          gvParameterHistory;
-    bool                        gbRunUpdateOnTerminate;
-    std::string                 gsUpdateArchiveFilename;
-    std::string                 gsVersion;
-    RunTimeComponentManager     gRunTimeComponentManager;
-    IniSession                  gSession;
-    FILE                      * gpDebugLog;
+    boost::filesystem::path     _ini_filepath;
+    boost::filesystem::path     _satscan_appdata_folder;
+    std::string                 _application_fullpath;
+    std::string                 _version;
+    RunTimeComponentManager     _runtime_component_manager;
+    IniSession                  _session;
+    FILE                      * _debug_log;
 
-    bool                        InsureLastDirectoryPath();
-    bool                        InsureLastImportDestinationDirectoryPath();
-    bool                        InsureRunHistoryFileName();
+    bool                        ensureRunHistory();
     void                        InsureSessionStructure();
-    void                        ReadParametersHistory();
-    void                        SetLastDirectory(const char * sLastDirectory);
     void                        Setup(const char * sApplicationFullPath);
-    void                        WriteParametersHistory();
 
   public:
     AppToolkit(const char * sApplicationFullPath);
     virtual ~AppToolkit();
 
-   void                         AddParameterToHistory(const char * sParameterFileName);
    void                         closeDebugFile();
    const char                 * GetAcknowledgment(std::string & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
-   const char                 * GetLastDirectory() /*const*/;
-   const char                 * GetLastImportDirectory() /*const*/;
-   const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
-   RunTimeComponentManager    & GetRunTimeComponentManager() { return gRunTimeComponentManager;}
-   bool                         GetRunUpdateOnTerminate() const {return gbRunUpdateOnTerminate;}
+   RunTimeComponentManager    & GetRunTimeComponentManager() { return _runtime_component_manager;}
    const char                 * GetSubstantiveSupportEmail() const;
-   const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}
+   const char                 * GetSystemIniFileName() const {return _ini_filename;}
    const char                 * GetTechnicalSupportEmail() const;
-   const char                 * GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename.c_str();}
-   const char                 * GetVersion() const {return gsVersion.c_str();}
+   const char                 * GetVersion() const {return _version.c_str();}
    const char                 * GetWebSite() const;
    bool                         is64Bit() const;
    FILE                       * openDebugFile(); 
-   void                         SetLastImportDirectory(const char * sLastDirectory);
-   void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
-   void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;}
 
-   static AppToolkit     &      getToolkit() {return *gpToolKit;}
+   static AppToolkit     &      getToolkit() {return *_tool_kit;}
    static void                  ToolKitCreate(const char * sApplicationFullPath);
    static void                  ToolKitDestroy();
 };

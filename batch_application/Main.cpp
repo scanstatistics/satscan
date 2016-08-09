@@ -160,7 +160,6 @@ int main(int argc, char *argv[]) {
     if (allOut) Parameters.requestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
-    Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     /* write parameters to file, if requested */
     if (vm.count("write-parameters")) {
         ParameterAccessCoordinator(Parameters).Write(vm["write-parameters"].as<std::string>().c_str(), Console);

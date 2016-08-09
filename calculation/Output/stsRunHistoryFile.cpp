@@ -10,6 +10,7 @@
 #include "AbstractDataFileWriter.h"
 #include "AnalysisRun.h"
 #include "stsRunHistoryFile.h"
+#include "Toolkit.h"
 #ifdef __BORLANDC__
   #include <syncobjs.hpp>
 #endif  
@@ -46,7 +47,7 @@ const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 // constructor
 stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection)
                   :gpPrintDirection(&PrintDirection) {
-  SetFileName(Parameters.GetRunHistoryFilename());
+  SetFileName(AppToolkit::getToolkit().GetRunHistoryFileName());
   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
   AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
   AbstractDataFileWriter::CreateField(gvFields, RUN_TIME_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);

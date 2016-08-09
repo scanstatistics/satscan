@@ -100,7 +100,6 @@ void _runAnalysis(const CParameters& Parameters, BasePrint& Console) {
   Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
   time(&RunTime); //get start time
   Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
-  const_cast<CParameters&>(Parameters).SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
   //validate parameters - print errors to console
   if (! ParametersValidate(Parameters).Validate(Console))
     throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"

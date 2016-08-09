@@ -413,10 +413,10 @@ std::string & getRoundAsString(double value, std::string& s, unsigned int precis
 #ifdef _WINDOWS_
 #include "shlobj.h"
 
-std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath) {
+std::string & GetUserDirectory(std::string& s, const std::string& defaultPath) {
   TCHAR szPath[MAX_PATH];
 
-  if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL|CSIDL_FLAG_CREATE, NULL, 0, szPath))) {
+  if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE|CSIDL_FLAG_CREATE, NULL, 0, szPath))) {
     //if (!DirectoryExists(szPath)) {
     //  if (!CreateDir(szPath))
     //    throw prg_error("Unable to create My Documents.", "GetMyDocumentsDirectory()");
@@ -427,10 +427,41 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
   }  
   return s;
 }
+
+std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath) {
+    TCHAR szPath[MAX_PATH];
+
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, szPath))) {
+        //if (!DirectoryExists(szPath)) {
+        //  if (!CreateDir(szPath))
+        //    throw prg_error("Unable to create My Documents.", "GetMyDocumentsDirectory()");
+        //}
+        s = szPath;
+    }
+    else {
+        s = defaultPath;
+    }
+    return s;
+}
+
 #else
 #include <sys/types.h>
 #include <pwd.h>
-   
+
+std::string & GetUserDirectory(std::string& s, const std::string& defaultPath) {
+    uid_t           uid;
+    struct passwd * pwd;
+    uid = getuid();
+    if (!(pwd = getpwuid(uid))) {
+        s = defaultPath;
+    }
+    else {
+        s = pwd->pw_dir;
+    }
+    endpwent();
+    return s;
+}
+
 std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath) {
   uid_t           uid;
   struct passwd * pwd;
