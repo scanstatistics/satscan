@@ -284,7 +284,8 @@ void CartesianGraph::generateChart() {
                         worker << printString(buffer2, "[%.2lf, %.2lf]", vCoordinates.at(0), vCoordinates.at(1)).c_str() << ",";
                     }
                 }                
-                cluster_html << trimString(worker.str(), ",").c_str() << "], '#FFFFFF');" << std::endl;
+                buffer = worker.str();
+                cluster_html << trimString(buffer, ",").c_str() << "], '#FFFFFF');" << std::endl;
 
             }
         }
@@ -316,9 +317,11 @@ void CartesianGraph::generateChart() {
                 entireRegion._smallestY = std::min(entireRegion._smallestY, p[1]);
             }
         }
-        cluster_region_points << trimString(worker.str(), ",").c_str() << "], '#FF9900');" << std::endl;
+        buffer = worker.str();
+        cluster_region_points << trimString(buffer, ",").c_str() << "], '#FF9900');" << std::endl;
         templateReplace(html, "--extra-points-cluster-region--", cluster_region_points.str().c_str());
-        entire_region_points << trimString(worker2.str(), ",").c_str() << "], '#FF9900');" << std::endl;
+        buffer = worker2.str();
+        entire_region_points << trimString(buffer, ",").c_str() << "], '#FF9900');" << std::endl;
         templateReplace(html, "--extra-points-entire-region--", entire_region_points.str().c_str());
 
         // need to keep x,y ranges equal for proper scaling
