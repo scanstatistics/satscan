@@ -653,6 +653,7 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s).c_str(), GetParameterComment(OUTPUTFILE));
     WriteIniParameter(WriteFile, OUTPUT_KML, GetParameterString(OUTPUT_KML, s).c_str(), GetParameterComment(OUTPUT_KML));
     WriteIniParameter(WriteFile, OUTPUT_SHAPEFILES, GetParameterString(OUTPUT_SHAPEFILES, s).c_str(), GetParameterComment(OUTPUT_SHAPEFILES));
+    WriteIniParameter(WriteFile, OUTPUT_CARTESIAN_GRAPH, GetParameterString(OUTPUT_CARTESIAN_GRAPH, s).c_str(), GetParameterComment(OUTPUT_CARTESIAN_GRAPH));
     WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, GetParameterString(OUTPUT_MLC_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));

@@ -429,8 +429,8 @@ void IniParameterSpecification::Build_6_1_x_ParameterList() {
 
     _parameter_info[MAX_REPORTED_SPATIAL_TYPE] = ParamInfo(MAX_REPORTED_SPATIAL_TYPE, "MaxReportedSpatialSizeInterpretation", 4, _clusters_reported_section);
 
-    _parameter_info[OUTPUT_MLC_CASE_ASCII] = ParamInfo(OUTPUT_MLC_CASE_ASCII, "MostLikelyClusterCaseInfoEachCentroidASCII", 15, _output_section);
-    _parameter_info[OUTPUT_MLC_CASE_DBASE] = ParamInfo(OUTPUT_MLC_CASE_DBASE, "MostLikelyClusterCaseInfoEachCentroidDBase", 16, _output_section);
+    _parameter_info[OUTPUT_MLC_CASE_ASCII] = ParamInfo(OUTPUT_MLC_CASE_ASCII, "MostLikelyClusterCaseInfoEachCentroidASCII", 10, _output_section);
+    _parameter_info[OUTPUT_MLC_CASE_DBASE] = ParamInfo(OUTPUT_MLC_CASE_DBASE, "MostLikelyClusterCaseInfoEachCentroidDBase", 11, _output_section);
 
     _parameter_info[SUPPRESS_WARNINGS] = ParamInfo(SUPPRESS_WARNINGS, "SuppressWarnings", 6, _run_options_section);
 
@@ -549,8 +549,8 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
     _parameter_info[PE_OUTPUT_SIMUALTION_DATA] = ParamInfo(PE_OUTPUT_SIMUALTION_DATA, "ReportPowerEvaluationSimulationData", 13, _power_evaluation_section);
     _parameter_info[PE_SIMUALTION_OUTPUTFILE] = ParamInfo(PE_SIMUALTION_OUTPUTFILE, "PowerEvaluationsSimulationOutputFilename", 14, _power_evaluation_section);
 
-    _parameter_info[OUTPUT_KML] = ParamInfo(OUTPUT_KML, "OutputGoogleEarthKML", 13, _output_section);
-    _parameter_info[OUTPUT_SHAPEFILES] = ParamInfo(OUTPUT_SHAPEFILES, "OutputShapefiles", 14, _output_section);
+    _parameter_info[OUTPUT_KML] = ParamInfo(OUTPUT_KML, "OutputGoogleEarthKML", 12, _output_section);
+    _parameter_info[OUTPUT_SHAPEFILES] = ParamInfo(OUTPUT_SHAPEFILES, "OutputShapefiles", 13, _output_section);
     _parameter_info[OUTPUT_TEMPORAL_GRAPH] = ParamInfo(OUTPUT_TEMPORAL_GRAPH, "OutputTemporalGraphHTML", 1, _temporal_output_section);
 
     // 'Clusters Reported' was renamed to 'Spatial Output'
@@ -610,7 +610,7 @@ void IniParameterSpecification::Build_9_4_x_ParameterList() {
 void IniParameterSpecification::Build_9_5_x_ParameterList() {
     Build_9_4_x_ParameterList();
 
-    _parameter_info[OUTPUT_CARTESIAN_GRAPH] = ParamInfo(OUTPUT_CARTESIAN_GRAPH, "OutputCartesianGraph", 15, _output_section);
+    _parameter_info[OUTPUT_CARTESIAN_GRAPH] = ParamInfo(OUTPUT_CARTESIAN_GRAPH, "OutputCartesianGraph", 14, _output_section);
 
     assert(_parameter_info.size() == 136);
 }
