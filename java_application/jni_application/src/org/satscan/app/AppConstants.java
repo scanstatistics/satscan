@@ -20,7 +20,7 @@ public final class AppConstants {
     public static final int MAX_GENERIC = 2921938;
     public static final int VERSION_MAJOR = 9;
     public static final int VERSION_MINOR = 4;
-    public static final int VERSION_RELEASE = 3;
+    public static final int VERSION_RELEASE = 4;
     public static final String VERSION_PHASE = "";
     public static final String CASEFILE_HELPID = "Case File";
     public static final String CONTROLFILE_HELPID = "Control File";

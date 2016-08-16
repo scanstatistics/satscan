@@ -140,8 +140,10 @@ double PoissonLinearTrendLikelihoodCalculator::CalcLogLikelihood(const count_t* 
     double nSum2 = 0;
 
     for (int i=0; i < gDataHub.m_nTimeIntervals; ++i) {
-      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i); 
-      nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
+		if (pMeasure[i]) {
+			nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i); 
+			nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
+		}
     }
     nLL = nSum1 - nSum2;
   }
@@ -262,8 +264,10 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcLogLikelihood(const count_
     double nSum2 = 0;
 
     for (int i=0; i < gDataHub.m_nTimeIntervals; ++i) {
-      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + nBeta * (i + 1) + nBeta2 * std::pow((double)( i + 1), 2.0));
-      nSum2 += pMeasure[i] * exp(nAlpha + nBeta * (i+1) + nBeta2 * std::pow((double)(i + 1), 2.0));
+		if (pMeasure[i]) {
+			nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + nBeta * (i + 1) + nBeta2 * std::pow((double)( i + 1), 2.0));
+			nSum2 += pMeasure[i] * exp(nAlpha + nBeta * (i+1) + nBeta2 * std::pow((double)(i + 1), 2.0));
+		}
     }
 
     nLL = nSum1 - nSum2;
