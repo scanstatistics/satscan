@@ -1430,9 +1430,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 break;
             case POISSON:
                 if (getAnalysisControlType() == Parameters.AnalysisType.SPATIALVARTEMPTREND) {
-                    _lowRatesRadioButton.setText("Low Trend");
-                    _highRatesRadioButton.setText("High Trend");
-                    _highOrLowRatesRadioButton.setText("High or Low Trend");
+                    _lowRatesRadioButton.setText("Lower Trend");
+                    _highRatesRadioButton.setText("Higher Trend");
+                    _highOrLowRatesRadioButton.setText("Higher or Lower Trend");
                     break;
                 }
             case HOMOGENEOUSPOISSON:    

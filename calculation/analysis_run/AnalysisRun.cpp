@@ -1229,13 +1229,22 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
       fprintf(fp, "\nNo clusters were found.\n");
     switch (gParameters.GetProbabilityModelType()) {
       case POISSON :
+		  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+			switch (gParameters.GetAreaScanRateType()) {
+				case HIGH       : buffer = "All potential cluster areas scanned had either only one case or a lower trend inside than outside the area."; break;
+				case LOW        : buffer = "All potential cluster areas scanned had either only one case or a higher trend inside than outside the area."; break;
+				case HIGHANDLOW : buffer = "All potential cluster areas scanned had either only one case or the same time trend inside and outside the area."; break;
+				default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+			}
+			break;
+		  }
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
       case HOMOGENEOUSPOISSON :
          switch (gParameters.GetAreaScanRateType()) {
-            case HIGH       : buffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
-            case LOW        : buffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
-            case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal cases to expected."; break;
+            case HIGH       : buffer = "All potential cluster areas scanned had either only one case or fewer observed cases than expected."; break;
+            case LOW        : buffer = "All potential cluster areas scanned had either only one case or more observed cases than expected."; break;
+            case HIGHANDLOW : buffer = "All potential cluster areas scanned had either only one case or an equal number of observed and expected cases."; break;
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
