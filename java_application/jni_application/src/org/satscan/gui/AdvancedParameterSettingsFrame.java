@@ -430,16 +430,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
                 bSTP = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
-                bNormal = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.NORMAL,
                 bCategorical = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL,
-                bExponential = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
                 bOrdinal = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL;
         boolean bPurelySpatial = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL,
                 bSpaceTime = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
                 || _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
 
-        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP /* testing additional models for gumbel https://www.squishlist.com/ims/satscan/66320/
-                 || bNormal || bCategorical || bExponential || bOrdinal*/);
+        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP || bCategorical || bOrdinal);
         _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled);
         if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected()) {
             _radioDefaultPValues.setSelected(true);
