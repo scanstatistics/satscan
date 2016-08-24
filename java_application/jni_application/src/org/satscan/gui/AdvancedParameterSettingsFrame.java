@@ -9,14 +9,12 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
-import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
@@ -54,13 +52,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final int MAXIMUM_ADDITIONAL_SETS = 11;
     final static String FLEXIBLE_COMPLETE = "flexible_complete";
     final static String FLEXIBLE_GENERIC = "flexible_generic";
-    final static String PROSPECTIVE_COMPLETE = "prospectiveCompleteDate";
-    final static String PROSPECTIVE_GENERIC = "prospectiveGenericDate";
     private DateComponentsGroup _flexStartRangeStartDateComponentsGroup;
     private DateComponentsGroup _flexStartRangeEndDateComponentsGroup;
     private DateComponentsGroup _flexEndRangeStartDateComponentsGroup;
     private DateComponentsGroup _flexEndRangeEndDateComponentsGroup;
-    private DateComponentsGroup _prospectiveStartDateComponentsGroup;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -71,7 +66,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _flexStartRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, 2000, 12, 31, true);
         _flexEndRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, 2000, 1, 1, false);
         _flexEndRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, 2000, 12, 31, true);
-        _prospectiveStartDateComponentsGroup = new DateComponentsGroup(undo, _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, 2000, 12, 31, true);
 
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
@@ -229,33 +223,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * enabled study period and prospective date precision based on time
-     * interval unit
+     * enabled study period date precision based on time interval unit
      */
     public void enableDatesByTimePrecisionUnits() {
         CardLayout cl_flexible = (CardLayout) (_flexible_window_cards.getLayout());
-        CardLayout cl_prospective = (CardLayout) (_prospectiveStartDateCards.getLayout());
         switch (_settings_window.getPrecisionOfTimesControlType()) {
             case NONE:
             case DAY:
                 enableDates();
                 cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
-                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
                 break;
             case YEAR:
                 enableDates();
                 cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
-                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
                 break;
             case MONTH:
                 enableDates();
                 cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
-                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
                 break;
             case GENERIC:
                 enableDates();
                 cl_flexible.show(_flexible_window_cards, FLEXIBLE_GENERIC);
-                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_GENERIC);
                 break;
             default:
                 throw new UnknownEnumException(_settings_window.getPrecisionOfTimesControlType());
@@ -263,12 +251,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * Enables dates of flexible temporal window and prospective surveillance
-     * groups. Enabling is determined through: - querying the 'precision of
-     * time' control contained in the analysis window - the Enabled property of
-     * the TGroupBox of which dates are contained - the Enabled and Checked
-     * properties of the TCheckBox that indicates whether user wishes to adjust
-     * for earlier analyses.
+     * Enables dates of flexible temporal window group. Enabling is determined 
+     * through: - querying the 'precision of time' control contained in the 
+     * analysis window - the Enabled property of the TGroupBox of which dates 
+     * are contained - the Enabled and Checked properties of the TCheckBox that 
+     * indicates whether user wishes to adjust for earlier analyses.
      */
     public void enableDates() {
         boolean enableYears = true, enableMonths = true, enableDays = true,
@@ -341,9 +328,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // to be cautious, validate the groups 
         _flexEndRangeStartDateComponentsGroup.validateGroup();
         _flexEndRangeEndDateComponentsGroup.validateGroup();
-
-        //enable date contained in prospective surveillance group
-        enableProspectiveStartDate();
     }
 
     private void enableAdditionalDataSetsGroup(boolean bEnable) {
@@ -465,7 +449,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(true, false);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(false, false, false);
-                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(!bH_Poisson);
@@ -486,7 +469,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(false, false);
                 enableWindowShapeGroup(false);
                 enableTemporalOptionsGroup(true, false, true);
-                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(false);
                 enableCoordinatesCheckGroup(false);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -508,7 +490,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
-                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -530,7 +511,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
-                enableProspectiveSurveillanceGroup(true);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -550,7 +530,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(false, false);
                 enableWindowShapeGroup(false);
                 enableTemporalOptionsGroup(true, false, false);
-                enableProspectiveSurveillanceGroup(true);
                 enableClustersReportedOptions(false);
                 enableCoordinatesCheckGroup(false);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -569,7 +548,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(true, false);
                 enableTemporalOptionsGroup(false, false, false);
-                enableProspectiveSurveillanceGroup(false);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -746,13 +724,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
 
         // Inference tab
-        bReturn &= (_adjustForEarlierAnalysesCheckBox.isSelected() == false);
         bReturn &= (_reportCriticalValuesCheckBox.isSelected() == false);
         bReturn &= (_radioDefaultPValues.isSelected() == true);
         bReturn &= (_checkReportGumbel.isSelected() == false);
-        bReturn &= (Integer.parseInt(_prospectiveStartDateYearTextField.getText()) == 1900 || Integer.parseInt(_prospectiveStartDateYearTextField.getText()) == 2000);
-        bReturn &= (Integer.parseInt(_prospectiveStartDateMonthTextField.getText()) == 12);
-        bReturn &= (Integer.parseInt(_prospectiveStartDateDayTextField.getText()) == 31);
         bReturn &= (_performIterativeScanCheckBox.isSelected() == false);
         bReturn &= (Integer.parseInt(_numIterativeScansTextField.getText()) == 10);
         bReturn &= (Double.parseDouble(_iterativeScanCutoffTextField.getText()) == 0.05);
@@ -1041,21 +1015,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetNonCompactnessPenalty(getNonCompactnessPenaltyType().ordinal());
         parameters.SetStudyPeriodDataCheckingType(_strictStudyPeriodCheckRadioButton.isSelected() ? Parameters.StudyPeriodDataCheckingType.STRICTBOUNDS.ordinal() : Parameters.StudyPeriodDataCheckingType.RELAXEDBOUNDS.ordinal());
         parameters.SetCoordinatesDataCheckingType(getCoordinatesDataCheckingTypeFromControl().ordinal());
-        parameters.SetAdjustForEarlierAnalyses(_adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
-        if (_adjustForEarlierAnalysesCheckBox.isEnabled() && !_adjustForEarlierAnalysesCheckBox.isSelected()) {
-            if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-                sString = _settings_window.getEdtStudyPeriodEndDateYearText();
-            } else {
-                sString = _settings_window.getEdtStudyPeriodEndDateYearText() + "/" + _settings_window.getEdtStudyPeriodEndDateMonthText() + "/" + _settings_window.getEdtStudyPeriodEndDateDayText();
-            }
-        } else {
-            if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-                sString = _prospectiveStartDateGenericTextField.getText();
-            } else {
-                sString = _prospectiveStartDateYearTextField.getText() + "/" + _prospectiveStartDateMonthTextField.getText() + "/" + _prospectiveStartDateDayTextField.getText();
-            }
-        }
-        parameters.SetProspectiveStartDate(sString);
         parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.SetMaxCirclePopulationFileName(_maxCirclePopulationFilenameTextField.getText());
         parameters.setMinimumTemporalClusterSize(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
@@ -1296,18 +1255,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialRadiusTextField);
             }
         }
-        //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
-        //as percentage of max circle population or as a distance.
-        if (_settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
-            if (!_spatialPopulationFileCheckBox.isSelected() && _spatialPopulationFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
-                throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eucledian neigbors, the maximum spatial cluster size must be defined as a\n" + "percentage of the population as defined in a max circle size file.\n",
-                        FocusedTabSet.ANALYSIS, (Component) _spatialPopulationFileCheckBox);
-            } else if (!_spatialPopulationFileCheckBox.isSelected() && !_spatialDistanceCheckBox.isSelected()) {
-                throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n",
-                        FocusedTabSet.ANALYSIS, (Component) _spatialPopulationFileCheckBox);
-            }
-        }
         // prevent using the isotonic scan statistic with multiple data sets.
         if (_caseFilenames.size() > 0
                 && _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
@@ -1509,40 +1456,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * Specific prospective space-time date check Must be between the start and
-     * end dates of the analysis
-     */
-    private void validateProspDateRange() {
-        if (!(_adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected())) {
-            return;
-        }
-
-        if (_prospectiveStartDateYearTextField.getText().length() == 0) {
-            throw new AdvFeaturesExpection("Please specify a prospective start year.",
-                    FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateYearTextField);
-        }
-        if (_prospectiveStartDateMonthTextField.getText().length() == 0) {
-            throw new AdvFeaturesExpection("Please specify a prospective start month.",
-                    FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateMonthTextField);
-        }
-        if (_prospectiveStartDateDayTextField.getText().length() == 0) {
-            throw new AdvFeaturesExpection("Please specify a prospective start day.",
-                    FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateDayTextField);
-        }
-        GregorianCalendar StudyPeriodStartDate = _settings_window.getStudyPeriodStartDateAsCalender();
-        GregorianCalendar StudyPeriodEndDate = _settings_window.getStudyPeriodEndDateAsCalender();
-        GregorianCalendar ProspectiveStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_settings_window.getPrecisionOfTimesControlType(),
-                _prospectiveStartDateYearTextField.getText(),
-                _prospectiveStartDateMonthTextField.getText(),
-                _prospectiveStartDateDayTextField.getText(),
-                _prospectiveStartDateGenericTextField.getText());
-        if (ProspectiveStartDate.before(StudyPeriodStartDate) || ProspectiveStartDate.after(StudyPeriodEndDate)) {
-            throw new AdvFeaturesExpection("The prospective start date must be between the study period start and end dates.",
-                    FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateYearTextField);
-        }
-    }
-
-    /**
      * validates temporal window settings - throws exception
      */
     private void validateTemporalWindowSettings() {
@@ -1559,19 +1472,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (bUsingNeighbors && bHierarchael && _hierarchicalSecondaryClusters.getSelectedIndex() > 0 && _hierarchicalSecondaryClusters.getSelectedIndex() < 5) {
             throw new AdvFeaturesExpection("Non-eculedian neighbors can only restrict secondary cluster in terms of no geographical overlap.\n",
                     FocusedTabSet.OUTPUT, (Component) _hierarchicalSecondaryClusters);
-        }
-        //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
-        //as percentage of max circle population or as a distance.
-        if (_restrictReportedClustersCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
-            if (_settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-                    && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
-                if (!_reportedSpatialPopulationFileCheckBox.isSelected() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
-                    throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eculedian neighbors, the maximum reported spatial cluster size must be\n" + "defined as a percentage of the population as defined in a max circle size file.\n",
-                            FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
-                } else if (!_reportedSpatialPopulationFileCheckBox.isSelected() && !_reportedSpatialDistanceCheckBox.isSelected()) {
-                    throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n", FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
-                }
-            }
         }
     }
 
@@ -1669,7 +1569,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validateSpatialWindowSettings();
         validateAdjustmentSettings();
         validateTemporalWindowSettings();
-        validateProspDateRange();
         validateInferenceSettings();
         validateBorderAnalysisSettings();
         validateClustersReportedSettings();
@@ -1773,13 +1672,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForAnalysisTabs() {
         // Inference tab
-        _adjustForEarlierAnalysesCheckBox.setSelected(false);
         _radioDefaultPValues.setSelected(true);
         _earlyTerminationThreshold.setText("50");
         _checkReportGumbel.setSelected(false);
-        _prospectiveStartDateYearTextField.setText("2000");
-        _prospectiveStartDateMonthTextField.setText("12");
-        _prospectiveStartDateDayTextField.setText("31");
         _reportCriticalValuesCheckBox.setSelected(false);
         _performIterativeScanCheckBox.setSelected(false);
         _numIterativeScansTextField.setText("10");
@@ -1882,8 +1777,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void enableSpatialOptionsGroup(boolean bEnable, boolean bEnableIncludePurelyTemporal) {
         _spatialOptionsGroup.setEnabled(bEnable);
-        boolean bEnablePopPercentage = !(_settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
+        boolean bEnablePopPercentage = true;
         _maxSpatialClusterSizeTextField.setEnabled(bEnable && bEnablePopPercentage);
         _percentageOfPopulationLabel.setEnabled(bEnable && bEnablePopPercentage);
 
@@ -1929,8 +1823,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedSpatialOptionsGroup.setEnabled(bEnable);
         _restrictReportedClustersCheckBox.setEnabled(bEnable);
 
-        boolean bEnablePopPercentage = !(_settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
+        boolean bEnablePopPercentage = true;
         _maxReportedSpatialClusterSizeTextField.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
         _reportedPercentOfPopulationLabel.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
         boolean bEnablePopulationFile = bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
@@ -2122,57 +2015,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * enabled prospective start date controls
-     */
-    private void enableProspectiveStartDate() {
-        boolean enableYears = true, enableMonths = true, enableDays = true,
-                enableGroup = _prospectiveSurveillanceGroup.isEnabled()
-                && _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected();
-
-        switch (_settings_window.getPrecisionOfTimesControlType()) {
-            case NONE:
-            case DAY:
-                enableYears = enableMonths = enableDays = enableGroup;
-                break;
-            case YEAR:
-                enableYears = enableGroup;
-                enableMonths = enableDays = false;
-                break;
-            case MONTH:
-                enableYears = enableMonths = enableGroup;
-                enableDays = false;
-                break;
-        }
-
-        _prospectiveStartDateGenericTextField.setEnabled(enableGroup);
-        _prospectiveStartGenericLabel.setEnabled(enableGroup);
-
-        _prospectiveStartYearLabel.setEnabled(enableYears);
-        _prospectiveStartDateYearTextField.setEnabled(enableYears);
-        _prospectiveStartMonthLabel.setEnabled(enableMonths);
-        _prospectiveStartDateMonthTextField.setEnabled(enableMonths);
-        if (!enableMonths && enableGroup) {
-            _prospectiveStartDateComponentsGroup.setMonth(Integer.parseInt(_settings_window.getEdtStudyPeriodEndDateMonthText()));
-        }
-        _prospectiveStartDayLabel.setEnabled(enableDays);
-        _prospectiveStartDateDayTextField.setEnabled(enableDays);
-        if (!enableDays && enableGroup) {
-            _prospectiveStartDateComponentsGroup.setDay(31);
-        }
-        // to be cautious, validate the group
-        _prospectiveStartDateComponentsGroup.validateGroup();
-    }
-
-    /**
-     * enables or disables the prospective start date group control
-     */
-    private void enableProspectiveSurveillanceGroup(boolean bEnable) {
-        _prospectiveSurveillanceGroup.setEnabled(bEnable);
-        _adjustForEarlierAnalysesCheckBox.setEnabled(bEnable);
-        enableProspectiveStartDate();
-    }
-
-    /**
      * Enables controls on the clusters reported tab.
      */
     private void enableClustersReportedOptions(boolean bEnable) {
@@ -2274,73 +2116,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * parses up a date string and places it into the given month, day, year
-     * interace text control (TEdit *). Defaults prospective survallience start
-     * date to months/days to like study period end date.
-     */
-    private void parseProspectiveDate(String sDateString, JTextField Year, JTextField Month, JTextField Day) {
-        String[] dateParts = sDateString.split("/");
-        GregorianCalendar thisCalender = new GregorianCalendar();
-        int iStudyPeriodDay = 0;
-
-        try {
-            int iYear = 0, iMonth = 0, iDay = 0;
-            //set values only if valid, prevent interface from having invalid date when first loaded.
-            if (dateParts.length > 0) {
-                switch (dateParts.length) {
-                    case 1:
-                        iYear = Integer.parseInt(dateParts[0]);
-                        if (iYear >= AppConstants.MIN_YEAR && iYear <= AppConstants.MAX_YEAR) {
-                            Year.setText(dateParts[0]);
-                        }
-                        thisCalender.set(Calendar.YEAR, iYear);
-                        thisCalender.set(Calendar.MONTH, Integer.parseInt(_settings_window.getEdtStudyPeriodEndDateMonthText()) - 1);
-                        Month.setText(_settings_window.getEdtStudyPeriodEndDateMonthText());
-                        iStudyPeriodDay = Integer.parseInt(_settings_window.getEdtStudyPeriodEndDateDayText());
-                        if (iStudyPeriodDay < thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-                            Day.setText(_settings_window.getEdtStudyPeriodEndDateDayText());
-                        } else {
-                            Day.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
-                        }
-                        break;
-                    case 2:
-                        iYear = Integer.parseInt(dateParts[0]);
-                        iMonth = Integer.parseInt(dateParts[1]);
-                        if (iYear >= AppConstants.MIN_YEAR && iYear <= AppConstants.MAX_YEAR && iMonth >= 1 && iMonth <= 12) {
-                            Year.setText(dateParts[0]);
-                            Month.setText(dateParts[1]);
-                            thisCalender.set(Calendar.YEAR, iYear);
-                            thisCalender.set(Calendar.MONTH, iMonth - 1);
-                            iStudyPeriodDay = Integer.parseInt(_settings_window.getEdtStudyPeriodEndDateDayText());
-                            if (iStudyPeriodDay < thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-                                Day.setText(_settings_window.getEdtStudyPeriodEndDateDayText());
-                            } else {
-                                Day.setText(Integer.toString(thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)));
-                            }
-                        }
-                        break;
-                    case 3:
-                    default:
-                        iYear = Integer.parseInt(dateParts[0]);
-                        iMonth = Integer.parseInt(dateParts[1]);
-                        iDay = Integer.parseInt(dateParts[2]);
-                        thisCalender.set(Calendar.YEAR, iYear);
-                        thisCalender.set(Calendar.MONTH, iMonth - 1);
-                        if (iYear >= AppConstants.MIN_YEAR && iYear <= AppConstants.MAX_YEAR && iMonth >= 1 && iMonth <= 12
-                                && iDay >= 1 && iDay <= thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-                            Year.setText(dateParts[0]);
-                            Month.setText(dateParts[1]);
-                            Day.setText(dateParts[2]);
-                        }
-                        break;
-                }
-            }
-        } catch (NumberFormatException e) {
-            return; //leave current values if parse error occurs
-        }
-    }
-
-    /**
      * Set appropriate control for maximum spatial cluster size type.
      */
     private void setMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType eSpatialSizeType, double dMaxSize) {
@@ -2407,13 +2182,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setPValueReportingControlType(parameters.GetPValueReportingType());
         _checkReportGumbel.setSelected(parameters.GetReportGumbelPValue());
         _earlyTerminationThreshold.setText(Integer.toString(parameters.GetEarlyTermThreshold()));
-        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());
-        _adjustForEarlierAnalysesCheckBox.setSelected(parameters.GetAdjustForEarlierAnalyses());
-        if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-            Utils.parseDateStringToControl(parameters.GetProspectiveStartDate(), _prospectiveStartDateGenericTextField);
-        } else {
-            parseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
-        }
+        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());           
+                
         _performIterativeScanCheckBox.setSelected(parameters.GetIsIterativeScanning());
         _numIterativeScansTextField.setText(parameters.GetNumIterativeScansRequested() < 1 || parameters.GetNumIterativeScansRequested() > Parameters.MAXIMUM_ITERATIVE_ANALYSES ? "10" : Integer.toString(parameters.GetNumIterativeScansRequested()));
         _iterativeScanCutoffTextField.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
@@ -2688,19 +2458,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioStandardPValues = new javax.swing.JRadioButton();
         _checkReportGumbel = new javax.swing.JCheckBox();
         _earlyTerminationThreshold = new javax.swing.JTextField();
-        _prospectiveSurveillanceGroup = new javax.swing.JPanel();
-        _adjustForEarlierAnalysesCheckBox = new javax.swing.JCheckBox();
-        _prospectiveStartDateCards = new javax.swing.JPanel();
-        _prospectiveCompleteCard = new javax.swing.JPanel();
-        _prospectiveStartYearLabel = new javax.swing.JLabel();
-        _prospectiveStartDateYearTextField = new javax.swing.JTextField();
-        _prospectiveStartMonthLabel = new javax.swing.JLabel();
-        _prospectiveStartDayLabel = new javax.swing.JLabel();
-        _prospectiveStartDateDayTextField = new javax.swing.JTextField();
-        _prospectiveStartDateMonthTextField = new javax.swing.JTextField();
-        _prospectiveGenericDate = new javax.swing.JPanel();
-        _prospectiveStartGenericLabel = new javax.swing.JLabel();
-        _prospectiveStartDateGenericTextField = new javax.swing.JTextField();
         _iterativeScanGroup = new javax.swing.JPanel();
         _performIterativeScanCheckBox = new javax.swing.JCheckBox();
         _maxIterativeScansLabel = new javax.swing.JLabel();
@@ -4545,142 +4302,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(8, Short.MAX_VALUE))
         );
 
-        _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance"));
-        _prospectiveSurveillanceGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_prospectiveSurveillanceGroup, "Adjust for Earlier Analyses in Prospective Surveillance"));
-
-        _adjustForEarlierAnalysesCheckBox.setText("Adjust for earlier analyses performed since:"); // NOI18N
-        _adjustForEarlierAnalysesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _adjustForEarlierAnalysesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _adjustForEarlierAnalysesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _prospectiveStartDateCards.setLayout(new java.awt.CardLayout());
-
-        _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-        _prospectiveStartYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartYearLabel.setText("Year"); // NOI18N
-
-        _prospectiveStartDateYearTextField.setText("2000"); // NOI18N
-
-        _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-        _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartMonthLabel.setText("Month"); // NOI18N
-
-        _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-        _prospectiveStartDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartDayLabel.setText("Day"); // NOI18N
-
-        _prospectiveStartDateDayTextField.setText("31"); // NOI18N
-
-        _prospectiveStartDateMonthTextField.setText("12"); // NOI18N
-
-        javax.swing.GroupLayout _prospectiveCompleteCardLayout = new javax.swing.GroupLayout(_prospectiveCompleteCard);
-        _prospectiveCompleteCard.setLayout(_prospectiveCompleteCardLayout);
-        _prospectiveCompleteCardLayout.setHorizontalGroup(
-            _prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospectiveStartYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_prospectiveStartMonthLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospectiveStartDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(252, Short.MAX_VALUE))
-        );
-        _prospectiveCompleteCardLayout.setVerticalGroup(
-            _prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
-                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
-                        .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(_prospectiveStartMonthLabel)
-                            .addComponent(_prospectiveStartYearLabel))
-                        .addGap(0, 0, 0)
-                        .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
-                        .addComponent(_prospectiveStartDayLabel)
-                        .addGap(0, 0, 0)
-                        .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-
-        _prospectiveStartDateCards.add(_prospectiveCompleteCard, "prospectiveCompleteDate");
-
-        _prospectiveStartGenericLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-        _prospectiveStartGenericLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartGenericLabel.setText("Generic Unit"); // NOI18N
-
-        _prospectiveStartDateGenericTextField.setText("31"); // NOI18N
-        _prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);
-            }
-        });
-        _prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _prospectiveGenericDateLayout = new javax.swing.GroupLayout(_prospectiveGenericDate);
-        _prospectiveGenericDate.setLayout(_prospectiveGenericDateLayout);
-        _prospectiveGenericDateLayout.setHorizontalGroup(
-            _prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveGenericDateLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospectiveStartGenericLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(255, Short.MAX_VALUE))
-        );
-        _prospectiveGenericDateLayout.setVerticalGroup(
-            _prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveGenericDateLayout.createSequentialGroup()
-                .addComponent(_prospectiveStartGenericLabel)
-                .addGap(0, 0, 0)
-                .addComponent(_prospectiveStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-
-        _prospectiveStartDateCards.add(_prospectiveGenericDate, "prospectiveGenericDate");
-
-        javax.swing.GroupLayout _prospectiveSurveillanceGroupLayout = new javax.swing.GroupLayout(_prospectiveSurveillanceGroup);
-        _prospectiveSurveillanceGroup.setLayout(_prospectiveSurveillanceGroupLayout);
-        _prospectiveSurveillanceGroupLayout.setHorizontalGroup(
-            _prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveSurveillanceGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_adjustForEarlierAnalysesCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _prospectiveSurveillanceGroupLayout.setVerticalGroup(
-            _prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospectiveSurveillanceGroupLayout.createSequentialGroup()
-                .addGap(13, 13, 13)
-                .addComponent(_adjustForEarlierAnalysesCheckBox))
-            .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
         _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
         _iterativeScanGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_iterativeScanGroup, "Iterative Scan Statistic"));
 
@@ -4826,7 +4447,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_monteCarloGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -4839,10 +4459,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(146, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5809,7 +5427,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _additionalDataSetsGroup;
     private javax.swing.JPanel _additionalOutputFiles;
     private javax.swing.JCheckBox _adjustDayOfWeek;
-    private javax.swing.JCheckBox _adjustForEarlierAnalysesCheckBox;
     private javax.swing.JCheckBox _adjustForKnownRelativeRisksCheckBox;
     private javax.swing.JRadioButton _adjustmentByDataSetsRadioButton;
     private javax.swing.JLabel _adjustmentsByRelativeRisksFileLabel;
@@ -5948,18 +5565,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JTextField _printTitle;
-    private javax.swing.JPanel _prospectiveCompleteCard;
-    private javax.swing.JPanel _prospectiveGenericDate;
-    private javax.swing.JPanel _prospectiveStartDateCards;
-    private javax.swing.JTextField _prospectiveStartDateDayTextField;
-    private javax.swing.JTextField _prospectiveStartDateGenericTextField;
-    private javax.swing.JTextField _prospectiveStartDateMonthTextField;
-    private javax.swing.JTextField _prospectiveStartDateYearTextField;
-    private javax.swing.JLabel _prospectiveStartDayLabel;
-    private javax.swing.JLabel _prospectiveStartGenericLabel;
-    private javax.swing.JLabel _prospectiveStartMonthLabel;
-    private javax.swing.JLabel _prospectiveStartYearLabel;
-    private javax.swing.JPanel _prospectiveSurveillanceGroup;
     private javax.swing.JRadioButton _radioDefaultPValues;
     private javax.swing.JRadioButton _radioEarlyTerminationPValues;
     private javax.swing.JRadioButton _radioGumbelPValues;
