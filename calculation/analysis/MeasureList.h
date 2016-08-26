@@ -32,7 +32,7 @@ class CMeasureList {
     virtual void                   SetMeasures() = 0;
 
   public:
-            CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
+            CMeasureList(const CSaTScanData & hub, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMeasureList();
 
     virtual void                   AddMeasure(count_t n, measure_t u) = 0;
@@ -42,7 +42,7 @@ class CMeasureList {
     void                           SetForNextIteration(int iIteration);
 };
 
-/** Redefines base class methods to scan for areas with more than expected cases. */
+/** Redefines class methods to scan for areas with more than expected cases. */
 class CMinMeasureList : public CMeasureList {
   private:
     void                        Init();
@@ -56,7 +56,7 @@ class CMinMeasureList : public CMeasureList {
     virtual void                SetMeasures();
 
   public:
-            CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
+            CMinMeasureList(const CSaTScanData & hub, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMinMeasureList();
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
@@ -68,7 +68,7 @@ inline void CMinMeasureList::AddMeasure(count_t n, measure_t u) {
     gpMinMeasures[n] = u;
 }
 
-/** Redefines base class methods to scan for areas with less than expected cases. */
+/** Redefines class methods to scan for areas with less than expected cases. */
 class CMaxMeasureList : public CMeasureList {
   private:
     void                        Init();
@@ -94,8 +94,7 @@ inline void CMaxMeasureList::AddMeasure(count_t n, measure_t u) {
     gpMaxMeasures[n] = u;
 }
 
-/** Redefines base class methods to scan for area with both less than or greater
-    than expected cases simultaneously. */
+/** Redefines class methods to scan for area with both less than or greater than expected cases simultaneously. */
 class CMinMaxMeasureList : public CMeasureList {
   private:
     void                        Init();
@@ -123,5 +122,101 @@ inline void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u) {
   if (gpMaxMeasures[n] < u)
     gpMaxMeasures[n] = u;
 }
+
+/* Risk level calculation - abstraction. */
+class RiskCalculate {
+protected:
+    const double _measure_adjustment;
+
+public:
+    RiskCalculate(double measure_adjustment) : _measure_adjustment(measure_adjustment) {}
+    virtual ~RiskCalculate() {}
+
+    virtual double getRisk(count_t n, measure_t u) const = 0;
+};
+
+/* Risk level calculation - observed / expected. */
+class ObservedDividedExpectedCalc : public RiskCalculate {
+public:
+    ObservedDividedExpectedCalc(double measure_adjustment) : RiskCalculate(measure_adjustment) {}
+    virtual ~ObservedDividedExpectedCalc() {}
+
+    virtual double getRisk(count_t n, measure_t u) const {
+        u *= _measure_adjustment; // apply measure adjustment --  applicable only to Bernoulli
+        return (u ? static_cast<double>(n) / u : 0.0);
+    }
+};
+
+/* Risk level calculation - relative risk. */
+class RelativeRiskCalc : public RiskCalculate {
+protected:
+    const double _total_cases;
+
+public:
+    RelativeRiskCalc(double total_cases, double measure_adjustment) : RiskCalculate(measure_adjustment), _total_cases(total_cases) {}
+    virtual ~RelativeRiskCalc() {}
+
+    virtual double getRisk(count_t n, measure_t u) const {
+        if (_total_cases == n) return std::numeric_limits<double>::max(); // could use std::numeric_limits<double>::infinity()
+        u *= _measure_adjustment; // apply measure adjustment --  applicable only to Bernoulli
+        if (u && _total_cases - u && ((_total_cases - u) / (_total_cases - u)))
+            return (n / u) / ((_total_cases - n) / (_total_cases - u));
+        return 0.0;
+    }
+};
+
+/** Extends class CMinMeasureList to include risk level check. */
+class RiskMinMeasureList : public CMinMeasureList {
+protected:
+    std::auto_ptr<RiskCalculate> _risk_calc;
+    const double _risk_threshold;
+
+public:
+    RiskMinMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double risk_threshold);
+    virtual ~RiskMinMeasureList() {}
+
+    virtual void AddMeasure(count_t n, measure_t u) {
+        if (gpMinMeasures[n] > u && _risk_calc->getRisk(n, u) > _risk_threshold)
+            gpMinMeasures[n] = u;
+    }
+};
+
+/** Extends class CMaxMeasureList to include risk level check. */
+class RiskMaxMeasureList : public CMaxMeasureList {
+protected:
+    std::auto_ptr<RiskCalculate> _risk_calc;
+    const double _risk_threshold;
+
+public:
+    RiskMaxMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double risk_threshold);
+    virtual ~RiskMaxMeasureList() {}
+
+    virtual void AddMeasure(count_t n, measure_t u) {
+        if (gpMaxMeasures[n] < u && _risk_calc->getRisk(n, u) < _risk_threshold)
+            gpMaxMeasures[n] = u;
+    }
+};
+
+/** Redefines class methods to scan for area with both less than or greater than expected cases simultaneously - while including risk level check. */
+class RiskMinMaxMeasureList : public CMinMaxMeasureList {
+protected:
+    std::auto_ptr<RiskCalculate> _risk_calc;
+    const double _low_risk_threshold;
+    const double _high_risk_threshold;
+
+public:
+    RiskMinMaxMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double low_risk_threshold, double high_risk_threshold);
+    virtual ~RiskMinMaxMeasureList() {}
+
+    virtual void AddMeasure(count_t n, measure_t u) {
+        double risk = _risk_calc->getRisk(n, u);
+        if (gpMinMeasures[n] > u) 
+            if (risk > _high_risk_threshold)
+                gpMinMeasures[n] = u;
+        if (gpMaxMeasures[n] < u)
+            if (risk < _low_risk_threshold)
+                gpMaxMeasures[n] = u;
+    }
+};
 //*****************************************************************************
 #endif

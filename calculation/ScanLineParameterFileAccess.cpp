@@ -156,6 +156,10 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case NUM_OLIVEIRA_SETS                  : return "number of data sets with Oliveira's F calculation (line 134)";
     case OLIVEIRA_CUTOFF                    : return "p-value cutoff with Oliveira's F calculation (line 135)";
     case OUTPUT_CARTESIAN_GRAPH             : return "output cartesian graph file (line 136)";
+    case RISK_LIMIT_HIGH_CLUSTERS           : return "restrict high clusters by risk level (line 137)";
+    case RISK_THESHOLD_HIGH_CLUSTERS        : return "threshold for high clusters by risk level (line 137)";
+    case RISK_LIMIT_LOW_CLUSTERS            : return "restrict low clusters by risk level (line 139)";
+    case RISK_THESHOLD_LOW_CLUSTERS         : return "threshold for low clusters by risk level (line 140)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

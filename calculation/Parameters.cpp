@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 136;
+const int CParameters::giNumParameters                = 140;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -166,7 +166,11 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
   if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
   if (_oliveira_pvalue_cutoff != rhs._oliveira_pvalue_cutoff) return false;
-  if (_output_cartesian_graph != rhs._output_cartesian_graph) return false;  
+  if (_output_cartesian_graph != rhs._output_cartesian_graph) return false; 
+  if (_risk_limit_high_clusters != rhs._risk_limit_high_clusters) return false;
+  if (_risk_threshold_high_clusters != rhs._risk_threshold_high_clusters) return false;
+  if (_risk_limit_low_clusters != rhs._risk_limit_low_clusters) return false;
+  if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
 
   return true;
 }
@@ -382,6 +386,10 @@ void CParameters::Copy(const CParameters &rhs) {
   _num_oliveira_sets = rhs._num_oliveira_sets;
   _oliveira_pvalue_cutoff = rhs._oliveira_pvalue_cutoff;
   _output_cartesian_graph = rhs._output_cartesian_graph;
+  _risk_limit_high_clusters = rhs._risk_limit_high_clusters;
+  _risk_threshold_high_clusters = rhs._risk_threshold_high_clusters;
+  _risk_limit_low_clusters = rhs._risk_limit_low_clusters;
+  _risk_threshold_low_clusters = rhs._risk_threshold_low_clusters;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -882,6 +890,11 @@ void CParameters::SetAsDefaulted() {
   _num_oliveira_sets = 1000;
   _oliveira_pvalue_cutoff = 0.05;
   _output_cartesian_graph = false;
+  _risk_limit_high_clusters = false;
+  _risk_threshold_high_clusters = 1.0;
+  _risk_limit_low_clusters = false;
+  _risk_threshold_low_clusters = 1.0;
+
 }
 
 /** Sets start range start date. Throws exception. */

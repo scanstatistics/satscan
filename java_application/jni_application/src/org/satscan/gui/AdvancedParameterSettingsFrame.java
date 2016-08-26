@@ -410,6 +410,40 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _iterativeScanCutoffTextField.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
     }
 
+    public void enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType scanrate) {
+        boolean bPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
+                bHPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON,
+                bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
+                bSTP = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
+                bExponential = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL;
+        _limit_clusters_risk_group.setEnabled((bPoisson || bHPoisson || bBernoulli || bSTP || bExponential) &&
+                                              (_additionalDataSetsGroup.isEnabled() == true ? _dataSetsListModel.getSize() <= 1 : true));
+        switch (_settings_window.getModelControlType()) {
+            case EXPONENTIAL: 
+                _limit_high_clusters.setText("Restrict short survival clusters to observed/expected greater than or equal to:");
+                _limit_low_clusters.setText("Restrict long survival clusters to observed/expected less than or equal to:");
+                break;
+            case SPACETIMEPERMUTATION:
+                _limit_high_clusters.setText("Restrict high rate clusters to observed/expected greater than or equal to:");
+                _limit_low_clusters.setText("Restrict low rate clusters to observed/expected less than or equal to:");
+                break;
+            case POISSON:
+            case HOMOGENEOUSPOISSON:
+            case BERNOULLI:
+            default:
+                _limit_high_clusters.setText("Restrict high rate clusters to relative risk greater than or equal to:");
+                _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
+        }
+        
+        _limit_high_clusters.setEnabled(_limit_clusters_risk_group.isEnabled() &&
+                                        (scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW));
+        _limit_high_clusters_value.setEnabled(_limit_high_clusters.isEnabled() && _limit_high_clusters.isSelected());
+        
+        _limit_low_clusters.setEnabled(_limit_clusters_risk_group.isEnabled() &&
+                                       (scanrate == Parameters.AreaRateType.LOW || scanrate == Parameters.AreaRateType.HIGHANDLOW));
+        _limit_low_clusters_value.setEnabled(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());            
+    }
+    
     private void enablePValueOptionsGroup() {
         boolean bPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
@@ -563,6 +597,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableBorderAnalysisGroup(false);
                 break;
         }
+        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
         enableClustersReportedGroup();
         enablePowerEvaluationsGroup();
         enableAdjustmentsGroup(bPoisson);
@@ -1059,6 +1094,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         parameters.setTemporalGraphMostLikelyCount(Integer.parseInt(_numMostLikelyClustersGraph.getText()));
         parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
+        
+        parameters.setRiskLimitHighClusters(_limit_high_clusters.isEnabled() && _limit_high_clusters.isSelected());
+        parameters.setRiskThresholdHighClusters(Double.parseDouble(_limit_high_clusters_value.getText()));
+        parameters.setRiskLimitLowClusters(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());
+        parameters.setRiskThresholdLowClusters(Double.parseDouble(_limit_low_clusters_value.getText()));
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -2189,6 +2229,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _iterativeScanCutoffTextField.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.GetNumReplicationsRequested()));
 
+        _limit_high_clusters.setSelected(parameters.getRiskLimitHighClusters());
+        _limit_high_clusters_value.setText(Double.toString(parameters.getRiskThresholdHighClusters()));
+        _limit_low_clusters.setSelected(parameters.getRiskLimitLowClusters());
+        _limit_low_clusters_value.setText(Double.toString(parameters.getRiskThresholdLowClusters()));
+        
         // border analysis tab
         _calculate_oliveiras_f.setSelected(parameters.getCalculateOliveirasF());
         _number_oliveira_data_sets.setText(Integer.toString(parameters.getNumRequestedOliveiraSets()));
@@ -2467,6 +2512,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _monteCarloGroup = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
+        _limit_clusters_risk_group = new javax.swing.JPanel();
+        _limit_low_clusters = new javax.swing.JCheckBox();
+        _limit_low_clusters_value = new javax.swing.JTextField();
+        _limit_high_clusters = new javax.swing.JCheckBox();
+        _limit_high_clusters_value = new javax.swing.JTextField();
         _spatialOutputTab = new javax.swing.JPanel();
         _clustersReportedGroup = new javax.swing.JPanel();
         _hierarchicalSecondaryClusters = new java.awt.Choice();
@@ -4439,6 +4489,94 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Limit Clusters by Risk Level"));
+
+        _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
+        _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _limit_low_clusters_value.setText("0.25");
+        _limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);
+            }
+        });
+        _limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_limit_low_clusters_value.getText().length() == 0 ||
+                    Double.parseDouble(_limit_low_clusters_value.getText()) < 0 ||
+                    Double.parseDouble(_limit_low_clusters_value.getText()) > 1)
+                if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText("1.0");
+                enableSetDefaultsButton();
+            }
+        });
+        _limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _limit_high_clusters.setText("Restrict high rate clusters to relative risk greater than or equal to:");
+        _limit_high_clusters.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _limit_high_clusters_value.setText("1.875");
+        _limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);
+            }
+        });
+        _limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_limit_high_clusters_value.getText().length() == 0 ||
+                    Double.parseDouble(_limit_high_clusters_value.getText()) < 1.0)
+                if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText("1.0");
+                enableSetDefaultsButton();
+            }
+        });
+        _limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        javax.swing.GroupLayout _limit_clusters_risk_groupLayout = new javax.swing.GroupLayout(_limit_clusters_risk_group);
+        _limit_clusters_risk_group.setLayout(_limit_clusters_risk_groupLayout);
+        _limit_clusters_risk_groupLayout.setHorizontalGroup(
+            _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_limit_low_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_limit_high_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_limit_low_clusters_value)
+                    .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        _limit_clusters_risk_groupLayout.setVerticalGroup(
+            _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_limit_high_clusters)
+                    .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_limit_low_clusters)
+                    .addComponent(_limit_low_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _inferenceTabLayout = new javax.swing.GroupLayout(_inferenceTab);
         _inferenceTab.setLayout(_inferenceTabLayout);
         _inferenceTabLayout.setHorizontalGroup(
@@ -4448,7 +4586,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_monteCarloGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _inferenceTabLayout.setVerticalGroup(
@@ -4460,7 +4599,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(146, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(50, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5494,6 +5635,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JCheckBox _launchKMLViewer;
+    private javax.swing.JPanel _limit_clusters_risk_group;
+    private javax.swing.JCheckBox _limit_high_clusters;
+    private javax.swing.JTextField _limit_high_clusters_value;
+    private javax.swing.JCheckBox _limit_low_clusters;
+    private javax.swing.JTextField _limit_low_clusters_value;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
     private javax.swing.JButton _maxCirclePopFileBrowseButton;

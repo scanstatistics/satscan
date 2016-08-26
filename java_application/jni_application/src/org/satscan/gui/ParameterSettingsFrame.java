@@ -947,7 +947,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * returns area scan rate type for control group
      */
-    private Parameters.AreaRateType getAreaScanRateControlType() {
+    public Parameters.AreaRateType getAreaScanRateControlType() {
         Parameters.AreaRateType eReturn = null;
 
         if (_highRatesRadioButton.isSelected()) {
@@ -2599,14 +2599,29 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _highRatesRadioButton.setText("High Rates"); // NOI18N
         _highRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _highRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);
+            }
+        });
 
         _lowRatesRadioButton.setText("Low Rates"); // NOI18N
         _lowRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _lowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);
+            }
+        });
 
         _highOrLowRatesRadioButton.setText("High or Low Rates"); // NOI18N
         _highOrLowRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _highOrLowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);
+            }
+        });
 
         javax.swing.GroupLayout _scanAreasGroupLayout = new javax.swing.GroupLayout(_scanAreasGroup);
         _scanAreasGroup.setLayout(_scanAreasGroupLayout);

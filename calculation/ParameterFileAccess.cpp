@@ -220,6 +220,10 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case NUM_OLIVEIRA_SETS            : return "number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)";
       case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)";
       case OUTPUT_CARTESIAN_GRAPH       : return "output cartesian graph file (y/n)";
+      case RISK_LIMIT_HIGH_CLUSTERS     : return "risk limit high clusters (y/n)";
+      case RISK_THESHOLD_HIGH_CLUSTERS  : return "risk threshold high clusters (1.0 or greater)";
+      case RISK_LIMIT_LOW_CLUSTERS      : return "risk limit low clusters (y/n)";
+      case RISK_THESHOLD_LOW_CLUSTERS   : return "risk threshold low clusters (0.000 - 1.000)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -385,6 +389,10 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case NUM_OLIVEIRA_SETS            : return AsString(s, gParameters.getNumRequestedOliveiraSets());
       case OLIVEIRA_CUTOFF              : return AsString(s, gParameters.getOliveiraPvalueCutoff());
       case OUTPUT_CARTESIAN_GRAPH       : return AsString(s, gParameters.getOutputCartesianGraph());
+      case RISK_LIMIT_HIGH_CLUSTERS     : return AsString(s, gParameters.getRiskLimitHighClusters());
+      case RISK_THESHOLD_HIGH_CLUSTERS  : return AsString(s, gParameters.getRiskThresholdHighClusters());
+      case RISK_LIMIT_LOW_CLUSTERS      : return AsString(s, gParameters.getRiskLimitLowClusters());
+      case RISK_THESHOLD_LOW_CLUSTERS   : return AsString(s, gParameters.getRiskThresholdLowClusters());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -783,6 +791,10 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case NUM_OLIVEIRA_SETS            : gParameters.setNumRequestedOliveiraSets(ReadUnsignedInt(sParameter, eParameterType)); break;
       case OLIVEIRA_CUTOFF              : gParameters.setOliveiraPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
       case OUTPUT_CARTESIAN_GRAPH       : gParameters.setOutputCartesianGraph(ReadBoolean(sParameter, eParameterType)); break;
+      case RISK_LIMIT_HIGH_CLUSTERS     : gParameters.setRiskLimitHighClusters(ReadBoolean(sParameter, eParameterType)); break;
+      case RISK_THESHOLD_HIGH_CLUSTERS  : gParameters.setRiskThresholdHighClusters(ReadDouble(sParameter, eParameterType)); break;
+      case RISK_LIMIT_LOW_CLUSTERS      : gParameters.setRiskLimitLowClusters(ReadBoolean(sParameter, eParameterType)); break;
+      case RISK_THESHOLD_LOW_CLUSTERS   : gParameters.setRiskThresholdLowClusters(ReadDouble(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

@@ -141,7 +141,11 @@ enum ParameterType
     CALCULATE_OLIVEIRA,             /* whether to calculate Oliveira's F*/
     NUM_OLIVEIRA_SETS,              /* number of Oliveira sets to calculate */
     OLIVEIRA_CUTOFF,                /* max p-value for clusters used with Oliveira's F (numeric) */
-    OUTPUT_CARTESIAN_GRAPH          /* generate html cartesian graph file */
+    OUTPUT_CARTESIAN_GRAPH,         /* generate html cartesian graph file */
+    RISK_LIMIT_HIGH_CLUSTERS,       /* restrict high clusters by risk level */      
+    RISK_THESHOLD_HIGH_CLUSTERS,    /* threshold for high clusters by risk level */
+    RISK_LIMIT_LOW_CLUSTERS,        /* restrict low clusters by risk level */
+    RISK_THESHOLD_LOW_CLUSTERS      /* threshold for low clusters by risk level */
 };
 /** analysis and cluster types */
 enum AnalysisType

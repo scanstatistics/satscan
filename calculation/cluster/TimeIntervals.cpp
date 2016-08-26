@@ -23,11 +23,6 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
     try {
         giNumIntervals = gDataHub.GetNumTimeIntervals();
         giMaxWindowLength = gDataHub.GetTimeIntervalCut();
-        switch(gDataHub.GetParameters().GetExecuteScanRateType()) {
-            case LOW        : fRateOfInterest = LowRate;       break;
-            case HIGHANDLOW : fRateOfInterest = HighOrLowRate; break;
-            default         : fRateOfInterest = HighRate;
-        };
         if (gDataHub.GetParameters().GetIsProspectiveAnalysis() && eIncludeClustersType == ALLCLUSTERS) {
             // For a prospective analysis with IncludeClustersType of ALLCLUSTERS, this situation indicates
             // that this object is being constructed for use in simulations. Perhaps there should be another

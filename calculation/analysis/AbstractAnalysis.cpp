@@ -76,13 +76,27 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
 /** Returns newly allocated CMeasureList object - caller is responsible for deletion.
     - throws prg_error if type is not known */
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
-  switch (gParameters.GetExecuteScanRateType()) {
-    case HIGH       : return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
-    case LOW        : return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    case HIGHANDLOW : return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    default         : throw prg_error("Unknown incidence rate specifier \"%d\".","GetNewMeasureListObject()",
-                                      gParameters.GetExecuteScanRateType());
-  }
+    switch (gParameters.GetExecuteScanRateType()) {
+    case HIGH:
+        if (gParameters.getRiskLimitHighClusters())
+            return new RiskMinMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdHighClusters());
+        return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
+    case LOW: 
+        if (gParameters.getRiskLimitLowClusters())
+            return new RiskMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters());
+        return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
+    case HIGHANDLOW: 
+        if (gParameters.getRiskLimitHighClusters() && gParameters.getRiskLimitLowClusters())
+            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters(), gParameters.getRiskThresholdHighClusters());
+        else if (gParameters.getRiskLimitLowClusters())
+            /* We're restricting the low clusters only -- pass 1.0 for high risk restriction, which will always pass for high rates. */
+            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters(), 1.0);
+        else if (gParameters.getRiskLimitHighClusters())
+            /* We're restricting the high clusters only -- pass 1.0 for low risk restriction, which will always pass for low rates. */
+            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, 1.0, gParameters.getRiskThresholdHighClusters());
+        return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
+    default         : throw prg_error("Unknown incidence rate specifier '%d'.","GetNewMeasureListObject()", gParameters.GetExecuteScanRateType());
+    }
 }
 
 /** Returns newly allocated CTimeIntervals derived object based upon parameter

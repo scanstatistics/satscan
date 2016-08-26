@@ -54,7 +54,7 @@
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_56_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_61_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -76,7 +76,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_56_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_61_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -264,46 +264,46 @@
     <ClInclude Include="test_helper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\chrono.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\process_cpu_clocks.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\chrono\src\thread_clock.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\cmdline.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\config_file.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\convert.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\options_description.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\parsers.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\positional_options.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\split.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\value_semantic.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\variables_map.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\winmain.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\cpp_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\cregex.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\c_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\fileiter.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\icu.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\instances.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\regex.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\regex_debug.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\regex_raw_buffer.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\regex_traits_defaults.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\static_mutex.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\usinstances.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\w32_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\wc_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\wide_posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\regex\src\winstances.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\codecvt_error_category.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\operations.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\path_traits.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\portability.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\unique_path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_61_0\libs\filesystem\src\windows_file_codecvt.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\chrono\src\chrono.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\chrono\src\process_cpu_clocks.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\chrono\src\thread_clock.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\cmdline.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\config_file.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\convert.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\options_description.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\parsers.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\positional_options.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\split.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\value_semantic.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\variables_map.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\winmain.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\cpp_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\cregex.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\c_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\fileiter.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\icu.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\instances.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\posix_api.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\regex.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\regex_debug.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\regex_raw_buffer.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\regex_traits_defaults.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\static_mutex.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\usinstances.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\w32_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\wc_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\wide_posix_api.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\regex\src\winstances.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\system\src\error_code.cpp" />
+    <ClCompile Include="..\boost\boost_1_61_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractBruteForceAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractCentricAnalysis.cpp" />
@@ -468,6 +468,7 @@
     <ClCompile Include="integrationtest_oliveira.cpp" />
     <ClCompile Include="integrationtest_points.cpp" />
     <ClCompile Include="integrationtest_squish66408.cpp" />
+    <ClCompile Include="integrationtest_squish66425.cpp" />
     <ClCompile Include="squish66406.cpp" />
     <ClCompile Include="squish66420.cpp" />
     <ClCompile Include="squish66455.cpp" />

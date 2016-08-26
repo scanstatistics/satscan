@@ -158,6 +158,7 @@ public class Parameters implements Cloneable {
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
     private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
     private boolean                         _output_shapefiles=false;
+    private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -218,8 +219,11 @@ public class Parameters implements Cloneable {
     private int                             _power_replica=1000; /* number of replications in power step of power evaluations */
     
     private Vector<InputSourceSettings>     _input_sources;
-
-    private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
+    
+    private boolean                         _risk_limit_high_clusters=false;
+    private double                          _risk_threshold_high_clusters=1.0;
+    private boolean                         _risk_limit_low_clusters=false;
+    private double                          _risk_threshold_low_clusters=1.0;
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -286,6 +290,16 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public boolean getRiskLimitHighClusters() {return _risk_limit_high_clusters;}
+    public void setRiskLimitHighClusters(boolean b) {_risk_limit_high_clusters = b;}
+    public double getRiskThresholdHighClusters() {return _risk_threshold_high_clusters;}
+    public void setRiskThresholdHighClusters(double d) {_risk_threshold_high_clusters = d;}
+    
+    public boolean getRiskLimitLowClusters() {return _risk_limit_low_clusters;}
+    public void setRiskLimitLowClusters(boolean b) {_risk_limit_low_clusters = b;}
+    public double getRiskThresholdLowClusters() {return _risk_threshold_low_clusters;}
+    public void setRiskThresholdLowClusters(double d) {_risk_threshold_low_clusters = d;}
+    
     public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
     public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
 

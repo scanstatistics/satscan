@@ -28,7 +28,6 @@ class CTimeIntervals {
         std::auto_ptr<AbstractMaxWindowLengthIndicator> gpMaxWindowLengthIndicator; /** indicates maximum temporal window length */
         int giNumIntervals; /* number of total time intervals */
         int giMaxWindowLength; /* maximum window length */
-        RATE_FUNCPTRTYPE fRateOfInterest;
 
     public:
         CTimeIntervals(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);

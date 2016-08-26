@@ -3,6 +3,7 @@
 #define __LikelihoodCalculation_H
 //******************************************************************************
 #include "SaTScan.h"
+#include "boost/shared_ptr.hpp"
 
 class SpatialMonotoneData; /** forward class declaration */
 class CSaTScanData;       /** forward class declaration */
@@ -16,21 +17,27 @@ class AbstractLikelihoodCalculator {
   public:
     typedef bool (AbstractLikelihoodCalculator::*SCANRATE_FUNCPTR) (count_t,measure_t,size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATENORMAL_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
+    typedef double (AbstractLikelihoodCalculator::*RISK_FUNCPTR) (count_t, measure_t, size_t) const;
 
   protected:
-    const CSaTScanData                & gDataHub;                      /** const reference to data hub */
-    AbstractLoglikelihoodRatioUnifier * gpUnifier;                     /** log likelihood ratio unifier for multiple data sets */
+    const CSaTScanData                & gDataHub; /** const reference to data hub */
+    boost::shared_ptr<AbstractLoglikelihoodRatioUnifier> _unifier; /** log likelihood ratio unifier for multiple data sets */
     std::vector<std::pair<count_t,measure_t> > gvDataSetTotals;
     std::vector<measure_t>              gvDataSetMeasureAuxTotals;
     count_t                             gtMinLowRateCases;
     count_t                             gtMinHighRateCases;
 
+    double                              _low_risk_threshold;
+    double                              _high_risk_threshold;
+    double                              _measure_adjustment;
+
   public:
     AbstractLikelihoodCalculator(const CSaTScanData& DataHub);
-    virtual ~AbstractLikelihoodCalculator();
+    virtual ~AbstractLikelihoodCalculator() {}
 
     SCANRATE_FUNCPTR                    gpRateOfInterest;
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
+    RISK_FUNCPTR                        _risk_function;
 
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const;
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
@@ -53,6 +60,14 @@ class AbstractLikelihoodCalculator {
     inline bool                         LowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
     inline bool                         MultipleSetsHighRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const;
 
+    inline double                       getObservedDividedExpected(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
+    inline double                       getRelativeRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    inline bool                         HighRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    inline bool                         LowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    inline bool                         HighRateOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    inline bool                         HighRiskOrLowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
+    inline bool                         HighRiskOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
+
     inline bool                         HighOrLowRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
     inline bool                         HighRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
     inline bool                         LowRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
@@ -66,17 +81,68 @@ class AbstractLikelihoodCalculator {
     inline bool                         AllRatesWeightedNormalCovariates(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
 };
 
-/** Indicates whether an area has lower than expected cases for a clustering
-    within a single dataset. */
+/* Returns the observed / expected -- this function is used as a risk function when restricting clusters by risk level. */
+inline double AbstractLikelihoodCalculator::getObservedDividedExpected(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    nMeasure *= _measure_adjustment; // apply measure adjustment --  applicable only to Bernoulli
+    return (nMeasure ? static_cast<double>(nCases) / nMeasure : 0.0);
+}
+
+/* Returns the relative risk -- this function is used as a risk function when restricting clusters by risk level. */
+inline double AbstractLikelihoodCalculator::getRelativeRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    double total_cases = gvDataSetTotals[tSetIndex].first;
+    if (total_cases == nCases) return std::numeric_limits<double>::max(); // could use std::numeric_limits<double>::infinity()    
+    nMeasure *= _measure_adjustment; // apply measure adjustment --  applicable only to Bernoulli
+    if (nMeasure && total_cases - nMeasure && ((total_cases - nMeasure) / (total_cases - nMeasure)))
+        return (nCases / nMeasure) / ((total_cases - nCases) / (total_cases - nMeasure));
+    return 0.0;
+}
+
+/* Returns whether potential cluster is high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    return HighRate(nCases, nMeasure, tSetIndex) && (this->*_risk_function)(nCases, nMeasure, tSetIndex) >= _high_risk_threshold;
+}
+
+/* Returns whether potential cluster is low rate while not exceeding low risk level maximum. */
+inline bool AbstractLikelihoodCalculator::LowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    return LowRate(nCases, nMeasure, tSetIndex) && (this->*_risk_function)(nCases, nMeasure, tSetIndex) <= _low_risk_threshold;
+}
+
+/* Returns whether potential cluster is high rate or low rate while not exceeding low risk level maximum. */
+inline bool AbstractLikelihoodCalculator::HighRateOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    if (HighRate(nCases, nMeasure, tSetIndex))
+        return true;
+    if (LowRate(nCases, nMeasure, tSetIndex) && (this->*_risk_function)(nCases, nMeasure, tSetIndex) <= _low_risk_threshold)
+        return true;
+    return false;
+}
+
+/* Returns whether potential cluster is low rate or high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRiskOrLowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    if (LowRate(nCases, nMeasure, tSetIndex))
+        return true;
+    if (HighRate(nCases, nMeasure, tSetIndex) && (this->*_risk_function)(nCases, nMeasure, tSetIndex) >= _high_risk_threshold)
+        return true;
+    return false;
+}
+
+/* Returns whether potential cluster is low rate while not exceeding low risk level maximum or high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRiskOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
+    if (HighOrLowRate(nCases, nMeasure, tSetIndex)) {
+        double risk = (this->*_risk_function)(nCases, nMeasure, tSetIndex);
+        return (risk <= _low_risk_threshold || risk >= _high_risk_threshold);
+    }
+    return false;
+}
+
+/** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::LowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
    if (nMeasure == 0 || nCases < gtMinLowRateCases) return false;
    return (nCases*gvDataSetTotals[tSetIndex].second < nMeasure*gvDataSetTotals[tSetIndex].first);
 }
 
-/** Indicates whether an area has high than expected cases for a clustering
-    within a single dataset. Clusterings with less than two cases are not
-    considered for high rates. Note this function should not be used for scannning
-    for high rates with an analysis with multiple datasets; use MultipleSetsHighRate() */
+/** Indicates whether an area has high than expected cases for a clustering within a single dataset. Clusterings with less
+    than two cases are not considered for high rates. Note this function should not be used for scannning for high rates with
+    an analysis with multiple datasets; use MultipleSetsHighRate() */
 inline bool AbstractLikelihoodCalculator::HighRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
    if (nMeasure == 0 || nCases < gtMinHighRateCases) return false;
    return (nCases*gvDataSetTotals[tSetIndex].second  > nMeasure*gvDataSetTotals[tSetIndex].first);

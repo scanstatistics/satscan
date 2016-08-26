@@ -647,6 +647,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputCartesianGraph());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setRiskLimitHighClusters", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getRiskLimitHighClusters());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRiskThresholdHighClusters", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getRiskThresholdHighClusters());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRiskLimitLowClusters", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getRiskLimitLowClusters());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRiskThresholdLowClusters", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getRiskThresholdLowClusters());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1290,6 +1306,22 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputCartesianGraph", "()Z");
   Parameters.setOutputCartesianGraph(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRiskLimitHighClusters", "()Z");
+  Parameters.setRiskLimitHighClusters(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRiskThresholdHighClusters", "()D");
+  Parameters.setRiskThresholdHighClusters(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRiskLimitLowClusters", "()Z");
+  Parameters.setRiskLimitLowClusters(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRiskThresholdLowClusters", "()D");
+  Parameters.setRiskThresholdLowClusters(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

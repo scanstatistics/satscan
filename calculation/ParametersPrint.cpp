@@ -591,6 +591,34 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
                 settings.push_back(std::make_pair("Stop when p-value greater",buffer));
             }
         }
+        switch (gParameters.GetProbabilityModelType()) {
+            case EXPONENTIAL:
+                if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+                    settings.push_back(std::make_pair("Restrict Short Survival Clusters", (gParameters.getRiskLimitHighClusters() ? "Yes" : "No")));
+                    if (gParameters.getRiskLimitHighClusters())
+                        settings.push_back(std::make_pair("Risk Threshold Short Survival Clusters", printString(buffer, "%g", gParameters.getRiskThresholdHighClusters())));
+                }
+                if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+                    settings.push_back(std::make_pair("Restrict Long Survival Clusters", (gParameters.getRiskLimitLowClusters() ? "Yes" : "No")));
+                    if (gParameters.getRiskLimitLowClusters())
+                        settings.push_back(std::make_pair("Risk Threshold Long Survival Clusters", printString(buffer, "%g", gParameters.getRiskThresholdLowClusters())));
+                } break;
+            case SPACETIMEPERMUTATION:
+            case POISSON:
+            case HOMOGENEOUSPOISSON:
+            case BERNOULLI:
+                if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+                    settings.push_back(std::make_pair("Restrict High Rate Clusters", (gParameters.getRiskLimitHighClusters() ? "Yes" : "No")));
+                    if (gParameters.getRiskLimitHighClusters())
+                        settings.push_back(std::make_pair("Risk Threshold High Rate Clusters", printString(buffer, "%g", gParameters.getRiskThresholdHighClusters())));
+                }
+                if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+                    settings.push_back(std::make_pair("Restrict Low Rate Clusters", (gParameters.getRiskLimitLowClusters() ? "Yes" : "No")));
+                    if (gParameters.getRiskLimitLowClusters())
+                        settings.push_back(std::make_pair("Risk Threshold Low Rate Clusters", printString(buffer, "%g", gParameters.getRiskThresholdLowClusters())));
+                } break;
+            default: break;
+        }
         WriteSettingsContainer(settings, "Inference", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintInferenceParameters()","ParametersPrint");

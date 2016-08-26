@@ -556,22 +556,58 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 /** Validates inference parameters.
     Prints errors to print direction and returns whether values are vaild.*/
 bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
-  if (gParameters.getPerformPowerEvaluation()) return true;
+    if (gParameters.getPerformPowerEvaluation()) return true;
 
-  bool  bValid=true;
+    bool bValid=true;
 
-  try {
-    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE &&
-        (gParameters.GetEarlyTermThreshold() < 1 || gParameters.GetEarlyTermThreshold() > gParameters.GetNumReplicationsRequested())) {
-      bValid = false;
-      PrintDirection.Printf("%s:\nThe threshold for early termination of simulations must be from 1 to "
-                            "number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    try {
+        if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE &&
+            (gParameters.GetEarlyTermThreshold() < 1 || gParameters.GetEarlyTermThreshold() > gParameters.GetNumReplicationsRequested())) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe threshold for early termination of simulations must be from 1 to "
+                                  "number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+
+        if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
+            switch (gParameters.GetProbabilityModelType()) {
+            case EXPONENTIAL:
+            case SPACETIMEPERMUTATION:
+            case POISSON:
+            case HOMOGENEOUSPOISSON:
+            case BERNOULLI:
+                if ((gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getRiskLimitHighClusters()) {
+                    if (gParameters.getRiskThresholdHighClusters() < 1.0) {
+                        bValid = false;
+                        PrintDirection.Printf("%s:\nThe risk threshold for %s clusters more be greater than or equal to 1.0.\n",
+                                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
+                                              (gParameters.GetProbabilityModelType() == EXPONENTIAL ? "short survival" : "high rate"));
+                    }
+                }
+                if ((gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getRiskLimitLowClusters()) {
+                    if (gParameters.getRiskThresholdLowClusters() < 0.0 || gParameters.getRiskThresholdLowClusters() > 1.0) {
+                        bValid = false;
+                        PrintDirection.Printf("%s:\nThe risk threshold for %s clusters more be greater than or equal to 0 and less than or equal to 1.0.\n",
+                                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
+                                              (gParameters.GetProbabilityModelType() == EXPONENTIAL ? "long survival" : "low rate"));
+                    }
+
+                } break;
+            default:
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented for the %s model.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
+            if (gParameters.GetNumDataSets() > 1) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented with multiple data sets.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateInferenceParameters()","ParametersValidate");
+        throw;
     }
-  } catch (prg_exception& x) {
-    x.addTrace("ValidateInferenceParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    return bValid;
 }
 
 /** Validates parameters used in optional iterative scan feature.

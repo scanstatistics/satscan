@@ -235,6 +235,10 @@ class CParameters {
     unsigned int                        _minimum_temporal_cluster_size;          /* mimimum temporal cluster size in time aggregation units */
 
     bool                                _output_cartesian_graph;                 /** generate KML output file */
+    bool                                _risk_limit_high_clusters;               /** restrict high rate clusters by risk level */
+    double                              _risk_threshold_high_clusters;           /** threshold for high rate clusters */
+    bool                                _risk_limit_low_clusters;                /** restrict low rate clusters by risk level */
+    double                              _risk_threshold_low_clusters;            /** threshold for low rate clusters */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -253,6 +257,14 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    bool                                getRiskLimitHighClusters() const { return _risk_limit_high_clusters; }
+    void                                setRiskLimitHighClusters(bool b) { _risk_limit_high_clusters = b; }
+    double                              getRiskThresholdHighClusters() const { return _risk_threshold_high_clusters; }
+    void                                setRiskThresholdHighClusters(double d) { _risk_threshold_high_clusters = d; }
+    bool                                getRiskLimitLowClusters() const { return _risk_limit_low_clusters; }
+    void                                setRiskLimitLowClusters(bool b) { _risk_limit_low_clusters = b; }
+    double                              getRiskThresholdLowClusters() const { return _risk_threshold_low_clusters; }
+    void                                setRiskThresholdLowClusters(double d) { _risk_threshold_low_clusters = d; }
 
     double                              getTemporalGraphSignificantCutoff() const {return _temporal_graph_report_cutoff;}
     void                                setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}

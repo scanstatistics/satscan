@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <boost/program_options.hpp>
+#include <algorithm>
 
 namespace po = boost::program_options;
 class CParameters;
@@ -20,4 +21,5 @@ void run_analysis(const std::string& analysis_name, std::string& results_user_di
 typedef std::vector<std::string> CSV_Row_t;
 CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row);
 
+bool compare_files(const std::string& filename1, const std::string& filename2);
 #endif

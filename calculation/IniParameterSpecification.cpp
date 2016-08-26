@@ -611,8 +611,12 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
     Build_9_4_x_ParameterList();
 
     _parameter_info[OUTPUT_CARTESIAN_GRAPH] = ParamInfo(OUTPUT_CARTESIAN_GRAPH, "OutputCartesianGraph", 14, _output_section);
+    _parameter_info[RISK_LIMIT_HIGH_CLUSTERS] = ParamInfo(RISK_LIMIT_HIGH_CLUSTERS, "RiskLimitHighClusters", 15, _inference_section);
+    _parameter_info[RISK_THESHOLD_HIGH_CLUSTERS] = ParamInfo(RISK_THESHOLD_HIGH_CLUSTERS, "RiskThresholdHighClusters", 16, _inference_section);
+    _parameter_info[RISK_LIMIT_LOW_CLUSTERS] = ParamInfo(RISK_LIMIT_LOW_CLUSTERS, "RiskLimitLowClusters", 17, _inference_section);
+    _parameter_info[RISK_THESHOLD_LOW_CLUSTERS] = ParamInfo(RISK_THESHOLD_LOW_CLUSTERS, "RiskThresholdLowClusters", 18, _inference_section);
 
-    assert(_parameter_info.size() == 136);
+    assert(_parameter_info.size() == 140);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

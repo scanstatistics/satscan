@@ -839,6 +839,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     //find end range date indexes
+    //m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     //validate windows will be evaluated - check that there will be clusters evaluated...
@@ -862,7 +863,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
     //different than the user defined.
-    if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
+    /*if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1, gParameters.GetPrecisionOfTimesType());
       throw resolvable_error("Error: No clusters will be evaluated.\n"
@@ -871,8 +872,9 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                              "       time plus %i %s), which does not intersect with scanning window end range.\n",
                              m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str(),
                              sDateMaxWET.c_str(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
-    }
+    }*/
 
+    /*
     if (!(gParameters.GetProbabilityModelType() == POISSON && gParameters.UseAdjustmentForRelativeRisksFile())) {
         // Collapse unused time intervals at end of study period, if possible.
         if (m_nTimeIntervals - iMaxEndWindow > 1)
@@ -886,7 +888,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
         m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
         m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
         m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
-    }
+    }*/
 
     // verify that windows will be evaluated given the flexible window definition and the minimum cluster size
     if (_min_iterval_cut >= (m_nFlexibleWindowEndRangeEndIndex - m_nFlexibleWindowStartRangeStartIndex)) {
