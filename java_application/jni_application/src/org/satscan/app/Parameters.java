@@ -173,7 +173,7 @@ public class Parameters implements Cloneable {
     private String                          gsSpecialGridFileName=""; /** special grid data source filename */
     private String                          gsMaxCirclePopulationFileName=""; /** special population file for constructing circles only */
     private String                          gsOutputFileName=""; /** results output filename */
-    private boolean                         gbLogRunHistory=true; /** indicates whether to log history */
+    private boolean                         gbLogRunHistory=false; /** indicates whether to log history */
     private String                          gsSimulationDataSourceFileName=""; /** simulation data source filename */
     private boolean                         gbUseAdjustmentsForRRFile=false; /** indicates whether to use adjustments for known relative risks file */
     private String                          gsAdjustmentsByRelativeRisksFileName=""; /** adjustments by known relative risks filename */
