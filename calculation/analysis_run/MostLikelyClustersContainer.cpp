@@ -741,6 +741,23 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
   return bResult;
 }
 
+/* Sets all clusters in collection as Gini clusters. */
+void MostLikelyClustersContainer::setClustersGini() {
+    ClusterList_t::iterator itr(gvTopClusterList.begin()), itrEnd(gvTopClusterList.end());
+    for (; itr != itrEnd; ++itr) {
+        (*itr)->setAsGiniCluster(true);
+    }
+}
+
+/* Sets all clusters in collection as Hierarchical clusters. */
+void MostLikelyClustersContainer::setClustersHierarchical() {
+    ClusterList_t::iterator itr(gvTopClusterList.begin()), itrEnd(gvTopClusterList.end());
+    for (; itr != itrEnd; ++itr) {
+        (*itr)->setAsHierarchicalCluster(true);
+    }
+}
+
+
 /** sorts collection by cluster LLR, descending order */
 void MostLikelyClustersContainer::sort() {
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());

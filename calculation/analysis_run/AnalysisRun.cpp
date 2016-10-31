@@ -1468,9 +1468,10 @@ void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, M
 	}
 
     if (!(gParameters.getReportHierarchicalClusters() || gParameters.getReportGiniOptimizedClusters()) || gParameters.GetIsPurelyTemporalAnalysis()) {
-        // Not performing heirarchacal nor gini clusters, then we're only grabbing the top ranked cluster.
+        // Not performing hierarchical nor gini clusters, then we're only grabbing the top ranked cluster.
         mlc = mlc_collection.back();
         mlc.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), print, 1);
+        mlc.setClustersHierarchical();
         // don't need to add clusters to cluster ranker if not performing simulations
         if (gParameters.GetNumReplicationsRequested() && ranker) ranker->add(mlc);
     } else {
@@ -1479,6 +1480,7 @@ void AnalysisRunner::rankClusterCollections(MLC_Collections_t& mlc_collection, M
         if (gParameters.getReportHierarchicalClusters()) {
             mlc = mlc_collection.back();
             mlc.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), print);
+            mlc.setClustersHierarchical();
             // don't need to add clusters to cluster ranker if not performing simulations
             if (gParameters.GetNumReplicationsRequested() && ranker) ranker->add(mlc);
         }

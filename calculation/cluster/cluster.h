@@ -35,7 +35,8 @@ class CCluster {
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
     mutable ReportCache_t       * gpCachedReportLines;
-	mutable bool                  gGiniCluster;
+	mutable bool                  _gini_cluster;           // indicates that cluster is gini cluster
+    mutable bool                  _hierarchical_cluster;   // indicates that cluster is hierarchical cluster
 
     void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=0) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
@@ -132,7 +133,8 @@ class CCluster {
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
-    bool                          isGiniCluster() const {return gGiniCluster;}
+    bool                          isGiniCluster() const {return _gini_cluster;}
+    bool                          isHierarchicalCluster() const { return _hierarchical_cluster; }
     boost::logic::tribool         isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
@@ -142,7 +144,8 @@ class CCluster {
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
-    void                          setAsGiniCluster(bool b) {gGiniCluster = b;}
+    void                          setAsGiniCluster(bool b) { _gini_cluster = b;}
+    void                          setAsHierarchicalCluster(bool b) { _hierarchical_cluster = b; }
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);

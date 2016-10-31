@@ -165,6 +165,8 @@ class MostLikelyClustersContainer {
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride=0);
+    void                        setClustersGini();
+    void                        setClustersHierarchical();
     void                        sort();
 };
 

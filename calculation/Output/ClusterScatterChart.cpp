@@ -20,23 +20,25 @@ const char * CartesianGraph::TEMPLATE = " \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
         <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <style type=\"text/css\"> \n \
-        body {background-color: #f0f8ff;} \n \
-        #chartContainer { overflow: hidden; } \n \
-        .chart-options{ display:none } \n \
-        .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver } \n \
-        .options-row{ margin:0 10px 10px 10px } \n \
-        .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold } \n \
-        .options-row input[type='radio']{ margin:5px } \n \
-        p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; } \n \
-        .main-content{ margin: 5px; } \n \
-        .options-row label{ font-weight: normal; } \n \
-        input[type=checkbox]{ margin-right:5px; } \n \
-        label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100% ; } \n \
-        .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; } \n \
-        .print-section a{ padding-right: 20px; text-decoration: none; } \n \
-        .cluster-selection{ border-bottom: dashed 1px #e6e9eb; } \n \
-        .cluster-selection label{ white-space: nowrap; color: #313030; } \n \
-        @media print{ title, #banner,.chart-options-section{ display: none; } #chartContainer{ margin: 20px; }.chart-column{ border-left: 0; } } \n \
+        body {background-color: #f0f8ff;}\n \
+        #chartContainer{ overflow: hidden; }\n \
+        .chart-options{ display:none; }\n \
+        .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver; }\n \
+        .options-row{ margin:0 10px 10px 10px }\n \
+        .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold; }\n \
+        .options-row input[type='radio']{ margin:5px }\n \
+        p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; }\n \
+        .main-content{ margin: 5px; }\n \
+        .options-row label{ font-weight: normal; }\n \
+        input[type=checkbox]{ margin-right:5px; }\n \
+        label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100 % ; }\n \
+        .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; }\n \
+        .print-section a{ padding-right: 20px; text-decoration: none; }\n \
+        .cluster-selection{ border-bottom: dashed 1px #e6e9eb; }\n \
+        .cluster-selection label{ white-space: nowrap; color: #313030; }\n \
+        #id_display_count { margin:10px; }\n \
+        fieldset { margin-top: 10px; }\n \
+        @media print{ title, #banner,.chart-options-section{ display: none; } #chartContainer{ margin: 20px; }.chart-column{ border-left: 0; } }\n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/jQuery.resizeEnd.js'></script> \n \
@@ -51,35 +53,91 @@ const char * CartesianGraph::TEMPLATE = " \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/canvas-toBlob-2016-05-26.js'></script> \n \
         <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
         <script type='text/javascript'> \n \
+            var clusters = [ \n \
+            --cluster-definitions-- \n \
+            ]; \n \
             var chart = null; \n \
-            var cluster_region = {zmin:--c-zmin--,zmax:--c-zmax--,xsteps:--c-xsteps--,ysteps:--c-ysteps--,bubbleSize:--c-bubbleSize--,xmin:--c-xmin--,xmax:--c-xmax--,ymin:--c-ymin--,ymax:--c-ymax--}; \n \
-            var entire_region = {zmin:--e-zmin--,zmax:--e-zmax--,xsteps:--e-xsteps--,ysteps:--e-ysteps--,bubbleSize:--e-bubbleSize--,xmin:--e-xmin--,xmax:--e-xmax--,ymin:--e-ymin--,ymax:--e-ymax--}; \n \
+            var parameters = {--parameters--};\n \
+            var cluster_region = {--cluster-region-hash--}; \n \
+            var cluster_region_points = [--cluster-region-points--]; \n \
+            var entire_region = {--entire-region-hash--}; \n \
+            var entire_region_points = [--entire-region-points--]; \n \
+            var display_stats = {};\n \
             function showGraph() { \n \
-               var region = document.getElementById('id_cluster_region').checked ? cluster_region : entire_region; \n \
+               var region = jQuery('#id_zoom_cluster_region').is(':checked') ? jQuery.extend({}, cluster_region) : jQuery.extend({}, entire_region); \n \
                var row = jQuery('.row'); \n \
                var options_div = jQuery('.chart-options-section'); \n \
                var dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50); \n \
                jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
-               chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,title: jQuery('.title-setter').val() || 'Cluster Graph',points_mouseoveronly: document.getElementById('points_mouseover').checked});  \n \
-               --extra-points-cluster-region-- \n \
-               --extra-points-entire-region-- \n \
-               --chart--bubbles-- \n \
+               chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,\n \
+                                        title: jQuery('.title-setter').val() || 'Cluster Graph',\n \
+                                        points_mouseoveronly: false, \n \
+                                        showGrid:document.getElementById('id_show_grid_lines').checked, \n \
+                                        showAxes:document.getElementById('id_show_axes').checked});  \n \
+                display_stats = {displayed_clusters: 0, displayed_cluster_points: 0, displayed_points: 0};\n \
+                jQuery.each(clusters, function(i, c) { \n \
+                    var add = true;\n \
+                    if (parameters.scanrate == 3) {\n \
+                        if (jQuery('#id_view_high').is(':checked')) add &= (c.highrate == true);\n \
+                        if (jQuery('#id_view_low').is(':checked')) add &= (c.highrate == false);\n \
+                    }\n \
+                    if (jQuery('#id_hierarchical').is(':checked') && jQuery('#id_gini').is(':checked')) add &= (c.hierarchical == true && c.gini == true);\n \
+                    else if (jQuery('#id_hierarchical').is(':checked')) add &= (c.hierarchical == true);\n \
+                    else if (jQuery('#id_gini').is(':checked')) add &= (c.gini == true);\n \
+                    else add = false;\n \
+                    if (jQuery('#id_view_significant').is(':checked')) add &= (c.significant == true);\n \
+                    if (add && jQuery('#id_cluster_circles').is(':checked')) {\n \
+                        if (c.ellipse)\n \
+                            chart.addEllipticBubble(c.id, c.x, c.y, c.z, c.semimajor, c.angle, c.shape, c.color, c.tip);\n \
+                        else\n \
+                            chart.addBubble(c.id, c.x, c.y, c.z, c.color, c.tip);\n \
+                        display_stats.displayed_clusters++;\n \
+                    }\n \
+                    if (add && jQuery('#id_cluster_locations').is(':checked')) {\n \
+                        chart.addPoints(c.id, c.points, c.pointscolor);\n \
+                        display_stats.displayed_cluster_points += c.points.length;\n \
+                        display_stats.displayed_points += c.points.length;\n \
+                    } else if (jQuery('#id_show_location_points').is(':checked')) {\n \
+                        chart.addPoints(0, c.points, '#00001a');\n \
+                        display_stats.displayed_points += c.points.length;\n \
+                    }\n \
+                });\n \
+                if (jQuery('#id_show_location_points').is(':checked')) {\n \
+                    if (jQuery('#id_zoom_cluster_region').is(':checked')) {\n \
+                        chart.addPoints(0, cluster_region_points, '#00001a'); \n \
+                        display_stats.displayed_points += cluster_region_points.length; \n \
+                    } else {\n \
+                        chart.addPoints(0, entire_region_points, '#00001a');\n \
+                        display_stats.displayed_points += entire_region_points.length;\n \
+                    }\n \
+                }\n \
+               jQuery('#id_cluster_count').html(display_stats.displayed_clusters); \n \
+               jQuery('#id_cluster_point_count').html(display_stats.displayed_cluster_points); \n \
+               jQuery('#id_point_count').html(display_stats.displayed_points); \n \
                chart.drawLabels(); \n \
                chart.redraw(); \n \
             } \n \
             window.addEvent('domready', function(){ \n \
                try { \n \
-                  showGraph(); \n \
-                  jQuery('.cluster-selection input[type=checkbox], #points_mouseover, #show_points_outside_clusters, #id_entire_region, #id_cluster_region').on('click', function(){ showGraph(); }); \n \
-                  jQuery('.title-setter').keyup(function() { showGraph(); }); \n \
-                  jQuery(window).resizeend(function() { showGraph(); }); \n \
-                  jQuery('#print_png').on('click', function(){ \n \
-                     var filename = chart.options.title || \"cluster-graph\"; \n \
-                     chart.canvas.toBlob(function(blob) { \n \
-                        saveAs(blob, filename + '.png'); \n \
-                     }); \n \
-                     return false; \n \
-                  }); \n \
+                    if ( clusters.every(function(c) { return c.significant == false; }))\n \
+                        jQuery('#id_view_all').prop('checked', true);\n \
+                    if ( clusters.every(function(c) { return c.hierarchical == false; }))\n \
+                        jQuery('#id_hierarchical').prop('checked', false);\n \
+                    if (clusters.every(function(c) { return c.gini == false; }))\n \
+                        jQuery('#id_gini').prop('checked', false);\n \
+                    jQuery('#id_rates_option').toggle(parameters.scanrate == 3);\n \
+                    jQuery('#id_secondary_clusters_option').toggle(parameters.giniscan);\n \
+                    showGraph();\n \
+                    jQuery('.options-row :input').on('click', function(){ showGraph(); });\n \
+                    jQuery('.title-setter').keyup(function() { showGraph(); });\n \
+                    jQuery(window).resizeend(function() { showGraph(); });\n \
+                    jQuery('#print_png').on('click', function(){\n \
+                        var filename = chart.options.title || 'cluster-graph';\n \
+                        chart.canvas.toBlob(function(blob) {\n \
+                            saveAs(blob, filename + '.png');\n \
+                        });\n \
+                        return false;\n \
+                    });\n \
                } catch (error) { \n \
 				   jQuery('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
              	   throw( error ); \n \
@@ -96,47 +154,73 @@ const char * CartesianGraph::TEMPLATE = " \
         </tr></tbody></table> \n \
 		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
     <div class=\"container-fluid main-content\"> \n \
-    <div class=\"row\"> \n \
-    <div class=\"col-md-3 chart-options-section\"> \n \
-    <fieldset> \n \
-    <h3 style=\"font-size: 13px; font-weight: 700;\">Graph Options : </h3> \n \
-    <div class=\"options-row\"> \n \
-    <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
-    <div><input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cluster Graph\"> \n \
-    <p class=\"help-block\">Title can be updated by editing this text.</p> \n \
-    </div> \n \
-    </div> \n \
-    <div class=\"options-row\"> \n \
-    <label class=\"option-section\" for = \"title_obs\">Print</label> \n \
-    <div class=\"print-section\"> \n \
-    <a href=\"#\" onclick = \"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
-    <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> \n \
-    </div> \n \
-    </div> \n \
-    <div class=\"options-row\"> \n \
-    <label class=\"option-section\">Clusters</label> \n \
-    <p class=\"help-block\">Toggle display of clusters and locations.</p> \n \
-    <div class=\"container-fluid\"> \n \
-    --cluster-sections-- \n \
-    </div> </div> \n \
-    <div class=\"options-row\"> \n \
-    <label class=\"option-section\">Additional</label> \n \
-    <label><input type=\"checkbox\" id=\"points_mouseover\" value=\"points\" />Locations on mouseover only</label> \n \
-    <p class=\"help-block\">Only display cluster locations when mouseover cluster.</p> \n \
-    <label><input type=\"checkbox\" id=\"show_points_outside_clusters\" />Show points outside clusters</label> \n \
-    <p class=\"help-block\">Display points outside reported clusters.</p> \n \
-     <label><input type=\"radio\" name=\"view_region\" id=\"id_entire_region\" value=\"entire\" />Show entire region</label> \n \
-     <label><input type=\"radio\" name=\"view_region\" id=\"id_cluster_region\" value=\"cluster\" checked=checked />Show cluster region</label> \n \
-     <p class=\"help-block\">Display entire coordinates region or focus on reported clusters.</p> \n \
-    </div> \n \
-    </fieldset> \n \
-    </div> \n \
-    <div class=\"col-md-9 chart-column\"> \n \
-    <div id='chartContainer' name='chartContainer'></div> \n \
-    </div> \n \
-    </div> \n \
-    </div> \n \
-    </body> \n \
+        <div class=\"row\"> \n \
+            <div class=\"col-md-3 chart-options-section\"> \n \
+                <fieldset> \n \
+                <div class=\"options-row\"> \n \
+                    <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
+                    <div>\n \
+                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cluster Graph\"> \n \
+                        <p class=\"help-block\">Title can be updated by editing this text.</p> \n \
+                    </div> \n \
+                </div> \n \
+                <div class=\"options-row\"> \n \
+                    <label class=\"option-section\" for=\"title_obs\">Print</label> \n \
+                    <div class=\"print-section\"> \n \
+                        <a href=\"#\" onclick=\"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
+                        <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> \n \
+                    </div> \n \
+                </div> \n \
+                <div class=\"options-row\"> \n \
+                    <div id=\"id_significance_option\">\n \
+                        <div><label class=\"option-section\">Significance</label></div>\n \
+                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_significant\" value=\"entire\" checked=checked />Significant clusters</label>\n \
+                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_all\" value=\"cluster\" />All clusters</label>\n \
+                        <p class=\"help-block\">Toggle display between significant and all clusters.</p>\n \
+                    </div>\n \
+                    <div id=\"id_rates_option\"> \n \
+                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_highlow\" value=\"entire\" checked=checked />High and low clusters</label>\n \
+                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_high\" value=\"cluster\"/>High only</label>\n \
+                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_low\" value=\"cluster\"/>Low only</label>\n \
+                        <p class=\"help-block\">Toggle display of clusters for scan rate.</p>\n \
+                    </div> \n \
+                    <div id=\"id_secondary_clusters_option\"> \n \
+                        <div>Secondary Clusters:</div>\n \
+                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" checked=checked />Hierarchical</label>\n \
+                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_gini\" value=\"secondary\" checked=checked />Gini</label>\n \
+                        <p class=\"help-block\">Display options for secondary clusters.</p>\n \
+                    </div> \n \
+                    <div>Show clusters using:</div>\n \
+                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />Circles / Ellipses</label>\n \
+                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_locations\" value=\"cluster\" />Locations</label>\n \
+                    <p class=\"help-block\">Display options for clusters.</p>\n \
+                    <div id=\"id_zoom_cluster_option\" style=\"display:--display-zoom-cluster--;\">\n \
+                    <label><input type=\"checkbox\" id=\"id_zoom_cluster_region\"/>Zoom in on cluster region</label>\n \
+                    <p class=\"help-block\">Focus grid region on reported clusters.</p>\n \
+                    </div>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_grid_lines\" checked=checked />Show grid lines</label>\n \
+                    <p class=\"help-block\">Toggle display of graph grid lines.</p>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_axes\" checked=checked />Show x and y axes</label>\n \
+                    <p class=\"help-block\">Toggle display of graph x / y axes.</p>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_location_points\" checked=checked />Show location points</label>\n \
+                    <p class=\"help-block\">Toggle display of location points.</p>\n \
+                </div> \n \
+                <div id=\"id_display_count\">\n \
+                    <fieldset>\n \
+                            <legend style=\"font-size:14px; margin-bottom:0;\">Display Data:</legend>\n \
+                            <div><span id=\"id_cluster_count\"></span> Clusters</div>\n \
+                            <div><span id=\"id_cluster_point_count\"></span> Cluster Locations</div>\n \
+                            <div><span id=\"id_point_count\"></span> Total Locations</div> \n \
+                    </fieldset>\n \
+                </div>\n \
+                </fieldset> \n \
+            </div> \n \
+            <div class=\"col-md-9 chart-column\"> \n \
+                <div id='chartContainer' name='chartContainer'></div> \n \
+            </div> \n \
+        </div> \n \
+     </div> \n \
+     </body> \n \
 </html> \n";
 
 /** Alters pass Filename to include suffix and extension. */
@@ -175,18 +259,15 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
 void CartesianGraph::generateChart() {
     double                   gdMinRatioToReport = 0.001;
     RegionSettings           clusterRegion, entireRegion;
-    std::string              color, legend;
+    std::string              buffer, buffer2, legend, clusterColor, pointsColor;
     std::vector<double>      vCoordinates;
-    RandomNumberGenerator    rng;
-    std::string              buffer, buffer2;
-    std::stringstream        html, cluster_html, cluster_sections, worker, worker2;
+    std::stringstream        html, cluster_html, cluster_sections, worker, worker2, cluster_definitions;
     FileName fileName;
     std::vector<tract_t>     clusterLocations;
 
     try {
         fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
         getFilename(fileName);
-
         std::ofstream HTMLout;
         //open output file
         HTMLout.open(fileName.getFullPath(buffer).c_str());
@@ -201,178 +282,123 @@ void CartesianGraph::generateChart() {
 
         //if  no replications requested, attempt to display up to top 10 clusters
         tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
-
         //first iterate through all location coordinates to determine largest X and Y
-        for (int i = 0; i < _clusters.GetNumClustersRetained(); ++i) {
+        for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
             //get reference to i'th top cluster
             const CCluster& cluster = _clusters.GetCluster(i);
             if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (_simVars.get_sim_count() == 0 || cluster.GetRank() <= _simVars.get_sim_count()))))
                 break;
             //write cluster details to 'cluster information' file
             if (cluster.m_nRatio >= gdMinRatioToReport) {
-
-                color = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "F13C3F" : "5F8EBD";
-                //changeColor(color, i, rng);
-
+                clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
+                pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
                 getClusterLegend(cluster, i, legend);
-                _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
-                //chartClusters.resize(chartClusters.size() + 1);
+                worker.str("");
+                for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
+                    tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                    if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
+                        if (!_dataHub.GetIsNullifiedLocation(tTract)) {
+                            CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
+                            worker << printString(buffer2, "[%.2lf, %.2lf],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                            clusterLocations.push_back(tTract);
+                        }
+                    } else {
+                        std::vector<tract_t> indexes;
+                        _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
+                        for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
+                            if (!_dataHub.GetIsNullifiedLocation(*itr)) {
+                                CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
+                                worker << printString(buffer2, "[%.2lf, %.2lf],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                                clusterLocations.push_back(tTract);
+                            }
+                        }
+                    }
+                }
 
+                std::string points = worker.str();
+                trimString(points, ",");
+                const char * cluster_def_format = "x : %.2lf, y : %.2lf, z : %.2lf, semimajor : %.2lf, angle : %.2lf, shape : %.2lf";
+                _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
                 if (cluster.GetEllipseOffset() == 0) {
-                    printString(buffer, "chart.addBubble(%d, %.2lf, %.2lf, %.2lf, '#%s', '%s');",
-                        i + 1, //cluster index
-                        vCoordinates.at(0), // X coordinate
-                        vCoordinates.at(1), // Y coordinate
-                        cluster.GetCartesianRadius(), // cluster radius
-                        color.c_str(), // cluster color
-                        legend.c_str()); // cluster details for popup
+                    printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), 0.0, 0.0, 0.0);
                     clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + cluster.GetCartesianRadius() + 0.25);
                     clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - cluster.GetCartesianRadius() - 0.25/* left-margin buffer*/);
                     clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + cluster.GetCartesianRadius() + 0.25);
                     clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - cluster.GetCartesianRadius() - 0.25/* bottom-margin buffer*/);
-                }
-                else {
+                } else {
                     double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
                     double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
                     degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
-                    printString(buffer, "chart.addEllipticBubble(%d, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, '#%s', '%s');",
-                        i + 1, //cluster index
-                        vCoordinates.at(0), // X coordinate
-                        vCoordinates.at(1), // Y coordinate
-                        cluster.GetCartesianRadius(), // semi-minor axis
-                        semi_major, // semi-major axis
-                        degrees, // cluster angle
-                                 //cluster.ConvertAngleToDegrees(_dataHub.GetEllipseAngle(cluster.GetEllipseOffset())), // cluster angle
-                        _dataHub.GetEllipseShape(cluster.GetEllipseOffset()), // cluster shape
-                        color.c_str(), // cluster color
-                        legend.c_str()); // cluster details for popup
-                                         // to make it simplier, just pretend that semi-major extends along X and Y axis  
+                    printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), semi_major, degrees, _dataHub.GetEllipseShape(cluster.GetEllipseOffset()));
                     clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + semi_major + 0.25/* left-margin buffer*/);
                     clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - semi_major - 0.25/* left-margin buffer*/);
                     clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
                     clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
                 }
-
-                cluster_sections << "<div class=\"row cluster-selection\">"
-                    << "<div class=\"col-md-6\"><label><input type=\"checkbox\" id=\"cluster_" << (i + 1) << "\" value=\"cluster_" << (i + 1) << "\" checked=checked />Cluster #" << (i + 1) << "</label></div>"
-                    << "<div class=\"col-md-6\"><label><input type=\"checkbox\" id=\"points_" << (i + 1) << "\" value=\"points_" << (i + 1) << "\" checked=checked />#" << (i + 1) << " Locations</label></div>"
-                    << "</div>" << std::endl;
-
-                cluster_html << "if (document.getElementById('cluster_" << (i + 1) << "').checked) " << buffer.c_str() << std::endl;
-                cluster_html << "if (document.getElementById('points_" << (i + 1) << "').checked) ";
-                cluster_html << "chart.addPoints(" << (i + 1) << ",[";
-
-                worker.str("");
-                for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                    tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                    // Track which locations are in reported clusters -- so we can exclude their coordinates in the outside clusters collection.
-                    if (tTract < _dataHub.GetNumTracts()) // is tract atomic?
-                        clusterLocations.push_back(tTract);
-                    else {
-                        std::vector<tract_t> indexes;
-                        _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
-                        for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) 
-                            clusterLocations.push_back(tTract);
-                    }
-                    if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                        CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                        clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0));
-                        clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0));
-                        clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1));
-                        clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1));
-                        //chartPoints.resize(chartPoints.size() + 1);
-                        worker << printString(buffer2, "[%.2lf, %.2lf]", vCoordinates.at(0), vCoordinates.at(1)).c_str() << ",";
-                    }
-                }                
-                buffer = worker.str();
-                cluster_html << trimString(buffer, ",").c_str() << "], '#FFFFFF');" << std::endl;
-
+                cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, _simVars) ? "true" : "false")
+                                    << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
+                                    << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
+                                    << ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
+                                    << ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str() << "', points : [" << points << "] },\n";
             }
         }
 
-        // site resource link path
-        templateReplace(html, "--cluster-sections--", cluster_sections.str().c_str());
-        templateReplace(html, "--chart--bubbles--", cluster_html.str().c_str());
-
+        // Update cluster region to keep x and y ranges equal -- for proper scaling in graph
+        clusterRegion.setproportional();
         entireRegion = clusterRegion;
         std::sort(clusterLocations.begin(), clusterLocations.end());
         std::stringstream cluster_region_points, entire_region_points;
         const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
         worker.str("");
-        cluster_region_points << "if (document.getElementById('show_points_outside_clusters').checked && document.getElementById('id_cluster_region').checked) ";
-        cluster_region_points << "chart.addPoints(0,[";
-        entire_region_points << "if (document.getElementById('show_points_outside_clusters').checked && document.getElementById('id_entire_region').checked) ";
-        entire_region_points << "chart.addPoints(0,[";
+        worker2.str("");
         for (size_t t = 0; t < locations.size(); ++t) {
             std::vector<tract_t>::iterator itr = std::lower_bound(clusterLocations.begin(), clusterLocations.end(), t);
             if (itr == clusterLocations.end() || *itr != t) {
                 double * p = locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->getCoordinates();
                 if (clusterRegion.in(p[0], p[1])) {
-                    worker << printString(buffer2, "[%.2lf, %.2lf]", p[0], p[1]).c_str() << ",";
+                    worker2 << printString(buffer2, "[%.2lf, %.2lf],", p[0], p[1]).c_str();
                 }
-                worker2 << printString(buffer2, "[%.2lf, %.2lf]", p[0], p[1]).c_str() << ",";
+                worker << printString(buffer2, "[%.2lf, %.2lf],", p[0], p[1]).c_str();
                 entireRegion._largestX = std::max(entireRegion._largestX, p[0]);
                 entireRegion._smallestX = std::min(entireRegion._smallestX, p[0]);
                 entireRegion._largestY = std::max(entireRegion._largestY, p[1]);
                 entireRegion._smallestY = std::min(entireRegion._smallestY, p[1]);
             }
         }
-        buffer = worker.str();
-        cluster_region_points << trimString(buffer, ",").c_str() << "], '#FF9900');" << std::endl;
-        templateReplace(html, "--extra-points-cluster-region--", cluster_region_points.str().c_str());
-        buffer = worker2.str();
-        entire_region_points << trimString(buffer, ",").c_str() << "], '#FF9900');" << std::endl;
-        templateReplace(html, "--extra-points-entire-region--", entire_region_points.str().c_str());
+        std::string entire_points = worker.str();
+        std::string cluster_points = worker2.str();
+        // site resource link path
+        buffer = cluster_definitions.str();
+        templateReplace(html, "--cluster-definitions--", trimString(buffer, ",\n").c_str());
+        templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
+        templateReplace(html, "--cluster-region-points--", trimString(trimString(cluster_points, ","), ",").c_str());
 
-        // need to keep x,y ranges equal for proper scaling
-        double xrange = fabs(ceil(clusterRegion._largestX) - floor(clusterRegion._smallestX));
-        double yrange = fabs(ceil(clusterRegion._largestY) - floor(clusterRegion._smallestY));
-        long xmax = static_cast<long>(std::max(xrange, yrange) + clusterRegion._smallestX);
-        long ymax = static_cast<long>(std::max(xrange, yrange) + clusterRegion._smallestY);
-        templateReplace(html, "--c-bubbleSize--", "8");
-        templateReplace(html, "--c-zmin--", "0");
-        templateReplace(html, "--c-zmax--", "1");
-        worker.str(""); worker << floor(clusterRegion._smallestX);
-        templateReplace(html, "--c-xmin--", worker.str().c_str());
-        worker.str(""); worker << xmax;
-        templateReplace(html, "--c-xmax--", worker.str().c_str());
-        worker.str(""); worker << floor(clusterRegion._smallestY);
-        templateReplace(html, "--c-ymin--", worker.str().c_str());
-        worker.str(""); worker << ymax;
-        templateReplace(html, "--c-ymax--", worker.str().c_str());
-        long xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(clusterRegion._smallestX) + 1.0)));
-        worker.str(""); worker << xstep;
-        templateReplace(html, "--c-xsteps--", worker.str().c_str());
-        long ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(clusterRegion._smallestY) + 1.0)));
-        worker.str(""); worker << ystep;
-        templateReplace(html, "--c-ysteps--", worker.str().c_str());
+        // TODO: try to get clusterRegion and entireRegion to better numbers/ticks in graph
 
-        xrange = fabs(ceil(entireRegion._largestX) - floor(entireRegion._smallestX));
-        yrange = fabs(ceil(entireRegion._largestY) - floor(entireRegion._smallestY));
-        xmax = static_cast<long>(std::max(xrange, yrange) + entireRegion._smallestX);
-        ymax = static_cast<long>(std::max(xrange, yrange) + entireRegion._smallestY);
-        templateReplace(html, "--e-bubbleSize--", "8");
-        templateReplace(html, "--e-zmin--", "0");
-        templateReplace(html, "--e-zmax--", "1");
-        worker.str(""); worker << floor(entireRegion._smallestX);
-        templateReplace(html, "--e-xmin--", worker.str().c_str());
-        worker.str(""); worker << xmax;
-        templateReplace(html, "--e-xmax--", worker.str().c_str());
-        worker.str(""); worker << floor(entireRegion._smallestY);
-        templateReplace(html, "--e-ymin--", worker.str().c_str());
-        worker.str(""); worker << ymax;
-        templateReplace(html, "--e-ymax--", worker.str().c_str());
-        xstep = static_cast<long>(std::min(20.0, std::abs(xmax - floor(entireRegion._smallestX) + 1.0)));
-        worker.str(""); worker << xstep;
-        templateReplace(html, "--e-xsteps--", worker.str().c_str());
-        ystep = static_cast<long>(std::min(20.0, std::abs(ymax - floor(entireRegion._smallestY) + 1.0)));
-        worker.str(""); worker << ystep;
-        templateReplace(html, "--e-ysteps--", worker.str().c_str());
+        // replace parameters hash
+        printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
+        templateReplace(html, "--parameters--", buffer.c_str());
+
+        // replace region hashes in template
+        const char * region_hash = "zmin:0,zmax:1,xsteps:%d,ysteps:%d,bubbleSize:8,xmin:%g,xmax:%g,ymin:%g,ymax:%g";
+        long xstep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestX - clusterRegion._smallestX + 1.0)));
+        long ystep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestY - clusterRegion._smallestY + 1.0)));
+        printString(buffer, region_hash, xstep, ystep, clusterRegion._smallestX, clusterRegion._largestX, clusterRegion._smallestY, clusterRegion._largestY);
+        templateReplace(html, "--cluster-region-hash--", buffer.c_str());
+        entireRegion.setproportional(); // need to keep x,y ranges equal for proper scaling
+        xstep = static_cast<long>(std::min(20.0, std::abs(entireRegion._largestX - floor(entireRegion._smallestX) + 1.0)));
+        ystep = static_cast<long>(std::min(20.0, std::abs(entireRegion._largestY - floor(entireRegion._smallestY) + 1.0)));
+        printString(buffer, region_hash, xstep, ystep, entireRegion._smallestX, entireRegion._largestX, entireRegion._smallestY, entireRegion._largestY);
+        templateReplace(html, "--entire-region-hash--", buffer.c_str());
+
+        // hide the option to switch between entire region and cluster region if cluster region is greater than 90% of entire region.
+        double cluster_region_area = clusterRegion.area();
+        double entire_region_area = entireRegion.area();
+        templateReplace(html, "--display-zoom-cluster--", ((cluster_region_area / entire_region_area) < 0.9) ? "block" : "none");
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();
-    }
-    catch (prg_exception& x) {
+    } catch (prg_exception& x) {
         x.addTrace("renderScatterChart()", "ClusterScatterChart");
         throw;
     }

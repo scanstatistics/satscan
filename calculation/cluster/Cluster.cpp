@@ -38,7 +38,8 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nLastInterval  = 0;
   m_iEllipseOffset = 0;
   gpCachedReportLines = 0;
-  gGiniCluster = false;
+  _gini_cluster = false;
+  _hierarchical_cluster = false;
 }
 
 /** overloaded assignment operator */
@@ -56,7 +57,8 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   if (rhs.gpCachedReportLines) {
       gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
   }
-  gGiniCluster = rhs.gGiniCluster;
+  _gini_cluster = rhs._gini_cluster;
+  _hierarchical_cluster = rhs._hierarchical_cluster;
   return *this;
 }
 

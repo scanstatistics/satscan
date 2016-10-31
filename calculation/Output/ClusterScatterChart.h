@@ -24,6 +24,32 @@ class CartesianGraph {
         bool in(double x, double y) {
             return (y > _smallestY && y < _largestY) && (x > _smallestX && x < _largestX);
         }
+        double area() const {
+            return (_largestX - _smallestX) * (_largestY - _smallestY);
+        }
+        void setproportional() {
+            double xrange = fabs(ceil(_largestX) - floor(_smallestX));
+            double yrange = fabs(ceil(_largestY) - floor(_smallestY));
+            if (xrange < yrange) {
+                double upper = (yrange - xrange) / 2.0;
+                double lower = (yrange - xrange) - upper;
+                _largestX = static_cast<long>(_largestX + upper);
+                _smallestX = floor(_smallestX - lower);
+            } else {
+                _largestX = static_cast<long>(std::max(xrange, yrange) + _smallestX);
+                _smallestX = floor(_smallestX);
+            }
+
+            if (xrange > yrange) {
+                double upper = (xrange - yrange) / 2.0;
+                double lower = (xrange - yrange) - upper;
+                _largestY = static_cast<long>(_largestY + upper);
+                _smallestY = floor(_smallestY - lower);
+            } else {
+                _largestY = static_cast<long>(std::max(xrange, yrange) + _smallestY);
+                _smallestY = floor(_smallestY);
+            }
+        }
 
         double  _largestX;
         double _largestY;
