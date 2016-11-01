@@ -693,10 +693,10 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
                                   && 
                                  (parameters.GetProbabilityModelType() == POISSON || 
                                   parameters.GetProbabilityModelType() == BERNOULLI ||
-                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || 
-                                  parameters.GetProbabilityModelType() == ORDINAL || 
-                                  parameters.GetProbabilityModelType() == CATEGORICAL
+                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
 								  );
+    bReportsDefaultGumbel |= parameters.GetAnalysisType() == PURELYSPATIAL &&
+                            (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL);
     if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
@@ -1038,10 +1038,12 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
                                           && 
                                          (parameters.GetProbabilityModelType() == POISSON ||
                                           parameters.GetProbabilityModelType() == BERNOULLI ||
-                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
-                                          parameters.GetProbabilityModelType() == ORDINAL ||
-                                          parameters.GetProbabilityModelType() == CATEGORICAL
+                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
 										  );
+            bReportsDefaultGumbel |= parameters.GetAnalysisType() == PURELYSPATIAL &&
+                                    (parameters.GetProbabilityModelType() == ORDINAL ||
+                                      parameters.GetProbabilityModelType() == CATEGORICAL
+                                    );
             if (bReportsDefaultGumbel && reportableGumbelPValue(parameters, simVars)) {
                 std::pair<double,double> p = GetGumbelPValue(simVars);
                 return std::max(p.first, p.second);

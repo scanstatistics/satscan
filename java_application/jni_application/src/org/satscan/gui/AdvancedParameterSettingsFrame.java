@@ -454,14 +454,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bSpaceTime = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
                 || _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
 
-        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP || bCategorical || bOrdinal);
-        _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled);
+        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP) && (bPurelySpatial || bSpaceTime);
+        modelGumbelEnabled |= (bCategorical || bOrdinal) && bPurelySpatial;
+        
+        _radioGumbelPValues.setEnabled(modelGumbelEnabled);
         if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected()) {
             _radioDefaultPValues.setSelected(true);
         }
 
-        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled
-                && (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));
+        _checkReportGumbel.setEnabled(modelGumbelEnabled && (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));
         if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected()) {
             _checkReportGumbel.setSelected(false);
         }
