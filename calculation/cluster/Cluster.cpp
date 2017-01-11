@@ -136,7 +136,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
                             ode = (measure_t)tObserved/tExpected; 
                         } else {
                             // compare previous ode with current ode, then break loop
-                            increasing = ode >= (measure_t)tObserved/tExpected; 
+                            increasing = (measure_t)tObserved/tExpected >= ode;
                             break;
                         }
                     }
