@@ -72,9 +72,9 @@
     programGroup="yes"
     encoding="UTF-8"
     type="Application"
-    description="Uninstall SaTScan Application">
     desktop="no"
     applications="no"
+    description="Uninstall SaTScan Application">
     <createForPack name="Base" />
   </shortcut>
 </izpack:shortcuts>

@@ -1,10 +1,11 @@
 
-<processing>
-
+<izpack:processing version="5.0" 
+                   xmlns:izpack="http://izpack.org/schema/processing"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://izpack.org/schema/processing http://izpack.org/schema/5.0/izpack-processing-5.0.xsd">
   <!-- unix jobs -->
 
   <job name="32bit symbolic links for Java Native Interface">
-	    <description>Create symbolic links</description>
 	    <os family="unix"/>
 	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
 	      <arg>$INSTALL_PATH/libsatscan32.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++6_x86_64_32bit.so</arg>
@@ -12,7 +13,6 @@
   </job>
 
   <job name="32bit symbolic links for SaTScan Commandline Application">
-	    <description>Create symbolic links</description>
 	    <os family="unix"/>
 	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
 	      <arg>$INSTALL_PATH/SaTScanBatch</arg><arg>$INSTALL_PATH/satscan_stdc++6_x86_64_32bit</arg>
@@ -20,7 +20,6 @@
   </job>
 	  
   <job name="64bit symbolic links for Java Native Interface">
-	    <description>Create symbolic links</description>
 	    <os family="unix"/>
 	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
 	      <arg>$INSTALL_PATH/libsatscan64.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++6_x86_64_64bit.so</arg>
@@ -28,11 +27,10 @@
   </job>
 
   <job name="64bit symbolic links for SaTScan Commandline Application">
-	    <description>Create symbolic links</description>
 	    <os family="unix"/>
 	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
 	      <arg>$INSTALL_PATH/SaTScanBatch64</arg><arg>$INSTALL_PATH/satscan_stdc++6_x86_64_64bit</arg>
 	    </executefile>
   </job>
   	  
-</processing>
+</izpack:processing>
