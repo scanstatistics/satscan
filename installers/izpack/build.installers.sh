@@ -66,9 +66,9 @@ bzip2 -f $installer_version/satscan.9.5_linux.tar
 rm -rf $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
 python $build/satscan/installers/izpack/mac/satscan2app/satscan2app.py $build/satscan/java_application/jni_application/dist/SaTScan.jar $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
 # copy jni libraries into app directory
-cp $build/binaries/mac/libsatscan.jnilib $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Resources/Java/libsatscan.jnilib
+cp $build/binaries/mac/libsatscan.jnilib $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Java/libsatscan.jnilib
 # copy additional Java libraries into app directory
-cp $build/satscan/java_application/jni_application/dist/lib/* $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Resources/Java/lib/
+cp $build/satscan/java_application/jni_application/dist/lib/* $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Java/lib
 
 # prompt user to sign the SaTScan.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
 echo
