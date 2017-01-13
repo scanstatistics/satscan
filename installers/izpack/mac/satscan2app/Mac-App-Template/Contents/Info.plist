@@ -1,46 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CFBundleName</key>
-	<string>SaTScan</string>
-	<key>CFBundleDisplayName</key>
-	<string>SaTScan</string>
-	<key>CFBundleVersion</key>
-	<string>9.4.0</string>
-	<key>CFBundleIdentifier</key>
-	<string>org.satscan.SaTScan</string>
-	<key>CFBundleExecutable</key>
-	<string>JavaApplicationStub</string>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundlePackageType</key>
-	<string>BNDL</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-    <key>NSHumanReadableCopyright</key>
-    <string>SaTScan is a trademark of Martin Kulldorff. The SaTScan software was developed under the joint auspices of (i) Martin Kulldorff, (ii) the National Cancer Institute, and (iii) Farzad Mostashari of the New York City Department of Health and Mental Hygiene.</string>
-	<key>CFBundleIconFile</key>
-	<string>SaTScan.icns</string>
-	<key>Java</key>
-	<dict>
-		<key>MainClass</key>
-		<string>org.satscan.gui.SaTScanApplication</string>
-		<key>JVMVersion</key>
-		<string>1.6+</string>
-		<key>ClassPath</key>
-	    <string>$JAVAROOT/SaTScan.jar</string>
-        <key>Arguments</key>
-        <string></string>
-		<key>Properties</key>
-		<dict>
-			<key>apple.laf.useScreenMenuBar</key>
-			<string>true</string>
-			<key>java.library.path</key>
-			<string>$JAVAROOT</string>
-		</dict>
-	</dict>
-</dict>
+   <dict>
+      <key>CFBundleDevelopmentRegion</key>
+      <string>English</string>
+      <key>CFBundleExecutable</key>
+      <string>JavaAppLauncher</string>
+      <key>CFBundleIconFile</key>
+      <string>SaTScan.icns</string>
+      <key>CFBundleIdentifier</key>
+      <string>org.satscan.gui.SaTScanApplication</string>
+      <key>CFBundleDisplayName</key>
+      <string>SaTScan</string>
+      <key>CFBundleInfoDictionaryVersion</key>
+      <string>6.0</string>
+      <key>CFBundleName</key>
+      <string>SaTScan</string>
+      <key>CFBundlePackageType</key>
+      <string>APPL</string>
+      <key>CFBundleShortVersionString</key>
+      <string>1.0</string>
+      <key>CFBundleSignature</key>
+      <string>????</string>
+      <key>CFBundleVersion</key>
+      <string>9.4.0</string>
+      <key>NSHumanReadableCopyright</key>
+      <string>SaTScan is a trademark of Martin Kulldorff. The SaTScan software was developed under the joint auspices of (i) Martin Kulldorff, (ii) the National Cancer Institute, and (iii) Farzad Mostashari of the New York City Department of Health and Mental Hygiene.</string>
+      <key>JVMMainClassName</key>
+      <string>org.satscan.gui.SaTScanApplication</string>
+      <key>JVMOptions</key>
+      <array>
+         <string>-Djava.library.path=$APP_ROOT/Contents/Java/</string>
+         <string>-Dcom.apple.macos.useScreenMenuBar=true</string>
+      </array>	
+      <key>JVMArguments</key>
+      <array />
+   </dict>
 </plist>
