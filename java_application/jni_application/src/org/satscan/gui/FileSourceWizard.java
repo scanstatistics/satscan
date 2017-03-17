@@ -1184,7 +1184,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Case: defaultName = "Cases"; extension =  ".cas"; break;
             case Control: defaultName = "Controls"; extension =  ".ctl"; break;
             case Population: defaultName = "Population"; extension =  ".pop";  break;
-            case Coordinates: defaultName = "Coordintes"; extension =  ".geo";  break;
+            case Coordinates: defaultName = "Coordinates"; extension =  ".geo";  break;
             case SpecialGrid: defaultName = "Grid"; extension =  ".grd";  break;
             case MaxCirclePopulation: defaultName = "MaximumSizeCircle"; extension =  ".max"; break;
             case AdjustmentsByRR: defaultName = "Adjustments"; extension =  ".adj"; break;
