@@ -216,11 +216,14 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
     std::string buffer;
 
     try {
+        if (theCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+            throw prg_error("LocationInformationWriter::Write() is not implemented for purely temporal clusters.", "Write()");
+
         //do not report locations for which iterative scan has nullified its data
         if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
 		/* Get coordinates for the cluster. */
-		if (theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+		if (!gParameters.UseLocationNeighborsFile()) {
 			loc_first_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD);
 			loc_second_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD);
 		}
@@ -267,7 +270,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
             }
 
 			/* Report coordinate fields for location. */
-			if (theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+            if (!gParameters.UseLocationNeighborsFile()) {
 				/* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
 				DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
 				/* Write records to record buffer. */
