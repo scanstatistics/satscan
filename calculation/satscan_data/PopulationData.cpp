@@ -937,7 +937,6 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
   std::string                   sBuffer;
   char                          sDateBuffer[20];
   const CovariateCategory     * pCategoryDescriptor;
-  Julian                        lastReported=0;
 
   try {
     if (gbStartAsPopDt)
@@ -956,7 +955,7 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
              PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
        }
-       lastReported = 0;
+       Julian popdate, lastdate=0;
        for (j=nPStartIndex; j <= nPEndIndex; j++) {
           if (PopTotalsArray[j]==0) {
             if (!bZeroFound) {
@@ -965,15 +964,27 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
               fprintf(pDisplay,"Warning: The following locations have a population totaling zero for the specified date(s).\n");
               PrintDirection.Printf("Warning: The following locations have a population totaling zero for the specified date(s).\n", BasePrint::P_WARNING);
             }
-            //Suppress printing the same population date for a location; this can happen when original population date from
-            //input file was precise to the day.
-            if (lastReported != gvPopulationDates[j]) {
+            /* Suppress printing the same population date for a location; this can happen when original population date from input file was precise to the day.
+              
+              https://www.squishlist.com/ims/satscan/66489/
+              There exists special logic when reading the population file for the population date. If the population date is precise to the day, then we
+              create a population record for that date and the folllowing date. It is also possible that that following date is specified in the population
+              file - so that date will exist twice in the collection of population dates. See referenced issue for more details on why we're doing this.
+
+              When calling this function to check for zero population dates, we can't be certain if a population date is:
+                - an actual date read from file
+                - a population date created as described above
+                - a population date read with year or month precision and assigned default (e.g. 2016 -> 2016/07/01, 2016/30 -> 2016/30/15)
+
+              We've chosen to error on the side of caution, in place of potentially reporting incorrect warnings. */
+            popdate = gvPopulationDates[j];
+            if ((lastdate != popdate - 1) && lastdate != popdate) {
               JulianToChar(sDateBuffer, gvPopulationDates[j]);
               if (pDisplay)
                 fprintf(pDisplay,"Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
               PrintDirection.Printf("Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
-              lastReported = gvPopulationDates[j];
             }
+            lastdate = gvPopulationDates[j];
           }
        }
     }
