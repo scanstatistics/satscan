@@ -145,7 +145,9 @@ enum ParameterType
     RISK_LIMIT_HIGH_CLUSTERS,       /* restrict high clusters by risk level */      
     RISK_THESHOLD_HIGH_CLUSTERS,    /* threshold for high clusters by risk level */
     RISK_LIMIT_LOW_CLUSTERS,        /* restrict low clusters by risk level */
-    RISK_THESHOLD_LOW_CLUSTERS      /* threshold for low clusters by risk level */
+    RISK_THESHOLD_LOW_CLUSTERS,     /* threshold for low clusters by risk level */
+    MIN_CASES_LOWRATE_CLUSTERS,     /* minimum number of cases in cluster when scanning low rates */
+    MIN_CASES_HIGHRATE_CLUSTERS     /* minimum number of cases in cluster when scanning high rates */
 };
 /** analysis and cluster types */
 enum AnalysisType

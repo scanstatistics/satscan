@@ -9,9 +9,12 @@
 #include "newmat.h"
 
 /** class constructor */
-AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
-                             :gDataHub(DataHub), gtMinLowRateCases(0), gtMinHighRateCases(2),
-                              gpRateOfInterest(0), gpRateOfInterestNormal(0), _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0){
+AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub):
+    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0),
+    _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()),
+    _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()),
+    _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
+
     try {
         const CParameters& parameters = DataHub.GetParameters();
         //store data set totals for later calculation
@@ -83,19 +86,6 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                 default :
                     throw prg_error("Unknown purpose for multiple data sets '%d'.","constructor()", parameters.GetMultipleDataSetPurposeType());
             }
-        }
-        /* Define minimum number of cases for a potential cluster to be considered during evaluation. */
-        switch (parameters.GetProbabilityModelType()) {
-            case POISSON              :
-            case BERNOULLI            :
-            case SPACETIMEPERMUTATION :
-            case CATEGORICAL          :
-            case ORDINAL              :
-            case RANK                 :
-            case HOMOGENEOUSPOISSON   :
-            case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
-            case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
-            default : throw prg_error("Unknown data model type '%d'.","constructor()", parameters.GetProbabilityModelType());
         }
     } catch (prg_exception& x) {
         x.addTrace("constructor()","AbstractLikelihoodCalculator");

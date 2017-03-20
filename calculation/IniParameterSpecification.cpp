@@ -616,7 +616,10 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
     _parameter_info[RISK_LIMIT_LOW_CLUSTERS] = ParamInfo(RISK_LIMIT_LOW_CLUSTERS, "RiskLimitLowClusters", 17, _inference_section);
     _parameter_info[RISK_THESHOLD_LOW_CLUSTERS] = ParamInfo(RISK_THESHOLD_LOW_CLUSTERS, "RiskThresholdLowClusters", 18, _inference_section);
 
-    assert(_parameter_info.size() == 140);
+    _parameter_info[MIN_CASES_LOWRATE_CLUSTERS] = ParamInfo(MIN_CASES_LOWRATE_CLUSTERS, "MinimumCasesInLowRateClusters", 19, _inference_section);
+    _parameter_info[MIN_CASES_HIGHRATE_CLUSTERS] = ParamInfo(MIN_CASES_HIGHRATE_CLUSTERS, "MinimumCasesInHighRateClusters", 20, _inference_section);
+
+    assert(_parameter_info.size() == 142);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

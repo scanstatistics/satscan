@@ -225,6 +225,10 @@ public class Parameters implements Cloneable {
     private boolean                         _risk_limit_low_clusters=false;
     private double                          _risk_threshold_low_clusters=1.0;
     
+    private int                             _minimum_low_rate_cases; /* minimum number of cases in cluster when scanning low rates */
+    private int                             _minimum_high_rate_cases; /* minimum number of cases in cluster when scanning high rates */
+    
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -289,6 +293,11 @@ public class Parameters implements Cloneable {
             throw new InternalError("But we are Cloneable!!!");
         }
     }
+
+    public int getMinimumCasesLowRateClusters() { return _minimum_low_rate_cases; }
+    public void setMinimumCasesLowRateClusters(int u) { _minimum_low_rate_cases = u; }
+    public int getMinimumCasesHighRateClusters() { return _minimum_high_rate_cases; }
+    public void setMinimumCasesHighRateClusters(int u) { _minimum_high_rate_cases = u; }
 
     public boolean getRiskLimitHighClusters() {return _risk_limit_high_clusters;}
     public void setRiskLimitHighClusters(boolean b) {_risk_limit_high_clusters = b;}

@@ -619,6 +619,12 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
                 } break;
             default: break;
         }
+
+        if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)
+            settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
+        if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
+            settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+
         WriteSettingsContainer(settings, "Inference", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintInferenceParameters()","ParametersPrint");

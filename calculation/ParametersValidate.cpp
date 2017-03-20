@@ -603,6 +603,43 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
         }
+
+        /* Validate minimum number of cases for low and high rate scans - base on probability model. */
+        switch (gParameters.GetProbabilityModelType()) {
+        case POISSON:
+        case BERNOULLI:
+        case SPACETIMEPERMUTATION:
+        case CATEGORICAL:
+        case ORDINAL:
+        case RANK:
+        case HOMOGENEOUSPOISSON:
+        case EXPONENTIAL:
+            if (gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters\n"
+                                      "with the %s model, cannot be less than 2.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
+            break;
+        case NORMAL:
+            /* Until we expose this feature in the GUI - default minimum here to actual minimum for Normal model. */
+            const_cast<CParameters&>(gParameters).setMinimumCasesLowRateClusters(2);
+
+            if (gParameters.getMinimumCasesLowRateClusters() < 2 && (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for low rate clusters\n"
+                    "with the %s model, cannot be less than 2.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
+            if (gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters\n"
+                    "with the %s model, cannot be less than 2.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
+            break;
+        default: throw prg_error("Unknown data model type '%d'.", "ValidateInferenceParameters()", gParameters.GetProbabilityModelType());
+        }
     } catch (prg_exception& x) {
         x.addTrace("ValidateInferenceParameters()","ParametersValidate");
         throw;

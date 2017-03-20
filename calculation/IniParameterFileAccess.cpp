@@ -441,6 +441,8 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, RISK_THESHOLD_HIGH_CLUSTERS, GetParameterString(RISK_THESHOLD_HIGH_CLUSTERS, s).c_str(), GetParameterComment(RISK_THESHOLD_HIGH_CLUSTERS));
         WriteIniParameter(WriteFile, RISK_LIMIT_LOW_CLUSTERS, GetParameterString(RISK_LIMIT_LOW_CLUSTERS, s).c_str(), GetParameterComment(RISK_LIMIT_LOW_CLUSTERS));
         WriteIniParameter(WriteFile, RISK_THESHOLD_LOW_CLUSTERS, GetParameterString(RISK_THESHOLD_LOW_CLUSTERS, s).c_str(), GetParameterComment(RISK_THESHOLD_LOW_CLUSTERS));
+        WriteIniParameter(WriteFile, MIN_CASES_LOWRATE_CLUSTERS, GetParameterString(MIN_CASES_LOWRATE_CLUSTERS, s).c_str(), GetParameterComment(MIN_CASES_LOWRATE_CLUSTERS));
+        WriteIniParameter(WriteFile, MIN_CASES_HIGHRATE_CLUSTERS, GetParameterString(MIN_CASES_HIGHRATE_CLUSTERS, s).c_str(), GetParameterComment(MIN_CASES_HIGHRATE_CLUSTERS));
     } catch (prg_exception& x) {
         x.addTrace("WriteInferenceSettings()","IniParameterFileAccess");
         throw;

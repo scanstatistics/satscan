@@ -240,6 +240,9 @@ class CParameters {
     bool                                _risk_limit_low_clusters;                /** restrict low rate clusters by risk level */
     double                              _risk_threshold_low_clusters;            /** threshold for low rate clusters */
 
+    unsigned int                        _minimum_low_rate_cases;                 /** minimum number of cases in cluster when scanning low rates */
+    unsigned int                        _minimum_high_rate_cases;                /** minimum number of cases in cluster when scanning high rates */
+
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -256,6 +259,11 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+    unsigned int                        getMinimumCasesLowRateClusters() const { return _minimum_low_rate_cases; }
+    void                                setMinimumCasesLowRateClusters(unsigned int u) { _minimum_low_rate_cases = u; }
+    unsigned int                        getMinimumCasesHighRateClusters() const { return _minimum_high_rate_cases; }
+    void                                setMinimumCasesHighRateClusters(unsigned int u) { _minimum_high_rate_cases = u; }
 
     bool                                getRiskLimitHighClusters() const { return _risk_limit_high_clusters; }
     void                                setRiskLimitHighClusters(bool b) { _risk_limit_high_clusters = b; }

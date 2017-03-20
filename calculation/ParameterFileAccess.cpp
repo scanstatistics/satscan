@@ -224,6 +224,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case RISK_THESHOLD_HIGH_CLUSTERS  : return "risk threshold high clusters (1.0 or greater)";
       case RISK_LIMIT_LOW_CLUSTERS      : return "risk limit low clusters (y/n)";
       case RISK_THESHOLD_LOW_CLUSTERS   : return "risk threshold low clusters (0.000 - 1.000)";
+      case MIN_CASES_LOWRATE_CLUSTERS   : return "minimum cases in low rate clusters (positive integer)";
+      case MIN_CASES_HIGHRATE_CLUSTERS  : return "minimum cases in high clusters (positive integer)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -393,6 +395,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case RISK_THESHOLD_HIGH_CLUSTERS  : return AsString(s, gParameters.getRiskThresholdHighClusters());
       case RISK_LIMIT_LOW_CLUSTERS      : return AsString(s, gParameters.getRiskLimitLowClusters());
       case RISK_THESHOLD_LOW_CLUSTERS   : return AsString(s, gParameters.getRiskThresholdLowClusters());
+      case MIN_CASES_LOWRATE_CLUSTERS: return AsString(s, gParameters.getMinimumCasesLowRateClusters());
+      case MIN_CASES_HIGHRATE_CLUSTERS: return AsString(s, gParameters.getMinimumCasesHighRateClusters());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -795,6 +799,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case RISK_THESHOLD_HIGH_CLUSTERS  : gParameters.setRiskThresholdHighClusters(ReadDouble(sParameter, eParameterType)); break;
       case RISK_LIMIT_LOW_CLUSTERS      : gParameters.setRiskLimitLowClusters(ReadBoolean(sParameter, eParameterType)); break;
       case RISK_THESHOLD_LOW_CLUSTERS   : gParameters.setRiskThresholdLowClusters(ReadDouble(sParameter, eParameterType)); break;
+      case MIN_CASES_LOWRATE_CLUSTERS   : gParameters.setMinimumCasesLowRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case MIN_CASES_HIGHRATE_CLUSTERS  : gParameters.setMinimumCasesHighRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

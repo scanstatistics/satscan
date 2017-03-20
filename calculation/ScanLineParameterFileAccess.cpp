@@ -160,6 +160,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case RISK_THESHOLD_HIGH_CLUSTERS        : return "threshold for high clusters by risk level (line 137)";
     case RISK_LIMIT_LOW_CLUSTERS            : return "restrict low clusters by risk level (line 139)";
     case RISK_THESHOLD_LOW_CLUSTERS         : return "threshold for low clusters by risk level (line 140)";
+    case MIN_CASES_LOWRATE_CLUSTERS         : return "minimum cases in low rate cluster (line 141)";
+    case MIN_CASES_HIGHRATE_CLUSTERS        : return "minimum cases in high rate cluster (line 142)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }
