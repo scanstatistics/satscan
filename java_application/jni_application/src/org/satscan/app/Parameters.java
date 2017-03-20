@@ -225,8 +225,8 @@ public class Parameters implements Cloneable {
     private boolean                         _risk_limit_low_clusters=false;
     private double                          _risk_threshold_low_clusters=1.0;
     
-    private int                             _minimum_low_rate_cases; /* minimum number of cases in cluster when scanning low rates */
-    private int                             _minimum_high_rate_cases; /* minimum number of cases in cluster when scanning high rates */
+    private int                             _minimum_low_rate_cases=0; /* minimum number of cases in cluster when scanning low rates */
+    private int                             _minimum_high_rate_cases=2; /* minimum number of cases in cluster when scanning high rates */
     
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
