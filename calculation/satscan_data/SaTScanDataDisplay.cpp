@@ -132,6 +132,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   switch (gParameters.GetProbabilityModelType()) {
     //label for data is dependent on probability model
     case POISSON     : if (!gParameters.UsePopulationFile()) break;
+                       PrintFormat.PrintSectionLabel(fp, "Population, averaged over time", true, false); break;
     case BERNOULLI   : PrintFormat.PrintSectionLabel(fp, "Total population", true, false); break;
     case EXPONENTIAL : PrintFormat.PrintSectionLabel(fp, "Total individuals", true, false); break;
     default          : break;
@@ -206,7 +207,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       }
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
-      PrintFormat.PrintSectionLabel(fp, "Percent cases in area per category", false, false);
+      PrintFormat.PrintSectionLabel(fp, "Percent cases per category", false, false);
       buffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
          getValueAsString(100.0 * Population.GetNumOrdinalCategoryCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1);
