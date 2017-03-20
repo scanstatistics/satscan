@@ -487,7 +487,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
             throw prg_error("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
 
         // update total data set population now for the Poisson model -- before cluster tracts are nullified
-        if (gParameters.GetProbabilityModelType() == POISSON) {
+        if (gParameters.GetProbabilityModelType() == POISSON && Cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
             for (size_t dIdx=0; dIdx < gDataSets->GetNumDataSets(); ++dIdx) {
                 double clusterSetPopulation = GetProbabilityModel().GetPopulation(dIdx, Cluster, *this);
                 // round the total population now for reporting reasons
