@@ -978,6 +978,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING);
     }
     if (gParameters.getOutputShapeFiles() && !gParameters.GetOutputClusterLevelDBase()) {
+      const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);
       PrintDirection.Printf("Parameter Setting Warning:\n"
                             "The shapefiles option requires that the 'Cluster Information' dBase file also be generated.\nThe option was enabled.\n",
                             BasePrint::P_WARNING);
