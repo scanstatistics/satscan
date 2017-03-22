@@ -63,11 +63,19 @@ const char * CartesianGraph::TEMPLATE = " \
             var entire_region = {--entire-region-hash--}; \n \
             var entire_region_points = [--entire-region-points--]; \n \
             var display_stats = {};\n \
+			function inViewport(el) {\n \
+                var elH = jQuery(el).outerHeight(), H = jQuery(window).height(), r = jQuery(el)[0].getBoundingClientRect(), t = r.top, b = r.bottom;\n \
+                return Math.max(0, t > 0 ? Math.min(elH, H - t) : (b < H ? b : H));\n \
+            }\n \
             function showGraph() { \n \
                var region = jQuery('#id_zoom_cluster_region').is(':checked') ? jQuery.extend({}, cluster_region) : jQuery.extend({}, entire_region); \n \
                var row = jQuery('.row'); \n \
                var options_div = jQuery('.chart-options-section'); \n \
-               var dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50); \n \
+               var dimension;\n \
+               if (jQuery('#id_fit_graph_viewport').is(':checked'))\n \
+                  dimension = Math.max(jQuery(window).height() - jQuery('#id_banner').height(), inViewport('.row')) - 50;\n \
+               else\n \
+                 dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50);\n \
                jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
                chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,\n \
                                         title: jQuery('.title-setter').val() || 'Cluster Graph',\n \
@@ -146,7 +154,7 @@ const char * CartesianGraph::TEMPLATE = " \
         </script> \n \
     </head> \n \
     <body style=\"margin:0;background-color: #fff;\"> \n \
-        <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
+        <table id=\"id_banner\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
         <tbody><tr> \n \
         <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"Östersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
         <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
@@ -173,7 +181,6 @@ const char * CartesianGraph::TEMPLATE = " \
                 </div> \n \
                 <div class=\"options-row\"> \n \
                     <div id=\"id_significance_option\">\n \
-                        <div><label class=\"option-section\">Significance</label></div>\n \
                         <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_significant\" value=\"entire\" checked=checked />Significant clusters</label>\n \
                         <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_all\" value=\"cluster\" />All clusters</label>\n \
                         <p class=\"help-block\">Toggle display between significant and all clusters.</p>\n \
@@ -204,6 +211,8 @@ const char * CartesianGraph::TEMPLATE = " \
                     <p class=\"help-block\">Toggle display of graph x / y axes.</p>\n \
                     <label><input type=\"checkbox\" id=\"id_show_location_points\" checked=checked />Show location points</label>\n \
                     <p class=\"help-block\">Toggle display of location points.</p>\n \
+                    <label><input type=\"checkbox\" id=\"id_fit_graph_viewport\" />Fit graph to viewport</label>\n \
+                    <p class=\"help-block\">Attempts to keep entire graph in view.</p>\n \
                 </div> \n \
                 <div id=\"id_display_count\">\n \
                     <fieldset>\n \
