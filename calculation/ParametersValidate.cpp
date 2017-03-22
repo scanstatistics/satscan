@@ -963,19 +963,35 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING,
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
-    if (gParameters.getOutputKMLFile() &&
-        (gParameters.GetCoordinatesType() != LATLON || gParameters.GetIsPurelyTemporalAnalysis())) {
-            const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
-      PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The Google Earth option is not available for purely temporal analyses or cartesian coordinates.\nThe option was disabled.\n",
-                            BasePrint::P_WARNING);
+    if (gParameters.getOutputKMLFile() && gParameters.GetCoordinatesType() != LATLON) {
+        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+                              "The Google Earth option is not available for Cartesian coordinates.\nThe option was disabled.\n", BasePrint::P_WARNING);
     }
-    if (gParameters.getOutputShapeFiles() &&
-        (gParameters.GetCoordinatesType() != LATLON || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())) {
-            const_cast<CParameters&>(gParameters).setOutputShapeFiles(false);
-      PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The shapefiles option is not available for purely temporal analyses, cartesian coordinates or the location neighbors file.\nThe option was disabled.\n",
-                            BasePrint::P_WARNING);
+    if (gParameters.getOutputKMLFile() && gParameters.GetIsPurelyTemporalAnalysis()) {
+        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+                              "The Google Earth option is not available for purely temporal analyses.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputKMLFile() && gParameters.UseLocationNeighborsFile()) {
+        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+                              "The Google Earth option is not available for non-euclidean neighbors file.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputShapeFiles() && gParameters.GetCoordinatesType() != LATLON) {
+       const_cast<CParameters&>(gParameters).setOutputShapeFiles(false);
+       PrintDirection.Printf("Parameter Setting Warning:\n"
+                             "The shapefiles option is not available for Cartesian coordinates.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputShapeFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
+        const_cast<CParameters&>(gParameters).setOutputShapeFiles(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+                              "The shapefiles option is not available for purely temporal analyses.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputShapeFiles() && gParameters.UseLocationNeighborsFile()) {
+        const_cast<CParameters&>(gParameters).setOutputShapeFiles(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+                              "The shapefiles option is not available for non-euclidean neighbors file.\nThe option was disabled.\n", BasePrint::P_WARNING);
     }
     if (gParameters.getOutputShapeFiles() && !gParameters.GetOutputClusterLevelDBase()) {
       const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);

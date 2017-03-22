@@ -514,6 +514,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       }
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis()); //repeat analysis - iterative scan
+    // Finalize kml writer if it was allocated.
+    if (_cluster_kml.get()) _cluster_kml->finalize();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteSuccessively()","AnalysisRunner");
     throw;
@@ -982,8 +984,8 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       //report additional output file: 'relative risks for each location'
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis() == true); //repeat analysis - iterative scan
-
-    //finish report
+    // Finalize kml writer if it was allocated.
+    if (_cluster_kml.get()) _cluster_kml->finalize();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteCentricEvaluation()","AnalysisRunner");
     throw;
@@ -1631,15 +1633,12 @@ void AnalysisRunner::reportClusters() {
             }
         }
 
-        // create a KML if requested and other settings collectively permit the option
-        bool generateKML = gParameters.getOutputKMLFile() && 
-                           _reportClusters.GetNumClustersRetained() && 
-                           gParameters.GetCoordinatesType() == LATLON &&
-                           !gParameters.GetIsPurelyTemporalAnalysis() && 
-                           !gParameters.UseLocationNeighborsFile() &&
-                           (!gParameters.GetIsIterativeScanning() || (gParameters.GetIsIterativeScanning() && giAnalysisCount == 1));
-        if (generateKML)
-            ClusterKML(*gpDataHub, _reportClusters, gSimVars).generateKML();
+        // Create KML file if requested.
+        if (gParameters.getOutputKMLFile() && _reportClusters.GetNumClustersRetained()) {
+            // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
+            if (giAnalysisCount == 1) _cluster_kml.reset(new ClusterKML(*gpDataHub));
+            _cluster_kml->add(_reportClusters, gSimVars);
+        }
     } catch (prg_exception& x) {
         x.addTrace("reportClusters()","AnalysisRunner");
         throw;

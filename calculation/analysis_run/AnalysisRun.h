@@ -14,6 +14,7 @@
 #include "ClusterLocationsWriter.h"
 #include "LocationRelevance.h"
 #include <boost/optional.hpp>
+#include "ClusterKML.h"
 
 class ClusterRankHelper {
     private:
@@ -83,6 +84,7 @@ class AnalysisRunner {
     ExecutionType                       geExecutingType;
     SimulationVariables                 gSimVars;
     std::auto_ptr<LocationRelevance>    _relevance_tracker;
+    std::auto_ptr<ClusterKML>           _cluster_kml;
 
     typedef std::pair<const MostLikelyClustersContainer*,unsigned int> OptimalGiniByLimit_t;
 
