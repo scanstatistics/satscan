@@ -21,11 +21,11 @@ GridFile=
 CoordinatesType=0
 
 [Analysis]
-;analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal)
+;analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal, 7=Seasonal Temporal)
 AnalysisType=1
 ;model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial)
 ModelType=1
-;scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential), 3=Both Areas)
+;scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential); Higher Trend(Poisson-SVTT), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential); Lower Trend(Poisson-SVTT), 3=Both Areas)
 ScanAreas=1
 ;time aggregation units (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
 TimeAggregationUnits=3
@@ -39,6 +39,8 @@ ResultsFile=NHumberside.txt
 OutputGoogleEarthKML=n
 ;output shapefiles (y/n)
 OutputShapefiles=n
+;output cartesian graph file (y/n)
+OutputCartesianGraph=n
 ;output cluster information in ASCII format? (y/n)
 MostLikelyClusterEachCentroidASCII=n
 ;output cluster information in dBase format? (y/n)
@@ -51,9 +53,9 @@ MostLikelyClusterCaseInfoEachCentroidDBase=n
 CensusAreasReportedClustersASCII=n
 ;output location information in dBase format? (y/n)
 CensusAreasReportedClustersDBase=n
-;output risks estimates in ASCII format? (y/n)
+;output risk estimates in ASCII format? (y/n)
 IncludeRelativeRisksCensusAreasASCII=n
-;output risks estimates in dBase format? (y/n)
+;output risk estimates in dBase format? (y/n)
 IncludeRelativeRisksCensusAreasDBase=n
 ;output simulated log likelihoods ratios in ASCII format? (y/n)
 SaveSimLLRsASCII=n
@@ -120,6 +122,20 @@ IntervalStartRange=2000/1/1,2000/12/31
 ;flexible temporal window end range (YYYY/MM/DD,YYYY/MM/DD)
 IntervalEndRange=2000/1/1,2000/12/31
 
+[Cluster Restrictions]
+;risk limit high clusters (y/n)
+RiskLimitHighClusters=n
+;risk threshold high clusters (1.0 or greater)
+RiskThresholdHighClusters=1
+;risk limit low clusters (y/n)
+RiskLimitLowClusters=n
+;risk threshold low clusters (0.000 - 1.000)
+RiskThresholdLowClusters=1
+;minimum cases in low rate clusters (positive integer)
+MinimumCasesInLowRateClusters=0
+;minimum cases in high clusters (positive integer)
+MinimumCasesInHighRateClusters=2
+
 [Space and Time Adjustments]
 ;time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadraticPercentage)
 TimeTrendAdjustmentType=0
@@ -137,7 +153,7 @@ UseAdjustmentsByRRFile=n
 AdjustmentsByKnownRelativeRisksFilename=
 
 [Inference]
-;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3)
+;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) 
 PValueReportType=0
 ;early termination threshold
 EarlyTerminationThreshold=50
@@ -157,12 +173,12 @@ IterativeScanMaxIterations=10
 IterativeScanMaxPValue=0.05
 
 [Border Analysis]
-;calculate oliveira's F
-Calculateoliveira=n
-;number of bootstrap replications for oliveira calculation (minimum=100, multiple of 100)
+;calculate Oliveira's F
+CalculateOliveira=n
+;number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)
 NumBootstrapReplications=1000
-;p-value cutoff for cluster's in oliveira calculation (0.000-1.000)
-oliveiraPvalueCutoff=0.05
+;p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)
+OliveiraPvalueCutoff=0.05
 
 [Power Evaluation]
 ;perform power evaluation - Poisson only (y/n)
@@ -278,5 +294,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=9.4.0
+Version=9.5.0
 

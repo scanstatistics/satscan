@@ -19,6 +19,7 @@ class ParametersPrint {
     void                PrintSpatialOutputParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
     void                PrintEllipticScanParameters(FILE* fp) const;
+    void                PrintClusterRestrictionsParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
     void                PrintIsotonicScanParameters(FILE* fp) const;

@@ -663,10 +663,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getRiskThresholdLowClusters());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setMinimumCasesLowRateClusters", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumCasesLowRateClusters());
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setMinimumCasesHighRateClusters", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumCasesHighRateClusters());
   jni_error::_detectError(Env);
@@ -1330,10 +1326,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getRiskThresholdLowClusters", "()D");
   Parameters.setRiskThresholdLowClusters(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "getMinimumCasesLowRateClusters", "()I");
-  Parameters.setMinimumCasesLowRateClusters(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getMinimumCasesHighRateClusters", "()I");

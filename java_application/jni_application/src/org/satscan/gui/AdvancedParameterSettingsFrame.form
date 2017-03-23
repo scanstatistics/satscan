@@ -2266,7 +2266,6 @@
                           <Component id="_pValueOptionsGroup" alignment="1" max="32767" attributes="0"/>
                           <Component id="_monteCarloGroup" alignment="0" max="32767" attributes="0"/>
                           <Component id="_iterativeScanGroup" alignment="1" max="32767" attributes="0"/>
-                          <Component id="_limit_clusters_risk_group" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2281,9 +2280,7 @@
                       <Component id="_monteCarloGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_limit_clusters_risk_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="50" max="32767" attributes="0"/>
+                      <EmptySpace pref="150" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2564,90 +2561,6 @@
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_montCarloReplicationsTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText(&quot;999&quot;);&#xa;        enableSetDefaultsButton();&#xa;        updateCriticalValuesTextCaptions();&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-              </SubComponents>
-            </Container>
-            <Container class="javax.swing.JPanel" name="_limit_clusters_risk_group">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Limit Clusters by Risk Level">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
-                  </Border>
-                </Property>
-              </Properties>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_limit_low_clusters" max="32767" attributes="0"/>
-                              <Component id="_limit_high_clusters" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_limit_low_clusters_value" max="32767" attributes="0"/>
-                              <Component id="_limit_high_clusters_value" pref="101" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_limit_high_clusters" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_limit_high_clusters_value" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_limit_low_clusters" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_limit_low_clusters_value" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="_limit_low_clusters">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Restrict low rate clusters to relative risk less than or equal to:"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_limit_low_clusters_value">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="0.25"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_low_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &lt; 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="_limit_high_clusters">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Restrict high rate clusters to relative risk greater than or equal to:"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_high_clusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_limit_high_clusters_value">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="1.875"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_high_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_high_clusters_value.getText()) &lt; 1.0)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -3888,6 +3801,181 @@
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_montCarloReplicationsTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText(&quot;999&quot;);&#xa;        enableSetDefaultsButton();&#xa;        updateCriticalValuesTextCaptions();&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_cluster_restrictions_tab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Cluster Restrictions">
+                <Property name="tabTitle" type="java.lang.String" value="Cluster Restrictions"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="_minimum_clusters_group" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_limit_clusters_risk_group" alignment="1" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_minimum_clusters_group" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_limit_clusters_risk_group" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="261" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_minimum_clusters_group">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Limit Clusters by Minimum Number of Cases">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_min_cases_label" min="-2" pref="267" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_minimum_number_cases_cluster" min="-2" pref="73" max="-2" attributes="1"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_min_cases_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_minimum_number_cases_cluster" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_min_cases_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restrict clusters to have a minimum number of cases:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_minimum_number_cases_cluster">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="2" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_number_cases_cluster.getText().length() == 0 ||&#xa;                Integer.parseInt(_minimum_number_cases_cluster.getText()) &lt; 2) {&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_number_cases_cluster.setText(&quot;2&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_limit_clusters_risk_group">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Limit Clusters by Risk Level">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="_limit_low_clusters" max="32767" attributes="0"/>
+                              <Component id="_limit_high_clusters" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="_limit_low_clusters_value" max="32767" attributes="0"/>
+                              <Component id="_limit_high_clusters_value" pref="101" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace pref="180" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_limit_high_clusters" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_limit_high_clusters_value" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_limit_low_clusters" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_limit_low_clusters_value" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_limit_low_clusters">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restrict low rate clusters to relative risk less than or equal to:"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_limit_low_clusters_value">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0.25"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_low_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &lt; 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_limit_high_clusters">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restrict high rate clusters to relative risk greater than or equal to:"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_high_clusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_limit_high_clusters_value">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1.875"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_high_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_high_clusters_value.getText()) &lt; 1.0)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

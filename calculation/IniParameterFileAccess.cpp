@@ -296,6 +296,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteSpatialNeighborsSettings(ini);
         WriteSpatialWindowSettings(ini);
         WriteTemporalWindowSettings(ini);
+        WriteClusterRestrictionsSettings(ini);
         WriteSpaceAndTimeAdjustmentSettings(ini);
         WriteInferenceSettings(ini);
         WriteBorderAnalysisSettings(ini);
@@ -437,14 +438,24 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s).c_str(), GetParameterComment(ITERATIVE));
         WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));
         WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteInferenceSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+void IniParameterFileAccess::WriteClusterRestrictionsSettings(IniFile& WriteFile) {
+    std::string  s;
+    try {
         WriteIniParameter(WriteFile, RISK_LIMIT_HIGH_CLUSTERS, GetParameterString(RISK_LIMIT_HIGH_CLUSTERS, s).c_str(), GetParameterComment(RISK_LIMIT_HIGH_CLUSTERS));
         WriteIniParameter(WriteFile, RISK_THESHOLD_HIGH_CLUSTERS, GetParameterString(RISK_THESHOLD_HIGH_CLUSTERS, s).c_str(), GetParameterComment(RISK_THESHOLD_HIGH_CLUSTERS));
         WriteIniParameter(WriteFile, RISK_LIMIT_LOW_CLUSTERS, GetParameterString(RISK_LIMIT_LOW_CLUSTERS, s).c_str(), GetParameterComment(RISK_LIMIT_LOW_CLUSTERS));
         WriteIniParameter(WriteFile, RISK_THESHOLD_LOW_CLUSTERS, GetParameterString(RISK_THESHOLD_LOW_CLUSTERS, s).c_str(), GetParameterComment(RISK_THESHOLD_LOW_CLUSTERS));
         WriteIniParameter(WriteFile, MIN_CASES_LOWRATE_CLUSTERS, GetParameterString(MIN_CASES_LOWRATE_CLUSTERS, s).c_str(), GetParameterComment(MIN_CASES_LOWRATE_CLUSTERS));
         WriteIniParameter(WriteFile, MIN_CASES_HIGHRATE_CLUSTERS, GetParameterString(MIN_CASES_HIGHRATE_CLUSTERS, s).c_str(), GetParameterComment(MIN_CASES_HIGHRATE_CLUSTERS));
-    } catch (prg_exception& x) {
-        x.addTrace("WriteInferenceSettings()","IniParameterFileAccess");
+    }
+    catch (prg_exception& x) {
+        x.addTrace("WriteClusterRestrictionsSettings()", "IniParameterFileAccess");
         throw;
     }
 }

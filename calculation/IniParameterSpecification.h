@@ -61,6 +61,7 @@ class IniParameterSpecification {
     SectionInfo                 _spatial_neighbors_section;
     SectionInfo                 _spatial_window_section;
     SectionInfo                 _temporal_window_section;
+    SectionInfo                 _cluster_restrictions_section;
     SectionInfo                 _space_time_adjustments_section;
     SectionInfo                 _inference_section;
     SectionInfo                 _border_analysis_section;
@@ -90,6 +91,7 @@ class IniParameterSpecification {
     static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
+    static const char         * ClusterRestrictions;
     static const char         * Polygons;
     static const char         * SpaceAndTimeAdjustments;
     static const char         * Inference;

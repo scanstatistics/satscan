@@ -2601,6 +2601,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _highRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);
                 getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);
             }
         });
@@ -2610,6 +2611,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _lowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);
                 getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);
             }
         });
@@ -2619,6 +2621,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _highOrLowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
+                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);
                 getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);
             }
         });

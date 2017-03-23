@@ -15,6 +15,7 @@ const char * IniParameterSpecification::SpatialNeighbors          = "Spatial Nei
 const char * IniParameterSpecification::Analysis                  = "Analysis";
 const char * IniParameterSpecification::SpatialWindow             = "Spatial Window";
 const char * IniParameterSpecification::TemporalWindow            = "Temporal Window";
+const char * IniParameterSpecification::ClusterRestrictions       = "Cluster Restrictions";
 const char * IniParameterSpecification::Polygons                  = "Polygons";
 const char * IniParameterSpecification::SpaceAndTimeAdjustments   = "Space and Time Adjustments";
 const char * IniParameterSpecification::Inference                 = "Inference";
@@ -141,6 +142,7 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _spatial_neighbors_section = SectionInfo(SpatialNeighbors, 526);
     _spatial_window_section = SectionInfo(SpatialWindow, 530);
     _temporal_window_section = SectionInfo(TemporalWindow, 540);
+    _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
     _inference_section = SectionInfo(Inference, 560);
@@ -611,13 +613,12 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
     Build_9_4_x_ParameterList();
 
     _parameter_info[OUTPUT_CARTESIAN_GRAPH] = ParamInfo(OUTPUT_CARTESIAN_GRAPH, "OutputCartesianGraph", 14, _output_section);
-    _parameter_info[RISK_LIMIT_HIGH_CLUSTERS] = ParamInfo(RISK_LIMIT_HIGH_CLUSTERS, "RiskLimitHighClusters", 15, _inference_section);
-    _parameter_info[RISK_THESHOLD_HIGH_CLUSTERS] = ParamInfo(RISK_THESHOLD_HIGH_CLUSTERS, "RiskThresholdHighClusters", 16, _inference_section);
-    _parameter_info[RISK_LIMIT_LOW_CLUSTERS] = ParamInfo(RISK_LIMIT_LOW_CLUSTERS, "RiskLimitLowClusters", 17, _inference_section);
-    _parameter_info[RISK_THESHOLD_LOW_CLUSTERS] = ParamInfo(RISK_THESHOLD_LOW_CLUSTERS, "RiskThresholdLowClusters", 18, _inference_section);
-
-    _parameter_info[MIN_CASES_LOWRATE_CLUSTERS] = ParamInfo(MIN_CASES_LOWRATE_CLUSTERS, "MinimumCasesInLowRateClusters", 19, _inference_section);
-    _parameter_info[MIN_CASES_HIGHRATE_CLUSTERS] = ParamInfo(MIN_CASES_HIGHRATE_CLUSTERS, "MinimumCasesInHighRateClusters", 20, _inference_section);
+    _parameter_info[MIN_CASES_LOWRATE_CLUSTERS] = ParamInfo(MIN_CASES_LOWRATE_CLUSTERS, "MinimumCasesInLowRateClusters", 1, _cluster_restrictions_section);
+    _parameter_info[MIN_CASES_HIGHRATE_CLUSTERS] = ParamInfo(MIN_CASES_HIGHRATE_CLUSTERS, "MinimumCasesInHighRateClusters", 2, _cluster_restrictions_section);
+    _parameter_info[RISK_LIMIT_HIGH_CLUSTERS] = ParamInfo(RISK_LIMIT_HIGH_CLUSTERS, "RiskLimitHighClusters", 3, _cluster_restrictions_section);
+    _parameter_info[RISK_THESHOLD_HIGH_CLUSTERS] = ParamInfo(RISK_THESHOLD_HIGH_CLUSTERS, "RiskThresholdHighClusters", 4, _cluster_restrictions_section);
+    _parameter_info[RISK_LIMIT_LOW_CLUSTERS] = ParamInfo(RISK_LIMIT_LOW_CLUSTERS, "RiskLimitLowClusters", 5, _cluster_restrictions_section);
+    _parameter_info[RISK_THESHOLD_LOW_CLUSTERS] = ParamInfo(RISK_THESHOLD_LOW_CLUSTERS, "RiskThresholdLowClusters", 6, _cluster_restrictions_section);
 
     assert(_parameter_info.size() == 142);
 }

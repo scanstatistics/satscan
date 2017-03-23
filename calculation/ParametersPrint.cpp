@@ -133,6 +133,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintSpatialNeighborsParameters(fp);
         PrintSpatialWindowParameters(fp);
         PrintTemporalWindowParameters(fp);
+        PrintClusterRestrictionsParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
         PrintBorderAnalysisParameters(fp);
@@ -551,6 +552,25 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
 }
 
 /** Prints 'Inference' tab parameters to file stream. */
+void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer;
+
+    try {
+        if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
+            settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
+        if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
+            settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+
+        WriteSettingsContainer(settings, "Cluster Restrictions", fp);
+    }
+    catch (prg_exception& x) {
+        x.addTrace("PrintClusterRestrictionsParameters()", "ParametersPrint");
+        throw;
+    }
+}
+
+/** Prints 'Inference' tab parameters to file stream. */
 void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
@@ -619,11 +639,6 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
                 } break;
             default: break;
         }
-
-        if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)
-            settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
-        if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
-            settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
 
         WriteSettingsContainer(settings, "Inference", fp);
     } catch (prg_exception& x) {

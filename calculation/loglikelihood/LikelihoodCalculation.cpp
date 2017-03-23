@@ -10,13 +10,13 @@
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub):
-    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0),
-    _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()),
-    _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()),
-    _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
+    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0), _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
+        _min_low_rate_cases = parameters.GetProbabilityModelType() == NORMAL ? parameters.getMinimumCasesHighRateClusters() : parameters.getMinimumCasesLowRateClusters();
+        _min_high_rate_cases = parameters.getMinimumCasesHighRateClusters();
+
         //store data set totals for later calculation
         for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
             gvDataSetTotals.push_back(std::make_pair(DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(),
