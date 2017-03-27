@@ -223,6 +223,7 @@ const char * CartesianGraph::TEMPLATE = " \
                     </fieldset>\n \
                 </div>\n \
                 </fieldset> \n \
+                <div style=\"font-style:italic; font-size:smaller;\">Generated with SaTScan v--satscan-version--</div>\n \
             </div> \n \
             <div class=\"col-md-9 chart-column\"> \n \
                 <div id='chartContainer' name='chartContainer'></div> \n \
@@ -308,7 +309,7 @@ void CartesianGraph::generateChart() {
                     if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
                         if (!_dataHub.GetIsNullifiedLocation(tTract)) {
                             CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                            worker << printString(buffer2, "[%.2lf, %.2lf],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                            worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                             clusterLocations.push_back(tTract);
                         }
                     } else {
@@ -317,7 +318,7 @@ void CartesianGraph::generateChart() {
                         for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
                             if (!_dataHub.GetIsNullifiedLocation(*itr)) {
                                 CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
-                                worker << printString(buffer2, "[%.2lf, %.2lf],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                                worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                                 clusterLocations.push_back(tTract);
                             }
                         }
@@ -326,7 +327,7 @@ void CartesianGraph::generateChart() {
 
                 std::string points = worker.str();
                 trimString(points, ",");
-                const char * cluster_def_format = "x : %.2lf, y : %.2lf, z : %.2lf, semimajor : %.2lf, angle : %.2lf, shape : %.2lf";
+                const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
                 _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
                 if (cluster.GetEllipseOffset() == 0) {
                     printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), 0.0, 0.0, 0.0);
@@ -365,9 +366,9 @@ void CartesianGraph::generateChart() {
             if (itr == clusterLocations.end() || *itr != t) {
                 double * p = locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->getCoordinates();
                 if (clusterRegion.in(p[0], p[1])) {
-                    worker2 << printString(buffer2, "[%.2lf, %.2lf],", p[0], p[1]).c_str();
+                    worker2 << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
                 }
-                worker << printString(buffer2, "[%.2lf, %.2lf],", p[0], p[1]).c_str();
+                worker << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
                 entireRegion._largestX = std::max(entireRegion._largestX, p[0]);
                 entireRegion._smallestX = std::min(entireRegion._smallestX, p[0]);
                 entireRegion._largestY = std::max(entireRegion._largestY, p[1]);
@@ -389,7 +390,7 @@ void CartesianGraph::generateChart() {
         templateReplace(html, "--parameters--", buffer.c_str());
 
         // replace region hashes in template
-        const char * region_hash = "zmin:0,zmax:1,xsteps:%d,ysteps:%d,bubbleSize:8,xmin:%g,xmax:%g,ymin:%g,ymax:%g";
+        const char * region_hash = "zmin:0,zmax:1,xsteps:%d,ysteps:%d,bubbleSize:8,xmin:%f,xmax:%f,ymin:%f,ymax:%f";
         long xstep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestX - clusterRegion._smallestX + 1.0)));
         long ystep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestY - clusterRegion._smallestY + 1.0)));
         printString(buffer, region_hash, xstep, ystep, clusterRegion._smallestX, clusterRegion._largestX, clusterRegion._smallestY, clusterRegion._largestY);
@@ -404,6 +405,8 @@ void CartesianGraph::generateChart() {
         double cluster_region_area = clusterRegion.area();
         double entire_region_area = entireRegion.area();
         templateReplace(html, "--display-zoom-cluster--", ((cluster_region_area / entire_region_area) < 0.9) ? "block" : "none");
+
+        templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();
