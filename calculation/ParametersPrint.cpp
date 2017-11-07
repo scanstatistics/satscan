@@ -979,10 +979,10 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
 
     try {
         if (gParameters.GetNumRequestedParallelProcesses() == 0)
-            settings.push_back(std::make_pair("Processer Usage","All Available Proccessors"));
+            settings.push_back(std::make_pair("Processor Usage","All Available Processors"));
         else {
-            printString(buffer, "At Most %u Proccessors", gParameters.GetNumRequestedParallelProcesses());
-            settings.push_back(std::make_pair("Processer Usage",buffer));
+            printString(buffer, "At Most %u Processors", gParameters.GetNumRequestedParallelProcesses());
+            settings.push_back(std::make_pair("Processor Usage",buffer));
         }
         settings.push_back(std::make_pair("Suppress Warnings", (gParameters.GetSuppressingWarnings() ? "Yes" : "No")));
         settings.push_back(std::make_pair("Logging Analysis", (gParameters.GetIsLoggingHistory() ? "Yes" : "No")));
