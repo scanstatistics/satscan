@@ -11,4 +11,4 @@ fi
 # Mount nfse.omni.imsweb.com/prj/satscan onto this Mac
 
 echo "mounting satscan home directory"
-mount -t smbfs //OMNI\;$1@nfsk.omni.imsweb.com/satscan /Users/$2/prj/satscan.development/satscan.home
+mount -t smbfs //OMNI\;$1@oriole-04-int/satscan /Users/$2/prj/satscan.development/satscan.home
