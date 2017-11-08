@@ -837,7 +837,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
     m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
-    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType())) - 1;
     //find end range date indexes
     //m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
