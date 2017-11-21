@@ -234,7 +234,9 @@ void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
     outKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
     outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-    outKML << std::endl << "\t<name>SaTScan Clusters Detected</name>" << std::endl << std::endl;
+
+    FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
+    outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;
 }
 
 /** Write the closing block to the KML file. */
