@@ -66,7 +66,7 @@ const char * AppToolkit::_debug_filename = "_debug_";
 /** analysis history filename */
 const char * AppToolkit::_default_run_history_filename = "AnalysisHistory";
 /** Default website. */
-const char * AppToolkit::_webSite = "http://www.satscan.org/";
+const char * AppToolkit::_webSite = "https://www.satscan.org/";
 /** Default Substantive Support Email. */
 const char * AppToolkit::_substantive_support_email = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
