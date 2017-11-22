@@ -597,10 +597,9 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
         }
         printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
         settings.push_back(std::make_pair("Number of Replications",buffer));
-        if (gParameters.GetIsProspectiveAnalysis()) {
-            settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No")));
-            if (gParameters.GetAdjustForEarlierAnalyses())
-                settings.push_back(std::make_pair("Prospective Start Time",gParameters.GetProspectiveStartDate()));
+        if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses()) {
+            settings.push_back(std::make_pair("Adjusted for Earlier Analyses", "Yes"));
+            settings.push_back(std::make_pair("Prospective Start Time",gParameters.GetProspectiveStartDate()));
         }
         if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON && !gParameters.getPerformPowerEvaluation()) {
             settings.push_back(std::make_pair("Adjusting for More Likely Clusters",(gParameters.GetIsIterativeScanning() ? "Yes" : "No")));

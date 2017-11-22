@@ -437,7 +437,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         // specifying the critical values for power evaluations is not implemented in gui
         if (_parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_POWER_VALUES) {
             _parameters.setPowerEvaluationCriticalValueType(Parameters.CriticalValuesType.CV_MONTECARLO.ordinal());
-        }
+        }        
     }
 
     /**
@@ -446,18 +446,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private void setUp(final String sParameterFileName) {
         if (sParameterFileName.length() > 0) {
             _parameters.Read(sParameterFileName);
-            /* Adjusting for earlier analyses and the prospective start date were 
-               removed from GUI in version 9.5. Inform user that this feature is
-               no longer available in GUI, only through command-line. */
+            
             if (_parameters.GetAdjustForEarlierAnalyses() && 
                 (_parameters.GetAnalysisType() == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
-                 _parameters.GetAnalysisType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {                
-                JOptionPane.showInternalMessageDialog(this, 
-                        "The option to adjust for earlier analyses with a prospective analysis\n" +
-                        "is no longer available and has been disabled. This feature can still\n" +
-                        "be used but only through the command line execution.");
-            }
-            _parameters.SetAdjustForEarlierAnalyses(false);
+                 _parameters.GetAnalysisType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {
+                JOptionPane.showMessageDialog(null, "The option to adjust for earlier analyses with a prospective analysis\n" +
+                                                    "is no longer available and has been disabled. This feature can still\n" +
+                                                    "be used but only through the command line execution.");
+          }
+          _parameters.SetAdjustForEarlierAnalyses(false);            
+            
         }
         defaultHiddenParameters();
         setupInterface(_parameters);
