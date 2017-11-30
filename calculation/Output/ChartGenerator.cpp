@@ -44,6 +44,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
     <head> \n \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-6.0.3/code/css/highcharts.css\" type=\"text/css\">\n \
         <style type=\"text/css\"> \n \
         body{font:100% Arial,Helvetica;background:#9ea090} \n \
         .chart-options{display:none} \n \
@@ -63,8 +64,8 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/highcharts.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/modules/exporting.js'></script> \n \
         <script type='text/javascript'> \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
@@ -535,6 +536,7 @@ const char * GiniChartGenerator::BASE_TEMPLATE = " \
     <head> \n \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-6.0.3/code/css/highcharts.css\" type=\"text/css\">\n \
         <style type=\"text/css\"> \n \
         body{font:100% Arial,Helvetica;background:#9ea090} \n \
         .chart-options{display:none} \n \
@@ -553,8 +555,8 @@ const char * GiniChartGenerator::BASE_TEMPLATE = " \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/highcharts.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-4.2.6/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/modules/exporting.js'></script> \n \
         <script type='text/javascript'> \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
