@@ -137,8 +137,8 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
                 dRisk(gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases()/gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure()),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  i = 2; //Start case index at two -- don't want to consider simulations
-         //with one case as this could indicate a false high loglikelihood.
+  //Start case index at specified minimum number of cases.
+  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
 
   //Calculating the LLR for less than half the cases can use a trick where the
   //calculation is performed only if the excess exceeds any previous excess.
@@ -152,7 +152,7 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   }
   //Calculate LLR for remaining half - trick not valid when number of cases is
   //greater than or equal half.
-  for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
+  for (i=std::max(iHalfListSize, static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters())); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
@@ -174,8 +174,9 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
   double        dLogLikelihood, dMaxExcess(0),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
-  i = 2; //Start case index at two -- don't want to consider simulations
-         //with one case as this could indicate a false high loglikelihood.
+
+  //Start case index at specified minimum number of cases.
+  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
 
   //Calculating the LLR for less than half the cases can use a trick where the
   //calculation is performed only if the excess exceeds any previous excess.
@@ -189,7 +190,7 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   }
   //Calculate LLR for remaining half - trick not valid when number of cases is
   //greater than or equal half.
-  for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
+  for (i=std::max(iHalfListSize, static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters())); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
@@ -277,7 +278,10 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure()),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  for (i=0; i <= iListSize; i++) {
+  //Start case index at specified minimum number of cases.
+  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+
+  for (; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
@@ -299,7 +303,10 @@ void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
   double        dLogLikelihood, dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  for (i=0; i <= iListSize; i++) {
+  //Start case index at specified minimum number of cases.
+  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+
+  for (; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
@@ -392,23 +399,26 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
-  double        dLogLikelihood, dMaxExcess(0),
+  double        dLogLikelihood, dMaxExcess(0), dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal()),
                 dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure()),
-                dRisk(gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases()/gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure()),
-  		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+                dRisk(gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases()/gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure());
+
+  //Start case index at specified minimum number of cases.
+  int iH = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+  int iL = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
 
   //Calculating the LLR for less than half the cases can use a trick where the
   //calculation is performed only if the excess exceeds any previous excess. But
   //note that this trick is not valid for low rates, which use same process regardless.
-  for (i=0; i < iHalfListSize; ++i) {
-     if (i > 1 && i - gpMinMeasures[i] * dRisk > dMaxExcess) {
+  for (i=std::min(iL, iH); i < iHalfListSize; ++i) {
+     if (i >= iH && i - gpMinMeasures[i] * dRisk > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i] * dRisk;
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
 
-     if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
+     if (i >= iL && gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
@@ -416,14 +426,15 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
   }
   //Calculate LLR for remaining half - trick not valid when number of cases is
   //greater than or equal half.
-  for (i=iHalfListSize; i <= iListSize; ++i) {
-     if (i > 1 && gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
+  i = std::max(std::min(iL, iH), iHalfListSize);
+  for (; i <= iListSize; ++i) {
+     if (i >= iH && gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
 
-     if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
+     if (i >= iL && gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
@@ -443,20 +454,23 @@ void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
-  double        dLogLikelihood, dMaxExcess(0),
-  		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+  double        dLogLikelihood, dMaxExcess(0), dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+
+  //Start case index at specified minimum number of cases.
+  int iH = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+  int iL = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
 
   //Calculating the LLR for less than half the cases can use a trick where the
   //calculation is performed only if the excess exceeds any previous excess. But
   //note that this trick is not valid for low rates, which use same process regardless.
-  for (i=0; i < iHalfListSize; ++i) {
-     if (i > 1 && i - gpMinMeasures[i] > dMaxExcess) {
+  for (i=std::min(iL, iH); i < iHalfListSize; ++i) {
+     if (i >= iH && i - gpMinMeasures[i] > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i];
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
-     if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
+     if (i >= iL && gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
@@ -464,13 +478,14 @@ void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   }
   //Calculate LLR for remaining half - trick not valid when number of cases is
   //greater than or equal half.
-  for (i=iHalfListSize; i <= iListSize; ++i) {
-     if (i > 1 && gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
+  i = std::max(std::min(iL, iH), iHalfListSize);
+  for (; i <= iListSize; ++i) {
+     if (i >= iH && gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
-     if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
+     if (i >= iL && gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
