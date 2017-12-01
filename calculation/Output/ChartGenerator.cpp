@@ -135,7 +135,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                       <div class=\"options-row\"> \n \
                           <label for=\"title_obs\">Title</label> \n \
                           <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
-                              <p class=\"help-block\">The graph title can be updated simply by editing this text.</p> \n \
+                              <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
                           </div> \n \
                       </div> \n \
                       <div class=\"options-row\"> \n \
@@ -604,7 +604,7 @@ const char * GiniChartGenerator::TEMPLATE_CHARTSECTION = "\
                       <div class=\"options-row\"> \n \
                           <label for=\"title_obs\">Title</label> \n \
                           <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
-                              <p class=\"help-block\">The graph title can be updated simply by editing this text.</p> \n \
+                              <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
                           </div> \n \
                       </div> \n \
                     </div> \n \

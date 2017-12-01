@@ -619,8 +619,9 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
     _parameter_info[RISK_THESHOLD_HIGH_CLUSTERS] = ParamInfo(RISK_THESHOLD_HIGH_CLUSTERS, "RiskThresholdHighClusters", 4, _cluster_restrictions_section);
     _parameter_info[RISK_LIMIT_LOW_CLUSTERS] = ParamInfo(RISK_LIMIT_LOW_CLUSTERS, "RiskLimitLowClusters", 5, _cluster_restrictions_section);
     _parameter_info[RISK_THESHOLD_LOW_CLUSTERS] = ParamInfo(RISK_THESHOLD_LOW_CLUSTERS, "RiskThresholdLowClusters", 6, _cluster_restrictions_section);
+    _parameter_info[LAUNCH_CARTESIAN_MAP] = ParamInfo(LAUNCH_CARTESIAN_MAP, "LaunchCartesianGraph", 18, _spatial_output_section);
 
-    assert(_parameter_info.size() == 142);
+    assert(_parameter_info.size() == 143);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

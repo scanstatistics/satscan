@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 142;
+const int CParameters::giNumParameters                = 143;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -173,6 +173,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
   if (_minimum_low_rate_cases != rhs._minimum_low_rate_cases) return false;
   if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
+  if (_launch_browser_for_cartesian_graph != rhs._launch_browser_for_cartesian_graph) return false;
 
   return true;
 }
@@ -394,6 +395,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _risk_threshold_low_clusters = rhs._risk_threshold_low_clusters;
   _minimum_low_rate_cases = rhs._minimum_low_rate_cases;
   _minimum_high_rate_cases = rhs._minimum_high_rate_cases;
+  _launch_browser_for_cartesian_graph = rhs._launch_browser_for_cartesian_graph;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -900,7 +902,7 @@ void CParameters::SetAsDefaulted() {
   _risk_threshold_low_clusters = 1.0;
   _minimum_low_rate_cases = 0;
   _minimum_high_rate_cases = 2;
-
+  _launch_browser_for_cartesian_graph = true;
 }
 
 /** Sets start range start date. Throws exception. */

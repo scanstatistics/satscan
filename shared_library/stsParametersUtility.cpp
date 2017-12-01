@@ -667,6 +667,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumCasesHighRateClusters());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setLaunchBrowserForCartesianGraph", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchBrowserForCartesianGraph());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1330,6 +1334,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getMinimumCasesHighRateClusters", "()I");
   Parameters.setMinimumCasesHighRateClusters(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getLaunchBrowserForCartesianGraph", "()Z");
+  Parameters.setLaunchBrowserForCartesianGraph(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

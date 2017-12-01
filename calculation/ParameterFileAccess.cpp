@@ -226,6 +226,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case RISK_THESHOLD_LOW_CLUSTERS   : return "risk threshold low clusters (0.000 - 1.000)";
       case MIN_CASES_LOWRATE_CLUSTERS   : return "minimum cases in low rate clusters (positive integer)";
       case MIN_CASES_HIGHRATE_CLUSTERS  : return "minimum cases in high clusters (positive integer)";
+      case LAUNCH_CARTESIAN_MAP         : return "automatically launch Cartesian graph - gui only (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -395,8 +396,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case RISK_THESHOLD_HIGH_CLUSTERS  : return AsString(s, gParameters.getRiskThresholdHighClusters());
       case RISK_LIMIT_LOW_CLUSTERS      : return AsString(s, gParameters.getRiskLimitLowClusters());
       case RISK_THESHOLD_LOW_CLUSTERS   : return AsString(s, gParameters.getRiskThresholdLowClusters());
-      case MIN_CASES_LOWRATE_CLUSTERS: return AsString(s, gParameters.getMinimumCasesLowRateClusters());
-      case MIN_CASES_HIGHRATE_CLUSTERS: return AsString(s, gParameters.getMinimumCasesHighRateClusters());
+      case MIN_CASES_LOWRATE_CLUSTERS   : return AsString(s, gParameters.getMinimumCasesLowRateClusters());
+      case MIN_CASES_HIGHRATE_CLUSTERS  : return AsString(s, gParameters.getMinimumCasesHighRateClusters());
+      case LAUNCH_CARTESIAN_MAP         : return AsString(s, gParameters.getLaunchBrowserForCartesianGraph());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -801,6 +803,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case RISK_THESHOLD_LOW_CLUSTERS   : gParameters.setRiskThresholdLowClusters(ReadDouble(sParameter, eParameterType)); break;
       case MIN_CASES_LOWRATE_CLUSTERS   : gParameters.setMinimumCasesLowRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MIN_CASES_HIGHRATE_CLUSTERS  : gParameters.setMinimumCasesHighRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case LAUNCH_CARTESIAN_MAP         : gParameters.setLaunchBrowserForCartesianGraph(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

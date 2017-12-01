@@ -2165,8 +2165,11 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportCartesianGraph">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Cartesian Graph in HTML"/>
+                    <Property name="text" type="java.lang.String" value="HTML file with Cartesian map"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableCartesianGraphGroup();&#xa;    }&#xa;});"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

@@ -159,6 +159,7 @@ public class Parameters implements Cloneable {
     private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
     private boolean                         _output_shapefiles=false;
     private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
+    private boolean                         _launch_browser_for_cartesian_graph=true; /* whether to launch browser for graph */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -308,6 +309,8 @@ public class Parameters implements Cloneable {
     
     public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
     public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
+    public boolean getLaunchBrowserForCartesianGraph() {return _launch_browser_for_cartesian_graph;}
+    public void setLaunchBrowserForCartesianGraph(boolean b) {_launch_browser_for_cartesian_graph = b;}
 
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}

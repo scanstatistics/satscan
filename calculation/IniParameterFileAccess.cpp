@@ -382,6 +382,7 @@ void IniParameterFileAccess::WriteSpatialOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
         WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
         WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
+        WriteIniParameter(WriteFile, LAUNCH_CARTESIAN_MAP, GetParameterString(LAUNCH_CARTESIAN_MAP, s).c_str(), GetParameterComment(LAUNCH_CARTESIAN_MAP));
         WriteIniParameter(WriteFile, REPORT_HIERARCHICAL_CLUSTERS, GetParameterString(REPORT_HIERARCHICAL_CLUSTERS, s).c_str(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS));
         WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
         WriteIniParameter(WriteFile, REPORT_GINI_CLUSTERS, GetParameterString(REPORT_GINI_CLUSTERS, s).c_str(), GetParameterComment(REPORT_GINI_CLUSTERS));

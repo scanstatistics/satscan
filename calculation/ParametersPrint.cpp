@@ -8,6 +8,7 @@
 #include "ObservableRegion.h"
 #include "ChartGenerator.h"
 #include "LoglikelihoodRatioWriter.h"
+#include "ClusterScatterChart.h"
 
 /** Returns analysis type as string. */
 const char * ParametersPrint::GetAnalysisTypeAsString() const {
@@ -424,6 +425,9 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
             printString(buffer, "%u", gParameters.getLocationsThresholdKML());
             settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
         }
+        if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
+            settings.push_back(std::make_pair("Automatically launch Cartesian coordinates map", (gParameters.getLaunchBrowserForCartesianGraph() ? "Yes" : "No")));
+        }
 
         // skip these settings when performing power evaluations without running an analysis
         if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
@@ -781,7 +785,8 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Shapefile",AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
-            AdditionalOutputFile.setExtension(".html");
+            AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
+            CartesianGraph::getFilename(AdditionalOutputFile);
             settings.push_back(std::make_pair("Cartesian Graph File", AdditionalOutputFile.getFullPath(buffer)));
         }
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelDBase()) {

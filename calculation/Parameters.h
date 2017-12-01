@@ -235,6 +235,7 @@ class CParameters {
     unsigned int                        _minimum_temporal_cluster_size;          /* mimimum temporal cluster size in time aggregation units */
 
     bool                                _output_cartesian_graph;                 /** generate KML output file */
+    bool                                _launch_browser_for_cartesian_graph;     /** launch browser to display graph */
     bool                                _risk_limit_high_clusters;               /** restrict high rate clusters by risk level */
     double                              _risk_threshold_high_clusters;           /** threshold for high rate clusters */
     bool                                _risk_limit_low_clusters;                /** restrict low rate clusters by risk level */
@@ -259,6 +260,9 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+    bool                                getLaunchBrowserForCartesianGraph() const { return _launch_browser_for_cartesian_graph; }
+    void                                setLaunchBrowserForCartesianGraph(bool b) { _launch_browser_for_cartesian_graph = b; }
 
     unsigned int                        getMinimumCasesLowRateClusters() const { return _minimum_low_rate_cases; }
     void                                setMinimumCasesLowRateClusters(unsigned int u) { _minimum_low_rate_cases = u; }

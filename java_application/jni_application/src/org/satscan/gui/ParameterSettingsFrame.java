@@ -216,6 +216,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return _reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected();
     }
 
+    public boolean getReportingCartesianGraph() {
+        boolean test = _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
+        return _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
+    }    
+    
     /**
      * sets precision of times type control for DatePrecisionType
      */
@@ -2997,7 +3002,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _reportShapefile.setText("Shapefile for GIS software");
 
-        _reportCartesianGraph.setText("Cartesian Graph in HTML");
+        _reportCartesianGraph.setText("HTML file with Cartesian map");
+        _reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                _advancedParametersSetting.enableCartesianGraphGroup();
+            }
+        });
 
         javax.swing.GroupLayout _geographicalOutputGroupLayout = new javax.swing.GroupLayout(_geographicalOutputGroup);
         _geographicalOutputGroup.setLayout(_geographicalOutputGroupLayout);

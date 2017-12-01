@@ -223,7 +223,23 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                     }
                 } catch (Throwable t) {
                     JOptionPane.showMessageDialog(null, "Unable to launch KML file viewer. If you do not have a viewer, you can download Google Earth from http://www.google.com/earth/download/.");
-                    //new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+                }
+                
+                try {
+                    if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchBrowserForCartesianGraph()) {
+                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
+                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
+                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".cluster.html");
+                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                            Desktop.getDesktop().open(path);
+                        } else {
+                            String htmlFile = "file://localhost/" + path.getAbsolutePath();
+                            htmlFile = htmlFile.replace('\\', '/');
+                            BareBonesBrowserLaunch.openURL(htmlFile);
+                       }                        
+                    }
+                } catch (Throwable t) {
+                    JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
                 }
             }
         });

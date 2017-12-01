@@ -16,7 +16,7 @@ const char * CartesianGraph::TEMPLATE = " \
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
 <html lang=\"en\"> \n \
     <head> \n \
-        <title>Cluster Graph</title> \n \
+        <title>Cartesian Coordinates Map</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
         <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <style type=\"text/css\"> \n \
@@ -78,7 +78,7 @@ const char * CartesianGraph::TEMPLATE = " \
                  dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50);\n \
                jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
                chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,\n \
-                                        title: jQuery('.title-setter').val() || 'Cluster Graph',\n \
+                                        title: jQuery('.title-setter').val() || 'Cartesian Coordinates Map',\n \
                                         points_mouseoveronly: false, \n \
                                         showGrid:document.getElementById('id_show_grid_lines').checked, \n \
                                         showAxes:document.getElementById('id_show_axes').checked});  \n \
@@ -168,8 +168,8 @@ const char * CartesianGraph::TEMPLATE = " \
                 <div class=\"options-row\"> \n \
                     <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
                     <div>\n \
-                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cluster Graph\"> \n \
-                        <p class=\"help-block\">Title can be updated by editing this text.</p> \n \
+                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cartesian Coordinates Map\"> \n \
+                        <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
                     </div> \n \
                 </div> \n \
                 <div class=\"options-row\"> \n \

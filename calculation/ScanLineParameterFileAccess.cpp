@@ -162,6 +162,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case RISK_THESHOLD_LOW_CLUSTERS         : return "threshold for low clusters by risk level (line 140)";
     case MIN_CASES_LOWRATE_CLUSTERS         : return "minimum cases in low rate cluster (line 141)";
     case MIN_CASES_HIGHRATE_CLUSTERS        : return "minimum cases in high rate cluster (line 142)";
+    case LAUNCH_CARTESIAN_MAP               : return "whether to launch cartesian graph - gui only (line 129)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

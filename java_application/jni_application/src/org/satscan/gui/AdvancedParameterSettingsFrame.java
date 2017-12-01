@@ -223,6 +223,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _launchKMLViewer.setEnabled(_googleEarthGroup.isEnabled());
     }
 
+    /*
+     * enables the cartesian graph advanced options
+     */
+    public void enableCartesianGraphGroup() {
+        _group_cartesian_graph.setEnabled(_settings_window.getReportingCartesianGraph());
+        _launchbrowserforcartesiangraph.setEnabled(_group_cartesian_graph.isEnabled());
+    }
+    
     /**
      * enabled study period date precision based on time interval unit
      */
@@ -614,6 +622,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableAdjustmentsGroup(bPoisson);
         updateMonteCarloTextCaptions();
         enableGoogleEarthGroup();
+        enableCartesianGraphGroup();
     }
 
     public boolean isAdjustingForDayOfWeek() {
@@ -856,6 +865,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_includeClusterLocationsInKML.isSelected() == true);
         bReturn &= (_createCompressedKMZ.isSelected() == false);
         bReturn &= (_launchKMLViewer.isSelected() == true);
+        bReturn &= (_launchbrowserforcartesiangraph.isSelected() == true);
 
         return bReturn;
     }
@@ -1080,6 +1090,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setIncludeLocationsKML(_includeClusterLocationsInKML.isSelected());
         parameters.setCompressClusterKML(_createCompressedKMZ.isSelected());
         parameters.setLaunchKMLViewer(_launchKMLViewer.isSelected());
+        parameters.setLaunchBrowserForCartesianGraph(_launchbrowserforcartesiangraph.isSelected());
 
         // border analysis tab
         parameters.setCalculateOliveirasF(_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected());
@@ -1803,6 +1814,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includeClusterLocationsInKML.setSelected(true);
         _createCompressedKMZ.setSelected(false);
         _launchKMLViewer.setSelected(true);
+        _launchbrowserforcartesiangraph.setSelected(true);
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");
     }
@@ -2263,6 +2275,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includeClusterLocationsInKML.setSelected(parameters.getIncludeLocationsKML());
         _createCompressedKMZ.setSelected(parameters.getCompressClusterKML());
         _launchKMLViewer.setSelected(parameters.getLaunchKMLViewer());
+        _launchbrowserforcartesiangraph.setSelected(parameters.getLaunchBrowserForCartesianGraph());
 
         // Multiple Data Sets tab
         enableAdditionalDataSetsGroup(false);
@@ -2550,6 +2563,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includeClusterLocationsInKML = new javax.swing.JCheckBox();
         _createCompressedKMZ = new javax.swing.JCheckBox();
         _launchKMLViewer = new javax.swing.JCheckBox();
+        _group_cartesian_graph = new javax.swing.JPanel();
+        _launchbrowserforcartesiangraph = new javax.swing.JCheckBox();
         _otherOutputTab = new javax.swing.JPanel();
         _reportCriticalValuesGroup = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
@@ -2987,7 +3002,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(173, Short.MAX_VALUE))
+                .addContainerGap(205, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3103,7 +3118,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(233, Short.MAX_VALUE))
+                .addContainerGap(265, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3278,7 +3293,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addContainerGap(200, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3564,7 +3579,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addContainerGap(166, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4004,7 +4019,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(81, Short.MAX_VALUE))
+                .addContainerGap(113, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4257,7 +4272,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(67, Short.MAX_VALUE))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4531,7 +4546,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addContainerGap(191, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4784,7 +4799,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _launchKMLViewer.setText("Automatically Launch Google Earth");
+        _launchKMLViewer.setText("Automatically launch Google Earth");
         _launchKMLViewer.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
@@ -4815,6 +4830,35 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _group_cartesian_graph.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "HTML file with Cartesian map"));
+        _group_cartesian_graph.setPreferredSize(new java.awt.Dimension(189, 55));
+
+        _launchbrowserforcartesiangraph.setText("Automatically launch Cartesian coordinates map");
+        _launchbrowserforcartesiangraph.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _launchbrowserforcartesiangraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _launchbrowserforcartesiangraphActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout _group_cartesian_graphLayout = new javax.swing.GroupLayout(_group_cartesian_graph);
+        _group_cartesian_graph.setLayout(_group_cartesian_graphLayout);
+        _group_cartesian_graphLayout.setHorizontalGroup(
+            _group_cartesian_graphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_group_cartesian_graphLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_launchbrowserforcartesiangraph, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _group_cartesian_graphLayout.setVerticalGroup(
+            _group_cartesian_graphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(_launchbrowserforcartesiangraph)
+        );
+
         javax.swing.GroupLayout _spatialOutputTabLayout = new javax.swing.GroupLayout(_spatialOutputTab);
         _spatialOutputTab.setLayout(_spatialOutputTabLayout);
         _spatialOutputTabLayout.setHorizontalGroup(
@@ -4824,7 +4868,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_googleEarthGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_googleEarthGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_group_cartesian_graph, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _spatialOutputTabLayout.setVerticalGroup(
@@ -4836,7 +4881,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_group_cartesian_graph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -4978,7 +5025,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5236,7 +5283,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -5371,7 +5418,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(281, Short.MAX_VALUE))
+                .addContainerGap(313, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5444,7 +5491,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(343, Short.MAX_VALUE))
+                .addContainerGap(375, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
@@ -5605,7 +5652,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(277, Short.MAX_VALUE))
+                .addContainerGap(305, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
@@ -5653,6 +5700,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void _printTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__printTitleActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event__printTitleActionPerformed
+
+    private void _launchbrowserforcartesiangraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__launchbrowserforcartesiangraphActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__launchbrowserforcartesiangraphActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
@@ -5714,6 +5765,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _giniOptimizedClusters;
     private javax.swing.JPanel _googleEarthGroup;
     private javax.swing.JPanel _graphOutputGroup;
+    private javax.swing.JPanel _group_cartesian_graph;
     private javax.swing.JLabel _hierarchicalLabel;
     private java.awt.Choice _hierarchicalSecondaryClusters;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
@@ -5727,6 +5779,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JCheckBox _launchKMLViewer;
+    private javax.swing.JCheckBox _launchbrowserforcartesiangraph;
     private javax.swing.JPanel _limit_clusters_risk_group;
     private javax.swing.JCheckBox _limit_high_clusters;
     private javax.swing.JTextField _limit_high_clusters_value;
