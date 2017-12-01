@@ -416,6 +416,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                            _settings_window.getModelControlType() == Parameters.ProbabilityModelType.NORMAL);
         _min_cases_label.setEnabled(_minimum_clusters_group.isEnabled());
         _minimum_number_cases_cluster.setEnabled(_minimum_clusters_group.isEnabled());
+        _min_cases_label2.setEnabled(_minimum_clusters_group.isEnabled());
     }    
     
     public void enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType scanrate) {
@@ -2601,6 +2602,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minimum_clusters_group = new javax.swing.JPanel();
         _min_cases_label = new javax.swing.JLabel();
         _minimum_number_cases_cluster = new javax.swing.JTextField();
+        _min_cases_label2 = new javax.swing.JLabel();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -5447,7 +5449,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
 
-        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Limit Clusters by Risk Level"));
+        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Limit of Clusters by Risk Level"));
 
         _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
         _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
@@ -5519,7 +5521,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_limit_low_clusters_value)
                     .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _limit_clusters_risk_groupLayout.setVerticalGroup(
             _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5535,11 +5537,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Limit Clusters by Minimum Number of Cases"));
+        _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
 
-        _min_cases_label.setText("Restrict clusters to have a minimum number of cases:"); // NOI18N
+        _min_cases_label.setText("Restrict high rate clusters to have at least"); // NOI18N
 
-        _minimum_number_cases_cluster.setText("999"); // NOI18N
+        _minimum_number_cases_cluster.setText("2"); // NOI18N
         _minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);
@@ -5560,6 +5562,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _min_cases_label2.setText("cases.");
+
         javax.swing.GroupLayout _minimum_clusters_groupLayout = new javax.swing.GroupLayout(_minimum_clusters_group);
         _minimum_clusters_group.setLayout(_minimum_clusters_groupLayout);
         _minimum_clusters_groupLayout.setHorizontalGroup(
@@ -5569,14 +5573,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_min_cases_label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_min_cases_label2, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         _minimum_clusters_groupLayout.setVerticalGroup(
             _minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_minimum_clusters_groupLayout.createSequentialGroup()
                 .addGroup(_minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_min_cases_label)
-                    .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_min_cases_label2))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -5748,6 +5755,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _minTemporalOptionsGroup;
     private javax.swing.JLabel _minTemporalTimeUnitsLabel;
     private javax.swing.JLabel _min_cases_label;
+    private javax.swing.JLabel _min_cases_label2;
     private javax.swing.JPanel _minimum_clusters_group;
     private javax.swing.JTextField _minimum_number_cases_cluster;
     private javax.swing.JTextField _montCarloReplicationsTextField;

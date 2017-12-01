@@ -3846,7 +3846,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Limit Clusters by Risk Level">
+                    <TitledBorder title="Limit of Clusters by Risk Level">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -3869,7 +3869,7 @@
                               <Component id="_limit_low_clusters_value" max="32767" attributes="0"/>
                               <Component id="_limit_high_clusters_value" pref="101" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="180" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -3930,7 +3930,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Limit Clusters by Minimum Number of Cases">
+                    <TitledBorder title="Minimum Number of Cases">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -3950,7 +3950,9 @@
                           <Component id="_min_cases_label" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_minimum_number_cases_cluster" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_min_cases_label2" min="-2" pref="291" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -3960,6 +3962,7 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_min_cases_label" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_minimum_number_cases_cluster" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_min_cases_label2" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -3969,16 +3972,21 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_min_cases_label">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Restrict clusters to have a minimum number of cases:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Restrict high rate clusters to have at least" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_minimum_number_cases_cluster">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="999" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="2" noResource="true"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_number_cases_cluster.getText().length() == 0 ||&#xa;                Integer.parseInt(_minimum_number_cases_cluster.getText()) &lt; 2) {&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_number_cases_cluster.setText(&quot;2&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_min_cases_label2">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="cases."/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>
