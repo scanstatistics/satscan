@@ -85,7 +85,8 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
      case PURELYTEMPORALCLUSTER            :
           pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT();
 		  if (seasonalhub) {
-			  dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart())];
+              int end_interval = std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart());
+			  dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - (end_interval == seasonalhub->getExtendedPeriodStart() ? 0 : pPTMeasure[end_interval]);
 			  dPopulation += pPTMeasure[0] - pPTMeasure[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())];
 		  } else {
 			  dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];

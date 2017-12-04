@@ -34,7 +34,8 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, co
                 for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
                     count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT_Cat().GetArray()[t];
                     if (seasonalhub) {
-                        dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart())];
+                        int end_interval = std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart());
+                        dPopulation += pCases[Cluster.m_nFirstInterval] - (end_interval == seasonalhub->getExtendedPeriodStart() ? 0 : pCases[end_interval]);
                         dPopulation += pCases[0] - pCases[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())];
                     } else
                         dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];

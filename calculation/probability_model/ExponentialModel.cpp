@@ -33,9 +33,10 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
             case PURELYTEMPORALCLUSTER            :
                 for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
                     if (seasonalhub) {
-                        dPopulation += ppCases[Cluster.m_nFirstInterval][t] - ppCases[std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart())][t];
+                        int end_interval = std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart());
+                        dPopulation += ppCases[Cluster.m_nFirstInterval][t] - (end_interval == seasonalhub->getExtendedPeriodStart() ? 0 : ppCases[end_interval][t]);
                         dPopulation += ppCases[0][t] - ppCases[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())][t];
-                        dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - ppCensoredCases[std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart())][t];
+                        dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - (end_interval == seasonalhub->getExtendedPeriodStart() ? 0 : ppCensoredCases[end_interval][t]);
                         dPopulation += ppCensoredCases[0][t] - ppCensoredCases[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())][t];
                     } else {
                         dPopulation += ppCases[Cluster.m_nFirstInterval][t] - (Cluster.m_nLastInterval == DataHub.GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][t]);

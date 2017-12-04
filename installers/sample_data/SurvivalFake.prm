@@ -4,7 +4,7 @@ CaseFile=SurvivalFake.cas
 ;control data filename
 ControlFile=
 ;time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
-PrecisionCaseTimes=1
+PrecisionCaseTimes=3
 ;study period start date (YYYY/MM/DD)
 StartDate=2000/1/1
 ;study period end date (YYYY/MM/DD)
@@ -28,7 +28,7 @@ ModelType=4
 ;scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential); Higher Trend(Poisson-SVTT), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential); Lower Trend(Poisson-SVTT), 3=Both Areas)
 ScanAreas=1
 ;time aggregation units (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
-TimeAggregationUnits=1
+TimeAggregationUnits=3
 ;time aggregation length (Positive Integer)
 TimeAggregationLength=1
 
@@ -220,7 +220,7 @@ IncludeClusterLocationsKML=y
 ;threshold for generating separate kml files for cluster locations (positive integer)
 ThresholdLocationsSeparateKML=1000
 ;automatically launch Cartesian graph - gui only (y/n)
-LaunchCartesianGraph=n
+LaunchCartesianGraph=y
 ;report hierarchical clusters (y/n)
 ReportHierarchicalClusters=y
 ;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)

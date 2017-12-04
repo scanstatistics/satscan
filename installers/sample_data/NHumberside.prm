@@ -220,7 +220,7 @@ IncludeClusterLocationsKML=y
 ;threshold for generating separate kml files for cluster locations (positive integer)
 ThresholdLocationsSeparateKML=1000
 ;automatically launch Cartesian graph - gui only (y/n)
-LaunchCartesianGraph=n
+LaunchCartesianGraph=y
 ;report hierarchical clusters (y/n)
 ReportHierarchicalClusters=y
 ;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
