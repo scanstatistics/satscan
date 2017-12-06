@@ -561,10 +561,12 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
-            settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
-        if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
-            settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+            if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
+                settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
+            if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
+                settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+        }
 
         switch (gParameters.GetProbabilityModelType()) {
         case EXPONENTIAL:
@@ -596,8 +598,7 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
         }
 
         WriteSettingsContainer(settings, "Cluster Restrictions", fp);
-    }
-    catch (prg_exception& x) {
+    } catch (prg_exception& x) {
         x.addTrace("PrintClusterRestrictionsParameters()", "ParametersPrint");
         throw;
     }

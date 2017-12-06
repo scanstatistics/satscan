@@ -603,8 +603,9 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
         }
-        /* Validate minimum number of cases for low and high rate scans - base on probability model. */
-        if (gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+        /* Validate minimum number of cases for high rate scans - base on probability model. */
+        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) &&
+            gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
             bValid = false;
             PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters, cannot be less than 2.\n",
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);

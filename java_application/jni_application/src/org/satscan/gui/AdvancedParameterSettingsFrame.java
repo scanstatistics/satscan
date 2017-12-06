@@ -420,8 +420,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public void enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType scanrate) {
-        _minimum_clusters_group.setEnabled((scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW) ||
-                                           _settings_window.getModelControlType() == Parameters.ProbabilityModelType.NORMAL);
+        Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
+        _minimum_clusters_group.setEnabled((scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW) &&
+                                           !(modeltype == Parameters.ProbabilityModelType.ORDINAL || modeltype == Parameters.ProbabilityModelType.CATEGORICAL));
         _min_cases_label.setEnabled(_minimum_clusters_group.isEnabled());
         _minimum_number_cases_cluster.setEnabled(_minimum_clusters_group.isEnabled());
         _min_cases_label2.setEnabled(_minimum_clusters_group.isEnabled());
