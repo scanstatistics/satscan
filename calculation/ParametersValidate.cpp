@@ -568,6 +568,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                                   "number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
 
+        /* Validate any restictions on clusters by relative risk. */
         if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
             switch (gParameters.GetProbabilityModelType()) {
             case EXPONENTIAL:
@@ -583,7 +584,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                                               (gParameters.GetProbabilityModelType() == EXPONENTIAL ? "short survival" : "high rate"));
                     }
                 }
-                if ((gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getRiskLimitLowClusters()) {
+                if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getRiskLimitLowClusters()) {
                     if (gParameters.getRiskThresholdLowClusters() < 0.0 || gParameters.getRiskThresholdLowClusters() > 1.0) {
                         bValid = false;
                         PrintDirection.Printf("%s:\nThe risk threshold for %s clusters more be greater than or equal to 0 and less than or equal to 1.0.\n",
@@ -603,12 +604,26 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
         }
-        /* Validate minimum number of cases for high rate scans - base on probability model. */
-        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) &&
-            gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
-            bValid = false;
-            PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters, cannot be less than 2.\n",
-                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        /* Validate the settings for minimum number of cases in low rate and high rate clusters. This feature isn't available for multiple data sets and neither ordinal / multinomial models. */
+        if (gParameters.GetNumDataSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+            /* Validate the minimum number of cases in low rate clusters */
+            if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getMinimumCasesLowRateClusters() < 2 && (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for low rate clusters, cannot be less than 2 for the normal model.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+
+            }
+            /* Validate minimum number of cases for high rate scans. */
+            if (gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters, cannot be less than 2.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+
+        } else {
+            /* Default the values when these settings are not used -- the AbstractLikelihoodCalculator methods still reference the values in places. */
+            const_cast<CParameters&>(gParameters).setMinimumCasesLowRateClusters(gParameters.GetProbabilityModelType() == NORMAL ? 2: 0);
+            const_cast<CParameters&>(gParameters).setMinimumCasesHighRateClusters(2);
         }
     } catch (prg_exception& x) {
         x.addTrace("ValidateInferenceParameters()","ParametersValidate");

@@ -349,6 +349,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableRemoveButton();
         enableInputFileEdits();
         enableDataSetPurposeControls();
+        enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
+        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());        
     }
 
     /**
@@ -420,22 +422,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public void enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType scanrate) {
+        boolean enableGroup = _additionalDataSetsGroup.isEnabled() == false || _dataSetsListModel.getSize() == 0;
         Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
-        _minimum_clusters_group.setEnabled((scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW) &&
-                                           !(modeltype == Parameters.ProbabilityModelType.ORDINAL || modeltype == Parameters.ProbabilityModelType.CATEGORICAL));
+        enableGroup &= !(modeltype == Parameters.ProbabilityModelType.ORDINAL || modeltype == Parameters.ProbabilityModelType.CATEGORICAL);
+        enableGroup &= (scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW);
+        _minimum_clusters_group.setEnabled(enableGroup);
         _min_cases_label.setEnabled(_minimum_clusters_group.isEnabled());
         _minimum_number_cases_cluster.setEnabled(_minimum_clusters_group.isEnabled());
         _min_cases_label2.setEnabled(_minimum_clusters_group.isEnabled());
     }    
     
     public void enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType scanrate) {
-        boolean bPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
-                bHPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON,
-                bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
-                bSTP = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
-                bExponential = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL;
-        _limit_clusters_risk_group.setEnabled((bPoisson || bHPoisson || bBernoulli || bSTP || bExponential) &&
-                                              (_additionalDataSetsGroup.isEnabled() == true ? _dataSetsListModel.getSize() <= 1 : true));
+        boolean enableGroup = _additionalDataSetsGroup.isEnabled() == false || _dataSetsListModel.getSize() == 0;
+        Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
+        enableGroup &= !(modeltype == Parameters.ProbabilityModelType.ORDINAL ||
+                         modeltype == Parameters.ProbabilityModelType.CATEGORICAL ||
+                         modeltype == Parameters.ProbabilityModelType.NORMAL);
+        _limit_clusters_risk_group.setEnabled(enableGroup);
         switch (_settings_window.getModelControlType()) {
             case EXPONENTIAL: 
                 _limit_high_clusters.setText("Restrict short survival clusters to observed/expected greater than or equal to:");
@@ -836,6 +839,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _alternativeHypothesisFilename.getText().equals("");
         bReturn &= _numberPowerReplications.getText().equals("1000");
 
+        // Cluster Restrictions
+        bReturn &= _minimum_number_cases_cluster.getText().equals("2");
+        bReturn &= (_limit_high_clusters.isSelected() == false);
+        bReturn &= _limit_high_clusters_value.getText().equals("1.0");
+        bReturn &= (_limit_low_clusters.isSelected() == false);
+        bReturn &= _limit_low_clusters_value.getText().equals("1.0");
+        
         return bReturn;
     }
     //	** Checks to determine if only default values are set in the dialog
@@ -1788,6 +1798,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEstimationMonteCarlo.setSelected(true);
         _alternativeHypothesisFilename.setText("");
         _numberPowerReplications.setText("1000");
+        
+        // Cluster Restrictions
+        _minimum_number_cases_cluster.setText("2");
+        _limit_high_clusters.setSelected(false);
+        _limit_high_clusters_value.setText("1.0");
+        _limit_low_clusters.setSelected(false);
+        _limit_low_clusters_value.setText("1.0");        
     }
 
     /**
@@ -2690,6 +2707,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableNewButton();
                 enableRemoveButton();
                 enableSetDefaultsButton();
+                enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
+                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
             }
         });
 
@@ -2744,6 +2763,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableNewButton();
                 enableRemoveButton();
                 enableSetDefaultsButton();
+                enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
+                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
             }
         });
 

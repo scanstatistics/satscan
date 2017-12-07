@@ -76,7 +76,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
     if (parameters.GetProbabilityModelType() == CATEGORICAL) {
         // There is no concept of high versus low clusters with Multinomial model ... all clusters are high.
         return HIGH; 
-    } else if (parameters.GetAreaScanRateType() != HIGHANDLOW) {
+    } else if (parameters.GetAreaScanRateType() != HIGHANDLOW && !parameters.getIsWeightedNormalCovariates()) {
         // If not scanning for both high and low rates simultaneously, just use the parameter settings.
         return parameters.GetAreaScanRateType();
     } else if (parameters.GetNumDataSets() > 1 && parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
@@ -156,6 +156,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
                 if (DataHub.GetParameters().getIsWeightedNormal()) {
                     const AbstractWeightedNormalRandomizer * pRandomizer=0;
                     std::vector<tract_t> tractIndexes;
+                    getLocationIndexes(DataHub, tractIndexes, true);
                     AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
 
                     if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(handler.GetRandomizer(firstSetIdx))) == 0)

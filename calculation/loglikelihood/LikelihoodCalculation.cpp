@@ -14,7 +14,8 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
-        _min_low_rate_cases = parameters.GetProbabilityModelType() == NORMAL ? parameters.getMinimumCasesHighRateClusters() : parameters.getMinimumCasesLowRateClusters();
+
+        _min_low_rate_cases = parameters.getMinimumCasesLowRateClusters();
         _min_high_rate_cases = parameters.getMinimumCasesHighRateClusters();
 
         //store data set totals for later calculation
@@ -35,6 +36,11 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                 }
             } else if (parameters.getIsWeightedNormalCovariates()) {
                 gpRateOfInterestNormal = &AbstractLikelihoodCalculator::AllRatesWeightedNormalCovariates;
+                /* The AllRatesWeightedNormalCovariates method only uses one variable since we can't determine rate until calculating LLR. 
+                   -- see WeightedNormalCovariatesLikelihoodCalculator::CalculateMaximizingValueNormal */
+                if (parameters.GetAreaScanRateType() == LOW) _min_high_rate_cases = _min_low_rate_cases;
+                // This isn't technically correct since we can't determine rate at evaluation time -- so we're limiting by the greater value.
+                if (parameters.GetAreaScanRateType() == HIGHANDLOW) _min_high_rate_cases = std::max(_min_low_rate_cases, _min_high_rate_cases);
             } else if (parameters.getIsWeightedNormal()) {
                 switch (parameters.GetExecuteScanRateType()) {
                 case LOW: gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateWeightedNormal; break;

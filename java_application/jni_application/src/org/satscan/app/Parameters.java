@@ -489,6 +489,12 @@ public class Parameters implements Cloneable {
         if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
         if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
         if (_output_cartesian_graph != rhs._output_cartesian_graph) return false;
+
+        if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
+        if (_risk_limit_high_clusters != rhs._risk_limit_high_clusters) return false;
+        if (_risk_threshold_high_clusters != rhs._risk_threshold_high_clusters) return false;
+        if (_risk_limit_low_clusters != rhs._risk_limit_low_clusters) return false;
+        if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
         
         return true;
     }

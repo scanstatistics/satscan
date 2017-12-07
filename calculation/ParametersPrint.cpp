@@ -561,11 +561,18 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
-            if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
-                settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
-            if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
-                settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+        if (gParameters.GetNumDataSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+            if (gParameters.getIsWeightedNormalCovariates() && gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+                // There is a special situation with the weighted normal model with covariates and scanning for low and high rates together.
+                unsigned int minimum = std::max(gParameters.getMinimumCasesLowRateClusters(), gParameters.getMinimumCasesHighRateClusters());
+                settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", minimum)));
+                settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", minimum)));
+            } else {
+                if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
+                    settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
+                if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
+                    settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+            }
         }
 
         switch (gParameters.GetProbabilityModelType()) {

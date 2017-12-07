@@ -182,14 +182,12 @@ inline bool AbstractLikelihoodCalculator::HighRateNormal(count_t nCases, measure
 inline bool AbstractLikelihoodCalculator::HighOrLowRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux,size_t tSetIndex) const {
    return HighOrLowRate(nCases, nMeasure, tSetIndex);
 }
-/** For multiple sets, the criteria that a high rate must have more than one case
-    is not currently implemented. */
+/** For multiple sets, the criteria that a high rate must have more than one case is not currently implemented. */
 inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux,size_t tSetIndex) const {
    return MultipleSetsHighRate(nCases, nMeasure, tSetIndex);
 }
 
-/** Indicates whether an area has lower than expected cases for a clustering
-    within a single dataset. */
+/** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::LowRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex) const {
    if (nMeasure == 0 || nCases < _min_low_rate_cases) return false;
    return nMeasure/nMeasureAux < gvDataSetTotals[tSetIndex].second/gvDataSetMeasureAuxTotals[tSetIndex];
@@ -203,8 +201,7 @@ inline bool AbstractLikelihoodCalculator::HighRateWeightedNormal(count_t nCases,
    if (nMeasure == 0 || nCases < _min_high_rate_cases) return false;
    return nMeasure/nMeasureAux > gvDataSetTotals[tSetIndex].second/gvDataSetMeasureAuxTotals[tSetIndex];
 }
-/** Indicates whether an area has lower than expected cases for a clustering
-    within a single dataset. */
+/** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux,size_t tSetIndex) const {
    if (nMeasure == 0) return false;
    //check for high rate
@@ -213,17 +210,15 @@ inline bool AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal(count_t nC
    else if (nCases >= _min_low_rate_cases && nMeasure/nMeasureAux < gvDataSetTotals[tSetIndex].second/gvDataSetMeasureAuxTotals[tSetIndex]) return true;
    else return false;
 }
-/** For multiple sets, the criteria that a high rate must have more than one case
-    is not currently implemented. */
+/** For multiple sets, the criteria that a high rate must have more than one case is not currently implemented. */
 inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux,size_t tSetIndex) const {
    if (nMeasure == 0) return false;
    return (nMeasure/nMeasureAux > gvDataSetTotals[tSetIndex].second/gvDataSetMeasureAuxTotals[tSetIndex]);
 }
 
-/** Indicates whether an area has enough cases cases for a clustering within a single dataset for normal model
-    with weights and covariates. */
+/** Indicates whether an area has enough cases for a clustering within a single dataset for normal model with weights and covariates. */
 inline bool AbstractLikelihoodCalculator::AllRatesWeightedNormalCovariates(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex) const {
-   return nCases >= _min_low_rate_cases;
+   return nCases >= _min_high_rate_cases;
 }
 //******************************************************************************
 #endif
