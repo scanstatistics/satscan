@@ -570,6 +570,13 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
 
         /* Validate any restictions on clusters by relative risk. */
         if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
+            // This feature isn't implemented with multiple data sets.
+            if (gParameters.GetNumDataSets() > 1) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented with multiple data sets.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+            // Validate the risk thresholds by probability model.
             switch (gParameters.GetProbabilityModelType()) {
             case EXPONENTIAL:
             case SPACETIMEPERMUTATION:
@@ -597,11 +604,6 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                 bValid = false;
                 PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented for the %s model.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-            }
-            if (gParameters.GetNumDataSets() > 1) {
-                bValid = false;
-                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented with multiple data sets.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
         }
         /* Validate the settings for minimum number of cases in low rate and high rate clusters. This feature isn't available for multiple data sets and neither ordinal / multinomial models. */

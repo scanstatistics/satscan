@@ -15,15 +15,13 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
     try {
         const CParameters& parameters = DataHub.GetParameters();
 
-        _min_low_rate_cases = parameters.getMinimumCasesLowRateClusters();
-        _min_high_rate_cases = parameters.getMinimumCasesHighRateClusters();
-
         //store data set totals for later calculation
         for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
-            gvDataSetTotals.push_back(std::make_pair(DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(),
-                                                     DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
+            gvDataSetTotals.push_back(std::make_pair(DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(), DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
             gvDataSetMeasureAuxTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux());
         }
+        _min_low_rate_cases = parameters.getMinimumCasesLowRateClusters();
+        _min_high_rate_cases = parameters.getMinimumCasesHighRateClusters();
         /* Assign the class function pointer that will determine if cluster passes scan area test. */
         if (parameters.GetProbabilityModelType() == NORMAL) {
             /* The normal model is somewhat specialized. */
@@ -51,11 +49,12 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
             } else 
                 throw prg_error("Unable to assign scan area function pointer.", "constructor()");
         } else {
+            // Determine measure adjustment when restricting evaluated clusters by risk thresholds.
             if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
                 _measure_adjustment = gvDataSetTotals.front().first / gvDataSetTotals.front().second;
             _low_risk_threshold = parameters.getRiskThresholdLowClusters();
             _high_risk_threshold = parameters.getRiskThresholdHighClusters();
-            /* The class function pointer for scan area is dependent on whether we're restricting cluster risk level. */
+            /* The class function pointer for scan area is dependent on whether we're restricting cluster by rate only or both rate and risk level. */
             switch (parameters.GetExecuteScanRateType()) {
                 case LOW:
                     gpRateOfInterest = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRisk : &AbstractLikelihoodCalculator::LowRate;
@@ -76,7 +75,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     break;
                 default: throw prg_error("Unknown area scan type '%d'.", "constructor()", parameters.GetExecuteScanRateType());
             }
-            /* The risk function is dependent on the probability model. The space-time permutation and exponential models do not report relative risk. */
+            /* The risk function is dependent on the probability model since the space-time permutation and exponential models do not report relative risk. */
             if (parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || parameters.GetProbabilityModelType() == EXPONENTIAL)
                 _risk_function = &AbstractLikelihoodCalculator::getObservedDividedExpected;
             else
