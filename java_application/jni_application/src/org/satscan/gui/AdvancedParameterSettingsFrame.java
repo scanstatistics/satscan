@@ -5518,7 +5518,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
 
-        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Limit of Clusters by Risk Level"));
+        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
 
         _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
         _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
