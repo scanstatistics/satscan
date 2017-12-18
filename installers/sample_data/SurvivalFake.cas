@@ -7,6 +7,7 @@ LocationA	1	2004-12-04	56	0
 LocationA	1	2005-08-07	34	1
 LocationA	1	2005-10-04	57	0
 LocationA	1	2004-06-30	64	0
+LocationA	1	2004-12-20	10	0
 LocationA	1	2005-01-02	8	0
 LocationA	1	2005-02-15	16	0
 LocationA	1	2000-05-06	94	0
@@ -27,6 +28,8 @@ LocationB	2	2000-07-31	8	1
 LocationC	1	2001-06-14	132	0
 LocationC	1	2002-06-24	98	0
 LocationC	1	2004-05-17	18	0
+LocationC	1	2004-12-28	13	0
+LocationC	1	2004-12-29	9	0
 LocationC	1	2005-08-08	56	0
 LocationC	1	2005-06-17	67	0
 LocationC	1	2004-02-16	156	0
