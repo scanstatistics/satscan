@@ -120,7 +120,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         boolean bSaved = true;
         List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
         filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
-        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), "Select Parameters File", filters, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);
+        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), "Save Parameters to File", filters, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);
         File file = select.browse_saveas();
         if (file != null) {
             org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
