@@ -231,10 +231,12 @@ FILE * AppToolkit::openDebugFile() {
 void AppToolkit::Setup(const char * sApplicationFullPath) {
     try {
         _application_fullpath = sApplicationFullPath;
-        std::string buffer;
 
         // define base directory for user files
-        _satscan_appdata_folder = boost::filesystem::path(GetUserDirectory(buffer, _application_fullpath).c_str());
+        FileName applicationnamepath(sApplicationFullPath);
+        std::string buffer, app_path;
+
+        _satscan_appdata_folder = boost::filesystem::path(GetUserDirectory(buffer, applicationnamepath.getLocation(app_path)).c_str());
         _satscan_appdata_folder.concat("/").concat(".satscan").concat("/").make_preferred();
         boost::filesystem::create_directory(_satscan_appdata_folder);
         // define filename of ini settings file
