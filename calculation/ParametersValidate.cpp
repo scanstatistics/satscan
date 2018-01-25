@@ -988,7 +988,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     }
     if (gParameters.getOutputCartesianGraph() &&
         (gParameters.GetCoordinatesType() != CARTESIAN || gParameters.GetIsPurelyTemporalAnalysis())) {
-        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        const_cast<CParameters&>(gParameters).setOutputCartesianGraph(false);
         PrintDirection.Printf("Parameter Setting Warning:\n"
             "The cartesian graph option is not available for purely temporal analyses or latitude/longitude coordinates.\nThe option was disabled.\n",
             BasePrint::P_WARNING);
