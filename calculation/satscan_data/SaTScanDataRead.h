@@ -41,7 +41,7 @@ class SaTScanDataReader {
     bool                        ReadGridFileAsCartiesian(DataSource& Source);
     bool                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
     bool                        ReadHomogeneousPoissonData();
-    bool                        ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset);
+    bool                        ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset, bool& warned);
     bool                        ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
     bool                        ReadMaxCirclePopulationFile();
     bool                        ReadMetaLocationsFile();
