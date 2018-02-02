@@ -523,7 +523,7 @@ bool SaTScanDataReader::ReadGridFile() {
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered          */
 bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
-  bool                          bValid=true, bEmpty=true;
+  bool                          bValid=true, bEmpty=true, bwarned = false;
   short                         iScanCount;
   std::vector<double>           vCoordinates;
   CentroidHandler             * pGridPoints;
@@ -552,7 +552,7 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
         }
         GInfo::FocusInterval_t focusInterval;
         //check for focus interval dates - but only for analysis types that can implement this feature
-        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions())) {
+        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions(), bwarned)) {
             bValid = false;
             continue;
         }
@@ -580,7 +580,7 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
 }
 
 /** Reads interval ranges from data source starting at 'iSourceOffset'*/
-bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset) {
+bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset, bool& warned) {
     bool                            bValid=true, hasValuesAtOffset=false;
     DateStringParser                DateParser(gParameters.GetPrecisionOfTimesType());
     DateStringParser::ParserStatus  eStatus;
@@ -588,11 +588,24 @@ bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterv
     Julian                          JulianDate;
 
     try {
+        // First detect if additional columns are present.
         focusInterval.first = Source.GetValueAt(iSourceOffset) != 0;
-        // Focused grid points is only implemented for the retrospective temporal and space-time analyses, ignore any focus dates otherwise.
-        focusInterval.first &= (gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL);
+        if (!focusInterval.first)
+            return bValid;
 
-        if (focusInterval.first && bValid) {
+        // Focused grid points is only implemented for space-time analyses, ignore any focus dates otherwise.
+        focusInterval.first = gParameters.GetAnalysisType() == SPACETIME;
+        if (!focusInterval.first) {
+            if (!warned)
+                gPrint.Printf("Notice: In record %ld of %s, extra columns are present that are assumed to be dates.\n"
+                              "        The focused grid point intervals are only implemented restrospective space-time analyses.\n"
+                              "        The extra columns will be ignored for this analyse.\n",
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            warned = true;
+            return bValid;
+        }
+
+        if (focusInterval.first) {
           //if there is one more value, then we expect 4 more: <startrange start>  <startrange end>  <endrange start>  <endrange end>
           for (int i=0; i < 4 /*expected number of dates*/; ++i) {
               if (!Source.GetValueAt(iSourceOffset)) {
@@ -660,9 +673,9 @@ bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterv
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered           */
 bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
-  bool    	                bValid=true, bEmpty=true;
-  std::vector<double>           vCoordinates;
-  CentroidHandler             * pGridPoints;
+  bool    	                bValid=true, bEmpty=true, bwarned=false;
+  std::vector<double>       vCoordinates;
+  CentroidHandler         * pGridPoints;
 
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
@@ -678,7 +691,7 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
         }
         GInfo::FocusInterval_t focusInterval;
         //check for focus interval dates - but only for analysis types that can implement this feature
-        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions() - 1)) {
+        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions() - 1, bwarned)) {
             bValid = false;
             continue;
         }

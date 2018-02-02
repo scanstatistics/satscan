@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(test_restricting_low_rate_ode) {
 
     // Perform baseline analysis -- no restricting of clusters by risk level.
     _parameters.SetProbabilityModelType(SPACETIMEPERMUTATION);
-    _parameters.SetAnalysisType(SPACETIME);
+    _parameters.SetAnalysisType(PROSPECTIVESPACETIME);
     _parameters.SetAreaRateType(LOW);
     _parameters.setPrintAsciiHeaders(true);
     _parameters.SetOutputClusterLevelAscii(true);
@@ -320,6 +320,12 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
     getFileStream(stream, printString(buffer, "test2%s%s", ClusterInformationWriter::CLUSTER_FILE_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT), results_user_directory);
     double high2_rr = std::numeric_limits<double>::max(), low2_rr = std::numeric_limits<double>::max();
     getCSVRow(stream, headers);
+    itrRR = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::RELATIVE_RISK_FIELD));
+    if (itrRR == headers.end()) BOOST_FAIL("relative risk column not found");
+    itrOBS = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::OBSERVED_FIELD));
+    if (itrOBS == headers.end()) BOOST_FAIL("observed column not found");
+    itrEXP = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::EXPECTED_FIELD));
+    if (itrEXP == headers.end()) BOOST_FAIL("expected column not found");
     getCSVRow(stream, data);
     while (data.size() && (high2_rr == std::numeric_limits<double>::max() || low2_rr == std::numeric_limits<double>::max())) {
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrOBS)).c_str(), observed));
@@ -347,6 +353,12 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
     getFileStream(stream, printString(buffer, "test3%s%s", ClusterInformationWriter::CLUSTER_FILE_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT), results_user_directory);
     double high3_rr = std::numeric_limits<double>::max(), low3_rr = std::numeric_limits<double>::max();
     getCSVRow(stream, headers);
+    itrRR = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::RELATIVE_RISK_FIELD));
+    if (itrRR == headers.end()) BOOST_FAIL("relative risk column not found");
+    itrOBS = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::OBSERVED_FIELD));
+    if (itrOBS == headers.end()) BOOST_FAIL("observed column not found");
+    itrEXP = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::EXPECTED_FIELD));
+    if (itrEXP == headers.end()) BOOST_FAIL("expected column not found");
     getCSVRow(stream, data);
     while (data.size() && (high3_rr == std::numeric_limits<double>::max() || low3_rr == std::numeric_limits<double>::max())) {
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrOBS)).c_str(), observed));

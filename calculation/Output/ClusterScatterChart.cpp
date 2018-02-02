@@ -92,7 +92,7 @@ const char * CartesianGraph::TEMPLATE = " \
                     if (jQuery('#id_hierarchical').is(':checked') && jQuery('#id_gini').is(':checked')) add &= (c.hierarchical == true && c.gini == true);\n \
                     else if (jQuery('#id_hierarchical').is(':checked')) add &= (c.hierarchical == true);\n \
                     else if (jQuery('#id_gini').is(':checked')) add &= (c.gini == true);\n \
-                    else add = false;\n \
+                    else add &= true;\n \
                     if (jQuery('#id_view_significant').is(':checked')) add &= (c.significant == true);\n \
                     if (add && jQuery('#id_cluster_circles').is(':checked')) {\n \
                         if (c.ellipse)\n \

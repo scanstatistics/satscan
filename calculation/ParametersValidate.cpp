@@ -610,10 +610,8 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
         if (gParameters.GetNumDataSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
             /* Validate the minimum number of cases in low rate clusters */
             if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getMinimumCasesLowRateClusters() < 2 && (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
-                bValid = false;
-                PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for low rate clusters, cannot be less than 2 for the normal model.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-
+                /* Since this settings is no present in GUI, just default to minimum value for normal model. */
+                const_cast<CParameters&>(gParameters).setMinimumCasesLowRateClusters(2);
             }
             /* Validate minimum number of cases for high rate scans. */
             if (gParameters.getMinimumCasesHighRateClusters() < 2 && (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
@@ -988,7 +986,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     }
     if (gParameters.getOutputCartesianGraph() &&
         (gParameters.GetCoordinatesType() != CARTESIAN || gParameters.GetIsPurelyTemporalAnalysis())) {
-        const_cast<CParameters&>(gParameters).setOutputKMLFile(false);
+        const_cast<CParameters&>(gParameters).setOutputCartesianGraph(false);
         PrintDirection.Printf("Parameter Setting Warning:\n"
             "The cartesian graph option is not available for purely temporal analyses or latitude/longitude coordinates.\nThe option was disabled.\n",
             BasePrint::P_WARNING);
