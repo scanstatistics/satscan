@@ -1528,7 +1528,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane = new javax.swing.JTabbedPane();
         _inputTab = new javax.swing.JPanel();
         _caseInputPanel = new javax.swing.JPanel();
-        _caseFileLabel = new HelpLinkedLabel("Case Files:", AppConstants.CASEFILE_HELPID);
+        _caseFileLabel = new HelpLinkedLabel("Case File:", AppConstants.CASEFILE_HELPID);
         _caseFileTextField = new javax.swing.JTextField();
         _caseFileBrowseButton = new javax.swing.JButton();
         _timePrecisionGroup = new javax.swing.JPanel();
@@ -1560,7 +1560,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _endDateLabel1 = new javax.swing.JLabel();
         _studyPeriodEndDateGenericTextField = new javax.swing.JTextField();
         _endDateYearLabel1 = new javax.swing.JLabel();
-        _controlFileLabel = new HelpLinkedLabel("Control Files:",AppConstants.CONTROLFILE_HELPID);
+        _controlFileLabel = new HelpLinkedLabel("Control File:",AppConstants.CONTROLFILE_HELPID);
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileBrowseButton = new javax.swing.JButton();
         _bernoulliModelHintLabel = new javax.swing.JLabel();
@@ -1704,7 +1704,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _timePrecisionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Precision"));
-        _timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, "Time Precision"));
+        _timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, AppConstants.TIMEPRECISION_HELPID));
 
         _timePrecisionNone.setText("None"); // NOI18N
         _timePrecisionNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1794,7 +1794,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _studyPeriodGroup.setLayout(new java.awt.CardLayout());
 
         _studyPeriodComplete.setBorder(javax.swing.BorderFactory.createTitledBorder("Study Period"));
-        _studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, "Study Period"));
+        _studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, AppConstants.STUDYPERIOD_HELPID));
 
         _startDateLabel.setText("Start Date:"); // NOI18N
 
@@ -1897,7 +1897,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _studyPeriodGroup.add(_studyPeriodComplete, "study_complete");
 
         _studyPeriodGeneric.setBorder(javax.swing.BorderFactory.createTitledBorder("Study Period"));
-        _studyPeriodGeneric.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodGeneric, "study_period_htm"));
+        _studyPeriodGeneric.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodGeneric, AppConstants.STUDYPERIOD_HELPID));
 
         _startDateLabel1.setText("Start Time:"); // NOI18N
 
@@ -2128,7 +2128,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _coordinateTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Coordinates"));
-        _coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, "Coordinates"));
+        _coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, AppConstants.COORDINATES_HELPID));
 
         _cartesianRadioButton.setSelected(true);
         _cartesianRadioButton.setText("Cartesian"); // NOI18N
@@ -2286,7 +2286,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane.addTab("Input", _inputTab);
 
         _analysisTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Type of Analysis"));
-        this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, "Type of Analysis"));
+        this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, AppConstants.TYPEANALYSIS_HELPID));
 
         jLabel1.setText("Retrospective Analyses:"); // NOI18N
 
@@ -2440,7 +2440,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Probability Model"));
-        _probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, "Probability Model"));
+        _probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, AppConstants.PROBABILITYMODEL_HELPID));
 
         _probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);
         _poissonModelRadioButton.setSelected(true);
@@ -2596,7 +2596,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Scan For Areas With:"));
-        _scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, "Scan for High or Low Rates"));
+        _scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, AppConstants.SCANAREA_HELPID));
 
         _highRatesRadioButton.setSelected(true);
         _highRatesRadioButton.setText("High Rates"); // NOI18N
@@ -2653,7 +2653,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _timeAggregationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Aggregation"));
-        this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, "Time Aggregation"));
+        this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, AppConstants.TIMEAGGREGATION_HELPID));
 
         _timeAggregationUnitsLabel.setText("Units:"); // NOI18N
 
@@ -2803,7 +2803,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _tabbedPane.addTab("Analysis", _analysisTab);
 
         _additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Output Format"));
-        _additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, "Column Output Format"));
+        _additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, AppConstants.COLUMNOUTPUT_HELPID));
 
         _asciiLabel.setText("ASCII"); // NOI18N
 
@@ -2939,7 +2939,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
-        _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "Text Output Format"));
+        _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, AppConstants.TEXTOUTPUT_HELPID));
 
         _resultsFileLabel.setText("Main Results File:"); // NOI18N
 
@@ -2990,7 +2990,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output Format"));
-        _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, "Geographical Output Format"));
+        _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, AppConstants.GEOGRAPHICALOUTPUT_HELPID));
 
         _reportGoogleEarthKML.setText("KML file for Google Earth");
         _reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {

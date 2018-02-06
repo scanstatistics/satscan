@@ -821,8 +821,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _executeSessionMenuItem = new javax.swing.JMenuItem();
         _executeOptionsMenuItem = new javax.swing.JMenuItem();
         _helpMenu = new javax.swing.JMenu();
-        _helpContentMenuItem = new javax.swing.JMenuItem();
         _userGuideMenuItem = new javax.swing.JMenuItem();
+        _helpContentMenuItem = new javax.swing.JMenuItem();
         _helpMenuSeparator1 = new javax.swing.JSeparator();
         _chechVersionMenuItem = new javax.swing.JMenuItem();
         _helpMenuSeparator2 = new javax.swing.JSeparator();
@@ -893,9 +893,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _ToolBar.add(softwareUpdateAvailable);
         _ToolBar.add(jSeparator5);
 
-        helpSystemToolButton.setAction(new HelpSystemAction());
+        helpSystemToolButton.setAction(new UserGuideAction());
         helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Help.gif"))); // NOI18N
-        helpSystemToolButton.setToolTipText("Help"); // NOI18N
+        helpSystemToolButton.setText("");
+        helpSystemToolButton.setToolTipText("User Guide"); // NOI18N
         helpSystemToolButton.setHideActionText(true);
         _ToolBar.add(helpSystemToolButton);
 
@@ -971,16 +972,16 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _helpMenu.setMnemonic(KeyEvent.VK_H);
         _helpMenu.setText("Help"); // NOI18N
 
-        _helpContentMenuItem.setAction(new HelpSystemAction());
-        _helpContentMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
-        _helpContentMenuItem.setText("Help Contents"); // NOI18N
-        _helpContentMenuItem.setIcon(null);
-        _helpMenu.add(_helpContentMenuItem);
-
         _userGuideMenuItem.setAction(new UserGuideAction());
+        _userGuideMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
         _userGuideMenuItem.setText("User Guide"); // NOI18N
         _userGuideMenuItem.setIcon(null);
         _helpMenu.add(_userGuideMenuItem);
+
+        _helpContentMenuItem.setAction(new HelpSystemAction());
+        _helpContentMenuItem.setText("Help Contents"); // NOI18N
+        _helpContentMenuItem.setIcon(null);
+        _helpMenu.add(_helpContentMenuItem);
         _helpMenu.add(_helpMenuSeparator1);
 
         _chechVersionMenuItem.setAction(new CheckNewVersionAction());

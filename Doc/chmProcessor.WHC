@@ -7,12 +7,12 @@
   <DirectorioDestino>..\..\..\..\Users\hostovic\Desktop\SaTScan User Guide_final.july.updates-project</DirectorioDestino>
   <HtmlCabecera />
   <HtmlPie />
-  <TituloAyuda>SaTScan_Help</TituloAyuda>
+  <TituloAyuda>SaTScan User's Guide</TituloAyuda>
   <NivelCorte>0</NivelCorte>
   <GenerarWeb>false</GenerarWeb>
   <ArchivosAdicionales />
   <AbrirProyecto>false</AbrirProyecto>
-  <DirectorioWeb>.\SaTScan-web</DirectorioWeb>
+  <DirectorioWeb>..\..\..\..\Downloads\SaTScan-web</DirectorioWeb>
   <NivelArbolContenidos>0</NivelArbolContenidos>
   <NivelTemasIndice>0</NivelTemasIndice>
   <ArchivoAyuda>.\SaTScan.chm</ArchivoAyuda>
@@ -21,13 +21,13 @@
   <PdfPath>..\installers\documents\SaTScan_Users_Guide.pdf</PdfPath>
   <WebKeywords />
   <WebDescription />
-  <WebHeaderFile />
+  <WebHeaderFile>..\..\satscan_website\htdocs\header.shtml</WebHeaderFile>
   <WebFooterFile />
   <GenerateSitemap>true</GenerateSitemap>
   <WebBase>http://</WebBase>
   <ChangeFrequency>monthly</ChangeFrequency>
   <WebLanguage>English</WebLanguage>
-  <ConfigurationVersion>1.6</ConfigurationVersion>
+  <ConfigurationVersion>1.7</ConfigurationVersion>
   <FullTextSearch>false</FullTextSearch>
   <PdfGeneration>OfficeAddin</PdfGeneration>
   <GenerateXps>false</GenerateXps>
@@ -36,4 +36,6 @@
   <JavaHelpPath>..\java_application\jni_application\libs\SaTScan_Help.jar</JavaHelpPath>
   <HeadTagFile />
   <ChmLocaleID>1033</ChmLocaleID>
+  <WebTemplateName>jQuery</WebTemplateName>
+  <CustomTemplateDirectory />
 </Configuracion>
