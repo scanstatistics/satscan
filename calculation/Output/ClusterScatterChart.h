@@ -59,22 +59,23 @@ class CartesianGraph {
 
 protected:
     const CSaTScanData                & _dataHub;
-    const MostLikelyClustersContainer & _clusters;
-    const SimulationVariables         & _simVars;
+    RegionSettings                      _clusterRegion;
+    RegionSettings                      _entireRegion;
+    std::stringstream                   _cluster_definitions;
+    std::vector<tract_t>                _clusterLocations;
+    unsigned int                        _clusters_written;
 
     static std::stringstream          & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
     std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
 
 public:
-    CartesianGraph(const CSaTScanData& dataHub, const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars)
-        :_dataHub(dataHub), _clusters(clusters), _simVars(simVars) {}
+    CartesianGraph(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0) {}
     ~CartesianGraph() {}
 
-    void generateChart();
+    void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars);
+    void finalize();
+
     static FileName& getFilename(FileName& filename);
-
-    //static std::string                & changeColor(std::string& s, long i, RandomNumberGenerator & rng);
-
 };
 //******************************************************************************
 #endif

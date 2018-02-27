@@ -15,6 +15,7 @@
 #include "LocationRelevance.h"
 #include <boost/optional.hpp>
 #include "ClusterKML.h"
+#include "ClusterScatterChart.h"
 
 class ClusterRankHelper {
     private:
@@ -85,6 +86,7 @@ class AnalysisRunner {
     SimulationVariables                 gSimVars;
     std::auto_ptr<LocationRelevance>    _relevance_tracker;
     std::auto_ptr<ClusterKML>           _cluster_kml;
+    std::auto_ptr<CartesianGraph>       _cluster_graph;
 
     typedef std::pair<const MostLikelyClustersContainer*,unsigned int> OptimalGiniByLimit_t;
 

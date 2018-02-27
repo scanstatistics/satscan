@@ -43,7 +43,7 @@
 #include "PoissonRandomizer.h"
 #include "OliveiraJobSource.h"
 #include "OliveiraFunctor.h"
-#include "ClusterScatterChart.h"
+//#include "ClusterScatterChart.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
@@ -514,6 +514,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       }
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis()); //repeat analysis - iterative scan
+    // Finalize cluster graph writer if it was allocated.
+    if (_cluster_graph.get()) _cluster_graph->finalize();
     // Finalize kml writer if it was allocated.
     if (_cluster_kml.get()) _cluster_kml->finalize();
   } catch (prg_exception& x) {
@@ -984,6 +986,8 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       //report additional output file: 'relative risks for each location'
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis() == true); //repeat analysis - iterative scan
+    // Finalize cluster graph writer if it was allocated.
+    if (_cluster_graph.get()) _cluster_graph->finalize();
     // Finalize kml writer if it was allocated.
     if (_cluster_kml.get()) _cluster_kml->finalize();
   } catch (prg_exception& x) {
@@ -1627,10 +1631,20 @@ void AnalysisRunner::reportClusters() {
                 generator.generateChart();
             }
 
-            if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
-                gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
-                CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
-            }
+            //if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
+            //    gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
+            //    CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
+            //}
+        }
+
+        // Create Cartesian graph, if requested.
+        if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
+            gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
+
+            // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
+            if (giAnalysisCount == 1) _cluster_graph.reset(new CartesianGraph(*gpDataHub));
+            _cluster_graph->add(_reportClusters, gSimVars);
+            //CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
         }
 
         // Create KML file if requested.

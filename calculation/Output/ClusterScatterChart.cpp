@@ -265,15 +265,85 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
     return legend;
 }
 
+void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
+    double gdMinRatioToReport = 0.001;
+    std::vector<double> vCoordinates;
+    std::string buffer, buffer2, legend, clusterColor, pointsColor;
+    std::stringstream  worker;
+
+    //if  no replications requested, attempt to display up to top 10 clusters
+    tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
+    //first iterate through all location coordinates to determine largest X and Y
+    for (int i = 0; i < clusters.GetNumClustersRetained(); ++i) {
+        //get reference to i'th top cluster
+        const CCluster& cluster = clusters.GetCluster(i);
+        if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
+            break;
+        //write cluster details to 'cluster information' file
+        if (cluster.m_nRatio >= gdMinRatioToReport) {
+            clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
+            pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
+            getClusterLegend(cluster, _clusters_written, legend);
+            worker.str("");
+            for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
+                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+                if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
+                    if (!_dataHub.GetIsNullifiedLocation(tTract)) {
+                        CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
+                        worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                        _clusterLocations.push_back(tTract);
+                    }
+                }
+                else {
+                    std::vector<tract_t> indexes;
+                    _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
+                    for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
+                        if (!_dataHub.GetIsNullifiedLocation(*itr)) {
+                            CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
+                            worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                            _clusterLocations.push_back(tTract);
+                        }
+                    }
+                }
+            }
+
+            std::string points = worker.str();
+            trimString(points, ",");
+            const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
+            _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
+            if (cluster.GetEllipseOffset() == 0) {
+                printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), 0.0, 0.0, 0.0);
+                _clusterRegion._largestX = std::max(_clusterRegion._largestX, vCoordinates.at(0) + cluster.GetCartesianRadius() + 0.25);
+                _clusterRegion._smallestX = std::min(_clusterRegion._smallestX, vCoordinates.at(0) - cluster.GetCartesianRadius() - 0.25/* left-margin buffer*/);
+                _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + cluster.GetCartesianRadius() + 0.25);
+                _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - cluster.GetCartesianRadius() - 0.25/* bottom-margin buffer*/);
+            }
+            else {
+                double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
+                double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
+                degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
+                printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), semi_major, degrees, _dataHub.GetEllipseShape(cluster.GetEllipseOffset()));
+                _clusterRegion._largestX = std::max(_clusterRegion._largestX, vCoordinates.at(0) + semi_major + 0.25/* left-margin buffer*/);
+                _clusterRegion._smallestX = std::min(_clusterRegion._smallestX, vCoordinates.at(0) - semi_major - 0.25/* left-margin buffer*/);
+                _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
+                _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
+            }
+            _cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
+                << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
+                << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
+                << ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
+                << ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str() << "', points : [" << points << "] },\n";
+        }
+        ++_clusters_written;
+    }
+
+}
+
 /** Render scatter chart to html page. */
-void CartesianGraph::generateChart() {
-    double                   gdMinRatioToReport = 0.001;
-    RegionSettings           clusterRegion, entireRegion;
-    std::string              buffer, buffer2, legend, clusterColor, pointsColor;
-    std::vector<double>      vCoordinates;
-    std::stringstream        html, cluster_html, cluster_sections, worker, worker2, cluster_definitions;
+void CartesianGraph::finalize() {
+    std::string buffer, buffer2;
+    std::stringstream html, worker, worker2;
     FileName fileName;
-    std::vector<tract_t>     clusterLocations;
 
     try {
         fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
@@ -290,95 +360,32 @@ void CartesianGraph::generateChart() {
         // site resource link path
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
-        //if  no replications requested, attempt to display up to top 10 clusters
-        tract_t tNumClustersToDisplay(_simVars.get_sim_count() == 0 ? std::min(10, _clusters.GetNumClustersRetained()) : _clusters.GetNumClustersRetained());
-        //first iterate through all location coordinates to determine largest X and Y
-        for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
-            //get reference to i'th top cluster
-            const CCluster& cluster = _clusters.GetCluster(i);
-            if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (_simVars.get_sim_count() == 0 || cluster.GetRank() <= _simVars.get_sim_count()))))
-                break;
-            //write cluster details to 'cluster information' file
-            if (cluster.m_nRatio >= gdMinRatioToReport) {
-                clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
-                pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
-                getClusterLegend(cluster, i, legend);
-                worker.str("");
-                for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                    tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                    if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
-                        if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                            CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                            worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
-                            clusterLocations.push_back(tTract);
-                        }
-                    } else {
-                        std::vector<tract_t> indexes;
-                        _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
-                        for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
-                            if (!_dataHub.GetIsNullifiedLocation(*itr)) {
-                                CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
-                                worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
-                                clusterLocations.push_back(tTract);
-                            }
-                        }
-                    }
-                }
-
-                std::string points = worker.str();
-                trimString(points, ",");
-                const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
-                _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
-                if (cluster.GetEllipseOffset() == 0) {
-                    printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), 0.0, 0.0, 0.0);
-                    clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + cluster.GetCartesianRadius() + 0.25);
-                    clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - cluster.GetCartesianRadius() - 0.25/* left-margin buffer*/);
-                    clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + cluster.GetCartesianRadius() + 0.25);
-                    clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - cluster.GetCartesianRadius() - 0.25/* bottom-margin buffer*/);
-                } else {
-                    double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
-                    double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
-                    degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
-                    printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), semi_major, degrees, _dataHub.GetEllipseShape(cluster.GetEllipseOffset()));
-                    clusterRegion._largestX = std::max(clusterRegion._largestX, vCoordinates.at(0) + semi_major + 0.25/* left-margin buffer*/);
-                    clusterRegion._smallestX = std::min(clusterRegion._smallestX, vCoordinates.at(0) - semi_major - 0.25/* left-margin buffer*/);
-                    clusterRegion._largestY = std::max(clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
-                    clusterRegion._smallestY = std::min(clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
-                }
-                cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, _simVars) ? "true" : "false")
-                                    << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
-                                    << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
-                                    << ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
-                                    << ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str() << "', points : [" << points << "] },\n";
-            }
-        }
-
         // Update cluster region to keep x and y ranges equal -- for proper scaling in graph
-        clusterRegion.setproportional();
-        entireRegion = clusterRegion;
-        std::sort(clusterLocations.begin(), clusterLocations.end());
+        _clusterRegion.setproportional();
+        _entireRegion = _clusterRegion;
+        std::sort(_clusterLocations.begin(), _clusterLocations.end());
         std::stringstream cluster_region_points, entire_region_points;
         const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
         worker.str("");
         worker2.str("");
         for (size_t t = 0; t < locations.size(); ++t) {
-            std::vector<tract_t>::iterator itr = std::lower_bound(clusterLocations.begin(), clusterLocations.end(), t);
-            if (itr == clusterLocations.end() || *itr != t) {
+            std::vector<tract_t>::iterator itr = std::lower_bound(_clusterLocations.begin(), _clusterLocations.end(), t);
+            if (itr == _clusterLocations.end() || *itr != t) {
                 double * p = locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->getCoordinates();
-                if (clusterRegion.in(p[0], p[1])) {
+                if (_clusterRegion.in(p[0], p[1])) {
                     worker2 << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
                 }
                 worker << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
-                entireRegion._largestX = std::max(entireRegion._largestX, p[0]);
-                entireRegion._smallestX = std::min(entireRegion._smallestX, p[0]);
-                entireRegion._largestY = std::max(entireRegion._largestY, p[1]);
-                entireRegion._smallestY = std::min(entireRegion._smallestY, p[1]);
+                _entireRegion._largestX = std::max(_entireRegion._largestX, p[0]);
+                _entireRegion._smallestX = std::min(_entireRegion._smallestX, p[0]);
+                _entireRegion._largestY = std::max(_entireRegion._largestY, p[1]);
+                _entireRegion._smallestY = std::min(_entireRegion._smallestY, p[1]);
             }
         }
         std::string entire_points = worker.str();
         std::string cluster_points = worker2.str();
         // site resource link path
-        buffer = cluster_definitions.str();
+        buffer = _cluster_definitions.str();
         templateReplace(html, "--cluster-definitions--", trimString(buffer, ",\n").c_str());
         templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
         templateReplace(html, "--cluster-region-points--", trimString(trimString(cluster_points, ","), ",").c_str());
@@ -391,19 +398,19 @@ void CartesianGraph::generateChart() {
 
         // replace region hashes in template
         const char * region_hash = "zmin:0,zmax:1,xsteps:%d,ysteps:%d,bubbleSize:8,xmin:%f,xmax:%f,ymin:%f,ymax:%f";
-        long xstep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestX - clusterRegion._smallestX + 1.0)));
-        long ystep = static_cast<long>(std::min(20.0, std::abs(clusterRegion._largestY - clusterRegion._smallestY + 1.0)));
-        printString(buffer, region_hash, xstep, ystep, clusterRegion._smallestX, clusterRegion._largestX, clusterRegion._smallestY, clusterRegion._largestY);
+        long xstep = static_cast<long>(std::min(20.0, std::abs(_clusterRegion._largestX - _clusterRegion._smallestX + 1.0)));
+        long ystep = static_cast<long>(std::min(20.0, std::abs(_clusterRegion._largestY - _clusterRegion._smallestY + 1.0)));
+        printString(buffer, region_hash, xstep, ystep, _clusterRegion._smallestX, _clusterRegion._largestX, _clusterRegion._smallestY, _clusterRegion._largestY);
         templateReplace(html, "--cluster-region-hash--", buffer.c_str());
-        entireRegion.setproportional(); // need to keep x,y ranges equal for proper scaling
-        xstep = static_cast<long>(std::min(20.0, std::abs(entireRegion._largestX - floor(entireRegion._smallestX) + 1.0)));
-        ystep = static_cast<long>(std::min(20.0, std::abs(entireRegion._largestY - floor(entireRegion._smallestY) + 1.0)));
-        printString(buffer, region_hash, xstep, ystep, entireRegion._smallestX, entireRegion._largestX, entireRegion._smallestY, entireRegion._largestY);
+        _entireRegion.setproportional(); // need to keep x,y ranges equal for proper scaling
+        xstep = static_cast<long>(std::min(20.0, std::abs(_entireRegion._largestX - floor(_entireRegion._smallestX) + 1.0)));
+        ystep = static_cast<long>(std::min(20.0, std::abs(_entireRegion._largestY - floor(_entireRegion._smallestY) + 1.0)));
+        printString(buffer, region_hash, xstep, ystep, _entireRegion._smallestX, _entireRegion._largestX, _entireRegion._smallestY, _entireRegion._largestY);
         templateReplace(html, "--entire-region-hash--", buffer.c_str());
 
         // hide the option to switch between entire region and cluster region if cluster region is greater than 90% of entire region.
-        double cluster_region_area = clusterRegion.area();
-        double entire_region_area = entireRegion.area();
+        double cluster_region_area = _clusterRegion.area();
+        double entire_region_area = _entireRegion.area();
         templateReplace(html, "--display-zoom-cluster--", ((cluster_region_area / entire_region_area) < 0.9) ? "block" : "none");
 
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
