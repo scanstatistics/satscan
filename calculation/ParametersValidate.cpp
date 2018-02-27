@@ -739,7 +739,7 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
         PrintDirection.Printf("%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
                               "Note that current settings limit the maximum to %d %s%s.\n",
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
-                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), maximum,
+                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), static_cast<int>(maximum),
                               static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
                               static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(),
                               (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
