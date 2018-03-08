@@ -321,6 +321,7 @@
     <ClCompile Include="stsJNIPrintWindow.cpp" />
     <ClCompile Include="stsParametersUtility.cpp" />
     <ClCompile Include="PrintCallback.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\cluster\ClusterSupplement.h" />
@@ -496,6 +497,7 @@
     <ClInclude Include="stsJNIPrintWindow.h" />
     <ClInclude Include="stsParametersUtility.h" />
     <ClInclude Include="PrintCallback.h" />
+    <ClInclude Include="..\calculation\Output\ClusterMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

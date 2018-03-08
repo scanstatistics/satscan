@@ -396,6 +396,11 @@ void IniParameterFileAccess::WriteSpatialOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPFILE_REPORTED));
         WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
         WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
+
+        WriteIniParameter(WriteFile, OUTPUT_GOOGLE_MAP, GetParameterString(OUTPUT_GOOGLE_MAP, s).c_str(), GetParameterComment(OUTPUT_GOOGLE_MAP));
+        WriteIniParameter(WriteFile, LAUNCH_GOOGLE_MAP, GetParameterString(LAUNCH_GOOGLE_MAP, s).c_str(), GetParameterComment(LAUNCH_GOOGLE_MAP));
+        WriteIniParameter(WriteFile, GOOGLE_MAP_APIKEY, GetParameterString(GOOGLE_MAP_APIKEY, s).c_str(), GetParameterComment(GOOGLE_MAP_APIKEY));
+
     } catch (prg_exception& x) {
         x.addTrace("WriteSpatialOutputSettings()","IniParameterFileAccess");
         throw;

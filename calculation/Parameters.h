@@ -147,10 +147,14 @@ class CParameters {
     bool                                _include_locations_kml;                 /** include cluster locations in kml output */
     unsigned int                        _locations_threshold_kml;               /** threshold before cluster locations are put into separate kml files */
     bool                                _compress_kml_output;                   /** compress kml output into kmz format */
-    bool                                _launch_kml_viewer;                     /** compress kml output into kmz format */
+    bool                                _launch_kml_viewer;                     /** launch kml viewer (Google Earth) */
     bool                                _calculate_oliveira_f;                  /** whether to calculate Oliveira's F */
     unsigned int                        _num_oliveira_sets;                     /** number of data sets to evaluate for Oliveira's F */
     double                              _oliveira_pvalue_cutoff;                /** P-Value used to limit clusters in Oliveira's F calcuation */
+
+    bool                                _output_google_map;                     /** generate google maps output file */
+    bool                                _launch_browser_google_map;             /** launch Google maps viewer (web browser) */
+    std::string                         _google_maps_api_key;                   /** Google Maps api key */
 
     /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
@@ -260,6 +264,13 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+    bool                                getOutputGoogleMapsFile() const { return _output_google_map; }
+    void                                setOutputGoogleMapsFile(bool b) { _output_google_map = b; }
+    bool                                getLaunchBrowserForGoogleMap() const { return _launch_browser_google_map; }
+    void                                setLaunchBrowserForGoogleMap(bool b) { _launch_browser_google_map = b; }
+    const std::string                 & getGoogleMapsApiKey() const { return _google_maps_api_key; }
+    void                                setGoogleMapsApiKey(const char * api_key) { _google_maps_api_key = api_key; }
 
     bool                                getLaunchBrowserForCartesianGraph() const { return _launch_browser_for_cartesian_graph; }
     void                                setLaunchBrowserForCartesianGraph(bool b) { _launch_browser_for_cartesian_graph = b; }

@@ -228,6 +228,9 @@ public class Parameters implements Cloneable {
     
     private int                             _minimum_high_rate_cases=2; /* minimum number of cases in cluster when scanning high rates */
     
+    private boolean                        _output_google_map=false;
+    private boolean                        _launch_browser_google_map=true;
+    private String                         _google_maps_api_key="";
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -284,6 +287,7 @@ public class Parameters implements Cloneable {
             newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
             newObject.gvObservableRegions = new Vector<String>(gvObservableRegions);
             newObject.gsTitleName = new String(gsTitleName);
+            newObject._google_maps_api_key = new String(_google_maps_api_key);
             newObject._input_sources = new Vector<InputSourceSettings>();
             for (InputSourceSettings iss : _input_sources) {
                 newObject._input_sources.addElement(iss.clone());
@@ -294,6 +298,13 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public boolean getOutputGoogleMapsFile() { return _output_google_map; }
+    public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
+    public boolean getLaunchBrowserForGoogleMap() { return _launch_browser_google_map; }
+    public void setLaunchBrowserForGoogleMap(boolean b) { _launch_browser_google_map = b; }
+    public String getGoogleMapsApiKey() { return _google_maps_api_key; }
+    public void setGoogleMapsApiKey(final String api_key) { _google_maps_api_key = api_key; }
+    
     public int getMinimumCasesHighRateClusters() { return _minimum_high_rate_cases; }
     public void setMinimumCasesHighRateClusters(int u) { _minimum_high_rate_cases = u; }
 
@@ -496,6 +507,10 @@ public class Parameters implements Cloneable {
         if (_risk_limit_low_clusters != rhs._risk_limit_low_clusters) return false;
         if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
         
+        if (_output_google_map != rhs._output_google_map) return false;
+        if (_launch_browser_google_map != rhs._launch_browser_google_map) return false;
+        if (!_google_maps_api_key.equals(rhs._google_maps_api_key)) return false;
+
         return true;
     }
     public boolean getCalculateOliveirasF() {return _calculate_oliveira_f;}

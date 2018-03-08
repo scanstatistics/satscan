@@ -9,6 +9,7 @@
 #include "ChartGenerator.h"
 #include "LoglikelihoodRatioWriter.h"
 #include "ClusterScatterChart.h"
+#include "ClusterMap.h"
 
 /** Returns analysis type as string. */
 const char * ParametersPrint::GetAnalysisTypeAsString() const {
@@ -139,6 +140,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintInferenceParameters(fp);
         PrintBorderAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
+        PrintSpatialClustersParameters(fp);
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
@@ -409,6 +411,79 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
+/** Prints 'Spatial Clusters' tab parameters to file stream. */
+void ParametersPrint::PrintSpatialClustersParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer, worker;
+
+    try {
+        // skip these settings for purely temporal analysis
+        if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+
+        // skip these settings when performing power evaluations without running an analysis
+        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
+
+        settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
+        if (gParameters.getReportHierarchicalClusters()) {
+            buffer = "Criteria for Reporting Secondary Clusters";
+            switch (gParameters.GetCriteriaSecondClustersType()) {
+            case NOGEOOVERLAP:
+                settings.push_back(std::make_pair(buffer, "No Geographical Overlap")); break;
+            case NOCENTROIDSINOTHER:
+                settings.push_back(std::make_pair(buffer, "No Cluster Centroids in Other Clusters")); break;
+            case NOCENTROIDSINMORELIKE:
+                settings.push_back(std::make_pair(buffer, "No Cluster Centroids in More Likely Clusters")); break;
+            case NOCENTROIDSINLESSLIKE:
+                settings.push_back(std::make_pair(buffer, "No Cluster Centroids in Less Likely Clusters")); break;
+            case NOPAIRSINEACHOTHERS:
+                settings.push_back(std::make_pair(buffer, "No Pairs of Centroids Both in Each Others Clusters")); break;
+            case NORESTRICTIONS:
+                settings.push_back(std::make_pair(buffer, "No Restrictions = Most Likely Cluster for Each Centroid")); break;
+            default: throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintSpatialClustersParameters()", gParameters.GetCriteriaSecondClustersType());
+            }
+        }
+        if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
+            settings.push_back(std::make_pair("Report Gini Optimized Cluster Collection", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
+            if (gParameters.getReportGiniOptimizedClusters()) {
+                buffer = "Gini Index Based Collection Reporting";
+                switch (gParameters.getGiniIndexReportType()) {
+                case OPTIMAL_ONLY: settings.push_back(std::make_pair(buffer, "Optimal Only")); break;
+                case ALL_VALUES: settings.push_back(std::make_pair(buffer, "All Values")); break;
+                default: throw prg_error("Unknown index based cluster reporting type '%d'.\n", "PrintSpatialClustersParameters()", gParameters.getGiniIndexReportType());
+                }
+                settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
+                /*printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
+                for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
+                printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
+                buffer += worker;
+                }
+                settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));*/
+            }
+        }
+        settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
+        if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+            if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
+                printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+                settings.push_back(std::make_pair("Reported Clusters", buffer));
+            }
+            if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+                printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
+                settings.push_back(std::make_pair("Reported Clusters", buffer));
+            }
+            if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+                printString(buffer, "Only clusters smaller than %g%s reported.",
+                    gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
+                settings.push_back(std::make_pair("Reported Clusters", buffer));
+            }
+        }
+        WriteSettingsContainer(settings, "Spatial Clusters", fp);
+    }
+    catch (prg_exception& x) {
+        x.addTrace("PrintSpatialClustersParameters()", "ParametersPrint");
+        throw;
+    }
+}
+
 /** Prints 'Spatial Output' tab parameters to file stream. */
 void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
@@ -418,6 +493,9 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
         // skip these settings for purely temporal analysis
         if (gParameters.GetIsPurelyTemporalAnalysis()) return;
 
+        // skip these settings when performing power evaluations without running an analysis
+        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
+
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
             settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Compress KML File into KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
@@ -425,66 +503,13 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
             printString(buffer, "%u", gParameters.getLocationsThresholdKML());
             settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
         }
+        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputGoogleMapsFile()) {
+            settings.push_back(std::make_pair("Automatically launch Google map of clusters", (gParameters.getLaunchBrowserForGoogleMap() ? "Yes" : "No")));
+        }
         if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
             settings.push_back(std::make_pair("Automatically launch Cartesian coordinates map", (gParameters.getLaunchBrowserForCartesianGraph() ? "Yes" : "No")));
         }
 
-        // skip these settings when performing power evaluations without running an analysis
-        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
-
-        settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
-        if (gParameters.getReportHierarchicalClusters()) {
-            buffer = "Criteria for Reporting Secondary Clusters";
-            switch (gParameters.GetCriteriaSecondClustersType()) {
-                case NOGEOOVERLAP          :
-                    settings.push_back(std::make_pair(buffer,"No Geographical Overlap")); break;
-                case NOCENTROIDSINOTHER    :
-                    settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters")); break;
-                case NOCENTROIDSINMORELIKE :
-                    settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters")); break;
-                case NOCENTROIDSINLESSLIKE :
-                    settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters")); break;
-                case NOPAIRSINEACHOTHERS   :
-                    settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters")); break;
-                case NORESTRICTIONS        :
-                    settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid")); break;
-                default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintSpatialOutputParameters()", gParameters.GetCriteriaSecondClustersType());
-            }
-        }
-        if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-            settings.push_back(std::make_pair("Report Gini Optimized Cluster Collection", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
-            if (gParameters.getReportGiniOptimizedClusters()) {
-                buffer = "Gini Index Based Collection Reporting";
-                switch (gParameters.getGiniIndexReportType()) {
-                    case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
-                    case ALL_VALUES    : settings.push_back(std::make_pair(buffer,"All Values")); break;
-                    default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintSpatialOutputParameters()", gParameters.getGiniIndexReportType());
-                }
-                settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
-                /*printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
-                for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
-                    printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
-                    buffer += worker;
-                }
-                settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));*/
-            }
-        }
-        settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
-        if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
-            if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
-                printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
-                settings.push_back(std::make_pair("Reported Clusters",buffer));
-            }
-            if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
-                printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
-                settings.push_back(std::make_pair("Reported Clusters",buffer));
-            }
-            if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
-                printString(buffer, "Only clusters smaller than %g%s reported.",
-                            gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
-                settings.push_back(std::make_pair("Reported Clusters",buffer));
-            }
-        }
         WriteSettingsContainer(settings, "Spatial Output", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintSpatialOutputParameters()","ParametersPrint");
@@ -787,6 +812,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
             AdditionalOutputFile.setExtension(gParameters.getCompressClusterKML() ? ".kmz" : ".kml");
             settings.push_back(std::make_pair("Google Earth File",AdditionalOutputFile.getFullPath(buffer)));
+        }
+        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputGoogleMapsFile()) {
+            ClusterMap::getFilename(AdditionalOutputFile);
+            settings.push_back(std::make_pair("Google Maps File", AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
             AdditionalOutputFile.setExtension(".col.shp");

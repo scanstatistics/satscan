@@ -82,6 +82,10 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SaTScanBatch64</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SaTScanBatch64</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ReferencePath>
+    </ReferencePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -415,6 +419,7 @@
     <ClCompile Include="..\calculation\Output\stsDBaseFileWriter.cpp" />
     <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp" />
     <ClCompile Include="ParameterProgramOptions.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp" />
@@ -583,6 +588,7 @@
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
     <ClInclude Include="..\calculation\utility\ZipUtils.h" />
     <ClInclude Include="ParameterProgramOptions.h" />
+    <ClInclude Include="..\calculation\Output\ClusterMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

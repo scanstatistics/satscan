@@ -163,6 +163,9 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case MIN_CASES_LOWRATE_CLUSTERS         : return "minimum cases in low rate cluster (line 141)";
     case MIN_CASES_HIGHRATE_CLUSTERS        : return "minimum cases in high rate cluster (line 142)";
     case LAUNCH_CARTESIAN_MAP               : return "whether to launch cartesian graph - gui only (line 129)";
+    case OUTPUT_GOOGLE_MAP                  : return "whether to generate google maps output (line 130)";
+    case LAUNCH_GOOGLE_MAP                  : return "whether to launch google maps - gui only (line 131)";
+    case GOOGLE_MAP_APIKEY                  : return "google maps api key (line 132)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

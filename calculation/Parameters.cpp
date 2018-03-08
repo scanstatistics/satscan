@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 143;
+const int CParameters::giNumParameters                = 146;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -174,6 +174,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_minimum_low_rate_cases != rhs._minimum_low_rate_cases) return false;
   if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
   if (_launch_browser_for_cartesian_graph != rhs._launch_browser_for_cartesian_graph) return false;
+  if (_output_google_map != rhs._output_google_map) return false;
+  if (_launch_browser_google_map != rhs._launch_browser_google_map) return false;
+  if (_google_maps_api_key != rhs._google_maps_api_key) return false;
 
   return true;
 }
@@ -396,6 +399,10 @@ void CParameters::Copy(const CParameters &rhs) {
   _minimum_low_rate_cases = rhs._minimum_low_rate_cases;
   _minimum_high_rate_cases = rhs._minimum_high_rate_cases;
   _launch_browser_for_cartesian_graph = rhs._launch_browser_for_cartesian_graph;
+  _output_google_map = rhs._output_google_map;
+  _launch_browser_google_map = rhs._launch_browser_google_map;
+  _google_maps_api_key = rhs._google_maps_api_key;
+
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -903,6 +910,9 @@ void CParameters::SetAsDefaulted() {
   _minimum_low_rate_cases = 0;
   _minimum_high_rate_cases = 2;
   _launch_browser_for_cartesian_graph = true;
+  _output_google_map = false;
+  _launch_browser_google_map = true;
+  _google_maps_api_key = "";
 }
 
 /** Sets start range start date. Throws exception. */

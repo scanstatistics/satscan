@@ -241,6 +241,24 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 } catch (Throwable t) {
                     JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
                 }
+
+                try {
+                    if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchBrowserForGoogleMap()) {
+                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
+                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
+                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".clustermap.html");
+                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                            Desktop.getDesktop().open(path);
+                        } else {
+                            String htmlFile = "file://localhost/" + path.getAbsolutePath();
+                            htmlFile = htmlFile.replace('\\', '/');
+                            BareBonesBrowserLaunch.openURL(htmlFile);
+                       }                        
+                    }
+                } catch (Throwable t) {
+                    JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
+                }
+
             }
         });
     }

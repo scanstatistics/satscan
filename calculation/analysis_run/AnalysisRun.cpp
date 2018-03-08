@@ -518,6 +518,8 @@ void AnalysisRunner::ExecuteSuccessively() {
     if (_cluster_graph.get()) _cluster_graph->finalize();
     // Finalize kml writer if it was allocated.
     if (_cluster_kml.get()) _cluster_kml->finalize();
+    // Finalize google writer if it was allocated.
+    if (_cluster_map.get()) _cluster_map->finalize();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteSuccessively()","AnalysisRunner");
     throw;
@@ -990,6 +992,8 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
     if (_cluster_graph.get()) _cluster_graph->finalize();
     // Finalize kml writer if it was allocated.
     if (_cluster_kml.get()) _cluster_kml->finalize();
+    // Finalize google writer if it was allocated.
+    if (_cluster_map.get()) _cluster_map->finalize();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteCentricEvaluation()","AnalysisRunner");
     throw;
@@ -1630,11 +1634,6 @@ void AnalysisRunner::reportClusters() {
                 TemporalChartGenerator generator(*gpDataHub, _reportClusters, gSimVars);
                 generator.generateChart();
             }
-
-            //if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
-            //    gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
-            //    CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
-            //}
         }
 
         // Create Cartesian graph, if requested.
@@ -1645,6 +1644,13 @@ void AnalysisRunner::reportClusters() {
             if (giAnalysisCount == 1) _cluster_graph.reset(new CartesianGraph(*gpDataHub));
             _cluster_graph->add(_reportClusters, gSimVars);
             //CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
+        }
+
+        // Create Google Maps file if requested.
+        if (gParameters.getOutputGoogleMapsFile() && _reportClusters.GetNumClustersRetained()) {
+            // If first iteration of analyses, create the ClusterMap object -- this is both with and without iterative scan.
+            if (giAnalysisCount == 1) _cluster_map.reset(new ClusterMap(*gpDataHub));
+            _cluster_map->add(_reportClusters, gSimVars);
         }
 
         // Create KML file if requested.

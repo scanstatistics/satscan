@@ -16,6 +16,7 @@ class ParametersPrint {
 
     void                PrintAnalysisParameters(FILE* fp) const;
     void                PrintBorderAnalysisParameters(FILE* fp) const;
+    void                PrintSpatialClustersParameters(FILE* fp) const;
     void                PrintSpatialOutputParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
     void                PrintEllipticScanParameters(FILE* fp) const;

@@ -1741,9 +1741,9 @@
                       <Component id="_textOutputFormatGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="51" max="32767" attributes="0"/>
+                      <EmptySpace pref="37" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2129,8 +2129,9 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_reportGoogleEarthKML" alignment="0" pref="513" max="32767" attributes="0"/>
-                              <Component id="_reportShapefile" alignment="1" pref="513" max="32767" attributes="0"/>
                               <Component id="_reportCartesianGraph" alignment="0" pref="513" max="32767" attributes="0"/>
+                              <Component id="_reportShapefile" alignment="0" pref="513" max="32767" attributes="0"/>
+                              <Component id="_reportGoogleMap" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2141,10 +2142,12 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="_reportGoogleEarthKML" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportShapefile" min="-2" max="-2" attributes="0"/>
+                          <Component id="_reportGoogleMap" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_reportShapefile" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_reportCartesianGraph" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="10" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2162,6 +2165,14 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Shapefile for GIS software"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_reportGoogleMap">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="HTML file with Google Map"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableGoogleMapGroup();&#xa;    }&#xa;});"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportCartesianGraph">
                   <Properties>

@@ -12,8 +12,11 @@ class GisUtils {
         typedef std::vector<point_t> points_t;
         typedef std::pair<point_t,point_t> pointpair_t;
 
+        static double EARTH_RADIUS_METERS;
+
         static pointpair_t getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster);
         static points_t getPointsOnCircleCircumference(point_t centerPoint, point_t pointOnCircumference);
+        static double getRadiusInMeters(point_t centerPoint, point_t pointOnCircumference);
 };
 
 //******************************************************************************

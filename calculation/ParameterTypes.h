@@ -148,7 +148,10 @@ enum ParameterType
     RISK_THESHOLD_LOW_CLUSTERS,     /* threshold for low clusters by risk level */
     MIN_CASES_LOWRATE_CLUSTERS,     /* minimum number of cases in cluster when scanning low rates */
     MIN_CASES_HIGHRATE_CLUSTERS,    /* minimum number of cases in cluster when scanning high rates */
-    LAUNCH_CARTESIAN_MAP            /* whether to launch browser to view cartesian graph */
+    LAUNCH_CARTESIAN_MAP,           /* whether to launch browser to view cartesian graph */
+    OUTPUT_GOOGLE_MAP,              /* whether to generate google maps output */
+    LAUNCH_GOOGLE_MAP,              /* whether to launch browser to view google map */
+    GOOGLE_MAP_APIKEY               /* api key for google maps */
 };
 /** analysis and cluster types */
 enum AnalysisType

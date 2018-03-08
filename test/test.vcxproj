@@ -262,6 +262,7 @@
     <ClInclude Include="fixture_prm_source.h" />
     <ClInclude Include="fixture_sampledata.h" />
     <ClInclude Include="test_helper.h" />
+    <ClInclude Include="..\calculation\Output\ClusterMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\codecvt_error_category.cpp" />
@@ -478,6 +479,7 @@
     <ClCompile Include="unittest_JulianDates.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterMap.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

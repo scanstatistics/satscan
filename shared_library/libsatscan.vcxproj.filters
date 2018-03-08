@@ -696,6 +696,9 @@
     <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\windows_file_codecvt.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1216,6 +1219,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h">
       <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Output\ClusterMap.h">
+      <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

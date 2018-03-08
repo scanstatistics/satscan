@@ -978,6 +978,24 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
         PrintDirection.Printf("Parameter Setting Warning:\n"
                               "The shapefiles option is not available for non-euclidean neighbors file.\nThe option was disabled.\n", BasePrint::P_WARNING);
     }
+
+    if (gParameters.getOutputGoogleMapsFile() && gParameters.GetCoordinatesType() != LATLON) {
+        const_cast<CParameters&>(gParameters).setOutputGoogleMapsFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+            "The Google Maps option is not available for Cartesian coordinates.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputGoogleMapsFile() && gParameters.GetIsPurelyTemporalAnalysis()) {
+        const_cast<CParameters&>(gParameters).setOutputGoogleMapsFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+            "The Google Maps option is not available for purely temporal analyses.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+    if (gParameters.getOutputGoogleMapsFile() && gParameters.UseLocationNeighborsFile()) {
+        const_cast<CParameters&>(gParameters).setOutputGoogleMapsFile(false);
+        PrintDirection.Printf("Parameter Setting Warning:\n"
+            "The Google Maps option is not available for non-euclidean neighbors file.\nThe option was disabled.\n", BasePrint::P_WARNING);
+    }
+
+
     if (gParameters.getOutputShapeFiles() && !gParameters.GetOutputClusterLevelDBase()) {
       const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);
       PrintDirection.Printf("Parameter Setting Warning:\n"

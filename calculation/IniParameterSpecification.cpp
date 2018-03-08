@@ -187,8 +187,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_9_3_x_ParameterList();
     else if (version.iMajor == 9 && version.iMinor == 4)
         Build_9_4_x_ParameterList();
-    else
+    else if (version.iMajor == 9 && version.iMinor == 4)
         Build_9_5_x_ParameterList();
+    else
+        Build_9_6_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -622,6 +624,17 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
     _parameter_info[LAUNCH_CARTESIAN_MAP] = ParamInfo(LAUNCH_CARTESIAN_MAP, "LaunchCartesianGraph", 18, _spatial_output_section);
 
     assert(_parameter_info.size() == 143);
+}
+
+/** Version 9.6.x */
+void IniParameterSpecification::Build_9_6_x_ParameterList() {
+    Build_9_5_x_ParameterList();
+
+    _parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 19, _spatial_output_section);
+    _parameter_info[LAUNCH_GOOGLE_MAP] = ParamInfo(LAUNCH_GOOGLE_MAP, "LaunchCartesianGraph", 20, _spatial_output_section);
+    _parameter_info[GOOGLE_MAP_APIKEY] = ParamInfo(GOOGLE_MAP_APIKEY, "ApiKeyGoogleMaps", 21, _spatial_output_section);
+
+    assert(_parameter_info.size() == 146);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

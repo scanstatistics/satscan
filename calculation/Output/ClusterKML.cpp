@@ -50,7 +50,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         outKML << "\t\t<name>" << (iCluster + 1) << "</name>" << std::endl;
         outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << "</snippet>" << std::endl;
         outKML << "\t\t<visibility>" << (iCluster == 0 || cluster.isSignificant(_dataHub, iCluster, simVars) ? "1" : "0") << "</visibility>" << std::endl;
-        outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
+        //outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
         outKML << "\t\t" << getClusterExtendedData(cluster, iCluster, buffer).c_str() << std::endl;
         outKML << "\t\t<MultiGeometry>" << std::endl;
@@ -232,8 +232,8 @@ std::string & BaseClusterKML::getClusterLegend(const CCluster& cluster, int iClu
 void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
     outKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     outKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
-    outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-    outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><color>ff0000aa</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>ffff0000</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
 
     FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
     outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;

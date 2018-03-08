@@ -216,6 +216,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return _reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected();
     }
 
+    public boolean getReportingGoogleMap() {
+        return _reportGoogleMap.isEnabled() && _reportGoogleMap.isSelected();
+    }    
+    
     public boolean getReportingCartesianGraph() {
         boolean test = _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
         return _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
@@ -858,7 +862,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /**
-     *
+     * Setup the dialog controls from the parameter settings.
      */
     private void setupInterface(final Parameters parameters) {
         _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this, parameters);
@@ -919,6 +923,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
         _reportShapefile.setSelected(parameters.getOutputShapeFiles());
         _reportCartesianGraph.setSelected(parameters.getOutputCartesianGraph());
+        _reportGoogleMap.setSelected(parameters.getOutputGoogleMapsFile());
         
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
@@ -1032,6 +1037,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setOutputKMLFile(_reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected());
         parameters.setOutputShapeFiles(_reportShapefile.isEnabled() && _reportShapefile.isSelected());
         parameters.setOutputCartesianGraph(_reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected());
+        parameters.setOutputGoogleMapsFile(_reportGoogleMap.isEnabled() && _reportGoogleMap.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
         
@@ -1253,6 +1259,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                          !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                            getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                            getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
+        _reportGoogleMap.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
+                                    !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+                                      getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                                      getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
     }
 
     /**
@@ -1645,6 +1655,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _geographicalOutputGroup = new javax.swing.JPanel();
         _reportGoogleEarthKML = new javax.swing.JCheckBox();
         _reportShapefile = new javax.swing.JCheckBox();
+        _reportGoogleMap = new javax.swing.JCheckBox();
         _reportCartesianGraph = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
@@ -3002,6 +3013,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _reportShapefile.setText("Shapefile for GIS software");
 
+        _reportGoogleMap.setText("HTML file with Google Map");
+        _reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                _advancedParametersSetting.enableGoogleMapGroup();
+            }
+        });
+
         _reportCartesianGraph.setText("HTML file with Cartesian map");
         _reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -3018,8 +3037,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap()
                 .addGroup(_geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-                    .addComponent(_reportShapefile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-                    .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
+                    .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                    .addComponent(_reportShapefile, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                    .addComponent(_reportGoogleMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalOutputGroupLayout.setVerticalGroup(
@@ -3027,10 +3047,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
                 .addComponent(_reportGoogleEarthKML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportShapefile)
+                .addComponent(_reportGoogleMap)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportShapefile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_reportCartesianGraph)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
@@ -3055,9 +3077,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3153,6 +3175,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _relativeRiskEstimatesAreaLabel;
     private javax.swing.JCheckBox _reportCartesianGraph;
     private javax.swing.JCheckBox _reportGoogleEarthKML;
+    private javax.swing.JCheckBox _reportGoogleMap;
     private javax.swing.JCheckBox _reportShapefile;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;

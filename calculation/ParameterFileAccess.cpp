@@ -227,6 +227,10 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MIN_CASES_LOWRATE_CLUSTERS   : return "minimum cases in low rate clusters (positive integer)";
       case MIN_CASES_HIGHRATE_CLUSTERS  : return "minimum cases in high clusters (positive integer)";
       case LAUNCH_CARTESIAN_MAP         : return "automatically launch Cartesian graph - gui only (y/n)";
+
+      case OUTPUT_GOOGLE_MAP            : return "generate Google Maps output (y/n)";
+      case LAUNCH_GOOGLE_MAP            : return "automatically launch Google Map - gui only (y/n)";
+      case GOOGLE_MAP_APIKEY            : return "api key for Google Maps (string)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -399,6 +403,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case MIN_CASES_LOWRATE_CLUSTERS   : return AsString(s, gParameters.getMinimumCasesLowRateClusters());
       case MIN_CASES_HIGHRATE_CLUSTERS  : return AsString(s, gParameters.getMinimumCasesHighRateClusters());
       case LAUNCH_CARTESIAN_MAP         : return AsString(s, gParameters.getLaunchBrowserForCartesianGraph());
+      case OUTPUT_GOOGLE_MAP            : return AsString(s, gParameters.getOutputGoogleMapsFile());
+      case LAUNCH_GOOGLE_MAP            : return AsString(s, gParameters.getLaunchBrowserForGoogleMap());
+      case GOOGLE_MAP_APIKEY            : s = gParameters.getGoogleMapsApiKey().c_str(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -804,6 +811,9 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case MIN_CASES_LOWRATE_CLUSTERS   : gParameters.setMinimumCasesLowRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MIN_CASES_HIGHRATE_CLUSTERS  : gParameters.setMinimumCasesHighRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LAUNCH_CARTESIAN_MAP         : gParameters.setLaunchBrowserForCartesianGraph(ReadBoolean(sParameter, eParameterType)); break;
+      case OUTPUT_GOOGLE_MAP            : gParameters.setOutputGoogleMapsFile(ReadBoolean(sParameter, eParameterType)); break;
+      case LAUNCH_GOOGLE_MAP            : gParameters.setLaunchBrowserForGoogleMap(ReadBoolean(sParameter, eParameterType)); break;
+      case GOOGLE_MAP_APIKEY            : gParameters.setGoogleMapsApiKey(sParameter.c_str()); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {
