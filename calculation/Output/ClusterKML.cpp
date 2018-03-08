@@ -9,12 +9,18 @@
 #include "RandomNumberGenerator.h"
 #include "ZipUtils.h"
 #include "GisUtils.h"
+#include <boost/dynamic_bitset.hpp>
 
 /////////////////////////////////// BaseClusterKML ////////////////////////////////////////
 
 const char * BaseClusterKML::KMZ_FILE_EXT = ".kmz";
 const char * BaseClusterKML::KML_FILE_EXT = ".kml";
 double BaseClusterKML::_minRatioToReport=0.001;
+
+BaseClusterKML::BaseClusterKML(const CSaTScanData& dataHub) : _dataHub(dataHub), _visibleLocations(false) {
+    _cluster_locations.resize(_dataHub.GetTInfo()->getLocations().size());
+    _separateLocationsKML = dataHub.GetTInfo()->getLocations().size() > _dataHub.GetParameters().getLocationsThresholdKML();
+}
 
 void BaseClusterKML::createKMZ(const file_collection_t& fileCollection, bool removefiles) {
     try {
@@ -72,10 +78,11 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         if (_dataHub.GetParameters().getIncludeLocationsKML()) {
             std::stringstream  clusterPlacemarks;
             // create locations folder and locations within cluster placemarks
-            for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
+            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
                 tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
                 if (!_dataHub.GetIsNullifiedLocation(tTract)) {
                     _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
+                    _cluster_locations.set(tTract);
                     CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
                     prLatitudeLongitude = ConvertToLatLong(vCoordinates);
                     clusterPlacemarks << "\t\t<Placemark><name>" << vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>")
@@ -234,6 +241,7 @@ void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
     outKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
     outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><color>ff0000aa</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>ffff0000</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    outKML << "\t<Style id=\"location-placemark\"><IconStyle><color>ff019399</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
 
     FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
     outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;
@@ -293,13 +301,57 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
             if (cluster.m_nRatio >= _minRatioToReport)
                 _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).GetNumTractsInCluster());
         }
-        _separateLocationsKML = _locations_written > _dataHub.GetParameters().getLocationsThresholdKML();
     }
     _clusters_written += addClusters(clusters, simVars, _kml_out, _fileCollection, _clusters_written);
 }
 
 void ClusterKML::finalize() {
     try {
+        if (_dataHub.GetParameters().getIncludeLocationsKML() && !_cluster_locations.all()) {
+            /* Create collection of locations which are not within a cluster. */
+            std::string buffer;
+            std::vector<double> vCoordinates;
+            std::stringstream  locationPlacemarks;
+            const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
+            // create locations folder and locations within cluster placemarks
+            for (size_t t=0; t < locations.size(); ++t) {
+                if (!_cluster_locations.test(t)) {
+                    locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
+                    std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                    locationPlacemarks << "\t\t<Placemark>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
+                    if (_separateLocationsKML) {
+                        // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
+                        locationPlacemarks << _fileCollection.front().getFileName() << _fileCollection.front().getExtension();
+                    }
+                    locationPlacemarks << "#location-placemark</styleUrl><Point><coordinates>" << prLatitudeLongitude.second << ","
+                        << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
+                }
+            }
+            if (locationPlacemarks.str().size()) {
+                if (_separateLocationsKML) {
+                    // Create separate kml for this clusters locations, then reference in primary cluster.
+                    _fileCollection.resize(_fileCollection.size() + 1);
+                    _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+                    _fileCollection.back().setFileName("locations_outside_clusters");
+                    _fileCollection.back().setExtension(KML_FILE_EXT);
+
+                    std::ofstream clusterKML;
+                    clusterKML.open(_fileCollection.back().getFullPath(buffer).c_str());
+                    if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
+                    clusterKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+                    clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+                    clusterKML << "<name>Locations Outside Clusters</name>" << std::endl << locationPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
+                    clusterKML.close();
+                    // Now reference this kml file in NetworkLink tag of primary kml.
+                    _kml_out << "\t<NetworkLink><name>Locations Outside Clusters</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
+                        << "locations_outside_clusters" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
+                }
+                else { // Insert locations into primary kml.
+                    _kml_out << "\t<Folder><name>Locations Outside Clusters</name><description></description>" << std::endl << locationPlacemarks.str() << "\t</Folder>" << std::endl << std::endl;
+                }
+            }
+        }
+        /* Finish writing the KML file. */
         writeCloseBlockKML(_kml_out);
         _kml_out.close();
         if (_dataHub.GetParameters().getCompressClusterKML())

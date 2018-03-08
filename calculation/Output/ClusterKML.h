@@ -19,6 +19,7 @@ class BaseClusterKML {
       const CSaTScanData & _dataHub;
       bool _visibleLocations;
       bool _separateLocationsKML;
+      mutable boost::dynamic_bitset<> _cluster_locations;
 
       unsigned int addClusters(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset=0);
       void createKMZ(const file_collection_t& fileCollection, bool removefiles=true);
@@ -32,7 +33,7 @@ class BaseClusterKML {
       void writeOpenBlockKML(std::ofstream& outKML) const;
 
   public:
-      BaseClusterKML(const CSaTScanData& dataHub) : _dataHub(dataHub), _visibleLocations(false), _separateLocationsKML(false) {}
+      BaseClusterKML(const CSaTScanData& dataHub);
       virtual ~BaseClusterKML() {}
 };
 
