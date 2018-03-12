@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.SaTScanApplication;
 
 public final class AppGuiUtils {

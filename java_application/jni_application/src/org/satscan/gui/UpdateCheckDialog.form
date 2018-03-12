@@ -93,7 +93,7 @@
                           <Component id="_checkFrequency" alignment="0" pref="325" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                              <Component id="_noUpdateOkButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="_noUpdateOkButton" min="-2" pref="70" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -160,10 +160,11 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="_updateLabel" alignment="0" pref="325" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
-                              <Component id="_doUpdateButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="76" max="-2" attributes="0"/>
+                              <Component id="_doUpdateButton" min="-2" pref="70" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_doNotUpdateButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="_doNotUpdateButton" min="-2" pref="69" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -222,12 +223,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_stepLabel" alignment="0" pref="325" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_downloadProgressBar" pref="254" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="_stepLabel" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="_downloadProgressBar" min="-2" pref="245" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jButton3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jButton3" min="-2" pref="74" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -279,9 +280,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="errorText" pref="0" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
-                              <Component id="jLabel6" min="-2" pref="54" max="-2" attributes="0"/>
+                              <Component id="jLabel6" min="-2" pref="70" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="webSiteLabel" pref="265" max="32767" attributes="0"/>
+                              <Component id="webSiteLabel" pref="249" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>

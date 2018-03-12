@@ -6,8 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 import javax.swing.JProgressBar;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.satscan.app.*;
 
 /**

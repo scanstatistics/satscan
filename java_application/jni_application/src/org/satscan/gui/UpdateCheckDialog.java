@@ -231,7 +231,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                     .addComponent(_checkFrequency, 0, 325, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _noUpdatePanelLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(_noUpdateOkButton)))
+                        .addComponent(_noUpdateOkButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _noUpdatePanelLayout.setVerticalGroup(
@@ -276,10 +276,11 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 .addGroup(_updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_updateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                     .addGroup(_updatePanelLayout.createSequentialGroup()
-                        .addGap(97, 97, 97)
-                        .addComponent(_doUpdateButton)
+                        .addGap(76, 76, 76)
+                        .addComponent(_doUpdateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_doNotUpdateButton)))
+                        .addComponent(_doNotUpdateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _updatePanelLayout.setVerticalGroup(
@@ -306,12 +307,12 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             _downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_downloadPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_stepLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _downloadPanelLayout.createSequentialGroup()
-                        .addComponent(_downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                .addGroup(_downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_stepLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_downloadPanelLayout.createSequentialGroup()
+                        .addComponent(_downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)))
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _downloadPanelLayout.setVerticalGroup(
@@ -348,9 +349,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 .addGroup(failedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(errorText, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(failedPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(webSiteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)))
+                        .addComponent(webSiteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         failedPanelLayout.setVerticalGroup(
