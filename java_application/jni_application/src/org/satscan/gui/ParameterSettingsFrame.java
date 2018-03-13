@@ -1255,8 +1255,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                     !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                       getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                       getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
-        _reportCartesianGraph.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN && 
-                                         !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+        _reportCartesianGraph.setEnabled(!(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                            getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                            getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
         _reportGoogleMap.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 

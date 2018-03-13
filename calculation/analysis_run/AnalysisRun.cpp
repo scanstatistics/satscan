@@ -1638,12 +1638,11 @@ void AnalysisRunner::reportClusters() {
 
         // Create Cartesian graph, if requested.
         if (gParameters.getOutputCartesianGraph() && !gParameters.GetIsPurelyTemporalAnalysis() &&
-            gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2) {
+            (gParameters.GetCoordinatesType() == CARTESIAN && gpDataHub->GetTInfo()->getCoordinateDimensions() == 2 || gParameters.GetCoordinatesType() == LATLON)) {
 
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             if (giAnalysisCount == 1) _cluster_graph.reset(new CartesianGraph(*gpDataHub));
             _cluster_graph->add(_reportClusters, gSimVars);
-            //CartesianGraph(*gpDataHub, _reportClusters, gSimVars).generateChart();
         }
 
         // Create Google Maps file if requested.

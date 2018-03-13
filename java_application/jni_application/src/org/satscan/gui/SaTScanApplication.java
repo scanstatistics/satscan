@@ -138,8 +138,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "SaTScan.jar";
             _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";            
         }        
-        
-        System.out.println("Java 9?: " + SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
     }
 
     public static SaTScanApplication getInstance() {

@@ -506,7 +506,7 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputGoogleMapsFile()) {
             settings.push_back(std::make_pair("Automatically launch Google map of clusters", (gParameters.getLaunchBrowserForGoogleMap() ? "Yes" : "No")));
         }
-        if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
+        if (gParameters.getOutputCartesianGraph()) {
             settings.push_back(std::make_pair("Automatically launch Cartesian coordinates map", (gParameters.getLaunchBrowserForCartesianGraph() ? "Yes" : "No")));
         }
 

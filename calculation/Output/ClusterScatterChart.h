@@ -67,6 +67,7 @@ protected:
 
     static std::stringstream          & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
     std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
+    std::vector<double>               & transform(std::vector<double>& vCoordinates);
 
 public:
     CartesianGraph(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0) {}

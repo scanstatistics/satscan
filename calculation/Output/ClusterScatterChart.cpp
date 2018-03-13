@@ -265,6 +265,18 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
     return legend;
 }
 
+/* If coordinates system is are latitude/longitude, transforms coordinates back to latitude/longitude and
+   performs projection. At the moment, that projection is simply the Plate Carrée projection. */
+std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates) {
+    if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
+        std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
+        vCoordinates.clear();
+        vCoordinates.push_back(latlong.second);
+        vCoordinates.push_back(latlong.first);
+    }
+    return vCoordinates;
+}
+
 void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
     double gdMinRatioToReport = 0.001;
     std::vector<double> vCoordinates;
@@ -279,19 +291,23 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
         const CCluster& cluster = clusters.GetCluster(i);
         if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
             break;
+        std::vector<double> clusterCenterCoordinates;
         //write cluster details to 'cluster information' file
         if (cluster.m_nRatio >= gdMinRatioToReport) {
             clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
             pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
             getClusterLegend(cluster, _clusters_written, legend);
             worker.str("");
-            for (tract_t t = 1; t <= cluster.GetNumTractsInCluster(); ++t) {
+            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
                 tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
                 if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
                     if (!_dataHub.GetIsNullifiedLocation(tTract)) {
                         CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
+                        transform(vCoordinates);
                         worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                         _clusterLocations.push_back(tTract);
+                        if (t == 1)
+                            clusterCenterCoordinates = vCoordinates;
                     }
                 }
                 else {
@@ -300,6 +316,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                     for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
                         if (!_dataHub.GetIsNullifiedLocation(*itr)) {
                             CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
+                            transform(vCoordinates);
                             worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                             _clusterLocations.push_back(tTract);
                         }
@@ -307,18 +324,26 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                 }
             }
 
+            double radius = 0.0;
+            if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
+                // Calcuate the radius from centroid to outer most location in cluster.
+                radius = std::sqrt(_dataHub.GetTInfo()->getDistanceSquared(clusterCenterCoordinates, vCoordinates));
+            } else {
+                radius = cluster.GetCartesianRadius();
+            }
+
             std::string points = worker.str();
             trimString(points, ",");
             const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
+            transform(vCoordinates);
             if (cluster.GetEllipseOffset() == 0) {
-                printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), cluster.GetCartesianRadius(), 0.0, 0.0, 0.0);
-                _clusterRegion._largestX = std::max(_clusterRegion._largestX, vCoordinates.at(0) + cluster.GetCartesianRadius() + 0.25);
-                _clusterRegion._smallestX = std::min(_clusterRegion._smallestX, vCoordinates.at(0) - cluster.GetCartesianRadius() - 0.25/* left-margin buffer*/);
-                _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + cluster.GetCartesianRadius() + 0.25);
-                _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - cluster.GetCartesianRadius() - 0.25/* bottom-margin buffer*/);
-            }
-            else {
+                printString(buffer, cluster_def_format, vCoordinates.at(0), vCoordinates.at(1), radius, 0.0, 0.0, 0.0);
+                _clusterRegion._largestX = std::max(_clusterRegion._largestX, vCoordinates.at(0) + radius + 0.25);
+                _clusterRegion._smallestX = std::min(_clusterRegion._smallestX, vCoordinates.at(0) - radius - 0.25/* left-margin buffer*/);
+                _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + radius + 0.25);
+                _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - radius - 0.25/* bottom-margin buffer*/);
+            } else {
                 double semi_major = cluster.GetCartesianRadius() * _dataHub.GetEllipseShape(cluster.GetEllipseOffset());
                 double degrees = 180.0 * (_dataHub.GetEllipseAngle(cluster.GetEllipseOffset()) / (double)M_PI);
                 degrees = 180.0 - degrees; // invert degrees to lower quadrands for canvas rotate
@@ -344,6 +369,7 @@ void CartesianGraph::finalize() {
     std::string buffer, buffer2;
     std::stringstream html, worker, worker2;
     FileName fileName;
+    std::vector<double> vCoordinates;
 
     try {
         fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
@@ -371,15 +397,16 @@ void CartesianGraph::finalize() {
         for (size_t t = 0; t < locations.size(); ++t) {
             std::vector<tract_t>::iterator itr = std::lower_bound(_clusterLocations.begin(), _clusterLocations.end(), t);
             if (itr == _clusterLocations.end() || *itr != t) {
-                double * p = locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->getCoordinates();
-                if (_clusterRegion.in(p[0], p[1])) {
-                    worker2 << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
+                locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
+                transform(vCoordinates);
+                if (_clusterRegion.in(vCoordinates[0], vCoordinates[1])) {
+                    worker2 << printString(buffer2, "[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
                 }
-                worker << printString(buffer2, "[%f, %f],", p[0], p[1]).c_str();
-                _entireRegion._largestX = std::max(_entireRegion._largestX, p[0]);
-                _entireRegion._smallestX = std::min(_entireRegion._smallestX, p[0]);
-                _entireRegion._largestY = std::max(_entireRegion._largestY, p[1]);
-                _entireRegion._smallestY = std::min(_entireRegion._smallestY, p[1]);
+                worker << printString(buffer2, "[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
+                _entireRegion._largestX = std::max(_entireRegion._largestX, vCoordinates[0]);
+                _entireRegion._smallestX = std::min(_entireRegion._smallestX, vCoordinates[0]);
+                _entireRegion._largestY = std::max(_entireRegion._largestY, vCoordinates[1]);
+                _entireRegion._smallestY = std::min(_entireRegion._smallestY, vCoordinates[1]);
             }
         }
         std::string entire_points = worker.str();
