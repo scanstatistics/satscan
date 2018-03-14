@@ -59,7 +59,7 @@ OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Dat
     gvDataSetTotalCasesPerCategory.push_back(std::vector<double>());
     LL0 = 0;
     for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i) {
-       count_t tCategoryCases = Population.GetNumOrdinalCategoryCases(i);
+       count_t tCategoryCases = Population.GetNumCategoryTypeCases(i);
        // add number of category cases to accumulation
        gvDataSetTotalCasesPerCategory.back().push_back(tCategoryCases);
        // add this categories contribution to loglikelihood under null to LL0

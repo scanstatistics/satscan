@@ -183,12 +183,12 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
                Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(i + 1);
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = static_cast<double>(j + 1);
              Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
-             dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumOrdinalCategoryCases(j) / DataSet.getTotalPopulation();
+             dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumCategoryTypeCases(j) / DataSet.getTotalPopulation();
              Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
              if (dExpected) {
                Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
-               dNumerator = Population.GetNumOrdinalCategoryCases(j) - pCases[t];
-               dDenominator = Population.GetNumOrdinalCategoryCases(j) - dExpected;
+               dNumerator = Population.GetNumCategoryTypeCases(j) - pCases[t];
+               dDenominator = Population.GetNumCategoryTypeCases(j) - dExpected;
                if (dDenominator && dNumerator/dDenominator)
                  Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
              }

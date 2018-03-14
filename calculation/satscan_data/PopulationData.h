@@ -37,21 +37,39 @@ class CovariateCategory {
     ~CovariateCategory();
 };
 
-/** Stores case count for an ordinal category. */
-class OrdinalCategory {
+/** Stores case count for category type. This class is used by the ordinal and multinomial models. */
+class CategoryType {
   private:
     count_t     gtTotalCases;
-    double      gdOrdinalNumber;
+    std::string _category_label;
 
   public:
-    OrdinalCategory(double dOrdinalNumber, count_t tInitialCount=0);
-    ~OrdinalCategory();
+    CategoryType(const std::string& category_label, count_t tInitialCount=0) : _category_label(category_label), gtTotalCases(tInitialCount) {}
+    ~CategoryType() {}
 
-    void        AddCaseCount(count_t tCount);
-    void        DecrementCaseCount(count_t tCount);
-    double      GetOrdinalNumber() const {return gdOrdinalNumber;}
-    count_t     GetTotalCases() const {return gtTotalCases;}
+    bool                    operator==(const CategoryType& rhs) const { return (_category_label == rhs._category_label); }
+    void                    AddCaseCount(count_t tCount);
+    void                    DecrementCaseCount(count_t tCount) { gtTotalCases = std::max(0L, gtTotalCases - tCount); }
+    const std::string     & getCategoryLabel() const { return _category_label; }
+    static double           getAsOrdinalNumber(const std::string& s);
+    double                  getCategoryLabelAsOrdinalNumber() const;
+    count_t                 GetTotalCases() const {return gtTotalCases;}
 };
+
+class CompareCategoryTypeByLabel {
+public:
+    bool operator() (const CategoryType& lhs, const CategoryType& rhs) {
+        return lhs.getCategoryLabel() < rhs.getCategoryLabel();
+    }
+};
+
+class CompareCategoryTypeByOrdinal {
+public:
+    bool operator() (const CategoryType& lhs, const CategoryType& rhs) {
+        return lhs.getCategoryLabelAsOrdinalNumber() < rhs.getCategoryLabelAsOrdinalNumber();
+    }
+};
+
 
 class CSaTScanData; /** forward class declaration */
 
@@ -78,7 +96,7 @@ class PopulationData {
     std::vector<count_t>                gvCovariateCategoryCaseCount;     /** number of total cases for covariate categories */
     std::vector<count_t>                gvCovariateCategoryControlCount;  /** number of total controls for covariate categories */
     std::vector<CovariateCategory*>     gCovariateCategoriesPerLocation;  /** CovariateCategory objects for each location */
-    std::vector<OrdinalCategory>        gvOrdinalCategories;              /** categories defined for population stratified by ordinal numbers */
+    std::vector<CategoryType>           _category_types;                  /** categories defined for population stratified by category type */
     std::vector<Julian>                 gvPopulationDates;                /** collection of all population dates */
     bool                                gbStartAsPopDt;                   /** indicates whether the study period start
                                                                               date was introduced into gvPopulationDates */
@@ -98,7 +116,7 @@ class PopulationData {
     void                                AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex,
                                                                        const PopulationDate_t& prPopulationDate,
                                                                        float fPopulation);
-    size_t                              AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
+    size_t                              addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, bool asOrdinal);
     void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;
     bool                                CheckZeroPopulations(BasePrint& PrintDirection) const;
@@ -111,15 +129,15 @@ class PopulationData {
     count_t                             GetNumCovariateCategoryCases(int iCategoryIndex) const;
     count_t                             GetNumCovariateCategoryControls(int iCategoryIndex) const;
     int                                 GetNumCovariatesPerCategory() const {return giNumberCovariatesPerCategory;}
-    count_t                             GetNumOrdinalCategoryCases(int iCategoryIndex) const;
-    size_t                              GetNumOrdinalCategories() const {return gvOrdinalCategories.size();}
+    count_t                             GetNumCategoryTypeCases(int iCategoryIdx) const;
+    size_t                              GetNumOrdinalCategories() const {return _category_types.size();}
     unsigned int                        GetNumPopulationDates() const {return gvPopulationDates.size();}
     CovariateCategory                 * GetCovariateCategory(tract_t tTractIndex, unsigned int iCategoryIndex);
     const CovariateCategory           * GetCovariateCategory(tract_t tTractIndex, unsigned int iCategoryIndex) const;
     CovariateCategory                 & GetCovariateCategory(tract_t tTractIndex, unsigned int iCategoryIndex, int iPopulationListSize);
     const char                        * GetCovariateCategoryAsString(int iCategoryIndex, std::string& sBuffer) const;
     int                                 GetCovariateCategoryIndex(const CovariatesNames_t& vCovariates) const;
-    double                              GetOrdinalCategoryValue(int iCategoryIndex) const;
+    const std::string                 & GetCategoryTypeLabel(int iCategoryIndex) const;
     float                               GetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex);
     Julian                              GetPopulationDate(int iDateIndex) const;
     int                                 GetPopulationDateIndex(Julian Date, bool bTrueDate) const;
@@ -128,7 +146,7 @@ class PopulationData {
     measure_t                           GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t,
                                                                   int iPopulationDateIndex, const std::vector<double>& vRisk) const;
     int                                 LowerPopIndex(Julian Date) const;
-    void                                RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount);
+    void                                RemoveCategoryTypeCases(size_t iCategoryIndex, count_t tCount);
     void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
     void                                setAdditionalCovariates(CovariatesNames_t& covariates);
     void                                SetAggregateCovariateCategories(bool b);

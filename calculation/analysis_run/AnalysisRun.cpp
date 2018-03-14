@@ -1561,7 +1561,7 @@ bool AnalysisRunner::RepeatAnalysis() {
         for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i) {
            const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData();
            for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t)
-              if (Population.GetNumOrdinalCategoryCases(static_cast<int>(t)) > 0)
+              if (Population.GetNumCategoryTypeCases(static_cast<int>(t)) > 0)
                 ++iCategoriesWithCases;
            if (iCategoriesWithCases < 2)
              return false;

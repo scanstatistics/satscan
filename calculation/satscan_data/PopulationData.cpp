@@ -125,18 +125,11 @@ void CovariateCategory::Setup(int iPopulationListSize, int iCategoryIndex) {
 
 //******************************************************************************
 
-/** constructor */
-OrdinalCategory::OrdinalCategory(double dOrdinalNumber, count_t tInitialCount)
-                :gdOrdinalNumber(dOrdinalNumber), gtTotalCases(tInitialCount) {}
-
-/** destructor */
-OrdinalCategory::~OrdinalCategory() {}
-
 /** Adds case count to cumulative total for ordinal category.
     Throws prg_eror if tCount is negative.
     Throws resolvable_error if category cases exceeds positive
     limits for count_t(long) */
-void OrdinalCategory::AddCaseCount(count_t tCount) {
+void CategoryType::AddCaseCount(count_t tCount) {
   // validate count is not negative
   if (tCount < 0)
     throw prg_error("Negative case count specifed '%ld'.","AddCaseCount()", tCount);
@@ -146,9 +139,15 @@ void OrdinalCategory::AddCaseCount(count_t tCount) {
     throw resolvable_error("Error: The total number of cases exceeds the maximum of %ld.\n", std::numeric_limits<count_t>::max());
 }
 
-/** Decrements number of cases in category. */
-void OrdinalCategory::DecrementCaseCount(count_t tCount) {
-  gtTotalCases = std::max(0L, gtTotalCases - tCount); 
+double CategoryType::getCategoryLabelAsOrdinalNumber() const {
+    return getAsOrdinalNumber(_category_label);
+}
+
+double CategoryType::getAsOrdinalNumber(const std::string& s) {
+    double ordinal;
+    if (!string_to_type<double>(s.c_str(), ordinal))
+        throw prg_error("Unable to convert category label '%s' to double.", "getCategoryLabelAsOrdinalNumber()", s.c_str());
+    return ordinal;
 }
 
 //******************************************************************************
@@ -227,23 +226,20 @@ void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigne
   }
 }
 
-/** Adds case count to total for category represented by 'dOrdinalNumber'. */
-size_t PopulationData::AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t tCount) {
-  std::vector<OrdinalCategory>::iterator itr=gvOrdinalCategories.begin();
+/** Adds case count to total for category type label. */
+size_t PopulationData::addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t tCount, bool asOrdinal) {
+    CategoryType  category_type(categoryTypeLabel, tCount);
+    std::vector<CategoryType>::iterator itrPos;
+    if (asOrdinal)
+        itrPos = std::lower_bound(_category_types.begin(), _category_types.end(), category_type, CompareCategoryTypeByOrdinal());
+    else
+        itrPos = std::lower_bound(_category_types.begin(), _category_types.end(), category_type, CompareCategoryTypeByLabel());
 
-  for (; itr != gvOrdinalCategories.end(); ++itr) {
-     if (itr->GetOrdinalNumber() == dOrdinalNumber) {
-       itr->AddCaseCount(tCount);
-       return std::distance(gvOrdinalCategories.begin(), itr);
-     }
-     if (dOrdinalNumber < itr->GetOrdinalNumber()) {
-       itr = gvOrdinalCategories.insert(itr, OrdinalCategory(dOrdinalNumber, tCount));
-       return std::distance(gvOrdinalCategories.begin(), itr);
-     }
-  }
-
-  gvOrdinalCategories.push_back(OrdinalCategory(dOrdinalNumber, tCount));
-  return gvOrdinalCategories.size() - 1;
+    if (itrPos != _category_types.end() && (*itrPos) == category_type)
+        itrPos->AddCaseCount(tCount);
+    else 
+        itrPos = _category_types.insert(itrPos, category_type);
+    return std::distance(_category_types.begin(), itrPos);
 }
 
 /** Adds population count to categories population list. Passing bTrueDate == true
@@ -615,19 +611,16 @@ count_t PopulationData::GetNumCovariateCategoryControls(int iCategoryIndex) cons
   }
 }
 
-/** Returns the number of cases for ordinal category at index. Throws prg_error if
-    category index is out of range. */
-count_t PopulationData::GetNumOrdinalCategoryCases(int iCategoryIndex) const {
-  try {
-    if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvOrdinalCategories.size()) - 1)
-      throw prg_error("Index %d out of range [size=%u].","GetNumOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
-
-    return gvOrdinalCategories[iCategoryIndex].GetTotalCases();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetNumOrdinalCategoryCases()","PopulationData");
-    throw;
-  }
+/** Returns the number of cases for category type at index. Throws prg_error if category index is out of range. */
+count_t PopulationData::GetNumCategoryTypeCases(int iCategoryIdx) const {
+    try {
+        if (iCategoryIdx < 0 || iCategoryIdx > static_cast<int>(_category_types.size()) - 1)
+            throw prg_error("Index %d out of range [size=%u].","GetNumCategoryTypeCases()", iCategoryIdx, _category_types.size());
+        return _category_types[iCategoryIdx].GetTotalCases();
+    } catch (prg_exception& x) {
+        x.addTrace("GetNumCategoryTypeCases()","PopulationData");
+        throw;
+    }
 }
 
 /** internal class initialization */
@@ -753,17 +746,15 @@ int PopulationData::GetCovariateCategoryIndex(const CovariatesNames_t& vCovariat
 }
 
 /** Returns ordinal value for category. */
-double PopulationData::GetOrdinalCategoryValue(int iCategoryIndex) const {
-  try {
-    if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvOrdinalCategories.size()) - 1)
-      throw prg_error("Index %d out of range [size=%u].","GetNumOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
-
-    return gvOrdinalCategories[iCategoryIndex].GetOrdinalNumber();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetOrdinalCategoryValue()","PopulationData");
-    throw;
-  }
+const std::string& PopulationData::GetCategoryTypeLabel(int iCategoryIndex) const {
+    try {
+        if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(_category_types.size()) - 1)
+            throw prg_error("Index %d out of range [size=%u].","GetCategoryTypeLabel()", iCategoryIndex, _category_types.size());
+        return _category_types[iCategoryIndex].getCategoryLabel();
+    } catch (prg_exception& x) {
+        x.addTrace("GetCategoryTypeLabel()","PopulationData");
+        throw;
+    }
 }
 
 /** Returns the population for a given year and category in a given tract
@@ -915,17 +906,15 @@ int PopulationData::LowerPopIndex(Julian Date) const {
 }
 
 /** Removes cases from internal count for ordinal category. */
-void PopulationData::RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount) {
-  try {
-    if (iCategoryIndex > gvOrdinalCategories.size() - 1)
-      throw prg_error("Index %d out of range [size=%u].","RemoveOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
-
-    gvOrdinalCategories[iCategoryIndex].DecrementCaseCount(tCount);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RemoveOrdinalCategoryCases()","PopulationData");
-    throw;
-  }
+void PopulationData::RemoveCategoryTypeCases(size_t iCategoryIndex, count_t tCount) {
+    try {
+        if (iCategoryIndex > _category_types.size() - 1)
+        throw prg_error("Index %d out of range [size=%u].","RemoveCategoryTypeCases()", iCategoryIndex, _category_types.size());
+        _category_types[iCategoryIndex].DecrementCaseCount(tCount);
+    } catch (prg_exception& x) {
+        x.addTrace("RemoveCategoryTypeCases()","PopulationData");
+        throw;
+    }
 }
 
 /** Scans for tracts that have population dates which have zero populations.

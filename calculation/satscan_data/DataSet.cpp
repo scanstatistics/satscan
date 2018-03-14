@@ -695,10 +695,10 @@ TwoDimCountArray_t & RealDataSet::allocateControlData() {
     dimensional array does not exist for category associated with 'dOrdinalNumber',
     one is allocated. Returns referance to two dimensional array associated with
     'dOrdinalNumber'. */
-TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count, Julian date) {
+TwoDimCountArray_t & RealDataSet::addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, Julian date, bool asOrdinal) {
   size_t        tCategoryIndex;
 
-  tCategoryIndex = _population->AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
+  tCategoryIndex = _population->addCategoryTypeCaseCount(categoryTypeLabel, Count, asOrdinal);
   if (_population->GetNumOrdinalCategories() > gvCaseData_Cat.size())
     gvCaseData_Cat.insert(gvCaseData_Cat.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
 

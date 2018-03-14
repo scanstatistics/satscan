@@ -195,14 +195,14 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       const PopulationData& Population = gDataSets->GetDataSet().getPopulationData();
       buffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         printString(work, "%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
+         printString(work, "%s%s", (j ? ", " : ""), Population.GetCategoryTypeLabel(j).c_str());
          buffer += work;
       }
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       PrintFormat.PrintSectionLabel(fp, "Total cases per category", false, false);
       buffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
+         printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
          buffer += work;
       }
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -210,7 +210,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       PrintFormat.PrintSectionLabel(fp, "Percent cases per category", false, false);
       buffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         getValueAsString(100.0 * Population.GetNumOrdinalCategoryCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1);
+         getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1);
          printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
          buffer += work;
       }
@@ -222,7 +222,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
         const PopulationData& Population = gDataSets->GetDataSet(i).getPopulationData();
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           printString(work, "%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
+           printString(work, "%s%s", (j ? ", " : ""), Population.GetCategoryTypeLabel(j).c_str());
            buffer += work;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -231,7 +231,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
         buffer="";
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
+           printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
            buffer += work;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -240,7 +240,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
         buffer="";
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           getValueAsString(100.0 * Population.GetNumOrdinalCategoryCases(j) / gDataSets->GetDataSet(i).getTotalCases(), work2, 1);
+           getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(i).getTotalCases(), work2, 1);
            printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
            buffer += work;
         }

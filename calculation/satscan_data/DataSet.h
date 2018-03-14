@@ -153,7 +153,7 @@ class RealDataSet : public DataSet {
 
     TwoDimCountArray_t        & allocateCaseData_Censored();
     TwoDimCountArray_t        & allocateControlData();
-    TwoDimCountArray_t        & addOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count, Julian date);
+    TwoDimCountArray_t        & addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, Julian date, bool asOrdinal);
     void                        checkPopulationDataCases(CSaTScanData& Data);
     double                      getCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex) const;

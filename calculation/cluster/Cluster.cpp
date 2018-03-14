@@ -432,9 +432,9 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        buffer += (itrCategory == vCategoryContainer.begin() ? "" : ", ");
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-         printString(work, "%s%g%s",
+         printString(work, "%s%s%s",
                       (m == 0 ? "[" : ", "),
-                      thisDataSet.getPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(m)),
+                      thisDataSet.getPopulationData().GetCategoryTypeLabel(itrCategory->GetCategoryIndex(m)).c_str(),
                       (m + 1 == itrCategory->GetNumCombinedCategories() ? "]" : ""));
          buffer += work;
        }
@@ -485,7 +485,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumCategoryTypeCases(itrCategory->GetCategoryIndex(m));
        }
        if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
          printString(work, "%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
@@ -897,7 +897,7 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
   const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(tSetIndex);
 
   return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this, DataHub) *
-             DataSet.getPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.getTotalPopulation();
+             DataSet.getPopulationData().GetNumCategoryTypeCases(iCategoryIndex) / DataSet.getTotalPopulation();
 
 }
 

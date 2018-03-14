@@ -376,7 +376,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         break;
                     case ORDINAL :
                     case CATEGORICAL :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;");
+                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Category Type&gt;");
                         break;
                     case EXPONENTIAL :
                         builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Censored&gt;");
@@ -960,6 +960,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null));
         _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
         _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null));
+        _import_variables.addElement(new ImportVariable("Category Type", 3, true, null, null));
         _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null));
         _import_variables.addElement(new ImportVariable("Weight", 4, false, null, null));
         _import_variables.addElement(new ImportVariable("Covariate1", 5, false, null, null));
@@ -1113,22 +1114,24 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables
                         _import_variables.get(t).setShowing(true);
                         model.setShowing(_import_variables.get(t));
-                    } else if (t >= 6 && t <= 15) {//show 'covariate' variables for Poisson,space-time permutation and normal models only
+                    } else if (t >= 7 && t <= 16) {//show 'covariate' variables for Poisson,space-time permutation and normal models only
                         _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.POISSON ||
                                                            _modelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ||
                                                            _modelType == Parameters.ProbabilityModelType.NORMAL);
                         model.setShowing(_import_variables.get(t));
-                    } else if (t == 3) { //show 'attribute' variable for ordinal, exponential, normal and rank models only
-                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.ORDINAL ||
-                                                           _modelType == Parameters.ProbabilityModelType.CATEGORICAL ||
-                                                           _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
-                                                           _modelType == Parameters.ProbabilityModelType.NORMAL ||
-                                                           _modelType == Parameters.ProbabilityModelType.RANK);
+                    } else if (t == 3) { //show 'attribute' variable for exponential, normal and rank models only
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
+                                                            _modelType == Parameters.ProbabilityModelType.NORMAL ||
+                                                            _modelType == Parameters.ProbabilityModelType.RANK);
                         model.setShowing(_import_variables.get(t));
-                    } else if (t == 4) { //show 'censored' variable for exponential mapping_model only
+                    } else if (t == 4) { //show 'category type' variable for ordinal and mulitnomialmodels only
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.ORDINAL ||
+                                                           _modelType == Parameters.ProbabilityModelType.CATEGORICAL);
+                        model.setShowing(_import_variables.get(t));
+                    } else if (t == 5) { //show 'censored' variable for exponential mapping_model only
                         _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
                         model.setShowing(_import_variables.get(t));
-                    } else if (t == 5) { //show 'weight' variable for normal mapping_model only
+                    } else if (t == 6) { //show 'weight' variable for normal mapping_model only
                         _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.NORMAL);
                         model.setShowing(_import_variables.get(t));
                     } else { //default - show variable
@@ -1350,7 +1353,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         });
 
-        _expectedFormatScrollPane.setBorder(null);
         _expectedFormatScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         _expectedFormatScrollPane.setBorder(null);
 
@@ -1561,7 +1563,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _main_content_panel.add(_fileFormatPanel, "file-format");
 
-        jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(170);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);

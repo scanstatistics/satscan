@@ -653,7 +653,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
              for (int i=0; i < Cluster.m_nFirstInterval; ++i)
                ppCases[i][tTractIndex] -= tCasesInInterval;
              //update category population
-             thisPopulation.RemoveOrdinalCategoryCases(c, tCasesInInterval);
+             thisPopulation.RemoveCategoryTypeCases(c, tCasesInInterval);
              //update totals for data set
              DataSet.setTotalCases(DataSet.getTotalCases() - tCasesInInterval);
              DataSet.setTotalPopulation(DataSet.getTotalPopulation() - tCasesInInterval);

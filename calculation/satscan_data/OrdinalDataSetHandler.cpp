@@ -139,7 +139,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
     parts: location, case count, date and ordinal category. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
-DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
+DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, std::string& categoryTypeLabel) {
   short   iCategoryIndex;
 
   try {
@@ -156,8 +156,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
          return DataSetHandler::Rejected;
       } 
       if (nCount == 0) return DataSetHandler::Ignored;    
-    }
-    else {
+    } else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
@@ -168,14 +167,19 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
     // read ordinal category
     iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!Source.GetValueAt(iCategoryIndex)) {
-      gPrint.Printf("Error: Record %d, of the %s, is missing ordinal data field.\n",
+      gPrint.Printf("Error: Record %d, of the %s, is missing category type field.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (!string_to_type<measure_t>(Source.GetValueAt(iCategoryIndex), tContinuousVariable)) {
-       gPrint.Printf("Error: The ordinal data '%s' in record %ld, of the %s, is not a decimal number.\n",
-                     BasePrint::P_READERROR, Source.GetValueAt(iCategoryIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
+    categoryTypeLabel = Source.GetValueAt(iCategoryIndex);
+    if (gParameters.GetProbabilityModelType() == ORDINAL) {
+        /* The ordinal model requires the category type to be a decimal number. */
+        double ordinal;
+        if (!string_to_type<double>(categoryTypeLabel.c_str(), ordinal)) {
+            gPrint.Printf("Error: The category type '%s' in record %ld, of the %s, is not a decimal number.\n",
+                          BasePrint::P_READERROR, categoryTypeLabel.c_str(), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            return DataSetHandler::Rejected;
+        }
     }
   }
   catch (prg_exception& x) {
@@ -202,21 +206,21 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
     Julian                                Date;
     tract_t                               tLocationIndex;
     count_t                               tCount, tTotalCases=0, ** ppCategoryCounts;
-    measure_t                             tOrdinalVariable;
-    std::vector<double>                   vReadCategories;
+    std::string                           categoryTypeLabel;
+    std::vector<std::string>              vReadCategories;
     DataSetHandler::RecordStatusType      eRecordStatus;
 
     try {
         //read, parse, validate and update data structures for each record in data file
         while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
             //parse record into parts: location index, # of cases, date, ordinal catgory
-            eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, tOrdinalVariable);
+            eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, categoryTypeLabel);
             if (eRecordStatus == Accepted) {
                 bEmpty = false;
                 //note each category read from file. since we are ignoring records with zero cases,
                 //we might need this information for error reporting
-                if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
-                    vReadCategories.push_back(tOrdinalVariable);
+                if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), categoryTypeLabel))
+                    vReadCategories.push_back(categoryTypeLabel);
                 if (tCount > 0) { //ignore records with zero cases
                     //add count to cumulative total
                     tTotalCases += tCount;
@@ -228,7 +232,7 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
                         Date = gDataHub.convertToSeasonalDate(Date);
 
                     //record count and get category's 2-D array pointer
-                    ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount, Date).GetArray();
+                    ppCategoryCounts = DataSet.addCategoryTypeCaseCount(categoryTypeLabel, tCount, Date, gParameters.GetProbabilityModelType() == ORDINAL).GetArray();
                     //update location case counts such that 'tCount' is reprented cumulatively through time from start date through specifed date in record
                     ppCategoryCounts[0][tLocationIndex] += tCount;
                     for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)

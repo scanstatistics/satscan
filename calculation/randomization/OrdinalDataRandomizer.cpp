@@ -32,8 +32,8 @@ void OrdinalDenominatorDataRandomizer::RandomizeData(const RealDataSet& RealSet,
   for (size_t c=0; c < iNumCategories - 1; ++c) {
      SimSet.getCaseData_Cat()[c]->Set(0);
      ppSimCases = SimSet.getCaseData_Cat()[c]->GetArray();
-     tRemainingControls -= RealSet.getPopulationData().GetNumOrdinalCategoryCases(c);
-     RandomizeOrdinalData(RealSet.getPopulationData().GetNumOrdinalCategoryCases(c), tRemainingControls, ppSimCases, ppMeasure, iNumTracts, iNumIntervals);
+     tRemainingControls -= RealSet.getPopulationData().GetNumCategoryTypeCases(c);
+     RandomizeOrdinalData(RealSet.getPopulationData().GetNumCategoryTypeCases(c), tRemainingControls, ppSimCases, ppMeasure, iNumTracts, iNumIntervals);
      //update measure so that assigned cases are removed from measure
      for (unsigned int i=0; i < iNumIntervals; ++i)
         for (unsigned int t=0; t < iNumTracts; ++t)
@@ -69,8 +69,8 @@ void OrdinalPurelyTemporalDenominatorDataRandomizer::RandomizeData(const RealDat
   for (size_t c=0; c < SimSet.getCaseData_PT_Cat().Get1stDimension() - 1; ++c) {
      pSimCases = SimSet.getCaseData_PT_Cat().GetArray()[c];
      memset(pSimCases, 0, SimSet.getCaseData_PT_Cat().Get2ndDimension() * sizeof(count_t));
-     tRemainingControls -= RealSet.getPopulationData().GetNumOrdinalCategoryCases(c);
-     RandomizePurelyTemporalOrdinalData(RealSet.getPopulationData().GetNumOrdinalCategoryCases(c), tRemainingControls,
+     tRemainingControls -= RealSet.getPopulationData().GetNumCategoryTypeCases(c);
+     RandomizePurelyTemporalOrdinalData(RealSet.getPopulationData().GetNumCategoryTypeCases(c), tRemainingControls,
                                         pSimCases, pMeasure, RealSet.getIntervalDimension());
      //update measure so that assigned cases are removed from measure
      for (unsigned int i=0; i < iNumIntervals; ++i)
@@ -140,7 +140,7 @@ void OrdinalPurelyTemporalDenominatorDataRandomizer::RandomizeData(const RealDat
 //                                             iNumTracts,
 //                                             iNumIntervals - std::distance(_weekdays.begin(), itrWeekDay),
 //                                             itrWeekDay == _weekdays.end() - 1,
-//                                             RealSet.getPopulationData().GetNumOrdinalCategoryCases(c),
+//                                             RealSet.getPopulationData().GetNumCategoryTypeCases(c),
 //                                             tRemainingControls,
 //                                             iNumIntervals);
 //            // *** This is not right:

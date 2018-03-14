@@ -688,7 +688,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           tObserved += theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumCategoryTypeCases(itrCategory->GetCategoryIndex(m));
        }
        //record observed/expected cases - categories which were combined will have the same value
        tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);
