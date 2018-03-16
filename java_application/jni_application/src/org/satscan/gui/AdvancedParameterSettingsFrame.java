@@ -189,7 +189,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
-                jTabbedPane1.addTab("Spatial Clusters", null, this._spatial_clusters_tab, null);
                 jTabbedPane1.addTab("Spatial Output", null, _spatialOutputTab, null);
                 jTabbedPane1.addTab("Temporal Output", null, _temporalOutputTab, null);
                 jTabbedPane1.addTab("Other Output", null, _otherOutputTab, null);
@@ -215,31 +214,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /*
-     * enables the google earth advanced options
+     * enables options in the maps output group
      */
-    public void enableGoogleEarthGroup() {
-        _googleEarthGroup.setEnabled(_settings_window.getReportingGoogleEarthKML());
-        _includeClusterLocationsInKML.setEnabled(_googleEarthGroup.isEnabled());
-        _createCompressedKMZ.setEnabled(_googleEarthGroup.isEnabled());
-        _launchKMLViewer.setEnabled(_googleEarthGroup.isEnabled());
+    public void enableMapsOutputGroup() {
+        _mapsOutputGroup.setEnabled(_settings_window.getReportingGoogleEarthKML());
+        _includeClusterLocationsInKML.setEnabled(_mapsOutputGroup.isEnabled());
+        _createCompressedKMZ.setEnabled(_mapsOutputGroup.isEnabled());
+        _launch_map_viewer.setEnabled(_mapsOutputGroup.isEnabled());
     }
 
-    /*
-     * enables the google earth advanced options
-     */
-    public void enableGoogleMapGroup() {
-        _group_google_map.setEnabled(_settings_window.getReportingGoogleMap());
-        _launchbrowserforgooglemap.setEnabled(_group_google_map.isEnabled());
-    }
-    
-    /*
-     * enables the cartesian graph advanced options
-     */
-    public void enableCartesianGraphGroup() {
-        _group_cartesian_graph.setEnabled(_settings_window.getReportingCartesianGraph());
-        _launchbrowserforcartesiangraph.setEnabled(_group_cartesian_graph.isEnabled());
-    }
-    
     /**
      * enabled study period date precision based on time interval unit
      */
@@ -634,8 +617,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enablePowerEvaluationsGroup();
         enableAdjustmentsGroup(bPoisson);
         updateMonteCarloTextCaptions();
-        enableGoogleEarthGroup();
-        enableCartesianGraphGroup();
+        enableMapsOutputGroup();
     }
 
     public boolean isAdjustingForDayOfWeek() {
@@ -884,9 +866,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Double.parseDouble(_temporalGraphPvalueCutoff.getText()) == 0.05);                
         bReturn &= (_includeClusterLocationsInKML.isSelected() == true);
         bReturn &= (_createCompressedKMZ.isSelected() == false);
-        bReturn &= (_launchKMLViewer.isSelected() == true);
-        bReturn &= (_launchbrowserforcartesiangraph.isSelected() == true);
-        bReturn &= (_launchbrowserforgooglemap.isSelected() == true);
+        bReturn &= (_launch_map_viewer.isSelected() == true);
 
         return bReturn;
     }
@@ -1110,9 +1090,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setReportGiniOptimizedClusters(_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected());
         parameters.setIncludeLocationsKML(_includeClusterLocationsInKML.isSelected());
         parameters.setCompressClusterKML(_createCompressedKMZ.isSelected());
-        parameters.setLaunchKMLViewer(_launchKMLViewer.isSelected());
-        parameters.setLaunchBrowserForCartesianGraph(_launchbrowserforcartesiangraph.isSelected());
-        parameters.setLaunchBrowserForGoogleMap(_launchbrowserforgooglemap.isSelected());
+        parameters.setLaunchMapViewer(_launch_map_viewer.isSelected());
 
         // border analysis tab
         parameters.setCalculateOliveirasF(_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected());
@@ -1842,11 +1820,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalGraphPvalueCutoff.setText("0.05");
         _includeClusterLocationsInKML.setSelected(true);
         _createCompressedKMZ.setSelected(false);
-        _launchKMLViewer.setSelected(true);
-        _launchbrowserforcartesiangraph.setSelected(true);
+        _launch_map_viewer.setSelected(true);
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");
-        _launchbrowserforgooglemap.setSelected(true);
     }
 
     /**
@@ -2306,9 +2282,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _printTitle.setText(parameters.GetTitleName());
         _includeClusterLocationsInKML.setSelected(parameters.getIncludeLocationsKML());
         _createCompressedKMZ.setSelected(parameters.getCompressClusterKML());
-        _launchKMLViewer.setSelected(parameters.getLaunchKMLViewer());
-        _launchbrowserforcartesiangraph.setSelected(parameters.getLaunchBrowserForCartesianGraph());
-        _launchbrowserforgooglemap.setSelected(parameters.getLaunchBrowserForGoogleMap());
+        _launch_map_viewer.setSelected(parameters.getLaunchMapViewer());
 
         // Multiple Data Sets tab
         enableAdditionalDataSetsGroup(false);
@@ -2575,14 +2549,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
         _spatialOutputTab = new javax.swing.JPanel();
-        _googleEarthGroup = new javax.swing.JPanel();
+        _mapsOutputGroup = new javax.swing.JPanel();
         _includeClusterLocationsInKML = new javax.swing.JCheckBox();
         _createCompressedKMZ = new javax.swing.JCheckBox();
-        _launchKMLViewer = new javax.swing.JCheckBox();
-        _group_cartesian_graph = new javax.swing.JPanel();
-        _launchbrowserforcartesiangraph = new javax.swing.JCheckBox();
-        _group_google_map = new javax.swing.JPanel();
-        _launchbrowserforgooglemap = new javax.swing.JCheckBox();
+        _launch_map_viewer = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        _clustersReportedGroup = new javax.swing.JPanel();
+        _hierarchicalSecondaryClusters = new java.awt.Choice();
+        _hierarchicalLabel = new javax.swing.JLabel();
+        _checkboxReportIndexCoefficients = new javax.swing.JCheckBox();
+        _mostLikelyClustersHierarchically = new javax.swing.JCheckBox();
+        _giniOptimizedClusters = new javax.swing.JCheckBox();
+        _reportedSpatialOptionsGroup = new javax.swing.JPanel();
+        _restrictReportedClustersCheckBox = new javax.swing.JCheckBox();
+        _maxReportedSpatialClusterSizeTextField = new javax.swing.JTextField();
+        _reportedPercentOfPopulationLabel = new javax.swing.JLabel();
+        _reportedSpatialPopulationFileCheckBox = new javax.swing.JCheckBox();
+        _maxReportedSpatialPercentFileTextField = new javax.swing.JTextField();
+        _reportedPercentageOfPopFileLabel = new javax.swing.JLabel();
+        _reportedSpatialDistanceCheckBox = new javax.swing.JCheckBox();
+        _reportedMaxDistanceLabel = new javax.swing.JLabel();
+        _maxReportedSpatialRadiusTextField = new javax.swing.JTextField();
+        _maxReportedRadiusLabel = new javax.swing.JLabel();
         _otherOutputTab = new javax.swing.JPanel();
         _reportCriticalValuesGroup = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
@@ -2636,24 +2624,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _min_cases_label = new javax.swing.JLabel();
         _minimum_number_cases_cluster = new javax.swing.JTextField();
         _min_cases_label2 = new javax.swing.JLabel();
-        _spatial_clusters_tab = new javax.swing.JPanel();
-        _clustersReportedGroup = new javax.swing.JPanel();
-        _hierarchicalSecondaryClusters = new java.awt.Choice();
-        _hierarchicalLabel = new javax.swing.JLabel();
-        _checkboxReportIndexCoefficients = new javax.swing.JCheckBox();
-        _mostLikelyClustersHierarchically = new javax.swing.JCheckBox();
-        _giniOptimizedClusters = new javax.swing.JCheckBox();
-        _reportedSpatialOptionsGroup = new javax.swing.JPanel();
-        _restrictReportedClustersCheckBox = new javax.swing.JCheckBox();
-        _maxReportedSpatialClusterSizeTextField = new javax.swing.JTextField();
-        _reportedPercentOfPopulationLabel = new javax.swing.JLabel();
-        _reportedSpatialPopulationFileCheckBox = new javax.swing.JCheckBox();
-        _maxReportedSpatialPercentFileTextField = new javax.swing.JTextField();
-        _reportedPercentageOfPopFileLabel = new javax.swing.JLabel();
-        _reportedSpatialDistanceCheckBox = new javax.swing.JCheckBox();
-        _reportedMaxDistanceLabel = new javax.swing.JLabel();
-        _maxReportedSpatialRadiusTextField = new javax.swing.JTextField();
-        _maxReportedRadiusLabel = new javax.swing.JLabel();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -4591,8 +4561,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
 
-        _googleEarthGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "KML file for Google Earth"));
-        _googleEarthGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_googleEarthGroup, AppConstants.KMLGOOGLEEARTH_HELPID));
+        _mapsOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maps"));
+        _mapsOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_mapsOutputGroup, AppConstants.KMLGOOGLEEARTH_HELPID));
 
         _includeClusterLocationsInKML.setText("Include All Location IDs in the Clusters");
         _includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {
@@ -4608,95 +4578,274 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _launchKMLViewer.setText("Automatically launch Google Earth");
-        _launchKMLViewer.addItemListener(new java.awt.event.ItemListener() {
+        _launch_map_viewer.setText("Automatically launch requested maps");
+        _launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
             }
         });
 
-        javax.swing.GroupLayout _googleEarthGroupLayout = new javax.swing.GroupLayout(_googleEarthGroup);
-        _googleEarthGroup.setLayout(_googleEarthGroupLayout);
-        _googleEarthGroupLayout.setHorizontalGroup(
-            _googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_googleEarthGroupLayout.createSequentialGroup()
+        jLabel1.setText("KML Options:");
+
+        javax.swing.GroupLayout _mapsOutputGroupLayout = new javax.swing.GroupLayout(_mapsOutputGroup);
+        _mapsOutputGroup.setLayout(_mapsOutputGroupLayout);
+        _mapsOutputGroupLayout.setHorizontalGroup(
+            _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .addComponent(_launchKMLViewer, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
-                .addContainerGap())
+                .addComponent(_launch_map_viewer, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        _googleEarthGroupLayout.setVerticalGroup(
-            _googleEarthGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_googleEarthGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_launchKMLViewer)
+        _mapsOutputGroupLayout.setVerticalGroup(
+            _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_createCompressedKMZ)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_includeClusterLocationsInKML)
+                .addGap(5, 5, 5))
+            .addGroup(_mapsOutputGroupLayout.createSequentialGroup()
+                .addComponent(_launch_map_viewer)
+                .addContainerGap())
+        );
+
+        _clustersReportedGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
+        _clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, AppConstants.SECONDARDY_CLUSTERS_HELPID));
+
+        _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _hierarchicalSecondaryClusters.add("No Geographical Overlap");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in Other Clusters");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in More Likely Clusters");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in Less Likely Clusters");
+        _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
+        _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
+
+        _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
+
+        _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
+        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _mostLikelyClustersHierarchically.setText("Most Likely Clusters, Hierarchically");
+        _mostLikelyClustersHierarchically.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _giniOptimizedClusters.setText("Gini Optimized Cluster Collection");
+        _giniOptimizedClusters.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _clustersReportedGroupLayout = new javax.swing.GroupLayout(_clustersReportedGroup);
+        _clustersReportedGroup.setLayout(_clustersReportedGroupLayout);
+        _clustersReportedGroupLayout.setHorizontalGroup(
+            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_mostLikelyClustersHierarchically, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                    .addComponent(_giniOptimizedClusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _clustersReportedGroupLayout.createSequentialGroup()
+                        .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(0, 119, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        _clustersReportedGroupLayout.setVerticalGroup(
+            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
+                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_mostLikelyClustersHierarchically)
+                    .addComponent(_hierarchicalLabel))
+                .addGap(0, 0, 0)
+                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_giniOptimizedClusters)
+                    .addComponent(_checkboxReportIndexCoefficients))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _group_cartesian_graph.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "HTML file with Cartesian map"));
-        _group_cartesian_graph.setPreferredSize(new java.awt.Dimension(189, 55));
-        _group_cartesian_graph.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_group_cartesian_graph, AppConstants.HTMLCARTESIANMAP_HELPID));
+        _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
 
-        _launchbrowserforcartesiangraph.setText("Automatically launch Cartesian coordinates map");
-        _launchbrowserforcartesiangraph.addItemListener(new java.awt.event.ItemListener() {
+        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
+        _reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, AppConstants.MAXIMIMCLUSTERSREPORTED_HELPID));
+
+        _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
+        _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
                 enableSetDefaultsButton();
             }
         });
-        _launchbrowserforcartesiangraph.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _launchbrowserforcartesiangraphActionPerformed(evt);
+
+        _maxReportedSpatialClusterSizeTextField.setText("50"); // NOI18N
+        _maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);
             }
         });
-
-        javax.swing.GroupLayout _group_cartesian_graphLayout = new javax.swing.GroupLayout(_group_cartesian_graph);
-        _group_cartesian_graph.setLayout(_group_cartesian_graphLayout);
-        _group_cartesian_graphLayout.setHorizontalGroup(
-            _group_cartesian_graphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_group_cartesian_graphLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_launchbrowserforcartesiangraph, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _group_cartesian_graphLayout.setVerticalGroup(
-            _group_cartesian_graphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_launchbrowserforcartesiangraph)
-        );
-
-        _group_google_map.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "HTML file with Google Map"));
-        _group_google_map.setPreferredSize(new java.awt.Dimension(189, 55));
-        _group_google_map.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_group_google_map, AppConstants.HTMLCARTESIANMAP_HELPID));
-
-        _launchbrowserforgooglemap.setText("Automatically launch Google Map");
-        _launchbrowserforcartesiangraph.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
+        _maxReportedSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_maxReportedSpatialClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialClusterSizeTextField.setText("50");
+                }
                 enableSetDefaultsButton();
             }
         });
-        _launchbrowserforgooglemap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _launchbrowserforgooglemapActionPerformed(evt);
+        _maxReportedSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
             }
         });
 
-        javax.swing.GroupLayout _group_google_mapLayout = new javax.swing.GroupLayout(_group_google_map);
-        _group_google_map.setLayout(_group_google_mapLayout);
-        _group_google_mapLayout.setHorizontalGroup(
-            _group_google_mapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_group_google_mapLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_launchbrowserforgooglemap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+
+        _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _maxReportedSpatialPercentFileTextField.setText("50"); // NOI18N
+        _maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);
+            }
+        });
+        _maxReportedSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_maxReportedSpatialPercentFileTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialPercentFileTextField.setText("50");
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        _maxReportedSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
+
+        _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _reportedMaxDistanceLabel.setText("is an ellipse with a"); // NOI18N
+
+        _maxReportedSpatialRadiusTextField.setText("1"); // NOI18N
+        _maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);
+            }
+        });
+        _maxReportedSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_maxReportedSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialRadiusTextField.setText("1");
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        _maxReportedSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
+
+        javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
+        _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
+        _reportedSpatialOptionsGroupLayout.setHorizontalGroup(
+            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(_restrictReportedClustersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                .addComponent(_reportedSpatialPopulationFileCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE))
+                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
+                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                .addComponent(_reportedSpatialDistanceCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_reportedMaxDistanceLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_maxReportedRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
-        _group_google_mapLayout.setVerticalGroup(
-            _group_google_mapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_launchbrowserforgooglemap)
+        _reportedSpatialOptionsGroupLayout.setVerticalGroup(
+            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_restrictReportedClustersCheckBox)
+                .addGap(10, 10, 10)
+                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_reportedPercentOfPopulationLabel))
+                .addGap(10, 10, 10)
+                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_reportedSpatialPopulationFileCheckBox)
+                    .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_reportedPercentageOfPopFileLabel))
+                .addGap(10, 10, 10)
+                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_reportedSpatialDistanceCheckBox)
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_reportedMaxDistanceLabel)
+                        .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_maxReportedRadiusLabel)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _spatialOutputTabLayout = new javax.swing.GroupLayout(_spatialOutputTab);
@@ -4706,21 +4855,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_spatialOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_googleEarthGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_group_cartesian_graph, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
-                    .addComponent(_group_google_map, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE))
+                    .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _spatialOutputTabLayout.setVerticalGroup(
             _spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_spatialOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_googleEarthGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_group_google_map, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_group_cartesian_graph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(157, Short.MAX_VALUE))
+                .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5496,260 +5645,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
 
-        _clustersReportedGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
-        _clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, AppConstants.SECONDARDY_CLUSTERS_HELPID));
-
-        _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-        _hierarchicalSecondaryClusters.add("No Geographical Overlap");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in Other Clusters");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in More Likely Clusters");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in Less Likely Clusters");
-        _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
-        _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
-
-        _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
-
-        _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
-        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _mostLikelyClustersHierarchically.setText("Most Likely Clusters, Hierarchically");
-        _mostLikelyClustersHierarchically.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _giniOptimizedClusters.setText("Gini Optimized Cluster Collection");
-        _giniOptimizedClusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _clustersReportedGroupLayout = new javax.swing.GroupLayout(_clustersReportedGroup);
-        _clustersReportedGroup.setLayout(_clustersReportedGroupLayout);
-        _clustersReportedGroupLayout.setHorizontalGroup(
-            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_mostLikelyClustersHierarchically, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-                    .addComponent(_giniOptimizedClusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _clustersReportedGroupLayout.createSequentialGroup()
-                        .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(0, 119, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _clustersReportedGroupLayout.setVerticalGroup(
-            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_mostLikelyClustersHierarchically)
-                    .addComponent(_hierarchicalLabel))
-                .addGap(0, 0, 0)
-                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_giniOptimizedClusters)
-                    .addComponent(_checkboxReportIndexCoefficients))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
-
-        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
-        _reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, AppConstants.MAXIMIMCLUSTERSREPORTED_HELPID));
-
-        _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
-        _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _maxReportedSpatialClusterSizeTextField.setText("50"); // NOI18N
-        _maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);
-            }
-        });
-        _maxReportedSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialClusterSizeTextField.setText("50");
-                }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
-
-        _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _maxReportedSpatialPercentFileTextField.setText("50"); // NOI18N
-        _maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);
-            }
-        });
-        _maxReportedSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialPercentFileTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialPercentFileTextField.setText("50");
-                }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
-
-        _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _reportedMaxDistanceLabel.setText("is an ellipse with a"); // NOI18N
-
-        _maxReportedSpatialRadiusTextField.setText("1"); // NOI18N
-        _maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);
-            }
-        });
-        _maxReportedSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialRadiusTextField.setText("1");
-                }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
-
-        javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
-        _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
-        _reportedSpatialOptionsGroupLayout.setHorizontalGroup(
-            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_restrictReportedClustersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_reportedSpatialPopulationFileCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE))
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_reportedSpatialDistanceCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedMaxDistanceLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap())
-        );
-        _reportedSpatialOptionsGroupLayout.setVerticalGroup(
-            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_restrictReportedClustersCheckBox)
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_reportedPercentOfPopulationLabel))
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_reportedSpatialPopulationFileCheckBox)
-                    .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_reportedPercentageOfPopFileLabel))
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportedSpatialDistanceCheckBox)
-                    .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_reportedMaxDistanceLabel)
-                        .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_maxReportedRadiusLabel)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _spatial_clusters_tabLayout = new javax.swing.GroupLayout(_spatial_clusters_tab);
-        _spatial_clusters_tab.setLayout(_spatial_clusters_tabLayout);
-        _spatial_clusters_tabLayout.setHorizontalGroup(
-            _spatial_clusters_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatial_clusters_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatial_clusters_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _spatial_clusters_tabLayout.setVerticalGroup(
-            _spatial_clusters_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatial_clusters_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(130, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Spatial Clusters", _spatial_clusters_tab);
-
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -5779,7 +5674,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5793,14 +5688,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void _printTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__printTitleActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event__printTitleActionPerformed
-
-    private void _launchbrowserforcartesiangraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__launchbrowserforcartesiangraphActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__launchbrowserforcartesiangraphActionPerformed
-
-    private void _launchbrowserforgooglemapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__launchbrowserforgooglemapActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__launchbrowserforgooglemapActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
@@ -5860,10 +5747,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
     private javax.swing.JCheckBox _giniOptimizedClusters;
-    private javax.swing.JPanel _googleEarthGroup;
     private javax.swing.JPanel _graphOutputGroup;
-    private javax.swing.JPanel _group_cartesian_graph;
-    private javax.swing.JPanel _group_google_map;
     private javax.swing.JLabel _hierarchicalLabel;
     private java.awt.Choice _hierarchicalSecondaryClusters;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
@@ -5876,9 +5760,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _iterativeScanGroup;
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
-    private javax.swing.JCheckBox _launchKMLViewer;
-    private javax.swing.JCheckBox _launchbrowserforcartesiangraph;
-    private javax.swing.JCheckBox _launchbrowserforgooglemap;
+    private javax.swing.JCheckBox _launch_map_viewer;
     private javax.swing.JPanel _limit_clusters_risk_group;
     private javax.swing.JCheckBox _limit_high_clusters;
     private javax.swing.JTextField _limit_high_clusters_value;
@@ -5886,6 +5768,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _limit_low_clusters_value;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
+    private javax.swing.JPanel _mapsOutputGroup;
     private javax.swing.JButton _maxCirclePopFileBrowseButton;
     private javax.swing.JTextField _maxCirclePopulationFilenameTextField;
     private javax.swing.JLabel _maxIterativeScansLabel;
@@ -5993,7 +5876,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.ButtonGroup _spatialWindowShapeButtonGroup;
     private javax.swing.JPanel _spatialWindowShapeGroup;
     private javax.swing.JPanel _spatialWindowTab;
-    private javax.swing.JPanel _spatial_clusters_tab;
     private javax.swing.JPanel _specialNeighborFilesGroup;
     private javax.swing.JCheckBox _specifiyMetaLocationsFileCheckBox;
     private javax.swing.JCheckBox _specifiyNeighborsFileCheckBox;
@@ -6033,6 +5915,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _userDefinedRunTitle;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables

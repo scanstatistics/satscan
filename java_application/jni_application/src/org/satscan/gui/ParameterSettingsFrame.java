@@ -2999,32 +2999,32 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output Format"));
+        _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output"));
         _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, AppConstants.GEOGRAPHICALOUTPUT_HELPID));
 
         _reportGoogleEarthKML.setText("KML file for Google Earth");
         _reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                _advancedParametersSetting.enableGoogleEarthGroup();
+                _advancedParametersSetting.enableMapsOutputGroup();
             }
         });
 
         _reportShapefile.setText("Shapefile for GIS software");
 
-        _reportGoogleMap.setText("HTML file with Google Map");
+        _reportGoogleMap.setText("HTML file for Google Map");
         _reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                _advancedParametersSetting.enableGoogleMapGroup();
+                _advancedParametersSetting.enableMapsOutputGroup();
             }
         });
 
-        _reportCartesianGraph.setText("HTML file with Cartesian map");
+        _reportCartesianGraph.setText("HTML file for Cartesian map");
         _reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                _advancedParametersSetting.enableCartesianGraphGroup();
+                _advancedParametersSetting.enableMapsOutputGroup();
             }
         });
 
@@ -3035,19 +3035,19 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
                     .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
                     .addComponent(_reportShapefile, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-                    .addComponent(_reportGoogleMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_reportGoogleMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalOutputGroupLayout.setVerticalGroup(
             _geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
-                .addComponent(_reportGoogleEarthKML)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportGoogleMap)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportGoogleEarthKML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_reportShapefile)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_reportCartesianGraph)
@@ -3075,7 +3075,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap()
                 .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)

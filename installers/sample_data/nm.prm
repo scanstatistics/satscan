@@ -211,16 +211,14 @@ ReportPowerEvaluationSimulationData=n
 PowerEvaluationsSimulationOutputFilename=
 
 [Spatial Output]
-;automatically launch Google Earth - gui only (y/n)
-LaunchKMLViewer=y
+;automatically launch map viewer - gui only (y/n)
+LaunchMapViewer=y
 ;create compressed KMZ file instead of KML file (y/n)
 CompressKMLtoKMZ=n
 ;whether to include cluster locations kml output (y/n)
 IncludeClusterLocationsKML=y
 ;threshold for generating separate kml files for cluster locations (positive integer)
 ThresholdLocationsSeparateKML=1000
-;automatically launch Cartesian graph - gui only (y/n)
-LaunchCartesianGraph=y
 ;report hierarchical clusters (y/n)
 ReportHierarchicalClusters=y
 ;criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
@@ -247,6 +245,8 @@ MaxSizeInMaxCirclePopulationFile_Reported=50
 UseDistanceFromCenterOption_Reported=n
 ;maximum reported spatial size in distance from center (positive integer)
 MaxSpatialSizeInDistanceFromCenter_Reported=1
+;generate Google Maps output (y/n)
+OutputGoogleMaps=n
 
 [Temporal Output]
 ;output temporal graph HTML file (y/n)
@@ -296,5 +296,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=9.5.0
+Version=9.6.0
 

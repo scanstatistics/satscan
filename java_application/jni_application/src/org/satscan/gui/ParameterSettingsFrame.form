@@ -1740,7 +1740,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_textOutputFormatGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
+                      <Component id="_geographicalOutputGroup" min="-2" pref="124" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="37" max="32767" attributes="0"/>
@@ -2110,7 +2110,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Geographical Output Format">
+                    <TitledBorder title="Geographical Output">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -2128,10 +2128,10 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_reportGoogleEarthKML" alignment="0" pref="513" max="32767" attributes="0"/>
                               <Component id="_reportCartesianGraph" alignment="0" pref="513" max="32767" attributes="0"/>
                               <Component id="_reportShapefile" alignment="0" pref="513" max="32767" attributes="0"/>
-                              <Component id="_reportGoogleMap" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_reportGoogleMap" max="32767" attributes="0"/>
+                              <Component id="_reportGoogleEarthKML" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2140,10 +2140,10 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="_reportGoogleEarthKML" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_reportGoogleMap" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_reportGoogleEarthKML" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_reportShapefile" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_reportCartesianGraph" min="-2" max="-2" attributes="0"/>
@@ -2158,7 +2158,7 @@
                     <Property name="text" type="java.lang.String" value="KML file for Google Earth"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableGoogleEarthGroup();&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableMapsOutputGroup();&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportShapefile">
@@ -2168,18 +2168,18 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportGoogleMap">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="HTML file with Google Map"/>
+                    <Property name="text" type="java.lang.String" value="HTML file for Google Map"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableGoogleMapGroup();&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableMapsOutputGroup();&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportCartesianGraph">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="HTML file with Cartesian map"/>
+                    <Property name="text" type="java.lang.String" value="HTML file for Cartesian map"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableCartesianGraphGroup();&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            _advancedParametersSetting.enableMapsOutputGroup();&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

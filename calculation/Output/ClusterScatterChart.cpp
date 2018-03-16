@@ -46,7 +46,7 @@ const char * CartesianGraph::TEMPLATE = " \
             jQuery.noConflict(); \n \
         </script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <!-- <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.1.js'></script> --> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.1.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
@@ -130,10 +130,10 @@ const char * CartesianGraph::TEMPLATE = " \
                try { \n \
                     if ( clusters.every(function(c) { return c.significant == false; }))\n \
                         jQuery('#id_view_all').prop('checked', true);\n \
-                    if ( clusters.every(function(c) { return c.hierarchical == false; }))\n \
-                        jQuery('#id_hierarchical').prop('checked', false);\n \
-                    if (clusters.every(function(c) { return c.gini == false; }))\n \
-                        jQuery('#id_gini').prop('checked', false);\n \
+                    //if ( clusters.every(function(c) { return c.hierarchical == false; }))\n \
+                    //    jQuery('#id_hierarchical').prop('checked', false);\n \
+                    //if (clusters.every(function(c) { return c.gini == false; }))\n \
+                    //    jQuery('#id_gini').prop('checked', false);\n \
                     jQuery('#id_rates_option').toggle(parameters.scanrate == 3);\n \
                     jQuery('#id_secondary_clusters_option').toggle(parameters.giniscan);\n \
                     showGraph();\n \
@@ -194,8 +194,8 @@ const char * CartesianGraph::TEMPLATE = " \
                     </div> \n \
                     <div id=\"id_secondary_clusters_option\"> \n \
                         <div>Secondary Clusters:</div>\n \
-                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" checked=checked />Hierarchical</label>\n \
-                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_gini\" value=\"secondary\" checked=checked />Gini</label>\n \
+                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" />Hierarchical</label>\n \
+                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_gini\" value=\"secondary\" />Gini</label>\n \
                         <p class=\"help-block\">Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \

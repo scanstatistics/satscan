@@ -561,7 +561,7 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
     _parameter_info[INCLUDE_LOCATIONS_KML] = ParamInfo(INCLUDE_LOCATIONS_KML, "IncludeClusterLocationsKML", 1, _spatial_output_section);
     _parameter_info[LOCATIONS_THRESHOLD_KML] = ParamInfo(LOCATIONS_THRESHOLD_KML, "ThresholdLocationsSeparateKML", 2, _spatial_output_section);
     _parameter_info[COMPRESS_KML_OUTPUT] = ParamInfo(COMPRESS_KML_OUTPUT, "CompressKMLtoKMZ", 3, _spatial_output_section);
-    _parameter_info[LAUNCH_KML_VIEWER] = ParamInfo(LAUNCH_KML_VIEWER, "LaunchKMLViewer", 4, _spatial_output_section);
+    _parameter_info[LAUNCH_MAP_VIEWER] = ParamInfo(LAUNCH_MAP_VIEWER, "LaunchKMLViewer", 4, _spatial_output_section);
 
     _parameter_info[REPORT_HIERARCHICAL_CLUSTERS] = ParamInfo(REPORT_HIERARCHICAL_CLUSTERS, "ReportHierarchicalClusters", 5, _spatial_output_section);
     _parameter_info[REPORT_GINI_CLUSTERS] = ParamInfo(REPORT_GINI_CLUSTERS, "ReportGiniClusters", 6, _spatial_output_section);
@@ -630,11 +630,12 @@ void IniParameterSpecification::Build_9_5_x_ParameterList() {
 void IniParameterSpecification::Build_9_6_x_ParameterList() {
     Build_9_5_x_ParameterList();
 
+    /* This option was combined with another setting. */
+    _parameter_info[LAUNCH_CARTESIAN_MAP] = ParamInfo(LAUNCH_CARTESIAN_MAP, NotUsed, 0, _not_used_section);
+    _parameter_info[LAUNCH_MAP_VIEWER] = ParamInfo(LAUNCH_MAP_VIEWER, "LaunchMapViewer", 4, _spatial_output_section);
     _parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 19, _spatial_output_section);
-    _parameter_info[LAUNCH_GOOGLE_MAP] = ParamInfo(LAUNCH_GOOGLE_MAP, "LaunchCartesianGraph", 20, _spatial_output_section);
-    _parameter_info[GOOGLE_MAP_APIKEY] = ParamInfo(GOOGLE_MAP_APIKEY, "ApiKeyGoogleMaps", 21, _spatial_output_section);
 
-    assert(_parameter_info.size() == 146);
+    assert(_parameter_info.size() == 144);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

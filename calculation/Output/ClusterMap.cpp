@@ -95,7 +95,7 @@ const char * ClusterMap::TEMPLATE = " \
                     </div> \n \
                     <div id=\"id_secondary_clusters_option\"> \n \
                         <div>Secondary Clusters:</div>\n \
-                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" checked=checked />Hierarchical</label>\n \
+                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" />Hierarchical</label>\n \
                         <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_gini\" value=\"secondary\" />Gini</label>\n \
                         <p class=\"help-block\">Display options for secondary clusters.</p>\n \
                     </div> \n \
@@ -134,104 +134,9 @@ const char * ClusterMap::TEMPLATE = " \
             var clusters = [ \n \
             --cluster-definitions-- \n \
             ]; \n \
-            var bounds;  \n \
-            var map; \n \
-            var markers = [];\n \
-            function initMap() {\n \
-                icon_high = {\n \
-                    url: '--resource-path--images/small_dot_red.png',\n \
-                    size: new google.maps.Size(9, 9), origin: new google.maps.Point(0, 0), anchor: new google.maps.Point(5, 5)\n \
-                };\n \
-                icon_low = {\n \
-                    url: '--resource-path--images/small_dot_blue.png',\n \
-                    size: new google.maps.Size(9, 9), origin: new google.maps.Point(0, 0), anchor: new google.maps.Point(5, 5)\n \
-                };\n \
-                icon_loc = {\n \
-                    url: '--resource-path--images/small_dot_black.png',\n \
-                    size: new google.maps.Size(9, 9), origin: new google.maps.Point(0, 0), anchor: new google.maps.Point(5, 5)\n \
-                };\n \
-                bounds = new google.maps.LatLngBounds({lat: clusters[0].lat, lng: clusters[0].lng}); \n \
-                map = new google.maps.Map(document.getElementById('map'), { center: {lat: clusters[0].lat, lng: clusters[0].lng}, zoom: 0 });\n \
-                $.each(clusters, function(i, cluster) {\n \
-                    cluster.circle = new google.maps.Circle({\n \
-                        strokeColor: cluster.color,\n \
-                        strokeOpacity: 0.8,\n \
-                        strokeWeight: 0.5,\n \
-                        fillColor: cluster.color,\n \
-                        fillOpacity: 0.35,\n \
-                        center: {lat: cluster.lat, lng: cluster.lng},\n \
-                        radius: cluster.radius\n \
-                    });\n \
-                    bounds.union(cluster.circle.getBounds()); \n \
-                    var infowindow = new google.maps.InfoWindow({ position: {lat: cluster.lat, lng: cluster.lng}, content: cluster.tip });\n \
-                    cluster.circle.addListener('click', function() { infowindow.open(map, cluster.circle); });\n \
-                });\n \
-                 $.each(entire_region_points, function(i, point){ bounds.extend({lat: point[1], lng: point[0]}); }); \n \
-                 map.fitBounds(bounds); \n \
-                showGraph();\n \
-            }\n \
-            function inViewport(el) {\n \
-                var elH = $(el).outerHeight(), H = $(window).height(), r = $(el)[0].getBoundingClientRect(), t = r.top, b = r.bottom; \n \
-                return Math.max(0, t > 0 ? Math.min(elH, H - t) : (b < H ? b : H)); \n \
-            } \n \
-            function sizeViewPort() { \n \
-                var row = $('.row'); \n \
-                var options_div = $('.chart-options-section'); \n \
-                var dimension; \n \
-                if ($('#id_fit_graph_viewport').is(':checked')) \n \
-                    dimension = Math.max($(window).height() - $('#id_banner').height(), inViewport('.row')) - 50; \n \
-                else \n \
-                    dimension = Math.max($(row).width() - $(options_div).width() - 100, $(options_div).width() - 50); \n \
-                $('#map-outer').height(dimension); \n \
-                $('#map').height(dimension - 40); \n \
-            } \n \
-      function showGraph() { \n \
-        /* Remove all markers from map and clear array. */ \n \
-        $.each(markers, function(i, marker) { marker.setMap(null); }); markers = []; \n \
-        /* Remove all circles from map. */ \n \
-        $.each(clusters, function(i, cluster) { cluster.circle.setMap(null); }); \n \
-        sizeViewPort(); \n \
-        display_stats = {displayed_clusters: 0, displayed_cluster_points: 0, displayed_points: 0}; \n \
-        $.each(clusters, function(i, cluster) { \n \
-            var add = true; \n \
-            if (parameters.scanrate == 3) { \n \
-                if ($('#id_view_high').is(':checked')) add &= (cluster.highrate == true); \n \
-                if ($('#id_view_low').is(':checked')) add &= (cluster.highrate == false); \n \
-            } \n \
-            if ($('#id_hierarchical').is(':checked') && $('#id_gini').is(':checked')) add &= (cluster.hierarchical == true && cluster.gini == true); \n \
-            else if ($('#id_hierarchical').is(':checked')) add &= (cluster.hierarchical == true); \n \
-            else if ($('#id_gini').is(':checked')) add &= (cluster.gini == true); \n \
-            else add &= true; \n \
-            if ($('#id_view_significant').is(':checked')) add &= (cluster.significant == true); \n \
-            if (add && $('#id_cluster_circles').is(':checked')) { \n \
-                cluster.circle.setMap(map); \n \
-                display_stats.displayed_clusters++; \n \
-            } \n \
-            if (add && $('#id_cluster_locations').is(':checked')) { \n \
-                $.each(cluster.points, function(i, point){ addMarker({lat: point[1], lng: point[0]}, cluster.highrate ? icon_high : icon_low); }); \n \
-                display_stats.displayed_cluster_points += cluster.points.length; \n \
-                display_stats.displayed_points += cluster.points.length; \n \
-            } else if ($('#id_show_location_points').is(':checked')) { \n \
-                $.each(cluster.points, function(i, point){ addMarker({lat: point[1], lng: point[0]}, icon_loc); }); \n \
-                display_stats.displayed_points += cluster.points.length; \n \
-            } \n \
-        }); \n \
-        if ($('#id_show_location_points').is(':checked')) { \n \
-            $.each(entire_region_points, function(i, point){ addMarker({lat: point[1], lng: point[0]}, icon_loc); }); \n \
-            display_stats.displayed_points += entire_region_points.length; \n \
-        } \n \
-        $('#id_cluster_count').html(display_stats.displayed_clusters); \n \
-        $('#id_cluster_point_count').html(display_stats.displayed_cluster_points); \n \
-        $('#id_point_count').html(display_stats.displayed_points); \n \
-      } \n \
-      // Adds a marker to the map and push to the array. \n \
-      function addMarker(location, icon) { \n \
-        markers.push(new google.maps.Marker({ position: location, map: map, opacity: 0.85, icon: icon })); \n \
-      } \n \
-      $(window).resizeend(function() { sizeViewPort(); }); \n \
-      $('#id_fit_graph_viewport').on('click', function(){ sizeViewPort(); }); \n \
-      $('.options-row :input').not('#id_fit_graph_viewport').on('click', function(){ showGraph(); }); \n \
+            var resource_path = '--resource-path--'; \n \
     </script> \n \
+    <script src='--resource-path--javascript/clustercharts/mapgoogle-1.0.js'></script> \n \
     <script src='https://maps.googleapis.com/maps/api/js?key=--api-key--&callback=initMap' \n \
     async defer></script> \n \
      </body> \n \
@@ -361,8 +266,7 @@ void ClusterMap::finalize() {
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
         templateReplace(html, "--parameters--", buffer.c_str());
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
-        templateReplace(html, "--api-key--", _dataHub.GetParameters().getGoogleMapsApiKey().empty() ? std::string(API_KEY) : _dataHub.GetParameters().getGoogleMapsApiKey());
-        
+        templateReplace(html, "--api-key--", std::string(API_KEY));
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();

@@ -140,7 +140,6 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintInferenceParameters(fp);
         PrintBorderAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
-        PrintSpatialClustersParameters(fp);
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
@@ -411,8 +410,8 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
-/** Prints 'Spatial Clusters' tab parameters to file stream. */
-void ParametersPrint::PrintSpatialClustersParameters(FILE* fp) const {
+/** Prints 'Spatial Output' tab parameters to file stream. */
+void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer, worker;
 
@@ -422,6 +421,16 @@ void ParametersPrint::PrintSpatialClustersParameters(FILE* fp) const {
 
         // skip these settings when performing power evaluations without running an analysis
         if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
+
+        if (gParameters.getOutputKMLFile() || gParameters.getOutputCartesianGraph() || gParameters.getOutputGoogleMapsFile())
+            settings.push_back(std::make_pair("Automatically Launch Map", (gParameters.getLaunchMapViewer() ? "Yes" : "No")));
+
+        if (gParameters.getOutputKMLFile()) {
+            settings.push_back(std::make_pair("Compress KML File into KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
+            printString(buffer, "%u", gParameters.getLocationsThresholdKML());
+            settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
+        }
 
         settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
         if (gParameters.getReportHierarchicalClusters()) {
@@ -475,39 +484,6 @@ void ParametersPrint::PrintSpatialClustersParameters(FILE* fp) const {
                     gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
                 settings.push_back(std::make_pair("Reported Clusters", buffer));
             }
-        }
-        WriteSettingsContainer(settings, "Spatial Clusters", fp);
-    }
-    catch (prg_exception& x) {
-        x.addTrace("PrintSpatialClustersParameters()", "ParametersPrint");
-        throw;
-    }
-}
-
-/** Prints 'Spatial Output' tab parameters to file stream. */
-void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
-    SettingContainer_t settings;
-    std::string buffer, worker;
-
-    try {
-        // skip these settings for purely temporal analysis
-        if (gParameters.GetIsPurelyTemporalAnalysis()) return;
-
-        // skip these settings when performing power evaluations without running an analysis
-        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
-
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
-            settings.push_back(std::make_pair("Automatically Launch Google Earth",(gParameters.getLaunchKMLViewer() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Compress KML File into KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
-            printString(buffer, "%u", gParameters.getLocationsThresholdKML());
-            settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
-        }
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputGoogleMapsFile()) {
-            settings.push_back(std::make_pair("Automatically launch Google map of clusters", (gParameters.getLaunchBrowserForGoogleMap() ? "Yes" : "No")));
-        }
-        if (gParameters.getOutputCartesianGraph()) {
-            settings.push_back(std::make_pair("Automatically launch Cartesian coordinates map", (gParameters.getLaunchBrowserForCartesianGraph() ? "Yes" : "No")));
         }
 
         WriteSettingsContainer(settings, "Spatial Output", fp);

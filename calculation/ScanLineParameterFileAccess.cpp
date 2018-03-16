@@ -148,7 +148,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 126)";
     case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 127)";
     case COMPRESS_KML_OUTPUT                : return "compress the kml output into a kmz file (line 128)";
-    case LAUNCH_KML_VIEWER                  : return "whether to launch kml/kmz viewer - gui only (line 129)";
+    case LAUNCH_MAP_VIEWER                  : return "whether to launch map viewer - gui only (line 129)";
     case ADJUST_WEEKLY_TRENDS               : return "adjust for weekly trends, nonparametric (line 130)";
     case MIN_TEMPORAL_CLUSTER               : return "minimum temporal cluster size in time aggregation units (line 131)";
     case USER_DEFINED_TITLE                 : return "user defined title (line 132)";
@@ -164,8 +164,6 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case MIN_CASES_HIGHRATE_CLUSTERS        : return "minimum cases in high rate cluster (line 142)";
     case LAUNCH_CARTESIAN_MAP               : return "whether to launch cartesian graph - gui only (line 129)";
     case OUTPUT_GOOGLE_MAP                  : return "whether to generate google maps output (line 130)";
-    case LAUNCH_GOOGLE_MAP                  : return "whether to launch google maps - gui only (line 131)";
-    case GOOGLE_MAP_APIKEY                  : return "google maps api key (line 132)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

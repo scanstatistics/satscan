@@ -134,7 +134,7 @@ enum ParameterType
     INCLUDE_LOCATIONS_KML,          /* whether to include cluster locations kml output */
     LOCATIONS_THRESHOLD_KML,        /* threshold for generating separate kml files for cluster locations */
     COMPRESS_KML_OUTPUT,            /* compress the kml output into a kmz file */
-    LAUNCH_KML_VIEWER,              /* whether to launch kml/kmz viewer - gui only */
+    LAUNCH_MAP_VIEWER,              /* whether to launch map viewer - gui only */
     ADJUST_WEEKLY_TRENDS,           /* adjust for weekly trends, nonparametric */
     MIN_TEMPORAL_CLUSTER,           /* minimum temporal cluster size */
     USER_DEFINED_TITLE,             /* user defined title */
@@ -148,10 +148,8 @@ enum ParameterType
     RISK_THESHOLD_LOW_CLUSTERS,     /* threshold for low clusters by risk level */
     MIN_CASES_LOWRATE_CLUSTERS,     /* minimum number of cases in cluster when scanning low rates */
     MIN_CASES_HIGHRATE_CLUSTERS,    /* minimum number of cases in cluster when scanning high rates */
-    LAUNCH_CARTESIAN_MAP,           /* whether to launch browser to view cartesian graph */
-    OUTPUT_GOOGLE_MAP,              /* whether to generate google maps output */
-    LAUNCH_GOOGLE_MAP,              /* whether to launch browser to view google map */
-    GOOGLE_MAP_APIKEY               /* api key for google maps */
+    LAUNCH_CARTESIAN_MAP,           /* whether to launch browser to view cartesian graph - no longer used */
+    OUTPUT_GOOGLE_MAP               /* whether to generate google maps output */
 };
 /** analysis and cluster types */
 enum AnalysisType

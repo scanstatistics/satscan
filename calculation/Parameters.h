@@ -147,14 +147,12 @@ class CParameters {
     bool                                _include_locations_kml;                 /** include cluster locations in kml output */
     unsigned int                        _locations_threshold_kml;               /** threshold before cluster locations are put into separate kml files */
     bool                                _compress_kml_output;                   /** compress kml output into kmz format */
-    bool                                _launch_kml_viewer;                     /** launch kml viewer (Google Earth) */
+    bool                                _launch_map_viewer;                     /** launch map viewer */
     bool                                _calculate_oliveira_f;                  /** whether to calculate Oliveira's F */
     unsigned int                        _num_oliveira_sets;                     /** number of data sets to evaluate for Oliveira's F */
     double                              _oliveira_pvalue_cutoff;                /** P-Value used to limit clusters in Oliveira's F calcuation */
 
     bool                                _output_google_map;                     /** generate google maps output file */
-    bool                                _launch_browser_google_map;             /** launch Google maps viewer (web browser) */
-    std::string                         _google_maps_api_key;                   /** Google Maps api key */
 
     /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
@@ -239,7 +237,6 @@ class CParameters {
     unsigned int                        _minimum_temporal_cluster_size;          /* mimimum temporal cluster size in time aggregation units */
 
     bool                                _output_cartesian_graph;                 /** generate KML output file */
-    bool                                _launch_browser_for_cartesian_graph;     /** launch browser to display graph */
     bool                                _risk_limit_high_clusters;               /** restrict high rate clusters by risk level */
     double                              _risk_threshold_high_clusters;           /** threshold for high rate clusters */
     bool                                _risk_limit_low_clusters;                /** restrict low rate clusters by risk level */
@@ -267,13 +264,6 @@ class CParameters {
 
     bool                                getOutputGoogleMapsFile() const { return _output_google_map; }
     void                                setOutputGoogleMapsFile(bool b) { _output_google_map = b; }
-    bool                                getLaunchBrowserForGoogleMap() const { return _launch_browser_google_map; }
-    void                                setLaunchBrowserForGoogleMap(bool b) { _launch_browser_google_map = b; }
-    const std::string                 & getGoogleMapsApiKey() const { return _google_maps_api_key; }
-    void                                setGoogleMapsApiKey(const char * api_key) { _google_maps_api_key = api_key; }
-
-    bool                                getLaunchBrowserForCartesianGraph() const { return _launch_browser_for_cartesian_graph; }
-    void                                setLaunchBrowserForCartesianGraph(bool b) { _launch_browser_for_cartesian_graph = b; }
 
     unsigned int                        getMinimumCasesLowRateClusters() const { return _minimum_low_rate_cases; }
     void                                setMinimumCasesLowRateClusters(unsigned int u) { _minimum_low_rate_cases = u; }
@@ -345,8 +335,8 @@ class CParameters {
     bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
-    bool                                getLaunchKMLViewer() const {return _launch_kml_viewer;}
-    void                                setLaunchKMLViewer(bool b) {_launch_kml_viewer = b;}
+    bool                                getLaunchMapViewer() const {return _launch_map_viewer;}
+    void                                setLaunchMapViewer(bool b) {_launch_map_viewer = b;}
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}

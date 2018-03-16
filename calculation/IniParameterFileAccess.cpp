@@ -378,11 +378,10 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteSpatialOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
-        WriteIniParameter(WriteFile, LAUNCH_KML_VIEWER, GetParameterString(LAUNCH_KML_VIEWER, s).c_str(), GetParameterComment(LAUNCH_KML_VIEWER));
+        WriteIniParameter(WriteFile, LAUNCH_MAP_VIEWER, GetParameterString(LAUNCH_MAP_VIEWER, s).c_str(), GetParameterComment(LAUNCH_MAP_VIEWER));
         WriteIniParameter(WriteFile, COMPRESS_KML_OUTPUT, GetParameterString(COMPRESS_KML_OUTPUT, s).c_str(), GetParameterComment(COMPRESS_KML_OUTPUT));
         WriteIniParameter(WriteFile, INCLUDE_LOCATIONS_KML, GetParameterString(INCLUDE_LOCATIONS_KML, s).c_str(), GetParameterComment(INCLUDE_LOCATIONS_KML));
         WriteIniParameter(WriteFile, LOCATIONS_THRESHOLD_KML, GetParameterString(LOCATIONS_THRESHOLD_KML, s).c_str(), GetParameterComment(LOCATIONS_THRESHOLD_KML));
-        WriteIniParameter(WriteFile, LAUNCH_CARTESIAN_MAP, GetParameterString(LAUNCH_CARTESIAN_MAP, s).c_str(), GetParameterComment(LAUNCH_CARTESIAN_MAP));
         WriteIniParameter(WriteFile, REPORT_HIERARCHICAL_CLUSTERS, GetParameterString(REPORT_HIERARCHICAL_CLUSTERS, s).c_str(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS));
         WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
         WriteIniParameter(WriteFile, REPORT_GINI_CLUSTERS, GetParameterString(REPORT_GINI_CLUSTERS, s).c_str(), GetParameterComment(REPORT_GINI_CLUSTERS));
@@ -396,11 +395,7 @@ void IniParameterFileAccess::WriteSpatialOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPFILE_REPORTED));
         WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
         WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
-
         WriteIniParameter(WriteFile, OUTPUT_GOOGLE_MAP, GetParameterString(OUTPUT_GOOGLE_MAP, s).c_str(), GetParameterComment(OUTPUT_GOOGLE_MAP));
-        WriteIniParameter(WriteFile, LAUNCH_GOOGLE_MAP, GetParameterString(LAUNCH_GOOGLE_MAP, s).c_str(), GetParameterComment(LAUNCH_GOOGLE_MAP));
-        WriteIniParameter(WriteFile, GOOGLE_MAP_APIKEY, GetParameterString(GOOGLE_MAP_APIKEY, s).c_str(), GetParameterComment(GOOGLE_MAP_APIKEY));
-
     } catch (prg_exception& x) {
         x.addTrace("WriteSpatialOutputSettings()","IniParameterFileAccess");
         throw;

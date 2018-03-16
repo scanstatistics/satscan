@@ -212,7 +212,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
       case COMPRESS_KML_OUTPUT          : return "create compressed KMZ file instead of KML file (y/n)";
-      case LAUNCH_KML_VIEWER            : return "automatically launch Google Earth - gui only (y/n)";
+      case LAUNCH_MAP_VIEWER            : return "automatically launch map viewer - gui only (y/n)";
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       case MIN_TEMPORAL_CLUSTER         : return "minimum temporal cluster size (in time aggregation units)";
       case USER_DEFINED_TITLE           : return "user-defined title for results file";
@@ -227,10 +227,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MIN_CASES_LOWRATE_CLUSTERS   : return "minimum cases in low rate clusters (positive integer)";
       case MIN_CASES_HIGHRATE_CLUSTERS  : return "minimum cases in high clusters (positive integer)";
       case LAUNCH_CARTESIAN_MAP         : return "automatically launch Cartesian graph - gui only (y/n)";
-
       case OUTPUT_GOOGLE_MAP            : return "generate Google Maps output (y/n)";
-      case LAUNCH_GOOGLE_MAP            : return "automatically launch Google Map - gui only (y/n)";
-      case GOOGLE_MAP_APIKEY            : return "api key for Google Maps (string)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -388,7 +385,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case INCLUDE_LOCATIONS_KML        : return AsString(s, gParameters.getIncludeLocationsKML());
       case LOCATIONS_THRESHOLD_KML      : return AsString(s, gParameters.getLocationsThresholdKML());
       case COMPRESS_KML_OUTPUT          : return AsString(s, gParameters.getCompressClusterKML());
-      case LAUNCH_KML_VIEWER            : return AsString(s, gParameters.getLaunchKMLViewer());
+      case LAUNCH_MAP_VIEWER            : return AsString(s, gParameters.getLaunchMapViewer());
       case ADJUST_WEEKLY_TRENDS         : return AsString(s, gParameters.getAdjustForWeeklyTrends());
       case MIN_TEMPORAL_CLUSTER         : return AsString(s, gParameters.getMinimumTemporalClusterSize());
       case USER_DEFINED_TITLE           : s = gParameters.GetTitleName().c_str(); return s;
@@ -402,10 +399,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case RISK_THESHOLD_LOW_CLUSTERS   : return AsString(s, gParameters.getRiskThresholdLowClusters());
       case MIN_CASES_LOWRATE_CLUSTERS   : return AsString(s, gParameters.getMinimumCasesLowRateClusters());
       case MIN_CASES_HIGHRATE_CLUSTERS  : return AsString(s, gParameters.getMinimumCasesHighRateClusters());
-      case LAUNCH_CARTESIAN_MAP         : return AsString(s, gParameters.getLaunchBrowserForCartesianGraph());
+      case LAUNCH_CARTESIAN_MAP         : s = "0"; return s;
       case OUTPUT_GOOGLE_MAP            : return AsString(s, gParameters.getOutputGoogleMapsFile());
-      case LAUNCH_GOOGLE_MAP            : return AsString(s, gParameters.getLaunchBrowserForGoogleMap());
-      case GOOGLE_MAP_APIKEY            : s = gParameters.getGoogleMapsApiKey().c_str(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -796,7 +791,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case INCLUDE_LOCATIONS_KML        : gParameters.setIncludeLocationsKML(ReadBoolean(sParameter, eParameterType)); break;
       case LOCATIONS_THRESHOLD_KML      : gParameters.setLocationsThresholdKML(ReadUnsignedInt(sParameter, eParameterType)); break;
       case COMPRESS_KML_OUTPUT          : gParameters.setCompressClusterKML(ReadBoolean(sParameter, eParameterType)); break;
-      case LAUNCH_KML_VIEWER            : gParameters.setLaunchKMLViewer(ReadBoolean(sParameter, eParameterType)); break;
+      case LAUNCH_MAP_VIEWER            : gParameters.setLaunchMapViewer(ReadBoolean(sParameter, eParameterType)); break;
       case ADJUST_WEEKLY_TRENDS         : gParameters.setAdjustForWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
       case MIN_TEMPORAL_CLUSTER         : gParameters.setMinimumTemporalClusterSize(ReadUnsignedInt(sParameter, eParameterType)); break;
       case USER_DEFINED_TITLE           : gParameters.SetTitleName(sParameter.c_str()); break;
@@ -810,10 +805,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case RISK_THESHOLD_LOW_CLUSTERS   : gParameters.setRiskThresholdLowClusters(ReadDouble(sParameter, eParameterType)); break;
       case MIN_CASES_LOWRATE_CLUSTERS   : gParameters.setMinimumCasesLowRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MIN_CASES_HIGHRATE_CLUSTERS  : gParameters.setMinimumCasesHighRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case LAUNCH_CARTESIAN_MAP         : gParameters.setLaunchBrowserForCartesianGraph(ReadBoolean(sParameter, eParameterType)); break;
+      case LAUNCH_CARTESIAN_MAP         : /* no longer used */ break;
       case OUTPUT_GOOGLE_MAP            : gParameters.setOutputGoogleMapsFile(ReadBoolean(sParameter, eParameterType)); break;
-      case LAUNCH_GOOGLE_MAP            : gParameters.setLaunchBrowserForGoogleMap(ReadBoolean(sParameter, eParameterType)); break;
-      case GOOGLE_MAP_APIKEY            : gParameters.setGoogleMapsApiKey(sParameter.c_str()); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

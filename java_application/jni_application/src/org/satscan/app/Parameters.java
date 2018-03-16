@@ -156,10 +156,9 @@ public class Parameters implements Cloneable {
     private double                          _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
     private boolean                         _include_locations_kml=true; /** include cluster locations in kml output */
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
-    private boolean                         _launch_kml_viewer=false; /* whether to launch kml viewer */
+    private boolean                         _launch_map_viewer=true; /* whether to launch viewer for requested maps */
     private boolean                         _output_shapefiles=false;
     private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
-    private boolean                         _launch_browser_for_cartesian_graph=true; /* whether to launch browser for graph */
 
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
@@ -229,7 +228,6 @@ public class Parameters implements Cloneable {
     private int                             _minimum_high_rate_cases=2; /* minimum number of cases in cluster when scanning high rates */
     
     private boolean                        _output_google_map=false;
-    private boolean                        _launch_browser_google_map=true;
     private String                         _google_maps_api_key="";
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
@@ -300,8 +298,6 @@ public class Parameters implements Cloneable {
 
     public boolean getOutputGoogleMapsFile() { return _output_google_map; }
     public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
-    public boolean getLaunchBrowserForGoogleMap() { return _launch_browser_google_map; }
-    public void setLaunchBrowserForGoogleMap(boolean b) { _launch_browser_google_map = b; }
     public String getGoogleMapsApiKey() { return _google_maps_api_key; }
     public void setGoogleMapsApiKey(final String api_key) { _google_maps_api_key = api_key; }
     
@@ -320,8 +316,6 @@ public class Parameters implements Cloneable {
     
     public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
     public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
-    public boolean getLaunchBrowserForCartesianGraph() {return _launch_browser_for_cartesian_graph;}
-    public void setLaunchBrowserForCartesianGraph(boolean b) {_launch_browser_for_cartesian_graph = b;}
 
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}
@@ -340,8 +334,8 @@ public class Parameters implements Cloneable {
     public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
     public boolean getOutputShapeFiles() {return _output_shapefiles;}
     public void setOutputShapeFiles(boolean b) {_output_shapefiles = b;}    
-    public boolean getLaunchKMLViewer() {return _launch_kml_viewer;}
-    public void setLaunchKMLViewer(boolean b) {_launch_kml_viewer = b;}
+    public boolean getLaunchMapViewer() {return _launch_map_viewer;}
+    public void setLaunchMapViewer(boolean b) {_launch_map_viewer = b;}
     public boolean getIncludeLocationsKML() {return _include_locations_kml;}
     public void setIncludeLocationsKML(boolean b) {_include_locations_kml = b;}
     public boolean getCompressClusterKML() {return _compress_kml_output;}
@@ -490,7 +484,7 @@ public class Parameters implements Cloneable {
         if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
         if (_include_locations_kml != rhs._include_locations_kml) return false;
         if (_compress_kml_output != rhs._compress_kml_output) return false;
-        if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;  
+        if (_launch_map_viewer != rhs._launch_map_viewer) return false;  
         if (_output_shapefiles != rhs._output_shapefiles) return false;
         if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;        
         if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
@@ -508,7 +502,6 @@ public class Parameters implements Cloneable {
         if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
         
         if (_output_google_map != rhs._output_google_map) return false;
-        if (_launch_browser_google_map != rhs._launch_browser_google_map) return false;
         if (!_google_maps_api_key.equals(rhs._google_maps_api_key)) return false;
 
         return true;

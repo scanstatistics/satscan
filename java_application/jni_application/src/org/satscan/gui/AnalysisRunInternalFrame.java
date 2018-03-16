@@ -177,7 +177,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
             
                 try {
-                    if (_parameters.getOutputKMLFile() && _parameters.getLaunchKMLViewer()) {
+                    if (_parameters.getOutputKMLFile() && _parameters.getLaunchMapViewer()) {
                         int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
                         extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
                         File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + (_parameters.getCompressClusterKML() ? ".kmz" : ".kml"));
@@ -226,7 +226,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 }
                 
                 try {
-                    if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchBrowserForCartesianGraph()) {
+                    if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchMapViewer()) {
                         int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
                         extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
                         File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".cluster.html");
@@ -243,7 +243,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 }
 
                 try {
-                    if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchBrowserForGoogleMap()) {
+                    if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchMapViewer()) {
                         int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
                         extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
                         File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".clustermap.html");

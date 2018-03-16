@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 146;
+const int CParameters::giNumParameters                = 144;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -157,7 +157,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_include_locations_kml != rhs._include_locations_kml) return false;
   if (_locations_threshold_kml != rhs._locations_threshold_kml) return false;
   if (_compress_kml_output != rhs._compress_kml_output) return false;
-  if (_launch_kml_viewer != rhs._launch_kml_viewer) return false;
+  if (_launch_map_viewer != rhs._launch_map_viewer) return false;
   if (_adjustWeeklyTrends != rhs._adjustWeeklyTrends) return false;
   if (_minimum_temporal_cluster_size != rhs._minimum_temporal_cluster_size) return false;
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
@@ -173,10 +173,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
   if (_minimum_low_rate_cases != rhs._minimum_low_rate_cases) return false;
   if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
-  if (_launch_browser_for_cartesian_graph != rhs._launch_browser_for_cartesian_graph) return false;
   if (_output_google_map != rhs._output_google_map) return false;
-  if (_launch_browser_google_map != rhs._launch_browser_google_map) return false;
-  if (_google_maps_api_key != rhs._google_maps_api_key) return false;
 
   return true;
 }
@@ -385,7 +382,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _include_locations_kml = rhs._include_locations_kml;
   _compress_kml_output = rhs._compress_kml_output;
   _locations_threshold_kml = rhs._locations_threshold_kml;
-  _launch_kml_viewer = rhs._launch_kml_viewer;
+  _launch_map_viewer = rhs._launch_map_viewer;
   _adjustWeeklyTrends = rhs._adjustWeeklyTrends;
   _minimum_temporal_cluster_size = rhs._minimum_temporal_cluster_size;
   _calculate_oliveira_f = rhs._calculate_oliveira_f;
@@ -398,10 +395,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _risk_threshold_low_clusters = rhs._risk_threshold_low_clusters;
   _minimum_low_rate_cases = rhs._minimum_low_rate_cases;
   _minimum_high_rate_cases = rhs._minimum_high_rate_cases;
-  _launch_browser_for_cartesian_graph = rhs._launch_browser_for_cartesian_graph;
   _output_google_map = rhs._output_google_map;
-  _launch_browser_google_map = rhs._launch_browser_google_map;
-  _google_maps_api_key = rhs._google_maps_api_key;
 
 }
 
@@ -895,7 +889,7 @@ void CParameters::SetAsDefaulted() {
   _output_shapefiles = false;
   _include_locations_kml = true;
   _compress_kml_output = false;
-  _launch_kml_viewer = false;
+  _launch_map_viewer = true;
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
   _minimum_temporal_cluster_size = 1;
@@ -909,10 +903,7 @@ void CParameters::SetAsDefaulted() {
   _risk_threshold_low_clusters = 1.0;
   _minimum_low_rate_cases = 0;
   _minimum_high_rate_cases = 2;
-  _launch_browser_for_cartesian_graph = true;
   _output_google_map = false;
-  _launch_browser_google_map = true;
-  _google_maps_api_key = "";
 }
 
 /** Sets start range start date. Throws exception. */

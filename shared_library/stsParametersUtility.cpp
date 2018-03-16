@@ -607,8 +607,8 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCompressClusterKML());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setLaunchKMLViewer", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchKMLViewer());
+  mid = _getMethodId_Checked(Env, clazz, "setLaunchMapViewer", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchMapViewer());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setOutputShapeFiles", "(Z)V");
@@ -667,21 +667,9 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumCasesHighRateClusters());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setLaunchBrowserForCartesianGraph", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchBrowserForCartesianGraph());
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setOutputGoogleMapsFile", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputGoogleMapsFile());
   jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setLaunchBrowserForGoogleMap", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getLaunchBrowserForGoogleMap());
-  jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "setGoogleMapsApiKey", "(Ljava/lang/String;)V");
-  //Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getGoogleMapsApiKey().c_str()));
-  //jni_error::_detectError(Env);
 
   return jParameters;
 }
@@ -1286,8 +1274,8 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setCompressClusterKML(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getLaunchKMLViewer", "()Z");
-  Parameters.setLaunchKMLViewer(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getLaunchMapViewer", "()Z");
+  Parameters.setLaunchMapViewer(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputShapeFiles", "()Z");
@@ -1348,24 +1336,9 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setMinimumCasesHighRateClusters(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getLaunchBrowserForCartesianGraph", "()Z");
-  Parameters.setLaunchBrowserForCartesianGraph(Env.CallBooleanMethod(jParameters, mid));
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "getOutputGoogleMapsFile", "()Z");
   Parameters.setOutputGoogleMapsFile(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "getLaunchBrowserForGoogleMap", "()Z");
-  Parameters.setLaunchBrowserForGoogleMap(Env.CallBooleanMethod(jParameters, mid));
-  jni_error::_detectError(Env);
-
-  //mid = _getMethodId_Checked(Env, clazz, "getGoogleMapsApiKey", "()Ljava/lang/String;");
-  //jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  //jni_error::_detectError(Env);
-  //sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  //Parameters.setGoogleMapsApiKey(sFilename);
-  //if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return Parameters;
 }
