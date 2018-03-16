@@ -895,7 +895,7 @@ void CParameters::SetAsDefaulted() {
   _output_shapefiles = false;
   _include_locations_kml = true;
   _compress_kml_output = false;
-  _launch_kml_viewer = true;
+  _launch_kml_viewer = false;
   _locations_threshold_kml = 1000;
   _adjustWeeklyTrends = false;
   _minimum_temporal_cluster_size = 1;

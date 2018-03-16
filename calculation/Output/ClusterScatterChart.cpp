@@ -46,14 +46,14 @@ const char * CartesianGraph::TEMPLATE = " \
             jQuery.noConflict(); \n \
         </script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.0.js'></script> \n \
+        <!-- <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.1.js'></script> --> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/canvas-toBlob-2016-05-26.js'></script> \n \
         <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
-        <script type='text/javascript'> \n \
-            var clusters = [ \n \
+        <script type='text/javascript'> \n"
+"          var clusters = [ \n \
             --cluster-definitions-- \n \
             ]; \n \
             var chart = null; \n \
@@ -80,6 +80,7 @@ const char * CartesianGraph::TEMPLATE = " \
                chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,\n \
                                         title: jQuery('.title-setter').val() || 'Cartesian Coordinates Map',\n \
                                         points_mouseoveronly: false, \n \
+                                        x_sinusoidal_factor: --x_sinusoidal_factor--, \n \
                                         showGrid:document.getElementById('id_show_grid_lines').checked, \n \
                                         showAxes:document.getElementById('id_show_axes').checked});  \n \
                 display_stats = {displayed_clusters: 0, displayed_cluster_points: 0, displayed_points: 0};\n \
@@ -209,7 +210,7 @@ const char * CartesianGraph::TEMPLATE = " \
                     <p class=\"help-block\">Toggle display of graph grid lines.</p>\n \
                     <label><input type=\"checkbox\" id=\"id_show_axes\" checked=checked />Show x and y axes</label>\n \
                     <p class=\"help-block\">Toggle display of graph x / y axes.</p>\n \
-                    <label><input type=\"checkbox\" id=\"id_show_location_points\" checked=checked />Show location points</label>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_location_points\" checked=checked />Show all location points</label>\n \
                     <p class=\"help-block\">Toggle display of location points.</p>\n \
                     <label><input type=\"checkbox\" id=\"id_fit_graph_viewport\" />Fit graph to viewport</label>\n \
                     <p class=\"help-block\">Attempts to keep entire graph in view.</p>\n \
@@ -232,6 +233,25 @@ const char * CartesianGraph::TEMPLATE = " \
      </div> \n \
      </body> \n \
 </html> \n";
+
+CartesianGraph::CartesianGraph(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0), _median_parallel(0.0) {
+    if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
+        // Calculate the median parallel among all points.
+        std::vector<double> parallels;
+        const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
+        std::vector<double> vCoordinates;
+        for (size_t t = 0; t < locations.size(); ++t) {
+            locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
+            std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
+            parallels.push_back(latlong.first);
+        }
+        std::sort(parallels.begin(), parallels.end());
+        if (parallels.size() % 2 == 0)
+            _median_parallel = (parallels[parallels.size() / 2 - 1] + parallels[parallels.size() / 2]) / 2;
+        else
+            _median_parallel = parallels[parallels.size() / 2];
+    }
+}
 
 /** Alters pass Filename to include suffix and extension. */
 FileName& CartesianGraph::getFilename(FileName& filename) {
@@ -265,8 +285,7 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
     return legend;
 }
 
-/* If coordinates system is are latitude/longitude, transforms coordinates back to latitude/longitude and
-   performs projection. At the moment, that projection is simply the Plate Carrée projection. */
+/* If the coordinates system in settings is latitude/longitude, transform coordinates back to latitude/longitude. */
 std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates) {
     if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
         std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
@@ -439,7 +458,8 @@ void CartesianGraph::finalize() {
         double cluster_region_area = _clusterRegion.area();
         double entire_region_area = _entireRegion.area();
         templateReplace(html, "--display-zoom-cluster--", ((cluster_region_area / entire_region_area) < 0.9) ? "block" : "none");
-
+        printString(buffer, "%.6f", (_dataHub.GetParameters().GetCoordinatesType() == CARTESIAN ? 1.0 : std::cos(degrees2radians(_median_parallel))));
+        templateReplace(html, "--x_sinusoidal_factor--", buffer.c_str());
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
 
         HTMLout << html.str() << std::endl;

@@ -105,7 +105,7 @@ const char * ClusterMap::TEMPLATE = " \
                     <p class=\"help-block\">Display options for clusters.</p>\n \
                     <!-- <label><input type=\"checkbox\" id=\"id_show_grid_lines\" checked=checked />Show grid lines</label> \n \
                     <p class=\"help-block\">Toggle display of graph grid lines.</p> --> \n \
-                    <label><input type=\"checkbox\" id=\"id_show_location_points\" />Show location points</label>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_location_points\" />Show all location points</label>\n \
                     <p class=\"help-block\">Toggle display of location points.</p>\n \
                     <label><input type=\"checkbox\" id=\"id_fit_graph_viewport\" checked=checked />Fit map to viewport</label>\n \
                     <p class=\"help-block\">Attempts to keep entire map in view.</p>\n \

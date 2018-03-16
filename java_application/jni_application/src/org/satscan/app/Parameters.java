@@ -156,7 +156,7 @@ public class Parameters implements Cloneable {
     private double                          _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
     private boolean                         _include_locations_kml=true; /** include cluster locations in kml output */
     private boolean                         _compress_kml_output=false; /** compress kml output into kmz format */
-    private boolean                         _launch_kml_viewer=true; /* whether to launch kml viewer */
+    private boolean                         _launch_kml_viewer=false; /* whether to launch kml viewer */
     private boolean                         _output_shapefiles=false;
     private boolean                         _output_cartesian_graph=false; /* generate spatial cartesian graph */
     private boolean                         _launch_browser_for_cartesian_graph=true; /* whether to launch browser for graph */
