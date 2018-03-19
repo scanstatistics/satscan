@@ -134,6 +134,7 @@ const char * ClusterMap::TEMPLATE = " \
             var clusters = [ \n \
             --cluster-definitions-- \n \
             ]; \n \
+            clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
     <script src='--resource-path--javascript/clustercharts/mapgoogle-1.0.js'></script> \n \
@@ -183,12 +184,16 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
     std::vector<double> vCoordinates;
     std::string buffer, buffer2, legend;
     std::stringstream  worker;
+    unsigned int clusterOffset = _clusters_written;
 
     //if no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
-    for (int i = 0; i < clusters.GetNumClustersRetained(); ++i) {
+    for (int i=0; i < clusters.GetNumClustersRetained(); ++i) {
         //get reference to i'th top cluster
         const CCluster& cluster = clusters.GetCluster(i);
+        //skip purely temporal clusters
+        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+            continue;
         if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
             break;
         if (cluster.m_nRatio >= gdMinRatioToReport) {
@@ -218,7 +223,7 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
                 << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
-                << "', tip : '" << getClusterLegend(cluster, _clusters_written, legend).c_str() << "', points : [" << points << "] },\n";
+                << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', points : [" << points << "] },\n";
         }
         ++_clusters_written;
     }

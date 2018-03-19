@@ -1646,14 +1646,14 @@ void AnalysisRunner::reportClusters() {
         }
 
         // Create Google Maps file if requested.
-        if (gParameters.getOutputGoogleMapsFile() && _reportClusters.GetNumClustersRetained()) {
+        if (gParameters.getOutputGoogleMapsFile()) {
             // If first iteration of analyses, create the ClusterMap object -- this is both with and without iterative scan.
             if (giAnalysisCount == 1) _cluster_map.reset(new ClusterMap(*gpDataHub));
             _cluster_map->add(_reportClusters, gSimVars);
         }
 
         // Create KML file if requested.
-        if (gParameters.getOutputKMLFile() && _reportClusters.GetNumClustersRetained()) {
+        if (gParameters.getOutputKMLFile()) {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             if (giAnalysisCount == 1) _cluster_kml.reset(new ClusterKML(*gpDataHub));
             _cluster_kml->add(_reportClusters, gSimVars);
