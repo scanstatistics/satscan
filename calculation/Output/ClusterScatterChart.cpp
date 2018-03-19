@@ -301,13 +301,17 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
     std::vector<double> vCoordinates;
     std::string buffer, buffer2, legend, clusterColor, pointsColor;
     std::stringstream  worker;
+    unsigned int clusterOffset = _clusters_written;
 
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
     //first iterate through all location coordinates to determine largest X and Y
-    for (int i = 0; i < clusters.GetNumClustersRetained(); ++i) {
+    for (int i=0; i < clusters.GetNumClustersRetained(); ++i) {
         //get reference to i'th top cluster
         const CCluster& cluster = clusters.GetCluster(i);
+        //skip purely temporal clusters
+        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+            continue;
         if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
             break;
         std::vector<double> clusterCenterCoordinates;
@@ -315,7 +319,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
         if (cluster.m_nRatio >= gdMinRatioToReport) {
             clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
             pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
-            getClusterLegend(cluster, _clusters_written, legend);
+            getClusterLegend(cluster, i + clusterOffset, legend);
             worker.str("");
             for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
                 tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
@@ -325,7 +329,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                         transform(vCoordinates);
                         worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                         _clusterLocations.push_back(tTract);
-                        if (t == 1)
+                        if (clusterCenterCoordinates.empty())
                             clusterCenterCoordinates = vCoordinates;
                     }
                 }
