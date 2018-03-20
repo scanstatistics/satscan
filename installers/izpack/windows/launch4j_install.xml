@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/prj/satscan/installers/v.9.5.x/install-9_5_windows.jar</jar>
-  <outfile>/prj/satscan/installers/v.9.5.x/install-9_5_windows.exe</outfile>
+  <jar>/prj/satscan/installers/v.9.6.x/install-9_6_windows.jar</jar>
+  <outfile>/prj/satscan/installers/v.9.6.x/install-9_6_windows.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -15,21 +15,21 @@
   <icon>/prj/satscan/build.area/satscan/installers/resources/SaTScan.ico</icon>
   <jre>
     <path></path>
-    <minVersion>1.6.0_01</minVersion>
+    <minVersion>1.8.0_01</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
   </jre>
   <versionInfo>
-    <fileVersion>9.5.0.0</fileVersion>
-    <txtFileVersion>Version 9.5.0</txtFileVersion>
+    <fileVersion>9.6.0.0</fileVersion>
+    <txtFileVersion>Version 9.6.0</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>9.5.0.0</productVersion>
-    <txtProductVersion>Version 9.5.0</txtProductVersion>
+    <productVersion>9.6.0.0</productVersion>
+    <txtProductVersion>Version 9.6.0</txtProductVersion>
     <productName>SaTScan</productName>
     <companyName>SaTscan.org</companyName>
-    <internalName>install-9_5</internalName>
-    <originalFilename>install-9_5.exe</originalFilename>
+    <internalName>install-9_6</internalName>
+    <originalFilename>install-9_6.exe</originalFilename>
   </versionInfo>
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
