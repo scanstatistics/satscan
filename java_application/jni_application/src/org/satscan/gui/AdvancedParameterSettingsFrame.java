@@ -217,10 +217,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables options in the maps output group
      */
     public void enableMapsOutputGroup() {
-        _mapsOutputGroup.setEnabled(_settings_window.getReportingGoogleEarthKML());
-        _includeClusterLocationsInKML.setEnabled(_mapsOutputGroup.isEnabled());
-        _createCompressedKMZ.setEnabled(_mapsOutputGroup.isEnabled());
-        _launch_map_viewer.setEnabled(_mapsOutputGroup.isEnabled());
+        _mapsOutputGroup.setEnabled(_settings_window.anyLaunchableSelections());
+        _label_kml_options.setEnabled(_mapsOutputGroup.isEnabled() && _settings_window.getReportingGoogleEarthKML());
+        _includeClusterLocationsInKML.setEnabled(_mapsOutputGroup.isEnabled() && _settings_window.getReportingGoogleEarthKML());
+        _createCompressedKMZ.setEnabled(_mapsOutputGroup.isEnabled() && _settings_window.getReportingGoogleEarthKML());
+        _launch_map_viewer.setEnabled(_mapsOutputGroup.isEnabled() && _settings_window.anyLaunchableSelections());
     }
 
     /**
@@ -2553,7 +2554,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includeClusterLocationsInKML = new javax.swing.JCheckBox();
         _createCompressedKMZ = new javax.swing.JCheckBox();
         _launch_map_viewer = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        _label_kml_options = new javax.swing.JLabel();
         _clustersReportedGroup = new javax.swing.JPanel();
         _hierarchicalSecondaryClusters = new java.awt.Choice();
         _hierarchicalLabel = new javax.swing.JLabel();
@@ -4585,7 +4586,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel1.setText("KML Options:");
+        _label_kml_options.setText("KML Options:");
 
         javax.swing.GroupLayout _mapsOutputGroupLayout = new javax.swing.GroupLayout(_mapsOutputGroup);
         _mapsOutputGroup.setLayout(_mapsOutputGroupLayout);
@@ -4598,7 +4599,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_label_kml_options, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -4606,7 +4607,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel1)
+                .addComponent(_label_kml_options)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_createCompressedKMZ)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -5760,6 +5761,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _iterativeScanGroup;
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
+    private javax.swing.JLabel _label_kml_options;
     private javax.swing.JCheckBox _launch_map_viewer;
     private javax.swing.JPanel _limit_clusters_risk_group;
     private javax.swing.JCheckBox _limit_high_clusters;
@@ -5915,7 +5917,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _userDefinedRunTitle;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables

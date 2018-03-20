@@ -212,6 +212,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return bReturn;
     }
 
+    public boolean anyLaunchableSelections() {
+        return getReportingGoogleEarthKML() || getReportingGoogleMap() || getReportingCartesianGraph();
+    }
+    
     public boolean getReportingGoogleEarthKML() {
         return _reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected();
     }
@@ -221,7 +225,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }    
     
     public boolean getReportingCartesianGraph() {
-        boolean test = _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
         return _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
     }    
     
@@ -3005,7 +3008,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _reportGoogleEarthKML.setText("KML file for Google Earth");
         _reportGoogleEarthKML.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
                 _advancedParametersSetting.enableMapsOutputGroup();
             }
         });
@@ -3015,7 +3017,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _reportGoogleMap.setText("HTML file for Google Map");
         _reportGoogleMap.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
                 _advancedParametersSetting.enableMapsOutputGroup();
             }
         });
@@ -3023,7 +3024,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _reportCartesianGraph.setText("HTML file for Cartesian map");
         _reportCartesianGraph.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
                 _advancedParametersSetting.enableMapsOutputGroup();
             }
         });

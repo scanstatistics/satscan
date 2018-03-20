@@ -2636,7 +2636,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_createCompressedKMZ" alignment="0" min="-2" pref="278" max="-2" attributes="0"/>
-                                  <Component id="jLabel1" alignment="1" min="-2" pref="278" max="-2" attributes="0"/>
+                                  <Component id="_label_kml_options" alignment="1" min="-2" pref="278" max="-2" attributes="0"/>
                               </Group>
                               <Component id="_includeClusterLocationsInKML" min="-2" pref="278" max="-2" attributes="0"/>
                           </Group>
@@ -2648,7 +2648,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <Component id="_label_kml_options" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_createCompressedKMZ" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -2687,7 +2687,7 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JLabel" name="jLabel1">
+                <Component class="javax.swing.JLabel" name="_label_kml_options">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="KML Options:"/>
                   </Properties>
