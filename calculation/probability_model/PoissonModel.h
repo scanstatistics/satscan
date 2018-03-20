@@ -15,6 +15,7 @@ class CPoissonModel : public CModel {
     static const double         gTimeTrendConvergence; /* time trend convergence variable */
     const CParameters         & gParameters;
     CSaTScanData              & gDataHub; 
+    mutable std::vector<double> _alpha;
 
     void                        AdjustForNonParameteric(RealDataSet& DataSet);
     void                        AdjustForLLPercentage(RealDataSet& DataSet, double nPercentage);
@@ -29,6 +30,7 @@ class CPoissonModel : public CModel {
     boost::shared_ptr<TwoDimMeasureArray_t> calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData=0);
     virtual void                CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
+    virtual double              GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //*****************************************************************************
 #endif

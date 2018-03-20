@@ -123,3 +123,43 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
   return dPopulation;
 }
 
+/** Returns population as defined in CCluster object for specific tract. */
+double CBernoulliModel::GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, const CCluster& Cluster, const CSaTScanData& DataHub) const {
+    double dPopulation = 0.0;
+    count_t nNeighbor;
+    measure_t ** ppMeasure;
+
+    try {
+        const ClosedLoopData * seasonalhub = dynamic_cast<const ClosedLoopData*>(&DataHub);
+        if (!seasonalhub && DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) throw prg_error("Unable to dynamic cast CSaTScanData to ClosedLoopData.", "GetPopulation()");
+
+        switch (Cluster.GetClusterType()) {
+        case PURELYTEMPORALCLUSTER:
+        case SPACETIMECLUSTER:
+            ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+            if (seasonalhub) {
+                int end_interval = std::min(Cluster.m_nLastInterval, seasonalhub->getExtendedPeriodStart());
+                dPopulation = ppMeasure[Cluster.m_nFirstInterval][tractIdx] - (end_interval == seasonalhub->getExtendedPeriodStart() ? 0 : ppMeasure[end_interval][tractIdx]);
+                dPopulation += ppMeasure[0][tractIdx] - ppMeasure[std::max(0, Cluster.m_nLastInterval - seasonalhub->getExtendedPeriodStart())][tractIdx];
+                break;
+            }
+            else if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
+                dPopulation = ppMeasure[Cluster.m_nFirstInterval][tractIdx] - ppMeasure[Cluster.m_nLastInterval][tractIdx];
+                break;
+            }
+        case PURELYSPATIALCLUSTER:
+        case PURELYSPATIALMONOTONECLUSTER:
+            ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+            dPopulation = ppMeasure[Cluster.m_nFirstInterval][tractIdx];
+            break;
+        case SPATIALVARTEMPTRENDCLUSTER:
+        case PURELYSPATIALPROSPECTIVECLUSTER:
+        default:
+            throw prg_error("Unknown cluster type '%d'.", "GetLocationPopulation()", Cluster.GetClusterType());
+        }
+    } catch (prg_exception &x) {
+        x.addTrace("GetPopulation()", "CBernoulliModel");
+        throw;
+    }
+    return dPopulation;
+}

@@ -161,6 +161,7 @@ const size_t AbstractDataFileWriter::DEFAULT_LOC_FIELD_SIZE             = 30;
 const size_t AbstractDataFileWriter::MAX_LOC_FIELD_SIZE                 = 254;
 const char * AbstractDataFileWriter::RECURRENCE_INTERVAL_FLD            = "RECURR_INT";
 const char * AbstractDataFileWriter::PERCENTAGE_CASES_FIELD             = "PCT_CASES";
+const char * AbstractDataFileWriter::POPULATION_FIELD                   = "POPULATION";
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)

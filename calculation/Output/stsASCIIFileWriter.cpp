@@ -102,7 +102,7 @@ void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const ptr_vector<
       throw resolvable_error("Unable to open/create file %s", gsFileName.getFullPath(buffer).c_str());
 
     //write column headers when requested
-    if (Parameters.getPrintAsciiHeaders()) {
+    if (Parameters.getPrintAsciiHeaders() && !bAppend) {
         std::stringstream s;
         ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
         for (; itr != itr_end; ++itr) {

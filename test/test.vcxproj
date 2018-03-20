@@ -470,6 +470,7 @@
     <ClCompile Include="integrationtest_points.cpp" />
     <ClCompile Include="integrationtest_squish66408.cpp" />
     <ClCompile Include="integrationtest_squish66425.cpp" />
+    <ClCompile Include="integrationtest_squish66508.cpp" />
     <ClCompile Include="squish66406.cpp" />
     <ClCompile Include="squish66420.cpp" />
     <ClCompile Include="squish66455.cpp" />

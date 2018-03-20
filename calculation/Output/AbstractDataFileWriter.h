@@ -57,6 +57,7 @@ class AbstractDataFileWriter {
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * RECURRENCE_INTERVAL_FLD;
     static const char         * PERCENTAGE_CASES_FIELD;
+    static const char         * POPULATION_FIELD;
 
   protected:
     const CParameters         & gParameters;             /** reference to parameters object */

@@ -319,35 +319,48 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
 
 /** Returns population as defined in CCluster object. */
 double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
-    std::vector<double> vAlpha;
-    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getPopulationData();
-    double nPopulation = 0.0;
+    double population = 0.0;
 
     try {
-        int ncats = Population.GetNumCovariateCategories();
-        int nPops = static_cast<int>(Population.GetNumPopulationDates());
-        Population.CalculateAlpha(vAlpha, DataHub.GetStudyPeriodStartDate(), DataHub.GetStudyPeriodEndDate());
+        if (!DataHub.GetParameters().UsePopulationFile() || Cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+            throw prg_error("CPoissonModel::GetPopulation() is not implemented when not using population file or purely temporal clusters.", "GetPopulation()");
+
         for (tract_t tIdx=1; tIdx <= Cluster.GetNumTractsInCluster(); ++tIdx) {
-            tract_t t = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), tIdx, Cluster.GetCartesianRadius());
-            if ((size_t)t < DataHub.GetTInfo()->getLocations().size()) {
-                if (!DataHub.GetIsNullifiedLocation(t))
-                    for (int c=0; c < ncats; c++) 
-                        Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
-            } else {
-                std::vector<tract_t> AtomicIndexes;
-                DataHub.GetTInfo()->getMetaLocations().getLocations().at((size_t)t - DataHub.GetTInfo()->getLocations().size())->getAtomicIndexes(AtomicIndexes);
-                for (size_t a=0; a < AtomicIndexes.size(); ++a) {
-                    if (!DataHub.GetIsNullifiedLocation(AtomicIndexes[a]))
-                        for (int c=0; c < ncats; c++) 
-                            Population.GetAlphaAdjustedPopulation(nPopulation, AtomicIndexes[a], c, 0, nPops, vAlpha);
-                }
-            }
+            tract_t ttractIdx = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), tIdx, Cluster.GetCartesianRadius());
+            population += GetLocationPopulation(tSetIndex, ttractIdx, Cluster, DataHub);
         }
     } catch (prg_exception & x) {
         x.addTrace("GetPopulation()", "CPoissonModel");
         throw;
     }
-    return nPopulation;
+    return population;
+}
+
+/** Returns population as defined in CCluster object for specific tract. */
+double CPoissonModel::GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, const CCluster& Cluster, const CSaTScanData& DataHub) const {
+    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getPopulationData();
+
+    // Calcuate alpha -- if not already calcuated for population.
+    if (_alpha.empty())
+        Population.CalculateAlpha(_alpha, DataHub.GetStudyPeriodStartDate(), DataHub.GetStudyPeriodEndDate());
+
+    double population = 0.0;
+    int ncats = Population.GetNumCovariateCategories();
+    int nPops = static_cast<int>(Population.GetNumPopulationDates());
+    if (static_cast<size_t>(tractIdx) < DataHub.GetTInfo()->getLocations().size()) {
+        if (!DataHub.GetIsNullifiedLocation(tractIdx))
+            for (int c=0; c < ncats; ++c)
+                Population.GetAlphaAdjustedPopulation(population, tractIdx, c, 0, nPops, _alpha);
+    } else {
+        std::vector<tract_t> AtomicIndexes;
+        DataHub.GetTInfo()->getMetaLocations().getLocations().at(static_cast<size_t>(tractIdx) - DataHub.GetTInfo()->getLocations().size())->getAtomicIndexes(AtomicIndexes);
+        for (size_t a=0; a < AtomicIndexes.size(); ++a) {
+            if (!DataHub.GetIsNullifiedLocation(AtomicIndexes[a]))
+                for (int c=0; c < ncats; ++c)
+                    Population.GetAlphaAdjustedPopulation(population, AtomicIndexes[a], c, 0, nPops, _alpha);
+        }
+    }
+    return population;
 }
 
 /** Adjusts passed non-cumulative measure in a stratified spatial manner.

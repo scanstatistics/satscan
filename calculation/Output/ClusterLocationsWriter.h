@@ -20,6 +20,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * LOC_WEIGHTED_MEAN_FIELD;
       static const char       * LOC_OBS_DIV_EXP_FIELD;
       static const char       * LOC_REL_RISK_FIELD;
+      static const char       * LOC_POPULATION_FIELD;
       static const char       * LOC_TIME_TREND_FIELD;
       static const char       * LOC_COORD_LAT_FIELD;
       static const char       * LOC_COORD_LONG_FIELD;
@@ -31,6 +32,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_EXP_FIELD;
       static const char       * CLU_OBS_DIV_EXP_FIELD;
       static const char       * CLU_REL_RISK_FIELD;
+      static const char       * CLU_POPULATION_FIELD;
       static const char       * CLU_MEAN_IN_FIELD;
       static const char       * CLU_MEAN_OUT_FIELD;
       static const char       * CLU_WEIGHTED_MEAN_IN_FIELD;

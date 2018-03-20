@@ -26,9 +26,6 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * COORD_X_FIELD;
       static const char       * COORD_Y_FIELD;
       static const char       * COORD_Z_FIELD;
-      static const char       * OBS_FIELD_PART;
-      static const char       * EXP_FIELD_PART;
-      static const char       * OBS_DIV_EXP_FIELD;
       static const char       * TIME_TREND_IN_FIELD;
       static const char       * TIME_TREND_OUT_FIELD;
       static const char       * TIME_TREND_DIFF_FIELD;

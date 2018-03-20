@@ -28,9 +28,6 @@ const char * ClusterInformationWriter::COORD_LONG_FIELD	            = "LONGITUDE
 const char * ClusterInformationWriter::COORD_X_FIELD	            = "X";
 const char * ClusterInformationWriter::COORD_Y_FIELD                = "Y";
 const char * ClusterInformationWriter::COORD_Z_FIELD                = "Z";
-const char * ClusterInformationWriter::OBS_FIELD_PART  	            = "OBS";
-const char * ClusterInformationWriter::EXP_FIELD_PART               = "EXP";
-const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD            = "ODE";
 const char * ClusterInformationWriter::TIME_TREND_IN_FIELD          = "IN_TREND";
 const char * ClusterInformationWriter::TIME_TREND_OUT_FIELD         = "OUT_TREND";
 const char * ClusterInformationWriter::TIME_TREND_DIFF_FIELD        = "DIFF_TREND";
@@ -171,8 +168,13 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       }  
-      if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
-        CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
+          CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      }
+      if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
+           gParameters.GetProbabilityModelType() == BERNOULLI) {
+          CreateField(vFieldDefinitions, POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      }
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
          CreateField(vFieldDefinitions, TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
          CreateField(vFieldDefinitions, TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -250,6 +252,9 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     //   //CreateField(vDataFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
     //   //CreateField(vDataFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
     //}
+    if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
+         gParameters.GetProbabilityModelType() == BERNOULLI)
+        CreateField(vDataFieldDefinitions, POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
 
     if (gParameters.GetProbabilityModelType() == BERNOULLI ||
         gParameters.GetProbabilityModelType() == ORDINAL ||
@@ -295,18 +300,16 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 }
 
 void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber) {
-  try {
-    //now write to secondary cluster information file
-    if (gParameters.GetProbabilityModelType() == ORDINAL ||
-        gParameters.GetProbabilityModelType() == CATEGORICAL)
-      WriteCountOrdinalData(theCluster, iClusterNumber);
-    else
-      WriteCountData(theCluster, iClusterNumber);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("WriteClusterCaseInformation()","ClusterInformationWriter");
-    throw;
-  }
+    try {
+        //now write to secondary cluster information file
+        if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
+            WriteCountOrdinalData(theCluster, iClusterNumber);
+        else
+            WriteCountData(theCluster, iClusterNumber);
+    } catch (prg_exception& x) {
+        x.addTrace("WriteClusterCaseInformation()","ClusterInformationWriter");
+        throw;
+    }
 }
 
 void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars) {
@@ -395,6 +398,9 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
           Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+      if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||
+           gParameters.GetProbabilityModelType() == BERNOULLI)
+          Record.GetFieldValue(POPULATION_FIELD).AsDouble() = gDataHub.GetProbabilityModel().GetPopulation(0, theCluster, gDataHub);
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
           const AbtractSVTTClusterData * pClusterData=0;
           if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
@@ -592,7 +598,9 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
-
+      if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||
+          gParameters.GetProbabilityModelType() == BERNOULLI)
+          Record.GetFieldValue(POPULATION_FIELD).AsDouble() = gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
       if (gParameters.GetProbabilityModelType() == BERNOULLI) {
           double percentCases = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
           Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = percentCases;

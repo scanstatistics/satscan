@@ -1157,6 +1157,9 @@
     <ClCompile Include="integrationtest_squish66425.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
+    <ClCompile Include="integrationtest_squish66508.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
     <ClCompile Include="unittest_DataSource.cpp">
       <Filter>Source Files\unit_tests\satscan_data</Filter>
     </ClCompile>

@@ -14,6 +14,7 @@ const char * LocationInformationWriter::LOC_MEAN_FIELD                          
 const char * LocationInformationWriter::LOC_WEIGHTED_MEAN_FIELD                         = "LOC_WMEAN";
 const char * LocationInformationWriter::LOC_OBS_DIV_EXP_FIELD                           = "LOC_ODE";
 const char * LocationInformationWriter::LOC_REL_RISK_FIELD                              = "LOC_RR";
+const char * LocationInformationWriter::LOC_POPULATION_FIELD                            = "LOC_POP";
 const char * LocationInformationWriter::LOC_TIME_TREND_FIELD                            = "LOC_TREND";
 const char * LocationInformationWriter::LOC_COORD_LAT_FIELD	                            = "LOC_LAT";
 const char * LocationInformationWriter::LOC_COORD_LONG_FIELD	                        = "LOC_LONG";
@@ -25,6 +26,7 @@ const char * LocationInformationWriter::CLU_OBS_FIELD                           
 const char * LocationInformationWriter::CLU_EXP_FIELD                                   = "CLU_EXP";
 const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD                           = "CLU_ODE";
 const char * LocationInformationWriter::CLU_REL_RISK_FIELD                              = "CLU_RR";
+const char * LocationInformationWriter::CLU_POPULATION_FIELD                            = "CLU_POP";
 const char * LocationInformationWriter::CLU_MEAN_IN_FIELD                               = "CLU_MEAN_I";
 const char * LocationInformationWriter::CLU_MEAN_OUT_FIELD                              = "CLU_MEAN_O";
 const char * LocationInformationWriter::CLU_WEIGHTED_MEAN_IN_FIELD                      = "CL_WMEAN_I";
@@ -117,6 +119,9 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
             }
             if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
                 CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
+                gParameters.GetProbabilityModelType() == BERNOULLI)
+                CreateField(vFieldDefinitions, CLU_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
                 CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
                 CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -150,6 +155,9 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
             }
             if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
                 CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
+                gParameters.GetProbabilityModelType() == BERNOULLI)
+                CreateField(vFieldDefinitions, LOC_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
                 CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
@@ -308,6 +316,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                     if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
                         (dRelativeRisk = theCluster.GetRelativeRiskForTract(tTract, DataHub)) != -1)
                         Record.GetFieldValue(LOC_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
+                    if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
+                        gParameters.GetProbabilityModelType() == BERNOULLI)
+                        Record.GetFieldValue(LOC_POPULATION_FIELD).AsDouble() = DataHub.GetProbabilityModel().GetLocationPopulation(0, tTract, theCluster, DataHub);
                     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == LINEAR) {
                         std::auto_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
                         std::vector<count_t> vTemporalTractCases(DataHub.GetNumTimeIntervals());
@@ -360,6 +371,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                 if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
                     (dRelativeRisk = theCluster.GetRelativeRisk(DataHub)) != -1)
                     Record.GetFieldValue(CLU_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
+                if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||
+                    gParameters.GetProbabilityModelType() == BERNOULLI)
+                    Record.GetFieldValue(CLU_POPULATION_FIELD).AsDouble() = DataHub.GetProbabilityModel().GetPopulation(0, theCluster, DataHub);
                 if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
                     const AbtractSVTTClusterData * pClusterData=0;
                     if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
