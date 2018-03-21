@@ -173,7 +173,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       }
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
            gParameters.GetProbabilityModelType() == BERNOULLI) {
-          CreateField(vFieldDefinitions, POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+          CreateField(vFieldDefinitions, POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset, 2);
       }
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
          CreateField(vFieldDefinitions, TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);

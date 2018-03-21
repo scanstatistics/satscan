@@ -121,7 +121,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
                 gParameters.GetProbabilityModelType() == BERNOULLI)
-                CreateField(vFieldDefinitions, CLU_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+                CreateField(vFieldDefinitions, CLU_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset, 2);
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
                 CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
                 CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -157,7 +157,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
                 gParameters.GetProbabilityModelType() == BERNOULLI)
-                CreateField(vFieldDefinitions, LOC_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+                CreateField(vFieldDefinitions, LOC_POPULATION_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset, 2);
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
                 CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
