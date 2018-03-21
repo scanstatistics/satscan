@@ -274,12 +274,12 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
     // read continuous variable
     iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
     if (!Source.GetValueAt(iContiVariableIndex)) {
-      gPrint.Printf("Error: Record %d, of the %s, is missing the survival time.\n",
+      gPrint.Printf("Error: Record %d of the %s is missing the survival time.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
     if (!string_to_type<measure_t>(Source.GetValueAt(iContiVariableIndex), tContinuousVariable) || tContinuousVariable <= 0) {
-        gPrint.Printf("Error: The survival time value '%s' in record %ld, of the %s, is not valid.\n"
+        gPrint.Printf("Error: The survival time value '%s' in record %ld of the %s is not valid.\n"
                       "       Survival time must be a decimal value greater than 0.\n",
                       BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;

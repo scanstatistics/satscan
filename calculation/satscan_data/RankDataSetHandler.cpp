@@ -161,7 +161,7 @@ DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(Data
 
     // read continuous variable
     if (!Source.GetValueAt(uContinuousVariableIndex)) {
-      gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
+      gPrint.Printf("Error: Record %d of the %s is missing the continuous variable.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }

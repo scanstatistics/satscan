@@ -372,7 +372,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Source->GetValueAt(uPopulationDateIndex)) {
-            gPrint.Printf("Error: Record %ld, of the %s, is missing the date.\n",
+            gPrint.Printf("Error: Record %ld of the %s is missing the date.\n",
                           BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
@@ -412,7 +412,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
           }
           ConvertPopulationDateToJulian(Source->GetValueAt(uPopulationDateIndex), Source->GetCurrentRecordIndex(), prPopulationDate);
           if (!Source->GetValueAt(uPopulationIndex)) {
-            gPrint.Printf("Error: Record %d, of the %s, is missing the population number.\n",
+            gPrint.Printf("Error: Record %d of the %s is missing the population number.\n",
                           BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;

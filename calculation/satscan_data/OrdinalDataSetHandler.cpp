@@ -149,7 +149,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
     //read case count
     if (Source.GetValueAt(guCountIndex) != 0) {
       if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
-         gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
+         gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
                        "       Case count must be an integer in range 0 - %u.\n", BasePrint::P_READERROR,
                        Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
                        gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
@@ -157,7 +157,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
       } 
       if (nCount == 0) return DataSetHandler::Ignored;    
     } else {
-      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
+      gPrint.Printf("Error: Record %ld in the %s does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
@@ -167,7 +167,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
     // read ordinal category
     iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!Source.GetValueAt(iCategoryIndex)) {
-      gPrint.Printf("Error: Record %d, of the %s, is missing category type field.\n",
+      gPrint.Printf("Error: Record %d of the %s is missing category type field.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
@@ -176,7 +176,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
         /* The ordinal model requires the category type to be a decimal number. */
         double ordinal;
         if (!string_to_type<double>(categoryTypeLabel.c_str(), ordinal)) {
-            gPrint.Printf("Error: The category type '%s' in record %ld, of the %s, is not a decimal number.\n",
+            gPrint.Printf("Error: The category type '%s' in record %ld of the %s is not a decimal number.\n",
                           BasePrint::P_READERROR, categoryTypeLabel.c_str(), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             return DataSetHandler::Rejected;
         }
