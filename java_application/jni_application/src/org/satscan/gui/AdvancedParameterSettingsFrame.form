@@ -276,7 +276,7 @@
                                           <Component id="_controlFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="_populationFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="381" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="385" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
@@ -614,7 +614,7 @@
                                   <Component id="_strictCoordinatesLabel" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_relaxedCoordinatesRadioButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="612" max="32767" attributes="0"/>
+                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="616" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -736,18 +736,18 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="612" max="32767" attributes="0"/>
-                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="612" max="32767" attributes="0"/>
+                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="616" max="32767" attributes="0"/>
+                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="616" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_metaLocationsFileTextField" pref="564" max="32767" attributes="0"/>
+                                          <Component id="_metaLocationsFileTextField" pref="568" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_metaLocationsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_neighborsFileTextField" pref="564" max="32767" attributes="0"/>
+                                          <Component id="_neighborsFileTextField" pref="568" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_neighborsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
@@ -1030,7 +1030,7 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_percentageOfPopFileLabel" pref="493" max="32767" attributes="0"/>
+                                          <Component id="_percentageOfPopFileLabel" pref="497" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1209,7 +1209,7 @@
                                   <Component id="_nonCompactnessPenaltyComboBox" min="-2" pref="111" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="238" max="32767" attributes="0"/>
+                          <EmptySpace pref="242" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1595,7 +1595,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="231" max="32767" attributes="0"/>
+                                  <EmptySpace pref="235" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1746,7 +1746,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="239" max="32767" attributes="0"/>
+                                  <EmptySpace pref="243" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2095,7 +2095,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_spatialAdjustmentsNoneRadioButton" max="32767" attributes="0"/>
-                              <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" alignment="0" pref="624" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
@@ -2179,7 +2179,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="612" max="32767" attributes="0"/>
+                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="616" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2631,14 +2631,14 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_launch_map_viewer" min="-2" pref="273" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_launch_map_viewer" min="-2" pref="279" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="_createCompressedKMZ" alignment="0" min="-2" pref="278" max="-2" attributes="0"/>
-                                  <Component id="_label_kml_options" alignment="1" min="-2" pref="278" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="_createCompressedKMZ" alignment="1" pref="332" max="32767" attributes="0"/>
+                                  <Component id="_label_kml_options" alignment="1" max="32767" attributes="0"/>
                               </Group>
-                              <Component id="_includeClusterLocationsInKML" min="-2" pref="278" max="-2" attributes="0"/>
+                              <Component id="_includeClusterLocationsInKML" min="-2" pref="332" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2727,7 +2727,7 @@
                                       <Component id="_hierarchicalSecondaryClusters" alignment="0" min="-2" pref="248" max="-2" attributes="1"/>
                                       <Component id="_hierarchicalLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                                   </Group>
-                                  <EmptySpace min="0" pref="119" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -2826,12 +2826,12 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_maxReportedSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_reportedPercentageOfPopFileLabel" pref="527" max="32767" attributes="0"/>
+                                          <Component id="_reportedPercentageOfPopFileLabel" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_maxReportedSpatialClusterSizeTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_reportedPercentOfPopulationLabel" pref="546" max="32767" attributes="0"/>
+                                          <Component id="_reportedPercentOfPopulationLabel" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_reportedSpatialDistanceCheckBox" min="-2" max="-2" attributes="0"/>
@@ -3091,7 +3091,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportClusterRankCheckBox" pref="612" max="32767" attributes="0"/>
+                          <Component id="_reportClusterRankCheckBox" pref="616" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3146,7 +3146,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_printAsciiColumnHeaders" pref="612" max="32767" attributes="0"/>
+                          <Component id="_printAsciiColumnHeaders" pref="616" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3298,7 +3298,7 @@
                                                   <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
-                                          <EmptySpace min="0" pref="283" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="287" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
                                           <Group type="103" groupAlignment="1" attributes="0">
@@ -3610,7 +3610,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="616" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="620" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -3779,7 +3779,7 @@
                                   <Component id="_number_oliveira_data_sets_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_number_oliveira_data_sets" min="-2" pref="58" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="217" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="221" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
