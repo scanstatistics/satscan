@@ -16,7 +16,7 @@ const char * ClusterMap::FILE_SUFFIX_EXT = ".clustermap";
 const char * ClusterMap::API_KEY = "AIzaSyDFPvXhvQIG9SoJfHpsogahmlFZbrePWgc"; // API Key under spatovich@gmail.com - satscan
 
 const char * ClusterMap::TEMPLATE = " \
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
+<!DOCTYPE html> \n \
 <html lang=\"en\"> \n \
     <head> \n \
         <title>Cluster Map</title> \n \
@@ -138,9 +138,7 @@ const char * ClusterMap::TEMPLATE = " \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
     <script src='--resource-path--javascript/clustercharts/mapgoogle-1.0.js'></script> \n \
-    <script src='https://maps.googleapis.com/maps/api/js?key=--api-key--&callback=initMap' \n \
-    async defer></script> \n \
-     </body> \n \
+  </body> \n \
 </html> \n";
 
 ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0) { 
