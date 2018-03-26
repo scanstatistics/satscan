@@ -6,17 +6,40 @@
 
 class CSaTScanData; // forward class declaration
 
-typedef StationaryAttribute<std::pair<int, tract_t> >   RankStationary_t;
-typedef PermutedAttribute<double>                       RankPermuted_t;
+typedef StationaryAttribute<std::pair<int, tract_t> > RankStationary_t; // time interval / location index
+typedef PermutedAttribute<std::pair<double, double> > RankPermuted_t; // attribute / rank
+
+
+class RankRecord {
+public:
+    Julian _date;
+    tract_t _tract;
+    double _attribute;
+    double _rank;
+    RankRecord(Julian date, tract_t tract, double attribute): _date(date), _tract(tract), _attribute(attribute), _rank(0.0) {}
+    bool  operator<(const RankRecord& rhs) const { return _attribute < rhs._attribute; }
+    bool  operator>(const RankRecord& rhs) const { return _attribute > rhs._attribute; }
+};
+           
+typedef std::vector<RankRecord> RankRecordCollection_t;
+
+/** Function object used to compare Coordinates::gpCoordinates */
+class CompareRankPermuted {
+public:
+    CompareRankPermuted() {}
+    bool operator() (const RankPermuted_t& lhs, const RankPermuted_t& rhs) { return lhs.GetPermutedVariable().second > rhs.GetPermutedVariable().second; }
+};
 
 /** Abstraction for Rank data randomizers */
 class AbstractRankRandomizer :  public AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>{
+   protected:
+     virtual void               AddCase(Julian date, tract_t tract, measure_t variable, double rank);
+
    public:
      AbstractRankRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
      virtual ~AbstractRankRandomizer() {}
 
-    virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable);
-    virtual void               AssignFromAttributes(RealDataSet& RealSet);
+    virtual void               AssignFromAttributes(RankRecordCollection_t& records, RealDataSet& RealSet);
 };
 
 /** Rank model randomizer for null hypothesis. */

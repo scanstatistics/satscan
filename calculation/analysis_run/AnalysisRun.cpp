@@ -669,6 +669,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case ORDINAL: b = sizeof(count_t); break;
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
     case HOMOGENEOUSPOISSON: b = 1; break; // ??
+    case RANK: b = sizeof(count_t) + sizeof(measure_t); break;
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the number of categories in the ordinal model (CAT=1 for other models)
@@ -683,6 +684,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case BERNOULLI:
     case HOMOGENEOUSPOISSON: 
     case CATEGORICAL:
+    case RANK:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
@@ -1248,6 +1250,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
 			}
 			break;
 		  }
+      case RANK:
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
       case HOMOGENEOUSPOISSON :

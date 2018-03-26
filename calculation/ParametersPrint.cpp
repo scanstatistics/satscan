@@ -46,6 +46,7 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
                         default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
                     }
                 }
+            case RANK:
             case HOMOGENEOUSPOISSON :
             case BERNOULLI :
             case SPACETIMEPERMUTATION :

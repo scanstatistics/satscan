@@ -464,8 +464,7 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabilityModelType == SPACETIMEPERMUTATION ||
-          (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
+  return (geProbabilityModelType == SPACETIMEPERMUTATION || geProbabilityModelType == RANK || (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
 }
 
 /** Returns maximum spatial cluster size given type and whether value is for real or simulations. */

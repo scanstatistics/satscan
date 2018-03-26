@@ -133,7 +133,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
 }
 
 DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
-  const short   uContinuousVariableIndex=3;
+  short   uContinuousVariableIndex=3;
   
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -160,6 +160,7 @@ DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(Data
       return eDateStatus;
 
     // read continuous variable
+    uContinuousVariableIndex = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex);
     if (!Source.GetValueAt(uContinuousVariableIndex)) {
       gPrint.Printf("Error: Record %d of the %s is missing the continuous variable.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
@@ -198,6 +199,7 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   measure_t                             tContinuousVariable, tTotalMeasure=0;
   AbstractRankRandomizer              * pRandomizer;
   DataSetHandler::RecordStatusType      eRecordStatus;
+  RankRecordCollection_t                records;
 
   try {
     if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
@@ -206,11 +208,10 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
            bEmpty = false;
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
            if (eRecordStatus == DataSetHandler::Accepted) {
-             pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
-             tTotalCases += Count;
-             tTotalMeasure += tContinuousVariable;
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
+                for (tract_t t=0; t < Count; ++t) records.push_back(RankRecord(Date, TractIndex, tContinuousVariable));
+                tTotalCases += Count;
+                tTotalMeasure += tContinuousVariable;
+           } else if (eRecordStatus == DataSetHandler::Ignored)
              continue;
            else   
              bValid = false;
@@ -224,12 +225,8 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else {
-      pRandomizer->AssignFromAttributes(DataSet);
-      DataSet.setTotalCases(tTotalCases);
-      DataSet.setTotalMeasure(tTotalMeasure);
-    }
-
+    else
+      pRandomizer->AssignFromAttributes(records, DataSet);
   }
   catch (prg_exception& x) {
     x.addTrace("ReadCounts()","RankDataSetHandler");
