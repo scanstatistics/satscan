@@ -32,22 +32,40 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                 case HIGH:
                 default: gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateNormal;
                 }
-            } else if (parameters.getIsWeightedNormalCovariates()) {
+            }
+            else if (parameters.getIsWeightedNormalCovariates()) {
                 gpRateOfInterestNormal = &AbstractLikelihoodCalculator::AllRatesWeightedNormalCovariates;
-                /* The AllRatesWeightedNormalCovariates method only uses one variable since we can't determine rate until calculating LLR. 
+                /* The AllRatesWeightedNormalCovariates method only uses one variable since we can't determine rate until calculating LLR.
                    -- see WeightedNormalCovariatesLikelihoodCalculator::CalculateMaximizingValueNormal */
                 if (parameters.GetAreaScanRateType() == LOW) _min_high_rate_cases = _min_low_rate_cases;
                 // This isn't technically correct since we can't determine rate at evaluation time -- so we're limiting by the greater value.
                 if (parameters.GetAreaScanRateType() == HIGHANDLOW) _min_high_rate_cases = std::max(_min_low_rate_cases, _min_high_rate_cases);
-            } else if (parameters.getIsWeightedNormal()) {
+            }
+            else if (parameters.getIsWeightedNormal()) {
                 switch (parameters.GetExecuteScanRateType()) {
                 case LOW: gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateWeightedNormal; break;
                 case HIGHANDLOW: gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal; break;
                 case HIGH:
                 default: gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateWeightedNormal;
                 }
-            } else 
+            }
+            else
                 throw prg_error("Unable to assign scan area function pointer.", "constructor()");
+        } else if (parameters.GetProbabilityModelType() == RANK) {
+            /* The rank model is somewhat specialized. */
+            switch (parameters.GetExecuteScanRateType()) {
+            case LOW: gpRateOfInterest = &AbstractLikelihoodCalculator::LowRateRank; break;
+            case HIGHANDLOW: gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRateRank; break;
+            case HIGH:
+            default: gpRateOfInterest = &AbstractLikelihoodCalculator::HighRateRank;
+            }
+            // Calculate the average rank per data set.
+            for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t)
+                _average_rank_dataset.push_back(static_cast<double>(DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases() + 1) / 2.0);
+
+            /* TODO -- What is the risk function for the rank model? */
+            /* TODO -- What about multiple data sets? */
+
         } else {
             // Determine measure adjustment when restricting evaluated clusters by risk thresholds.
             if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
