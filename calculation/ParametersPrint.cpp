@@ -798,7 +798,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             AdditionalOutputFile.setExtension(".col.shp");
             settings.push_back(std::make_pair("Shapefile",AdditionalOutputFile.getFullPath(buffer)));
         }
-        if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.getOutputCartesianGraph()) {
+        if (gParameters.getOutputCartesianGraph()) {
             AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
             CartesianGraph::getFilename(AdditionalOutputFile);
             settings.push_back(std::make_pair("Cartesian Graph File", AdditionalOutputFile.getFullPath(buffer)));
