@@ -78,14 +78,18 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
     switch (gParameters.GetExecuteScanRateType()) {
     case HIGH:
-        if (gParameters.getRiskLimitHighClusters())
+        if (gParameters.getRiskLimitHighClusters()) 
             return new RiskMinMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdHighClusters());
+        if (gParameters.GetProbabilityModelType() == RANK)
+            return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
         return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
     case LOW: 
         if (gParameters.getRiskLimitLowClusters())
             return new RiskMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters());
+        if (gParameters.GetProbabilityModelType() == RANK)
+            return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
         return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    case HIGHANDLOW: 
+    case HIGHANDLOW:
         if (gParameters.getRiskLimitHighClusters() && gParameters.getRiskLimitLowClusters())
             return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters(), gParameters.getRiskThresholdHighClusters());
         else if (gParameters.getRiskLimitLowClusters())
@@ -95,7 +99,7 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
             /* We're restricting the high clusters only -- pass 1.0 for low risk restriction, which will always pass for low rates. */
             return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, 1.0, gParameters.getRiskThresholdHighClusters());
         return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    default         : throw prg_error("Unknown incidence rate specifier '%d'.","GetNewMeasureListObject()", gParameters.GetExecuteScanRateType());
+    default : throw prg_error("Unknown incidence rate specifier '%d'.","GetNewMeasureListObject()", gParameters.GetExecuteScanRateType());
     }
 }
 

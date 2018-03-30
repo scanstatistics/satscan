@@ -39,8 +39,10 @@ double CMeasureList::GetMaximumLogLikelihoodRatio() {
   //   SetForNextIteration(), so calculate LLR when asked.
   if (! gvMaximumLogLikelihoodRatios.size()) {
     if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
-      CalculateBernoulliMaximumLogLikelihood(0);
-    else  
+        CalculateBernoulliMaximumLogLikelihood(0);
+    else if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK)
+        CalculateRankMaximumLogLikelihood(0);
+    else
       CalculateMaximumLogLikelihood(0);
   }
 
@@ -69,6 +71,8 @@ void CMeasureList::SetForNextIteration(int iIteration) {
     //Hit a boundry, so calculate loglikelihood for current measure values.
     if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
       CalculateBernoulliMaximumLogLikelihood(iIteration);
+    else if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK)
+        CalculateRankMaximumLogLikelihood(iIteration);
     else
       CalculateMaximumLogLikelihood(iIteration);
     //If this is the last iteration, don't reinitialize measure arrays.
@@ -165,8 +169,32 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
-/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
-    to add result to internal list. */
+/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood() to add result to internal list. */
+void CMinMeasureList::CalculateRankMaximumLogLikelihood(int iIteration) {
+    macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+
+    int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() / 2,
+        iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
+    double        dLogLikelihood, dMaxExcess(0),
+        dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+
+    //Start case index at specified minimum number of cases.
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+    for (; i < iListSize; i++) {
+        if (gpMinMeasures[i] != 0) {
+            dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
+            if (dLogLikelihood > dMaximumLogLikelihood)
+                dMaximumLogLikelihood = dLogLikelihood;
+        }
+    }
+
+    //Now store maximum loglikelihood for comparison against other iterations
+    AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
+
+    macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+}
+
+/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood() to add result to internal list. */
 void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
@@ -176,7 +204,10 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   //Start case index at specified minimum number of cases.
-  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK)
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+  else
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
 
   //Calculating the LLR for less than half the cases can use a trick where the
   //calculation is performed only if the excess exceeds any previous excess.
@@ -217,14 +248,19 @@ void CMinMeasureList::SetMeasures() {
   count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
   measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure();
 
-  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
-    //Bernoulli model has cases + controls = total measure
-    for (i=0; i < iListSize; ++i)
-       gpMinMeasures[i] = (tTotalMeasure *  i) / tTotalCases;
-  else
-    for (i=0; i < iListSize; ++i)
-       gpMinMeasures[i] = i;
-
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+      //Bernoulli model has cases + controls = total measure
+      for (i=0; i < iListSize; ++i)
+          gpMinMeasures[i] = (tTotalMeasure *  i) / tTotalCases;
+  } else if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK) {
+      double _average_rank_dataset = (static_cast<double>(iListSize) / 2.0);
+      // Initially assign average 
+      for (i=0; i < iListSize; ++i)
+          gpMinMeasures[i] = static_cast<double>(i) * _average_rank_dataset;
+  } else {
+      for (i=0; i < iListSize; ++i)
+          gpMinMeasures[i] = i;
+  }
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
@@ -295,6 +331,29 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
+/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood() to add result to internal list. */
+void CMaxMeasureList::CalculateRankMaximumLogLikelihood(int iIteration) {
+    macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+
+    int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
+    double        dLogLikelihood, dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+
+    //Start case index at specified minimum number of cases.
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+    for (; i <= iListSize; i++) {
+        if (gpMaxMeasures[i] != 0) {
+            dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
+            if (dLogLikelihood > dMaximumLogLikelihood)
+                dMaximumLogLikelihood = dLogLikelihood;
+        }
+    }
+
+    //Now store maximum loglikelihood for comparison against other iterations
+    AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
+
+    macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+}
+
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
@@ -304,7 +363,10 @@ void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   double        dLogLikelihood, dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   //Start case index at specified minimum number of cases.
-  i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK)
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+  else
+    i = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
 
   for (; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
@@ -333,14 +395,19 @@ void CMaxMeasureList::SetMeasures() {
   count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
   measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure();
 
-  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI) {
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = (tTotalMeasure * i) / tTotalCases;
-  else
-    for (i=0; i < iListSize; ++i)
-       gpMaxMeasures[i] = i;
-
+    } else if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK) {
+     // Initially assign average
+        double _average_rank_dataset = (static_cast<double>(iListSize) / 2.0);
+        for (i=0; i < iListSize; ++i)
+            gpMaxMeasures[i] = static_cast<double>(i) * _average_rank_dataset;
+    } else {
+     for (i = 0; i < iListSize; ++i)
+         gpMaxMeasures[i] = i;
+    }
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
@@ -447,6 +514,40 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
+/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood() to add result to internal list. */
+void CMinMaxMeasureList::CalculateRankMaximumLogLikelihood(int iIteration) {
+    macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+
+    int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() / 2,
+        iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
+    double        dLogLikelihood, dMaxExcess(0), dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+
+    //Start case index at specified minimum number of cases.
+    int iH = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesHighRateClusters());
+    int iL = static_cast<int>(gSaTScanData.GetParameters().getMinimumCasesLowRateClusters());
+
+    //Calculating the LLR for less than half the cases can use a trick where the
+    //calculation is performed only if the excess exceeds any previous excess. But
+    //note that this trick is not valid for low rates, which use same process regardless.
+    for (i = std::min(iL, iH); i < iListSize; ++i) {
+        if (i >= iH && gpMaxMeasures[i] != 0) {
+            dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
+            if (dLogLikelihood > dMaximumLogLikelihood)
+                dMaximumLogLikelihood = dLogLikelihood;
+        }
+        if (i >= iL && gpMinMeasures[i] != 0) {
+            dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
+            if (dLogLikelihood > dMaximumLogLikelihood)
+                dMaximumLogLikelihood = dLogLikelihood;
+        }
+    }
+
+    //Now store maximum loglikelihood for comparison against other iterations
+    AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
+
+    macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
+}
+
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
@@ -506,19 +607,25 @@ void CMinMaxMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMinMaxMeasureList::SetMeasures() {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+    macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 
-  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() + 1;
-  count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
-  measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure();
+    int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() + 1;
+    count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases();
+    measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().getTotalMeasure();
 
-  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
-    //Bernoulli model has cases + controls = total measure
-    for (i=0; i < iListSize; ++i)
-       gpMaxMeasures[i] = gpMinMeasures[i] = (tTotalMeasure * i) / tTotalCases;
-  else
-    for (i=0; i < iListSize; ++i)
-       gpMaxMeasures[i] = gpMinMeasures[i] = i;
+    if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+        //Bernoulli model has cases + controls = total measure
+        for (i = 0; i < iListSize; ++i)
+            gpMaxMeasures[i] = gpMinMeasures[i] = (tTotalMeasure * i) / tTotalCases;
+    } else if (gSaTScanData.GetParameters().GetProbabilityModelType() == RANK) {
+        double _average_rank_dataset = (static_cast<double>(iListSize) / 2.0);
+        // Initially assign average 
+        for (i = 0; i < iListSize; ++i)
+            gpMaxMeasures[i] = gpMinMeasures[i] = static_cast<double>(i) * _average_rank_dataset;
+    } else {
+        for (i=0; i < iListSize; ++i)
+        gpMaxMeasures[i] = gpMinMeasures[i] = i;
+    }
 
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }

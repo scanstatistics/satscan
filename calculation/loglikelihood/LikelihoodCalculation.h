@@ -92,7 +92,7 @@ inline bool AbstractLikelihoodCalculator::LowRateRank(count_t nCases, measure_t 
     if (nCases == 0 || nMeasure == 0.0) return false;
     return _average_rank_dataset[tSetIndex] > (nMeasure + 1.0) / nCases;
 
-    /* TODO - Do we incorporate a minimum number of cases here? */
+    /* TODO - Do we incorporate a minimum number of cases here?  -- yes */
 }
 
 /** Indicates whether an area has higher average rank compared to average rank in data set -- high cluster. */
@@ -100,14 +100,14 @@ inline bool AbstractLikelihoodCalculator::HighRateRank(count_t nCases, measure_t
     if (nCases == 0 || nMeasure == 0.0) return false;
     return _average_rank_dataset[tSetIndex] < (nMeasure + 1.0) / nCases;
 
-    /* TODO - Do we incorporate a minimum number of cases here? */
+    /* TODO - Do we incorporate a minimum number of cases here? -- yes */
 }
 
 /** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighOrLowRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
     if (nCases == 0 || nMeasure == 0.0) return false;
     return true;
-    /* TODO - Do we incorporate a minimum number of cases here? */
+    /* TODO - Do we incorporate a minimum number of cases here?  -- yes */
 }
 /** For multiple sets, the criteria that a high rate must have more than one case is not currently implemented. */
 inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {

@@ -77,6 +77,8 @@ class CCluster {
                                                            const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub,
                                                             const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub,
+                                                         const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
                                                              const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub,

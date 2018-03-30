@@ -4,12 +4,13 @@
 //******************************************************************************
 #include "RankRandomizer.h"
 #include "SaTScanData.h"
+#include "cluster.h"
 #include <numeric> 
 
 //***************** AbstractRankRandomizer *************************************************************
 
 AbstractRankRandomizer::AbstractRankRandomizer(const CSaTScanData& dataHub, long lInitialSeed) 
- : AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>(dataHub, dataHub.GetParameters().getAdjustForWeeklyTrends(), lInitialSeed){}
+ : AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>(dataHub, dataHub.GetParameters().getAdjustForWeeklyTrends(), lInitialSeed), _average_attribute(0){}
 
 /** Adds new randomization entry with passed attrbiute values. */
 void AbstractRankRandomizer::AddCase(Julian date, tract_t tract, measure_t variable, double rank) {
@@ -63,9 +64,11 @@ void AbstractRankRandomizer::AssignFromAttributes(RankRecordCollection_t& record
     // Add records to internal data structures
     double ranksum = 0.0, num_records(static_cast<double>(records.size())), ranksum_expected(num_records * (num_records + 1.0) / 2.0);
     for (left = records.begin(); left != records.end(); ++left) {
+        _average_attribute += left->_attribute;
         ranksum += left->_rank;
         AddCase(left->_date, left->_tract, left->_attribute, left->_rank);
     }
+    _average_attribute = (_average_attribute + 1.0) / static_cast<double>(records.size());
     // Check - sum of the ranks should equal n(n + 1) / 2, n = records.size()
     if (ranksum != ranksum_expected)
         throw prg_error("Sum of ranks %g does not equal expected value %u\n", "AssignFromAttributes()", ranksum, ranksum_expected);
@@ -105,6 +108,7 @@ void AbstractRankRandomizer::AssignFromAttributes(RankRecordCollection_t& record
         }
     }
 }
+
 
 //***************** RankRandomizer *************************************************************
 

@@ -30,16 +30,19 @@ public:
     bool operator() (const RankPermuted_t& lhs, const RankPermuted_t& rhs) { return lhs.GetPermutedVariable().second > rhs.GetPermutedVariable().second; }
 };
 
+class CCluster;
 /** Abstraction for Rank data randomizers */
 class AbstractRankRandomizer :  public AbstractPermutedDataRandomizer<RankStationary_t, RankPermuted_t>{
    protected:
-     virtual void               AddCase(Julian date, tract_t tract, measure_t variable, double rank);
+     double                    _average_attribute;
+     virtual void              AddCase(Julian date, tract_t tract, measure_t variable, double rank);
 
    public:
      AbstractRankRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
      virtual ~AbstractRankRandomizer() {}
 
     virtual void               AssignFromAttributes(RankRecordCollection_t& records, RealDataSet& RealSet);
+    virtual double             getAverageAtributeValue() const { return _average_attribute; }
 };
 
 /** Rank model randomizer for null hypothesis. */

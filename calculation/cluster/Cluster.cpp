@@ -14,6 +14,7 @@
 #include "WeightedNormalRandomizer.h"
 #include "ClusterSupplement.h"
 #include "LoglikelihoodRatioUnifier.h"
+#include "RankRandomizer.h"
 
 unsigned int CCluster::MIN_RANK_RPT_GUMBEL = 10;
 
@@ -245,11 +246,13 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
             DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
         else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
             DisplayClusterDataExponential(fp, DataHub, PrintFormat);
-        else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) { 
+        else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) {
             if (DataHub.GetParameters().getIsWeightedNormal())
                 DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
             else
                 DisplayClusterDataNormal(fp, DataHub, PrintFormat);
+        } else if (DataHub.GetParameters().GetProbabilityModelType() == RANK) {
+            DisplayClusterDataRank(fp, DataHub, PrintFormat);
         } else
             DisplayClusterDataStandard(fp, DataHub, PrintFormat);
         DisplayTimeTrend(fp, DataHub, PrintFormat);
@@ -346,6 +349,54 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
 
      //NOTE: Not printing relative risk information for exponential model at this time.
   }
+}
+
+/** Prints observed cases, expected cases and observed/expected, for rank model,
+    to file stream is in format required by result output file. */
+void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+    std::string                                   buffer, work;
+    std::vector<unsigned int>                     vComprisedDataSetIndexes;
+    std::vector<unsigned int>::iterator           itr_Index;
+    std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
+    double                                        dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance;
+    double                                        n1, n2;
+    double                                        r1, r2;
+    const AbstractRankRandomizer                * pRandomizer = 0;
+
+    const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+    GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio / m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
+    for (itr_Index = vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
+        //print data set number if analyzing more than data set
+        if (Handler.GetNumDataSets() > 1) {
+            printString(buffer, "Data Set #%ld", *itr_Index + 1);
+            PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
+        }
+        //print total cases
+        printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr_Index)), true, *itr_Index + 1);
+        n1 = static_cast<double>(GetObservedCount(*itr_Index));
+        n2 = static_cast<double>(Handler.GetDataSet(*itr_Index).getTotalCases()) - n1;
+        r1 = GetExpectedCount(DataHub, *itr_Index);
+        r2 = Handler.GetDataSet(*itr_Index).getTotalMeasure() - r1;
+        printClusterData(fp, PrintFormat, "Average Rank Inside", printString(buffer, "%lf", (r1 + 1)/ n1), true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Average Rank Outside", printString(buffer, "%lf", (r2 + 1) / n2), true, *itr_Index + 1);
+        //get randomizer for data set to retrieve various information
+        //if ((pRandomizer = dynamic_cast<const AbstractRankRandomizer*>(Handler.GetRandomizer(*itr_Index))) == 0)
+        //    throw prg_error("Randomizer could not be dynamically casted to AbstractRankRandomizer type.\n", "DisplayClusterDataRank()");
+        //printClusterData(fp, PrintFormat, "Average Category", printString(buffer, "%lf", pRandomizer->getAverageAtributeValue()), true, *itr_Index + 1);
+
+        /*
+        TODO:
+        Consider implementing something similar to the AbstractWeightedNormalRandomizer methods
+        ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
+        ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
+        */
+
+        printClusterData(fp, PrintFormat, "Average Category", std::string(""), true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Median Rank Inside", std::string(""), true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Median Rank Outside", std::string(""), true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Variance", std::string(""), false);
+        printClusterData(fp, PrintFormat, "Standard deviation", std::string(""), false);
+    }
 }
 
 /** Prints observed cases, expected cases and observed/expected, for Normal model,
@@ -831,7 +882,7 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const As
 void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string  buffer;
 
-  if (DataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+  if (DataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || DataHub.GetParameters().GetProbabilityModelType() == RANK) {
      //PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
      //fprintf(fp, "%lf\n", m_nRatio);
      printString(buffer, "%lf", m_nRatio);

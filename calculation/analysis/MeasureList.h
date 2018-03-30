@@ -29,6 +29,7 @@ class CMeasureList {
     void                           AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration);
     virtual void                   CalculateBernoulliMaximumLogLikelihood(int iIteration) = 0;
     virtual void                   CalculateMaximumLogLikelihood(int iIteration) = 0;
+    virtual void                   CalculateRankMaximumLogLikelihood(int iIteration) = 0;
     virtual void                   SetMeasures() = 0;
 
   public:
@@ -53,6 +54,7 @@ class CMinMeasureList : public CMeasureList {
 
     virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
+    virtual void                CalculateRankMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
@@ -79,6 +81,7 @@ class CMaxMeasureList : public CMeasureList {
 
     virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
+    virtual void                CalculateRankMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
@@ -106,6 +109,7 @@ class CMinMaxMeasureList : public CMeasureList {
 
     virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
+    virtual void                CalculateRankMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
