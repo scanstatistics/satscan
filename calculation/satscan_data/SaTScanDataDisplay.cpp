@@ -391,16 +391,17 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       }
   }
   if (gParameters.GetProbabilityModelType() == RANK) {
+      std::string buffer("");
       PrintFormat.PrintSectionLabel(fp, "Average Rank", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, std::string(""));
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       PrintFormat.PrintSectionLabel(fp, "Mean Rank", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, std::string(""));
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       PrintFormat.PrintSectionLabel(fp, "Average Category", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, std::string(""));
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, std::string(""));
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, std::string(""));
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);

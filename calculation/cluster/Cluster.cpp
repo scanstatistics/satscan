@@ -393,11 +393,12 @@ void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, con
         ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
         */
 
-        printClusterData(fp, PrintFormat, "Average Category", std::string(""), true, *itr_Index + 1);
-        printClusterData(fp, PrintFormat, "Median Rank Inside", std::string(""), true, *itr_Index + 1);
-        printClusterData(fp, PrintFormat, "Median Rank Outside", std::string(""), true, *itr_Index + 1);
-        printClusterData(fp, PrintFormat, "Variance", std::string(""), false);
-        printClusterData(fp, PrintFormat, "Standard deviation", std::string(""), false);
+        buffer = "";
+        printClusterData(fp, PrintFormat, "Average Category", buffer, true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Median Rank Inside", buffer, true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Median Rank Outside", buffer, true, *itr_Index + 1);
+        printClusterData(fp, PrintFormat, "Variance", buffer, false);
+        printClusterData(fp, PrintFormat, "Standard deviation", buffer, false);
     }
 }
 
