@@ -10,6 +10,7 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
   switch(Parameters.GetProbabilityModelType()) {
     case POISSON              :
     case BERNOULLI            :
+    case UNIFORMTIME          :
     case SPACETIMEPERMUTATION : return new DefaultDataSetWriter();
     case CATEGORICAL          :
     case ORDINAL              : return new OrdinalDataSetWriter();

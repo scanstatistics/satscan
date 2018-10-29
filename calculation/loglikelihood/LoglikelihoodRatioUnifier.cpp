@@ -23,6 +23,14 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
 }
 
 /** Calculates loglikelihood ratio given parameter data; accumulating like high and low rate separately. */
+void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) {
+    if (gbScanLowRates && Calculator.LowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        gdLowRateRatios += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
+    if (gbScanHighRates && Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        gdHighRateRatios += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
+}
+
+/** Calculates loglikelihood ratio given parameter data; accumulating like high and low rate separately. */
 void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) {
   bool bWeightedNormal = geProbabilityModelType == NORMAL && Calculator.GetDataHub().GetParameters().getIsWeightedNormal();  
   if (gbScanLowRates && (bWeightedNormal ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
@@ -54,6 +62,24 @@ void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculat
     prHighLowRatios.second = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
   if (gbScanHighRates && Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex))
     prHighLowRatios.first = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
+}
+
+/** Calculates loglikelihood ratio given parameter data; accumulating high and low
+rates separately; storing is passed pair object. */
+void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                          count_t tCases,
+                                          measure_t tMeasure,
+                                          count_t casesInPeriod,
+                                          measure_t measureInPeriod,
+                                          size_t tSetIndex,
+                                          std::pair<double, double>& prHighLowRatios) {
+
+    prHighLowRatios.second = 0;
+    prHighLowRatios.first = 0;
+    if (gbScanLowRates && Calculator.LowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
+    if (gbScanHighRates && Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
 }
 
 /** Calculates loglikelihood ratio given parameter data; accumulating high and low
@@ -133,6 +159,18 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
   throw prg_error("AdjoinRatio() not implementated yet for Adjustment option!","AdjustmentUnifier");
   //gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
+}
+
+void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
+                                    count_t tCases, 
+                                    measure_t tMeasure, 
+                                    count_t casesInPeriod, 
+                                    measure_t measureInPeriod, 
+                                    size_t tSetIndex) {
+    if (Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        gdRatio += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
+    else if (Calculator.LowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        gdRatio += -1 * Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
 }
 
 /** Returns calculated loglikelihood ratio that is the sum of adjoined values.

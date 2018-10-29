@@ -16,7 +16,7 @@ public class Parameters implements Cloneable {
                                                PURELYSPATIALPROSPECTIVECLUSTER, PURELYSPATIALHOMOGENEOUSCLUSTER};
     /** probability model types */
     public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL,
-                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK};
+                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK, UNIFORMTIME};
     public enum IncludeClustersType           {ALLCLUSTERS, ALIVECLUSTERS, CLUSTERSINRANGE};
     public enum RiskType                      {STANDARDRISK, MONOTONERISK};
     /** area incidence rate types */
@@ -353,12 +353,12 @@ public class Parameters implements Cloneable {
     /** Add ellipsoid shape to collection of spatial shapes evaluated. */
     public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
         if (bEmptyFirst) gvEllipseShapes.setSize(0);
-        gvEllipseShapes.add(new Double(dShape));
+        gvEllipseShapes.add(Double.valueOf(dShape));
     }
     /** Add ellipsoid rotations to collection of spatial shapes evaluated. */
     public void AddEllipsoidRotations(int iRotations, boolean bEmptyFirst) {
         if (bEmptyFirst) gvEllipseRotations.setSize(0);
-        gvEllipseRotations.add(new Integer(iRotations));
+        gvEllipseRotations.add(Integer.valueOf(iRotations));
     }
     /** Add observable region to definition to collection. */
     public void ClearObservableRegions() {

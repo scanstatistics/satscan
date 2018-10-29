@@ -49,6 +49,7 @@ class SaTScanDataReader {
     bool                        ReadOrdinalData();
     bool                        ReadPoissonData();
     bool                        ReadRankData();
+    bool                        ReadUniformTimeData();
     bool                        ReadSpaceTimePermutationData();
     bool                        ReadUserSpecifiedNeighbors();
     RecordStatusType            RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex);

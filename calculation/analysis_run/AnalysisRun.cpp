@@ -663,6 +663,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
   switch (gParameters.GetProbabilityModelType()) {
     case POISSON:
     case SPACETIMEPERMUTATION:
+    case UNIFORMTIME:
     case EXPONENTIAL:  b = sizeof(count_t) + sizeof(measure_t); break;
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case CATEGORICAL:
@@ -685,6 +686,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case HOMOGENEOUSPOISSON: 
     case CATEGORICAL:
     case RANK:
+    case UNIFORMTIME:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
@@ -1254,6 +1256,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
       case HOMOGENEOUSPOISSON :
+      case UNIFORMTIME :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : buffer = "All potential cluster areas scanned had either only one case or fewer observed cases than expected."; break;
             case LOW        : buffer = "All potential cluster areas scanned had either only one case or more observed cases than expected."; break;

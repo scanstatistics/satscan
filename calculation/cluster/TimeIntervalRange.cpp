@@ -8,6 +8,8 @@
 #include "cluster.h"
 #include "ClusterData.h"
 #include "NormalClusterData.h"
+#include "UniformTimeClusterData.h"
+#include "MultiSetUniformTimeClusterData.h"
 #include "MultiSetClusterData.h"
 #include "CategoricalClusterData.h"
 #include "MultiSetCategoricalClusterData.h"
@@ -291,6 +293,91 @@ double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClu
     return dRatio;
 }
 
+//********** MultiSetUniformTimeTemporalDataEvaluator **********
+
+/** constructor */
+MultiSetUniformTimeTemporalDataEvaluator::MultiSetUniformTimeTemporalDataEvaluator(const CSaTScanData& DataHub,
+    AbstractLikelihoodCalculator & Calculator,
+    IncludeClustersType eIncludeClustersType)
+    :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void MultiSetUniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    AbstractMultiSetUniformTimeTemporalData& Data = (AbstractMultiSetUniformTimeTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
+    AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+
+    count_t * pCases = 0;
+    measure_t * pMeasure = 0;
+
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.getNumSets(); ++t) {
+                UniformTimeClusterDataInterface & Datum = Data.getUniformTimeClusterDataInterface(t);
+                pCases = Datum.getCasesArray();
+                pMeasure = Datum.getMeasureArray();
+                Datum.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
+                Datum.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
+                Datum.gtCasesInPeriod = pCases[0];
+                Datum.gtMeasureInPeriod = pMeasure[0];
+                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.getCases(), Datum.getMeasure(), Datum.gtCasesInPeriod, Datum.gtMeasureInPeriod, t);
+            }
+            Running.m_nFirstInterval = iWindowStart;
+            Running.m_nLastInterval = iWindowEnd;
+            Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            clusterSet.update(Running);
+        }
+    }
+    clusterSet.maximizeClusterSet();
+}
+
+/** Not implemented - throws prg_error */
+void MultiSetUniformTimeTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "MultiSetTemporalDataEvaluator");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+Calculates greatest loglikelihood ratio among clusterings that have rates
+which we are interested in. Returns greatest loglikelihood ratio. */
+double MultiSetUniformTimeTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    AbstractMultiSetUniformTimeTemporalData& Data = (AbstractMultiSetUniformTimeTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
+    AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
+    double                                dRatio(0);
+
+    count_t * pCases = 0;
+    measure_t * pMeasure = 0;
+
+    //iterate through windows
+    int iWindowStart, iMaxStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.getNumSets(); ++t) {
+                UniformTimeClusterDataInterface & Datum = Data.getUniformTimeClusterDataInterface(t);
+                pCases = Datum.getCasesArray();
+                pMeasure = Datum.getMeasureArray();
+                Datum.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
+                Datum.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
+                Datum.gtCasesInPeriod = pCases[0];
+                Datum.gtMeasureInPeriod = pMeasure[0];
+                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.getCases(), Datum.getMeasure(), Datum.gtCasesInPeriod, Datum.gtMeasureInPeriod, t);
+            }
+            dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+        }
+    }
+    return dRatio;
+}
+
 //********** ClosedLoopMultiSetTemporalDataEvaluator **********
 
 /** constructor */
@@ -448,6 +535,108 @@ double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClust
             Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0));
+        }
+    }
+    return dMaxValue;
+}
+
+//********** UniformTimeTemporalDataEvaluator **********
+
+/** constructor */
+UniformTimeTemporalDataEvaluator::UniformTimeTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
+    IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType)
+    :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
+    if (eExecutionType == CENTRICALLY) {
+        gpCalculationMethod = &AbstractLikelihoodCalculator::CalcLogLikelihoodRatioUniformTime;
+        gdDefaultMaximizingValue = 0;
+    }
+    else {
+        gpCalculationMethod = &AbstractLikelihoodCalculator::CalculateMaximizingValueUniformTime;
+        gdDefaultMaximizingValue = -std::numeric_limits<double>::max();
+    }
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void UniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    UniformTimeClusterDataInterface& Data = GetClusterDataAsType<UniformTimeClusterDataInterface>(*(Running.GetClusterData()));
+
+    count_t * pCases = Data.getCasesArray();
+    measure_t * pMeasure = Data.getMeasureArray();
+    AbstractLikelihoodCalculator::SCANRATEUNIFORMTIME_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestUniformTime;
+
+    int iWindowStart, iMinStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
+            Data.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
+            Data.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
+            Data.gtCasesInPeriod = pCases[0];
+            Data.gtMeasureInPeriod = pMeasure[0];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0)) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioUniformTime(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0);
+                clusterSet.update(Running);
+            }
+        }
+    }
+    clusterSet.maximizeClusterSet();
+}
+
+/** Not implemented - throws prg_error */
+void UniformTimeTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
+    UniformTimeClusterDataInterface& Data = GetClusterDataAsType<UniformTimeClusterDataInterface>(ClusterData);
+
+    count_t cases, * pCases = Data.getCasesArray();
+    measure_t measure, * pMeasure = Data.getMeasureArray();
+    double M = 2.0;
+
+    int iWindowStart, iMaxStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+            cases = pCases[iWindowStart] - pCases[iWindowEnd];
+            measure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+            if (cases < pCases[0])
+                MeasureList.AddMeasure(cases, measure * static_cast<double>(pCases[0] - cases) / (pMeasure[0] - measure));
+            else if (cases == pCases[0])
+                MeasureList.AddMeasure(cases, measure / (M * (pMeasure[0] - measure)));
+        }
+    }
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+Calculates greatest loglikelihood ratio among clusterings that have rates
+which we are interested in. Returns greatest loglikelihood ratio. */
+double UniformTimeTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    UniformTimeClusterDataInterface& Data = GetClusterDataAsType<UniformTimeClusterDataInterface>(ClusterData);
+
+    double dMaxValue(gdDefaultMaximizingValue);
+    AbstractLikelihoodCalculator::SCANRATEUNIFORMTIME_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestUniformTime;
+    count_t * pCases = Data.getCasesArray();
+    measure_t * pMeasure = Data.getMeasureArray();
+
+    //iterate through windows
+    int iWindowStart, iMaxStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+            Data.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
+            Data.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
+            Data.gtCasesInPeriod = pCases[0];
+            Data.gtMeasureInPeriod = pMeasure[0];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0))
+                dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0));
         }
     }
     return dMaxValue;

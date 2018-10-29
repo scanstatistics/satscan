@@ -11,6 +11,7 @@
 #include "RankModel.h"
 #include "OrdinalModel.h"
 #include "SSException.h"
+#include "UniformTimeModel.h"
 
 /** class constructor */
 CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -106,6 +107,7 @@ void CSpaceTimeData::SetProbabilityModel() {
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
      case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(); break;
+     case UNIFORMTIME: m_pModel = new UniformTimeModel(*this); break;
      default : throw prg_error("Unknown probability model type: '%d'.\n",
                                "SetProbabilityModel()", gParameters.GetProbabilityModelType());
   }

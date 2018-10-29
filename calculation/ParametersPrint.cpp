@@ -50,6 +50,7 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             case HOMOGENEOUSPOISSON :
             case BERNOULLI :
             case SPACETIMEPERMUTATION :
+            case UNIFORMTIME :
                 switch (gParameters.GetAreaScanRateType()) {
                     case HIGH       : return "High Rates";
                     case LOW        : return "Low Rates";
@@ -94,6 +95,7 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
             case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
             case NORMAL               : sProbabilityModel = "Normal"; break;
             case RANK                 : sProbabilityModel = "Rank"; break;
+            case UNIFORMTIME          : sProbabilityModel = "Uniform Time"; break;
             case HOMOGENEOUSPOISSON   : sProbabilityModel = "Continuous Poisson"; break;
             default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
         }
@@ -305,6 +307,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
+      case UNIFORMTIME          : fprintf(fp, "using the Uniform Time model.\n"); break;
       case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Continuous Poisson model.\n"); break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
@@ -688,6 +691,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
             case EXPONENTIAL          :
             case NORMAL               :
             case RANK                 :
+            case UNIFORMTIME          :
             case HOMOGENEOUSPOISSON   :  break;
             default : 
                 throw prg_error("Unknown probability model type '%d'.\n", "PrintInputParameters()", gParameters.GetProbabilityModelType());
@@ -756,6 +760,7 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
                 case EXPONENTIAL          :
                 case NORMAL               :
                 case RANK                 :
+                case UNIFORMTIME          :
                 case HOMOGENEOUSPOISSON   : break;
                 default : 
                     throw prg_error("Unknown probability model type '%d'.\n", "PrintMultipleDataSetParameters()", gParameters.GetProbabilityModelType());

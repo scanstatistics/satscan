@@ -54,6 +54,16 @@ class MultiSetTemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
+/** Temporal window evaluator for multiple data setsusing uniform model. */
+class MultiSetUniformTimeTemporalDataEvaluator : public CTimeIntervals {
+public:
+    MultiSetUniformTimeTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
 /** Temporal window evaluator for seasonal analysis and multiple data sets. */
 class ClosedLoopMultiSetTemporalDataEvaluator : public CTimeIntervals {
     private:
@@ -81,6 +91,21 @@ class NormalTemporalDataEvaluator : public CTimeIntervals {
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
         virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the uniform time model. */
+class UniformTimeTemporalDataEvaluator : public CTimeIntervals {
+private:
+    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
+
+public:
+    UniformTimeTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Temporal window evaluator for the normal model and seasonal analysis. */

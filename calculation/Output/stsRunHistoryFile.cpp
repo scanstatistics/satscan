@@ -205,6 +205,7 @@ void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, Proba
     case NORMAL : sTempValue = "Normal"; break;
     case EXPONENTIAL : sTempValue = "Exponential"; break;
     case RANK : sTempValue = "Rank"; break;
+    case UNIFORMTIME:  sTempValue = "Uniform Time"; break;
     case CATEGORICAL : sTempValue = "Multinomial"; break;
     case ORDINAL : sTempValue = "Ordinal"; break;
     case HOMOGENEOUSPOISSON : sTempValue = "Continuous Poisson"; break;

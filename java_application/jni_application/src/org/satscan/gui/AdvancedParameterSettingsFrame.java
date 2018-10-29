@@ -2132,7 +2132,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Set appropriate control for maximum spatial cluster size type.
      */
     private void setMaxTemporalClusterSizeControl(double dMaxSize) {
-        Double d = new Double(dMaxSize);
+        Double d = Double.valueOf(dMaxSize);
         double dMaxValue = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;
 
         switch (getMaxTemporalClusterSizeControlType()) {

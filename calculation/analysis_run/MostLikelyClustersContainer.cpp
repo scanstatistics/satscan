@@ -242,6 +242,7 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
             case BERNOULLI:
             case SPACETIMEPERMUTATION:
             case EXPONENTIAL:
+            case UNIFORMTIME:
             case HOMOGENEOUSPOISSON: {
                 double observed=0, expected=0;
                 for (unsigned int s=0; s < numDataSets; ++s) {

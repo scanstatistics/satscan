@@ -168,7 +168,9 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       }  
-      if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
+      if (gParameters.GetProbabilityModelType() == POISSON || 
+          gParameters.GetProbabilityModelType() == BERNOULLI ||
+          gParameters.GetProbabilityModelType() == UNIFORMTIME) {
           CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       }
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
@@ -234,6 +236,7 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     //   - relative risk calculation not defined for STP, Exponential, another to be model
     if (gParameters.GetProbabilityModelType() == POISSON  ||
         gParameters.GetProbabilityModelType() == BERNOULLI ||
+        gParameters.GetProbabilityModelType() == UNIFORMTIME ||
         gParameters.GetProbabilityModelType() == ORDINAL ||
         gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -395,7 +398,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       }
       //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
       //because the relative risk could not be calculated
-      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
+      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
           Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||
@@ -595,7 +598,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       }  
       //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
       //because the relative risk could not be calculated 
-      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
+      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||

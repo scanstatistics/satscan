@@ -117,7 +117,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, CLU_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
                 CreateField(vFieldDefinitions, CLU_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             }
-            if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+            if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME)
                 CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
                 gParameters.GetProbabilityModelType() == BERNOULLI)
@@ -141,7 +141,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
         }
         //defined location level fields to report -- none of these are reported
         // for multiple data sets nor the ordinal probability model
-        if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
+        if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL&& gParameters.GetProbabilityModelType() != UNIFORMTIME) {
             //these fields will no be supplied for analyses with more than one dataset
             CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
@@ -298,7 +298,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
 			}
 
             //location information fields are only present for one dataset and not ordinal model
-            if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
+            if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME) {
                 /* When there is more than one identifiers for a tract, this indicates that locations where combined. Print a record for each location but
                 leave area specific information blank. */
                 if (vIdentifiers.size() == 1) {
@@ -368,7 +368,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                     Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
                     Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
                 }
-                if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
+                if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) &&
                     (dRelativeRisk = theCluster.GetRelativeRisk(DataHub)) != -1)
                     Record.GetFieldValue(CLU_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
                 if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||

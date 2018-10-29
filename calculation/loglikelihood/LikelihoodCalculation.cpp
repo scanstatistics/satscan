@@ -10,7 +10,7 @@
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub):
-    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0), _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
+    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -65,7 +65,15 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
 
             /* TODO -- What is the risk function for the rank model? */
             /* TODO -- What about multiple data sets? */
-
+        }
+        else if (parameters.GetProbabilityModelType() == UNIFORMTIME) {
+            /* The rank model is somewhat specialized. */
+            switch (parameters.GetExecuteScanRateType()) {
+            case LOW: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::LowRateUniformTime; break;
+            case HIGHANDLOW: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighOrLowRateUniformTime; break;
+            case HIGH:
+            default: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighRateUniformTime;
+            }
         } else {
             // Determine measure adjustment when restricting evaluated clusters by risk thresholds.
             if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
@@ -127,6 +135,11 @@ double AbstractLikelihoodCalculator::CalcLogLikelihoodRatio(count_t, measure_t,s
 }
 
 /** Throws exception. Not implemented in base class */
+double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioUniformTime(count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    throw prg_error("CalcLogLikelihoodRatioUniformTime(count_t,measure_t,count_t,measure_t,size_t) not implementated.", "AbstractLikelihoodCalculator");
+}
+
+/** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
     throw prg_error("CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>&,const std::vector<count_t>&) not implementated.","AbstractLikelihoodCalculator");
 }
@@ -157,6 +170,11 @@ double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, SVTTClusterDa
 }
 
 /** Throws exception. Not implemented in base class */
+double AbstractLikelihoodCalculator::CalcLogLikelihoodUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    throw prg_error("CalcLogLikelihoodUniformTime(count_t, measure_t, count_t, measure_t, size_t) not implementated.", "AbstractLikelihoodCalculator");
+}
+
+/** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex) const {
     throw prg_error("CalculateFullStatistic(double_t,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
@@ -174,6 +192,11 @@ double AbstractLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, m
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
     throw prg_error("CalculateMaximizingValueOrdinal(const std::vector<count_t>&,size_t) not implementated.","AbstractLikelihoodCalculator");
+}
+
+/** Throws exception. Not implemented in base class */
+double AbstractLikelihoodCalculator::CalculateMaximizingValueUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    throw prg_error("CalculateMaximizingValueUniformTime(count_t, measure_t, count_t, measure_t, size_t) not implementated.", "AbstractLikelihoodCalculator");
 }
 
 /** returns log likelihood for total - not implemented - throws exception. */

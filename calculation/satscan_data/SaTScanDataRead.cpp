@@ -17,6 +17,7 @@
 #include "ParametersPrint.h"
 #include "MetaTractManager.h"
 #include "HomogeneousPoissonDataSetHandler.h"
+#include "UniformTimeDataSetHandler.h"
 
 const long SaTScanDataReader::guLocationIndex = 0;
 
@@ -98,6 +99,7 @@ void SaTScanDataReader::Read() {
       case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
+      case UNIFORMTIME          : bReadSuccess = ReadUniformTimeData(); break;
       case HOMOGENEOUSPOISSON   : bReadSuccess = ReadHomogeneousPoissonData(); break;
       default :
         throw prg_error("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
@@ -1021,6 +1023,27 @@ bool SaTScanDataReader::ReadRankData() {
   }
   return true;
 }
+
+/** reads data from input files for a Uniform Time probability model */
+bool SaTScanDataReader::ReadUniformTimeData() {
+    try {
+        if (!ReadCoordinatesFile())
+            return false;
+        gDataHub.gDataSets.reset(new UniformTimeDataSetHandler(gDataHub, gPrint));
+        if (!gDataHub.gDataSets->ReadData())
+            return false;
+        if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+            return false;
+        if (gParameters.UseSpecialGrid() && !ReadGridFile())
+            return false;
+    }
+    catch (prg_exception& x) {
+        x.addTrace("ReadUniformTimeData()", "SaTScanDataReader");
+        throw;
+    }
+    return true;
+}
+
 
 /** reads data from input files for a space-time permutation probability model */
 bool SaTScanDataReader::ReadSpaceTimePermutationData() {

@@ -26,6 +26,12 @@ class AbstractLoglikelihoodRatioUnifier {
                                     measure_t tMeasureAux,
                                     size_t tSetIndex) = 0;
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    count_t casesInPeriod, 
+                                    measure_t measureInPeriod,
+                                    size_t tSetIndex) = 0;
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
     virtual double      GetLoglikelihoodRatio() const = 0;
     virtual void        Reset() = 0;
@@ -62,6 +68,12 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     measure_t tMeasureAux,
                                     size_t tSetIndex);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    count_t casesInPeriod,
+                                    measure_t measureInPeriod,
+                                    size_t tSetIndex);
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
     void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
                                         count_t tCases,
@@ -72,6 +84,13 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                                         count_t tCases,
                                         measure_t tMeasure,
                                         measure_t tMeasureAux,
+                                        size_t tSetIndex,
+                                        std::pair<double, double>& prHighLowRatios);
+    void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                        count_t tCases,
+                                        measure_t tMeasure,
+                                        count_t casesInPeriod,
+                                        measure_t measureInPeriod,
                                         size_t tSetIndex,
                                         std::pair<double, double>& prHighLowRatios);
     void                GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator,
@@ -110,6 +129,12 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     size_t tSetIndex);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    count_t casesInPeriod,
+                                    measure_t measureInPeriod,
+                                    size_t tSetIndex);
     virtual double      GetLoglikelihoodRatio() const;
     double              GetRawLoglikelihoodRatio() const {return gdRatio;}
     virtual void        Reset();

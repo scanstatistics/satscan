@@ -52,7 +52,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_65_1;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_68_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -93,7 +93,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_65_1;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_68_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -126,36 +126,36 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\codecvt_error_category.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\operations.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\path.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\path_traits.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\portability.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\unique_path.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\windows_file_codecvt.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\chrono.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\process_cpu_clocks.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\thread_clock.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\system\src\error_code.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\c_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\cpp_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\cregex.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\fileiter.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\icu.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\instances.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_debug.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_raw_buffer.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_traits_defaults.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\static_mutex.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\usinstances.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\w32_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\wc_regex_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\wide_posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\winstances.cpp" />
-    <ClCompile Include="..\boost\boost_1_65_1\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\codecvt_error_category.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\operations.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\path_traits.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\portability.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\unique_path.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\windows_file_codecvt.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\chrono.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\process_cpu_clocks.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\thread_clock.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\system\src\error_code.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\c_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\cpp_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\cregex.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\fileiter.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\icu.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\instances.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\posix_api.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_debug.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_raw_buffer.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_traits_defaults.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\static_mutex.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\usinstances.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\w32_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\wc_regex_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\wide_posix_api.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\winstances.cpp" />
+    <ClCompile Include="..\boost\boost_1_68_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\analysis_run\LocationRelevance.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
@@ -195,6 +195,7 @@
     <ClCompile Include="..\calculation\analysis_run\MostLikelyClustersContainer.cpp" />
     <ClCompile Include="..\calculation\cluster\AbstractClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\AbstractClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp" />
     <ClCompile Include="..\calculation\cluster\CategoricalClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\CategoricalClusterDataFactory.cpp" />
     <ClCompile Include="..\calculation\cluster\Cluster.cpp" />
@@ -205,6 +206,8 @@
     <ClCompile Include="..\calculation\cluster\MultiSetClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\MultiSetNormalClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\NormalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp" />
     <ClCompile Include="..\calculation\cluster\PurelySpatialCluster.cpp" />
     <ClCompile Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.cpp" />
@@ -217,6 +220,7 @@
     <ClCompile Include="..\calculation\cluster\TimeIntervals.cpp" />
     <ClCompile Include="..\calculation\cluster\TimeTrend.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\LikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp" />
@@ -272,6 +276,7 @@
     <ClCompile Include="..\calculation\satscan_data\PurelySpatialData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\PurelyTemporalData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\RankDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\SaTScanData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\SaTScanDataDisplay.cpp" />
     <ClCompile Include="..\calculation\satscan_data\SaTScanDataRead.cpp" />
@@ -293,6 +298,7 @@
     <ClCompile Include="..\calculation\randomization\WeightedNormalRandomizer.cpp" />
     <ClCompile Include="..\calculation\probability_model\BernoulliModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\ExponentialModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\HomogeneousPoissonModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\NormalModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\OrdinalModel.cpp" />
@@ -366,6 +372,7 @@
     <ClInclude Include="..\calculation\analysis_run\SimulationVariables.h" />
     <ClInclude Include="..\calculation\cluster\AbstractClusterData.h" />
     <ClInclude Include="..\calculation\cluster\AbstractClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\CategoricalClusterData.h" />
     <ClInclude Include="..\calculation\cluster\CategoricalClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\cluster.h" />
@@ -376,6 +383,8 @@
     <ClInclude Include="..\calculation\cluster\MultiSetClusterData.h" />
     <ClInclude Include="..\calculation\cluster\MultiSetNormalClusterData.h" />
     <ClInclude Include="..\calculation\cluster\NormalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h" />
     <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\PurelySpatialCluster.h" />
     <ClInclude Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.h" />
@@ -403,6 +412,7 @@
     <ClInclude Include="..\calculation\print\PrintQueue.h" />
     <ClInclude Include="..\calculation\print\PrintScreen.h" />
     <ClInclude Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\LikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.h" />
     <ClInclude Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.h" />
@@ -415,6 +425,7 @@
     <ClInclude Include="..\calculation\probability_model\BernoulliModel.h" />
     <ClInclude Include="..\calculation\probability_model\ExponentialModel.h" />
     <ClInclude Include="..\calculation\probability_model\HomogeneousPoissonModel.h" />
+    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h" />
     <ClInclude Include="..\calculation\probability_model\NormalModel.h" />
     <ClInclude Include="..\calculation\probability_model\PoissonModel.h" />
     <ClInclude Include="..\calculation\probability_model\ProbabilityModel.h" />
@@ -459,6 +470,7 @@
     <ClInclude Include="..\calculation\satscan_data\PurelySpatialData.h" />
     <ClInclude Include="..\calculation\satscan_data\PurelyTemporalData.h" />
     <ClInclude Include="..\calculation\satscan_data\RankDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\SaTScanData.h" />
     <ClInclude Include="..\calculation\satscan_data\SaTScanDataRead.h" />
     <ClInclude Include="..\calculation\satscan_data\SpaceTimeData.h" />

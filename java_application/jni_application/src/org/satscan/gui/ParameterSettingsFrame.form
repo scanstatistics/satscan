@@ -993,9 +993,9 @@
                               <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                           </Group>
                           <Component id="_analysisTypeGroup" alignment="1" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="1" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="1" pref="266" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="112" max="32767" attributes="0"/>
+                      <EmptySpace pref="132" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1236,30 +1236,40 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" attributes="0">
-                                  <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_spaceTimePermutationModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_categoricallModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                                          <Component id="_homogeneouspoissonModelRadioButton" min="-2" pref="53" max="-2" attributes="0"/>
                                           <EmptySpace type="separate" max="-2" attributes="0"/>
                                           <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_uniformtimeModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_normalModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_exponentialModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_ordinalModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_categoricallModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_spaceTimePermutationModelRadioButton" min="-2" pref="133" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="_bernoulliModelRadioButton" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_poissonModelRadioButton" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
-                          <EmptySpace pref="16" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1281,6 +1291,8 @@
                           <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="_uniformtimeModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1288,7 +1300,7 @@
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1465,6 +1477,25 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Discrete Scan Statistics:"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_uniformtimeModelRadioButton">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Uniform Time" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_uniformtimeModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

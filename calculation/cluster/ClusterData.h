@@ -237,6 +237,8 @@ class SpaceTimeData : public TemporalData {
   protected:
      unsigned int               giAllocationSize;
 
+     SpaceTimeData();
+
   public:
     SpaceTimeData(const DataSetInterface& Interface);
     SpaceTimeData(const AbstractDataSetGateway& DataGateway);

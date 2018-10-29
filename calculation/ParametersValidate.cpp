@@ -932,7 +932,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     // Just suppress this setting for situations that don't allow it.
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
-         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL|| gParameters.GetProbabilityModelType() == UNIFORMTIME)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
@@ -1674,6 +1674,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 :
+      case UNIFORMTIME          :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
                                 "Temporal trends adjustment settings will be ignored.\n",

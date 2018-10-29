@@ -98,8 +98,11 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CLUSTER)/NormalClusterData.cpp \
                $(CLUSTER)/CategoricalClusterData.cpp \
                $(CLUSTER)/AbstractClusterDataFactory.cpp \
+               $(CLUSTER)/UniformTimeClusterDataFactory.cpp \
                $(CLUSTER)/ClusterDataFactory.cpp \
                $(CLUSTER)/NormalClusterDataFactory.cpp \
+               $(CLUSTER)/UniformTimeClusterData.cpp \
+               $(CLUSTER)/MultiSetUniformTimeClusterData.cpp \
                $(CLUSTER)/CategoricalClusterDataFactory.cpp \
                $(CLUSTER)/MultiSetClusterData.cpp \
                $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
@@ -130,6 +133,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(PROBMODEL)/SpaceTimePermutationModel.cpp \
                $(PROBMODEL)/NormalModel.cpp \
                $(PROBMODEL)/ExponentialModel.cpp \
+               $(PROBMODEL)/UniformTimeModel.cpp \
                $(PROBMODEL)/RankModel.cpp \
                $(PROBMODEL)/OrdinalModel.cpp \
                $(PROBMODEL)/HomogeneousPoissonModel.cpp \
@@ -146,6 +150,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(RANDOMIZER)/WeightedNormalRandomizer.cpp \
                $(RANDOMIZER)/HomogeneousPoissonRandomizer.cpp \
                $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
+               $(LOGLIKELIHOOD)/UniformTimeLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
                $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
@@ -177,6 +182,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(SATDATA)/NormalDataSetHandler.cpp \
                $(SATDATA)/PoissonDataSetHandler.cpp \
                $(SATDATA)/RankDataSetHandler.cpp \
+               $(SATDATA)/UniformTimeDataSetHandler.cpp \
                $(SATDATA)/SpaceTimePermutationDataSetHandler.cpp \
                $(SATDATA)/ExponentialDataSetHandler.cpp \
                $(SATDATA)/OrdinalDataSetHandler.cpp \

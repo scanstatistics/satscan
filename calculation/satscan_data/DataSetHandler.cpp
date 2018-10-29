@@ -337,8 +337,8 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
         return false;
       }
     }
-    else if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-      //For the Bernoulli model, ignore covariates in the case and control files
+    else if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) {
+      //For the Bernoulli and uniform time models, ignore covariates in the case and control files
       //All population categories are aggregated in one category.
       iCategoryIndex = 0;
     }

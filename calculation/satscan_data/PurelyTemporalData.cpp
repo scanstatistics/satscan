@@ -11,6 +11,7 @@
 #include "RankModel.h"
 #include "OrdinalModel.h"
 #include "SSException.h"
+#include "UniformTimeModel.h"
 
 /** class constructor */
 CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -138,6 +139,7 @@ void CPurelyTemporalData::SetProbabilityModel() {
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
+     case UNIFORMTIME: m_pModel = new UniformTimeModel(*this); break;
      case SPACETIMEPERMUTATION : throw prg_error("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
                                                  "SetProbabilityModel()");
      default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",

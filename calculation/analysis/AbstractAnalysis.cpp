@@ -7,6 +7,7 @@
 #include "ClusterDataFactory.h"
 #include "NormalClusterDataFactory.h"
 #include "CategoricalClusterDataFactory.h"
+#include "UniformTimeClusterDataFactory.h"
 #include "LikelihoodCalculation.h"
 #include "PoissonLikelihoodCalculation.h"
 #include "PoissonSVTTLikelihoodCalculation.h"
@@ -16,6 +17,7 @@
 #include "OrdinalLikelihoodCalculation.h"
 #include "WeightedNormalLikelihoodCalculation.h"
 #include "WeightedNormalCovariatesLikelihoodCalculation.h"
+#include "UniformTimeLikelihoodCalculation.h"
 #include "MeasureList.h"
 #include "SSException.h"
 
@@ -53,6 +55,7 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
 								  else
                                     return new PoissonLinearTrendLikelihoodCalculator(DataHub);
 								}
+    case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
     case HOMOGENEOUSPOISSON   :
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
@@ -126,6 +129,13 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
             if (gParameters.GetNumDataSets() == 1)
                 return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
             return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+        case UNIFORMTIME:
+            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                throw prg_error("Uniform time model not implemented for seasonal scan.", "GetNewTemporalDataEvaluatorObject()");
+            }
+            if (gParameters.GetNumDataSets() == 1)
+                return new UniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetUniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
         default :
             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 if (gParameters.GetNumDataSets() == 1)
@@ -149,22 +159,26 @@ void AbstractAnalysis::Setup() {
         gpClusterDataFactory = new NormalClusterDataFactory(gDataHub);
       else
         gpClusterDataFactory = new MultiSetNormalClusterDataFactory(gDataHub);
-    }
-    else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
+    } else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
       geReplicationsProcessType = ClusterEvaluation;
       if (gParameters.GetNumDataSets() == 1)
         gpClusterDataFactory = new CategoricalClusterDataFactory();
       else
         gpClusterDataFactory = new MultiSetsCategoricalClusterDataFactory(gParameters);
-    }
-    else if (gParameters.GetNumDataSets() > 1) {
+    } else if (gParameters.GetProbabilityModelType() == UNIFORMTIME) {
+        geReplicationsProcessType = MeasureListEvaluation;
+        if (gParameters.GetNumDataSets() == 1)
+            gpClusterDataFactory = new UniformTimeClusterDataFactory();
+        else {
+            geReplicationsProcessType = ClusterEvaluation;
+            gpClusterDataFactory = new MultiSetUniformTimeClusterDataFactory();
+        }
+    } else if (gParameters.GetNumDataSets() > 1) {
       gpClusterDataFactory = new MultiSetClusterDataFactory(gParameters);
       geReplicationsProcessType = ClusterEvaluation;
-    }
-    else {
+    } else {
       gpClusterDataFactory = new ClusterDataFactory();
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
         geReplicationsProcessType = ClusterEvaluation;
       else
         geReplicationsProcessType = MeasureListEvaluation;

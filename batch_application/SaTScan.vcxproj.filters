@@ -216,6 +216,9 @@
     <ClCompile Include="..\calculation\cluster\AbstractClusterDataFactory.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\cluster\CategoricalClusterData.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
@@ -244,6 +247,12 @@
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\NormalClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp">
@@ -280,6 +289,9 @@
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp">
       <Filter>Source Files\calculation\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\LikelihoodCalculation.cpp">
@@ -438,6 +450,9 @@
     <ClCompile Include="..\calculation\satscan_data\RankDataSetHandler.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\SaTScanData.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
@@ -519,6 +534,9 @@
     <ClCompile Include="..\calculation\probability_model\RankModel.cpp">
       <Filter>Source Files\calculation\probability_model</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\probability_model\SpaceTimePermutationModel.cpp">
       <Filter>Source Files\calculation\probability_model</Filter>
     </ClCompile>
@@ -567,106 +585,106 @@
     <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\cpp_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\cpp_regex_traits.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\c_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\c_regex_traits.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\cregex.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\cregex.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\fileiter.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\fileiter.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\icu.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\icu.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\instances.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\instances.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\posix_api.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\posix_api.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_debug.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_debug.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_raw_buffer.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_raw_buffer.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\regex_traits_defaults.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\regex_traits_defaults.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\static_mutex.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\static_mutex.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\usinstances.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\usinstances.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\w32_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\w32_regex_traits.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\wc_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\wc_regex_traits.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\wide_posix_api.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\wide_posix_api.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\regex\src\winstances.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\regex\src\winstances.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\cmdline.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\cmdline.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\config_file.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\config_file.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\convert.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\convert.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\options_description.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\options_description.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\parsers.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\parsers.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\positional_options.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\positional_options.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\split.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\split.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\utf8_codecvt_facet.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\utf8_codecvt_facet.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\value_semantic.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\value_semantic.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\variables_map.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\variables_map.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\program_options\src\winmain.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
     <ClCompile Include="ParameterProgramOptions.cpp">
       <Filter>Source Files\batch_application</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\chrono.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\chrono.cpp">
       <Filter>Source Files\boost\chrono</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\process_cpu_clocks.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\process_cpu_clocks.cpp">
       <Filter>Source Files\boost\chrono</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\chrono\src\thread_clock.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\chrono\src\thread_clock.cpp">
       <Filter>Source Files\boost\chrono</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_65_1\libs\system\src\error_code.cpp">
+    <ClCompile Include="..\boost\boost_1_68_0\libs\system\src\error_code.cpp">
       <Filter>Source Files\boost\system</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\DateStringParser.cpp">
@@ -693,28 +711,28 @@
     <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\codecvt_error_category.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\codecvt_error_category.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\operations.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\operations.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\path.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\path.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\path_traits.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\path_traits.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\portability.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\portability.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\unique_path.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\unique_path.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\utf8_codecvt_facet.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_65_1\libs\filesystem\src\windows_file_codecvt.cpp">
+    <ClCompile Include="..\..\..\boost\boost_1_68_0\libs\filesystem\src\windows_file_codecvt.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
@@ -833,6 +851,9 @@
     <ClInclude Include="..\calculation\cluster\AbstractClusterDataFactory.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\cluster\CategoricalClusterData.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
@@ -861,6 +882,12 @@
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\cluster\NormalClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h">
@@ -944,6 +971,9 @@
     <ClInclude Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.h">
       <Filter>Header Files\calculation\loglikelihood</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\loglikelihood\LikelihoodCalculation.h">
       <Filter>Header Files\calculation\loglikelihood</Filter>
     </ClInclude>
@@ -990,6 +1020,9 @@
       <Filter>Header Files\calculation\probability_model</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\probability_model\RankModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h">
       <Filter>Header Files\calculation\probability_model</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\probability_model\SpaceTimePermutationModel.h">
@@ -1110,6 +1143,9 @@
       <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\RankDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h">
       <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\SaTScanData.h">

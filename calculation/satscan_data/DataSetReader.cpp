@@ -10,6 +10,7 @@ AbstractDataSetReader * AbstractDataSetReader::getNewDataSetReader(const CParame
     switch(Parameters.GetProbabilityModelType()) {
         case POISSON              :
         case BERNOULLI            :
+        case UNIFORMTIME          :
         case SPACETIMEPERMUTATION : return new DefaultDataSetReader();
         case CATEGORICAL          :
         case ORDINAL              : return new OrdinalDataSetReader();

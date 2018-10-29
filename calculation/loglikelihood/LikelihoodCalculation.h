@@ -17,6 +17,7 @@ class AbstractLikelihoodCalculator {
   public:
     typedef bool (AbstractLikelihoodCalculator::*SCANRATE_FUNCPTR) (count_t,measure_t,size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATENORMAL_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
+    typedef bool (AbstractLikelihoodCalculator::*SCANRATEUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
     typedef double (AbstractLikelihoodCalculator::*RISK_FUNCPTR) (count_t, measure_t, size_t) const;
 
   protected:
@@ -38,6 +39,7 @@ class AbstractLikelihoodCalculator {
 
     SCANRATE_FUNCPTR                    gpRateOfInterest;
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
+    SCANRATEUNIFORMTIME_FUNCPTR         gpRateOfInterestUniformTime;
     RISK_FUNCPTR                        _risk_function;
 
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const;
@@ -45,13 +47,16 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
+    virtual double                      CalcLogLikelihoodRatioUniformTime(count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
     virtual double                      CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const;
     virtual double                      CalcSVTTLogLikelihood(size_t tSetIndex, SVTTClusterData& ClusterData, const AbstractTimeTrend& GlobalTimeTrend) const;
+    virtual double                      CalcLogLikelihoodUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex=0) const;
     virtual double                      CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueNormal(count_t n, measure_t u, measure_t u2, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
+    virtual double                      CalculateMaximizingValueUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex=0) const;
     const CSaTScanData                & GetDataHub() const {return gDataHub;}
     virtual double                      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;
     AbstractLoglikelihoodRatioUnifier & GetUnifier() const;
@@ -85,7 +90,39 @@ class AbstractLikelihoodCalculator {
     inline bool                         HighRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
     inline bool                         LowRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
     inline bool                         MultipleSetsHighRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex) const;
+
+    inline bool                         HighOrLowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         HighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         LowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         MultipleSetsHighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const;
 };
+
+/** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::LowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (nCases == 0 || nMeasure == 0.0) return false;
+    return static_cast<double>(nCases)/ static_cast<double>(casesInPeriod) < nMeasure / measureInPeriod;
+}
+
+/** Indicates whether an area has higher than expected cases for a clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::HighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (nCases == 0 || nMeasure == 0.0) return false;
+    return static_cast<double>(nCases) / static_cast<double>(casesInPeriod) > nMeasure / measureInPeriod;
+}
+
+/** Indicates whether an area has higher or lower than expected cases for a clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::HighOrLowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (nCases == 0 || nMeasure == 0.0) return false;
+    return true;
+}
+
+/** For multiple sets, the criteria that a high rate must have more than one case is not currently implemented. */
+inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (LowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        return true;
+    if (HighRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        return true;
+    return false;
+}
 
 /** Indicates whether an area has lower average rank compared to average rank in data set -- lower cluster. */
 inline bool AbstractLikelihoodCalculator::LowRateRank(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {

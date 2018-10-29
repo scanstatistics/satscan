@@ -111,7 +111,9 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
 /** Returns log likelihood ratio for Monte Carlo replication. */
 double CSpaceTimeAnalysis::MonteCarlo(const DataSetInterface& Interface) {
   tract_t               k, i;
-  SpaceTimeData       * pSpaceTimeData = dynamic_cast<SpaceTimeData*>(gAbstractClusterData.get());
+  SpaceTimeData * pSpaceTimeData=0;
+  if ((pSpaceTimeData = dynamic_cast<SpaceTimeData*>(gAbstractClusterData.get())) == 0)
+      throw prg_error("Cluster data object could not be dynamically casted to SpaceTimeData type.\n", "MonteCarlo()");
 
   gMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.

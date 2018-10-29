@@ -12,6 +12,7 @@
 #include "OrdinalModel.h"
 #include "SSException.h"
 #include "HomogeneousPoissonModel.h"
+#include "UniformTimeModel.h"
 
 /** class constructor */
 CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -48,6 +49,7 @@ void CPurelySpatialData::SetProbabilityModel() {
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
+     case UNIFORMTIME          : m_pModel = new UniformTimeModel(*this); break;
      case HOMOGENEOUSPOISSON   : m_pModel = new HomogenousPoissonModel(); break;
      case SPACETIMEPERMUTATION : throw prg_error("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
                                                  "SetProbabilityModel()");

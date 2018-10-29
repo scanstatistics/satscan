@@ -464,7 +464,10 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabilityModelType == SPACETIMEPERMUTATION || geProbabilityModelType == RANK || (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
+  return (geProbabilityModelType == SPACETIMEPERMUTATION || 
+          geProbabilityModelType == RANK || 
+          geProbabilityModelType == UNIFORMTIME || 
+          (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
 }
 
 /** Returns maximum spatial cluster size given type and whether value is for real or simulations. */
@@ -543,7 +546,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL || eModelType == UNIFORMTIME;
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */
@@ -554,7 +557,7 @@ bool CParameters::GetPermitsPurelyTemporalCluster() const {
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL || eModelType == UNIFORMTIME;
 }
 
 const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
@@ -1034,8 +1037,8 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
 
 /** Sets probability model type. Throws exception if out of range. */
 void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModelType) {
-  if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
+  if (eProbabilityModelType < POISSON || eProbabilityModelType > UNIFORMTIME)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, UNIFORMTIME);
   geProbabilityModelType = eProbabilityModelType;
 }
 

@@ -229,6 +229,8 @@ void CSVTTData::SetProbabilityModel() {
                                                    "SetProbabilityModel()");
        case RANK                 : throw prg_error("Spatial Variation in Temporal Trends not implemented for Rank model.\n",
                                                    "SetProbabilityModel()");
+       case UNIFORMTIME          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Uniform Time model.\n",
+                                                   "SetProbabilityModel()");
        default : throw prg_error("Unknown probability model type: '%d'.\n",
                                        "SetProbabilityModel()", gParameters.GetProbabilityModelType());
     }

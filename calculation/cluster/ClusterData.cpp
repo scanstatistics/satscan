@@ -397,6 +397,7 @@ void TemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
 
 //***************** class ProspectiveSpatialData *******************************
 
+
 /** class constructor */
 ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface)
                        :TemporalData(), geEvaluationAssistDataStatus(Allocated) {
@@ -608,6 +609,11 @@ void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterf
 }
 
 //****************** class SpaceTimeData ***************************************
+
+/** Protected class constructor - accessible by derived classes only. */
+SpaceTimeData::SpaceTimeData() : TemporalData() {
+    InitializeData();
+}
 
 /** class constructor */
 SpaceTimeData::SpaceTimeData(const DataSetInterface& Interface)
