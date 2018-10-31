@@ -187,6 +187,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _displayVariablesComboBox.addItem("ordinal model");
                 _displayVariablesComboBox.addItem("exponential model");
                 _displayVariablesComboBox.addItem("normal model");
+                _displayVariablesComboBox.addItem("uniform-time model");
                 switch (_startingModelType) {
                     case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
                     case SPACETIMEPERMUTATION : _displayVariablesComboBox.setSelectedIndex(2); break;
@@ -194,6 +195,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case ORDINAL              : _displayVariablesComboBox.setSelectedIndex(4); break;
                     case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(5); break;
                     case NORMAL               : _displayVariablesComboBox.setSelectedIndex(6); break;
+                    case UNIFORMTIME          : _displayVariablesComboBox.setSelectedIndex(7); break;
                     case POISSON              :
                     default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
                 } break;
@@ -372,6 +374,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                         break;
                     case BERNOULLI :
+                    case UNIFORMTIME :
                         builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;");
                         break;
                     case ORDINAL :
@@ -575,6 +578,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case 4: return Parameters.ProbabilityModelType.ORDINAL;
             case 5: return Parameters.ProbabilityModelType.EXPONENTIAL;
             case 6: return Parameters.ProbabilityModelType.NORMAL;
+            case 7: return Parameters.ProbabilityModelType.UNIFORMTIME;
             case 0:
             default: return Parameters.ProbabilityModelType.POISSON;
         }
@@ -1374,7 +1378,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addComponent(_source_filename)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _fileSourceSettingsPanelLayout.setVerticalGroup(
@@ -1387,7 +1391,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1473,7 +1477,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(_otherRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(186, Short.MAX_VALUE))
+                .addContainerGap(151, Short.MAX_VALUE))
         );
         fieldSeparatorGroupLayout.setVerticalGroup(
             fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1558,7 +1562,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
 
         _main_content_panel.add(_fileFormatPanel, "file-format");
@@ -1610,8 +1614,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
                         .addComponent(_displayVariablesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_displayVariablesComboBox, 0, 316, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
+                        .addComponent(_displayVariablesComboBox, 0, 289, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_clearSelectionButton))
         );
@@ -1652,11 +1656,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
         _dataMappingBottomPanelLayout.setHorizontalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
@@ -1670,7 +1674,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSplitPane1)
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1734,7 +1738,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_changeSaveDirectoryButton))
                     .addComponent(_execute_import_now, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                    .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputSettingsPanelLayout.setVerticalGroup(
@@ -1796,7 +1800,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(_file_source_buttons_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(acceptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 227, Short.MAX_VALUE)
                 .addComponent(clearInputSettigs, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonSource, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1836,7 +1840,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _file_format_buttons_panelLayout.setHorizontalGroup(
             _file_format_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_file_format_buttons_panelLayout.createSequentialGroup()
-                .addContainerGap(334, Short.MAX_VALUE)
+                .addContainerGap(351, Short.MAX_VALUE)
                 .addComponent(previousButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1873,7 +1877,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _data_mapping_buttons_panelLayout.setHorizontalGroup(
             _data_mapping_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _data_mapping_buttons_panelLayout.createSequentialGroup()
-                .addContainerGap(334, Short.MAX_VALUE)
+                .addContainerGap(351, Short.MAX_VALUE)
                 .addComponent(previousButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1936,7 +1940,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _output_settings_buttons_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 246, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 261, Short.MAX_VALUE)
                 .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1961,11 +1965,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
         );
 
         pack();

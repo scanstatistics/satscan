@@ -179,7 +179,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_dataSetsGroup" min="0" pref="0" max="32767" attributes="1"/>
+                              <Component id="_dataSetsGroup" min="0" max="32767" attributes="1"/>
                               <Component id="_fileInputGroup" alignment="0" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1624,7 +1624,7 @@
                                       <Component id="_endRangeEndMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_endRangeEndDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1767,7 +1767,7 @@
                                       <Component id="_endRangeEndGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_endGenericRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2346,7 +2346,7 @@
                               <Component id="_radioGumbelPValues" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_checkReportGumbel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="8" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

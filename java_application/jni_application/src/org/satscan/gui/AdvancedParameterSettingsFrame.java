@@ -489,7 +489,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bSpaceTimePermutation = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
                 bExponential = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
                 bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
-                bH_Poisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+                bH_Poisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON,
+                bUniformTime = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.UNIFORMTIME;
 
         switch (_settings_window.getAnalysisControlType()) {
             case PURELYSPATIAL:
@@ -538,7 +539,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
-                enableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
+                enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
@@ -559,7 +560,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
-                enableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
+                enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);

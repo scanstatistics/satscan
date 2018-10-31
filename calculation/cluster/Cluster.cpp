@@ -586,8 +586,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      DisplayAnnualCaseInformation(fp, *itr_Index, DataHub, PrintFormat);
      DisplayObservedDivExpected(fp, *itr_Index ,DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || 
-         DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI ||
-         DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME)
+         DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
        DisplayRelativeRisk(fp, *itr_Index, DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
         //percent cases in an area

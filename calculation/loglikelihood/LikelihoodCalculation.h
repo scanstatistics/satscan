@@ -19,6 +19,7 @@ class AbstractLikelihoodCalculator {
     typedef bool (AbstractLikelihoodCalculator::*SCANRATENORMAL_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATEUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
     typedef double (AbstractLikelihoodCalculator::*RISK_FUNCPTR) (count_t, measure_t, size_t) const;
+    typedef double (AbstractLikelihoodCalculator::*RISKUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
 
   protected:
     const CSaTScanData                & gDataHub; /** const reference to data hub */
@@ -41,6 +42,7 @@ class AbstractLikelihoodCalculator {
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
     SCANRATEUNIFORMTIME_FUNCPTR         gpRateOfInterestUniformTime;
     RISK_FUNCPTR                        _risk_function;
+    RISKUNIFORMTIME_FUNCPTR             _risk_function_uniformtime;
 
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const;
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
@@ -95,24 +97,83 @@ class AbstractLikelihoodCalculator {
     inline bool                         HighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
     inline bool                         LowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
     inline bool                         MultipleSetsHighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const;
+
+    inline double                       getRelativeRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         HighRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         LowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         HighRateOrLowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         HighRiskOrLowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+    inline bool                         HighRiskOrLowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
+
 };
+
+/* Returns the relative risk (same as ODE) -- this function is used as a risk function when restricting clusters by risk level for uniform-time model. */
+inline double AbstractLikelihoodCalculator::getRelativeRiskUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    double measure_diff = measureInPeriod - measure;
+    if (measure_diff) {
+        double M = 2.0;
+        double u = 0.0;
+        if (cases < casesInPeriod)
+            u = measure * static_cast<double>(casesInPeriod - cases) / (measure_diff);
+        else if (cases == casesInPeriod)
+            u = measure / (M * (measure_diff));
+        return static_cast<double>(cases) / u;
+    } return 0.0;
+}
+
+/* Returns whether potential cluster is high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    return HighRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) && (this->*_risk_function_uniformtime)(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) >= _high_risk_threshold;
+}
+
+/* Returns whether potential cluster is low rate while not exceeding low risk level maximum. */
+inline bool AbstractLikelihoodCalculator::LowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    return LowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) && (this->*_risk_function_uniformtime)(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) <= _low_risk_threshold;
+}
+
+/* Returns whether potential cluster is high rate or low rate while not exceeding low risk level maximum. */
+inline bool AbstractLikelihoodCalculator::HighRateOrLowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (HighRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        return true;
+    if (LowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) && (this->*_risk_function_uniformtime)(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) <= _low_risk_threshold)
+        return true;
+    return false;
+}
+
+/* Returns whether potential cluster is low rate or high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRiskOrLowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (LowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex))
+        return true;
+    if (HighRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) && (this->*_risk_function_uniformtime)(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) >= _high_risk_threshold)
+        return true;
+    return false;
+}
+
+/* Returns whether potential cluster is low rate while not exceeding low risk level maximum or high rate while exceeding high risk level minimum. */
+inline bool AbstractLikelihoodCalculator::HighRiskOrLowRiskUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
+    if (HighOrLowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex)) {
+        double risk = (this->*_risk_function_uniformtime)(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex);
+        return (risk <= _low_risk_threshold || risk >= _high_risk_threshold);
+    }
+    return false;
+}
 
 /** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::LowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
-    if (nCases == 0 || nMeasure == 0.0) return false;
+    if (nCases < _min_low_rate_cases || casesInPeriod == 0 || nMeasure == 0.0) return false;
     return static_cast<double>(nCases)/ static_cast<double>(casesInPeriod) < nMeasure / measureInPeriod;
 }
 
 /** Indicates whether an area has higher than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
-    if (nCases == 0 || nMeasure == 0.0) return false;
+    if (nCases < _min_high_rate_cases || casesInPeriod == 0 || nMeasure == 0.0) return false;
     return static_cast<double>(nCases) / static_cast<double>(casesInPeriod) > nMeasure / measureInPeriod;
 }
 
 /** Indicates whether an area has higher or lower than expected cases for a clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighOrLowRateUniformTime(count_t nCases, measure_t nMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) const {
-    if (nCases == 0 || nMeasure == 0.0) return false;
-    return true;
+    return LowRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex) || 
+           HighRateUniformTime(nCases, nMeasure, casesInPeriod, measureInPeriod, tSetIndex);
 }
 
 /** For multiple sets, the criteria that a high rate must have more than one case is not currently implemented. */

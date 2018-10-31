@@ -416,7 +416,7 @@
                                       <Component id="_endDateDayLabel" max="32767" attributes="1"/>
                                       <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="30" max="-2" attributes="1"/>
                                   </Group>
-                                  <EmptySpace pref="83" max="32767" attributes="0"/>
+                                  <EmptySpace pref="149" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -442,7 +442,7 @@
                                       <Component id="_startDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_studyPeriodEndDateDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="13" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -579,7 +579,7 @@
                                       <Component id="_endDateYearLabel1" max="32767" attributes="1"/>
                                       <Component id="_studyPeriodEndDateGenericTextField" alignment="0" pref="80" max="32767" attributes="1"/>
                                   </Group>
-                                  <EmptySpace pref="127" max="32767" attributes="0"/>
+                                  <EmptySpace pref="189" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -597,7 +597,7 @@
                                       <Component id="_studyPeriodEndDateGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_startDateLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="13" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -968,9 +968,9 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
-                                  <Component id="_scanAreasGroup" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="_scanAreasGroup" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -978,7 +978,7 @@
                               <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -990,12 +990,12 @@
                           <Group type="102" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
+                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="_analysisTypeGroup" alignment="1" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="1" pref="266" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="1" pref="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="132" max="32767" attributes="0"/>
+                      <EmptySpace pref="154" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1022,7 +1022,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                  <Component id="_spatialVariationRadioLabel" pref="124" max="32767" attributes="0"/>
+                                  <Component id="_spatialVariationRadioLabel" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1072,7 +1072,7 @@
                           <Component id="_retrospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_retrospectiveSeasonalRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="11" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Component id="_spatialVariationRadioButton" min="-2" pref="22" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                           <Component id="_spatialVariationRadioLabel" min="-2" max="-2" attributes="0"/>
@@ -1080,7 +1080,7 @@
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="11" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1243,16 +1243,10 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" attributes="0">
-                                          <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
-                                          <Component id="_homogeneouspoissonModelRadioButton" min="-2" pref="53" max="-2" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
-                                      </Group>
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_uniformtimeModelRadioButton" alignment="1" max="32767" attributes="0"/>
@@ -1260,12 +1254,14 @@
                                       <Component id="_exponentialModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_ordinalModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_categoricallModelRadioButton" alignment="1" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_spaceTimePermutationModelRadioButton" min="-2" pref="133" max="-2" attributes="0"/>
-                                          <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
-                                      </Group>
                                       <Component id="_bernoulliModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_poissonModelRadioButton" max="32767" attributes="0"/>
+                                      <Component id="_spaceTimePermutationModelRadioButton" alignment="0" pref="186" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_homogeneouspoissonModelRadioButton" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -1517,9 +1513,9 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_highRatesRadioButton" alignment="0" pref="127" max="32767" attributes="0"/>
-                              <Component id="_lowRatesRadioButton" alignment="1" pref="127" max="32767" attributes="0"/>
-                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="127" max="32767" attributes="0"/>
+                              <Component id="_highRatesRadioButton" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_lowRatesRadioButton" alignment="1" max="32767" attributes="0"/>
+                              <Component id="_highOrLowRatesRadioButton" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1529,11 +1525,11 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="_highRatesRadioButton" min="-2" pref="15" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
                           <Component id="_lowRatesRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_highOrLowRatesRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="22" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="33" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1625,7 +1621,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="15" max="32767" attributes="0"/>
+                          <EmptySpace pref="24" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1646,7 +1642,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="22" max="32767" attributes="0"/>
+                          <EmptySpace pref="24" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1809,7 +1805,7 @@
                                       <Component id="_clustersInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_clusterCaseInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="188" max="32767" attributes="0"/>
+                                  <EmptySpace pref="246" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_asciiLabel" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
@@ -2159,8 +2155,8 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_reportCartesianGraph" alignment="0" pref="513" max="32767" attributes="0"/>
-                              <Component id="_reportShapefile" alignment="0" pref="513" max="32767" attributes="0"/>
+                              <Component id="_reportCartesianGraph" alignment="0" pref="604" max="32767" attributes="0"/>
+                              <Component id="_reportShapefile" alignment="0" pref="604" max="32767" attributes="0"/>
                               <Component id="_reportGoogleMap" max="32767" attributes="0"/>
                               <Component id="_reportGoogleEarthKML" alignment="0" max="32767" attributes="0"/>
                           </Group>

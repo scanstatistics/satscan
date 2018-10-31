@@ -546,7 +546,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL || eModelType == UNIFORMTIME;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */

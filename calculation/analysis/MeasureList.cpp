@@ -647,7 +647,9 @@ void CMinMaxMeasureList::Setup() {
 
 RiskMinMeasureList::RiskMinMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double risk_threshold)
     : CMinMeasureList(hub, calculator), _risk_threshold(risk_threshold) {
-    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
+    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || 
+        hub.GetParameters().GetProbabilityModelType() == UNIFORMTIME ||
+        hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
         _risk_calc.reset(new ObservedDividedExpectedCalc(hub.GetMeasureAdjustment(0)));
     else
         _risk_calc.reset(new RelativeRiskCalc(hub.GetDataSetHandler().GetDataSet(0).getTotalCases(), hub.GetMeasureAdjustment(0)));
@@ -655,7 +657,9 @@ RiskMinMeasureList::RiskMinMeasureList(const CSaTScanData& hub, AbstractLikeliho
 
 RiskMaxMeasureList::RiskMaxMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double risk_threshold)
     : CMaxMeasureList(hub, calculator), _risk_threshold(risk_threshold) {
-    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
+    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || 
+        hub.GetParameters().GetProbabilityModelType() == UNIFORMTIME ||
+        hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
         _risk_calc.reset(new ObservedDividedExpectedCalc(hub.GetMeasureAdjustment(0)));
     else
         _risk_calc.reset(new RelativeRiskCalc(hub.GetDataSetHandler().GetDataSet(0).getTotalCases(), hub.GetMeasureAdjustment(0)));
@@ -663,7 +667,9 @@ RiskMaxMeasureList::RiskMaxMeasureList(const CSaTScanData& hub, AbstractLikeliho
 
 RiskMinMaxMeasureList::RiskMinMaxMeasureList(const CSaTScanData& hub, AbstractLikelihoodCalculator& calculator, double low_risk_threshold, double high_risk_threshold)
     : CMinMaxMeasureList(hub, calculator), _low_risk_threshold(low_risk_threshold), _high_risk_threshold(high_risk_threshold) {
-    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
+    if (hub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || 
+        hub.GetParameters().GetProbabilityModelType() == UNIFORMTIME ||
+        hub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
         _risk_calc.reset(new ObservedDividedExpectedCalc(hub.GetMeasureAdjustment(0)));
     else
         _risk_calc.reset(new RelativeRiskCalc(hub.GetDataSetHandler().GetDataSet(0).getTotalCases(), hub.GetMeasureAdjustment(0)));

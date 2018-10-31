@@ -44,12 +44,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_dialog_base_panel" pref="550" max="32767" attributes="0"/>
+          <Component id="_dialog_base_panel" pref="570" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_dialog_base_panel" alignment="0" pref="436" max="32767" attributes="0"/>
+          <Component id="_dialog_base_panel" alignment="0" pref="461" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -88,7 +88,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_browse_source" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_expectedFormatScrollPane" alignment="0" pref="530" max="32767" attributes="0"/>
+                              <Component id="_expectedFormatScrollPane" alignment="0" pref="546" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -105,7 +105,7 @@
                               <Component id="_browse_source" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_expectedFormatScrollPane" pref="322" max="32767" attributes="0"/>
+                          <Component id="_expectedFormatScrollPane" pref="333" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -211,7 +211,7 @@
                           <Component id="fieldSeparatorGroup" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_groupIndiocatorGroup" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="66" max="32767" attributes="0"/>
+                          <EmptySpace pref="69" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -296,7 +296,7 @@
                               <Component id="_otherRadioButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_otherFieldSeparatorTextField" min="-2" pref="20" max="-2" attributes="0"/>
-                              <EmptySpace pref="186" max="32767" attributes="0"/>
+                              <EmptySpace pref="151" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -458,7 +458,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jSplitPane1" max="32767" attributes="0"/>
+                              <Component id="jSplitPane1" pref="546" max="32767" attributes="0"/>
                               <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -503,9 +503,9 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_displayVariablesLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_displayVariablesComboBox" pref="316" max="32767" attributes="0"/>
+                                          <Component id="_displayVariablesComboBox" pref="289" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="jScrollPane2" alignment="1" pref="467" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane2" alignment="1" pref="474" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_clearSelectionButton" min="-2" max="-2" attributes="0"/>
@@ -590,12 +590,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_importTableScrollPane" pref="530" max="32767" attributes="0"/>
+                              <Component id="_importTableScrollPane" pref="544" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_importTableScrollPane" alignment="0" pref="185" max="32767" attributes="0"/>
+                              <Component id="_importTableScrollPane" alignment="0" pref="198" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>
@@ -656,7 +656,7 @@
                                   <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="_execute_import_now" max="32767" attributes="0"/>
-                              <Component id="_save_import_settings" alignment="0" pref="530" max="32767" attributes="0"/>
+                              <Component id="_save_import_settings" alignment="0" pref="546" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -742,7 +742,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="acceptButton" min="-2" pref="100" max="-2" attributes="0"/>
-                          <EmptySpace pref="212" max="32767" attributes="0"/>
+                          <EmptySpace pref="227" max="32767" attributes="0"/>
                           <Component id="clearInputSettigs" min="-2" pref="112" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonSource" min="-2" pref="100" max="-2" attributes="0"/>
@@ -807,7 +807,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace pref="334" max="32767" attributes="0"/>
+                          <EmptySpace pref="351" max="32767" attributes="0"/>
                           <Component id="previousButtonCSV" min="-2" pref="100" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonCSV" min="-2" pref="100" max="-2" attributes="0"/>
@@ -858,7 +858,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace pref="334" max="32767" attributes="0"/>
+                          <EmptySpace pref="351" max="32767" attributes="0"/>
                           <Component id="previousButtonMapping" min="-2" pref="100" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonMapping" min="-2" pref="100" max="-2" attributes="0"/>
@@ -911,7 +911,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelButton" min="-2" pref="85" max="-2" attributes="0"/>
-                          <EmptySpace pref="246" max="32767" attributes="0"/>
+                          <EmptySpace pref="261" max="32767" attributes="0"/>
                           <Component id="previousButtonOutSettings" min="-2" pref="93" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="executeButton" min="-2" pref="100" max="-2" attributes="0"/>

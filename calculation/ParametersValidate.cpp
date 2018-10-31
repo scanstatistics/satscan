@@ -583,6 +583,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             case POISSON:
             case HOMOGENEOUSPOISSON:
             case BERNOULLI:
+            case UNIFORMTIME:
                 if ((gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getRiskLimitHighClusters()) {
                     if (gParameters.getRiskThresholdHighClusters() < 1.0) {
                         bValid = false;

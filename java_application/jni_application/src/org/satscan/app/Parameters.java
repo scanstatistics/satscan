@@ -673,6 +673,7 @@ public class Parameters implements Cloneable {
             case RANK                 : sProbabilityModel = "Rank"; break;
             case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
             case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
+            case UNIFORMTIME          : sProbabilityModel = "Uniform-Time"; break;
         }
         return sProbabilityModel;
     }

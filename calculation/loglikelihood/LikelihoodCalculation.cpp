@@ -10,7 +10,9 @@
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub):
-    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0) {
+    gDataHub(DataHub), gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), 
+    _low_risk_threshold(0.0), _high_risk_threshold(0.0), _measure_adjustment(1.0), 
+    _risk_function(0), _risk_function_uniformtime(0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -69,11 +71,26 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         else if (parameters.GetProbabilityModelType() == UNIFORMTIME) {
             /* The rank model is somewhat specialized. */
             switch (parameters.GetExecuteScanRateType()) {
-            case LOW: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::LowRateUniformTime; break;
-            case HIGHANDLOW: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighOrLowRateUniformTime; break;
+            case LOW: 
+                gpRateOfInterestUniformTime = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRiskUniformTime : &AbstractLikelihoodCalculator::LowRateUniformTime;
+                break;
+            case HIGHANDLOW:
+                if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters()) {
+                    gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighRiskOrLowRiskUniformTime;
+                } else if (parameters.getRiskLimitLowClusters()) {
+                    gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighRateOrLowRiskUniformTime;
+                } else if (parameters.getRiskLimitHighClusters()) {
+                    gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighRiskOrLowRateUniformTime;
+                } else {
+                    gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighOrLowRateUniformTime;
+                }
+                break;
             case HIGH:
-            default: gpRateOfInterestUniformTime = &AbstractLikelihoodCalculator::HighRateUniformTime;
+            default: gpRateOfInterestUniformTime = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRiskUniformTime : &AbstractLikelihoodCalculator::HighRateUniformTime;
             }
+            _low_risk_threshold = parameters.getRiskThresholdLowClusters();
+            _high_risk_threshold = parameters.getRiskThresholdHighClusters();
+            _risk_function_uniformtime = &AbstractLikelihoodCalculator::getRelativeRiskUniformTime;
         } else {
             // Determine measure adjustment when restricting evaluated clusters by risk thresholds.
             if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
