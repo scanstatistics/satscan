@@ -55,10 +55,10 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
 								  else
                                     return new PoissonLinearTrendLikelihoodCalculator(DataHub);
 								}
-    case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
     case HOMOGENEOUSPOISSON   :
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
+    case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
     case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
     case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
                                     if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
