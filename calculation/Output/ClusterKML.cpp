@@ -18,7 +18,7 @@ const char * BaseClusterKML::KML_FILE_EXT = ".kml";
 double BaseClusterKML::_minRatioToReport=0.001;
 
 BaseClusterKML::BaseClusterKML(const CSaTScanData& dataHub) : _dataHub(dataHub), _visibleLocations(false) {
-    _cluster_locations.resize(_dataHub.GetTInfo()->getLocations().size());
+    _cluster_locations.resize(_dataHub.GetNumTracts() + _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
     _separateLocationsKML = dataHub.GetTInfo()->getLocations().size() > _dataHub.GetParameters().getLocationsThresholdKML();
 }
 

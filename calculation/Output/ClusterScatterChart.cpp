@@ -342,6 +342,8 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                             transform(vCoordinates);
                             worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
                             _clusterLocations.push_back(tTract);
+							if (clusterCenterCoordinates.empty())
+								clusterCenterCoordinates = vCoordinates;
                         }
                     }
                 }

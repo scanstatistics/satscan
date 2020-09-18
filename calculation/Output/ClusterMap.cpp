@@ -142,7 +142,7 @@ const char * ClusterMap::TEMPLATE = " \
 </html> \n";
 
 ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0) { 
-    _cluster_locations.resize(_dataHub.GetTInfo()->getLocations().size());
+    _cluster_locations.resize(_dataHub.GetNumTracts() + _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 }
 
 /** Alters pass Filename to include suffix and extension. */
