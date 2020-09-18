@@ -4093,7 +4093,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         _logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_logLinearTextField, e, 5);
+                Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);
             }
         });
         _logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {

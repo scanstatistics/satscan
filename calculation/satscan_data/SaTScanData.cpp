@@ -286,10 +286,15 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
       // in both real data and simulated data.
       iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
 
-    // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
-    // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
-    // first time interval, which will be the bucket for the collapsed intervals.
-    if (iNumCollapsibleIntervals > 1 && !(gParameters.GetProbabilityModelType() == POISSON && gParameters.UseAdjustmentForRelativeRisksFile())) {
+    /* If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
+       iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
+       first time interval, which will be the bucket for the collapsed intervals.
+	   Additionally we can't collapse intervals when performing any temporal adjustments - technically these adjustments
+	   are only implemented for Poisson as of now.
+	*/
+    if (iNumCollapsibleIntervals > 1 
+		&& !(gParameters.GetProbabilityModelType() == POISSON && 
+		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
       // will be cummulated into first interval.
