@@ -141,7 +141,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
         }
         //defined location level fields to report -- none of these are reported
         // for multiple data sets nor the ordinal probability model
-        if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL&& gParameters.GetProbabilityModelType() != UNIFORMTIME) {
+        if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME) {
             //these fields will no be supplied for analyses with more than one dataset
             CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {

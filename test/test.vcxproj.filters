@@ -297,42 +297,6 @@
     <ClInclude Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.h">
       <Filter>Header Files\source\calculation\cluster</Filter>
     </ClInclude>
-    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp">
-      <Filter>Source Files\calculation\cluster</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp">
-      <Filter>Source Files\calculation\cluster</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp">
-      <Filter>Source Files\calculation\cluster</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp">
-      <Filter>Source Files\calculation\loglikelihood</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp">
-      <Filter>Source Files\calculation\satscan_data</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
-      <Filter>Source Files\calculation\probability_model</Filter>
-    </ClCompile>
-    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h">
-      <Filter>Header Files\calculation\cluster</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h">
-      <Filter>Header Files\calculation\cluster</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h">
-      <Filter>Header Files\calculation\cluster</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h">
-      <Filter>Header Files\calculation\loglikelihood</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h">
-      <Filter>Header Files\calculation\probability_model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h">
-      <Filter>Header Files\calculation\satscan_data</Filter>
-    </ClInclude>                                                
     <ClInclude Include="..\calculation\cluster\PurelySpatialMonotoneCluster.h">
       <Filter>Header Files\source\calculation\cluster</Filter>
     </ClInclude>
@@ -677,6 +641,24 @@
     </ClInclude>
     <ClInclude Include="..\calculation\Output\ClusterMap.h">
       <Filter>Header Files\source\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1327,6 +1309,24 @@
     </ClCompile>
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
       <Filter>Source Files\source\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

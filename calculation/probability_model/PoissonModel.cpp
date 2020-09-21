@@ -353,7 +353,7 @@ double CPoissonModel::GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, 
                 Population.GetAlphaAdjustedPopulation(population, tractIdx, c, 0, nPops, _alpha);
     } else {
         std::vector<tract_t> AtomicIndexes;
-        DataHub.GetTInfo()->getMetaLocations().getLocations().at(static_cast<size_t>(tractIdx) - DataHub.GetTInfo()->getLocations().size())->getAtomicIndexes(AtomicIndexes);
+		DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(static_cast<size_t>(tractIdx) - DataHub.GetTInfo()->getLocations().size(), AtomicIndexes);
         for (size_t a=0; a < AtomicIndexes.size(); ++a) {
             if (!DataHub.GetIsNullifiedLocation(AtomicIndexes[a]))
                 for (int c=0; c < ncats; ++c)
