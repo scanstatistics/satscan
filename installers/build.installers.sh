@@ -22,7 +22,7 @@ $launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
 
 # prompt user to build gui exe and codesign it, then build installer and codesign that file as well.
 echo
-echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to build and sign SaTScanScan.exe, then build/sign installer. Hit <enter> once done ..."
+echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to build and sign SaTScan.exe, then build/sign installer. Hit <enter> once done ..."
 read dummy
 
 # Build Windows command-line only archive

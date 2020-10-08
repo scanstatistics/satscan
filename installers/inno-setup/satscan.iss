@@ -55,8 +55,8 @@ Source: "Q:\build.area\satscan\installers\documents\eula.html"; DestDir: "{app}"
 Source: "Q:\build.area\satscan\installers\documents\SaTScan_Users_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "Q:\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "Q:\build.area\satscan\\shared_library\Win32\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "Q:\build.area\satscan\\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "Q:\build.area\satscan\shared_library\Win32\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "Q:\build.area\satscan\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.jar"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
