@@ -46,7 +46,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "Q:\build.area\satcan\java_application\jni_application\dist\SaTScan.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Q:\build.area\satscan\installers\sample_data\*"; DestDir: "{app}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Q:\build.area\satscan\installers\java\win32-jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstallMode
