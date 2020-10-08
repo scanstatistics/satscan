@@ -136,7 +136,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="142" max="32767" attributes="0"/>
+                      <EmptySpace pref="168" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -244,7 +244,7 @@
                         <Property name="text" type="java.lang.String" value="Add" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));&#xa;        &#xa;        // enable and clear the edit boxes&#xa;        enableDataSetList();&#xa;        enableDataSetPurposeControls();&#xa;        enableInputFileEdits();&#xa;        _caseFilenames.addElement(&quot;&quot;);&#xa;        _controlFilenames.addElement(&quot;&quot;);&#xa;        _populationFilenames.addElement(&quot;&quot;);&#xa;        _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        enableNewButton();&#xa;        enableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;        enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));&#xa;        &#xa;        // enable and clear the edit boxes&#xa;        enableDataSetList();&#xa;        enableDataSetPurposeControls();&#xa;        enableInputFileEdits();&#xa;        _caseFilenames.addElement(&quot;&quot;);&#xa;        _controlFilenames.addElement(&quot;&quot;);&#xa;        _populationFilenames.addElement(&quot;&quot;);&#xa;        _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        enableNewButton();&#xa;        enableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;        enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableDrilldownGroup();&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JButton" name="_removeDataSetButton">
@@ -252,7 +252,7 @@
                         <Property name="text" type="java.lang.String" value="Remove" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;&#xa;        Vector&lt;InputSourceSettings.InputFileType&gt; filetypes = new Vector&lt;InputSourceSettings.InputFileType&gt;();&#xa;        filetypes.add(InputSourceSettings.InputFileType.Case);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Control);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Population);&#xa;        for (InputSourceSettings.InputFileType type : filetypes) {&#xa;            String key = type.toString() + Integer.toString(iDeleteIndex + 2);&#xa;            // remove input source settings for file type&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                _settings_window._input_source_map.remove(key);&#xa;            }&#xa;            // update input source settings keys for greater indexes      &#xa;            for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;                key = type.toString() + Integer.toString(i + 2);&#xa;                if (_settings_window._input_source_map.containsKey(key)) {&#xa;                    String newKey = type.toString() + Integer.toString(i - 1 + 2);&#xa;                    _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));&#xa;                }&#xa;            }&#xa;        }&#xa;&#xa;        // update remaining list box names&#xa;        for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i + 1);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;&#xa;        // remove files&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex);&#xa;        if (_inputDataSetsList.getModel().getSize() &gt; 0) {&#xa;            _inputDataSetsList.setSelectedIndex(0);&#xa;            _inputDataSetsList.ensureIndexIsVisible(0);&#xa;        }&#xa;        enableDataSetList();&#xa;        enableDataSetPurposeControls();&#xa;        enableInputFileEdits();&#xa;        enableNewButton();&#xa;        enableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;        enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;&#xa;        Vector&lt;InputSourceSettings.InputFileType&gt; filetypes = new Vector&lt;InputSourceSettings.InputFileType&gt;();&#xa;        filetypes.add(InputSourceSettings.InputFileType.Case);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Control);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Population);&#xa;        for (InputSourceSettings.InputFileType type : filetypes) {&#xa;            String key = type.toString() + Integer.toString(iDeleteIndex + 2);&#xa;            // remove input source settings for file type&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                _settings_window._input_source_map.remove(key);&#xa;            }&#xa;            // update input source settings keys for greater indexes      &#xa;            for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;                key = type.toString() + Integer.toString(i + 2);&#xa;                if (_settings_window._input_source_map.containsKey(key)) {&#xa;                    String newKey = type.toString() + Integer.toString(i - 1 + 2);&#xa;                    _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));&#xa;                }&#xa;            }&#xa;        }&#xa;&#xa;        // update remaining list box names&#xa;        for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i + 1);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;&#xa;        // remove files&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex);&#xa;        if (_inputDataSetsList.getModel().getSize() &gt; 0) {&#xa;            _inputDataSetsList.setSelectedIndex(0);&#xa;            _inputDataSetsList.ensureIndexIsVisible(0);&#xa;        }&#xa;        enableDataSetList();&#xa;        enableDataSetPurposeControls();&#xa;        enableInputFileEdits();&#xa;        enableNewButton();&#xa;        enableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;        enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());&#xa;        enableDrilldownGroup();&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
@@ -276,7 +276,7 @@
                                           <Component id="_controlFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="_populationFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="385" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="389" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
@@ -503,7 +503,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="202" max="32767" attributes="0"/>
+                      <EmptySpace pref="234" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -614,7 +614,7 @@
                                   <Component id="_strictCoordinatesLabel" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_relaxedCoordinatesRadioButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="616" max="32767" attributes="0"/>
+                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -708,7 +708,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="137" max="32767" attributes="0"/>
+                      <EmptySpace pref="169" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -736,18 +736,18 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="616" max="32767" attributes="0"/>
-                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="616" max="32767" attributes="0"/>
+                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_metaLocationsFileTextField" pref="568" max="32767" attributes="0"/>
+                                          <Component id="_metaLocationsFileTextField" pref="572" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_metaLocationsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_neighborsFileTextField" pref="568" max="32767" attributes="0"/>
+                                          <Component id="_neighborsFileTextField" pref="572" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_neighborsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
@@ -978,7 +978,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="103" max="32767" attributes="0"/>
+                      <EmptySpace pref="135" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1030,7 +1030,7 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_percentageOfPopFileLabel" pref="497" max="32767" attributes="0"/>
+                                          <Component id="_percentageOfPopFileLabel" pref="501" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1209,7 +1209,7 @@
                                   <Component id="_nonCompactnessPenaltyComboBox" min="-2" pref="111" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="242" max="32767" attributes="0"/>
+                          <EmptySpace pref="246" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1334,7 +1334,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="50" max="32767" attributes="0"/>
+                      <EmptySpace pref="82" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1595,7 +1595,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="235" max="32767" attributes="0"/>
+                                  <EmptySpace pref="239" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1746,7 +1746,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="243" max="32767" attributes="0"/>
+                                  <EmptySpace pref="247" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1927,7 +1927,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="36" max="32767" attributes="0"/>
+                      <EmptySpace pref="68" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2095,7 +2095,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_spatialAdjustmentsNoneRadioButton" max="32767" attributes="0"/>
-                              <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" alignment="0" pref="624" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" alignment="0" pref="628" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
@@ -2179,7 +2179,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="616" max="32767" attributes="0"/>
+                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="620" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2283,7 +2283,7 @@
                       <Component id="_monteCarloGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="128" max="32767" attributes="0"/>
+                      <EmptySpace pref="161" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2604,7 +2604,7 @@
                       <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="31" max="32767" attributes="0"/>
+                      <EmptySpace pref="59" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3009,7 +3009,7 @@
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_userDefinedRunTitle" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="122" max="32767" attributes="0"/>
+                      <EmptySpace pref="154" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3091,7 +3091,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportClusterRankCheckBox" pref="616" max="32767" attributes="0"/>
+                          <Component id="_reportClusterRankCheckBox" pref="620" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3146,7 +3146,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_printAsciiColumnHeaders" pref="616" max="32767" attributes="0"/>
+                          <Component id="_printAsciiColumnHeaders" pref="620" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3250,7 +3250,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_powerEvaluationsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="66" max="32767" attributes="0"/>
+                      <EmptySpace pref="98" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3298,7 +3298,7 @@
                                                   <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
-                                          <EmptySpace min="0" pref="287" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="291" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
                                           <Group type="103" groupAlignment="1" attributes="0">
@@ -3581,7 +3581,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="250" max="32767" attributes="0"/>
+                      <EmptySpace pref="282" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3610,7 +3610,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="620" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="624" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -3745,7 +3745,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_oliveiras_f_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="312" max="32767" attributes="0"/>
+                      <EmptySpace pref="344" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3779,7 +3779,7 @@
                                   <Component id="_number_oliveira_data_sets_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_number_oliveira_data_sets" min="-2" pref="58" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="221" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="225" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -3855,7 +3855,7 @@
                       <Component id="_minimum_clusters_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_limit_clusters_risk_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="242" max="32767" attributes="0"/>
+                      <EmptySpace pref="274" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -4009,6 +4009,197 @@
                 <Component class="javax.swing.JLabel" name="_min_cases_label2">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="cases."/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_drilldown_tab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Drilldown">
+                <Property name="tabTitle" type="java.lang.String" value="Drilldown"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_drilldown_restrictions_group" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_drilldown_restrictions_group" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="150" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_drilldown_restrictions_group">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Cluster Drilldown"/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="_drilldown_restrictions" min="-2" pref="349" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" attributes="0">
+                                          <Component id="_mainAnalysisDrilldown" min="-2" pref="304" max="-2" attributes="0"/>
+                                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                                          <Component id="_purelySpatialDrilldown" pref="302" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                              <Component id="_drilldown_restriction_cases_label" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="_drilldown_restriction_locations_label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_drilldown_restriction_locations" max="32767" attributes="0"/>
+                                              <Component id="_drilldown_restriction_cases" min="-2" pref="57" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" attributes="0">
+                                          <Component id="_drilldown_restriction_cutoff_label" min="-2" pref="151" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_drilldown_restriction_cutoff" min="-2" pref="57" max="-2" attributes="1"/>
+                                      </Group>
+                                      <Component id="_drilldown_restriction_dow" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_mainAnalysisDrilldown" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_purelySpatialDrilldown" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_drilldown_restrictions" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_drilldown_restriction_cutoff_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_drilldown_restriction_cutoff" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_drilldown_restriction_locations_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_drilldown_restriction_locations" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_drilldown_restriction_cases_label" alignment="3" min="-2" pref="12" max="-2" attributes="0"/>
+                              <Component id="_drilldown_restriction_cases" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_drilldown_restriction_dow" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="95" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_mainAnalysisDrilldown">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Same Design as Main Analysis"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_mainAnalysisDrilldownActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        enableDrilldownGroup();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_purelySpatialDrilldown">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Purely Spatial Bernoulli"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_purelySpatialDrilldown.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        enableDrilldownGroup();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_drilldown_restriction_locations_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Required Minimum Locations:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_drilldown_restriction_locations">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="2"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_locations.getText().length() == 0 ||&#xa;               Double.parseDouble(_drilldown_restriction_locations.getText()) &lt; 2&#xa;               )&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_locations.setText(&quot;2&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_locations.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_drilldown_restriction_locations, e, 10);&#xa;    }&#xa;});&#xa;_drilldown_restriction_locations.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_drilldown_restriction_cases_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Required Minimum Cases:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_drilldown_restriction_cases">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="10"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_cases.getText().length() == 0 ||&#xa;               Double.parseDouble(_drilldown_restriction_locations.getText()) &lt; 10&#xa;               )&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText(&quot;10&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_cases.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);&#xa;    }&#xa;});&#xa;_drilldown_restriction_cases.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_drilldown_restriction_cutoff_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="P-Value Cut Off:" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_drilldown_restriction_cutoff">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);&#xa;    }&#xa;});&#xa;_drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_cutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_drilldown_restriction_cutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_drilldown_restriction_cutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText(&quot;0.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_drilldown_restrictions">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Drilldown for Clusters with:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_drilldown_restriction_dow">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Adjust for day-of-week"/>
                   </Properties>
                 </Component>
               </SubComponents>

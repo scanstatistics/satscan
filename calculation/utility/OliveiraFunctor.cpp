@@ -16,20 +16,20 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
     for (size_t t=0; t < _oliveira_sets.size(); ++t)
         _randomization_container->at(t)->RandomizeData(*_oliveira_sets.at(t), *_simulation_data_container->at(t), param);
     // update meta location structures as necessary
-    if (_runner.GetDataHub().GetParameters().UseMetaLocationsFile() || _runner.GetDataHub().GetParameters().UsingMultipleCoordinatesMetaLocations())
+    if (_execution.getParameters().UseMetaLocationsFile() || _execution.getParameters().UsingMultipleCoordinatesMetaLocations())
         for (SimulationDataContainer_t::iterator itr=_simulation_data_container->begin(); itr != _simulation_data_container->end(); ++itr)
-            (*itr)->setCaseData_MetaLocations(_runner.GetDataHub().GetTInfo()->getMetaManagerProxy());
+            (*itr)->setCaseData_MetaLocations(_execution.getDataHub().GetTInfo()->getMetaManagerProxy());
     macroRunTimeStopSerial();
 
     //calculate most likely clusters
     boost::shared_ptr<MLC_Collections_t> topClustersContainer(new MLC_Collections_t());
-    for (std::vector<double>::const_iterator itr=_runner.GetDataHub().GetParameters().getExecuteSpatialWindowStops().begin(); itr != _runner.GetDataHub().GetParameters().getExecuteSpatialWindowStops().end(); ++itr)
+    for (std::vector<double>::const_iterator itr= _execution.getParameters().getExecuteSpatialWindowStops().begin(); itr != _execution.getParameters().getExecuteSpatialWindowStops().end(); ++itr)
         topClustersContainer->push_back(MostLikelyClustersContainer(*itr));
 
     _analysis->FindTopClusters(*_data_gateway, *topClustersContainer);
     boost::shared_ptr<MostLikelyClustersContainer> reportClusters(new MostLikelyClustersContainer(0));
     PrintNull nullPrint;
-    _runner.rankClusterCollections(*topClustersContainer, *reportClusters, 0, nullPrint);
+	_execution.rankClusterCollections(*topClustersContainer, *reportClusters, 0, nullPrint);
 
     temp_result.dSuccessfulResult = std::make_pair(reportClusters, topClustersContainer);
     temp_result.bUnExceptional = true;

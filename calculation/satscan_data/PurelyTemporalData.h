@@ -15,6 +15,9 @@ class CPurelyTemporalData : public CSaTScanData {
   private:
     virtual void        SetProbabilityModel();
 
+  protected:
+	virtual void        PostDataRead();
+
   public:
     CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalData();
@@ -29,7 +32,6 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                       SimulationDataContainer_t& SimDataContainer,
                                       unsigned int iSimulationNumber) const;
-    virtual void        ReadDataFromFiles();
 };
 //*********************************************************************************
 #endif

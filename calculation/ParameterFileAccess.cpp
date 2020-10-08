@@ -228,7 +228,13 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MIN_CASES_HIGHRATE_CLUSTERS  : return "minimum cases in high clusters (positive integer)";
       case LAUNCH_CARTESIAN_MAP         : return "automatically launch Cartesian graph - gui only (y/n)";
       case OUTPUT_GOOGLE_MAP            : return "generate Google Maps output (y/n)";
-      default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+	  case PERFORM_STANDARD_DRILLDOWN   : return "perform detected cluster standard drilldown (y/n)";
+	  case PERFORM_BERNOULLI_DRILLDOWN  : return "perform detected cluster Bernoulli drilldown (y/n)";
+	  case DRILLDOWN_MIN_LOCATIONS      : return "minimum number of locations in detected cluster to perform drilldown (positive integer)";
+	  case DRILLDOWN_MIN_CASES          : return "minimum number of cases in detected cluster to perform drilldown (positive integer)";
+	  case DRILLDOWN_PVLAUE_CUTOFF      : return "p-value cutoff of detected cluster to perform drilldown (0.000-1.000)";
+	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "adjust for weekly trends, purely spatial Bernoulli drilldown";
+	  default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
     x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
@@ -401,7 +407,13 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case MIN_CASES_HIGHRATE_CLUSTERS  : return AsString(s, gParameters.getMinimumCasesHighRateClusters());
       case LAUNCH_CARTESIAN_MAP         : s = "0"; return s;
       case OUTPUT_GOOGLE_MAP            : return AsString(s, gParameters.getOutputGoogleMapsFile());
-      default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+	  case PERFORM_STANDARD_DRILLDOWN   : return AsString(s, gParameters.getPerformStandardDrilldown());
+	  case PERFORM_BERNOULLI_DRILLDOWN  : return AsString(s, gParameters.getPerformBernoulliDrilldown());
+	  case DRILLDOWN_MIN_LOCATIONS      : return AsString(s, gParameters.getDrilldownMinimumLocationsCluster());
+	  case DRILLDOWN_MIN_CASES          : return AsString(s, gParameters.getDrilldownMinimumCasesCluster());
+	  case DRILLDOWN_PVLAUE_CUTOFF      : return AsString(s, gParameters.getDrilldownPvalueCutoff());
+	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return AsString(s, gParameters.getDrilldownAdjustWeeklyTrends());
+	  default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
     x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
@@ -807,7 +819,13 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case MIN_CASES_HIGHRATE_CLUSTERS  : gParameters.setMinimumCasesHighRateClusters(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LAUNCH_CARTESIAN_MAP         : /* no longer used */ break;
       case OUTPUT_GOOGLE_MAP            : gParameters.setOutputGoogleMapsFile(ReadBoolean(sParameter, eParameterType)); break;
-      default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
+	  case PERFORM_STANDARD_DRILLDOWN   : gParameters.setPerformStandardDrilldown(ReadBoolean(sParameter, eParameterType)); break;
+	  case PERFORM_BERNOULLI_DRILLDOWN  : gParameters.setPerformBernoulliDrilldown(ReadBoolean(sParameter, eParameterType)); break;
+	  case DRILLDOWN_MIN_LOCATIONS      : gParameters.setDrilldownMinimumLocationsCluster(ReadUnsignedInt(sParameter, eParameterType)); break;
+	  case DRILLDOWN_MIN_CASES          : gParameters.setDrilldownMinimumCasesCluster(ReadUnsignedInt(sParameter, eParameterType)); break;
+	  case DRILLDOWN_PVLAUE_CUTOFF      : gParameters.setDrilldownPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
+	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : gParameters.setDrilldownAdjustWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
+	  default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {
     gbReadStatusError = true;

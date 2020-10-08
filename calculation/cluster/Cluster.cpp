@@ -73,7 +73,7 @@ void CCluster::cacheReportLine(std::string& label, std::string& value, unsigned 
 
 /** returns the area rate for cluster */ 
 AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const {
-    const CParameters parameters = DataHub.GetParameters();
+    const CParameters& parameters = DataHub.GetParameters();
 
     if (parameters.GetProbabilityModelType() == CATEGORICAL) {
         // There is no concept of high versus low clusters with Multinomial model ... all clusters are high.

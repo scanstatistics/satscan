@@ -186,6 +186,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Inference", null, _inferenceTab, null);
                 jTabbedPane1.addTab("Border Analysis", null, _border_analysis_tab, null);
                 jTabbedPane1.addTab("Power Evaluation", null, _powerEvaluationTab, null);
+                jTabbedPane1.addTab("Drilldown", null, _drilldown_tab, null);
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
@@ -620,6 +621,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableAdjustmentsGroup(bPoisson);
         updateMonteCarloTextCaptions();
         enableMapsOutputGroup();
+        enableDrilldownGroup();
     }
 
     public boolean isAdjustingForDayOfWeek() {
@@ -838,6 +840,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _limit_high_clusters_value.getText().equals("1.0");
         bReturn &= (_limit_low_clusters.isSelected() == false);
         bReturn &= _limit_low_clusters_value.getText().equals("1.0");
+        
+        // Drilldown
+        bReturn &= _mainAnalysisDrilldown.isSelected() == false;
+        bReturn &= _purelySpatialDrilldown.isSelected() == false;
+        bReturn &= _drilldown_restriction_cutoff.getText().equals("0.05");
+        bReturn &= _drilldown_restriction_locations.getText().equals("2");
+        bReturn &= _drilldown_restriction_cases.getText().equals("10");
+        bReturn &= _drilldown_restriction_dow.isSelected() == false;
         
         return bReturn;
     }
@@ -1125,6 +1135,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setRiskThresholdHighClusters(Double.parseDouble(_limit_high_clusters_value.getText()));
         parameters.setRiskLimitLowClusters(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());
         parameters.setRiskThresholdLowClusters(Double.parseDouble(_limit_low_clusters_value.getText()));
+        
+        // Drilldown tab
+        parameters.setPerformStandardDrilldown(_mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected());
+        parameters.setPerformBernoulliDrilldown(_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected());
+        parameters.setDrilldownPvalueCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
+        parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
+        parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
+        parameters.setDrilldownAdjustWeeklyTrends(_drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected());
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1178,7 +1196,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      *
      */
-    private void validateInputFiles() {
+    private void validateInputFilesSettings() {
         boolean bAnalysisIsPurelyTemporal = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                             _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                             _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL;
@@ -1545,7 +1563,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Validates the power evaluations parameters in conjunction with other
      * selected parameters.
      */
-    private void validatePowerEvaluations() {
+    private void validatePowerEvaluationsSettings() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
             if (_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected()) {
                 throw new AdvFeaturesExpection("The power evaluation can not be performed with the iterative scan statistic.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
@@ -1627,10 +1645,47 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
+     * validates parameter settings for the cluster drilldown tab
+     */
+    private void validateDrilldownSettings() {
+        if ((_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected()) ||
+             (_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected())) {
+            double cutoff = Double.parseDouble(_drilldown_restriction_cutoff.getText());
+            if (0.0 >= cutoff || cutoff >= 1.0)
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.", 
+                    FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
+                );
+            if (Integer.parseInt(_drilldown_restriction_locations.getText()) < 2)
+                throw new AdvFeaturesExpection(
+                    "The minimum number of locations in detected cluster for drilldown cannot be less than 2.", 
+                    FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_locations
+                );                
+            if (Integer.parseInt(_drilldown_restriction_cases.getText()) < 10)
+                throw new AdvFeaturesExpection(
+                    "The minimum number of cases in detected cluster for drilldown cannot be less than 10.", 
+                    FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cases
+                );                
+        }
+        
+        if (_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected() &&
+            _drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected()) {
+            if (isAdjustingForDayOfWeek()) {
+                int time_length = Integer.parseInt(_settings_window._timeAggregationLengthTextField.getText());            
+                if (!(time_length == 1 && _settings_window.getTimeAggregationControlType() == Parameters.DatePrecisionType.DAY))
+                    throw new AdvFeaturesExpection(
+                            "The adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.", 
+                            FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_dow
+                    );
+            }        
+        }
+    }    
+    
+    /**
      * validates all the settings in this dialog
      */
     public void validateParameters() {
-        validateInputFiles();
+        validateInputFilesSettings();
         validateNeighborsFileSettings();
         validateSpatialWindowSettings();
         validateAdjustmentSettings();
@@ -1638,7 +1693,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validateInferenceSettings();
         validateBorderAnalysisSettings();
         validateClustersReportedSettings();
-        validatePowerEvaluations();
+        validatePowerEvaluationsSettings();
+        validateDrilldownSettings();
     }
 
     /**
@@ -1795,7 +1851,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _limit_high_clusters.setSelected(false);
         _limit_high_clusters_value.setText("1.0");
         _limit_low_clusters.setSelected(false);
-        _limit_low_clusters_value.setText("1.0");        
+        _limit_low_clusters_value.setText("1.0");
+
+        // Drilldown tab
+        _mainAnalysisDrilldown.setSelected(false);
+        _purelySpatialDrilldown.setSelected(false);
+        _drilldown_restriction_cutoff.setText("0.05");
+        _drilldown_restriction_locations.setText("2");
+        _drilldown_restriction_cases.setText("10");
+        _drilldown_restriction_dow.setSelected(false);
     }
 
     /**
@@ -2338,7 +2402,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _limit_high_clusters_value.setText(Double.toString(parameters.getRiskThresholdHighClusters()));
         _limit_low_clusters.setSelected(parameters.getRiskLimitLowClusters());
         _limit_low_clusters_value.setText(Double.toString(parameters.getRiskThresholdLowClusters()));
-        
+     
+        // Drilldown tab
+        _mainAnalysisDrilldown.setSelected(parameters.getPerformStandardDrilldown());
+        _purelySpatialDrilldown.setSelected(parameters.getPerformBernoulliDrilldown());
+        _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownPvalueCutoff()));
+        _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
+        _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
+        _drilldown_restriction_dow.setSelected(parameters.getDrilldownAdjustWeeklyTrends());
     }
 
     /**
@@ -2392,6 +2463,39 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableClustersReportedOptions(bEnableGroup);
     }
 
+    /**
+     * Enables clusters reported group based upon other primary settings, such
+     * as analysis type and probability model.
+     */
+    private void enableDrilldownGroup() {
+        Parameters.AnalysisType eAnalysisType = _settings_window.getAnalysisControlType();
+        Parameters.ProbabilityModelType eModelType = _settings_window.getModelControlType();
+        boolean bEnableGroup = (
+            eAnalysisType == Parameters.AnalysisType.SPACETIME || 
+            eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL
+        );
+        // This feature is not implemented when using meta locations.
+        bEnableGroup &= !(
+            _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected() &&
+            _specifiyMetaLocationsFileCheckBox.isEnabled() && _specifiyMetaLocationsFileCheckBox.isSelected()
+        );
+        _drilldown_restrictions_group.setEnabled(bEnableGroup);
+        _mainAnalysisDrilldown.setEnabled(bEnableGroup);
+        _purelySpatialDrilldown.setEnabled(eAnalysisType == Parameters.AnalysisType.SPACETIME  && (eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION));
+        boolean mainSelected = _mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected();
+        boolean bernoulliSelected = _purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected();
+        boolean drilldownSelected = mainSelected || bernoulliSelected;
+        _drilldown_restrictions.setEnabled(drilldownSelected);
+        _drilldown_restriction_cutoff_label.setEnabled(drilldownSelected);
+        _drilldown_restriction_cutoff.setEnabled(drilldownSelected);
+        _drilldown_restriction_locations_label.setEnabled(drilldownSelected);
+        _drilldown_restriction_locations.setEnabled(drilldownSelected);
+        _drilldown_restriction_cases_label.setEnabled(drilldownSelected);
+        _drilldown_restriction_cases.setEnabled(drilldownSelected);
+        // Adjustment by day of week is permitted for only purely spatia Bernoulli and one data set.
+        _drilldown_restriction_dow.setEnabled(bernoulliSelected && _inputDataSetsList.getModel().getSize() == 0);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -2626,6 +2730,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _min_cases_label = new javax.swing.JLabel();
         _minimum_number_cases_cluster = new javax.swing.JTextField();
         _min_cases_label2 = new javax.swing.JLabel();
+        _drilldown_tab = new javax.swing.JPanel();
+        _drilldown_restrictions_group = new javax.swing.JPanel();
+        _mainAnalysisDrilldown = new javax.swing.JCheckBox();
+        _purelySpatialDrilldown = new javax.swing.JCheckBox();
+        _drilldown_restriction_locations_label = new javax.swing.JLabel();
+        _drilldown_restriction_locations = new javax.swing.JTextField();
+        _drilldown_restriction_cases_label = new javax.swing.JLabel();
+        _drilldown_restriction_cases = new javax.swing.JTextField();
+        _drilldown_restriction_cutoff_label = new javax.swing.JLabel();
+        _drilldown_restriction_cutoff = new javax.swing.JTextField();
+        _drilldown_restrictions = new javax.swing.JLabel();
+        _drilldown_restriction_dow = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -2699,6 +2815,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSetDefaultsButton();
                 enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
                 enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                enableDrilldownGroup();
             }
         });
 
@@ -2755,6 +2872,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSetDefaultsButton();
                 enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
                 enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                enableDrilldownGroup();
             }
         });
 
@@ -2888,7 +3006,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_caseFileLabel)
                             .addComponent(_controlFileLabel)
                             .addComponent(_populationFileLabel))
-                        .addGap(0, 385, Short.MAX_VALUE))
+                        .addGap(0, 389, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileInputGroupLayout.createSequentialGroup()
                         .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_controlFileTextField)
@@ -3014,7 +3132,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(142, Short.MAX_VALUE))
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3097,7 +3215,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGap(17, 17, 17)
                         .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE))
+                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
@@ -3130,7 +3248,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(202, Short.MAX_VALUE))
+                .addContainerGap(234, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3199,17 +3317,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
-                    .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
+                    .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
                         .addGap(17, 17, 17)
                         .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
+                                .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
+                                .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
@@ -3305,7 +3423,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3447,7 +3565,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
                                 .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)))))
+                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         _spatialOptionsGroupLayout.setVerticalGroup(
@@ -3539,7 +3657,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_nonCompactnessPenaltyLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(242, Short.MAX_VALUE))
+                .addContainerGap(246, Short.MAX_VALUE))
         );
         _spatialWindowShapeGroupLayout.setVerticalGroup(
             _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3591,7 +3709,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(135, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3809,7 +3927,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(235, Short.MAX_VALUE))
+                .addContainerGap(239, Short.MAX_VALUE))
         );
         _windowCompletePanelLayout.setVerticalGroup(
             _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3918,7 +4036,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endGenericRangeToLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_endRangeEndGenericTextField)))
-                .addContainerGap(243, Short.MAX_VALUE))
+                .addContainerGap(247, Short.MAX_VALUE))
         );
         _windowGenericPanelLayout.setVerticalGroup(
             _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4031,7 +4149,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4175,7 +4293,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_spatialAdjustmentsNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
+                    .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
                 .addGap(2, 2, 2))
         );
         _spatialAdjustmentsGroupLayout.setVerticalGroup(
@@ -4242,7 +4360,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_adjustmentsByRelativeRisksFileTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_adjustmentsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE))
+                    .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _knownAdjustmentsGroupLayout.setVerticalGroup(
@@ -4284,7 +4402,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(68, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4558,7 +4676,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(128, Short.MAX_VALUE))
+                .addContainerGap(161, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4871,7 +4989,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -4923,7 +5041,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
+                .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _reportClusterRankGroupLayout.setVerticalGroup(
@@ -4952,7 +5070,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
+                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _additionalOutputFilesLayout.setVerticalGroup(
@@ -5013,7 +5131,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(154, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5180,7 +5298,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                         .addComponent(_numberPowerReplicationsLabel)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 287, Short.MAX_VALUE))
+                                .addGap(0, 291, Short.MAX_VALUE))
                             .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
                                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -5271,7 +5389,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(98, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -5355,7 +5473,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
                     .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5406,7 +5524,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(250, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5451,7 +5569,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_number_oliveira_data_sets_label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 221, Short.MAX_VALUE)))
+                        .addGap(0, 225, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _oliveiras_f_groupLayout.setVerticalGroup(
@@ -5479,7 +5597,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(312, Short.MAX_VALUE))
+                .addContainerGap(344, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
@@ -5642,10 +5760,184 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(242, Short.MAX_VALUE))
+                .addContainerGap(274, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
+
+        _drilldown_restrictions_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Drilldown"));
+
+        _mainAnalysisDrilldown.setText("Same Design as Main Analysis");
+        _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                enableDrilldownGroup();
+            }
+        });
+        _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _mainAnalysisDrilldownActionPerformed(evt);
+            }
+        });
+
+        _purelySpatialDrilldown.setText("Purely Spatial Bernoulli");
+        _purelySpatialDrilldown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                enableDrilldownGroup();
+            }
+        });
+
+        _drilldown_restriction_locations_label.setText("Required Minimum Locations:");
+
+        _drilldown_restriction_locations.setText("2");
+        _drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_drilldown_restriction_locations.getText().length() == 0 ||
+                    Double.parseDouble(_drilldown_restriction_locations.getText()) < 2
+                )
+                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_locations.setText("2");
+                enableSetDefaultsButton();
+            }
+        });
+        _drilldown_restriction_locations.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_drilldown_restriction_locations, e, 10);
+            }
+        });
+        _drilldown_restriction_locations.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _drilldown_restriction_cases_label.setText("Required Minimum Cases:");
+
+        _drilldown_restriction_cases.setText("10");
+        _drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_drilldown_restriction_cases.getText().length() == 0 ||
+                    Double.parseDouble(_drilldown_restriction_locations.getText()) < 10
+                )
+                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText("10");
+                enableSetDefaultsButton();
+            }
+        });
+        _drilldown_restriction_cases.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
+            }
+        });
+        _drilldown_restriction_cases.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _drilldown_restriction_cutoff_label.setText("P-Value Cut Off:"); // NOI18N
+
+        _drilldown_restriction_cutoff.setText("0.05"); // NOI18N
+        _drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);
+            }
+        });
+        _drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_drilldown_restriction_cutoff.getText().length() == 0 ||
+                    Double.parseDouble(_drilldown_restriction_cutoff.getText()) <= 0 ||
+                    Double.parseDouble(_drilldown_restriction_cutoff.getText()) > 1)
+                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText("0.05");
+                enableSetDefaultsButton();
+            }
+        });
+        _drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _drilldown_restrictions.setText("Drilldown for Clusters with:");
+
+        _drilldown_restriction_dow.setText("Adjust for day-of-week");
+
+        javax.swing.GroupLayout _drilldown_restrictions_groupLayout = new javax.swing.GroupLayout(_drilldown_restrictions_group);
+        _drilldown_restrictions_group.setLayout(_drilldown_restrictions_groupLayout);
+        _drilldown_restrictions_groupLayout.setHorizontalGroup(
+            _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                .addComponent(_mainAnalysisDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
+                        .addContainerGap())
+                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(_drilldown_restriction_locations_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(_drilldown_restriction_locations)
+                                    .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                .addComponent(_drilldown_restriction_cutoff_label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+        );
+        _drilldown_restrictions_groupLayout.setVerticalGroup(
+            _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_mainAnalysisDrilldown)
+                    .addComponent(_purelySpatialDrilldown))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_drilldown_restrictions)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_drilldown_restriction_cutoff_label)
+                    .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_drilldown_restriction_locations_label)
+                    .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(7, 7, 7)
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_drilldown_restriction_dow)
+                .addContainerGap(95, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _drilldown_tabLayout = new javax.swing.GroupLayout(_drilldown_tab);
+        _drilldown_tab.setLayout(_drilldown_tabLayout);
+        _drilldown_tabLayout.setHorizontalGroup(
+            _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_drilldown_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _drilldown_tabLayout.setVerticalGroup(
+            _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_drilldown_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(150, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Drilldown", _drilldown_tab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -5691,6 +5983,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event__printTitleActionPerformed
 
+    private void _mainAnalysisDrilldownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__mainAnalysisDrilldownActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__mainAnalysisDrilldownActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
     private javax.swing.JPanel _additionalDataSetsGroup;
@@ -5729,6 +6025,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _dataCheckingTab;
     private javax.swing.JPanel _dataSetsGroup;
     private javax.swing.JLabel _distancePrefixLabel;
+    private javax.swing.JTextField _drilldown_restriction_cases;
+    private javax.swing.JLabel _drilldown_restriction_cases_label;
+    private javax.swing.JTextField _drilldown_restriction_cutoff;
+    private javax.swing.JLabel _drilldown_restriction_cutoff_label;
+    private javax.swing.JCheckBox _drilldown_restriction_dow;
+    private javax.swing.JTextField _drilldown_restriction_locations;
+    private javax.swing.JLabel _drilldown_restriction_locations_label;
+    private javax.swing.JLabel _drilldown_restrictions;
+    private javax.swing.JPanel _drilldown_restrictions_group;
+    private javax.swing.JPanel _drilldown_tab;
     private javax.swing.JTextField _earlyTerminationThreshold;
     private javax.swing.JRadioButton _ellipticRadioButton;
     private javax.swing.JLabel _endGenericRangeToLabel;
@@ -5771,6 +6077,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _limit_low_clusters_value;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
+    private javax.swing.JCheckBox _mainAnalysisDrilldown;
     private javax.swing.JPanel _mapsOutputGroup;
     private javax.swing.JButton _maxCirclePopFileBrowseButton;
     private javax.swing.JTextField _maxCirclePopulationFilenameTextField;
@@ -5845,6 +6152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JTextField _printTitle;
+    private javax.swing.JCheckBox _purelySpatialDrilldown;
     private javax.swing.JRadioButton _radioDefaultPValues;
     private javax.swing.JRadioButton _radioEarlyTerminationPValues;
     private javax.swing.JRadioButton _radioGumbelPValues;

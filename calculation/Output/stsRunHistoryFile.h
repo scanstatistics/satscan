@@ -34,7 +34,7 @@ extern const char* NUM_SIGNIF_005_FIELD;
 extern const char* P_VALUE_FIELD;
 extern const char* ADDITIONAL_OUTPUT_FILES_FIELD;
 
-class AnalysisRunner;
+class AnalysisExecution;
 
 class stsRunHistoryFile {
    private:
@@ -62,7 +62,7 @@ class stsRunHistoryFile {
       ~stsRunHistoryFile();
 
       const std::string&GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const AnalysisRunner& AnalysisRun);
+      void              LogNewHistory(const AnalysisExecution& analysisExecution);
 
 };
 

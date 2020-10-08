@@ -105,7 +105,7 @@ void _runAnalysis(const CParameters& Parameters, BasePrint& Console) {
     throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
                            "Please review above message(s) and modify parameter settings accordingly.");
   //create analysis runner object and execute analysis
-  AnalysisRunner(Parameters, RunTime, Console).Execute();
+  AnalysisRunner(Parameters, RunTime, Console).run();
 }
 
 ///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////

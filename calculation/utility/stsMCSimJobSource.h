@@ -62,7 +62,7 @@ private://data members
   PrintQueue                              & grPrintDirection;
   const char                              * gszReplicationFormatString;
   std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
-  AnalysisRunner                          & grRunner;
+  AnalysisExecution                       & grExecution;
   bool                                      _frequent_estimations;
 
 private://functions
@@ -82,7 +82,7 @@ public:
     CParameters const & rParameters
    ,boost::posix_time::ptime CurrentTime
    ,PrintQueue & rPrintDirection
-   ,AnalysisRunner & rRunner
+   ,AnalysisExecution & rExecution
    ,unsigned int num_replica
    ,bool isPowerStep
    , unsigned int iteration

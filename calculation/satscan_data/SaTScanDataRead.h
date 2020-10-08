@@ -32,7 +32,6 @@ class SaTScanDataReader {
 
     bool                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
     bool                        ReadBernoulliData();
-    bool                        ReadCartesianCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short & iScanCount, short iWordOffSet);
     bool                        ReadCoordinatesFile();
     bool                        ReadCoordinatesFileAsCartesian(DataSource& Source);
     bool                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
@@ -42,7 +41,6 @@ class SaTScanDataReader {
     bool                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
     bool                        ReadHomogeneousPoissonData();
     bool                        ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset, bool& warned);
-    bool                        ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
     bool                        ReadMaxCirclePopulationFile();
     bool                        ReadMetaLocationsFile();
     bool                        ReadNormalData();
@@ -59,7 +57,10 @@ class SaTScanDataReader {
     ~SaTScanDataReader() {}
 
     void                        Read();
-    bool                        ReadAdjustmentsByRelativeRisksFile(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
+	bool                        ReadAdjustmentsByRelativeRisksFile(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
+	void                        ReadBernoulliDrilldown();
+	static bool                 ReadCartesianCoordinates(DataSource& Source, BasePrint & Print, std::vector<double> & vCoordinates, short & iScanCount, short iWordOffSet);
+	static bool                 ReadLatitudeLongitudeCoordinates(DataSource& Source, BasePrint & Print, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
 };
 //*****************************************************************************
 #endif

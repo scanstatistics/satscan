@@ -61,7 +61,7 @@ private://data members
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
   std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
-  AnalysisRunner                          & grRunner;
+  AnalysisExecution                       & grExecution;
   boost::posix_time::ptime StartTime;
   bool _frequent_estimations;
 
@@ -91,7 +91,7 @@ private://functions
   static void               DynamicBitsetPopFrontN(boost::dynamic_bitset<> & operand, unsigned long N);
 
 public:
-  OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection);
+  OliveiraJobSource(AnalysisExecution & rExecution, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection);
 
   bool                      is_exhausted() const;
   void                      acquire(job_id_type & dst_job_id, param_type & dst_param);

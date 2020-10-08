@@ -27,7 +27,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteAnalysisSettings(IniFile& WriteFile);
     void                                WriteSpatialOutputSettings(IniFile& WriteFile);
     void                                WriteDataCheckingSettings(IniFile& WriteFile);
-    void                                WriteEllipticScanSettings(IniFile& WriteFile);
+	void                                WriteDrilldownSettings(IniFile& WriteFile);
+	void                                WriteEllipticScanSettings(IniFile& WriteFile);
     void                                WriteInferenceSettings(IniFile& WriteFile);
     void                                WriteClusterRestrictionsSettings(IniFile& WriteFile);
     void                                WriteBorderAnalysisSettings(IniFile& WriteFile);

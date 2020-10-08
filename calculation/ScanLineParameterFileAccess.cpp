@@ -164,6 +164,12 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case MIN_CASES_HIGHRATE_CLUSTERS        : return "minimum cases in high rate cluster (line 142)";
     case LAUNCH_CARTESIAN_MAP               : return "whether to launch cartesian graph - gui only (line 129)";
     case OUTPUT_GOOGLE_MAP                  : return "whether to generate google maps output (line 130)";
+	case PERFORM_STANDARD_DRILLDOWN         : return "perform detected cluster standard drilldown (y/n) (line 131)";
+	case PERFORM_BERNOULLI_DRILLDOWN        : return "perform detected cluster Bernoulli drilldown (y/n) (line 132)";
+	case DRILLDOWN_MIN_LOCATIONS            : return "minimum number of locations in detected cluster to perform drilldown (line 133)";
+	case DRILLDOWN_MIN_CASES                : return "minimum number of cases in detected cluster to perform drilldown (line 134)";
+	case DRILLDOWN_PVLAUE_CUTOFF            : return "p-value cutoff of detected cluster to perform drilldown (line 135)";
+	case DRILLDOWN_ADJ_WEEKLY_TRENDS        : return "adjust for weekly trends, purely spatial Bernoulli drilldown (line 136)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

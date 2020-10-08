@@ -23,7 +23,8 @@
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
   friend class SaTScanDataReader;
-  friend class  CentroidNeighborCalculator;
+  friend class CentroidNeighborCalculator;
+  friend class BernoulliAnalysisDrilldown;
 
   public:
     typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
@@ -83,12 +84,10 @@ class CSaTScanData {
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
-    int                                         LowerPopIndex(Julian Date) const;
+	virtual void                                PostDataRead();
     virtual void                                RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
-    void                                        SetMeasureByTimeIntervalArray();
-    void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
     void                                        setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, const std::vector<tract_t>& vMaxReported, tract_t iNumMaximumNeighbors);
     void                                        SetPurelyTemporalCases();
     virtual void                                SetTimeIntervalRangeIndexes();

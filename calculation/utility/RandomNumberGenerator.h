@@ -39,7 +39,8 @@ class RandomNumberGenerator {
     long                GetMaxSeed() const {return glM;}
     double              GetRandomDouble();
     float               GetRandomFloat();
-    long                GetSeed() const {return glSeed;}
+	int                 GetRandomInteger();
+	long                GetSeed() const {return glSeed;}
     void                SetSeed(long lSeed);
     int                 Test();
 };

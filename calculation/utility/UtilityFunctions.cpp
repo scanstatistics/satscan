@@ -546,3 +546,12 @@ std::pair<double,double> calculateGumbelCriticalValue(const SimulationVariables&
     double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
     return std::make_pair(critical_value,min);
 }
+
+const char * ordinal_suffix(unsigned int n) {
+	static const char suffixes[][3] = { "th", "st", "nd", "rd" };
+	unsigned int ord = n % 100;
+	if (ord / 10 == 1) ord = 0; 
+	ord = ord % 10;
+	if (ord > 3) ord = 0;
+	return suffixes[ord];
+}

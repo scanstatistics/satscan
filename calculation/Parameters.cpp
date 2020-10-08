@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 144;
+const int CParameters::giNumParameters                = 150;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -174,7 +174,13 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_minimum_low_rate_cases != rhs._minimum_low_rate_cases) return false;
   if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
   if (_output_google_map != rhs._output_google_map) return false;
-
+  if (_perform_standard_drilldown != rhs._perform_standard_drilldown) return false;
+  if (_perform_bernoulli_drilldown != rhs._perform_bernoulli_drilldown) return false;
+  if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
+  if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
+  if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
+  if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
+  
   return true;
 }
 
@@ -396,7 +402,13 @@ void CParameters::Copy(const CParameters &rhs) {
   _minimum_low_rate_cases = rhs._minimum_low_rate_cases;
   _minimum_high_rate_cases = rhs._minimum_high_rate_cases;
   _output_google_map = rhs._output_google_map;
-
+  _input_sources = rhs._input_sources;
+  _perform_standard_drilldown = rhs._perform_standard_drilldown;
+  _perform_bernoulli_drilldown = rhs._perform_bernoulli_drilldown;
+  _drilldown_minimum_locations = rhs._drilldown_minimum_locations;
+  _drilldown_minimum_cases = rhs._drilldown_minimum_cases;
+  _drilldown_pvalue_cutoff = rhs._drilldown_pvalue_cutoff;
+  _drilldown_adjust_weekly_trends = rhs._drilldown_adjust_weekly_trends;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -450,6 +462,11 @@ AreaRateType CParameters::GetExecuteScanRateType() const {
 /** Returns whether analysis is a prospective analysis. */
 bool CParameters::GetIsProspectiveAnalysis() const {
   return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
+}
+
+/** Returns whether analysis is purely spatial. */
+bool CParameters::GetIsPurelySpatialAnalysis() const {
+	return geAnalysisType == PURELYSPATIAL;
 }
 
 /** Returns whether analysis is purely temporal. */
@@ -906,6 +923,12 @@ void CParameters::SetAsDefaulted() {
   _minimum_low_rate_cases = 0;
   _minimum_high_rate_cases = 2;
   _output_google_map = false;
+  _perform_standard_drilldown = false;
+  _perform_bernoulli_drilldown = false;
+  _drilldown_minimum_locations = 2;
+  _drilldown_minimum_cases = 10;
+  _drilldown_pvalue_cutoff = 0.05;
+  _drilldown_adjust_weekly_trends = false;
 }
 
 /** Sets start range start date. Throws exception. */

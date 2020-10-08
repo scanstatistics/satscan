@@ -62,6 +62,16 @@ class region_exception : public resolvable_error {
     virtual ~region_exception() throw();
 };
 
+/** Exception type to thrown when drilldown fails in a expected manner (e.g. no data in data sets). */
+class drilldown_exception : public resolvable_error {
+protected:
+	drilldown_exception();
+
+public:
+	drilldown_exception(const char * format, ...);
+	virtual ~drilldown_exception() throw();
+};
+
 template <typename TYPE>
 class CarrierException : public prg_exception {
 private:

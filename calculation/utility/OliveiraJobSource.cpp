@@ -5,14 +5,14 @@
 #include "OliveiraJobSource.h"
 
 //constructor
-OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection)
+OliveiraJobSource::OliveiraJobSource(AnalysisExecution & rExecution, boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection)
  : guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
  , gfnRegisterResult(&OliveiraJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
- , grRunner(rRunner)
- , guiJobCount(rRunner.gParameters.getNumRequestedOliveiraSets())
+ , grExecution(rExecution)
+ , guiJobCount(rExecution._parameters.getNumRequestedOliveiraSets())
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
  , StartTime(::GetCurrentTime_HighResolution())
@@ -21,12 +21,12 @@ OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time
     gfnRegisterResult = &OliveiraJobSource::RegisterResult_NoAutoAbort;
 
     // define location relevance tracker and bitsets to track presence in a particular data set
-    grRunner._relevance_tracker.reset(new LocationRelevance(grRunner.GetDataHub()));
+	grExecution._relevance_tracker.reset(new LocationRelevance(grExecution.getDataHub()));
 
     // determine the number of significant clusters present in cluster collections
     MostLikelyClustersContainer::ClusterList_t significantClusters;
     // _reportClusters contains either most likely cluster or hierarchical clusters, so calculate the number of significant clusters at oliveira cutoff
-    grRunner._reportClusters.getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), significantClusters);
+	grExecution._reportClusters.getSignificantClusters(grExecution.getDataHub(), grExecution._sim_vars, grExecution._parameters.getOliveiraPvalueCutoff(), significantClusters);
     _numSignificantMLC = std::min(static_cast<size_t>(1), significantClusters.size()); // significant clusters for neither hierarchical nor gini
     _numSignificantHierarchical = significantClusters.size(); // significant clusters for hierarchical
 
@@ -35,26 +35,26 @@ OliveiraJobSource::OliveiraJobSource(AnalysisRunner & rRunner, boost::posix_time
     */
 
     // initialize variables based on which parameter settings are requested
-    if (!(grRunner.gParameters.getReportHierarchicalClusters() || grRunner.gParameters.getReportGiniOptimizedClusters()) || grRunner.gParameters.getReportHierarchicalClusters())
-        _presence_hierarchical.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
+    if (!(grExecution._parameters.getReportHierarchicalClusters() || grExecution._parameters.getReportGiniOptimizedClusters()) || grExecution._parameters.getReportHierarchicalClusters())
+        _presence_hierarchical.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
 
     /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
-    if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
-        _presence_gini_optimal.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
-        _presence_gini_maxima.resize(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
+    if (grExecution._parameters.getReportGiniOptimizedClusters()) { // gini clusters
+        _presence_gini_optimal.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
+        _presence_gini_maxima.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
         // gini clusters are derived from gTopClustersContainers -- calculate the optimal gini collection
-        const MostLikelyClustersContainer * optimal = grRunner.getOptimalGiniContainerByPValue(grRunner.gTopClustersContainers, grRunner.gParameters.getGiniIndexPValueCutoff());
+        const MostLikelyClustersContainer * optimal = grExecution.getOptimalGiniContainerByPValue(grExecution._top_clusters_containers, grExecution._parameters.getGiniIndexPValueCutoff());
         if (optimal) {
             MostLikelyClustersContainer::ClusterList_t clusterList;
             // calculate the number of significant clusters in optimal gini collection at oliveira cutoff
-            optimal->getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), clusterList);
+            optimal->getSignificantClusters(grExecution.getDataHub(), grExecution._sim_vars, grExecution._parameters.getOliveiraPvalueCutoff(), clusterList);
             // when calculating the gini coefficient, use the same limit for all maxima
             std::fill(_optimalSignificantCluster.begin(), _optimalSignificantCluster.end(), clusterList.size());
         }
-        for (MLC_Collections_t::const_iterator itrMLC=grRunner.gTopClustersContainers.begin(); itrMLC != grRunner.gTopClustersContainers.end(); ++itrMLC) {
+        for (MLC_Collections_t::const_iterator itrMLC=grExecution._top_clusters_containers.begin(); itrMLC != grExecution._top_clusters_containers.end(); ++itrMLC) {
             MostLikelyClustersContainer::ClusterList_t clusterList;
             // calculate the number of significant clusters for this maxima collection at oliveira cutoff
-            itrMLC->getSignificantClusters(grRunner.GetDataHub(), grRunner.gSimVars, grRunner.gParameters.getOliveiraPvalueCutoff(), clusterList);
+            itrMLC->getSignificantClusters(grExecution.getDataHub(), grExecution._sim_vars, grExecution._parameters.getOliveiraPvalueCutoff(), clusterList);
             // when calculating the gini coefficient at this maxima, use same # of significant clusters at real data
             _maximaSignificantCluster.push_back(clusterList.size());
         }
@@ -324,23 +324,23 @@ void OliveiraJobSource::ReleaseAutoAbortCheckResources()
 
 void OliveiraJobSource::WriteResultToStructures(successful_result_type const & rResult) {
     try {
-        LocationRelevance& relevance(*grRunner._relevance_tracker);
-        if (!(grRunner.gParameters.getReportHierarchicalClusters() || grRunner.gParameters.getReportGiniOptimizedClusters())) // most likely cluster
-            relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantMLC, _presence_hierarchical, relevance._most_likely_only);
-        if (grRunner.gParameters.getReportHierarchicalClusters()) // hierarachical clusters
-            relevance.update(grRunner.GetDataHub(), *rResult.first, _numSignificantHierarchical, _presence_hierarchical, relevance._hierarchical);
+        LocationRelevance& relevance(*grExecution._relevance_tracker);
+        if (!(grExecution._parameters.getReportHierarchicalClusters() || grExecution._parameters.getReportGiniOptimizedClusters())) // most likely cluster
+            relevance.update(grExecution.getDataHub(), *rResult.first, _numSignificantMLC, _presence_hierarchical, relevance._most_likely_only);
+        if (grExecution._parameters.getReportHierarchicalClusters()) // hierarachical clusters
+            relevance.update(grExecution.getDataHub(), *rResult.first, _numSignificantHierarchical, _presence_hierarchical, relevance._hierarchical);
 
         /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
         if (grRunner.gParameters.getReportGiniOptimizedClusters()) { // gini clusters
             // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant in optimal collection for real data
-            AnalysisRunner::OptimalGiniByLimit_t optimalOliveira = grRunner.getOptimalGiniContainerByLimit(*rResult.second, _optimalSignificantCluster);
-            if (optimalOliveira.first) relevance.update(grRunner.GetDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_optimal, relevance._gini_optimal);
+            AnalysisExecution::OptimalGiniByLimit_t optimalOliveira = grExecution.getOptimalGiniContainerByLimit(*rResult.second, _optimalSignificantCluster);
+            if (optimalOliveira.first) relevance.update(grExecution.getDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_optimal, relevance._gini_optimal);
             // instead of getting optimal gini collection by p-value (since these clusters don't have a p-value), limit by # significant at corresponding maxima of real data
-            optimalOliveira = grRunner.getOptimalGiniContainerByLimit(*rResult.second, _maximaSignificantCluster);
-            if (optimalOliveira.first) relevance.update(grRunner.GetDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_maxima, relevance._gini_maxima);
+            optimalOliveira = grExecution.getOptimalGiniContainerByLimit(*rResult.second, _maximaSignificantCluster);
+            if (optimalOliveira.first) relevance.update(grExecution.getDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_maxima, relevance._gini_maxima);
         }
-        if (grRunner.gParameters.getReportHierarchicalClusters() && grRunner.gParameters.getReportGiniOptimizedClusters()) { // both hierarachical and gini clusters
-            boost::dynamic_bitset<> location_presence(grRunner.GetDataHub().GetNumTracts() + grRunner.GetDataHub().GetNumMetaTracts());
+        if (grExecution._parameters.getReportHierarchicalClusters() && grExecution._parameters.getReportGiniOptimizedClusters()) { // both hierarachical and gini clusters
+            boost::dynamic_bitset<> location_presence(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
             location_presence = _presence_hierarchical | _presence_gini_optimal;
             relevance.updateRelevance(location_presence, relevance._hierarchical_gini_optimal);
             location_presence.reset();

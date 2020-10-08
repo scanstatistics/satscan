@@ -471,15 +471,25 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 void CSaTScanData::ReadDataFromFiles() {
   try {
     SaTScanDataReader(*this).Read();
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-      std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
-    CalculateExpectedCases();
-    if (gParameters.UseMetaLocationsFile())
-      gDataSets->assignMetaLocationData(gDataSets->getDataSets());
+	PostDataRead();
   } catch (prg_exception& x) {
-    x.addTrace("ReadDataFromFiles()","CSaTScanData");
-    throw;
+	  x.addTrace("ReadDataFromFiles()", "CSaTScanData");
+	  throw;
   }
+}
+
+/* Class specific actions to perform after data has been read. */
+void CSaTScanData::PostDataRead() {
+	try {
+		if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+		CalculateExpectedCases();
+		if (gParameters.UseMetaLocationsFile())
+			gDataSets->assignMetaLocationData(gDataSets->getDataSets());
+	} catch (prg_exception& x) {
+		x.addTrace("PostDataRead()", "CSaTScanData");
+		throw;
+	}
 }
 
 /** Removes all cases/controls/measure from data sets, geographically and temporally, for passed cluster object. */

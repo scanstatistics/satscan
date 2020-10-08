@@ -42,6 +42,10 @@ float RandomNumberGenerator::GetRandomFloat() {
   return (float) glSeed / (float) glM;
 }
 
+int RandomNumberGenerator::GetRandomInteger() {
+	return static_cast<int>(GetRandomDouble() * 10000.0);
+}
+
 /** Sets the random number generator seed.  Note: 0 < lSeed < glM */
 void RandomNumberGenerator::SetSeed(long lSeed) {
   glSeed = ((0 < lSeed && lSeed < glM) ? lSeed : glDefaultSeed);

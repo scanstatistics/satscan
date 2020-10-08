@@ -64,7 +64,8 @@ class IniParameterSpecification {
     SectionInfo                 _cluster_restrictions_section;
     SectionInfo                 _space_time_adjustments_section;
     SectionInfo                 _inference_section;
-    SectionInfo                 _border_analysis_section;
+	SectionInfo                 _drilldown_section;
+	SectionInfo                 _border_analysis_section;
     SectionInfo                 _power_evaluation_section;
     SectionInfo                 _clusters_reported_section;
     SectionInfo                 _spatial_output_section;
@@ -86,7 +87,8 @@ class IniParameterSpecification {
     static const char         * Input;
     static const char         * MultipleDataSets;
     static const char         * DataChecking;
-    static const char         * NeighborsFile;
+	static const char         * Drilldown;
+	static const char         * NeighborsFile;
     static const char         * SpatialNeighbors;
     static const char         * Analysis;
     static const char         * SpatialWindow;
@@ -151,6 +153,7 @@ class IniParameterSpecification {
     void                        Build_9_4_x_ParameterList();
     void                        Build_9_5_x_ParameterList();
     void                        Build_9_6_x_ParameterList();
+	void                        Build_9_7_x_ParameterList();
 
    public:
      IniParameterSpecification();

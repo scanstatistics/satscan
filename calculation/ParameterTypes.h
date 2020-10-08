@@ -149,7 +149,13 @@ enum ParameterType
     MIN_CASES_LOWRATE_CLUSTERS,     /* minimum number of cases in cluster when scanning low rates */
     MIN_CASES_HIGHRATE_CLUSTERS,    /* minimum number of cases in cluster when scanning high rates */
     LAUNCH_CARTESIAN_MAP,           /* whether to launch browser to view cartesian graph - no longer used */
-    OUTPUT_GOOGLE_MAP               /* whether to generate google maps output */
+    OUTPUT_GOOGLE_MAP               /* whether to generate google maps output */,
+	PERFORM_STANDARD_DRILLDOWN,     /* whether to perform standard anaylsis drilldown */
+	PERFORM_BERNOULLI_DRILLDOWN,    /* whether to perform Bernoulli anaylsis drilldown */
+	DRILLDOWN_MIN_LOCATIONS,        /* minimum number of locations in detected cluster to perform drilldown */
+	DRILLDOWN_MIN_CASES,            /* minimum number of cases in detected cluster to perform drilldown */
+	DRILLDOWN_PVLAUE_CUTOFF,        /* maximum p-value in detected cluster to perform drilldown */
+    DRILLDOWN_ADJ_WEEKLY_TRENDS     /* whether to adjust for weekly trends in Bernoulli drilldown, nonparametric */
 };
 /** analysis and cluster types */
 enum AnalysisType

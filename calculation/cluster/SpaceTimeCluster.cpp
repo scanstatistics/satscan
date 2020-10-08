@@ -98,6 +98,18 @@ count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const C
   return tCaseCount;
 }
 
+/** returns the number of cases for tract outside cluster window */
+count_t CSpaceTimeCluster::GetCountForTractOutside(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+	count_t      tCaseCount, ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray();
+
+	if (m_nLastInterval == Data.GetNumTimeIntervals())
+		tCaseCount = ppCases[0][tTractIndex] - ppCases[m_nFirstInterval][tTractIndex];
+	else
+		tCaseCount = (ppCases[0][tTractIndex] - ppCases[m_nFirstInterval][tTractIndex]) + ppCases[m_nLastInterval][tTractIndex];
+
+	return tCaseCount;
+}
+
 /** Adds neighbor location data from DataGateway to cluster data accumulation and calculates loglikelihood ratio. 
     Updates cluster set given current state of this cluster object. */
 void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway & DataGateway,

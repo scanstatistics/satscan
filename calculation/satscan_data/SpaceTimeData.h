@@ -15,7 +15,7 @@
 class CSpaceTimeData : public CSaTScanData {
   protected:
     virtual void        CalculateMeasure(RealDataSet& DataSet);
-    virtual void        ReadDataFromFiles();
+    virtual void        PostDataRead();
     virtual void        SetIntervalCut();
     virtual void        SetProbabilityModel();
 

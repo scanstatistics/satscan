@@ -47,11 +47,15 @@ class CParameters {
             bool _first_row_headers;
 
         public:
-            InputSource() : _skip(0) {}
+            InputSource() : _skip(0), _first_row_headers(false) {}
 
             InputSource(SourceType type, FieldMapContainer_t map):
                 _source_type(type), _fields_map(map), 
                 _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false) {}
+
+			InputSource(SourceType type, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers) :
+				_source_type(type), _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers) {}
+
 
             InputSource(SourceType type, FieldMapContainer_t map, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers):
                 _source_type(type), _fields_map(map), 
@@ -245,6 +249,14 @@ class CParameters {
     unsigned int                        _minimum_low_rate_cases;                 /** minimum number of cases in cluster when scanning low rates */
     unsigned int                        _minimum_high_rate_cases;                /** minimum number of cases in cluster when scanning high rates */
 
+	bool                                _perform_standard_drilldown;
+	bool                                _perform_bernoulli_drilldown;
+	unsigned int                        _drilldown_minimum_locations;
+	unsigned int                        _drilldown_minimum_cases;
+	double                              _drilldown_pvalue_cutoff;
+	bool                                _drilldown_adjust_weekly_trends;
+	std::vector<std::string>            _drilldown_result_filenames;
+
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -261,6 +273,21 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+	bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
+	void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
+	bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }
+	void                                setPerformBernoulliDrilldown(bool b) { _perform_bernoulli_drilldown = b; }
+	unsigned int                        getDrilldownMinimumLocationsCluster() const { return _drilldown_minimum_locations; }
+	void                                setDrilldownMinimumLocationsCluster(unsigned int u) { _drilldown_minimum_locations = u; }
+	unsigned int                        getDrilldownMinimumCasesCluster() const { return _drilldown_minimum_cases; }
+	void                                setDrilldownMinimumCasesCluster(unsigned int u) { _drilldown_minimum_cases = u; }
+	double                              getDrilldownPvalueCutoff() const { return _drilldown_pvalue_cutoff; }
+	void                                setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+	bool                                getDrilldownAdjustWeeklyTrends() const { return _drilldown_adjust_weekly_trends; }
+	void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
+	void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
+	const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
 
     bool                                getOutputGoogleMapsFile() const { return _output_google_map; }
     void                                setOutputGoogleMapsFile(bool b) { _output_google_map = b; }
@@ -331,8 +358,9 @@ class CParameters {
     GiniIndexReportType                 getGiniIndexReportType() const {return _giniIndexReportType;}
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsProspectiveAnalysis() const;
-    bool                                GetIsPurelyTemporalAnalysis() const;
-    bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
+    bool                                GetIsPurelySpatialAnalysis() const;
+	bool                                GetIsPurelyTemporalAnalysis() const;
+	bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
     bool                                getLaunchMapViewer() const {return _launch_map_viewer;}
@@ -457,7 +485,6 @@ class CParameters {
     void                                SetEarlyTermThreshold(unsigned int i) {giEarlyTermThreshold = i;}
     void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
-    void                                setClusterReportType(ClusterReportType e);
     void                                setReportHierarchicalClusters(bool b) {_reportHierarchicalClusters = b;}
     void                                setReportGiniOptimizedClusters(bool b) {_reportGiniOptimizedClusters = b;}
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);

@@ -10,6 +10,7 @@ const char * IniParameterSpecification::NotUsed                   = "NotUsed";
 const char * IniParameterSpecification::Input                     = "Input";
 const char * IniParameterSpecification::MultipleDataSets          = "Multiple Data Sets";
 const char * IniParameterSpecification::DataChecking              = "Data Checking";
+const char * IniParameterSpecification::Drilldown                 = "Cluster Drilldown";
 const char * IniParameterSpecification::NeighborsFile             = "Non-Eucledian Neighbors";
 const char * IniParameterSpecification::SpatialNeighbors          = "Spatial Neighbors";
 const char * IniParameterSpecification::Analysis                  = "Analysis";
@@ -145,8 +146,9 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
-    _inference_section = SectionInfo(Inference, 560);
-    _border_analysis_section = SectionInfo(BorderAnalysis, 561);
+    _inference_section = SectionInfo(Inference, 550);
+	_drilldown_section = SectionInfo(Drilldown, 560);
+	_border_analysis_section = SectionInfo(BorderAnalysis, 561);
     _power_evaluation_section = SectionInfo(PowerEvaluations, 564);
     _clusters_reported_section = SectionInfo(ClustersReported, 570);
     _temporal_output_section = SectionInfo(TemporalOutput, 572);
@@ -161,36 +163,38 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _advanced_section = SectionInfo(AdvancedFeatures, 800);
     _system_section = SectionInfo(System, 2000);
 
-    if (version.iMajor <= 3)
-        Build_3_0_5_ParameterList();
-    else if (version.iMajor <= 4)
-        Build_4_0_x_ParameterList();
-    else if (version.iMajor == 5  && version.iMinor == 0)
-        Build_5_0_x_ParameterList();
-    else if (version.iMajor == 5  && version.iMinor == 1)
-        Build_5_1_x_ParameterList();
-    else if (version.iMajor == 6  && version.iMinor == 0)
-        Build_6_0_x_ParameterList();
-    else if (version.iMajor == 6  && version.iMinor == 1)
-        Build_6_1_x_ParameterList();
-    else if (version.iMajor == 7 && version.iMinor == 0)
-        Build_7_0_x_ParameterList();
-    else if (version.iMajor == 8 && (version.iMinor == 0 || version.iMinor == 1))
-        Build_8_0_x_ParameterList();
-    else if (version.iMajor == 8  && version.iMinor == 2)
-        Build_8_2_x_ParameterList();
-    else if (version.iMajor == 9  && version.iMinor == 0)
-        Build_9_0_x_ParameterList();
-    else if (version.iMajor == 9  && version.iMinor == 2 && version.iRelease < 1)
-        Build_9_2_x_ParameterList();
-    else if (version.iMajor == 9  && version.iMinor == 3)
-        Build_9_3_x_ParameterList();
-    else if (version.iMajor == 9 && version.iMinor == 4)
-        Build_9_4_x_ParameterList();
-    else if (version.iMajor == 9 && version.iMinor == 5)
-        Build_9_5_x_ParameterList();
-    else
-        Build_9_6_x_ParameterList();
+	if (version.iMajor <= 3)
+		Build_3_0_5_ParameterList();
+	else if (version.iMajor <= 4)
+		Build_4_0_x_ParameterList();
+	else if (version.iMajor == 5 && version.iMinor == 0)
+		Build_5_0_x_ParameterList();
+	else if (version.iMajor == 5 && version.iMinor == 1)
+		Build_5_1_x_ParameterList();
+	else if (version.iMajor == 6 && version.iMinor == 0)
+		Build_6_0_x_ParameterList();
+	else if (version.iMajor == 6 && version.iMinor == 1)
+		Build_6_1_x_ParameterList();
+	else if (version.iMajor == 7 && version.iMinor == 0)
+		Build_7_0_x_ParameterList();
+	else if (version.iMajor == 8 && (version.iMinor == 0 || version.iMinor == 1))
+		Build_8_0_x_ParameterList();
+	else if (version.iMajor == 8 && version.iMinor == 2)
+		Build_8_2_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 0)
+		Build_9_0_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 2 && version.iRelease < 1)
+		Build_9_2_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 3)
+		Build_9_3_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 4)
+		Build_9_4_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 5)
+		Build_9_5_x_ParameterList();
+	else if (version.iMajor == 9 && version.iMinor == 6)
+		Build_9_6_x_ParameterList();
+	else
+		Build_9_7_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -636,6 +640,21 @@ void IniParameterSpecification::Build_9_6_x_ParameterList() {
     _parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 19, _spatial_output_section);
 
     assert(_parameter_info.size() == 144);
+}
+
+/** Version 9.6.x */
+void IniParameterSpecification::Build_9_7_x_ParameterList() {
+	Build_9_6_x_ParameterList();
+
+	/* This option was combined with another setting. */
+	_parameter_info[PERFORM_STANDARD_DRILLDOWN] = ParamInfo(PERFORM_STANDARD_DRILLDOWN, "PerformStandardDrilldown", 0, _drilldown_section);
+	_parameter_info[PERFORM_BERNOULLI_DRILLDOWN] = ParamInfo(PERFORM_BERNOULLI_DRILLDOWN, "PerformBernoulliDrilldown", 1, _drilldown_section);
+	_parameter_info[DRILLDOWN_MIN_LOCATIONS] = ParamInfo(DRILLDOWN_MIN_LOCATIONS, "DrilldownMinimumClusterLocations", 2, _drilldown_section);
+	_parameter_info[DRILLDOWN_MIN_CASES] = ParamInfo(DRILLDOWN_MIN_CASES, "DrilldownMinimumClusterCases", 3, _drilldown_section);
+	_parameter_info[DRILLDOWN_PVLAUE_CUTOFF] = ParamInfo(DRILLDOWN_PVLAUE_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
+	_parameter_info[DRILLDOWN_ADJ_WEEKLY_TRENDS] = ParamInfo(DRILLDOWN_ADJ_WEEKLY_TRENDS, "DrilldownAdjustForWeeklyTrends", 5, _drilldown_section);
+
+	assert(_parameter_info.size() == 150);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

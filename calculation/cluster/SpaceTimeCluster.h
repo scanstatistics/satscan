@@ -29,6 +29,7 @@ class CSpaceTimeCluster : public CCluster {
     virtual ClusterType                   GetClusterType() const {return SPACETIMECLUSTER;}
     virtual measure_t                     GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                       GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+	virtual count_t                       GetCountForTractOutside(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex = 0) const;
     void                                  CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                      const CentroidNeighbors& CentroidDef,
                                                                                      CClusterSet& clusterSet,

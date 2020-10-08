@@ -255,7 +255,7 @@ void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iTy
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
-void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
+void stsRunHistoryFile::LogNewHistory(const AnalysisExecution& analysisExecution) {
    std::string                  sTempValue, sInterval;
    std::auto_ptr<dBaseFile>     pFile;
    bool                         bFound(false);
@@ -266,7 +266,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       pSection->Acquire();
 #endif
 
-      const CParameters & params(AnalysisRun.GetDataHub().GetParameters());
+      const CParameters & params(analysisExecution.getParameters());
 
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
@@ -285,7 +285,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetDoubleField(*pRecord, (double)(pFile->GetNumRecords() + 1), GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
 
       // run time and date field
-      sTempValue = ctime(AnalysisRun.GetStartTime());
+      sTempValue = ctime(analysisExecution.getStartTime());
       StripCRLF(sTempValue);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RUN_TIME_FIELD));
 
@@ -315,9 +315,9 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
-      SetDoubleField(*pRecord, (double)AnalysisRun.GetDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
-      SetDoubleField(*pRecord, AnalysisRun.GetDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetDoubleField(*pRecord, (double)AnalysisRun.GetDataHub().GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
+      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
+      SetDoubleField(*pRecord, analysisExecution.getDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
+      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
       sTempValue = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");
@@ -337,7 +337,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)AnalysisRun.GetDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).getPopulationData().GetNumCovariateCategories(),
+                     (double)analysisExecution.getDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).getPopulationData().GetNumCovariateCategories(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
@@ -354,20 +354,20 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       // p-value field
       bool bPrintPValue = params.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
       if(bPrintPValue) {
-         if (AnalysisRun.getLargestMaximaClusterCollection().GetNumClustersRetained()) {
-            const CCluster & topCluster = AnalysisRun.getLargestMaximaClusterCollection().GetTopRankedCluster();
-            dTopClusterRatio = topCluster.getReportingPValue(params, AnalysisRun.GetSimVariables(), true);
+         if (analysisExecution.getLargestMaximaClusterCollection().GetNumClustersRetained()) {
+            const CCluster & topCluster = analysisExecution.getLargestMaximaClusterCollection().GetTopRankedCluster();
+            dTopClusterRatio = topCluster.getReportingPValue(params, analysisExecution.getSimVariables(), true);
          }
          SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
       }
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)analysisExecution.getNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
-      if(!params.GetIsIterativeScanning() && bPrintPValue && AnalysisRun.GetIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
-         SetDoubleField(*pRecord, AnalysisRun.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
-         SetDoubleField(*pRecord, AnalysisRun.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
-         SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
+      if(!params.GetIsIterativeScanning() && bPrintPValue && analysisExecution.getIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
+         SetDoubleField(*pRecord, analysisExecution.getSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
+         SetDoubleField(*pRecord, analysisExecution.getSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+         SetDoubleField(*pRecord, (double)analysisExecution.getNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
       }
       else {
          pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));

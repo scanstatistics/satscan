@@ -50,5 +50,6 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
                                 }
 std::pair<double,double>        calculateGumbelPValue(const SimulationVariables& simVars, double critical_value);
 std::pair<double,double>        calculateGumbelCriticalValue(const SimulationVariables& simVars, double p_value);
+const char                    * ordinal_suffix(unsigned int n);
 //******************************************************************************
 #endif

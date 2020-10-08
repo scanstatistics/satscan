@@ -59,20 +59,17 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
-/** Calls base class CSaTScanData::ReadDataFromFiles().If purely temporal
-    clusters were requested, ensures that each datasets' corresponding
-    data structures are allocated and set. */
-void CSpaceTimeData::ReadDataFromFiles() {
+void CSpaceTimeData::PostDataRead() {
     try {
-        CSaTScanData::ReadDataFromFiles();
         // Do not set purely temporal case data if performing power evaluation without analysis. 
         // In one situation, it is not needed and in the other, case data structures are not defined (no case file).
+		CSaTScanData::PostDataRead();
         if (!(gParameters.getPerformPowerEvaluation() && 
              (gParameters.getPowerEvaluationMethod() == PE_ONLY_CASEFILE || gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
             SetPurelyTemporalCases();
         }
     } catch (prg_exception& x) {
-        x.addTrace("ReadDataFromFiles()","CSpaceTimeData");
+        x.addTrace("PostDataRead()","CSpaceTimeData");
         throw;
     }
 }

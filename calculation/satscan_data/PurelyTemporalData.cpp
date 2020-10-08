@@ -112,20 +112,14 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
   }
 }
 
-/** Calls base class CSaTScanData::ReadDataFromFiles(). Sets dataset objects' temporal data structures. */
-void CPurelyTemporalData::ReadDataFromFiles() {
-    try {
-        CSaTScanData::ReadDataFromFiles();
-        // Do not set purely temporal case data if performing power evaluation without analysis. 
-        // In one situation, it is not needed and in the other, case data structures are not defined (no case file).
-        if (!(gParameters.getPerformPowerEvaluation() && 
-             (gParameters.getPowerEvaluationMethod() == PE_ONLY_CASEFILE || gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
-            SetPurelyTemporalCases();
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("ReadDataFromFiles()","CPurelyTemporalData");
-        throw;
-    }
+void CPurelyTemporalData::PostDataRead() {
+	// Do not set purely temporal case data if performing power evaluation without analysis. 
+	// In one situation, it is not needed and in the other, case data structures are not defined (no case file).
+	CSaTScanData::PostDataRead();
+	if (!(gParameters.getPerformPowerEvaluation() &&
+		(gParameters.getPowerEvaluationMethod() == PE_ONLY_CASEFILE || gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
+		SetPurelyTemporalCases();
+	}
 }
 
 /** Allocates probability model object. Throws prg_error if probability model

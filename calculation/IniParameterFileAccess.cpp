@@ -299,6 +299,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteClusterRestrictionsSettings(ini);
         WriteSpaceAndTimeAdjustmentSettings(ini);
         WriteInferenceSettings(ini);
+		WriteDrilldownSettings(ini);
         WriteBorderAnalysisSettings(ini);
         WritePowerEvaluationsSettings(ini);
         WriteSpatialOutputSettings(ini);
@@ -412,6 +413,21 @@ void IniParameterFileAccess::WriteDataCheckingSettings(IniFile& WriteFile) {
         x.addTrace("WriteDataCheckingSettings()","IniParameterFileAccess");
         throw;
     }
+}
+
+void IniParameterFileAccess::WriteDrilldownSettings(IniFile& WriteFile) {
+	std::string  s;
+	try {
+		WriteIniParameter(WriteFile, PERFORM_STANDARD_DRILLDOWN, GetParameterString(PERFORM_STANDARD_DRILLDOWN, s).c_str(), GetParameterComment(PERFORM_STANDARD_DRILLDOWN));
+		WriteIniParameter(WriteFile, PERFORM_BERNOULLI_DRILLDOWN, GetParameterString(PERFORM_BERNOULLI_DRILLDOWN, s).c_str(), GetParameterComment(PERFORM_BERNOULLI_DRILLDOWN));
+		WriteIniParameter(WriteFile, DRILLDOWN_MIN_LOCATIONS, GetParameterString(DRILLDOWN_MIN_LOCATIONS, s).c_str(), GetParameterComment(DRILLDOWN_MIN_LOCATIONS));
+		WriteIniParameter(WriteFile, DRILLDOWN_MIN_CASES, GetParameterString(DRILLDOWN_MIN_CASES, s).c_str(), GetParameterComment(DRILLDOWN_MIN_CASES));
+		WriteIniParameter(WriteFile, DRILLDOWN_PVLAUE_CUTOFF, GetParameterString(DRILLDOWN_PVLAUE_CUTOFF, s).c_str(), GetParameterComment(DRILLDOWN_PVLAUE_CUTOFF));
+		WriteIniParameter(WriteFile, DRILLDOWN_ADJ_WEEKLY_TRENDS, GetParameterString(DRILLDOWN_ADJ_WEEKLY_TRENDS, s).c_str(), GetParameterComment(DRILLDOWN_ADJ_WEEKLY_TRENDS));
+	} catch (prg_exception& x) {
+		x.addTrace("WriteDrilldownSettings()", "IniParameterFileAccess");
+		throw;
+	}
 }
 
 /** Writes parameter settings grouped under 'Elliptic Scan'. */

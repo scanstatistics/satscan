@@ -72,7 +72,7 @@ void run_analysis(const std::string& analysis_name, std::string& results_user_di
     time_t startTime;
     time(&startTime);
     AppToolkit::ToolKitCreate(boost::unit_test::framework::master_test_suite().argv[0]);
-    AnalysisRunner(parameters, startTime, print).Execute();
+	AnalysisRunner(parameters, startTime, print).run();
     AppToolkit::ToolKitDestroy();
 }
 

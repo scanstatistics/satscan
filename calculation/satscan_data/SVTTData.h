@@ -21,7 +21,7 @@ class CSVTTData : public CSaTScanData {
     virtual void        SetProbabilityModel();
 
   protected:
-    virtual void        ReadDataFromFiles();
+    virtual void        PostDataRead();
     virtual void        RemoveClusterSignificance(const CCluster& Cluster);
     virtual void        SetIntervalStartTimes();
 

@@ -9,7 +9,7 @@ stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
  ,boost::posix_time::ptime CurrentTime
  ,PrintQueue & rPrintDirection
- ,AnalysisRunner & rRunner
+ ,AnalysisExecution & rExecution
  ,unsigned int num_replica
  ,bool isPowerStep
  , unsigned int iteration
@@ -19,7 +19,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
- , grRunner(rRunner)
+ , grExecution(rExecution)
  , guiJobCount(num_replica)
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
@@ -102,7 +102,7 @@ unsigned int stsMCSimJobSource::GetSuccessfullyCompletedJobCount() const
 {
   unsigned int uiResult = guiUnregisteredJobLowerBound-1;
   if (AutoAbortConditionExists())
-     uiResult = grRunner.gSimVars.get_sim_count();
+     uiResult = grExecution._sim_vars.get_sim_count();
   else
     uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
   return uiResult;
@@ -223,7 +223,7 @@ void stsMCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, par
          RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
          gmapOverflowResults.erase(gmapOverflowResults.begin());
          ++guiNextProcessingJobId;
-         if (grRunner.gSimVars.get_llr_counters().front().second >= grRunner.gParameters.GetExecuteEarlyTermThreshold()) {
+         if (grExecution._sim_vars.get_llr_counters().front().second >= grExecution._parameters.GetExecuteEarlyTermThreshold()) {
             //auto-abort is triggered
             gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbortConditionExists;
             ReleaseAutoAbortCheckResources();
@@ -315,12 +315,12 @@ void stsMCSimJobSource::WriteResultToStructures(successful_result_type const & r
   try
   {
     //update most likely clusters given latest simulated loglikelihood ratio
-    grRunner._clusterRanker.update(rResult);
+    grExecution._clusterRanker.update(rResult);
     //update significance indicator
-    grRunner.UpdateSignificantRatiosList(rResult);
+	grExecution.updateSignificantRatiosList(rResult);
     if (gRatioWriter.get()) gRatioWriter->Write(rResult);
-    grRunner.gSimVars.add_llr(rResult);
-    grRunner.gSimVars.increment_sim_count();
+	grExecution._sim_vars.add_llr(rResult);
+	grExecution._sim_vars.increment_sim_count();
   }
   catch (prg_exception & e)
   {

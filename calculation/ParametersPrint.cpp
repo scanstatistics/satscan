@@ -141,6 +141,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintClusterRestrictionsParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
+		PrintDrilldownParameters(fp);
         PrintBorderAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
         PrintSpatialOutputParameters(fp);
@@ -532,6 +533,40 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
         throw;
     }
 }
+
+void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
+	SettingContainer_t settings;
+	std::string buffer;
+
+	try {
+		bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL;
+		permitsStandard &= !gParameters.UseMetaLocationsFile();
+		bool permitsBernoulli = gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+		permitsBernoulli &= !gParameters.UseMetaLocationsFile();
+		if (permitsStandard || permitsBernoulli) {
+			if (permitsStandard)
+				settings.push_back(std::make_pair("Standard Drilldown on Detected Clusters", (gParameters.getPerformStandardDrilldown() ? "Yes" : "No")));
+			if (permitsBernoulli)
+				settings.push_back(std::make_pair("Bernoulli Drilldown on Detected Clusters", (gParameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
+			if (gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()) {
+				settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumLocationsCluster())));
+				settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumCasesCluster())));
+				settings.push_back(std::make_pair("P-Value Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownPvalueCutoff())));
+				if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
+					settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
+				}
+			}
+			for (std::vector<std::string>::const_iterator itr=gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
+				settings.push_back(std::make_pair("Drilldown Results File", *itr));
+		}
+		WriteSettingsContainer(settings, "Cluster Drilldown", fp);
+	}
+	catch (prg_exception& x) {
+		x.addTrace("PrintDrilldownParameters()", "ParametersPrint");
+		throw;
+	}
+}
+
 
 /** Prints 'Elliptic Scan' parameters to file stream. */
 void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {

@@ -2858,7 +2858,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 154, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
@@ -3265,7 +3265,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _timeAggregationDayRadioButton;
     private javax.swing.JPanel _timeAggregationGroup;
     private javax.swing.JLabel _timeAggregationLengthLabel;
-    private javax.swing.JTextField _timeAggregationLengthTextField;
+    public javax.swing.JTextField _timeAggregationLengthTextField;
     private javax.swing.JRadioButton _timeAggregationMonthRadioButton;
     private javax.swing.JLabel _timeAggregationUnitsLabel;
     private javax.swing.JRadioButton _timeAggregationYearRadioButton;

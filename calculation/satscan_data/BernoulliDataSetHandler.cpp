@@ -183,6 +183,12 @@ bool BernoulliDataSetHandler::ReadData() {
   return true;
 }
 
+// Removes data set at index -- this is a specialized function and with specialized purpose in BernoulliAnalysisDrilldown.
+void BernoulliDataSetHandler::removeDataSet(size_t iSetIndex) {
+	gvDataSets.kill(gvDataSets.begin() + iSetIndex);
+	gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + iSetIndex);
+}
+
 /** Allocates randomizers for each dataset. There are currently 3 randomization types
     for the Bernoulli model: null hypothesis, purely temporal optimized null hypothesis and
     file source. */

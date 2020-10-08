@@ -227,8 +227,15 @@ public class Parameters implements Cloneable {
     
     private int                             _minimum_high_rate_cases=2; /* minimum number of cases in cluster when scanning high rates */
     
-    private boolean                        _output_google_map=false;
-    private String                         _google_maps_api_key="";
+    private boolean                         _output_google_map=false;
+    private String                          _google_maps_api_key="";
+    
+    private boolean                         _perform_standard_drilldown=false;
+    private boolean                         _perform_bernoulli_drilldown=false;
+    private int                             _drilldown_minimum_locations=2;
+    private int                             _drilldown_minimum_cases=10;
+    private double                          _drilldown_pvalue_cutoff=0.05;
+    private boolean                         _drilldown_adjust_weekly_trends=false;
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -296,6 +303,19 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public boolean getPerformStandardDrilldown() { return _perform_standard_drilldown; }
+    public void setPerformStandardDrilldown(boolean b) { _perform_standard_drilldown = b; }
+    public boolean getPerformBernoulliDrilldown() { return _perform_bernoulli_drilldown; }
+    public void setPerformBernoulliDrilldown(boolean b) { _perform_bernoulli_drilldown = b; }
+    public int getDrilldownMinimumLocationsCluster() { return _drilldown_minimum_locations; }
+    public void setDrilldownMinimumLocationsCluster(int u) { _drilldown_minimum_locations = u; }
+    public int getDrilldownMinimumCasesCluster() { return _drilldown_minimum_cases; }
+    public void setDrilldownMinimumCasesCluster(int u) { _drilldown_minimum_cases = u; }
+    public double getDrilldownPvalueCutoff() { return _drilldown_pvalue_cutoff; }
+    public void setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+    public boolean getDrilldownAdjustWeeklyTrends() { return _drilldown_adjust_weekly_trends; }
+    public void setDrilldownAdjustWeeklyTrends(boolean b) { _drilldown_adjust_weekly_trends = b; }    
+    
     public boolean getOutputGoogleMapsFile() { return _output_google_map; }
     public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
     public String getGoogleMapsApiKey() { return _google_maps_api_key; }
@@ -503,6 +523,13 @@ public class Parameters implements Cloneable {
         
         if (_output_google_map != rhs._output_google_map) return false;
         if (!_google_maps_api_key.equals(rhs._google_maps_api_key)) return false;
+        
+        if (_perform_standard_drilldown != rhs._perform_standard_drilldown) return false;
+        if (_perform_bernoulli_drilldown != rhs._perform_bernoulli_drilldown) return false;
+        if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
+        if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
+        if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
+        if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
 
         return true;
     }

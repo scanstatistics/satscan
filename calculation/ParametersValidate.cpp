@@ -17,7 +17,7 @@ const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting"
 
 /** Validates that given current state of settings, parameters and their relationships
     with other parameters are correct. Errors are sent to print direction and*/
-bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
+bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileValidation) const {
     bool bValid=true;
 
     try {
@@ -58,11 +58,13 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
         bValid &= ValidateDateParameters(PrintDirection);
         bValid &= ValidateSpatialParameters(PrintDirection);
         bValid &= ValidateContinuousPoissonParameters(PrintDirection);
-        bValid &= ValidateFileParameters(PrintDirection);
+		if (!excludeFileValidation)
+			bValid &= ValidateFileParameters(PrintDirection);
         bValid &= ValidateOutputOptionParameters(PrintDirection);
         bValid &= ValidateRangeParameters(PrintDirection);
         bValid &= ValidateIterativeScanParameters(PrintDirection);
         bValid &= ValidateInferenceParameters(PrintDirection);
+		bValid &= ValidateDrilldownParameters(PrintDirection);
         bValid &= ValidateBorderAnalysisParameters(PrintDirection);
         bValid &= ValidateEllipseParameters(PrintDirection);
         bValid &= ValidateSimulationDataParameters(PrintDirection);
@@ -248,6 +250,67 @@ bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, Parameter
         throw;
     }
     return bValid;
+}
+
+bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection) const {
+	bool bValid = true;
+
+	if (!(gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()))
+		return bValid;
+
+	if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis())) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe standard cluster drilldown is not implemented for %s analysis.\n",
+			BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+		return bValid;
+	}
+	if (gParameters.getPerformBernoulliDrilldown() && 
+		!(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
+			BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+		return bValid;
+	}
+	if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", BasePrint::P_PARAMERROR);
+	}
+	if (gParameters.getDrilldownMinimumLocationsCluster() < 2) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe minimum number of locations in detected cluster for drilldown cannot be less than 2.\n", BasePrint::P_PARAMERROR);
+	}
+	if (gParameters.getDrilldownMinimumCasesCluster() < 10) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR);
+	}
+	double cutoff = gParameters.getDrilldownPvalueCutoff();
+	if (cutoff <= 0.0 || 1.0 <= cutoff) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR);
+	}
+	if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
+		if (gParameters.GetNumDataSets() > 1) {
+			bValid = false;
+			PrintDirection.Printf("%s:\nThe adjustment for weekly trends, with the purely spatial Beroulli drilldown, cannot be performed with multiple data sets.\n",
+				BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+		}
+		if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
+			bValid = false;
+			PrintDirection.Printf("%s:\nThe adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.\n",
+				BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+		}
+		double dStudyPeriodLengthInUnits = ceil(
+			CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+			DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()), gParameters.GetTimeAggregationUnitsType(), 1)
+		);
+		// Primary analysis must adhere to study period restriction length.
+		if (gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
+			PrintDirection.Printf("%s:\nThe adjustment for day of week, in the purely spatial Beroulli drilldown, cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+			return false;
+		}
+	}
+
+	return bValid;
 }
 
 /** Validates ellipse parameters if number of ellipses greater than zero.

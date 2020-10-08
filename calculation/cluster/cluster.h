@@ -59,6 +59,7 @@ class CCluster {
     int                           m_nFirstInterval;     // Index # of first time interval
     int                           m_nLastInterval;      // Index # of last time interval
 
+	int                           getClusterLength() const { return m_nLastInterval - m_nFirstInterval + 1;	}
     virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
     virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
@@ -107,7 +108,7 @@ class CCluster {
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }//= 0;
+    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
@@ -116,8 +117,9 @@ class CCluster {
     virtual tract_t               GetNumTractsInCluster() const {return m_nTracts;}
     virtual tract_t               GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const;
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
-    virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetObservedCountForTract().", "GetObservedCountForTract()"); return 0; }//= 0;
-    virtual count_t               GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const;
+    virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetObservedCountForTract().", "GetObservedCountForTract()"); return 0; }
+	virtual count_t               GetCountForTractOutside(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex = 0) const { throw prg_error("GetCountForTractOutside().", "GetCountForTractOutside()"); return 0; }
+	virtual count_t               GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const;
     double                        GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;

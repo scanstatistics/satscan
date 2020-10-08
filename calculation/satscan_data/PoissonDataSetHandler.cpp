@@ -369,7 +369,11 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gParameters.getInputSource(POPFILE, DataSet.getSetIndex()), gPrint));
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
-        bEmpty=false;
+		// Skip ignored records based on locations.
+		DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIdentifierIndex);
+		if (eStatus == DataSetHandler::Ignored)
+			continue;
+		bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Source->GetValueAt(uPopulationDateIndex)) {
             gPrint.Printf("Error: Record %ld of the %s is missing the date.\n",

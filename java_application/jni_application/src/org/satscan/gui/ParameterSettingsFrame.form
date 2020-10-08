@@ -993,7 +993,7 @@
                               <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="_analysisTypeGroup" alignment="1" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="1" pref="0" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="1" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace pref="154" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
@@ -1713,6 +1713,7 @@
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationLengthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_timeAggregationLengthTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _timeAggregationLengthTextField.setText(&quot;1&quot;);&#xa;    }&#xa;});&#xa;_timeAggregationLengthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_timeAggregationLengthTextField, e, 6);&#xa;    }&#xa;});&#xa;_timeAggregationLengthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_aggregrationUnitsLabel">

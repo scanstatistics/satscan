@@ -25,6 +25,7 @@ class ParametersValidate {
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
     bool                ValidateInferenceParameters(BasePrint & PrintDirection) const;
+	bool                ValidateDrilldownParameters(BasePrint & PrintDirection) const;
     bool                ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
@@ -44,7 +45,7 @@ class ParametersValidate {
   public:
     ParametersValidate(const CParameters& Parameters): gParameters(Parameters) {}
 
-    bool                Validate(BasePrint& PrintDirection) const;
+    bool                Validate(BasePrint& PrintDirection, bool excludeFileValidation=false) const;
 };
 //******************************************************************************
 #endif

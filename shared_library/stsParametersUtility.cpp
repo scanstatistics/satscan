@@ -671,6 +671,30 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputGoogleMapsFile());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPerformStandardDrilldown", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformStandardDrilldown());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPerformBernoulliDrilldown", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformBernoulliDrilldown());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDrilldownMinimumLocationsCluster", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDrilldownMinimumLocationsCluster());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDrilldownMinimumCasesCluster", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDrilldownMinimumCasesCluster());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDrilldownPvalueCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getDrilldownPvalueCutoff());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDrilldownAdjustWeeklyTrends", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getDrilldownAdjustWeeklyTrends());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1338,6 +1362,30 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputGoogleMapsFile", "()Z");
   Parameters.setOutputGoogleMapsFile(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPerformStandardDrilldown", "()Z");
+  Parameters.setPerformStandardDrilldown(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPerformBernoulliDrilldown", "()Z");
+  Parameters.setPerformBernoulliDrilldown(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDrilldownMinimumLocationsCluster", "()I");
+  Parameters.setDrilldownMinimumLocationsCluster(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDrilldownMinimumCasesCluster", "()I");
+  Parameters.setDrilldownMinimumCasesCluster(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDrilldownPvalueCutoff", "()D");
+  Parameters.setDrilldownPvalueCutoff(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDrilldownAdjustWeeklyTrends", "()Z");
+  Parameters.setDrilldownAdjustWeeklyTrends(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

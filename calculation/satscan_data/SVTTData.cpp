@@ -143,10 +143,9 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
-/** Calls base class CSaTScanData::ReadDataFromFiles() then sets non-cummulative case data strcutures. */
-void CSVTTData::ReadDataFromFiles() {
+void CSVTTData::PostDataRead() {
   try {
-    CSaTScanData::ReadDataFromFiles();
+    CSaTScanData::PostDataRead();
     std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
     std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
     std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_NC));
@@ -172,7 +171,7 @@ void CSVTTData::ReadDataFromFiles() {
                                    "       Time trend is infinite.", 
                                    std::distance(gDataSets->getDataSets().begin(), itr) + 1);
           case AbstractTimeTrend::NOT_CONVERGED :
-            throw prg_error("The time trend in real data did not converge.\n","ReadDataFromFiles()");
+            throw prg_error("The time trend in real data did not converge.\n","PostDataRead()");
           case AbstractTimeTrend::CONVERGED          :
           default                             : break; 
        }
@@ -187,7 +186,7 @@ void CSVTTData::ReadDataFromFiles() {
     }
   }
   catch (prg_exception& x) {
-    x.addTrace("ReadDataFromFiles()","CSVTTData");
+    x.addTrace("PostDataRead()","CSVTTData");
     throw;
   }
 }

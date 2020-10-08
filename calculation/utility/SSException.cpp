@@ -171,6 +171,36 @@ region_exception::~region_exception() throw() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
+drilldown_exception::drilldown_exception() : resolvable_error() {}
+
+drilldown_exception::drilldown_exception(const char * format, ...) : resolvable_error() {
+	try {
+#ifdef _MSC_VER
+		std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+		va_list varArgs;
+		va_start(varArgs, format);
+		vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+		va_end(varArgs);
+#else
+		std::vector<char> temp(1);
+		va_list varArgs;
+		va_start(varArgs, format);
+		size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
+		va_end(varArgs);
+		temp.resize(iStringLength + 1);
+		va_start(varArgs, format);
+		vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
+		va_end(varArgs);
+#endif
+		_what = &temp[0];
+	}
+	catch (...) {}
+}
+
+drilldown_exception::~drilldown_exception() throw() {}
+
+////////////////////////////////////////////////////////////////////////////////
+
 char * out_of_memory_cache = 0;
 
 void reserve_memory_cache() {

@@ -102,15 +102,38 @@ void SaTScanDataReader::Read() {
       case UNIFORMTIME          : bReadSuccess = ReadUniformTimeData(); break;
       case HOMOGENEOUSPOISSON   : bReadSuccess = ReadHomogeneousPoissonData(); break;
       default :
-        throw prg_error("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
+        throw prg_error("Unknown probability model type '%d'.","Read()", gParameters.GetProbabilityModelType());
     };
     if (!bReadSuccess)
       throw resolvable_error("\nProblem encountered when reading the data from the input files.");
   }
   catch (prg_exception& x) {
-    x.addTrace("ReadDataFromFiles()","SaTScanDataReader");
+    x.addTrace("Read()","SaTScanDataReader");
     throw;
   }
+}
+
+void SaTScanDataReader::ReadBernoulliDrilldown() {
+	bool  bReadSuccess = true;
+
+	try {
+		// First calculate time interval indexes, these values will be utilized by data read process.
+		gDataHub.CalculateTimeIntervalIndexes();
+		// Read coordinates, max circle and grid file - skip data files.
+		if (!ReadCoordinatesFile())
+			bReadSuccess = false;
+		gDataHub.gDataSets.reset(new BernoulliDataSetHandler(gDataHub, gPrint));
+		gDataHub.gDataSets->SetRandomizers();
+		if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+			bReadSuccess = false;
+		if (gParameters.UseSpecialGrid() && !ReadGridFile())
+			bReadSuccess = false;
+		if (!bReadSuccess)
+			throw resolvable_error("\nProblem encountered when reading the data from the input files.");
+	} catch (prg_exception& x) {
+		x.addTrace("ReadBernoulliDrilldown()", "SaTScanDataReader");
+		throw;
+	}
 }
 
 /** Read the relative risks file
@@ -277,7 +300,7 @@ bool SaTScanDataReader::ReadBernoulliData() {
     function will use this information to confirm that coordinates scanned is
     not less than defined dimensions. The reason we don't check scanned dimensions
     here is that a generic error message could not be implemented. */
-bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
+bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, BasePrint& Print, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
   const char  * pCoordinate;
   int           i;
 
@@ -285,15 +308,15 @@ bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector
      if ((pCoordinate = Source.GetValueAt(iWordOffSet)) != 0) {
        if (!string_to_type<double>(pCoordinate, vCoordinates[i])) {
          //unable to read word as double, print error to print direction and return false
-         gPrint.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
-                       BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+		 Print.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
+                      BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), Print.GetImpliedFileTypeString().c_str());
          //we can be specific about which dimension we are attending to read to
          if (i < 2)
-           gPrint.Printf("%s-coordinate.\n", BasePrint::P_READERROR, (i == 0 ? "x" : "y"));
+			Print.Printf("%s-coordinate.\n", BasePrint::P_READERROR, (i == 0 ? "x" : "y"));
          else if (vCoordinates.size() == 3)
-           gPrint.Printf("z-coordinate.\n", BasePrint::P_READERROR);
+			Print.Printf("z-coordinate.\n", BasePrint::P_READERROR);
          else
-           gPrint.Printf("z%d-coordinate.\n", BasePrint::P_READERROR, i - 1);
+            Print.Printf("z%d-coordinate.\n", BasePrint::P_READERROR, i - 1);
          return false;
        } else {
          iScanCount++; //track num successful scans, caller of function wants this information
@@ -372,7 +395,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
            vCoordinates.resize(iScanCount - 1, 0);
          }
          //read and validate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Source, vCoordinates, iScanCount, 1)) {
+         if (! ReadCartesianCoordinates(Source, gPrint, vCoordinates, iScanCount, 1)) {
            bValid = false;
            continue;
          }
@@ -437,7 +460,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
     gTractHandler.setCoordinateDimensions(3/*for conversion*/);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         bEmpty=false;
-        if (! ReadLatitudeLongitudeCoordinates(Source, vCoordinates, 1, "coordinates")) {
+        if (! ReadLatitudeLongitudeCoordinates(Source, gPrint, vCoordinates, 1, "coordinates")) {
            bValid = false;
            continue;
         }
@@ -539,7 +562,7 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
         //there are records with data, but not necessarily valid
         bEmpty = false;
          //read and vaidate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Source, vCoordinates, iScanCount, 0)) {
+         if (! ReadCartesianCoordinates(Source, gPrint, vCoordinates, iScanCount, 0)) {
            bValid = false;
            continue;
          }
@@ -687,7 +710,7 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty=false;
-        if (! ReadLatitudeLongitudeCoordinates(Source, vCoordinates, 0, "grid")) {
+        if (! ReadLatitudeLongitudeCoordinates(Source, gPrint, vCoordinates, 0, "grid")) {
            bValid = false;
            continue;
         }
@@ -743,47 +766,46 @@ bool SaTScanDataReader::ReadHomogeneousPoissonData() {
     Returns indication of whether words in passed string could be converted to
     coordinates. Checks that coordinates are in range and converts to cartesian
     coordinates. */
-bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates,
-                                                         short iWordOffSet, const char * sSourceFile) {
+bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, BasePrint & Print, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile) {
   const char  * pCoordinate;
   double        dLatitude, dLongitude;
 
   //read latitude, validating that string can be converted to double
   if ((pCoordinate = Source.GetValueAt(iWordOffSet)) != 0) {
     if (!string_to_type<double>(pCoordinate, dLatitude)) {
-      gPrint.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the latitude coordinate.\n",
+      Print.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the latitude coordinate.\n",
                     BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), sSourceFile);
       return false;
     }
   }
   else {
-    gPrint.Printf("Error: Record %d in the %s file is missing the latitude and longitude coordinates.\n",
+    Print.Printf("Error: Record %d in the %s file is missing the latitude and longitude coordinates.\n",
                   BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), sSourceFile);
     return false;
   }
   //read longitude, validating that string can be converted to double
   if ((pCoordinate = Source.GetValueAt(++iWordOffSet)) != 0) {
     if (!string_to_type<double>(pCoordinate, dLongitude)) {
-      gPrint.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the longitude coordinate.\n",
+      Print.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the longitude coordinate.\n",
                     BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), sSourceFile);
       return false;
     }
   }
   else {
-    gPrint.Printf("Error: Record %ld in the %s file is missing the longitude coordinate.\n",
+    Print.Printf("Error: Record %ld in the %s file is missing the longitude coordinate.\n",
                   BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), sSourceFile);
     return false;
   }
   //validate range of latitude value
   if ((fabs(dLatitude) > 90.0)) {
-    gPrint.Printf("Error: Latitude coordinate %lf, for record %ld in the %s file, is out of range.\n"
+    Print.Printf("Error: Latitude coordinate %lf, for record %ld in the %s file, is out of range.\n"
                   "       Latitude must be between -90 and 90.\n",
                   BasePrint::P_READERROR, dLatitude, Source.GetCurrentRecordIndex(), sSourceFile);
     return false;
   }
   //validate range of longitude value
   if ((fabs(dLongitude) > 180.0)) {
-    gPrint.Printf("Error: Longitude coordinate %lf, for record %ld in the %s file, is out of range.\n"
+    Print.Printf("Error: Longitude coordinate %lf, for record %ld in the %s file, is out of range.\n"
                   "       Longitude must be between -180 and 180.\n",
                   BasePrint::P_READERROR, dLongitude, Source.GetCurrentRecordIndex(), sSourceFile);
     return false;
