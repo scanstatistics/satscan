@@ -24,6 +24,7 @@ import org.satscan.gui.utils.JHyperLink;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.xmlbeans.impl.util.Base64;
 
 /** @author  Hostovic */
@@ -44,6 +45,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private static String CARD_NOUPDATE = "noUpdate";
     private static String CARD_DOWNLOAD = "download";
     private static String CARD_FAILED = "failed";
+    private static String CARD_UPDATEINFOONLY = "updateinfoonly";
 
     public static boolean _runUpdateOnTerminate = false;
     public static File _updaterFilename = null;
@@ -116,12 +118,23 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
      */
     private void showStatus() {
         try {
-            _applicationFrame.softwareUpdateAvailable.setVisible(_updateExists);
-            _applicationFrame._versionUpdateToolButton.setVisible(!_updateExists);
+            /* Application updater is not working currently -- only inform user about update. */
+            if (SystemUtils.IS_OS_WINDOWS) {
+                _applicationFrame.softwareUpdateAvailable.setVisible(false);
+                _applicationFrame._versionUpdateToolButton.setVisible(true);
+            } else {
+                _applicationFrame.softwareUpdateAvailable.setVisible(_updateExists);
+                _applicationFrame._versionUpdateToolButton.setVisible(!_updateExists);
+            }
             CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
             if (_updateExists) {
-                _updateLabel.setText("SaTScan " + getNewVersionNumber() + " is available. Do you want to install now?");
-                cl.show(_cardsPanel, CARD_UPDATE);                
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    cl.show(_cardsPanel, CARD_UPDATEINFOONLY);
+                    _updateInfoOnlyText.setText("Newer version " + getNewVersionNumber() + " is available at:");
+                } else {
+                    _updateLabel.setText("SaTScan " + getNewVersionNumber() + " is available. Do you want to install now?");
+                    cl.show(_cardsPanel, CARD_UPDATE);
+                }
             } else if (_error_code > 0){
                 errorText.setText(getErrorText(_error_code));
                 cl.show(_cardsPanel, CARD_FAILED);
@@ -177,6 +190,10 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         errorText = errorText = new javax.swing.JLabel(getErrorText(0));
         jLabel6 = new javax.swing.JLabel();
         webSiteLabel = new JHyperLink(AppConstants.getWebSite());
+        _updateInfoOnlyPanel = new javax.swing.JPanel();
+        _updateInfoOnlyText = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        webSiteLabel1 = new JHyperLink(AppConstants.getWebSite());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SaTScan Update");
@@ -367,6 +384,50 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         );
 
         _cardsPanel.add(failedPanel, "failed");
+
+        _updateInfoOnlyText.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        _updateInfoOnlyText.setText("Newer version 1.1.0 is available at:");
+
+        jButton1.setText("Ok");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setVisible(false);
+            }
+        });
+
+        ((JHyperLink)webSiteLabel1).addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+                BareBonesBrowserLaunch.openURL(webSiteLabel1.getText());
+            }
+        } );
+
+        javax.swing.GroupLayout _updateInfoOnlyPanelLayout = new javax.swing.GroupLayout(_updateInfoOnlyPanel);
+        _updateInfoOnlyPanel.setLayout(_updateInfoOnlyPanelLayout);
+        _updateInfoOnlyPanelLayout.setHorizontalGroup(
+            _updateInfoOnlyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_updateInfoOnlyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_updateInfoOnlyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_updateInfoOnlyText, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _updateInfoOnlyPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton1))
+                    .addComponent(webSiteLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _updateInfoOnlyPanelLayout.setVerticalGroup(
+            _updateInfoOnlyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_updateInfoOnlyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_updateInfoOnlyText, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(webSiteLabel1)
+                .addGap(30, 30, 30)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _cardsPanel.add(_updateInfoOnlyPanel, "updateinfoonly");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -584,16 +645,20 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private javax.swing.JButton _noUpdateOkButton;
     private javax.swing.JPanel _noUpdatePanel;
     private javax.swing.JLabel _stepLabel;
+    private javax.swing.JPanel _updateInfoOnlyPanel;
+    private javax.swing.JLabel _updateInfoOnlyText;
     private javax.swing.JLabel _updateLabel;
     private javax.swing.JPanel _updatePanel;
     private javax.swing.JLabel errorText;
     private javax.swing.JPanel failedPanel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel webSiteLabel;
+    private javax.swing.JLabel webSiteLabel1;
     // End of variables declaration//GEN-END:variables
     /**
      * Download file information.
