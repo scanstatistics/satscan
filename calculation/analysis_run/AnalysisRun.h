@@ -182,7 +182,7 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
 			return new AnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
 		};
 
-		virtual const char                * getTypeIdentifier() { return "primary-analysis"; };
+		virtual const char                * getTypeIdentifier() { return "primary"; };
 };
 
 class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {
@@ -198,7 +198,7 @@ public:
 		return new BernoulliAnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
 	};
 
-	virtual const char                * getTypeIdentifier() { return "purelyspatial-bernoulli"; };
+	virtual const char                * getTypeIdentifier() { return "bernoulli"; };
 };
 
 /** Coordinates the execution of analysis defined by parameters. */

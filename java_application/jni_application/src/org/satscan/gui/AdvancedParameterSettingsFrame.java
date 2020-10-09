@@ -2472,6 +2472,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.ProbabilityModelType eModelType = _settings_window.getModelControlType();
         boolean bEnableGroup = (
             eAnalysisType == Parameters.AnalysisType.SPACETIME || 
+            eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
             eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL
         );
         // This feature is not implemented when using meta locations.
@@ -2481,7 +2482,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
         _drilldown_restrictions_group.setEnabled(bEnableGroup);
         _mainAnalysisDrilldown.setEnabled(bEnableGroup);
-        _purelySpatialDrilldown.setEnabled(eAnalysisType == Parameters.AnalysisType.SPACETIME  && (eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION));
+        _purelySpatialDrilldown.setEnabled(
+            (eAnalysisType == Parameters.AnalysisType.SPACETIME || eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME)  &&
+            (eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION)
+        );
         boolean mainSelected = _mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected();
         boolean bernoulliSelected = _purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected();
         boolean drilldownSelected = mainSelected || bernoulliSelected;

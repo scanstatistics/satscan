@@ -1525,7 +1525,7 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, unsigned int downlevel) {
 	std::string buffer;
 	FileName resultsFile(_base_output.c_str());
-	resultsFile.setExtension(printString(buffer, "-down%u-cluster%u-%s.txt", downlevel, supplementInfo.getClusterReportIndex(detectedCluster), getTypeIdentifier()).c_str());
+	resultsFile.setFileName(printString(buffer, "%s-down%u-cluster%u-%s", resultsFile.getFileName().c_str(), downlevel, supplementInfo.getClusterReportIndex(detectedCluster), getTypeIdentifier()).c_str());
 	_parameters.SetOutputFileName(resultsFile.getFullPath(buffer).c_str());
 }
 
@@ -1697,7 +1697,6 @@ void AbstractAnalysisDrilldown::execute() {
 						_print_direction.Printf("The main analysis drilldown did not execute:\n%s\n", BasePrint::P_STDOUT, x.what());
 					}
 				}
-				/* This is technically a valid option in a AnalysisDrilldown drilldown not sure if it should be done and how to present option to user.
 				if (_parameters.getPerformBernoulliDrilldown()) {
 					try {
 						_print_direction.Printf("Performing %u%s purely spatial Bernoulli drilldown\n", BasePrint::P_STDOUT, _downlevel + 1, ordinal_suffix(_downlevel + 1));
@@ -1707,7 +1706,7 @@ void AbstractAnalysisDrilldown::execute() {
 					} catch (drilldown_exception& x) {
 						_print_direction.Printf("The purely spatial Bernoulli drilldown did not execute:\n%s\n", BasePrint::P_STDOUT, x.what());
 					}
-				} */
+				}
 			}
 		}
 	}
@@ -1729,8 +1728,6 @@ AnalysisDrilldown::AnalysisDrilldown(
 		throw prg_error("AnalysisDrilldown is not implemented for Analysis Type '%d'.", "constructor()", _parameters.GetAnalysisType());
 	// Create new data hub that is will be only data from detected cluster.
 	_data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
-	// Turn this off for now but technically it is potentially valid to carry the purely spatial Bernoulli drilldown in this path as well.
-	_parameters.setPerformBernoulliDrilldown(false);
 	// Assign output file for this drilldown analysis.
 	setOutputFilename(detectedCluster, supplementInfo, downlevel);
 	// Create new grid and coordinates file from locations defined in detected cluster.
@@ -1812,7 +1809,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 			tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
 			tract_t drilldown_tract = _data_hub->GetTInfo()->getLocationIndex(source_data_hub.GetTInfo()->getIdentifier(tTract));
 			// record number of cases by interval for current tract - stratifying by day of week.
-			for (int interval=detectedCluster.m_nFirstInterval; interval <= detectedCluster.m_nLastInterval; ++interval)
+			for (int interval=detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
 				setCases[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
 			// record number of controls by interval for current tract - stratifying by day of week.
 			for (int interval=0; interval < detectedCluster.m_nFirstInterval; ++interval)
