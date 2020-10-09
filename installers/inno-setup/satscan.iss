@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SaTScan"
-#define MyAppVersion "9.7"
+#define MyAppVersion "9.7 Alpha 1 Build 1"
 #define MyAppPublisher "Information Management Services, Ins."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"
@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{AD0046EA-ADC2-4AD7-B623-F53C00CDAEC9}
+AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -55,7 +55,7 @@ Source: "Q:\build.area\satscan\installers\documents\eula.html"; DestDir: "{app}"
 Source: "Q:\build.area\satscan\installers\documents\SaTScan_Users_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "Q:\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "Q:\build.area\satscan\shared_library\Win32\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "Q:\build.area\satscan\shared_library\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "Q:\build.area\satscan\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.jar"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

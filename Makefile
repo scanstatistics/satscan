@@ -42,7 +42,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBAS
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lz -lm -Wl,-Bdynamic -lrt -lpthread
 # static libgcc flags
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread
