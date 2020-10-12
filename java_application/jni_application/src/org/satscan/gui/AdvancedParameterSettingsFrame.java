@@ -2470,6 +2470,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void enableDrilldownGroup() {
         Parameters.AnalysisType eAnalysisType = _settings_window.getAnalysisControlType();
         Parameters.ProbabilityModelType eModelType = _settings_window.getModelControlType();
+        
         boolean bEnableGroup = (
             eAnalysisType == Parameters.AnalysisType.SPACETIME || 
             eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
@@ -2483,21 +2484,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restrictions_group.setEnabled(bEnableGroup);
         _mainAnalysisDrilldown.setEnabled(bEnableGroup);
         _purelySpatialDrilldown.setEnabled(
+            bEnableGroup &&
             (eAnalysisType == Parameters.AnalysisType.SPACETIME || eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME)  &&
             (eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION)
         );
         boolean mainSelected = _mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected();
         boolean bernoulliSelected = _purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected();
         boolean drilldownSelected = mainSelected || bernoulliSelected;
-        _drilldown_restrictions.setEnabled(drilldownSelected);
-        _drilldown_restriction_cutoff_label.setEnabled(drilldownSelected);
+        _drilldown_restrictions.setEnabled(bEnableGroup && drilldownSelected);
+        _drilldown_restriction_cutoff_label.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_cutoff.setEnabled(drilldownSelected);
-        _drilldown_restriction_locations_label.setEnabled(drilldownSelected);
-        _drilldown_restriction_locations.setEnabled(drilldownSelected);
-        _drilldown_restriction_cases_label.setEnabled(drilldownSelected);
-        _drilldown_restriction_cases.setEnabled(drilldownSelected);
+        _drilldown_restriction_locations_label.setEnabled(bEnableGroup && drilldownSelected);
+        _drilldown_restriction_locations.setEnabled(bEnableGroup && drilldownSelected);
+        _drilldown_restriction_cases_label.setEnabled(bEnableGroup && drilldownSelected);
+        _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);
         // Adjustment by day of week is permitted for only purely spatia Bernoulli and one data set.
-        _drilldown_restriction_dow.setEnabled(bernoulliSelected && _inputDataSetsList.getModel().getSize() == 0);
+        _drilldown_restriction_dow.setEnabled(bEnableGroup && bernoulliSelected && _inputDataSetsList.getModel().getSize() == 0);
     }
     
     /**
