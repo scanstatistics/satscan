@@ -1522,10 +1522,12 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 
 /////////////////////////////// AbstractAnalysisDrilldown /////////////////////////////
 
-void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, unsigned int downlevel) {
+void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) {
 	std::string buffer;
+	// Update cluster path to include this cluster.
+	_cluster_path = printString(buffer, "%sC%u", _cluster_path.c_str(), supplementInfo.getClusterReportIndex(detectedCluster));
 	FileName resultsFile(_base_output.c_str());
-	resultsFile.setFileName(printString(buffer, "%s-down%u-cluster%u-%s", resultsFile.getFileName().c_str(), downlevel, supplementInfo.getClusterReportIndex(detectedCluster), getTypeIdentifier()).c_str());
+	resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s", resultsFile.getFileName().c_str(), getTypeIdentifier(), _cluster_path.c_str()).c_str());
 	_parameters.SetOutputFileName(resultsFile.getFullPath(buffer).c_str());
 }
 
@@ -1542,7 +1544,8 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
 	std::stringstream temp_coordinates_filename;
 	std::string temp_directory, buffer;
 	temp_coordinates_filename << GetUserTemporaryDirectory(temp_directory).c_str();
-	temp_coordinates_filename << "\\down" << _downlevel << "-cluster" << supplementInfo.getClusterReportIndex(detectedCluster) << "-" << getTypeIdentifier();
+	buffer = boost::filesystem::path::preferred_separator;
+	temp_coordinates_filename << buffer << "drilldown-" << getTypeIdentifier() << "-" << _cluster_path;
 	temp_coordinates_filename << "-" << RandomNumberGenerator(reinterpret_cast<long>(&detectedCluster)).GetRandomInteger() << extension;
 	filename = temp_coordinates_filename.str();
 	return filename;
@@ -1690,7 +1693,7 @@ void AbstractAnalysisDrilldown::execute() {
 							_downlevel + 1, ordinal_suffix(_downlevel + 1), 
 							execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster))
 						);
-						AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
+						AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
 						drilldown.execute();
 						_parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
 					} catch (drilldown_exception& x) {
@@ -1700,7 +1703,7 @@ void AbstractAnalysisDrilldown::execute() {
 				if (_parameters.getPerformBernoulliDrilldown()) {
 					try {
 						_print_direction.Printf("Performing %u%s purely spatial Bernoulli drilldown\n", BasePrint::P_STDOUT, _downlevel + 1, ordinal_suffix(_downlevel + 1));
-						BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
+						BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
 						drilldown.execute();
 						_parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
 					} catch (drilldown_exception& x) {
@@ -1721,15 +1724,15 @@ void AbstractAnalysisDrilldown::execute() {
 
 AnalysisDrilldown::AnalysisDrilldown(
 	const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, 
-	const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel
-): AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel) {
+	const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path
+): AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel, cluster_path) {
 	// Restrict to purely spatial or space-time analyses - ParametersValidate shold be guarding most invalid parameter settings.
 	if (!(_parameters.GetIsPurelySpatialAnalysis() || _parameters.GetIsSpaceTimeAnalysis()))
 		throw prg_error("AnalysisDrilldown is not implemented for Analysis Type '%d'.", "constructor()", _parameters.GetAnalysisType());
 	// Create new data hub that is will be only data from detected cluster.
 	_data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
 	// Assign output file for this drilldown analysis.
-	setOutputFilename(detectedCluster, supplementInfo, downlevel);
+	setOutputFilename(detectedCluster, supplementInfo);
 	// Create new grid and coordinates file from locations defined in detected cluster.
 	createReducedGridFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
 	createReducedCoodinatesFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
@@ -1743,8 +1746,8 @@ AnalysisDrilldown::AnalysisDrilldown(
 
 BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
-	const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel
-) : AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel) {
+	const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path
+) : AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel, cluster_path) {
 	// The calling analysis is restricted to space-time analyses only  - ParametersValidate shold be guarding most invalid parameter settings.
 	if (!source_parameters.GetIsSpaceTimeAnalysis())
 		throw prg_error("BernoulliAnalysisDrilldown is not implemented for Analysis Type '%d'.", "BernoulliAnalysisDrilldown()", source_parameters.GetAnalysisType());
@@ -1775,7 +1778,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	// Create new data hub that is only the data from detected cluster.
 	_data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
 	// Assign output file for this drilldown analysis.
-	setOutputFilename(detectedCluster, supplementInfo, downlevel);
+	setOutputFilename(detectedCluster, supplementInfo);
 	// Create new grid and coordinates file from locations defined in detected cluster.
 	createReducedGridFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
 	createReducedCoodinatesFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
@@ -1901,6 +1904,8 @@ void AnalysisRunner::run() {
 
 		// Perform analysis drilldowns - if requested by user.
 		if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
+			// Suppress warnings for drilldown anaylses.
+			_print_direction.SetSuppressWarnings(true);
 			const MostLikelyClustersContainer & mlc = execution->getLargestMaximaClusterCollection();
 			for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
 				const CCluster& cluster = mlc.GetCluster(c);

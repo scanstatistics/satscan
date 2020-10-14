@@ -4057,47 +4057,44 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_mainAnalysisDrilldown" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <Component id="_drilldown_restrictions" min="-2" pref="349" max="-2" attributes="0"/>
-                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" attributes="0">
-                                          <Component id="_mainAnalysisDrilldown" min="-2" pref="304" max="-2" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="_purelySpatialDrilldown" pref="302" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Group type="102" attributes="0">
+                                      <Component id="_drilldown_restrictions" alignment="0" min="-2" pref="349" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="_drilldown_restriction_cases_label" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="_drilldown_restriction_locations_label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="_drilldown_restriction_locations" max="32767" attributes="0"/>
-                                              <Component id="_drilldown_restriction_cases" min="-2" pref="57" max="-2" attributes="0"/>
+                                              <Group type="102" alignment="1" attributes="0">
+                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                                      <Component id="_drilldown_restriction_cases_label" alignment="0" max="32767" attributes="0"/>
+                                                      <Component id="_drilldown_restriction_locations_label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                      <Component id="_drilldown_restriction_locations" max="32767" attributes="0"/>
+                                                      <Component id="_drilldown_restriction_cases" min="-2" pref="57" max="-2" attributes="0"/>
+                                                  </Group>
+                                              </Group>
+                                              <Group type="102" alignment="1" attributes="0">
+                                                  <Component id="_drilldown_restriction_cutoff_label" min="-2" pref="151" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="_drilldown_restriction_cutoff" min="-2" pref="57" max="-2" attributes="1"/>
+                                              </Group>
                                           </Group>
                                       </Group>
-                                      <Group type="102" attributes="0">
-                                          <Component id="_drilldown_restriction_cutoff_label" min="-2" pref="151" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_purelySpatialDrilldown" min="-2" pref="222" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_drilldown_restriction_cutoff" min="-2" pref="57" max="-2" attributes="1"/>
+                                          <Component id="_drilldown_restriction_dow" min="-2" pref="241" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="_drilldown_restriction_dow" alignment="0" max="32767" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="161" max="32767" attributes="0"/>
                               </Group>
                           </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -4105,11 +4102,13 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_mainAnalysisDrilldown" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_purelySpatialDrilldown" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_mainAnalysisDrilldown" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="_purelySpatialDrilldown" max="32767" attributes="0"/>
+                              <Component id="_drilldown_restriction_dow" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="_drilldown_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -4126,9 +4125,7 @@
                               <Component id="_drilldown_restriction_cases_label" alignment="3" min="-2" pref="12" max="-2" attributes="0"/>
                               <Component id="_drilldown_restriction_cases" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_drilldown_restriction_dow" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="95" max="32767" attributes="0"/>
+                          <EmptySpace pref="80" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -4155,7 +4152,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_drilldown_restriction_locations_label">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Required Minimum Locations:"/>
+                    <Property name="text" type="java.lang.String" value="Minimum Locations:"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_drilldown_restriction_locations">
@@ -4168,7 +4165,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_drilldown_restriction_cases_label">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Required Minimum Cases:"/>
+                    <Property name="text" type="java.lang.String" value="Minimum Cases:"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_drilldown_restriction_cases">
@@ -4181,7 +4178,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_drilldown_restriction_cutoff_label">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="P-Value Cut Off:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="P-Value Less Than Or Equal:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_drilldown_restriction_cutoff">
@@ -4199,7 +4196,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_drilldown_restriction_dow">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjust for day-of-week"/>
+                    <Property name="text" type="java.lang.String" value="With Day of Week Adjustment"/>
                   </Properties>
                 </Component>
               </SubComponents>

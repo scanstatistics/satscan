@@ -149,12 +149,14 @@ class AbstractAnalysisDrilldown {
 		unsigned int                        _downlevel;
 		std::vector<std::string>            _temp_files;
 		const std::string                 & _base_output;
+		std::string                         _cluster_path;
 
 	public:
-		AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel) :
-			_parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel){
+		AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
+			_parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel) {
 			// Record start time of drilldown start -- of course this excludes time reading data.
 			time(&_start_time);
+			_cluster_path = (cluster_path ? cluster_path.get() : "");
 		}
 		virtual ~AbstractAnalysisDrilldown();
 
@@ -165,7 +167,7 @@ class AbstractAnalysisDrilldown {
 		virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) = 0;
 		virtual const char                * getTypeIdentifier() = 0;
 		const CParameters                 & getParameters() const { return _parameters; }
-		virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, unsigned int downlevel);
+		virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
 		static bool                         shouldDrilldown(const CCluster& cluster, const CParameters& parameters, const SimulationVariables& simvars);
 };
 
@@ -174,7 +176,8 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
 	public:
 		AnalysisDrilldown(
 			const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
-			const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel
+			const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel,
+			boost::optional<std::string&> cluster_path = boost::none
 		);
 		virtual ~AnalysisDrilldown() {}
 
@@ -182,7 +185,7 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
 			return new AnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
 		};
 
-		virtual const char                * getTypeIdentifier() { return "primary"; };
+		virtual const char                * getTypeIdentifier() { return "std"; };
 };
 
 class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {
@@ -190,7 +193,8 @@ class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {
 public:
 	BernoulliAnalysisDrilldown(
 		const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
-		const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel=1
+		const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel=1,
+		boost::optional<std::string&> cluster_path = boost::none
 	);
 	virtual ~BernoulliAnalysisDrilldown() {}
 
@@ -198,7 +202,7 @@ public:
 		return new BernoulliAnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
 	};
 
-	virtual const char                * getTypeIdentifier() { return "bernoulli"; };
+	virtual const char                * getTypeIdentifier() { return "bin"; };
 };
 
 /** Coordinates the execution of analysis defined by parameters. */

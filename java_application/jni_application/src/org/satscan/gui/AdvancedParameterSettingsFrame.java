@@ -5792,7 +5792,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _drilldown_restriction_locations_label.setText("Required Minimum Locations:");
+        _drilldown_restriction_locations_label.setText("Minimum Locations:");
 
         _drilldown_restriction_locations.setText("2");
         _drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -5815,7 +5815,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _drilldown_restriction_cases_label.setText("Required Minimum Cases:");
+        _drilldown_restriction_cases_label.setText("Minimum Cases:");
 
         _drilldown_restriction_cases.setText("10");
         _drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -5838,7 +5838,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _drilldown_restriction_cutoff_label.setText("P-Value Cut Off:"); // NOI18N
+        _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:"); // NOI18N
 
         _drilldown_restriction_cutoff.setText("0.05"); // NOI18N
         _drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -5863,7 +5863,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _drilldown_restrictions.setText("Drilldown for Clusters with:");
 
-        _drilldown_restriction_dow.setText("Adjust for day-of-week");
+        _drilldown_restriction_dow.setText("With Day of Week Adjustment");
 
         javax.swing.GroupLayout _drilldown_restrictions_groupLayout = new javax.swing.GroupLayout(_drilldown_restrictions_group);
         _drilldown_restrictions_group.setLayout(_drilldown_restrictions_groupLayout);
@@ -5872,42 +5872,42 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_mainAnalysisDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
                         .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                .addComponent(_mainAnalysisDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                .addGap(10, 10, 10)
                                 .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_drilldown_restriction_locations_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(_drilldown_restriction_locations)
-                                    .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(_drilldown_restriction_locations_label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(_drilldown_restriction_locations)
+                                            .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                        .addComponent(_drilldown_restriction_cutoff_label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                .addComponent(_drilldown_restriction_cutoff_label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 161, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         _drilldown_restrictions_groupLayout.setVerticalGroup(
             _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_mainAnalysisDrilldown)
-                    .addComponent(_purelySpatialDrilldown))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_mainAnalysisDrilldown)
+                .addGap(6, 6, 6)
+                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addComponent(_drilldown_restrictions)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -5921,9 +5921,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_drilldown_restriction_dow)
-                .addContainerGap(95, Short.MAX_VALUE))
+                .addContainerGap(80, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _drilldown_tabLayout = new javax.swing.GroupLayout(_drilldown_tab);
