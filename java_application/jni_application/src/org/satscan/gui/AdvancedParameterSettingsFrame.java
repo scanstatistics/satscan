@@ -5821,7 +5821,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_drilldown_restriction_cases.getText().length() == 0 ||
-                    Double.parseDouble(_drilldown_restriction_locations.getText()) < 10
+                    Double.parseDouble(_drilldown_restriction_cases.getText()) < 10
                 )
                 if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText("10");
                 enableSetDefaultsButton();

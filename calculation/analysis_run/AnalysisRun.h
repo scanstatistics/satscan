@@ -168,7 +168,7 @@ class AbstractAnalysisDrilldown {
 		virtual const char                * getTypeIdentifier() = 0;
 		const CParameters                 & getParameters() const { return _parameters; }
 		virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
-		static bool                         shouldDrilldown(const CCluster& cluster, const CParameters& parameters, const SimulationVariables& simvars);
+		static bool                         shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
 };
 
 class AnalysisDrilldown : public AbstractAnalysisDrilldown {

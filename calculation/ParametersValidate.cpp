@@ -261,32 +261,35 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection)
 	if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis())) {
 		bValid = false;
 		PrintDirection.Printf("%s:\nThe standard cluster drilldown is not implemented for %s analysis.\n",
-			BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
 		return bValid;
 	}
 	if (gParameters.getPerformBernoulliDrilldown() && 
 		!(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))) {
 		bValid = false;
 		PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
-			BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
 		return bValid;
 	}
 	if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
 		bValid = false;
-		PrintDirection.Printf("%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", BasePrint::P_PARAMERROR);
+		PrintDirection.Printf(
+			"%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", 
+			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+		);
 	}
 	if (gParameters.getDrilldownMinimumLocationsCluster() < 2) {
 		bValid = false;
-		PrintDirection.Printf("%s:\nThe minimum number of locations in detected cluster for drilldown cannot be less than 2.\n", BasePrint::P_PARAMERROR);
+		PrintDirection.Printf("%s:\nThe minimum number of locations in detected cluster for drilldown cannot be less than 2.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
 	}
 	if (gParameters.getDrilldownMinimumCasesCluster() < 10) {
 		bValid = false;
-		PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR);
+		PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
 	}
 	double cutoff = gParameters.getDrilldownPvalueCutoff();
 	if (cutoff <= 0.0 || 1.0 <= cutoff) {
 		bValid = false;
-		PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR);
+		PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
 	}
 	if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
 		if (gParameters.GetNumDataSets() > 1) {

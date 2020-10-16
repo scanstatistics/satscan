@@ -293,6 +293,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
 	   are only implemented for Poisson as of now.
 	*/
     if (iNumCollapsibleIntervals > 1 
+		&& !(gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends())
 		&& !(gParameters.GetProbabilityModelType() == POISSON && 
 		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
       // Removes collaped intervals from the data structure which details time interval start times.

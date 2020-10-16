@@ -555,12 +555,12 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
 				if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
 					settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
 				}
-			}
-			if (gParameters.getDrilldownResultFilename().size()) {
-				for (std::vector<std::string>::const_iterator itr = gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
-					settings.push_back(std::make_pair("Drilldown Results File", *itr));
-			} else {
-				settings.push_back(std::make_pair("Drilldown Results File", "None"));
+				if (gParameters.getDrilldownResultFilename().size()) {
+					for (std::vector<std::string>::const_iterator itr = gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
+						settings.push_back(std::make_pair("Drilldown Results File", *itr));
+				} else {
+					settings.push_back(std::make_pair("Drilldown Results File", "None"));
+				}
 			}
 		}
 		WriteSettingsContainer(settings, "Cluster Drilldown", fp);
