@@ -1780,6 +1780,12 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	_parameters.setCalculateOliveirasF(false);
 	_parameters.SetSimulationType(STANDARD);
 	_parameters.setPerformPowerEvaluation(false);
+	_parameters.SetAdjustForEarlierAnalyses(false);
+	_parameters.setAdjustForWeeklyTrends(false);
+	_parameters.SetIncludePurelySpatialClusters(false);
+	_parameters.SetIncludePurelyTemporalClusters(false);
+	_parameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
+	_parameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
 	// If performing day of week adjustment on drilldown, potentially defined multiple data sets.
 	if (source_parameters.getDrilldownAdjustWeeklyTrends()) {
 		/* The primary analysis is restricted to having a time aggregation length of 1 day and a study period of at least 14 days. But there is the possiblity
