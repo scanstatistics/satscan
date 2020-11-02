@@ -474,6 +474,9 @@
     <ClInclude Include="..\calculation\satscan_data\CentroidNeighbors.h">
       <Filter>Header Files\source\calculation\satscan_data</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\LocationNetwork.h">
+      <Filter>Header Files\source\calculation\satscan_data</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\DataSet.h">
       <Filter>Header Files\source\calculation\satscan_data</Filter>
     </ClInclude>
@@ -939,6 +942,9 @@
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\CentroidNeighbors.cpp">
+      <Filter>Source Files\source\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\LocationNetwork.cpp">
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\DataSet.cpp">

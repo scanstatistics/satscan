@@ -233,7 +233,12 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
             if (supplementInfo.getOverlappingClusters(*this, buffer).size() == 0) buffer = "No Overlap";
             printClusterData(fp, PrintFormat, "Overlap with clusters", buffer, false);
         }
-        if (!DataHub.GetParameters().UseLocationNeighborsFile()) {
+
+		// Display cluster coordinates but not when:
+		// - using non-euclidean neighbors
+		// - using a network file to define locations and the user didn't specify all the coordinates in coordinates file
+        if (!(DataHub.GetParameters().UseLocationNeighborsFile() ||
+			  (DataHub.GetParameters().getUseLocationsNetworkFile() && DataHub.GetParameters().getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
             if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
                 DisplayCoordinates(fp, DataHub, PrintFormat);
             else
@@ -652,21 +657,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
   std::string           buffer, work, work2;
 
   try {
-    Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
+	 Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
+
     //print coordinates differently when ellipses are requested
     if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
-      //--PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          buffer += work;
       }
-      work2 = getValueAsString(m_CartesianRadius, work2);
-      printString(work, "%g) / %s", vCoordinates.back(), work2.c_str());
+      printString(work, "%g)", vCoordinates.back());
       buffer += work;
-      printClusterData(fp, PrintFormat, "Coordinates / radius", buffer, false);
-    }
-    else {//print ellipse settings
-      //--PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
+	  if (!Data.GetParameters().getUseLocationsNetworkFile()) {
+		  printString(work, " / %s", getValueAsString(m_CartesianRadius, work2).c_str());
+	  }
+	  printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
+    } else {//print ellipse settings
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          buffer += work;
@@ -675,22 +680,13 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       buffer += work;
       printClusterData(fp, PrintFormat, "Coordinates", buffer, false);
       //print ellipse particulars
-      //--PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
       work = getValueAsString(m_CartesianRadius, work);
-      //--fprintf(fp, "%s\n", work.c_str());
       printClusterData(fp, PrintFormat, "Semiminor axis", work, false);
-      //PrintFormat.PrintSectionLabel(fp, "Semimajor axis", false, true);
       work = getValueAsString(m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()), work);
-      //--fprintf(fp, "%s\n", work.c_str());
       printClusterData(fp, PrintFormat, "Semimajor axis", work, false);
-      //--PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
       work = getValueAsString(ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)), work);
-      //--fprintf(fp, "%s\n", work.c_str());
       printClusterData(fp, PrintFormat, "Angle (degrees)", work, false);
-
-      //PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
       work = getValueAsString(Data.GetEllipseShape(m_iEllipseOffset), work);
-      //fprintf(fp, "%s\n", work.c_str());
       printClusterData(fp, PrintFormat, "Shape", work, false);
     }
   }
@@ -704,19 +700,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
 void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>           vCoordinates;
   std::pair<double, double>     prLatitudeLongitude;
-  char                          cNorthSouth, cEastWest;
-  std::string                   buffer;
+  std::string                   buffer, work, work2;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
     prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-    prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
-    prLatitudeLongitude.second >= 0 ? cEastWest = 'E' : cEastWest = 'W';
-    PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-    buffer = getValueAsString(GetLatLongRadius(), buffer);
-    fprintf(fp, "(%.6f %c, %.6f %c) / %s km\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest, buffer.c_str());
-  }
-  catch (prg_exception& x) {
+	printString(buffer, "(%.6f %c, %.6f %c)", 
+		fabs(prLatitudeLongitude.first), prLatitudeLongitude.first >= 0 ? 'N' : 'S', 
+		fabs(prLatitudeLongitude.second), prLatitudeLongitude.second >= 0 ? 'E' : 'W'
+	);
+	if (!Data.GetParameters().getUseLocationsNetworkFile()) {
+		printString(work2, " / %s km", getValueAsString(GetLatLongRadius(), work).c_str());
+		buffer += work2;
+	}
+	printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
+  } catch (prg_exception& x) {
     x.addTrace("DisplayLatLongCoords()","CCluster");
     throw;
   }
@@ -1271,7 +1269,7 @@ bool CCluster::reportableRecurrenceInterval(const CParameters& parameters, const
 void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
   std::vector<double> ClusterCenter, TractCoords;
 
-  if (ClusterDefined() && !DataHub.GetParameters().UseLocationNeighborsFile()) {
+  if (ClusterDefined() && !DataHub.GetParameters().UseLocationNeighborsFile() && !DataHub.GetParameters().getUseLocationsNetworkFile()) {
     DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), ClusterCenter);
     CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), TractCoords);
     if (m_iEllipseOffset) {

@@ -257,6 +257,10 @@ class CParameters {
 	bool                                _drilldown_adjust_weekly_trends;
 	std::vector<std::string>            _drilldown_result_filenames;
 
+	std::string                         _locations_network_filename;
+	bool                                _use_locations_network_file;
+	NetworkPurposeType                  _network_file_purpose;
+
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -274,6 +278,13 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+	bool                                getUseLocationsNetworkFile() const { return _use_locations_network_file; }
+	void                                setUseLocationsNetworkFile(bool b) { _use_locations_network_file = b; }
+	const std::string                 & getLocationsNetworkFilename() const { return _locations_network_filename; }
+	void                                setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath = false);
+	NetworkPurposeType                  getNetworkFilePurpose() const { return _network_file_purpose; }
+	void                                setNetworkFilePurpose(NetworkPurposeType e);
+
 	bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
 	void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
 	bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }
@@ -288,6 +299,9 @@ class CParameters {
 	void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
 	void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
 	const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
+
+	bool                                requestsGeogrphaicalOutput() const {	return _output_google_map || _output_kml || _output_shapefiles || _output_cartesian_graph;	}
+	void                                toggleGeogrphaicalOutput(bool b) { _output_google_map = b; _output_kml = b; _output_shapefiles = b; _output_cartesian_graph = b; }
 
     bool                                getOutputGoogleMapsFile() const { return _output_google_map; }
     void                                setOutputGoogleMapsFile(bool b) { _output_google_map = b; }

@@ -9,14 +9,22 @@
 /* Returns the beginning and ending points of cluster radius segment. */
 GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster) {
     std::vector<double> vCoordinates, TractCoords;
-    std::pair<double, double> prLatitudeLongitude;
+    std::pair<double, double> prLatitudeLongitude, pointOnCircumference;
 
     //set focal point of this cluster - cluster centriod
     datahub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
     prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-    // get the coordinates of location farthest away from center
-    CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.GetNumTractsInCluster()), TractCoords);
-    std::pair<double, double> pointOnCircumference = ConvertToLatLong(TractCoords);
+
+	// If this analysis is using a network file, then we'll only have a radius around the cluster center,
+	// so force the prLatitudeLongitude == pointOnCircumference block below;
+	if (datahub.GetParameters().getUseLocationsNetworkFile()) {
+		pointOnCircumference = prLatitudeLongitude;
+	} else {
+		// get the coordinates of location farthest away from center
+		CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.GetNumTractsInCluster()), TractCoords);
+		pointOnCircumference = ConvertToLatLong(TractCoords);
+	}
+
     if (prLatitudeLongitude == pointOnCircumference) {
         /* If the cluster only has one location, the centroid, then get the nearest neighbor - per Martin.
            This is more difficult than I initially thought. First, I'm not sure he meant nearest point in 

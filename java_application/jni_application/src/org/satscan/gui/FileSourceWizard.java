@@ -239,6 +239,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case SpecialGrid: setGridFileVariables(); break;
             case MaxCirclePopulation: setMaxCirclePopFileVariables(); break;
             case AdjustmentsByRR: setRelativeRisksFileVariables(); break;
+            case NETWORK: setNetworkFileVariables(); break;
             case Neighbors:
             case MetaLocations:
             case AlternativeHypothesis: break;
@@ -318,6 +319,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case MaxCirclePopulation: 
             case Neighbors:
             case MetaLocations:
+            case NETWORK:
             case AlternativeHypothesis: return false;
             case AdjustmentsByRR: return _import_variables.get(_dateVariableColumn).isMappedToSourceField();
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
@@ -436,6 +438,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 heplID = AppConstants.ALTERNATIVEHYPOTHESIS_HELPID;
                 builder.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
+            case NETWORK:
+                heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
+                builder.append("&lt;First Location ID&gt;  &lt;Second Location ID&gt;  &lt;Distance&gt;");
+                break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");
@@ -482,6 +488,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Neighbors: return "Non-Euclidian Neighbors";
             case MetaLocations: return "Meta Locations";
             case AlternativeHypothesis: return "Alternative Hypothesis";
+            case NETWORK: return "Network File";
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
     }    
@@ -677,6 +684,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Coordinates:
             case SpecialGrid:
             case MaxCirclePopulation:
+            case NETWORK:
             case AdjustmentsByRR: return true;
             case Neighbors:
             case MetaLocations:
@@ -842,6 +850,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Neighbors: show_generatedId=true; show_oneCount=false; break;
             case MetaLocations: show_generatedId=false; show_oneCount=false; break;
             case AlternativeHypothesis: show_generatedId=true; show_oneCount=false; break;
+            case NETWORK: show_generatedId=false; show_oneCount=false; break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }        
         //create the table mapping_model
@@ -1102,6 +1111,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.addElement(new ImportVariable("End Date", 3, false, null, null));
     }
     
+    /** Setup field descriptors for network file. */
+    private void setNetworkFileVariables() {
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("First Location ID", 0, true, null, null));
+        _import_variables.addElement(new ImportVariable("Second Location ID", 1, false, null, null));
+        _import_variables.addElement(new ImportVariable("Distance", 2, false, null, null));
+    }    
+    
     /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
     private void setShowingVariables() {
         VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
@@ -1195,6 +1212,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case SpecialGrid: defaultName = "Grid"; extension =  ".grd";  break;
             case MaxCirclePopulation: defaultName = "MaximumSizeCircle"; extension =  ".max"; break;
             case AdjustmentsByRR: defaultName = "Adjustments"; extension =  ".adj"; break;
+            case NETWORK: defaultName = "Network"; extension =  ".ntk"; break;
             case Neighbors: defaultName = "NonEuclidianNeighbors"; extension =  ".nei"; break;
             case MetaLocations: defaultName = "MetaLocations"; extension =  ".meta"; break;
             case AlternativeHypothesis: defaultName = "AlternativeHypothesis"; extension =  ".ha"; break;

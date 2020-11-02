@@ -29,7 +29,8 @@ class ParametersValidate {
     bool                ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
-    bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
+	bool                ValidateLocationNetworkParameters(BasePrint & PrintDirection) const;
+	bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                ValidateRangeParameters(BasePrint & PrintDirection) const;

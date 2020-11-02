@@ -90,6 +90,7 @@ class TractHandler {
 
     typedef ptr_vector<Coordinates>      CoordinatesContainer_t;
     typedef ptr_vector<Location>         LocationsContainer_t;
+	typedef std::map<tract_t, std::map<tract_t, double> > LocationOverrides_t;
     enum addition_status_t               {Accepting=0, Closed};
 
   private:
@@ -115,14 +116,16 @@ class TractHandler {
     MetaLocationManager                 gMetaLocationsManager;
     MetaNeighborManager                 gMetaNeighborManager;
     std::auto_ptr<MetaManagerProxy>     gMetaManagerProxy;
+	LocationOverrides_t                 _location_distance_overrides;
 
   public:
     TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType);
     ~TractHandler() {}
 
     void                                additionsCompleted(bool bReportingRiskEstimates=false);
-    void                                addLocation(const char *sIdentifier);
-    void                                addLocation(const char *sIdentifier, std::vector<double>& vCoordinates);
+    size_t                              addLocation(const char *sIdentifier);
+    void                                addLocation(const char *sIdentifier, std::vector<double>& vCoordinates, bool onlyIfExists=false);
+	bool                                addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance);
     void                                assignExplicitCoordinates(CoordinatesContainer_t& coordinates);
     addition_status_t                   getAddStatus() const {return gAdditionStatus;}
     const CoordinatesContainer_t      & getCoordinates() const {return gvCoordinates;}
@@ -132,7 +135,9 @@ class TractHandler {
     const char                        * getIdentifier(tract_t tIndex) const;
     const LocationsContainer_t        & getLocations() const {return gvLocations;}
     tract_t                             getLocationIndex(const char *sIdentifier) const;
-    size_t                              getMaxIdentifierLength() const {return giMaxIdentifierLength;}
+	std::pair<bool, double>             getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
+	bool                                getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
+	size_t                              getMaxIdentifierLength() const {return giMaxIdentifierLength;}
     MetaLocationManager               & getMetaLocations() {return gMetaLocationsManager;}
     const MetaLocationManager         & getMetaLocations() const {return gMetaLocationsManager;}
     const MetaNeighborManager         & getMetaNeighborManager() const {return gMetaNeighborManager;}

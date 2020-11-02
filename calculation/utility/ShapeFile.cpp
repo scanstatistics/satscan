@@ -217,6 +217,20 @@ int ShapeFile::getType() const {
     return shapeType;
 }
 
+void ShapeFile::writePolyline(const std::vector<double>& polygonX, const std::vector<double>& polygonY) {
+	if (polygonX.size() != polygonY.size())
+		throw prg_error("Number of X coordinates (%u) does not equal number of Y coordinates (%u)!", "writePolyline()", polygonX.size(), polygonY.size());
+	if (getType() != SHPT_ARC)
+		throw prg_error("File type (%d) does not match SHPT_POLYGON!", "writePolyline()", getType());
+
+	SHPHandle shp = SHPOpen(_filename.c_str(), _mode.c_str());
+	if (!shp) throw prg_error("Unable to open file.", "writePolyline()");
+	SHPObject * pShape = SHPCreateSimpleObject(SHPT_ARC, polygonX.size(), const_cast<double*>(&(polygonX[0])), const_cast<double*>(&(polygonY[0])), NULL);
+	SHPWriteObject(shp, -1, pShape);
+	SHPDestroyObject(pShape);
+	SHPClose(shp);
+}
+
 void ShapeFile::writePoint(double x, double y) {
     if (getType() != SHPT_POINT)
         throw prg_error("File type (%d) does not match SHPT_POINT!","writePoint()",getType());

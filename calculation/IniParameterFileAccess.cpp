@@ -293,6 +293,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteObservableRegionSettings(ini);
         WriteMultipleDataSetsSettings(ini);
         WriteDataCheckingSettings(ini);
+		WriteLocationNetworkSettings(ini);
         WriteSpatialNeighborsSettings(ini);
         WriteSpatialWindowSettings(ini);
         WriteTemporalWindowSettings(ini);
@@ -560,6 +561,20 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
         x.addTrace("WriteInputSource()","IniParameterFileAccess");
         throw;
     }
+}
+
+/** Writes parameter settings grouped under 'Locations Network'. */
+void IniParameterFileAccess::WriteLocationNetworkSettings(IniFile& WriteFile) {
+	std::string  s;
+	try {
+		WriteIniParameter(WriteFile, NETWORK_FILE, GetParameterString(NETWORK_FILE, s).c_str(), GetParameterComment(NETWORK_FILE));
+		WriteIniParameter(WriteFile, USE_NETWORK_FILE, GetParameterString(USE_NETWORK_FILE, s).c_str(), GetParameterComment(USE_NETWORK_FILE));
+		WriteIniParameter(WriteFile, NETWORK_PURPOSE, GetParameterString(NETWORK_PURPOSE, s).c_str(), GetParameterComment(NETWORK_PURPOSE));
+	}
+	catch (prg_exception& x) {
+		x.addTrace("WriteLocationNetworkSettings()", "IniParameterFileAccess");
+		throw;
+	}
 }
 
 /** Writes specified comment and value to file for parameter type. */

@@ -96,13 +96,14 @@ class CentroidHandler : public GInfo {
 class CentroidHandlerPassThrough : public GInfo {
    private:
      const TractHandler   & gTractHandler;
+	 bool                   _network_locations;
      
    public:
-     CentroidHandlerPassThrough(const TractHandler& Handler) : GInfo(), gTractHandler(Handler) {}
+     CentroidHandlerPassThrough(const TractHandler& Handler, bool networkLocations) : GInfo(), gTractHandler(Handler), _network_locations(networkLocations){}
 
     virtual int         getGridPointDimensions() const {return gTractHandler.getCoordinateDimensions();}
-    virtual tract_t     getNumGridPoints() const {return gTractHandler.getCoordinates().size();}
-    virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const { gTractHandler.getCoordinates().at(tPoint)->retrieve(vRepository); }
+	virtual tract_t     getNumGridPoints() const;
+	virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const;
     FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const { throw prg_error("Not implemented for CentroidHandlerPassThrough class.", "retrieveFocusInterval()"); }
 };
 //*****************************************************************************

@@ -136,7 +136,8 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintMultipleDataSetParameters(fp);
         PrintDataCheckingParameters(fp);
         PrintSpatialNeighborsParameters(fp);
-        PrintSpatialWindowParameters(fp);
+		PrintLocationNetworkParameters(fp);
+		PrintSpatialWindowParameters(fp);
         PrintTemporalWindowParameters(fp);
         PrintClusterRestrictionsParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
@@ -840,7 +841,11 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
         }
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
             AdditionalOutputFile.setExtension(".col.shp");
-            settings.push_back(std::make_pair("Shapefile",AdditionalOutputFile.getFullPath(buffer)));
+            settings.push_back(std::make_pair("Shapefile (Cluster)",AdditionalOutputFile.getFullPath(buffer)));
+        }
+        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles() && gParameters.getUseLocationsNetworkFile()) {
+            AdditionalOutputFile.setExtension(".col.edges.shp");
+            settings.push_back(std::make_pair("Shapefile (Network)", AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.getOutputCartesianGraph()) {
             AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
@@ -868,6 +873,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
         if (canReportClusterFiles && gParameters.GetOutputAreaSpecificDBase()) {
             AdditionalOutputFile.setExtension(".gis.dbf");
             settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
+        }
+        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
+            AdditionalOutputFile.setExtension(".gis.shp");
+            settings.push_back(std::make_pair("Shapefile (Locations)", AdditionalOutputFile.getFullPath(buffer)));
         }
         // relative risk files
         if (gParameters.GetOutputRelativeRisksAscii()) {
@@ -1085,7 +1094,10 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
             if (gParameters.UseMetaLocationsFile())
                 settings.push_back(std::make_pair("Meta Locations File",gParameters.getMetaLocationsFilename()));
         }
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() || 
+              gParameters.UseLocationNeighborsFile() || 
+              gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
+              gParameters.getUseLocationsNetworkFile())) {
             buffer = "Multiple Coordinates Type";
             switch (gParameters.GetMultipleCoordinatesType()) {
                 case ONEPERLOCATION :
@@ -1105,6 +1117,29 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
         x.addTrace("PrintSpatialNeighborsParameters()","ParametersPrint");
         throw;
     }
+}
+
+/** Prints 'Locations Network' tab parameters to file stream. */
+void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
+	SettingContainer_t settings;
+	std::string buffer;
+
+	try {
+		if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+			settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
+			settings.push_back(std::make_pair("Locations Network File", gParameters.getLocationsNetworkFilename()));
+			switch (gParameters.getNetworkFilePurpose()) {
+				case COORDINATES_OVERRIDE: buffer = "Coordinates File Override"; break;
+				case NETWORK_DEFINITION: buffer = "Network Definition"; break;
+				default: throw prg_error("Unknown locations network file purpose type %d.\n", "PrintLocationNetworkParameters()", gParameters.getNetworkFilePurpose());
+			}
+			settings.push_back(std::make_pair("Locations Network Purpose", buffer));
+			WriteSettingsContainer(settings, "Locations Network", fp);
+		}
+	} catch (prg_exception& x) {
+		x.addTrace("PrintLocationNetworkParameters()", "ParametersPrint");
+		throw;
+	}
 }
 
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */

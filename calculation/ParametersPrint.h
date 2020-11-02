@@ -32,6 +32,7 @@ class ParametersPrint {
     void                PrintRunOptionsParameters(FILE* fp) const;
     void                PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const;
     void                PrintSpatialNeighborsParameters(FILE* fp) const;
+	void                PrintLocationNetworkParameters(FILE* fp) const;
     void                PrintSpatialWindowParameters(FILE* fp) const;
     void                PrintSystemParameters(FILE* fp) const;
     void                PrintTemporalWindowParameters(FILE* fp) const;

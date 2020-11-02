@@ -46,7 +46,7 @@ const char * CartesianGraph::TEMPLATE = " \
             jQuery.noConflict(); \n \
         </script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.1.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.2.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
@@ -99,7 +99,7 @@ const char * CartesianGraph::TEMPLATE = " \
                         if (c.ellipse)\n \
                             chart.addEllipticBubble(c.id, c.x, c.y, c.z, c.semimajor, c.angle, c.shape, c.color, c.tip);\n \
                         else\n \
-                            chart.addBubble(c.id, c.x, c.y, c.z, c.color, c.tip);\n \
+                            chart.addBubble(c.id, c.x, c.y, c.z, c.color, c.tip, c.edges);\n \
                         display_stats.displayed_clusters++;\n \
                     }\n \
                     if (add && jQuery('#id_cluster_locations').is(':checked')) {\n \
@@ -199,7 +199,7 @@ const char * CartesianGraph::TEMPLATE = " \
                         <p class=\"help-block\">Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \
-                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />Circles / Ellipses</label>\n \
+                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />--cluster-input-label--</label>\n \
                     <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_locations\" value=\"cluster\" />Locations</label>\n \
                     <p class=\"help-block\">Display options for clusters.</p>\n \
                     <div id=\"id_zoom_cluster_option\" style=\"display:--display-zoom-cluster--;\">\n \
@@ -299,7 +299,7 @@ std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates
 void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
     double gdMinRatioToReport = 0.001;
     std::vector<double> vCoordinates;
-    std::string buffer, buffer2, legend, clusterColor, pointsColor;
+    std::string buffer, buffer2, legend, clusterColor, pointsColor, points, edges;
     std::stringstream  worker;
     unsigned int clusterOffset = _clusters_written;
 
@@ -348,17 +348,36 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                     }
                 }
             }
+			points = worker.str();
+			trimString(points, ",");
 
-            double radius = 0.0;
-            if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
+            double radius;
+			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+				radius = 0.0;
+			} else if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
                 // Calcuate the radius from centroid to outer most location in cluster.
                 radius = std::sqrt(_dataHub.GetTInfo()->getDistanceSquared(clusterCenterCoordinates, vCoordinates));
             } else {
                 radius = cluster.GetCartesianRadius();
             }
 
-            std::string points = worker.str();
-            trimString(points, ",");
+			// When using a network file, we'll drawn connections/edges between locations in cluster.
+			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+				Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
+				worker.str("");
+				Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
+				for (; itr != end; ++itr) {
+					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
+					std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+					worker << printString(buffer2, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
+					prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+					worker << printString(buffer2, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+				}
+				edges = worker.str();
+				trimString(edges, ",");
+			}
+
             const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             transform(vCoordinates);
@@ -378,11 +397,12 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                 _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
                 _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
             }
-            _cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
-                << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
-                << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
-                << ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
-                << ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str() << "', points : [" << points << "] },\n";
+			_cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
+				<< ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
+				<< ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
+				<< ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
+				<< ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str()
+				<< "', edges : [" << edges << "], points : [" << points << "] },\n";
         }
         ++_clusters_written;
     }
@@ -410,6 +430,7 @@ void CartesianGraph::finalize() {
         templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // site resource link path
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
+		templateReplace(html, "--cluster-input-label--", _dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles / Edges" : "Circles / Ellipses");
 
         // Update cluster region to keep x and y ranges equal -- for proper scaling in graph
         _clusterRegion.setproportional();

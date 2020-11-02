@@ -66,6 +66,9 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
+	// When defining the locations entirely through network file, location
+	//tract_t num_grid_tracts = gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION ? m_nTracts : m_nGridTracts;
+
     if (!gParameters.UsingMultipleCoordinatesMetaLocations() && m_nTracts + (tract_t)(GetTInfo()->getMetaManagerProxy().getNumMetaLocations()) < std::numeric_limits<unsigned short>::max()) {
       if (!gpSortedUShortHandler)
         gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
@@ -444,6 +447,7 @@ void CSaTScanData::Init() {
   m_nEndDate = 0;
   m_nIntervalCut=1;
   _min_iterval_cut=4;
+  _network_can_report_coordinates = false;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -945,7 +949,7 @@ void CSaTScanData::Setup() {
     if (gParameters.UseSpecialGrid())
         gCentroidsHandler.reset(new CentroidHandler());
     else
-        gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
+        gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler, gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION));
     gRelativeRiskAdjustments = RiskAdjustments_t(new RelativeRiskAdjustmentHandler(*this));
   }
   catch (prg_exception& x) {

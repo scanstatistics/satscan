@@ -12,7 +12,7 @@ HomogeneousPoissonRandomizer::HomogeneousPoissonRandomizer(const CParameters& Pa
      gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
      gTractHandler->setCoordinateDimensions(2);
      if (!gParameters.UseSpecialGrid())
-       gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
+       gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler, gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION));
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","HomogeneousPoissonRandomizer");

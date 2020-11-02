@@ -695,6 +695,18 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getDrilldownAdjustWeeklyTrends());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setUseLocationsNetworkFile", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getUseLocationsNetworkFile());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setLocationsNetworkFilename", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getLocationsNetworkFilename().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setNetworkFilePurpose", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNetworkFilePurpose());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1386,6 +1398,20 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getDrilldownAdjustWeeklyTrends", "()Z");
   Parameters.setDrilldownAdjustWeeklyTrends(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getUseLocationsNetworkFile", "()Z");
+  Parameters.setUseLocationsNetworkFile(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getLocationsNetworkFilename", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setLocationsNetworkFilename(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  Parameters.setNetworkFilePurpose((NetworkPurposeType)getEnumTypeOrdinalIndex(Env, jParameters, "getNetworkFilePurpose", "Lorg/satscan/app/Parameters$NetworkPurposeType;"));
   jni_error::_detectError(Env);
 
   return Parameters;

@@ -212,6 +212,7 @@
     <ClInclude Include="..\calculation\satscan_data\AdjustmentHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\BernoulliDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\CentroidNeighbors.h" />
+    <ClInclude Include="..\calculation\satscan_data\LocationNetwork.h" />
     <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSet.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetGateway.h" />
@@ -424,6 +425,7 @@
     <ClCompile Include="..\calculation\satscan_data\AdjustmentHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\BernoulliDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\CentroidNeighbors.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\LocationNetwork.cpp" />
     <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSet.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetGateway.cpp" />

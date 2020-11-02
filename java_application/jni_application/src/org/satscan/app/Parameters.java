@@ -49,6 +49,7 @@ public class Parameters implements Cloneable {
     /** geographical coordinates data checking type  */
     public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
     public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY, GENERIC };
+    public enum NetworkPurposeType            { COORDINATES_OVERRIDE, NETWORK_DEFINITION };
     public class CreationVersion {
       public int giMajor;
       public int giMinor;
@@ -237,6 +238,10 @@ public class Parameters implements Cloneable {
     private double                          _drilldown_pvalue_cutoff=0.05;
     private boolean                         _drilldown_adjust_weekly_trends=false;
     
+    private String                          _locations_network_filename="";
+    private boolean                         _use_locations_network_file=false;
+    private NetworkPurposeType              _network_file_purpose=NetworkPurposeType.NETWORK_DEFINITION;
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -294,6 +299,7 @@ public class Parameters implements Cloneable {
             newObject.gsTitleName = new String(gsTitleName);
             newObject._google_maps_api_key = new String(_google_maps_api_key);
             newObject._input_sources = new Vector<InputSourceSettings>();
+            newObject._locations_network_filename = new String(_locations_network_filename);
             for (InputSourceSettings iss : _input_sources) {
                 newObject._input_sources.addElement(iss.clone());
             }
@@ -303,6 +309,16 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
+    public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
+    public String getLocationsNetworkFilename() { return _locations_network_filename; }
+    public void setLocationsNetworkFilename(final String s) { _locations_network_filename = s; }
+    public NetworkPurposeType getNetworkFilePurpose() { return _network_file_purpose; }
+    public void setNetworkFilePurpose(int iOrdinal) {
+        try { _network_file_purpose = NetworkPurposeType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _network_file_purpose.values()); }
+    }
+    
     public boolean getPerformStandardDrilldown() { return _perform_standard_drilldown; }
     public void setPerformStandardDrilldown(boolean b) { _perform_standard_drilldown = b; }
     public boolean getPerformBernoulliDrilldown() { return _perform_bernoulli_drilldown; }
@@ -531,6 +547,10 @@ public class Parameters implements Cloneable {
         if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
         if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
 
+        if (_use_locations_network_file != rhs._use_locations_network_file) return false;
+        if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
+        if (_network_file_purpose != rhs._network_file_purpose) return false;
+        
         return true;
     }
     public boolean getCalculateOliveirasF() {return _calculate_oliveira_f;}

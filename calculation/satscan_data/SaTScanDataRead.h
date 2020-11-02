@@ -41,7 +41,9 @@ class SaTScanDataReader {
     bool                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
     bool                        ReadHomogeneousPoissonData();
     bool                        ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset, bool& warned);
-    bool                        ReadMaxCirclePopulationFile();
+	bool                        ReadLocationNetworkFileAsDefinition();
+	bool                        ReadLocationNetworkFileAsOverride();
+	bool                        ReadMaxCirclePopulationFile();
     bool                        ReadMetaLocationsFile();
     bool                        ReadNormalData();
     bool                        ReadOrdinalData();

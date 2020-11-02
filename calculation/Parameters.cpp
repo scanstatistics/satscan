@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 150;
+const int CParameters::giNumParameters                = 153;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -180,7 +180,10 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
   if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
   if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
-  
+  if (_locations_network_filename != rhs._locations_network_filename) return false;
+  if (_use_locations_network_file != rhs._use_locations_network_file) return false;
+  if (_network_file_purpose != rhs._network_file_purpose) return false;
+
   return true;
 }
 
@@ -409,6 +412,9 @@ void CParameters::Copy(const CParameters &rhs) {
   _drilldown_minimum_cases = rhs._drilldown_minimum_cases;
   _drilldown_pvalue_cutoff = rhs._drilldown_pvalue_cutoff;
   _drilldown_adjust_weekly_trends = rhs._drilldown_adjust_weekly_trends;
+  _locations_network_filename = rhs._locations_network_filename;
+  _use_locations_network_file = rhs._use_locations_network_file;
+  _network_file_purpose = rhs._network_file_purpose;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -758,6 +764,15 @@ void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool
     AssignMissingPath(gsCoordinatesFileName);
 }
 
+/** Sets locations network data file name.
+If bCorrectForRelativePath is true, an attempt is made to modify filename
+to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath) {
+	_locations_network_filename = filename;
+	if (bCorrectForRelativePath)
+		AssignMissingPath(_locations_network_filename);
+}
+
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
   if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
@@ -929,6 +944,9 @@ void CParameters::SetAsDefaulted() {
   _drilldown_minimum_cases = 10;
   _drilldown_pvalue_cutoff = 0.05;
   _drilldown_adjust_weekly_trends = false;
+  _locations_network_filename = "";
+  _use_locations_network_file = false;
+  _network_file_purpose = NETWORK_DEFINITION;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1241,6 +1259,13 @@ void CParameters::setTemporalGraphReportType(TemporalGraphReportType e) {
   _temporal_graph_report_type = e;
 }
 
+/** Sets network file purpose type. Throws exception if out of range. */
+void CParameters::setNetworkFilePurpose(NetworkPurposeType e) {
+	if (e < COORDINATES_OVERRIDE || e > NETWORK_DEFINITION)
+		throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, COORDINATES_OVERRIDE, NETWORK_DEFINITION);
+	_network_file_purpose = e;
+}
+
 /** Sets time aggregation length. Throws exception if out of range. */
 void CParameters::SetTimeAggregationLength(long lTimeAggregationLength) {
   glTimeAggregationLength = lTimeAggregationLength;
@@ -1298,7 +1323,7 @@ bool CParameters::UseCoordinatesFile() const {
         //locations or adjustments at the locations level.
         return UseAdjustmentForRelativeRisksFile() && GetCoordinatesFileName().size() != 0;
     } else {
-        return !UseLocationNeighborsFile();
+        return !(UseLocationNeighborsFile() || (getUseLocationsNetworkFile() && GetCoordinatesFileName().size() == 0));
     }
 }
 

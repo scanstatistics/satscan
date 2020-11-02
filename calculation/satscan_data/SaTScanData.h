@@ -18,6 +18,7 @@
 #include "SaTScanDataRead.h"
 #include "ClusterLocationsWriter.h"
 #include "LocationRelevance.h"
+#include "LocationNetwork.h"
 
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
@@ -49,6 +50,7 @@ class CSaTScanData {
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     std::auto_ptr<GInfo>                        gCentroidsHandler;
     std::auto_ptr<TractHandler>                 gTractHandler;
+	Network                                     _locations_network;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
     TwoDimensionArrayHandler<MinimalGrowthArray<tract_t> > * gpReportedMaximumsNeighborCountHandler;
@@ -80,6 +82,7 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowEndRangeEndIndex;
     std::vector<tract_t>                        gvNullifiedLocations;
     mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
+	bool                                        _network_can_report_coordinates;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -100,6 +103,15 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
+	Network & getLocationNetwork() {
+		return  _locations_network;
+	}
+
+	const Network & refLocationNetwork() const {
+		return  _locations_network;
+	}
+
+
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
@@ -107,6 +119,7 @@ class CSaTScanData {
     virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
+	bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
     const DataSetHandler                      & GetDataSetHandler() const {return *gDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;

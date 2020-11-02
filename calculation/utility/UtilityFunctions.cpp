@@ -487,7 +487,7 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
   std::ifstream::char_type nextChar;
   std::stringstream        readStream;
 
-  while (!readstream.eof()) {
+  while (!(readstream.eof() || readstream.fail())) {
 
 	  if (!readstream.get(nextChar)) {//Does reading next char bring us to end of file?
          break;
@@ -508,7 +508,7 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
       readStream << nextChar;
   }
   line = readStream.str();
-  return line.size() > 0 ? true : readstream.eof() == false;
+  return line.size() > 0 ? true : (readstream.eof() == false && readstream.fail() == false);
 }
 
 void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {

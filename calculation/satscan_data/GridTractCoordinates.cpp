@@ -59,3 +59,21 @@ void CentroidHandler::setDimensions(unsigned int iPointDimensions) {
   giPointDimensions = iPointDimensions;
 }
 
+//////////////////////// CentroidHandlerPassThrough /////////////////////////////
+
+tract_t CentroidHandlerPassThrough::getNumGridPoints() const {
+	return _network_locations ? gTractHandler.getLocations().size() : gTractHandler.getCoordinates().size();
+}
+
+void CentroidHandlerPassThrough::retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const {
+	// When we're defining locations using the network file, we're really not generating clusters about a centroid point but
+	// instead from each location in the network (each node). So when we ask for the coordinates of a 'point', we're really asking for
+	// the coordinates of the location at index 'tPoint'.
+	if (_network_locations) {
+		if (gTractHandler.getLocations()[tPoint]->getCoordinates().size())
+			gTractHandler.getLocations()[tPoint]->getCoordinates()[0]->retrieve(vRepository);
+		else
+			vRepository.clear();
+	} else
+		gTractHandler.getCoordinates().at(tPoint)->retrieve(vRepository); 
+}

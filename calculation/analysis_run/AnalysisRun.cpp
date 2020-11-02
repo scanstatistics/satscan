@@ -1586,7 +1586,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 		_print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
 		while (Source->ReadRecord()) {
 			unsigned int written = 0;
-			for (long idx=0; idx < Source->GetNumValues(); ++idx) {
+			for (long idx = 0; idx < Source->GetNumValues(); ++idx) {
 				std::string identifier(Source->GetValueAt(idx));
 				if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) != clusterLocations.end()) {
 					neighbors_file << (written == 0 ? "" : ",") << identifier;
@@ -1620,6 +1620,32 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 		_parameters.defineInputSource(COORDFILE, source);
 		_parameters.SetCoordinatesFileName(buffer.c_str());
 		coordinates_file.close();
+		_temp_files.push_back(buffer);
+	}
+	if (_parameters.getUseLocationsNetworkFile()) {
+		std::ofstream network_file;
+		network_file.open(createTempFilename(detectedCluster, supplementInfo, ".ntk", buffer).c_str());
+		if (!network_file) throw resolvable_error("Error: Could not create locations network file '%s'.\n", buffer.c_str());
+
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.getLocationsNetworkFilename().c_str(), _parameters.getInputSource(NETWORK_FILE), _print_direction));
+		_print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
+		while (Source->ReadRecord()) {
+			std::string identifier(Source->GetValueAt(0));
+			if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) == clusterLocations.end())
+				continue;
+			if (Source->GetNumValues() > 1) {
+				identifier = Source->GetValueAt(1);
+				if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) == clusterLocations.end())
+					continue;
+			}
+			for (long idx = 0; idx < Source->GetNumValues(); ++idx)
+				network_file << (idx == 0 ? "" : ",") << Source->GetValueAt(idx);
+			network_file << std::endl;
+		}
+		CParameters::InputSource source(CSV, ",", "\"", 0, false);
+		_parameters.defineInputSource(NETWORK_FILE, source);
+		_parameters.setLocationsNetworkFilename(buffer.c_str());
+		network_file.close();
 		_temp_files.push_back(buffer);
 	}
 }

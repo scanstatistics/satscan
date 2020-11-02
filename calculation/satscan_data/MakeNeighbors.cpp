@@ -9,6 +9,7 @@
 #include "cluster.h" 
 #include <boost/dynamic_bitset.hpp>
 #include "HomogeneousPoissonDataSetHandler.h"
+#include "LocationNetwork.h"
 
 /** constructor */
 CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -220,26 +221,29 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize(const CSaTSc
     array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub) {
     try {
-        if (gParameters.UseLocationNeighborsFile()) {
-            std::pair<int, std::vector<int> >   prNeighborsCount;
-            boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-            gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
+		if (gParameters.UseLocationNeighborsFile()) {
+			std::pair<int, std::vector<int> >   prNeighborsCount;
+			boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+			gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
 
-            bool frequent_estimations = false;
-            int modulas = std::max(1, static_cast<int>(std::floor(dataHub.m_nGridTracts * STANDARD_MODULAS_PERCENT)));
+			bool frequent_estimations = false;
+			int modulas = std::max(1, static_cast<int>(std::floor(dataHub.m_nGridTracts * STANDARD_MODULAS_PERCENT)));
 
-            //Calculate maximum neighboring locations about each centroid for circular regions
-            for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
-                gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
-                //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
-                for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
-                    gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1), 0, 0);
-                CalculateNeighborsForCurrentState(prNeighborsCount);
-                const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
+			//Calculate maximum neighboring locations about each centroid for circular regions
+			for (tract_t t = 0; t < dataHub.m_nGridTracts; ++t) {
+				gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
+				//assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
+				for (size_t c = 0; c < gvCentroidToLocationDistances.size(); ++c)
+					gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c + 1), 0, 0);
+				CalculateNeighborsForCurrentState(prNeighborsCount);
+				const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
 
-                if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
-                    frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
-            }
+				if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
+					frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
+			}
+		} else if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION) {
+			const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
+			CalculateNeighborsByNetwork(dataHub);
         } else {
             const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
             CalculateNeighborsByCircles(dataHub);
@@ -380,6 +384,31 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData
     }
 }
 
+/** Calculates neighboring locations about each centroid through expanding network;
+storing results in sorted array contained in CSaTScanData object. */
+void CentroidNeighborCalculator::CalculateNeighborsByNetwork(const CSaTScanData& dataHub) {
+	boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+	std::pair<int, std::vector<tract_t> >   prNeighborsCount;
+	const Network & locationNetwork = dataHub.refLocationNetwork();
+
+	bool frequent_estimations = false;
+	int modulas = std::max(1, static_cast<int>(std::floor(static_cast<double>(locationNetwork.getNodes().size()) * 0.25)));
+
+	gPrintDirection.Printf("Constructing the network\n", BasePrint::P_STDOUT);
+	//Calculate neighboring locations about each centroid for network paths.
+	Network::NetworkContainer_t::const_iterator itr=locationNetwork.getNodes().begin(), end=locationNetwork.getNodes().end();
+	for (tract_t t = 0; itr != end; ++t, ++itr) {
+		LocationContainer_t locationPath;
+		locationNetwork.buildNeighborsAboutNode(itr->second, locationPath);
+		gvCentroidToLocationDistances = locationPath;
+		CalculateNeighborsForCurrentState(prNeighborsCount);
+		const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
+		if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
+			frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
+	}
+}
+
+
 /** Given current state of class data members, calculates the number of neighbors in real data and simulation data. */
 void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int, std::vector<int> >& prNeigborsCount) const {
   prNeigborsCount.first = (this->*gPrimaryNeighbors.first)(gPrimaryNeighbors.second);
@@ -424,7 +453,6 @@ void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int
       prNeigborsCount.second = (this->*gTertiaryReportedNeighbors.first)(gTertiaryReportedNeighbors.second, prNeigborsCount.second);
   }
 }*/
-
 
 /** Calculates the number of neighboring locations as defined in gvCentroidToLocationDistances
     and maximum circle size. */
@@ -517,47 +545,55 @@ tract_t CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopul
 
 /** Calculates distances from centroid to all locations, storing in gvCentroidToLocationDistances object. */
 void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
-  std::vector<double>           vCentroidCoordinates, vLocationCoordinates;
+	std::vector<double>           vCentroidCoordinates, vLocationCoordinates;
+	bool checkOverrides(
+		gParameters.getUseLocationsNetworkFile() && 
+		gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE && 
+		gLocationInfo.getLocationsDistanceOverridesExist()
+	);
 
-  gCentroidInfo.retrieveCoordinates(tCentroidIndex, vCentroidCoordinates);
-  gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
-  TractHandler::LocationsContainer_t::const_iterator  itr=gLocationInfo.getLocations().begin(),
-                                                      itr_end=gLocationInfo.getLocations().end();
-  if (tEllipseOffsetIndex == 0) {
-    //calculate distances from centroid to each location
-    for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
-       //if (!(*itr)->isEvaluatedLocation())
-       //    //skip locations that are marked as not evaluated in cluster expansion
-       //    continue;
-
-       for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
-         (*itr)->getCoordinates()[c]->retrieve(vLocationCoordinates);
-         gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
-         ++i;
-       }
-    }
-  }
-  else {
-    //tranform centroid coordinates into elliptical space
-    Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], GetEllipseAngle(tEllipseOffsetIndex),
-              GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
-    vLocationCoordinates.resize(2);
-    CalculateEllipticCoordinates(tEllipseOffsetIndex);
-    //calculate distances from centroid to each location
-    for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
-       //if (!(*itr)->isEvaluatedLocation())
-       //    //skip locations that are marked as not evaluated in cluster expansion
-       //    continue;
-
-       for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
-          unsigned int iPosition = (*itr)->getCoordinates()[c]->getInsertionOrdinal();
-          vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;
-          vLocationCoordinates[1] = gvLocationEllipticCoordinates[iPosition].second;
-          gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
-          ++i;
-       }
-    }
-  }
+	gCentroidInfo.retrieveCoordinates(tCentroidIndex, vCentroidCoordinates);
+	gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
+	TractHandler::LocationsContainer_t::const_iterator itr=gLocationInfo.getLocations().begin(), itr_end=gLocationInfo.getLocations().end();
+	if (tEllipseOffsetIndex == 0) {
+		//calculate distances from centroid to each location
+		for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+			//if (!(*itr)->isEvaluatedLocation())
+			//    //skip locations that are marked as not evaluated in cluster expansion
+			//    continue;
+			if (checkOverrides) {
+				std::pair<bool, double> override = gLocationInfo.getLocationsDistanceOverride(tCentroidIndex, k);
+				if (override.first) {
+					gvCentroidToLocationDistances[i].Set(k, override.second, 0);
+					++i;
+					continue;
+				}
+			}
+			for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
+				(*itr)->getCoordinates()[c]->retrieve(vLocationCoordinates);
+				gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
+				++i;
+			}
+		}
+	} else {
+		//transform centroid coordinates into elliptical space
+		Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], GetEllipseAngle(tEllipseOffsetIndex), GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
+		vLocationCoordinates.resize(2);
+		CalculateEllipticCoordinates(tEllipseOffsetIndex);
+		//calculate distances from centroid to each location
+		for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+			//if (!(*itr)->isEvaluatedLocation())
+			//    //skip locations that are marked as not evaluated in cluster expansion
+			//    continue;
+			for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
+				unsigned int iPosition = (*itr)->getCoordinates()[c]->getInsertionOrdinal();
+				vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;
+				vLocationCoordinates[1] = gvLocationEllipticCoordinates[iPosition].second;
+				gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
+				++i;
+			}
+		}
+	}
 }
 
 /** Scans gvCentroidToLocationDistances for adjacent locations that reference the same coordinates.

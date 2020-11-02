@@ -37,12 +37,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
             PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
-        if (!gParameters.getPerformPowerEvaluation() && gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
-            !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS || gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
-            bValid = false;
-            PrintDirection.Printf("%s:\nWhen using the non-Eucledian neighbors file, the criteria for reporting secondary clusters "
-                                  "can either be set to 'no restrictions' or 'no geographical overlap'.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        }
         //validate model parameters
         if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
             if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
@@ -60,6 +54,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateContinuousPoissonParameters(PrintDirection);
 		if (!excludeFileValidation)
 			bValid &= ValidateFileParameters(PrintDirection);
+		bValid &= ValidateLocationNetworkParameters(PrintDirection);
         bValid &= ValidateOutputOptionParameters(PrintDirection);
         bValid &= ValidateRangeParameters(PrintDirection);
         bValid &= ValidateIterativeScanParameters(PrintDirection);
@@ -324,7 +319,10 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
 
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
-
+	if (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.getUseLocationsNetworkFile()) {
+		bValid = false;
+		PrintDirection.Printf("%s:\nThe option to use elliptic spatial windows cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+	}
     if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
       PrintDirection.Printf("%s:\nThe number of requested ellipses '%d' is not within allowable range of 1 - %d.\n",
@@ -549,7 +547,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         }
     }
     //validate special grid file
-    if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
+    if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.getUseLocationsNetworkFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
     else if (gParameters.UseSpecialGrid()) {
         bool exists = checkFileExists(gParameters.GetSpecialGridFileName(), "grid", PrintDirection);
@@ -610,6 +608,10 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.UseMetaLocationsFile()) {
        bValid &= checkFileExists(gParameters.getMetaLocationsFilename(), "meta locations", PrintDirection);
     }
+	//validate locations network file
+	if (gParameters.getUseLocationsNetworkFile()) {
+		bValid &= checkFileExists(gParameters.getLocationsNetworkFilename(), "locations network", PrintDirection);
+	}
     //validate output file
     bValid &= checkFileExists(gParameters.GetOutputFileName(), "results", PrintDirection, true);
   } catch (prg_exception& x) {
@@ -923,6 +925,41 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
   return bReturn;
 }
 
+bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirection) const {
+	bool  bReturn = true;
+	try {
+        if (!gParameters.getUseLocationsNetworkFile())
+            return bReturn;
+
+		if (gParameters.GetIsPurelyTemporalAnalysis()) {
+			const_cast<CParameters&>(gParameters).setUseLocationsNetworkFile(false);
+		}
+		if (gParameters.UseLocationNeighborsFile()) {
+			bReturn = false;
+			PrintDirection.Printf("%s:\nThe non-euclidean neighbors file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+		}
+		if (gParameters.UseSpecialGrid()) {
+			bReturn = false;
+			PrintDirection.Printf("%s:\nThe special grid file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+		}
+		if (gParameters.requestsGeogrphaicalOutput() && gParameters.GetCoordinatesFileName().size() == 0) {
+			const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
+			PrintDirection.Printf("Parameter Setting Warning:\n"
+				"Geographical output file(s) have been requested in conjuction with a network file yet a coordinates file has not been provided.\n"
+				"A coordinates file is required to place locations geograghically. Geographical output files will not be created in this analysis.\n", BasePrint::P_WARNING
+			);
+		}
+        if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
+            bReturn = false;
+            PrintDirection.Printf("%s:\nThe locations network file cannot be used in conjunction with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+	} catch (prg_exception& x) {
+		x.addTrace("ValidateLocationNetworkParameters()", "ParametersValidate");
+		throw;
+	}
+	return bReturn;
+}
+
 /** Validates observable regions parameters. */
 bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const {
   bool  bReturn=true;
@@ -1063,10 +1100,11 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     }
 
 
-    if (gParameters.getOutputShapeFiles() && !gParameters.GetOutputClusterLevelDBase()) {
+    if (gParameters.getOutputShapeFiles() && !(gParameters.GetOutputClusterLevelDBase() || gParameters.GetOutputAreaSpecificDBase())) {
       const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);
-      PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The shapefiles option requires that the 'Cluster Information' dBase file also be generated.\nThe option was enabled.\n",
+	  const_cast<CParameters&>(gParameters).SetOutputAreaSpecificDBase(true);
+	  PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The shapefiles option requires that the 'Cluster Information' adnd 'Location Information' dBase files also be generated.\nThese options were enabled.\n",
                             BasePrint::P_WARNING);
     }
     if (gParameters.getOutputCartesianGraph() && gParameters.GetIsPurelyTemporalAnalysis()) {

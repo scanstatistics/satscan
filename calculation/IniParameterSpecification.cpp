@@ -13,6 +13,7 @@ const char * IniParameterSpecification::DataChecking              = "Data Checki
 const char * IniParameterSpecification::Drilldown                 = "Cluster Drilldown";
 const char * IniParameterSpecification::NeighborsFile             = "Non-Eucledian Neighbors";
 const char * IniParameterSpecification::SpatialNeighbors          = "Spatial Neighbors";
+const char * IniParameterSpecification::LocationsNetwork          = "Locations Network";
 const char * IniParameterSpecification::Analysis                  = "Analysis";
 const char * IniParameterSpecification::SpatialWindow             = "Spatial Window";
 const char * IniParameterSpecification::TemporalWindow            = "Temporal Window";
@@ -141,7 +142,8 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _data_checking_section = SectionInfo(DataChecking, 522);
     _non_eucledian_section = SectionInfo(NeighborsFile, 524);
     _spatial_neighbors_section = SectionInfo(SpatialNeighbors, 526);
-    _spatial_window_section = SectionInfo(SpatialWindow, 530);
+	_locations_network_section = SectionInfo(LocationsNetwork, 527);
+	_spatial_window_section = SectionInfo(SpatialWindow, 530);
     _temporal_window_section = SectionInfo(TemporalWindow, 540);
     _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
@@ -642,9 +644,11 @@ void IniParameterSpecification::Build_9_6_x_ParameterList() {
     assert(_parameter_info.size() == 144);
 }
 
-/** Version 9.6.x */
+/** Version 9.7.x */
 void IniParameterSpecification::Build_9_7_x_ParameterList() {
 	Build_9_6_x_ParameterList();
+
+	_parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 15, _output_section);
 
 	/* This option was combined with another setting. */
 	_parameter_info[PERFORM_STANDARD_DRILLDOWN] = ParamInfo(PERFORM_STANDARD_DRILLDOWN, "PerformStandardDrilldown", 0, _drilldown_section);
@@ -654,7 +658,11 @@ void IniParameterSpecification::Build_9_7_x_ParameterList() {
 	_parameter_info[DRILLDOWN_PVLAUE_CUTOFF] = ParamInfo(DRILLDOWN_PVLAUE_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
 	_parameter_info[DRILLDOWN_ADJ_WEEKLY_TRENDS] = ParamInfo(DRILLDOWN_ADJ_WEEKLY_TRENDS, "DrilldownAdjustForWeeklyTrends", 5, _drilldown_section);
 
-	assert(_parameter_info.size() == 150);
+	_parameter_info[USE_NETWORK_FILE] = ParamInfo(USE_NETWORK_FILE, "UseLocationsNetworkFile", 1, _locations_network_section);
+	_parameter_info[NETWORK_FILE] = ParamInfo(NETWORK_FILE, "LocationsNetworkFilename", 2, _locations_network_section);
+	_parameter_info[NETWORK_PURPOSE] = ParamInfo(NETWORK_PURPOSE, "PurposeLocationsNetworkFile", 3, _locations_network_section);
+
+	assert(_parameter_info.size() == 153);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

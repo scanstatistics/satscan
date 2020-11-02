@@ -56,7 +56,7 @@ const char * ClusterInformationWriter::GINI_CLUSTER_FIELD           = "GINI_CLUS
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
-                gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0), gpShapeDataFileWriter(0) {
+                gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0), gpPolygonShapeDataFileWriter(0), gpPolyLineShapeDataFileWriter(0){
   try {
     if (gParameters.GetOutputClusterLevelFiles() || gParameters.getOutputShapeFiles())
       DefineClusterInformationFields();
@@ -69,7 +69,9 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
     if (gParameters.GetOutputClusterLevelDBase() || gParameters.getOutputShapeFiles()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
       if (gParameters.getOutputShapeFiles()) {
-        gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, SHPT_POLYGON, bAppend);
+		  gpPolygonShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, SHPT_POLYGON, bAppend);
+		  if (gParameters.getUseLocationsNetworkFile())
+			  gpPolyLineShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, SHPT_ARC, bAppend);
       }
     }
     if (gParameters.GetOutputClusterCaseDBase())
@@ -88,11 +90,9 @@ ClusterInformationWriter::~ClusterInformationWriter() {
   try {
     delete gpASCIIFileDataWriter;
     delete gpDBaseFileDataWriter;
-
-    delete gpShapeDataFileWriter;
-
-  }
-  catch (...){}
+    delete gpPolygonShapeDataFileWriter;
+	delete gpPolyLineShapeDataFileWriter;
+  } catch (...){}
 }
 
 /** Defines fields of cluster information output file. */
@@ -105,7 +105,8 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     //define fields of data file that describes cluster properties
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(gDataHub), 0, uwOffset, 0);
-    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+    if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
+          (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !gDataHub.networkCanReportLocationCoordinates()))) {
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
           gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
@@ -323,7 +324,8 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     Record.GetFieldValue(LOC_ID_FIELD).AsString() = GetAreaID(sBuffer, theCluster);
     if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
       Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+    if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
+          (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !gDataHub.networkCanReportLocationCoordinates()))) {
       WriteCoordinates(Record, theCluster);
       if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
         WriteEllipseAngle(Record, theCluster);
@@ -492,17 +494,17 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                             Record.GetFieldValue(E_MAJOR_FIELD).AsDouble() = dRadius * gDataHub.GetEllipseShape(thisCluster.GetEllipseOffset());
                           }
                           else {
-                            Record.GetFieldValue(RADIUS_FIELD).AsDouble() = thisCluster.GetCartesianRadius();
+                            Record.GetFieldValue(RADIUS_FIELD).AsDouble() = std::max(thisCluster.GetCartesianRadius(), 0.0);
                           }
                           break;
          case LATLON    : prLatitudeLongitude = ConvertToLatLong(vCoordinates);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = prLatitudeLongitude.first;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = prLatitudeLongitude.second;
                           // write to shapefile, if we are creating one
-                          if (gpShapeDataFileWriter) {
-                              if (gpShapeDataFileWriter->getShapeType() == SHPT_POINT) {
-                                  gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
-                              } else if (gpShapeDataFileWriter->getShapeType() == SHPT_POLYGON) {
+                          if (gpPolygonShapeDataFileWriter) {
+                              if (gpPolygonShapeDataFileWriter->getShapeType() == SHPT_POINT) {
+								  gpPolygonShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+                              } else if (gpPolygonShapeDataFileWriter->getShapeType() == SHPT_POLYGON) {
                                 std::vector<double> x,y;
                                 GisUtils::pointpair_t clusterSegment = GisUtils::getClusterRadiusSegmentPoints(gDataHub, thisCluster);
                                 GisUtils::points_t circlePoints = GisUtils::getPointsOnCircleCircumference(clusterSegment.first, clusterSegment.second);
@@ -511,13 +513,30 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                                     x.push_back(itrPt->first);
                                     y.push_back(itrPt->second);
                                 }
-                                gpShapeDataFileWriter->writePolygon(x, y);
+								gpPolygonShapeDataFileWriter->writePolygon(x, y);
                               } else {
-                                throw prg_error("Unknown shapefile type '%d'.","WriteCoordinates()", gpShapeDataFileWriter->getShapeType());
+                                throw prg_error("Unknown shapefile type '%d'.","WriteCoordinates()", gpPolygonShapeDataFileWriter->getShapeType());
                               }
                           }
+						  // write edges/connections to shapefile, that we're creating one
+						  if (gpPolyLineShapeDataFileWriter) {
+							  std::vector<double> x, y;
+							  Network::Connection_Details_t connections = gDataHub.refLocationNetwork().getClusterConnections(thisCluster, gDataHub);
+							  Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
+							  for (; itr != end; ++itr) {
+								  CentroidNeighborCalculator::getTractCoordinates(gDataHub, thisCluster, itr->get<0>(), vCoordinates);
+								  std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+								  x.push_back(prLatitudeLongitude.second);
+								  y.push_back(prLatitudeLongitude.first);
+								  CentroidNeighborCalculator::getTractCoordinates(gDataHub, thisCluster, itr->get<1>(), vCoordinates);
+								  prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+								  x.push_back(prLatitudeLongitude.second);
+								  y.push_back(prLatitudeLongitude.first);
+								  gpPolyLineShapeDataFileWriter->writePolyline(x, y);
+							  }
+						  }
 
-                          dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
+						  dRadius = gParameters.getUseLocationsNetworkFile() ? 0.0 : 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius() / (2 * EARTH_RADIUS_km));
                           Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;
          default : throw prg_error("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());

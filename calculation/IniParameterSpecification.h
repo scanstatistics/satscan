@@ -59,7 +59,8 @@ class IniParameterSpecification {
     SectionInfo                 _data_checking_section;
     SectionInfo                 _non_eucledian_section;
     SectionInfo                 _spatial_neighbors_section;
-    SectionInfo                 _spatial_window_section;
+	SectionInfo                 _locations_network_section;
+	SectionInfo                 _spatial_window_section;
     SectionInfo                 _temporal_window_section;
     SectionInfo                 _cluster_restrictions_section;
     SectionInfo                 _space_time_adjustments_section;
@@ -90,7 +91,8 @@ class IniParameterSpecification {
 	static const char         * Drilldown;
 	static const char         * NeighborsFile;
     static const char         * SpatialNeighbors;
-    static const char         * Analysis;
+	static const char         * LocationsNetwork;
+	static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
     static const char         * ClusterRestrictions;

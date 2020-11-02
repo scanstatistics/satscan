@@ -234,6 +234,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
 	  case DRILLDOWN_MIN_CASES          : return "minimum number of cases in detected cluster to perform drilldown (positive integer)";
 	  case DRILLDOWN_PVLAUE_CUTOFF      : return "p-value cutoff of detected cluster to perform drilldown (0.000-1.000)";
 	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "adjust for weekly trends, purely spatial Bernoulli drilldown";
+	  case USE_NETWORK_FILE             : return "use locations network file";
+	  case NETWORK_FILE                 : return "locations network filename";
+	  case NETWORK_PURPOSE              : return "purpose of locations network file (0=Coordinates File Override, 1=Network Definition)";
 	  default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -413,6 +416,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
 	  case DRILLDOWN_MIN_CASES          : return AsString(s, gParameters.getDrilldownMinimumCasesCluster());
 	  case DRILLDOWN_PVLAUE_CUTOFF      : return AsString(s, gParameters.getDrilldownPvalueCutoff());
 	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return AsString(s, gParameters.getDrilldownAdjustWeeklyTrends());
+	  case USE_NETWORK_FILE             : return AsString(s, gParameters.getUseLocationsNetworkFile());
+	  case NETWORK_FILE                 : s = gParameters.getLocationsNetworkFilename().c_str(); return s;
+	  case NETWORK_PURPOSE              : return AsString(s, gParameters.getNetworkFilePurpose());
 	  default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -825,6 +831,10 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
 	  case DRILLDOWN_MIN_CASES          : gParameters.setDrilldownMinimumCasesCluster(ReadUnsignedInt(sParameter, eParameterType)); break;
 	  case DRILLDOWN_PVLAUE_CUTOFF      : gParameters.setDrilldownPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
 	  case DRILLDOWN_ADJ_WEEKLY_TRENDS  : gParameters.setDrilldownAdjustWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
+	  case USE_NETWORK_FILE             : gParameters.setUseLocationsNetworkFile(ReadBoolean(sParameter, eParameterType)); break;
+	  case NETWORK_FILE                 : gParameters.setLocationsNetworkFilename(sParameter.c_str(), true); break;
+	  case NETWORK_PURPOSE              : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, COORDINATES_OVERRIDE, NETWORK_DEFINITION);
+		                                  gParameters.setNetworkFilePurpose((NetworkPurposeType)iValue); break;
 	  default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

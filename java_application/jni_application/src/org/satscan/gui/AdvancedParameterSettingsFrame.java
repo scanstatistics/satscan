@@ -200,6 +200,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Multiple Data Sets", null, _multipleDataSetsTab, null);
                 jTabbedPane1.addTab("Data Checking", null, _dataCheckingTab, null);
                 jTabbedPane1.addTab("Spatial Neighbors", null, _spatialNeighborsTab, null);
+                jTabbedPane1.addTab("Network", null, _network_tab, null);
         }
     }
 
@@ -351,6 +352,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Enables neighbors file group.
      */
     private void enableNonEucludianNeighborsGroup(boolean bEnable) {
+        bEnable &= !(_locations_network.isEnabled() && _locations_network.isSelected());
         _specialNeighborFilesGroup.setEnabled(bEnable);
         _specifiyNeighborsFileCheckBox.setEnabled(bEnable);
         _neighborsFileTextField.setEnabled(bEnable && _specifiyNeighborsFileCheckBox.isSelected());
@@ -504,6 +506,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(!bH_Poisson);
                 enableNonEucludianNeighborsGroup(!bH_Poisson);
+                enableNetworkGroup(!bH_Poisson);
                 enableMultipleLocationsGroup(!bH_Poisson);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(bPoisson || bBernoulli);
@@ -524,6 +527,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(false);
                 enableTemporalStudyPeriodCheckGroup(true);
                 enableNonEucludianNeighborsGroup(false);
+                enableNetworkGroup(false);
                 enableMultipleLocationsGroup(false);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
@@ -545,6 +549,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
                 enableNonEucludianNeighborsGroup(true);
+                enableNetworkGroup(true);
                 enableMultipleLocationsGroup(true);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
@@ -566,6 +571,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
                 enableNonEucludianNeighborsGroup(true);
+                enableNetworkGroup(true);
                 enableMultipleLocationsGroup(true);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
@@ -585,6 +591,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(false);
                 enableTemporalStudyPeriodCheckGroup(true);
                 enableNonEucludianNeighborsGroup(false);
+                enableNetworkGroup(false);
                 enableMultipleLocationsGroup(false);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
@@ -603,6 +610,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCoordinatesCheckGroup(true);
                 enableTemporalStudyPeriodCheckGroup(true);
                 enableNonEucludianNeighborsGroup(true);
+                enableNetworkGroup(true);
                 enableIterativeScanOptionsGroup(true);
                 enableMultipleLocationsGroup(true);
                 enableAdditionalDataSetsGroup(false);
@@ -734,6 +742,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _inputDataSetsList.setEnabled(bEnable);
     }
 
+    private void enableNetworkGroup(boolean enable) {
+        enable &= !(_specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected());
+        _network_group.setEnabled(enable);
+        _locations_network.setEnabled(enable);
+        _network_file_label.setEnabled(enable && _locations_network.isSelected());
+        _network_filename.setEnabled(enable && _locations_network.isSelected());
+        _browse_network_filename.setEnabled(enable && _locations_network.isSelected());
+    }
+    
     /**
      * enables or disables the New button on the Input tab
      */
@@ -767,7 +784,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_specifiyMetaLocationsFileCheckBox.isSelected() == false);
         bReturn &= (_metaLocationsFileTextField.getText().length() == 0);
         bReturn &= (_onePerLocationIdRadioButton.isSelected());
-
+        bReturn &= (_locations_network.isSelected());
+        bReturn &= (_network_filename.getText().length() == 0);
+        
         return bReturn;
     }
 
@@ -1143,12 +1162,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
         parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
         parameters.setDrilldownAdjustWeeklyTrends(_drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected());
+        
+        // Network tab
+        parameters.setUseLocationsNetworkFile(_locations_network.isEnabled() && _locations_network.isSelected());
+        parameters.setLocationsNetworkFilename(_network_filename.getText());
     }
 
     public boolean isNonEucledianNeighborsSelected() {
         return _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
     }
 
+    public boolean isNetworkFileSelected() {
+        return _locations_network.isEnabled() && _locations_network.isSelected();
+    }
+    
     public boolean isAdjustedRelativeRisksSelected() {
         return _adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected();
     }
@@ -1548,18 +1575,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * validates reported clusters limiting control setting - throws exception
-     */
-    private void validateClustersReportedSettings() {
-        boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
-        boolean bHierarchael = _mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected();
-        if (bUsingNeighbors && bHierarchael && _hierarchicalSecondaryClusters.getSelectedIndex() > 0 && _hierarchicalSecondaryClusters.getSelectedIndex() < 5) {
-            throw new AdvFeaturesExpection("Non-eculedian neighbors can only restrict secondary cluster in terms of no geographical overlap.\n",
-                    FocusedTabSet.OUTPUT, (Component) _hierarchicalSecondaryClusters);
-        }
-    }
-
-    /**
      * Validates the power evaluations parameters in conjunction with other
      * selected parameters.
      */
@@ -1692,7 +1707,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validateTemporalWindowSettings();
         validateInferenceSettings();
         validateBorderAnalysisSettings();
-        validateClustersReportedSettings();
         validatePowerEvaluationsSettings();
         validateDrilldownSettings();
     }
@@ -1772,6 +1786,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _neighborsFileTextField.setText("");
         _specifiyMetaLocationsFileCheckBox.setSelected(false);
         _metaLocationsFileTextField.setText("");
+        
+        // network file
+        _locations_network.setSelected(false);
+        _network_filename.setText("");
     }
 
     /**
@@ -1938,7 +1956,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables or disables the window shape options group control
      */
     private void enableWindowShapeGroup(boolean bEnable) {
-        bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
+        bEnable &= !(_specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected());
+        bEnable &= !(_locations_network.isEnabled() && _locations_network.isSelected());
         _spatialWindowShapeGroup.setEnabled(bEnable);
         _circularRadioButton.setEnabled(bEnable);
         _ellipticRadioButton.setEnabled(bEnable
@@ -2410,6 +2429,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
         _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
         _drilldown_restriction_dow.setSelected(parameters.getDrilldownAdjustWeeklyTrends());
+        
+        // Network tab
+        _locations_network.setSelected(parameters.getUseLocationsNetworkFile());
+        _network_filename.setText(parameters.getLocationsNetworkFilename());
     }
 
     /**
@@ -2748,6 +2771,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cutoff = new javax.swing.JTextField();
         _drilldown_restrictions = new javax.swing.JLabel();
         _drilldown_restriction_dow = new javax.swing.JCheckBox();
+        _network_tab = new javax.swing.JPanel();
+        _network_group = new javax.swing.JPanel();
+        _locations_network = new javax.swing.JCheckBox();
+        _network_file_label = new HelpLinkedLabel("Network File:", AppConstants.ADJUSTMENTSFILE_HELPID);
+        _network_filename = new javax.swing.JTextField();
+        _browse_network_filename = new javax.swing.JButton();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -3138,7 +3167,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addContainerGap(144, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3254,7 +3283,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(234, Short.MAX_VALUE))
+                .addContainerGap(210, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -3429,7 +3458,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(169, Short.MAX_VALUE))
+                .addContainerGap(145, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3715,7 +3744,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(111, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4155,7 +4184,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(58, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4408,7 +4437,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4682,7 +4711,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(137, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4995,7 +5024,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5137,7 +5166,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(154, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -5395,7 +5424,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(98, Short.MAX_VALUE))
+                .addContainerGap(74, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -5530,7 +5559,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addContainerGap(258, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -5603,7 +5632,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_border_analysis_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(344, Short.MAX_VALUE))
+                .addContainerGap(320, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
@@ -5766,7 +5795,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(274, Short.MAX_VALUE))
+                .addContainerGap(250, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
@@ -5938,10 +5967,92 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_drilldown_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(150, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Drilldown", _drilldown_tab);
+
+        _network_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Locations Network"));
+
+        _locations_network.setText("Specify locations through a network file");
+        _locations_network.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSettingsForAnalysisModelCombination();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _network_file_label.setText("Network File:"); // NOI18N
+
+        _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _browse_network_filename.setText("..."); // NOI18N
+        _browse_network_filename.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
+        _browse_network_filename.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.NETWORK.toString() + "1";
+                if (!_settings_window._input_source_map.containsKey(key)) {
+                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.NETWORK));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_network_filename, inputSourceSettings, _settings_window);
+            }
+        });
+
+        javax.swing.GroupLayout _network_groupLayout = new javax.swing.GroupLayout(_network_group);
+        _network_group.setLayout(_network_groupLayout);
+        _network_groupLayout.setHorizontalGroup(
+            _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_network_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_locations_network, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+                    .addGroup(_network_groupLayout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addComponent(_network_file_label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_browse_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        _network_groupLayout.setVerticalGroup(
+            _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_network_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_locations_network)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_network_file_label)
+                    .addComponent(_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_browse_network_filename))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _network_tabLayout = new javax.swing.GroupLayout(_network_tab);
+        _network_tab.setLayout(_network_tabLayout);
+        _network_tabLayout.setHorizontalGroup(
+            _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_network_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_network_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _network_tabLayout.setVerticalGroup(
+            _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_network_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_network_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(310, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Network", _network_tab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -6007,6 +6118,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JRadioButton _atLeastOneRadioButton;
     private javax.swing.JPanel _border_analysis_tab;
+    private javax.swing.JButton _browse_network_filename;
     protected javax.swing.JCheckBox _calculate_oliveiras_f;
     private javax.swing.JButton _caseFileBrowseButton;
     private javax.swing.JLabel _caseFileLabel;
@@ -6079,6 +6191,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _limit_high_clusters_value;
     private javax.swing.JCheckBox _limit_low_clusters;
     private javax.swing.JTextField _limit_low_clusters_value;
+    private javax.swing.JCheckBox _locations_network;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
     private javax.swing.JCheckBox _mainAnalysisDrilldown;
@@ -6119,6 +6232,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _multivariateAdjustmentsRadioButton;
     private javax.swing.JButton _neighborsFileBrowseButton;
     private javax.swing.JTextField _neighborsFileTextField;
+    private javax.swing.JLabel _network_file_label;
+    private javax.swing.JTextField _network_filename;
+    private javax.swing.JPanel _network_group;
+    private javax.swing.JPanel _network_tab;
     private java.awt.Choice _nonCompactnessPenaltyComboBox;
     private javax.swing.JLabel _nonCompactnessPenaltyLabel;
     private javax.swing.JTextField _numIterativeScansTextField;

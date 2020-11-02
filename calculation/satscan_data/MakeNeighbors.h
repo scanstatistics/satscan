@@ -51,6 +51,7 @@ class CentroidNeighborCalculator {
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
     void                        CalculateNeighborsByCircles(const CSaTScanData& dataHub);
     void                        CalculateNeighborsByEllipses(const CSaTScanData& dataHub);
+	void                        CalculateNeighborsByNetwork(const CSaTScanData& dataHub);
 
     void                        CalculateNeighborsForCurrentState(std::pair<int, std::vector<int> >& prNeigborsCount) const;
     //void                        CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const;

@@ -100,7 +100,7 @@ const char * ClusterMap::TEMPLATE = " \
                         <p class=\"help-block\">Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \
-                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />Circles</label>\n \
+                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />--cluster-display--</label>\n \
                     <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_locations\" value=\"cluster\" checked=checked />Locations</label>\n \
                     <p class=\"help-block\">Display options for clusters.</p>\n \
                     <!-- <label><input type=\"checkbox\" id=\"id_show_grid_lines\" checked=checked />Show grid lines</label> \n \
@@ -137,7 +137,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src='--resource-path--javascript/clustercharts/mapgoogle-1.0.js'></script> \n \
+    <script src='--resource-path--javascript/clustercharts/mapgoogle-1.1.js'></script> \n \
   </body> \n \
 </html> \n";
 
@@ -180,7 +180,7 @@ std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster
 void ClusterMap::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
     double gdMinRatioToReport = 0.001;
     std::vector<double> vCoordinates;
-    std::string buffer, buffer2, legend;
+    std::string buffer, buffer2, legend, points, edges;
     std::stringstream  worker;
     unsigned int clusterOffset = _clusters_written;
 
@@ -205,6 +205,8 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
                     _cluster_locations.set(tTract);
                 }
             }
+			points = worker.str();
+			trimString(points, ",");
 
             if (cluster.GetEllipseOffset() != 0)
                 throw prg_error("Not implemented for elliptical clusters", "ClusterMap::add()");
@@ -212,8 +214,23 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             GisUtils::pointpair_t clusterSegment = GisUtils::getClusterRadiusSegmentPoints(_dataHub, cluster);
             double radius = GisUtils::getRadiusInMeters(clusterSegment.first, clusterSegment.second);
 
-            std::string points = worker.str();
-            trimString(points, ",");
+			// When using a network file, we'll drawn connections/edges between locations in cluster.
+			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+				Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
+				worker.str("");
+				Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
+				for (; itr != end; ++itr) {
+					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
+					std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+					worker << printString(buffer2, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
+					prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+					worker << printString(buffer2, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+				}
+				edges = worker.str();
+				trimString(edges, ",");
+			}
+
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
             printString(buffer, "lat : %f, lng : %f, radius : %f", prLatitudeLongitude.first, prLatitudeLongitude.second, radius);
@@ -221,7 +238,7 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
                 << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
-                << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', points : [" << points << "] },\n";
+                << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
         }
         ++_clusters_written;
     }
@@ -270,6 +287,7 @@ void ClusterMap::finalize() {
         templateReplace(html, "--parameters--", buffer.c_str());
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
         templateReplace(html, "--api-key--", std::string(API_KEY));
+		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));
 
         HTMLout << html.str() << std::endl;
         HTMLout.close();

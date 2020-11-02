@@ -212,6 +212,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return bReturn;
     }
 
+    public boolean requestsGeographicalOutput() {
+        return getReportingGoogleEarthKML() || getReportingGoogleMap() || getReportingCartesianGraph() || getReportingShapefile();
+    }
+    
     public boolean anyLaunchableSelections() {
         return getReportingGoogleEarthKML() || getReportingGoogleMap() || getReportingCartesianGraph();
     }
@@ -227,6 +231,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public boolean getReportingCartesianGraph() {
         return _reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected();
     }    
+
+    public boolean getReportingShapefile() {
+        return _reportShapefile.isEnabled() && _reportShapefile.isSelected();
+    }        
     
     /**
      * sets precision of times type control for DatePrecisionType
@@ -663,8 +671,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             eAnalysisType == Parameters.AnalysisType.SEASONALTEMPORAL) {
             bCheckCoordinatesFile = getAdvancedParameterInternalFrame().isAdjustedRelativeRisksSelected() &&
                                     _coordiantesFileTextField.getText().length() != 0;
-        } else {
-            bCheckCoordinatesFile = !getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected();
+        } else if (getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected()) {
+            bCheckCoordinatesFile = false;
+        } else if (getAdvancedParameterInternalFrame().isNetworkFileSelected() && !requestsGeographicalOutput() && _coordiantesFileTextField.getText().length() == 0) {
+            // If user specified a network file and no geographical output files and the coordinates input is blank, don't check coordinates input.
+            // The coordinates file is conditionally required based on 2 things:
+            //  - user specified a network file where at least one record does not detail the distance between a connection
+            //  - the user requested a geographical output file, so we need the coordinates file obtain coordinates of each location
+           bCheckCoordinatesFile = false; 
         }
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
         if (bCheckCoordinatesFile) {
@@ -680,7 +694,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             String validationString = validateInputSourceDataFile(_coordiantesFileTextField.getText(), InputSourceSettings.InputFileType.Coordinates.toString() + "1", "coordinates");
             if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             //validate special grid file -- optional
-            if (_gridFileTextField.getText().length() > 0) {
+            if (_gridFileTextField.getText().length() > 0 && !getAdvancedParameterInternalFrame().isNetworkFileSelected()) {
                 if (!FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false))
                     throw new SettingsException("The grid file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.", (Component) _gridFileTextField);
                 if (!FileAccess.isValidFilename(_gridFileTextField.getText())) {                

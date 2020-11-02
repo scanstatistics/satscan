@@ -21,7 +21,7 @@ public final class AppConstants {
     public static final int VERSION_MAJOR = 9;
     public static final int VERSION_MINOR = 7;
     public static final int VERSION_RELEASE = 0;
-    public static final String VERSION_PHASE = "Alpha 1 Build 1";
+    public static final String VERSION_PHASE = "Beta 2 Build 1";
     
     // Input Tab
     public static final String CASEFILE_HELPID = "Case File";
@@ -41,6 +41,7 @@ public final class AppConstants {
     public static final String NONEUCLIDIANFILE_HELPID = "Non-Euclidian Neighbors File";
     public static final String METALOCATIONSFILE_HELPID = "Meta Location File";
     public static final String MULTIPLECOORDLOC_HELPID = "Multiple Coordinates per Location";
+    // Advanced Input Tab - Network
     // Analysis Tab
     public static final String TYPEANALYSIS_HELPID = "Type of Analysis";
     public static final String PROBABILITYMODEL_HELPID = "Probability Model";

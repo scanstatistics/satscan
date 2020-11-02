@@ -8,6 +8,7 @@
 #include "SSException.h"
 #include "cluster.h"
 #include "MetaTractManager.h"
+#include "LocationNetwork.h"
 
 //////////////// TractHandler::Coordinates class ///////////////////////////////
 
@@ -66,7 +67,8 @@ TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aC
     if (!sIdentifier) throw prg_error("Null location pointer.", "Location()");
     gsIndentifier = new char[strlen(sIdentifier) + 1];
     strcpy(gsIndentifier, sIdentifier);
-    gvCoordinatesContainer.add(&aCoordinates, true);
+	if (aCoordinates.getSize() > 0)
+		gvCoordinatesContainer.add(&aCoordinates, true);
 }
 
 TractHandler::Location::~Location() {try {delete[] gsIndentifier;}catch(...){}}
@@ -148,34 +150,35 @@ void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
 
 /** Insert a tract into internal structure, sorting by tract identifier. Ignores location ids
     which already exist. Returns tract identifers relative index into internal structure. */
-void TractHandler::addLocation(const char *sIdentifier) {
+size_t TractHandler::addLocation(const char *sIdentifier) {
   assert(gAdditionStatus == Accepting);
   ptr_vector<Location>::iterator itr;
 
   try {
-    if (gbAggregatingTracts) return;//when aggregating locations, insertion process always succeeds
+    if (gbAggregatingTracts) return 0;//when aggregating locations, insertion process always succeeds
 
     if (!sIdentifier) throw prg_error("Null location pointer.", "addLocation()");
 
-    tract_t tLocationIndex=gMetaLocationsManager.getMetaLocationPool().getMetaLocationIndex(sIdentifier);
+    tract_t tLocationIndex = gMetaLocationsManager.getMetaLocationPool().getMetaLocationIndex(sIdentifier);
     if (tLocationIndex > -1) {
-      gMetaLocationsManager.addReferenced(tLocationIndex); return;
+      gMetaLocationsManager.addReferenced(tLocationIndex); return tLocationIndex;
     }
 
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
     itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itr == gvLocations.end() || strcmp((*itr)->getIndentifier(), sIdentifier))
-      gvLocations.insert(itr, identifier.release());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("addLocation()", "TractHandler");
+	if (itr == gvLocations.end() || strcmp((*itr)->getIndentifier(), sIdentifier)) {
+		itr = gvLocations.insert(itr, identifier.release());
+	}
+	return std::distance(gvLocations.begin(), itr);
+  } catch (prg_exception& x) {
+	x.addTrace("addLocation()", "TractHandler");
     throw;
   }
 }
 
 /** Inserts a locations identifier into internal structures.  */
-void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCoordinates) {
+void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCoordinates, bool onlyIfExists) {
   assert(gAdditionStatus == Accepting);
   try {
     if (gbAggregatingTracts) return; //when aggregating locations, insertion process always succeeds
@@ -200,7 +203,7 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
     if (itrIdentifiers != gvLocations.end() && !strcmp((*itrIdentifiers)->getIndentifier(), sIdentifier))
       //when identifier already exists, then note that it is defined at this coordinate as well
       (*itrIdentifiers)->addCoordinates(*(*itrCoordinates), geMultipleCoordinatesType);
-    else
+    else if (!onlyIfExists)
       //otherwise this is a new identifier
       gvLocations.insert(itrIdentifiers, identifier.release());
   }
@@ -208,6 +211,35 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
     x.addTrace("addLocation()", "TractHandler");
     throw;
   }
+}
+
+bool TractHandler::addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance) {
+	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
+	LocationOverrides_t::iterator itrSmaller = _location_distance_overrides.find(smaller);
+	if (itrSmaller == _location_distance_overrides.end()) {
+		std::map<tract_t, double> v;
+		v[larger] = distance;
+		_location_distance_overrides[smaller] = v;
+	} else {
+		std::map<tract_t, double>::iterator itrLarger = itrSmaller->second.find(larger);
+		if (itrLarger == itrSmaller->second.end()) {
+			std::map<tract_t, double> v;
+			v[larger] = distance;
+			itrSmaller->second = v;
+		} else if (itrLarger->second != distance)
+			return false;
+	}
+	return true;
+}
+
+std::pair<bool, double> TractHandler::getLocationsDistanceOverride(tract_t t1, tract_t t2) const {
+	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
+	LocationOverrides_t::const_iterator itrSmaller = _location_distance_overrides.find(smaller);
+	if (itrSmaller != _location_distance_overrides.end()) {
+		std::map<tract_t, double>::const_iterator itrLarger = itrSmaller->second.find(larger);
+		if (itrLarger != itrSmaller->second.end()) return std::make_pair(true, itrLarger->second);
+	}
+	return std::make_pair(false, 0.0);
 }
 
 /** Returns indication of whether coordinates are currently defined. */

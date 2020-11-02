@@ -53,8 +53,9 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
       DBaseDataFileWriter     * gpDBaseFileDataWriter;
-      ShapeDataFileWriter     * gpShapeDataFileWriter;
-      ptr_vector<FieldDef>      vDataFieldDefinitions;
+      ShapeDataFileWriter     * gpPolygonShapeDataFileWriter;
+	  ShapeDataFileWriter     * gpPolyLineShapeDataFileWriter;
+	  ptr_vector<FieldDef>      vDataFieldDefinitions;
 
       void                      DefineClusterInformationFields();
       void                      DefineClusterCaseInformationFields();

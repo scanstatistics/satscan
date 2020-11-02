@@ -91,7 +91,8 @@ class ShapeFile {
         int             getType() const;
         bool            hasProjection() const {return _projection.get() != 0;}
         const Projection & getProjection() const {return *_projection;}
-        void            writePoint(double x, double y);
+		void            writePolyline(const std::vector<double>& polygonX, const std::vector<double>& polygonY);
+		void            writePoint(double x, double y);
         void            writePolygon(const ConvexPolygonObservableRegion& polygon);
         void            writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY);
 

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SaTScan"
-#define MyAppVersion "9.7 Alpha 1 Build 1"
+#define MyAppVersion "9.7 Beta 2 Build 1"
 #define MyAppPublisher "Information Management Services, Ins."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"

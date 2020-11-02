@@ -77,6 +77,10 @@ public class FileSelectionDialog {
             case AlternativeHypothesis:
                 filters.add(new InputFileFilter("ha", "Alternative Hypothesis Files (*.ha)"));
                 break;
+            case NETWORK : 
+                filters = FileSourceWizard.getInputFilters();                
+                filters.add(new InputFileFilter("ntk", "Network Files (*.ntk)"));
+                break;
            default: throw new UnknownEnumException(fileType);
         }            
         setup(parent, browse_title, filters, lastBrowseDirectory);
@@ -109,6 +113,7 @@ public class FileSelectionDialog {
             case Neighbors: return "Non-Euclidian Neighbors";
             case MetaLocations: return "Meta Locations";
             case AlternativeHypothesis: return "Alternative Hypothesis";
+            case NETWORK: return "Network";
             default: throw new UnknownEnumException(fileType);
         }                
     }    
@@ -193,7 +198,8 @@ public class FileSelectionDialog {
                     case AdjustmentsByRR:
                     case Neighbors:
                     case MetaLocations:
-                    case AlternativeHypothesis: break;
+                    case AlternativeHypothesis: 
+                    case NETWORK: break;
                     default: throw new UnknownEnumException(inputSourceSettings.getInputFileType());
                 }                
             }

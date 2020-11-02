@@ -163,7 +163,8 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
         }
 
 		/* Define location specific coordinate fields. */
-		if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+		if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
+              (gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates())))) {
 			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
 				gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
 			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
@@ -231,7 +232,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
         if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
 		/* Get coordinates for the cluster. */
-		if (!gParameters.UseLocationNeighborsFile()) {
+        if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
 			loc_first_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD);
 			loc_second_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD);
 		}
@@ -278,7 +279,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
             }
 
 			/* Report coordinate fields for location. */
-            if (!gParameters.UseLocationNeighborsFile()) {
+            if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
 				/* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
 				DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
 				/* Write records to record buffer. */

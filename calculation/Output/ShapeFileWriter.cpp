@@ -32,6 +32,8 @@ void ShapeDataFileWriter::_setup(const CParameters& Parameters, const std::strin
     std::string   buffer, ext(sFileExtension);
 
     try {
+		if (shapetype == SHPT_ARC)
+			ext += ".edges";
         ext += SHAPE_FILE_EXT;
         _fileName.setFullPath(Parameters.GetOutputFileName().c_str());
         _fileName.setExtension(ext.c_str());
@@ -50,8 +52,7 @@ void ShapeDataFileWriter::_setup(const CParameters& Parameters, const std::strin
     }
 }
 
-/** Write data to file stream. Note that caller is responsible for ensuring that
-    record buffer structure agrees with file structure. */
+/** Write data to file stream.  */
 void ShapeDataFileWriter::writeCoordinates(double x, double y) {
     try {
         _file->writePoint(x, y);
@@ -61,8 +62,7 @@ void ShapeDataFileWriter::writeCoordinates(double x, double y) {
     }
 }
 
-/** Write data to file stream. Note that caller is responsible for ensuring that
-    record buffer structure agrees with file structure. */
+/** Write data to file stream. */
 void ShapeDataFileWriter::writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY) {
     try {
         _file->writePolygon(polygonX, polygonY);
@@ -70,4 +70,15 @@ void ShapeDataFileWriter::writePolygon(const std::vector<double>& polygonX, cons
         x.addTrace("writePolygon()","ShapeDataFileWriter");
         throw;
     }
+}
+
+/** Write data to file stream. */
+void ShapeDataFileWriter::writePolyline(const std::vector<double>& polylineX, const std::vector<double>& polylineY) {
+	try {
+		_file->writePolyline(polylineX, polylineY);
+	}
+	catch (prg_exception& x) {
+		x.addTrace("writePolyline()", "ShapeDataFileWriter");
+		throw;
+	}
 }

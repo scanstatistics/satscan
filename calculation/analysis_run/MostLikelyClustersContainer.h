@@ -162,6 +162,7 @@ class MostLikelyClustersContainer {
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
+	static bool                 clusterContainsTract(const CSaTScanData& DataHub, tract_t clusterCenter, const CCluster& Cluster);
 	static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
 	void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride=0);

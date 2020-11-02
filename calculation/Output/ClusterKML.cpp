@@ -74,6 +74,24 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         prLatitudeLongitude = clusterSegment.first;
         outKML << "\t\t\t<Point><extrude>1</extrude><altitudeMode>relativeToGround</altitudeMode><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0" << "</coordinates></Point>" << std::endl;
         outKML << "\t\t</MultiGeometry>" << std::endl << "\t</Placemark>" << std::endl;
+
+		// When using a network file, we only draw a small circle around central location then drawn connections/edges between locations in cluster.
+		if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+			outKML << "\t\t<Folder><name>Cluster " << (iCluster + 1) << " Edges</name>";
+			Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
+			Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
+			for (; itr != end; ++itr) {
+				CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
+				std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+				outKML << "\t\t\t<Placemark><styleUrl>#" << (isHighRate ? "high" : "low") << "-line-edge</styleUrl><LineString><coordinates>";
+				outKML << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0  ";
+				CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
+				prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+				outKML << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0</coordinates></LineString></Placemark>" << std::endl;
+			}
+			outKML << "\t\t</Folder>" << std::endl;
+		}
+
         // add cluster locations if requested
         if (_dataHub.GetParameters().getIncludeLocationsKML()) {
             std::stringstream  clusterPlacemarks;
@@ -96,6 +114,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
                         << "</coordinates></Point></Placemark>" << std::endl;
                 }
             }
+
             if (clusterPlacemarks.str().size()) {
                 if (_separateLocationsKML) {
                     // Create separate kml for this clusters locations, then reference in primary cluster.
@@ -120,8 +139,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
                     outKML << "\t<Folder><name>Cluster " << (iCluster + 1) << " Locations</name><description></description>" << std::endl << clusterPlacemarks.str() << "\t</Folder>" << std::endl << std::endl;
                 }
             }
-        }
-        else {
+        } else {
             outKML << std::endl;
         }
 
@@ -242,6 +260,8 @@ void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
     outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><color>ff0000aa</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>ffff0000</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"location-placemark\"><IconStyle><color>ff019399</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+	outKML << "\t<StyleMap id=\"high-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>ff0000aa</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>ff0000aa</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+	outKML << "\t<StyleMap id=\"low-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>ffff0000</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>ffff0000</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
 
     FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
     outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;

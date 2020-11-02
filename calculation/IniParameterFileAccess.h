@@ -35,7 +35,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
     void                                WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
     void                                WriteInputSettings(IniFile& WriteFile);
-    void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
+	void                                WriteLocationNetworkSettings(IniFile& WriteFile);
+	void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
     void                                WriteObservableRegionSettings(IniFile& WriteFile);
     void                                WriteOutputSettings(IniFile& WriteFile);
     void                                WritePowerEvaluationsSettings(IniFile& WriteFile);

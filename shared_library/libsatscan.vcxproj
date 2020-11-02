@@ -255,6 +255,7 @@
     <ClCompile Include="..\calculation\satscan_data\BernoulliDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\probability_model\CalculateMeasure.cpp" />
     <ClCompile Include="..\calculation\satscan_data\CentroidNeighbors.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\LocationNetwork.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSet.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetGateway.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetHandler.cpp" />
@@ -448,6 +449,7 @@
     <ClInclude Include="..\calculation\satscan_data\BernoulliDataSetHandler.h" />
     <ClInclude Include="..\calculation\probability_model\CalculateMeasure.h" />
     <ClInclude Include="..\calculation\satscan_data\CentroidNeighbors.h" />
+    <ClInclude Include="..\calculation\satscan_data\LocationNetwork.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSet.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetGateway.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetHandler.h" />
