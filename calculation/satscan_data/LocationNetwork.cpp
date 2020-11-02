@@ -77,31 +77,31 @@ LocationContainer_t& Network::buildNeighborsAboutNode(const NetworkNode& node, L
 
 	visited.set(node.getTractIndex()); // Mark the node as visited.
 	// Find node with shortest distance from starting node - all other connections from node become candidates.
-	NetworkNode::ConnectionsContainer_t::const_iterator itrBest=node.getConnections().begin(), end=node.getConnections().end(), itr=node.getConnections().begin();
-	for (++itr; itr != end; ++itr) {
-		if (itr->second < itrBest->second || (itr->second == itrBest->second && itr->first->getTractIndex() < itrBest->first->getTractIndex())) {
-			candidateNodes.push_back(*itrBest);
-			candidates.set(itrBest->first->getTractIndex());
-			candidate_length[itrBest->first->getTractIndex()] = itrBest->second;
-			itrBest = itr;
+	NetworkNode::ConnectionsContainer_t::const_iterator itrBestR=node.getConnections().begin(), endR=node.getConnections().end(), itrR=node.getConnections().begin();
+	for (++itrR; itrR != endR; ++itrR) {
+		if (itrR->second < itrBestR->second || (itrR->second == itrBestR->second && itrR->first->getTractIndex() < itrBestR->first->getTractIndex())) {
+			candidateNodes.push_back(*itrBestR);
+			candidates.set(itrBestR->first->getTractIndex());
+			candidate_length[itrBestR->first->getTractIndex()] = itrBestR->second;
+			itrBestR = itrR;
 		} else {
-			candidateNodes.push_back(*itr);
-			candidates.set(itr->first->getTractIndex());
-			candidate_length[itr->first->getTractIndex()] = itr->second;
+			candidateNodes.push_back(*itrR);
+			candidates.set(itrR->first->getTractIndex());
+			candidate_length[itrR->first->getTractIndex()] = itrR->second;
 		}
 	}
 	// Add the node with shortest distance to return list, then add that nodes connections as candidates.
-	locations.push_back(LocationDistance(itrBest->first->getTractIndex(), itrBest->second));
-	visited.set(itrBest->first->getTractIndex());
-	if (pathTree) pathTree->add_connection(*itrBest->first, itrBest->second, visited);
+	locations.push_back(LocationDistance(itrBestR->first->getTractIndex(), itrBestR->second));
+	visited.set(itrBestR->first->getTractIndex());
+	if (pathTree) pathTree->add_connection(*itrBestR->first, itrBestR->second, visited);
 	if (limitTo && limitTo.get() == locations.size())
 		return locations;
-	itr=itrBest->first->getConnections().begin(), end=itrBest->first->getConnections().end();
-	for (; itr != end; ++itr) {
-		if (!visited.test(itr->first->getTractIndex()) && !candidates.test(itr->first->getTractIndex())) {
-			candidateNodes.push_back(*itr);
-			candidates.set(itr->first->getTractIndex());
-			candidate_length[itr->first->getTractIndex()] = itrBest->second + itr->second;
+	itrR = itrBestR->first->getConnections().begin(), endR = itrBestR->first->getConnections().end();
+	for (; itrR != endR; ++itrR) {
+		if (!visited.test(itrR->first->getTractIndex()) && !candidates.test(itrR->first->getTractIndex())) {
+			candidateNodes.push_back(*itrR);
+			candidates.set(itrR->first->getTractIndex());
+			candidate_length[itrR->first->getTractIndex()] = itrBestR->second + itrR->second;
 		}
 	}
 	// At this point the candidates will be all nodes off the starting node plus direct connections from that best node -- excluding the best node itself.
@@ -109,33 +109,33 @@ LocationContainer_t& Network::buildNeighborsAboutNode(const NetworkNode& node, L
 	double lengthBest, lengthCandidate;
 	while (candidateNodes.size()) {
 		// Search for the node with the shortest distance among all current candidates.
-		itrBest=candidateNodes.begin(), end=candidateNodes.end(), itr=candidateNodes.begin();
-		for (++itr; itr != end; ++itr) {
-			lengthCandidate = candidate_length[itr->first->getTractIndex()];
-			lengthBest = candidate_length[itrBest->first->getTractIndex()];
-			if (lengthCandidate < lengthBest || (lengthCandidate == lengthBest && itr->first->getTractIndex() < itrBest->first->getTractIndex()))
-				itrBest = itr;
+        NetworkNode::ConnectionsContainer_t::iterator itrBestC = candidateNodes.begin(), endC = candidateNodes.end(), itrC = candidateNodes.begin();
+		for (++itrC; itrC != endC; ++itrC) {
+			lengthCandidate = candidate_length[itrC->first->getTractIndex()];
+			lengthBest = candidate_length[itrBestC->first->getTractIndex()];
+			if (lengthCandidate < lengthBest || (lengthCandidate == lengthBest && itrC->first->getTractIndex() < itrBestC->first->getTractIndex()))
+				itrBestC = itrC;
 		}
 		// At this point itrBest references the best candidate, so add it to the locations list along with it's distance from node center.
-		double lengthBest = candidate_length[itrBest->first->getTractIndex()];
-		locations.push_back(LocationDistance(itrBest->first->getTractIndex(), lengthBest));
+		double lengthBest = candidate_length[itrBestC->first->getTractIndex()];
+		locations.push_back(LocationDistance(itrBestC->first->getTractIndex(), lengthBest));
 		// Add all connections from itrBest as candidates as well - excluding any nodes already visited.
-		itr = itrBest->first->getConnections().begin(), end = itrBest->first->getConnections().end();
+        NetworkNode::ConnectionsContainer_t::const_iterator itrB = itrBestC->first->getConnections().begin(), endB = itrBestC->first->getConnections().end();
 		// But first set this node as visited and unset/remove from helper structures.
-		visited.set(itrBest->first->getTractIndex());
-		if (pathTree) pathTree->add_connection(*itrBest->first, itrBest->second, visited);
+		visited.set(itrBestC->first->getTractIndex());
+		if (pathTree) pathTree->add_connection(*itrBestC->first, itrBestC->second, visited);
 		if (limitTo && limitTo.get() == locations.size())
 			return locations;
-		candidates.reset(itrBest->first->getTractIndex());
-		candidate_length.erase(itrBest->first->getTractIndex());
+		candidates.reset(itrBestC->first->getTractIndex());
+		candidate_length.erase(itrBestC->first->getTractIndex());
 		// Now remove current best node from candidates.
-		candidateNodes.erase(itrBest);
+		candidateNodes.erase(itrBestC);
 		// Add direct connections - being sure to include it's distance from node center.
-		for (; itr != end; ++itr) {
-			if (!visited.test(itr->first->getTractIndex()) && !candidates.test(itr->first->getTractIndex())) {
-				candidateNodes.push_back(*itr);
-				candidates.set(itr->first->getTractIndex());
-				candidate_length[itr->first->getTractIndex()] = lengthBest + itr->second;
+		for (; itrB != endB; ++itrB) {
+			if (!visited.test(itrB->first->getTractIndex()) && !candidates.test(itrB->first->getTractIndex())) {
+				candidateNodes.push_back(*itrB);
+				candidates.set(itrB->first->getTractIndex());
+				candidate_length[itrB->first->getTractIndex()] = lengthBest + itrB->second;
 			}
 		}
 	}
