@@ -673,11 +673,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                     _coordiantesFileTextField.getText().length() != 0;
         } else if (getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected()) {
             bCheckCoordinatesFile = false;
-        } else if (getAdvancedParameterInternalFrame().isNetworkFileSelected() && !requestsGeographicalOutput() && _coordiantesFileTextField.getText().length() == 0) {
+        } else if (getAdvancedParameterInternalFrame().isNetworkFileSelected() && _coordiantesFileTextField.getText().length() == 0) {
             // If user specified a network file and no geographical output files and the coordinates input is blank, don't check coordinates input.
             // The coordinates file is conditionally required based on 2 things:
-            //  - user specified a network file where at least one record does not detail the distance between a connection
+            //  - user specified a network file where at least one record does not detail the distance between a connection (checked in data read)
             //  - the user requested a geographical output file, so we need the coordinates file obtain coordinates of each location
+            if (requestsGeographicalOutput())
+                throw new SettingsException(
+                    "Geographical output file(s) have been requested in conjuction\nwith a network file yet a coordinates file has not been provided.\n" + 
+                    "A coordinates file is required to place locations geograghically.",
+                    (Component) _coordiantesFileTextField
+                );
            bCheckCoordinatesFile = false; 
         }
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
