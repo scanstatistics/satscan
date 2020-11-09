@@ -1904,11 +1904,19 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="ASCII" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JHyperLink(&quot;ASCII&quot;, Color.BLACK);"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="((JHyperLink)_asciiLabel).addActionListener( new ActionListener() {&#xa;    public void actionPerformed( ActionEvent e ) {&#xa;        List&lt;javax.swing.JCheckBox&gt; check_boxes = Arrays.asList(&#xa;            _clustersInColumnFormatAsciiCheckBox, &#xa;            _clusterCaseInColumnFormatAsciiCheckBox,&#xa;            _censusAreasReportedClustersAsciiCheckBox,&#xa;            _relativeRiskEstimatesAreaAsciiCheckBox,&#xa;            _simulatedLogLikelihoodRatiosAsciiCheckBox&#xa;        );&#xa;        toggleColumnOutputSettings(check_boxes);&#xa;    }&#xa;});"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_dBaseLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="dBase" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JHyperLink(&quot;dBase&quot;, Color.BLACK);"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="((JHyperLink)_dBaseLabel).addActionListener( new ActionListener() {&#xa;    public void actionPerformed( ActionEvent e ) {&#xa;        List&lt;javax.swing.JCheckBox&gt; check_boxes = Arrays.asList(&#xa;            _clustersInColumnFormatDBaseCheckBox, &#xa;            _clusterCaseInColumnFormatDBaseCheckBox,&#xa;            _censusAreasReportedClustersDBaseCheckBox,&#xa;            _relativeRiskEstimatesAreaDBaseCheckBox,&#xa;            _simulatedLogLikelihoodRatiosDBaseCheckBox&#xa;        );&#xa;        toggleColumnOutputSettings(check_boxes);&#xa;    }&#xa;});"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_clustersInColumnFormatLabel">
                   <Properties>

@@ -1,11 +1,15 @@
 package org.satscan.gui;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -32,6 +36,7 @@ import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.gui.utils.InputFileFilter;
+import org.satscan.gui.utils.JHyperLink;
 import org.satscan.gui.utils.Utils;
 import org.satscan.importer.CSVImportDataSource;
 import org.satscan.importer.DBaseImportDataSource;
@@ -1575,6 +1580,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
+    /* Toggles collection of checkboxes either all on or all off. */
+    private void toggleColumnOutputSettings(List<javax.swing.JCheckBox> check_boxes) {
+        boolean all_checked = true;
+        all_checked = check_boxes.stream().filter(box -> (box.isEnabled())).map(box -> box.isSelected()).reduce(all_checked, (accumulator, _item) -> accumulator & _item);
+        for (javax.swing.JCheckBox box: check_boxes) {
+            if (box.isEnabled())
+                box.setSelected(!all_checked);
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1686,8 +1701,32 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _advancedAnalysisButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
         _additionalOutputFilesGroup = new javax.swing.JPanel();
-        _asciiLabel = new javax.swing.JLabel();
-        _dBaseLabel = new javax.swing.JLabel();
+        _asciiLabel = new JHyperLink("ASCII", Color.BLACK);
+        ((JHyperLink)_asciiLabel).addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+                List<javax.swing.JCheckBox> check_boxes = Arrays.asList(
+                    _clustersInColumnFormatAsciiCheckBox,
+                    _clusterCaseInColumnFormatAsciiCheckBox,
+                    _censusAreasReportedClustersAsciiCheckBox,
+                    _relativeRiskEstimatesAreaAsciiCheckBox,
+                    _simulatedLogLikelihoodRatiosAsciiCheckBox
+                );
+                toggleColumnOutputSettings(check_boxes);
+            }
+        });
+        _dBaseLabel = new JHyperLink("dBase", Color.BLACK);
+        ((JHyperLink)_dBaseLabel).addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+                List<javax.swing.JCheckBox> check_boxes = Arrays.asList(
+                    _clustersInColumnFormatDBaseCheckBox,
+                    _clusterCaseInColumnFormatDBaseCheckBox,
+                    _censusAreasReportedClustersDBaseCheckBox,
+                    _relativeRiskEstimatesAreaDBaseCheckBox,
+                    _simulatedLogLikelihoodRatiosDBaseCheckBox
+                );
+                toggleColumnOutputSettings(check_boxes);
+            }
+        });
         _clustersInColumnFormatLabel = new javax.swing.JLabel();
         _clustersInColumnFormatAsciiCheckBox = new javax.swing.JCheckBox();
         _clustersInColumnFormatDBaseCheckBox = new javax.swing.JCheckBox();

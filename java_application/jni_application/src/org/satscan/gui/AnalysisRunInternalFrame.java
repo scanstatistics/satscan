@@ -1,6 +1,12 @@
 package org.satscan.gui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,19 +15,40 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.app.AppConstants;
 import org.satscan.app.CalculationThread;
 import org.satscan.utils.EmailClientLauncher;
@@ -45,19 +72,43 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private String gsProgramErrorCallPath = "";
     private final int MAXLINES = 999;
     private boolean _warning_errors_encountered = false;
+    Map<DefaultMutableTreeNode, String> _tree_output_map = new HashMap<>();
+    Map<String, DefaultMutableTreeNode> _output_tree_map = new HashMap<>();
 
     /**
      * Creates new form ParameterSettingsFrame
      */
     public AnalysisRunInternalFrame(final Parameters parameters) {
         initComponents();
-        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
-        addInternalFrameListener(this);
+        /* Remove the drilldown tab initially - we'll add back if analysis completes any drilldowns. */
+        _bottom_tabbed_pane.remove(_drilldown_results_tab);
+        super.setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
+        super.addInternalFrameListener(this);
         _parameters = (Parameters)parameters.clone();
-        setTitle("Running " + (_parameters.GetSourceFileName().equals("") ? "Session" : _parameters.GetSourceFileName()));
+        super.setTitle("Running " + (_parameters.GetSourceFileName().equals("") ? "Session" : _parameters.GetSourceFileName()));
         new CalculationThread(this, _parameters).start();
     }
 
+    /* Add drilldown output in relation to outfile file from calling analysis. */
+    public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile) {
+        DefaultMutableTreeNode parent, child;
+        if (!_output_tree_map.containsKey(parent_resultfile)) {
+            parent = new DefaultMutableTreeNode(parent_resultfile);
+            _output_tree_map.put(parent_resultfile, parent);
+            _tree_output_map.put(parent, parent_resultfile);
+        } else {
+            parent = _output_tree_map.get(parent_resultfile);
+        }
+        if (!_output_tree_map.containsKey(drilldown_resultfile)) {
+            child = new DefaultMutableTreeNode(drilldown_resultfile);
+            _output_tree_map.put(drilldown_resultfile, child);
+            _tree_output_map.put(child, drilldown_resultfile);            
+        } else {
+            child = _output_tree_map.get(drilldown_resultfile);
+        }
+        parent.add(child);        
+    }
+    
     /**
      * Returns whether window can close.
      */
@@ -158,7 +209,21 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
     
     /** Loads analysis results from file into memo control */
-    synchronized public void LoadFromFile(final String sFileName) {
+    synchronized public void LoadFromFile(final String sFileName, boolean loadTree) {
+        if (loadTree && _tree_output_map.size() > 0) {
+            /* Drilldown analyses exist, add the dridown result tab.*/
+            _bottom_tabbed_pane.add("Drilldown", _drilldown_results_tab);
+            /* Find the node that is the primary analysis and set as root. */
+            for (DefaultMutableTreeNode node : _tree_output_map.keySet()) {
+                if (node.getParent() == null) {
+                    sortTree(node);
+                    _results_tree.setModel(new DefaultTreeModel(node));
+                    _results_tree.setSelectionPath(new TreePath(node.getPath()));
+                    break;
+                }
+            }
+        }
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 _progressTextArea.setText("");
@@ -337,16 +402,12 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         setCanClose(true);
     }
 
-    /**
-     *
-     */
+    /** */
     public void setProgramErrorCallpathExplicit(String path) {
         gsProgramErrorCallPath = path;
     }
 
-    /**
-     *
-     */
+    /** */
     public void setProgramErrorCallpath(StackTraceElement[] stackTrace) {
         StringBuilder trace = new StringBuilder();
         for (int i = 0; i < stackTrace.length; ++i) {
@@ -355,11 +416,57 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         gsProgramErrorCallPath = trace.toString();
     }
 
-    /**
-     *
-     */
+    /** */
     public boolean getWarningsErrorsEncountered() {
         return _warning_errors_encountered;
+    }
+
+    /* Determines the nodes label to be displayed in jTree and whether node is a Bernoulli analysis. */
+    private static Pair <String,Boolean> getNodeLabel(DefaultMutableTreeNode node) {
+        Pair <String, Boolean> response;
+        File f = new File(node.getUserObject().toString());
+        if (node.getParent() == null) {
+            response = Pair.of(f.getName(), false);
+        } else {
+            Pattern r = Pattern.compile("^.+\\-(((C\\d+)+)\\-(std|bin)){1}.*$");
+            Matcher m = r.matcher(f.getName());
+            if (m.find() && m.groupCount() == 4) {
+                response = Pair.of(m.group(1), m.group(4).equals("bin"));
+            } else {
+                response = Pair.of(f.getName(), false);
+            }
+        }
+        return response;
+    }   
+    
+    /* Sorts tree such that Bernoulli (bin) analyses group together at tree level first. */
+    private static void sortTree(DefaultMutableTreeNode root) {
+      Enumeration e = root.depthFirstEnumeration();
+      while (e.hasMoreElements()) {
+        DefaultMutableTreeNode thisnode = (DefaultMutableTreeNode) e.nextElement();
+        if (!thisnode.isLeaf()) {
+            List< DefaultMutableTreeNode> children = new ArrayList<>();
+            Enumeration e_nodes = thisnode.children();
+            while (e_nodes.hasMoreElements()) {
+              children.add((DefaultMutableTreeNode)e_nodes.nextElement());
+            } 
+            // Sorts tree such that Bernoulli nodes come first in respective tree level.
+            Collections.sort(children, new Comparator< DefaultMutableTreeNode>() {
+                @Override public int compare(DefaultMutableTreeNode a, DefaultMutableTreeNode b) {
+                    Pair <String, Boolean> sa = getNodeLabel(a), sb = getNodeLabel(b);
+                    // If both are Bernoulli or standard, just compare strings.
+                    if ((sa.getValue() && sb.getValue()) || (!sa.getValue() && !sb.getValue()))
+                        return sa.getKey().compareToIgnoreCase(sb.getKey());
+                    // Otherwise sort Bernoulli over standard.
+                    return sa.getValue() ? -1 : 1;
+                }
+            });
+            thisnode.removeAllChildren();
+            for (MutableTreeNode node: children) {
+              thisnode.add(node);
+            }            
+        }
+      }
     }
 
     /** This method is called from within the constructor to
@@ -371,14 +478,19 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private void initComponents() {
 
         jSplitPane1 = new javax.swing.JSplitPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        _progressTextArea = new javax.swing.JTextArea();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        _bottom_panel = new javax.swing.JPanel();
+        _bottom_tabbed_pane = new javax.swing.JTabbedPane();
+        _warnings_errors_tab = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         _warningsErrorsTextArea = new javax.swing.JTextArea();
+        _drilldown_results_tab = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        _results_tree = new javax.swing.JTree();
         _cancelButton = new javax.swing.JButton();
         _emailButton = new javax.swing.JButton();
+        _primary_panel = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        _progressTextArea = new javax.swing.JTextArea();
 
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -391,18 +503,65 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(1.0);
 
-        _progressTextArea.setEditable(false);
-        _progressTextArea.setColumns(20);
-        _progressTextArea.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        _progressTextArea.setRows(5);
-        jScrollPane1.setViewportView(_progressTextArea);
-
-        jSplitPane1.setTopComponent(jScrollPane1);
-
-        jLabel1.setText("Warnings/Errors:");
-
         _warningsErrorsTextArea.setEditable(false);
+        _warningsErrorsTextArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
         jScrollPane2.setViewportView(_warningsErrorsTextArea);
+
+        javax.swing.GroupLayout _warnings_errors_tabLayout = new javax.swing.GroupLayout(_warnings_errors_tab);
+        _warnings_errors_tab.setLayout(_warnings_errors_tabLayout);
+        _warnings_errors_tabLayout.setHorizontalGroup(
+            _warnings_errors_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+        );
+        _warnings_errors_tabLayout.setVerticalGroup(
+            _warnings_errors_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+        );
+
+        _bottom_tabbed_pane.addTab("Warnings/Errors", _warnings_errors_tab);
+
+        _results_tree.setModel(null);
+        jScrollPane1.setViewportView(_results_tree);
+        _results_tree.setCellRenderer(new FileTreeCellRenderer());
+        _results_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        _results_tree.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        _results_tree.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) { }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                TreePath tp = ((JTree)e.getSource()).getPathForLocation(e.getX(), e.getY());
+                if(tp != null) {
+                    ((JTree)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    ((JTree)e.getSource()).setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        });
+        _results_tree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();
+                if (node == null) return;
+                LoadFromFile(_tree_output_map.get(node), false);
+            }
+        });
+
+        javax.swing.GroupLayout _drilldown_results_tabLayout = new javax.swing.GroupLayout(_drilldown_results_tab);
+        _drilldown_results_tab.setLayout(_drilldown_results_tabLayout);
+        _drilldown_results_tabLayout.setHorizontalGroup(
+            _drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 686, Short.MAX_VALUE)
+            .addGroup(_drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE))
+        );
+        _drilldown_results_tabLayout.setVerticalGroup(
+            _drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 120, Short.MAX_VALUE)
+            .addGroup(_drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE))
+        );
+
+        _bottom_tabbed_pane.addTab("Drilldown", _drilldown_results_tab);
 
         _cancelButton.setText("Cancel");
         _cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -430,34 +589,48 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(416, 416, 416)
-                .addComponent(_emailButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+        javax.swing.GroupLayout _bottom_panelLayout = new javax.swing.GroupLayout(_bottom_panel);
+        _bottom_panel.setLayout(_bottom_panelLayout);
+        _bottom_panelLayout.setHorizontalGroup(
+            _bottom_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _bottom_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_emailButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addComponent(_bottom_tabbed_pane)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel1)
+        _bottom_panelLayout.setVerticalGroup(
+            _bottom_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_bottom_panelLayout.createSequentialGroup()
+                .addComponent(_bottom_tabbed_pane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_bottom_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_cancelButton)
                     .addComponent(_emailButton)))
         );
 
-        jSplitPane1.setRightComponent(jPanel1);
+        jSplitPane1.setRightComponent(_bottom_panel);
+
+        _progressTextArea.setEditable(false);
+        _progressTextArea.setColumns(20);
+        _progressTextArea.setRows(5);
+        _progressTextArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
+        jScrollPane3.setViewportView(_progressTextArea);
+
+        javax.swing.GroupLayout _primary_panelLayout = new javax.swing.GroupLayout(_primary_panel);
+        _primary_panel.setLayout(_primary_panelLayout);
+        _primary_panelLayout.setHorizontalGroup(
+            _primary_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+        );
+        _primary_panelLayout.setVerticalGroup(
+            _primary_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+        );
+
+        jSplitPane1.setLeftComponent(_primary_panel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -472,15 +645,17 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                .addComponent(jSplitPane1)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+    @Override
     public void internalFrameOpened(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameClosing(InternalFrameEvent e) {
         if (GetCanClose()) {
             OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
@@ -488,29 +663,77 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         }
     }
 
+    @Override
     public void internalFrameClosed(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameIconified(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameDeiconified(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameActivated(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameDeactivated(InternalFrameEvent e) {
     }
+   
+    /** A TreeCellRenderer for displaying filename only of analysis output files. */
+    class FileTreeCellRenderer extends DefaultTreeCellRenderer {
+        private JLabel label;
+
+        FileTreeCellRenderer() {
+            label = new JLabel();
+            label.setOpaque(true);
+            super.setTextSelectionColor(Color.white);
+            super.setBackgroundSelectionColor(new Color(229, 228, 226));
+            super.setBorderSelectionColor(Color.black);
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(
+            JTree tree,
+            Object value,
+            boolean selected,
+            boolean expanded,
+            boolean leaf,
+            int row,
+            boolean hasFocus) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
+            label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-blue-icon.png")));
+            label.setText(getNodeLabel(node).getKey());
+            label.setToolTipText(node.getUserObject().toString());
+            if (selected) {
+                label.setBackground(backgroundSelectionColor);
+            } else {
+                label.setBackground(backgroundNonSelectionColor);
+            }
+            int width = 10 + label.getIcon().getIconWidth();
+            width += SwingUtilities.computeStringWidth(label.getFontMetrics(label.getFont()), label.getText());
+            label.setPreferredSize( new Dimension(width, (int)label.getPreferredSize().getHeight()) );            
+            return label;
+        }
+    }    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel _bottom_panel;
+    private javax.swing.JTabbedPane _bottom_tabbed_pane;
     private javax.swing.JButton _cancelButton;
+    private javax.swing.JPanel _drilldown_results_tab;
     private javax.swing.JButton _emailButton;
+    private javax.swing.JPanel _primary_panel;
     private javax.swing.JTextArea _progressTextArea;
+    private javax.swing.JTree _results_tree;
     private javax.swing.JTextArea _warningsErrorsTextArea;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel _warnings_errors_tab;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
     // End of variables declaration//GEN-END:variables
 }

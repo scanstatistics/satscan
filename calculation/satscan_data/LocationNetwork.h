@@ -13,11 +13,14 @@
 typedef std::vector<LocationDistance> LocationContainer_t;
 
 class NetworkNode {
+    public:
+        enum AddStatusType { Added=0, Averaged, SelfReference, ConflictOther };
+
 	public:
-		typedef std::pair<const NetworkNode*, double>        NodeDistance_t;
-		typedef std::list<NodeDistance_t>                    ConnectionsContainer_t;
-		typedef std::list<NodeDistance_t>                    CandidatesContainer_t;
-		typedef boost::optional<NetworkNode::NodeDistance_t> ClosestNode_t;
+		typedef boost::tuple<const NetworkNode*, double, bool, bool>  NodeDistance_t; // connection node, distance, averaged, record source
+		typedef std::list<NodeDistance_t>                             ConnectionsContainer_t;
+		typedef std::list<NodeDistance_t>                             CandidatesContainer_t;
+		typedef boost::optional<NetworkNode::NodeDistance_t>          ClosestNode_t;
 
 	protected:
 		tract_t  _tract_index;
@@ -28,16 +31,25 @@ class NetworkNode {
 
 		bool                             operator<(const NetworkNode& rhs) const { return getTractIndex() < rhs.getTractIndex(); }
 
-		bool                             add_connection(NetworkNode* pNetworkNode, double distance);
+        AddStatusType                    add_connection(NetworkNode* pNetworkNode, double distance, bool recordDef);
 		const ConnectionsContainer_t   & getConnections() const { return _connections; }
 		tract_t                          getTractIndex() const { return _tract_index; }
 		ClosestNode_t                    getClosestVisitedConnection(const boost::dynamic_bitset<>& visited) const;
+
+        static const char              * getStatusMessage(AddStatusType e) {
+            switch (e) {
+            case SelfReference: return "location references self as connection";
+            case ConflictOther: return "connection conflicts with a previous connection definition";
+            case Averaged:
+            default: return "";
+            }
+        }
 };
 
 class CompareNodeDistance {
 	public:
 		bool operator() (const NetworkNode::NodeDistance_t& lhs, const NetworkNode::NodeDistance_t& rhs) {
-			return lhs.first->getTractIndex() < rhs.first->getTractIndex();
+			return lhs.get<0>()->getTractIndex() < rhs.get<0>()->getTractIndex();
 		}
 };
 
@@ -79,7 +91,7 @@ class Network {
 		NetworkContainer_t _nodes;
 
 	public:
-		bool                         addConnection(tract_t t1, tract_t t2, double distance);
+        NetworkNode::AddStatusType   addConnection(tract_t t1, tract_t t2, double distance, bool recordDef);
 		void				         addNode(tract_t t1);
 		LocationContainer_t        & buildNeighborsAboutNode(const NetworkNode& node, LocationContainer_t& locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = boost::none) const;
 		const NetworkContainer_t   & getNodes() const { return _nodes; }

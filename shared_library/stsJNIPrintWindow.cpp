@@ -25,6 +25,7 @@ JNIPrintWindow::JNIPrintWindow(JNIEnv& JNI_Env, jobject& ProgressWindowObj, bool
   gPrintWarningMethodId = _getMethodId_Checked(gJNI_Env, clazz, "PrintWarning", "(Ljava/lang/String;)V");
   gPrintNoticeMethodId = _getMethodId_Checked(gJNI_Env, clazz, "PrintNotice", "(Ljava/lang/String;)V");
   gSetCallpathMethodId = _getMethodId_Checked(gJNI_Env, clazz, "setCallpath", "(Ljava/lang/String;)V");
+  gReportDrilldownResultsMethodId = _getMethodId_Checked(gJNI_Env, clazz, "ReportDrilldownResults", "(Ljava/lang/String;Ljava/lang/String;)V");
 }
 
 /** Destructor */
@@ -88,6 +89,19 @@ void JNIPrintWindow::PrintWarning(const char * sMessage) {
   env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
+}
+
+void JNIPrintWindow::ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile) {
+    JNIEnv *env;
+    if (pJVM->AttachCurrentThread((void**)&env, NULL) < 0)
+        jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
+    jstring jdrillown = env->NewStringUTF(drilldown_resultfile);
+    jstring jparent = env->NewStringUTF(parent_resultfile);
+    env->CallVoidMethod(gProgressWindowObj, gReportDrilldownResultsMethodId, jdrillown, jparent);
+    env->DeleteLocalRef(jdrillown);
+    env->DeleteLocalRef(jparent);
+    //jni_error::_detectError(&env);
+    pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
 
 /** Creates formatted output from variable number of parameter arguments and calls class Print() method. */

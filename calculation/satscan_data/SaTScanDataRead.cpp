@@ -830,7 +830,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 		gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
 		gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
 		std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(gParameters.getLocationsNetworkFilename(), gParameters.getInputSource(NETWORK_FILE), gPrint));
-		// First pass - determine all location identifiers referenced in network file.
+		// First pass - determine all location identifiers referenced in network file and define as tract in handler.
 		while (!gPrint.GetMaximumReadErrorsPrinted() && networkSource->ReadRecord()) {
 			if (!(networkSource->GetNumValues() >= 1 && networkSource->GetNumValues() <= 3)) {
 				gPrint.Printf("Error: Record %ld of the %s contains %ld values but expecting either 1 , 2 or 3 values (<location id>, <location id>, <distance>).\n",
@@ -892,8 +892,8 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 						continue;
 					}
 					else if (networkSource->GetNumValues() == 3) {
-						if (!string_to_type<double>(networkSource->GetValueAt(2), distanceBetween) || distanceBetween < 0) {
-							gPrint.Printf("Error: The distance between value '%s' in record %ld, of %s, is not a positive decimal number.\n",
+						if (!string_to_type<double>(networkSource->GetValueAt(2), distanceBetween) || distanceBetween <= 0) {
+							gPrint.Printf("Error: The distance between value '%s' in record %ld, of %s, is not a positive decimal number greater than zero.\n",
 								BasePrint::P_READERROR, networkSource->GetValueAt(2), networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
 							bValid = false;
 							continue;
@@ -920,29 +920,31 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 							bValid = false;
 							continue;
 						}
-						gTractHandler.getLocations()[firstLocation]->getCoordinates()[0]->retrieve(coordinatesA); // TODO: Is this correct with multiple coordinates?
-						distanceBetween = gParameters.GetMultipleCoordinatesType() == ALLLOCATIONS ? std::numeric_limits<double>::min() : std::numeric_limits<double>::max();
-						for (size_t t = 0; t < gTractHandler.getLocations()[secondLocation]->getCoordinates().size(); ++t) {
-							gTractHandler.getLocations()[secondLocation]->getCoordinates()[t]->retrieve(coordinatesB);
-							if (gParameters.GetMultipleCoordinatesType() == ALLLOCATIONS)
-								distanceBetween = std::max(distanceBetween, std::sqrt(gTractHandler.getDistanceSquared(coordinatesA, coordinatesB)));
-							else
-								distanceBetween = std::min(distanceBetween, std::sqrt(gTractHandler.getDistanceSquared(coordinatesA, coordinatesB)));
-						}
+						gTractHandler.getLocations()[firstLocation]->getCoordinates()[0]->retrieve(coordinatesA);
+                        gTractHandler.getLocations()[secondLocation]->getCoordinates()[0]->retrieve(coordinatesB);
+					    distanceBetween = std::sqrt(gTractHandler.getDistanceSquared(coordinatesA, coordinatesB));
 					}
-					if (!locationNetwork.addConnection(firstLocation, secondLocation, distanceBetween)) {
-						gPrint.Printf("Error: The distance between location '%s' and location '%s' in record %ld, of %s, conflicts with a previous record.\n",
-							BasePrint::P_READERROR, networkSource->GetValueAt(0), networkSource->GetValueAt(1), networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                    NetworkNode::AddStatusType addStatus = locationNetwork.addConnection(firstLocation, secondLocation, distanceBetween, true);
+					if (addStatus >= NetworkNode::AddStatusType::SelfReference) {
+						gPrint.Printf(
+                            "Error: An issue was found when adding connection between location '%s' and location '%s' in record %ld of %s: %s.\n",
+							BasePrint::P_READERROR, networkSource->GetValueAt(0), networkSource->GetValueAt(1), networkSource->GetCurrentRecordIndex(), 
+                            gPrint.GetImpliedFileTypeString().c_str(), NetworkNode::getStatusMessage(addStatus)
+                        );
 						bValid = false;
 						continue;
 					}
-					if (!locationNetwork.addConnection(secondLocation, firstLocation, distanceBetween)) {
-						gPrint.Printf("Error: The distance between location '%s' and location '%s' in record %ld, of %s, conflicts with a previous record.\n",
-							BasePrint::P_READERROR, networkSource->GetValueAt(1), networkSource->GetValueAt(0), networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-						bValid = false;
-						continue;
-					}
-				}
+                    addStatus = locationNetwork.addConnection(secondLocation, firstLocation, distanceBetween, false);
+                    if (addStatus >= NetworkNode::AddStatusType::SelfReference) {
+                        gPrint.Printf(
+                            "Error: An issue was found when adding connection between location '%s' and location '%s' in record %ld of %s: %s.\n",
+                            BasePrint::P_READERROR, networkSource->GetValueAt(1), networkSource->GetValueAt(0), networkSource->GetCurrentRecordIndex(),
+                            gPrint.GetImpliedFileTypeString().c_str(), NetworkNode::getStatusMessage(addStatus)
+                        );
+                        bValid = false;
+                        continue;
+                    }
+                }
 				// Determine whether this record indicates if we can report coordinates in main output and geographical output files.
 				gDataHub._network_can_report_coordinates &= gTractHandler.getLocations()[firstLocation]->getCoordinates().size() > 0 && 
 					(secondLocation == -1 || gTractHandler.getLocations()[secondLocation]->getCoordinates().size() > 0);

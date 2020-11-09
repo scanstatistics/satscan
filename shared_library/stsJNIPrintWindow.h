@@ -20,6 +20,7 @@ class JNIPrintWindow : public BasePrint {
     jmethodID           gPrintStandardMethodId;
     jmethodID           gPrintWarningMethodId;
     jmethodID           gSetCallpathMethodId;
+    jmethodID           gReportDrilldownResultsMethodId;
 
     virtual void        PrintError(const char * sMessage);
     virtual void        PrintNotice(const char * sMessage);
@@ -33,6 +34,7 @@ class JNIPrintWindow : public BasePrint {
      bool               GetIsCanceled() const;
      virtual void       Printf(const char * sMessage, PrintType ePrintType, ...);
      void               RecordCallpath(const char * sCallpath);
+     virtual void       ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile);
 };
 //******************************************************************************
 #endif

@@ -1535,7 +1535,7 @@ void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluste
 	// Update cluster path to include this cluster.
 	_cluster_path = printString(buffer, "%sC%u", _cluster_path.c_str(), supplementInfo.getClusterReportIndex(detectedCluster));
 	FileName resultsFile(_base_output.c_str());
-	resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s", resultsFile.getFileName().c_str(), getTypeIdentifier(), _cluster_path.c_str()).c_str());
+	resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s", resultsFile.getFileName().c_str(), _cluster_path.c_str(), getTypeIdentifier()).c_str());
 	_parameters.SetOutputFileName(resultsFile.getFullPath(buffer).c_str());
 }
 
@@ -1720,42 +1720,46 @@ void AbstractAnalysisDrilldown::execute() {
 		for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
 			const CCluster& cluster = mlc.GetCluster(c);
 			if (shouldDrilldown(cluster, *_data_hub, _parameters, execution.getSimVariables())) {
-				if (_parameters.getPerformStandardDrilldown()) {
-					try {
-						_print_direction.Printf(
-							"Performing main analysis %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 
-							_downlevel + 1, ordinal_suffix(_downlevel + 1), 
-							execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster))
-						);
-						AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
-						drilldown.execute();
-						_parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-					} catch (drilldown_exception& x) {
-						_print_direction.Printf("The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", 
-							BasePrint::P_WARNING, _downlevel + 1, ordinal_suffix(_downlevel + 1), 
-							execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster)),
-							x.what()
-						);
-					}
-				}
-				if (_parameters.getPerformBernoulliDrilldown()) {
-					try {
-						_print_direction.Printf("Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n", 
-							BasePrint::P_STDOUT, _downlevel + 1, ordinal_suffix(_downlevel + 1),
-							execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster))
-						);
-						BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
-						drilldown.execute();
-						_parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-					} catch (drilldown_exception& x) {
-						_print_direction.Printf("The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
-							BasePrint::P_WARNING, _downlevel + 1, ordinal_suffix(_downlevel + 1),
-							execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster)),
-							x.what()
-						);
-					}
-				}
-			}
+                if (_parameters.getPerformStandardDrilldown()) {
+                    try {
+                        _print_direction.Printf(
+                            "Performing main analysis %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT,
+                            _downlevel + 1, ordinal_suffix(_downlevel + 1),
+                            execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster))
+                        );
+                        AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
+                        drilldown.execute();
+                        _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
+                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                    }
+                    catch (drilldown_exception& x) {
+                        _print_direction.Printf("The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
+                            BasePrint::P_WARNING, _downlevel + 1, ordinal_suffix(_downlevel + 1),
+                            execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster)),
+                            x.what()
+                        );
+                    }
+                }
+                if (_parameters.getPerformBernoulliDrilldown()) {
+                    try {
+                        _print_direction.Printf("Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n",
+                            BasePrint::P_STDOUT, _downlevel + 1, ordinal_suffix(_downlevel + 1),
+                            execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster))
+                        );
+                        BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
+                        drilldown.execute();
+                        _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
+                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                    }
+                    catch (drilldown_exception& x) {
+                        _print_direction.Printf("The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
+                            BasePrint::P_WARNING, _downlevel + 1, ordinal_suffix(_downlevel + 1),
+                            execution.getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution.getClusterSupplement().getClusterReportIndex(cluster)),
+                            x.what()
+                        );
+                    }
+                }
+            }
 		}
 	}
 	execution.finalize();
@@ -1972,44 +1976,48 @@ void AnalysisRunner::run() {
 			for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
 				const CCluster& cluster = mlc.GetCluster(c);
 				if (AbstractAnalysisDrilldown::shouldDrilldown(cluster, *_data_hub, _parameters, execution->getSimVariables())) {
-					if (_parameters.getPerformStandardDrilldown()) {
-						try {
-							_print_direction.Printf(
-								"Performing main analysis %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
-								execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster))
-							);
-							AnalysisDrilldown drilldown(
-								cluster, execution->getClusterSupplement(), *_data_hub, _parameters, _parameters.GetOutputFileName(), _executing_type, _print_direction, 1
-							);
-							drilldown.execute();
-							const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-						} catch (drilldown_exception& x) {
-							_print_direction.Printf(
-								"The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_STDOUT, 
-								1, ordinal_suffix(1), 
-								execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
-							);
-						}
-					}
-					if (_parameters.getPerformBernoulliDrilldown()) {
-						try {
-							_print_direction.Printf(
-								"Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
-								execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster))
-							);
-							BernoulliAnalysisDrilldown drilldown(
-								cluster, execution->getClusterSupplement(), *_data_hub, _parameters, _parameters.GetOutputFileName(), _executing_type, _print_direction
-							);
-							drilldown.execute();
-							const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-						} catch (drilldown_exception& x) {
-							_print_direction.Printf(
-								"The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
-								execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
-							);
-						}
-					}
-				}
+                    if (_parameters.getPerformStandardDrilldown()) {
+                        try {
+                            _print_direction.Printf(
+                                "Performing main analysis %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
+                                execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster))
+                            );
+                            AnalysisDrilldown drilldown(
+                                cluster, execution->getClusterSupplement(), *_data_hub, _parameters, _parameters.GetOutputFileName(), _executing_type, _print_direction, 1
+                            );
+                            drilldown.execute();
+                            const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
+                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                        }
+                        catch (drilldown_exception& x) {
+                            _print_direction.Printf(
+                                "The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_STDOUT,
+                                1, ordinal_suffix(1),
+                                execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
+                            );
+                        }
+                    }
+                    if (_parameters.getPerformBernoulliDrilldown()) {
+                        try {
+                            _print_direction.Printf(
+                                "Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
+                                execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster))
+                            );
+                            BernoulliAnalysisDrilldown drilldown(
+                                cluster, execution->getClusterSupplement(), *_data_hub, _parameters, _parameters.GetOutputFileName(), _executing_type, _print_direction
+                            );
+                            drilldown.execute();
+                            const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
+                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                        }
+                        catch (drilldown_exception& x) {
+                            _print_direction.Printf(
+                                "The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
+                                execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
+                            );
+                        }
+                    }
+                }
 			}
 		}
 		// Finalize analysis execution.
