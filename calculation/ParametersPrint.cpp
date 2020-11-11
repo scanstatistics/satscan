@@ -33,6 +33,18 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
     return sAnalysisType;
 }
 
+/* Returns time aggregation type as string. */
+const char * ParametersPrint::GetTimeAggregationTypeAsString() const {
+    switch (gParameters.GetTimeAggregationLength()) {
+        case GENERIC:
+        case YEAR  : return "annually";
+        case MONTH : return "monthly";
+        case DAY   : return "daily";
+        case NONE  :
+        default: throw prg_error("Unknown time aggregation type '%d'.\n", "GetTimeAggregationTypeAsString()", gParameters.GetTimeAggregationLength());
+    }
+}
+
 /** Returns area scan type as string based upon probability model type. */
 const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
     try {
@@ -208,16 +220,19 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case NONPARAMETRIC :
         buffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
-        printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
+        PrintCalculatedTimeTrend(fp, SetHandler); break;
+        /*printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
         if (gParameters.GetTimeTrendAdjustmentPercentage() < 0)
           buffer.insert(0, "Adjusted for time with a decrease ");
         else
-          buffer.insert(0, "Adjusted for time with an increase ");
+          buffer.insert(0, "Adjusted for time with an increase ");*/
         break;
       case CALCULATED_LOGLINEAR_PERC :
-        PrintCalculatedTimeTrend(fp, SetHandler); break;
+          PrintCalculatedTimeTrend(fp, SetHandler); break;
       case STRATIFIED_RANDOMIZATION  :
         buffer = "Adjusted for time by stratified randomization."; break;
+      case CALCULATED_QUADRATIC_PERC :
+          PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
         throw prg_error("Unknown time trend adjustment type '%d'\n.",
                         "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
@@ -344,19 +359,30 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
   unsigned int                  t;
-  std::string                   buffer, work;
+  std::string                   buffer, work, trend_label;
   std::deque<unsigned int>      TrendIncrease, TrendDecrease;
 
-  if (gParameters.GetTimeTrendAdjustmentType() != CALCULATED_LOGLINEAR_PERC)
+  if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC))
     return;
 
   //NOTE: Each dataset has own calculated time trend.
 
+  switch (gParameters.GetTimeAggregationUnitsType()) {
+    case GENERIC:
+    case YEAR: trend_label = "an annually"; break;
+    case MONTH: trend_label = "a monthly"; break;
+    case DAY: trend_label = "a daily"; break;
+    case NONE:
+    default: throw prg_error("Unknown time aggregation type '%d'.\n", "PrintCalculatedTimeTrend()", gParameters.GetTimeAggregationUnitsType());
+  }
+
   if (SetHandler.GetNumDataSets() == 1) {
     if (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0)
-      printString(buffer, "Adjusted for time trend with an annual decrease ");
+      printString(buffer, "Adjusted for time trend with %s decrease ", trend_label.c_str());
     else
-      printString(buffer, "Adjusted for time trend with an annual increase ");
+      printString(buffer, "Adjusted for time trend with %s increase ", trend_label.c_str());
     printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
     buffer += work;
   }
@@ -369,7 +395,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
          TrendIncrease.push_back(t);
     }
     //now print
-    buffer = "Adjusted for time trend with an annual ";
+    printString(buffer, "Adjusted for time trend with %s ", trend_label.c_str());
     //print increasing trends first
     if (TrendIncrease.size()) {
        printString(work, "increase of %0.2f%%",
@@ -388,8 +414,11 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
        }
        printString(work, (TrendIncrease.size() > 1 ? " respectively" : ""));
        buffer += work;
-       printString(work, (TrendDecrease.size() > 0 ? " and an annual " : "."));
-       buffer += work;
+       if (TrendDecrease.size() > 0) {
+           buffer += printString(work, " and %s ", trend_label.c_str());
+       } else {
+           buffer += ".";
+       }
     }
     //print decreasing trends
     if (TrendDecrease.size()) {
@@ -540,7 +569,7 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
 	std::string buffer;
 
 	try {
-		bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL;
+		bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND;
 		permitsStandard &= !gParameters.UseMetaLocationsFile();
 		bool permitsBernoulli = gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
 		permitsBernoulli &= !gParameters.UseMetaLocationsFile();
@@ -1164,12 +1193,14 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                 case NONPARAMETRIC             :
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
-                    printString(buffer, "Log linear with %g%% per year", gParameters.GetTimeTrendAdjustmentPercentage());
+                    printString(buffer, "Log linear with %g percent per year", gParameters.GetTimeTrendAdjustmentPercentage());
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
                     settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
                 case STRATIFIED_RANDOMIZATION  :
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
+                case CALCULATED_QUADRATIC_PERC :
+                    settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
                                           "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
             }

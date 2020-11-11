@@ -428,7 +428,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         if (node.getParent() == null) {
             response = Pair.of(f.getName(), false);
         } else {
-            Pattern r = Pattern.compile("^.+\\-(((C\\d+)+)\\-(std|bin)){1}.*$");
+            Pattern r = Pattern.compile("^.+\\-drilldown\\-(((C\\d+)+)\\-(std|bin)){1}.*$");
             Matcher m = r.matcher(f.getName());
             if (m.find() && m.groupCount() == 4) {
                 response = Pair.of(m.group(1), m.group(4).equals("bin"));
@@ -454,9 +454,17 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             Collections.sort(children, new Comparator< DefaultMutableTreeNode>() {
                 @Override public int compare(DefaultMutableTreeNode a, DefaultMutableTreeNode b) {
                     Pair <String, Boolean> sa = getNodeLabel(a), sb = getNodeLabel(b);
-                    // If both are Bernoulli or standard, just compare strings.
-                    if ((sa.getValue() && sb.getValue()) || (!sa.getValue() && !sb.getValue()))
+                    // If both are Bernoulli or standard, just compare cluster number.
+                    if ((sa.getValue() && sb.getValue()) || (!sa.getValue() && !sb.getValue())) {
+                        Pattern r = Pattern.compile("^((C(\\d+))+)\\-(std|bin)$");
+                        Matcher m1 = r.matcher(sa.getKey()), m2 = r.matcher(sb.getKey());
+                        if (m1.find() && m2.find()) {
+                            Integer sai = Integer.parseInt(m1.group(3));
+                            Integer sbi = Integer.parseInt(m2.group(3));
+                            return sai - sbi;
+                        }
                         return sa.getKey().compareToIgnoreCase(sb.getKey());
+                    }
                     // Otherwise sort Bernoulli over standard.
                     return sa.getValue() ? -1 : 1;
                 }

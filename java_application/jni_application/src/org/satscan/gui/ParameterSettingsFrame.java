@@ -462,10 +462,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (_parameters.getTimeTrendType() == Parameters.TimeTrendType.QUADRATIC) {
             _parameters.SetTimeTrendType(Parameters.TimeTrendType.LINEAR.ordinal());
         }
-        //calculated quadratic temporal adjustment not exposed in GUI
-        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC) {
-          _parameters.SetTimeTrendAdjustmentType(Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC.ordinal());
-        }
         // specifying the critical values for power evaluations is not implemented in gui
         if (_parameters.getPowerEvaluationCriticalValueType() == Parameters.CriticalValuesType.CV_POWER_VALUES) {
             _parameters.setPowerEvaluationCriticalValueType(Parameters.CriticalValuesType.CV_MONTECARLO.ordinal());

@@ -253,7 +253,7 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection)
 	if (!(gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()))
 		return bValid;
 
-	if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis())) {
+	if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
 		bValid = false;
 		PrintDirection.Printf("%s:\nThe standard cluster drilldown is not implemented for %s analysis.\n",
 			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());

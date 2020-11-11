@@ -175,9 +175,6 @@ std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster,
     templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     for (; itr != itr_end; ++itr) {
-        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
-            // skip reporting P-Values for prospective analyses
-            continue;
         if (numDataSets > 1) {
             setIdx = itr->second.second;
             if (setIdx != 0 && currSetIdx != setIdx) {

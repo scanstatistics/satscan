@@ -29,24 +29,6 @@ void CalcMeasure(RealDataSet& DataSet,
                  const Julian EndDate,
                  PopulationData * pAltPopulationData=0);
 
-// The following functions are either unfinished design thoughts or deprecated.
-
-int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
-                               count_t      *Cases[],
-                               tract_t      nTracts,
-                               int          nTimeIntervals,
-                               count_t*     pTotalCases,
-                               measure_t*   pTotalMeasure);
-
-void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
-                                  int          nTimeIntervals,
-                                  DatePrecisionType eIntervalUnits,
-                                  long         nIntervalLength,
-                                  tract_t      nTracts,
-                                  measure_t*   pTotalMeasure,
-                                  measure_t*** pMeasure,
-                                  BasePrint *pPrintDirection);
-
 void DisplayInitialData(Julian  StartDate,
                         Julian  EndDate,
                         Julian* pIntvDates,

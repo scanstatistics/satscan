@@ -21,7 +21,7 @@ public final class AppConstants {
     public static final int VERSION_MAJOR = 9;
     public static final int VERSION_MINOR = 7;
     public static final int VERSION_RELEASE = 0;
-    public static final String VERSION_PHASE = "Beta 2 Build 1";
+    public static final String VERSION_PHASE = "Beta 3 Build 1";
     
     // Input Tab
     public static final String CASEFILE_HELPID = "Case File";

@@ -2049,6 +2049,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_temporalTrendAdjLogLinearCalcRadioButton.isSelected()) {
             eReturn = Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC;
         }
+        if (_temporalTrendAdjQuadCalcRadioButton.isSelected()) {
+            eReturn = Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC;
+        }
         return eReturn;
     }
 
@@ -2068,6 +2071,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case CALCULATED_LOGLINEAR_PERC:
                 _temporalTrendAdjLogLinearCalcRadioButton.setSelected(true);
+                break;
+            case CALCULATED_QUADRATIC_PERC:
+                _temporalTrendAdjQuadCalcRadioButton.setSelected(true);
                 break;
             case STRATIFIED_RANDOMIZATION:
                 _temporalTrendAdjTimeStratifiedRadioButton.setSelected(true);
@@ -2101,6 +2107,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _temporalTrendAdjLogLinearCalcRadioButton.setEnabled(bCalculatedLog);
         if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC) {
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+        }
+
+        _temporalTrendAdjQuadCalcRadioButton.setEnabled(bCalculatedLog);
+        if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
         }
     }
@@ -2497,7 +2508,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bEnableGroup = (
             eAnalysisType == Parameters.AnalysisType.SPACETIME || 
             eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
-            eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL
+            eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL ||
+            eAnalysisType == Parameters.AnalysisType.SPATIALVARTEMPTREND
         );
         // This feature is not implemented when using meta locations.
         bEnableGroup &= !(
@@ -2657,6 +2669,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjLogLinearCalcRadioButton = new javax.swing.JRadioButton();
         _logLinearTextField = new javax.swing.JTextField();
         _logLinearLabel = new javax.swing.JLabel();
+        _temporalTrendAdjQuadCalcRadioButton = new javax.swing.JRadioButton();
         _spatialAdjustmentsGroup = new javax.swing.JPanel();
         _spatialAdjustmentsNoneRadioButton = new javax.swing.JRadioButton();
         _spatialAdjustmentsSpatialStratifiedRadioButton = new javax.swing.JRadioButton();
@@ -2802,10 +2815,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNoneRadioButton);
         _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsSpatialStratifiedRadioButton);
 
-        _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjNoneRadioButton);
-        _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjTimeStratifiedRadioButton);
-        _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearRadioButton);
-        _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearCalcRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNoneRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjTimeStratifiedRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalcRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalcRadioButton);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setResizable(true);
@@ -4261,6 +4275,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _logLinearLabel.setText("%  per year"); // NOI18N
 
+        _temporalTrendAdjQuadCalcRadioButton.setText("Log quadratic with automatically calculated trend"); // NOI18N
+        _temporalTrendAdjQuadCalcRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjQuadCalcRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjQuadCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+                enableSettingsForAnalysisModelCombination();
+            }
+        });
+
         javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
         _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
         _temporalTrendAdjGroupLayout.setHorizontalGroup(
@@ -4268,32 +4292,39 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_temporalTrendAdjLogLinearCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_temporalTrendAdjNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                        .addComponent(_temporalTrendAdjLogLinearRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_temporalTrendAdjTimeStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(2, 2, 2))
+                        .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_temporalTrendAdjLogLinearCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_temporalTrendAdjNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                                .addComponent(_temporalTrendAdjLogLinearRadioButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(_temporalTrendAdjTimeStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                        .addGap(2, 2, 2))
+                    .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                        .addComponent(_temporalTrendAdjQuadCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         _temporalTrendAdjGroupLayout.setVerticalGroup(
             _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _temporalTrendAdjGroupLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(_temporalTrendAdjNoneRadioButton)
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_temporalTrendAdjTimeStratifiedRadioButton)
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_temporalTrendAdjLogLinearRadioButton)
                     .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_logLinearLabel))
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalTrendAdjLogLinearCalcRadioButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_temporalTrendAdjQuadCalcRadioButton)
+                .addContainerGap())
         );
 
         _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
@@ -4423,7 +4454,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_adjustDayOfWeek, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_adjustDayOfWeek, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _spaceTimeAjustmentsTabLayout.setVerticalGroup(
@@ -4431,13 +4462,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_adjustDayOfWeek)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -6340,6 +6371,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _temporalTrendAdjLogLinearCalcRadioButton;
     private javax.swing.JRadioButton _temporalTrendAdjLogLinearRadioButton;
     private javax.swing.JRadioButton _temporalTrendAdjNoneRadioButton;
+    private javax.swing.JRadioButton _temporalTrendAdjQuadCalcRadioButton;
     private javax.swing.JRadioButton _temporalTrendAdjTimeStratifiedRadioButton;
     private javax.swing.JPanel _temporalWindowTab;
     private javax.swing.JRadioButton _timeTemporalRadioButton;

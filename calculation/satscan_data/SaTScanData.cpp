@@ -448,6 +448,7 @@ void CSaTScanData::Init() {
   m_nIntervalCut=1;
   _min_iterval_cut=4;
   _network_can_report_coordinates = false;
+  _is_drilldown = false;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -486,7 +487,9 @@ void CSaTScanData::ReadDataFromFiles() {
 /* Class specific actions to perform after data has been read. */
 void CSaTScanData::PostDataRead() {
 	try {
-		if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+		if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || 
+            gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
+            gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC)
 			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
 		CalculateExpectedCases();
 		if (gParameters.UseMetaLocationsFile())
