@@ -33,6 +33,18 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
     return sAnalysisType;
 }
 
+/* Returns time aggregation type as string. */
+const char * ParametersPrint::GetTimeAggregationTypeAsString() const {
+    switch (gParameters.GetTimeAggregationLength()) {
+        case GENERIC:
+        case YEAR  : return "annually";
+        case MONTH : return "monthly";
+        case DAY   : return "daily";
+        case NONE  :
+        default: throw prg_error("Unknown time aggregation type '%d'.\n", "GetTimeAggregationTypeAsString()", gParameters.GetTimeAggregationLength());
+    }
+}
+
 /** Returns area scan type as string based upon probability model type. */
 const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
     try {
@@ -204,16 +216,19 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case NONPARAMETRIC :
         buffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
-        printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
+        PrintCalculatedTimeTrend(fp, SetHandler); break;
+        /*printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
         if (gParameters.GetTimeTrendAdjustmentPercentage() < 0)
           buffer.insert(0, "Adjusted for time with a decrease ");
         else
-          buffer.insert(0, "Adjusted for time with an increase ");
+          buffer.insert(0, "Adjusted for time with an increase ");*/
         break;
       case CALCULATED_LOGLINEAR_PERC :
-        PrintCalculatedTimeTrend(fp, SetHandler); break;
+          PrintCalculatedTimeTrend(fp, SetHandler); break;
       case STRATIFIED_RANDOMIZATION  :
         buffer = "Adjusted for time by stratified randomization."; break;
+      case CALCULATED_QUADRATIC_PERC :
+          PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
         throw prg_error("Unknown time trend adjustment type '%d'\n.",
                         "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
@@ -338,77 +353,83 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
-  unsigned int                  t;
-  std::string                   buffer, work;
-  std::deque<unsigned int>      TrendIncrease, TrendDecrease;
+    unsigned int                  t;
+    std::string                   work, trend_label;
+    std::stringstream             strBuffer;
+    std::deque<unsigned int>      TrendIncrease, TrendDecrease;
 
-  if (gParameters.GetTimeTrendAdjustmentType() != CALCULATED_LOGLINEAR_PERC)
-    return;
+    if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
+          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
+          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC))
+        return;
 
-  //NOTE: Each dataset has own calculated time trend.
+    //NOTE: Each dataset has own calculated time trend.
 
-  if (SetHandler.GetNumDataSets() == 1) {
-    if (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0)
-      printString(buffer, "Adjusted for time trend with an annual decrease ");
-    else
-      printString(buffer, "Adjusted for time trend with an annual increase ");
-    printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
-    buffer += work;
-  }
-  else {//multiple datasets print
-    //count number of increasing and decreasing trends
-    for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
-       if (SetHandler.GetDataSet(t).getCalculatedTimeTrendPercentage() < 0)
-         TrendDecrease.push_back(t);
-       else
-         TrendIncrease.push_back(t);
+    if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC) {
+        strBuffer << "Adjusted for log quadratic time trend with:";
+        for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
+            strBuffer << std::endl << SetHandler.GetDataSet(t).getCalculatedQuadraticTimeTrend().c_str();
+            if (SetHandler.GetNumDataSets() > 1) strBuffer << " for data set " << (t + 1);
+        }
+    } else {
+        switch (gParameters.GetTimeAggregationUnitsType()) {
+            case GENERIC:
+            case YEAR: trend_label = "an annually"; break;
+            case MONTH: trend_label = "a monthly"; break;
+            case DAY: trend_label = "a daily"; break;
+            case NONE:
+            default: throw prg_error("Unknown time aggregation type '%d'.\n", "PrintCalculatedTimeTrend()", gParameters.GetTimeAggregationUnitsType());
+         }
+         if (SetHandler.GetNumDataSets() == 1) {
+             strBuffer << "Adjusted for time trend with " << trend_label.c_str();
+             strBuffer << (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0 ? " decrease " : " increase ");
+             strBuffer << printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
+         } else {//multiple datasets print
+            //count number of increasing and decreasing trends
+            for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
+                if (SetHandler.GetDataSet(t).getCalculatedTimeTrendPercentage() < 0)
+                    TrendDecrease.push_back(t);
+                else
+                    TrendIncrease.push_back(t);
+            }
+            //now print
+            strBuffer << "Adjusted for time trend with " << trend_label.c_str() << " ";
+            //print increasing trends first
+            if (TrendIncrease.size()) {
+                strBuffer << printString(work, "increase of %0.2f%%", fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage())).c_str();
+                for (t=1; t < TrendIncrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%", fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage())).c_str();
+                }
+                strBuffer << printString(work, " for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1).c_str();
+                for (t=1; t < TrendIncrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1).c_str();
+                }
+                strBuffer << printString(work, (TrendIncrease.size() > 1 ? " respectively" : "")).c_str();
+                if (TrendDecrease.size() > 0) {
+                    strBuffer << printString(work, " and %s ", trend_label.c_str()).c_str();
+                } else {
+                    strBuffer << ".";
+                }
+            }
+            //print decreasing trends
+            if (TrendDecrease.size()) {
+                strBuffer << printString(work, "decrease of %0.2f%%", fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage())).c_str();
+                for (t=1; t < TrendDecrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%", fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage())).c_str();
+                }
+                strBuffer << printString(work, " for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1).c_str();
+                for (t=1; t < TrendDecrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1).c_str();
+                }
+                strBuffer << printString(work, (TrendDecrease.size() > 1 ? " respectively." : ".")).c_str();
+            }
+        }
     }
-    //now print
-    buffer = "Adjusted for time trend with an annual ";
-    //print increasing trends first
-    if (TrendIncrease.size()) {
-       printString(work, "increase of %0.2f%%",
-                         fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage()));
-       buffer += work;
-       for (t=1; t < TrendIncrease.size(); ++t) {
-          printString(work, (t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
-                            fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage()));
-          buffer += work;
-       }
-       printString(work, " for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
-       buffer += work;
-       for (t=1; t < TrendIncrease.size(); ++t) {
-          printString(work, (t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
-          buffer += work;
-       }
-       printString(work, (TrendIncrease.size() > 1 ? " respectively" : ""));
-       buffer += work;
-       printString(work, (TrendDecrease.size() > 0 ? " and an annual " : "."));
-       buffer += work;
-    }
-    //print decreasing trends
-    if (TrendDecrease.size()) {
-      printString(work, "decrease of %0.2f%%",
-                        fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage()));
-      buffer += work;
-      for (t=1; t < TrendDecrease.size(); ++t) {
-         printString(work, (t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
-                           fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage()));
-         buffer += work;
-      }
-      printString(work, " for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
-      buffer += work;
-      for (t=1; t < TrendDecrease.size(); ++t) {
-         printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
-         buffer += work;
-      }
-      printString(work, (TrendDecrease.size() > 1 ? " respectively." : "."));
-      buffer += work;
-    }
-  }
-  AsciiPrintFormat PrintFormat;
-  PrintFormat.SetMarginsAsOverviewSection();
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsOverviewSection();
+    work = strBuffer.str();
+    PrintFormat.PrintAlignedMarginsDataString(fp, work);
 }
 
 /** Prints 'Spatial Output' tab parameters to file stream. */
@@ -1085,12 +1106,14 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                 case NONPARAMETRIC             :
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
-                    printString(buffer, "Log linear with %g%% per year", gParameters.GetTimeTrendAdjustmentPercentage());
+                    printString(buffer, "Log linear with %g percent per year", gParameters.GetTimeTrendAdjustmentPercentage());
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
                     settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
                 case STRATIFIED_RANDOMIZATION  :
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
+                case CALCULATED_QUADRATIC_PERC :
+                    settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
                                           "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
             }

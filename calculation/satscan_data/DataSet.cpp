@@ -770,6 +770,13 @@ void RealDataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
   }
 }
 
+/* Sets the quadratic trend used for data set during measure adjustment. */
+void RealDataSet::setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr) { 
+    std::stringstream s;
+    s << functionStr.c_str() << " " << definitionStr.c_str();
+    _calculatedQuadraticTrend = s.str(); 
+}
+
 /** Sets case data at meta location indexes. */
 void RealDataSet::setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;

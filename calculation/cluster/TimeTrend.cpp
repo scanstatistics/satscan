@@ -44,6 +44,22 @@ void AbstractTimeTrend::Initialize() {
   gbGlobalAlpha     = 0;
 }
 
+/* Calculates the time trend based upon aggregation units. */
+double AbstractTimeTrend::GetTimeTrendByAggregationUnits(double beta, Status status) {
+    double timeTrend = 0.0;
+    switch (status) {
+        case NOT_CONVERGED: throw prg_error("Unable to call SetAnnualTimeTrend with non-converged time trend.", "SetAnnualTimeTrend()");
+        case UNDEFINED: timeTrend = 0; return timeTrend;
+        case NEGATIVE_INFINITY: timeTrend = NEGATIVE_INFINITY_INDICATOR;  return timeTrend;
+        case POSITIVE_INFINITY: timeTrend = POSITIVE_INFINITY_INDICATOR;  return timeTrend;
+        case CONVERGED: break;
+        default: throw prg_error("Unknown time trend status '%d'.", "GetTimeTrendByAggregationUnits()", status);
+    }
+    timeTrend = 100.0 * (exp(beta) - 1.0);
+    //If the time trend is very small, then the value assigned above is more likely the result of round-off. In this case, set trend to zero.
+    return (-TREND_ZERO < timeTrend && timeTrend < TREND_ZERO) ? 0.0 : timeTrend;
+}
+
 /** Calculates annual time trend given specfied time interval precision and length. */
 double AbstractTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
   double nUnits;
@@ -62,8 +78,7 @@ double AbstractTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPreci
     case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
     case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
     case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;
-    default    : throw prg_error("SetAnnualTimeTrend() called with unknown aggregation precision '%d'.",
-                                 "SetAnnualTimeTrend()", eAggregationPrecision);
+    default    : throw prg_error("SetAnnualTimeTrend() called with unknown aggregation precision '%d'.", "SetAnnualTimeTrend()", eAggregationPrecision);
   }
   //If the time trend is very small, then the value assigned above is more likely the
   //result of round-off. In this case, set trend to zero.
@@ -74,12 +89,18 @@ double AbstractTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPreci
 
 /** Returns instance of time trend objects get type specified in parameters. */
 AbstractTimeTrend * AbstractTimeTrend::getTimeTrend(const CParameters& parameters) {
-  switch (parameters.getTimeTrendType()) {
-    case LINEAR    : return new LinearTimeTrend();
-    case QUADRATIC : return new QuadraticTimeTrend();
-    default        : throw prg_error("getTimeTrend() called with unknown time trend '%d'.",
-                                     "getTimeTrend()", parameters.getTimeTrendType());
-  }
+    if (parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        switch (parameters.getTimeTrendType()) {
+            case LINEAR    : return new LinearTimeTrend();
+            case QUADRATIC : return new QuadraticTimeTrend();
+            default        : throw prg_error("getTimeTrend() called with unknown time trend '%d'.", "getTimeTrend()", parameters.getTimeTrendType());
+        }
+    } else if (parameters.GetProbabilityModelType() == POISSON && parameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+        return new LinearTimeTrend();
+    else if (parameters.GetProbabilityModelType() == POISSON && parameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC)
+        return new QuadraticTimeTrend();
+    else
+        return new LinearTimeTrend();
 }
 
 //----------------------- LinearTimeTrend -------------------------------------

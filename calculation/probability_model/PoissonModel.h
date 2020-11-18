@@ -18,8 +18,8 @@ class CPoissonModel : public CModel {
     mutable std::vector<double> _alpha;
 
     void                        AdjustForNonParameteric(RealDataSet& DataSet);
-    void                        AdjustForLLPercentage(RealDataSet& DataSet, double nPercentage);
-    void                        AdjustForLogLinear(RealDataSet& DataSet);
+    void                        AdjustForTrend(RealDataSet& DataSet, double beta, double beta2);
+    void                        AdjustForCalculatedTrend(RealDataSet& DataSet);
     void                        AdjustMeasure(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
     void                        StratifiedSpatialAdjustment(RealDataSet& DataSet);
 

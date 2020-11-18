@@ -71,42 +71,32 @@ void CPoissonModel::AdjustForNonParameteric(RealDataSet& DataSet) {
 
 }
 
-/** Adjusts passed non-cumulative measure given passed log linear percentage. */
-void CPoissonModel::AdjustForLLPercentage(RealDataSet& DataSet, double nPercentage)
-{
-  unsigned int    i,t;
-  double c;
-  double k = IntervalInYears(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-  double p = 1 + (nPercentage/100);
-  double nAdjustedMeasure = 0;
-  measure_t ** ppNonCumulativeMeasure = DataSet.getMeasureData().GetArray();
+/* Adjusts measure for trend beta and beta2. For log linear trends, beta2 should be 0. */
+void CPoissonModel::AdjustForTrend(RealDataSet& DataSet, double beta, double beta2) {
+    double adjustedMeasure = 0;
+    measure_t ** ppNonCumulativeMeasure = DataSet.getMeasureData().GetArray();
 
-  #if DEBUGMODEL
-  fprintf(m_pDebugModelFile, "\nAdjust Measure for Time Trend - %f%% per year.\n\n", nPercentage);
-  #endif
+    /* Adjust the measure assigned to each interval/tract by yearly percentage */
+    for (unsigned int i=0; i < DataSet.getIntervalDimension(); ++i)
+        for (unsigned int t=0; t < DataSet.getLocationDimension(); ++t) {
+            ppNonCumulativeMeasure[i][t] *= exp((beta * i) + (beta2 * pow(i, 2)));
+            if (adjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
+                throw resolvable_error(
+                    "Error: Data overflow occurs when performing the time trend adjustment in data set %u.\n"
+                    "       Please run analysis without the time trend adjustment.\n", DataSet.getSetIndex()
+                );
+            adjustedMeasure += ppNonCumulativeMeasure[i][t];
+        }
 
-  /* Adjust the measure assigned to each interval/tract by yearly percentage */
-  for (i=0; i < DataSet.getIntervalDimension(); ++i)
-    for (t=0; t < DataSet.getLocationDimension(); ++t) {
-      ppNonCumulativeMeasure[i][t] = ppNonCumulativeMeasure[i][t]*(pow(p,i*k)) /* * c */ ;
-      if (nAdjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
-        throw resolvable_error("Error: Data overflow occurs when performing the time trend adjustment in data set %u.\n"
-                               "       Please run analysis without the time trend adjustment.\n", DataSet.getSetIndex());
-      nAdjustedMeasure += ppNonCumulativeMeasure[i][t];
-    }
-
-  /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
-  /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
-  /* measure (gData.m_nTotalMeasure).                                             */
-  c = (double)(DataSet.getTotalMeasure())/nAdjustedMeasure;
-  for (i=0; i < DataSet.getIntervalDimension(); ++i)
-    for (t=0; t < DataSet.getLocationDimension(); ++t)
-     ppNonCumulativeMeasure[i][t] *= c;
+    double c = (double)(DataSet.getTotalMeasure()) / adjustedMeasure; // total adjusted measure
+    /* Mutlipy the measure for each interval/tract by total adjusted measure equal to previous total measure. */
+    for (unsigned int i=0; i < DataSet.getIntervalDimension(); ++i)
+        for (unsigned int t=0; t < DataSet.getLocationDimension(); ++t)
+            ppNonCumulativeMeasure[i][t] *= c;
 }
 
-/** Calculates time trend for dataset, calls CParameters::SetTimeTrendAdjustmentPercentage()
-    with calculated value, and calls AdjustForLLPercentage(). */
-void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
+/** Calculates time trend for dataset and adjustment data set measure for that trend. */
+void CPoissonModel::AdjustForCalculatedTrend(RealDataSet& Set) {
   //purely temporal, not-cumulative measure data not available yet in RealDataSet object, so create temporary.
   std::vector<measure_t> vMeasure_PT_NC(Set.getIntervalDimension());
   measure_t ** ppMeasure = Set.getMeasureData().GetArray();
@@ -114,7 +104,7 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
      for (unsigned int j=0; j < Set.getLocationDimension(); ++j)
         vMeasure_PT_NC[i] += ppMeasure[i][j];
 
-  //Calculate time trend for whole dataset
+  // Calculate time trend for whole dataset -- either log linear or log quadratic.
   std::auto_ptr<AbstractTimeTrend> TimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
   TimeTrend->CalculateAndSet(Set.getCaseData_PT_NC(), &vMeasure_PT_NC[0], Set.getIntervalDimension(), gTimeTrendConvergence);
 
@@ -128,17 +118,26 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
       throw resolvable_error("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
                              "      Please run analysis without automatic adjustment of time trends.");
 	case AbstractTimeTrend::SINGULAR_MATRIX   :
-      throw prg_error("The time trend of cluster was not calculated because matrix A is singular.\n","AdjustForLogLinear()");
+      throw prg_error("The time trend of cluster was not calculated because matrix A is singular.\n","AdjustForCalculatedTrend()");
     case AbstractTimeTrend::NOT_CONVERGED     :
-      throw prg_error("The time trend did not converge.\n", "AdjustForLogLinear()");
+      throw prg_error("The time trend did not converge.\n", "AdjustForCalculatedTrend()");
     case AbstractTimeTrend::CONVERGED         : break;
-    default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend->GetStatus());
+    default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForCalculatedTrend()", TimeTrend->GetStatus());
   };
 
+  // Set the annual trend -- we probably won't use this variable anymore now that we're calculating trend by time aggregation.
   TimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-  AdjustForLLPercentage(Set, TimeTrend->GetAnnualTimeTrend());
+  // Adjust the measure of data by the calculated trend.
+  AdjustForTrend(Set, TimeTrend->GetBeta(), TimeTrend->GetBeta2());
+
   //store calculated time trend adjustment for reporting later
-  Set.setCalculatedTimeTrendPercentage(TimeTrend->GetAnnualTimeTrend());
+  const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(TimeTrend.get());
+  if (pQTrend) {
+      std::string buffer, buffer2;
+      pQTrend->getRiskFunction(buffer, buffer2, gDataHub);
+      Set.setCalculatedQuadraticTimeTrend(buffer, buffer2);
+  } else
+    Set.setCalculatedTimeTrendPercentage(TimeTrend->GetTimeTrendByAggregationUnits(TimeTrend->GetBeta(), TimeTrend->GetStatus()));
 }
 
 /** Adjusts passed non-cumulative measure for parameter specified temporal,
@@ -156,9 +155,26 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
         case NONPARAMETRIC             : AdjustForNonParameteric(DataSet); break;
-        case LOGLINEAR_PERC            : AdjustForLLPercentage(DataSet, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case LOGLINEAR_PERC            : {
+            // Derive beta from user specified percentage and time aggregation. (ln(exp(x)) = x)
+            double x = log(static_cast<double>(gParameters.GetTimeTrendAdjustmentPercentage()) / 100.0 + 1.0);
+            double beta = 0.0;
+            switch (gParameters.GetTimeAggregationUnitsType()) {
+                case GENERIC:
+                case YEAR: 
+                    beta = x / static_cast<double>(gParameters.GetTimeAggregationLength()); break;
+                case MONTH: 
+                    beta = x / (12.0 / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                case DAY:
+                    beta = x / (AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                default: throw prg_error("AdjustMeasure() unknown aggregation '%d'.", "AdjustMeasure()", gParameters.GetTimeAggregationUnitsType());
+            }
+            AdjustForTrend(DataSet, beta, 0.0);
+            //store calculated time trend adjustment for reporting later
+            DataSet.setCalculatedTimeTrendPercentage(AbstractTimeTrend::GetTimeTrendByAggregationUnits(beta, AbstractTimeTrend::CONVERGED));
+        } break;
         case CALCULATED_QUADRATIC_PERC :
-        case CALCULATED_LOGLINEAR_PERC : AdjustForLogLinear(DataSet); break;
+        case CALCULATED_LOGLINEAR_PERC : AdjustForCalculatedTrend(DataSet); break;
         case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet); break;//this adjustment occurs during randomization also
         default : throw prg_error("Unknown time trend adjustment type: '%d'.", "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }

@@ -471,7 +471,9 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 void CSaTScanData::ReadDataFromFiles() {
   try {
     SaTScanDataReader(*this).Read();
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || 
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC)
       std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
     CalculateExpectedCases();
     if (gParameters.UseMetaLocationsFile())

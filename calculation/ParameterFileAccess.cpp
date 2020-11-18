@@ -637,7 +637,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POWER_EVALUATION             : gParameters.setPerformPowerEvaluation(ReadBoolean(sParameter, eParameterType)); break;
       case POWER_05                     : gParameters.SetPowerEvaluationCriticalValue05(ReadDouble(sParameter, eParameterType)); break;
       case POWER_01                     : gParameters.SetPowerEvaluationCriticalValue01(ReadDouble(sParameter, eParameterType)); break;
-      case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
+      case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, CALCULATED_QUADRATIC_PERC);
                                           gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
       case TIMETRENDPERC                : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
       case PURETEMPORAL                 : gParameters.SetIncludePurelyTemporalClusters(ReadBoolean(sParameter, eParameterType)); break;

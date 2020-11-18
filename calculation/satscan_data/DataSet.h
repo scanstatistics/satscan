@@ -144,7 +144,8 @@ class RealDataSet : public DataSet {
                                                                             - controls are distributed in time intervals cumulatively */
     TwoDimCountArray_t        * gpCaseData_Censored;                    /** number of censored individuals stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
-    double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
+    double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases */
+    std::string                 _calculatedQuadraticTrend;              /* calculated quadratic trend used to adjust temporal expected cases */
     PopulationDataPair_t        _populationData;                        /* population measure data and PopulationData */
 
   public:
@@ -156,6 +157,7 @@ class RealDataSet : public DataSet {
     TwoDimCountArray_t        & addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, Julian date, bool asOrdinal);
     void                        checkPopulationDataCases(CSaTScanData& Data);
     double                      getCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
+    const std::string         & getCalculatedQuadraticTimeTrend() const { return _calculatedQuadraticTrend; }
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex) const;
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex, bool bCreateable=false);
     TwoDimCountArray_t        & getCaseData_Censored() const;
@@ -173,6 +175,7 @@ class RealDataSet : public DataSet {
     void                        resetPopulationData();
     void                        setAggregateCovariateCategories(bool b) {_population->SetAggregateCovariateCategories(b);}
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
+    void                        setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr);
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setControlData_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}

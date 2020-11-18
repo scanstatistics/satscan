@@ -44,6 +44,7 @@ class ParametersPrint {
     ~ParametersPrint() {}
 
     const char        * GetAnalysisTypeAsString() const;
+    const char        * GetTimeAggregationTypeAsString() const;
     const char        * GetAreaScanRateTypeAsString() const;
     const char        * GetProbabilityModelTypeAsString() const;
     const char        * getPowerEvaluationMethodAsString() const;

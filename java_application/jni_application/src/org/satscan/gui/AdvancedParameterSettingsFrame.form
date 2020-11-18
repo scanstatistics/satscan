@@ -39,7 +39,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_temporalTrendAdjButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjButtonGroup.add(this._temporalTrendAdjNoneRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(this._temporalTrendAdjTimeStratifiedRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearCalcRadioButton);&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjButtonGroup.add(_temporalTrendAdjNoneRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjTimeStratifiedRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalcRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalcRadioButton);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_pValueButtonGroup">
@@ -1920,14 +1920,14 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_temporalTrendAdjGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_temporalTrendAdjGroup" min="-2" pref="160" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_adjustDayOfWeek" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="36" max="32767" attributes="0"/>
+                      <EmptySpace pref="28" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1952,21 +1952,29 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_temporalTrendAdjLogLinearCalcRadioButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="_temporalTrendAdjNoneRadioButton" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_temporalTrendAdjLogLinearRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_logLinearTextField" min="-2" pref="61" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_logLinearLabel" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_temporalTrendAdjLogLinearCalcRadioButton" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjNoneRadioButton" alignment="0" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_temporalTrendAdjLogLinearRadioButton" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_logLinearTextField" min="-2" pref="61" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_logLinearLabel" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="_temporalTrendAdjTimeStratifiedRadioButton" alignment="0" pref="624" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_temporalTrendAdjTimeStratifiedRadioButton" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_temporalTrendAdjQuadCalcRadioButton" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1985,6 +1993,8 @@
                           </Group>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="_temporalTrendAdjLogLinearCalcRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_temporalTrendAdjQuadCalcRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -2069,6 +2079,22 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalcRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Log quadratic with automatically calculated trend" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjQuadCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>
