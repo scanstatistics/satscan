@@ -223,9 +223,9 @@ AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData&
     _riskAdjustments = riskAdjustments.front();
 
     // define the underlying randomization object
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+    if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
         _randomizer.reset(new PoissonTimeStratifiedRandomizer(gParameters, lInitialSeed));
-    else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+    else if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
         _randomizer.reset(new PoissonSpatialStratifiedRandomizer(gParameters, lInitialSeed));
     else if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
         _randomizer.reset(new ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer(DataHub, gParameters.GetRandomizationSeed()));
@@ -240,9 +240,9 @@ AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData&
                                                              long lInitialSeed)
                               :PoissonRandomizer(DataHub.GetParameters(), lInitialSeed), gDataHub(DataHub), _riskAdjustments(riskAdjustments) {
     // define the underlying randomization object
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+    if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
         _randomizer.reset(new PoissonTimeStratifiedRandomizer(gParameters, lInitialSeed));
-    else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+    else if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
         _randomizer.reset(new PoissonSpatialStratifiedRandomizer(gParameters, lInitialSeed));
     else if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
         _randomizer.reset(new ClosedLoopPoissonPurelyTemporalNullHypothesisRandomizer(DataHub, gParameters.GetRandomizationSeed()));

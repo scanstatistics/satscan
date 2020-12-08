@@ -379,25 +379,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _allLocationsRadioButton.setEnabled(bEnable);
     }
 
-    /**
-     * returns spatial adjustment type from control index
-     */
-    private Parameters.SpatialAdjustmentType getAdjustmentSpatialControlType() {
-        Parameters.SpatialAdjustmentType eReturn = null;
-
-        if (_spatialAdjustmentsNoneRadioButton.isSelected()) {
-            eReturn = Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT;
-        }
-        if (_spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
-            eReturn = Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION;
-        }
-        return eReturn;
-    }
-
-    /**
-     * enables adjustment options controls
-     */
-    private void enableAdjustmentsGroup(boolean bEnable) {
+    /* enables adjustment options controls */
+    private void enableRelativeRiskAdjustmentsGroup(boolean bEnable) {
         _knownAdjustmentsGroup.setEnabled(bEnable);
         _adjustForKnownRelativeRisksCheckBox.setEnabled(bEnable);
         _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnable && _adjustForKnownRelativeRisksCheckBox.isSelected());
@@ -532,10 +515,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableBorderAnalysisGroup(false);
                 break;
             case SPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
-                        bPoisson && getAdjustmentSpatialControlType() != Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION,
-                        bPoisson, bPoisson);
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
@@ -553,10 +534,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableBorderAnalysisGroup(false);
                 break;
             case PROSPECTIVESPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson,
-                        bPoisson && getAdjustmentSpatialControlType() != Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION,
-                        bPoisson, bPoisson);
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
@@ -616,7 +595,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
         enableClustersReportedGroup();
         enablePowerEvaluationsGroup();
-        enableAdjustmentsGroup(bPoisson);
+        enableRelativeRiskAdjustmentsGroup(bPoisson);
         updateMonteCarloTextCaptions();
         enableMapsOutputGroup();
     }
@@ -818,9 +797,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Risk tab
         bReturn &= (_adjustForKnownRelativeRisksCheckBox.isSelected() == false);
         bReturn &= (_adjustmentsByRelativeRisksFileTextField.getText().equals(""));
-        bReturn &= (_temporalTrendAdjNoneRadioButton.isSelected() == true);
+        bReturn &= (_temporalTrendAdjNone.isSelected() == true);
         bReturn &= (Double.parseDouble(_logLinearTextField.getText()) == 0);
-        bReturn &= (_spatialAdjustmentsNoneRadioButton.isSelected() == true);
+        bReturn &= (_spatialAdjustmentsNone.isSelected() == true);
 
         // Power Evaluations tab
         bReturn &= (_performPowerEvalautions.isSelected() == false);
@@ -872,17 +851,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return bReturn;
     }
 
+    /* Returns the spatial adjustment type based upon selected controls. */
     private Parameters.SpatialAdjustmentType getSpatialAdjustmentType() {
-        Parameters.SpatialAdjustmentType eReturn = null;
-
-        if (_spatialAdjustmentsNoneRadioButton.isSelected()) {
-            eReturn = Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT;
-        } else if (_spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
-            eReturn = Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION;
-        } else {
-            throw new IllegalArgumentException("No spatial adjustments option selected.");
+        Parameters.SpatialAdjustmentType eReturn = Parameters.SpatialAdjustmentType.SPATIAL_NOTADJUSTED;
+        if (Utils.selected(_spatialAdjustmentsNonparametric)) {
+            /* If temporal non-parametric (time stratified) is also selected, then spatial adjustment
+               type is non-parametric, not spatially stratfied randomization.
+            */
+            if (Utils.selected(_temporalTrendAdjNonparametric))
+                eReturn = Parameters.SpatialAdjustmentType.SPATIAL_NONPARAMETRIC;
+            else
+                eReturn = Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION;
         }
-        return eReturn;
+        return eReturn;        
     }
 
     private Parameters.CriteriaSecondaryClustersType getCriteriaSecondaryClustersType() {
@@ -1026,10 +1007,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetNumIterativeScans(Integer.parseInt(_numIterativeScansTextField.getText()));
         parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
-        parameters.SetTimeTrendAdjustmentType(_temporalTrendAdjGroup.isEnabled() ? getAdjustmentTimeTrendControlType().ordinal() : Parameters.TimeTrendAdjustmentType.NOTADJUSTED.ordinal());
+        parameters.SetTimeTrendAdjustmentType(getAdjustmentTimeTrendControlType().ordinal());
         parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
         parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());
-        parameters.SetSpatialAdjustmentType(_spatialAdjustmentsGroup.isEnabled() ? getSpatialAdjustmentType().ordinal() : Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT.ordinal());
+        parameters.SetSpatialAdjustmentType(getSpatialAdjustmentType().ordinal());
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
         parameters.SetEarlyTermThreshold(Integer.parseInt(_earlyTerminationThreshold.getText()));
@@ -1360,17 +1341,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                             _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL;
 
         //validate spatial adjustments
-        if (_spatialAdjustmentsGroup.isEnabled() && _spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
+        if (Utils.selected(_spatialAdjustmentsNonparametric)) {
             if (_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected()) {
                 throw new AdvFeaturesExpection("Spatial adjustments can not performed in conjunction\n" + " with the inclusion of purely spatial clusters.", FocusedTabSet.ANALYSIS, (Component) _spatialAdjustmentsGroup);
-            }
-            if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() == Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION) {
-                throw new AdvFeaturesExpection("Spatial adjustments can not performed in conjunction\n" + "with the nonparametric temporal adjustment.", FocusedTabSet.ANALYSIS, (Component) _spatialAdjustmentsGroup);
             }
         }
         //validate temporal adjustments
         if (_temporalTrendAdjGroup.isEnabled() && _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON && bAnalysisIsPurelyTemporal
-                && _settings_window.getEdtPopFileNameText().length() == 0 && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
+                && _settings_window.getEdtPopFileNameText().length() == 0 && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED) {
             throw new AdvFeaturesExpection("Temporal adjustments can not be performed for a purely temporal analysis\n" + "using the Poisson model, when no population file has been specfied.", FocusedTabSet.ANALYSIS, (Component) _temporalTrendAdjGroup);
         }
         //validate spatial/temporal/space-time adjustments
@@ -1557,10 +1535,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The power evaluation is not available for the Sequential Standard Monte Carlo p-value reporting.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
             }
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
-                if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.NOTADJUSTED) {
+                if (_temporalTrendAdjGroup.isEnabled() && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED) {
                     throw new AdvFeaturesExpection("A power evaluation cannot be performed when using temporal adjustments without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
                 }
-                if (_spatialAdjustmentsGroup.isEnabled() && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT) {
+                if (_spatialAdjustmentsGroup.isEnabled() && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_NOTADJUSTED) {
                     throw new AdvFeaturesExpection("A power evaluation cannot be performed when using spatial adjustments without case data.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
                 }
                 if (_knownAdjustmentsGroup.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected()) {
@@ -1775,8 +1753,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Risk tab
         _adjustForKnownRelativeRisksCheckBox.setSelected(false);
         _adjustmentsByRelativeRisksFileTextField.setText("");
-        setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
-        _spatialAdjustmentsNoneRadioButton.setSelected(true);
+        setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
+        _spatialAdjustmentsNone.setSelected(true);
         _logLinearTextField.setText("0");
         _adjustDayOfWeek.setSelected(false);
 
@@ -1947,97 +1925,84 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /**
-     * returns adjustment for time trend type for control index
-     */
+    /* returns adjustment for time trend type from control selection */
     private Parameters.TimeTrendAdjustmentType getAdjustmentTimeTrendControlType() {
-        Parameters.TimeTrendAdjustmentType eReturn = null;
-
-        if (_temporalTrendAdjNoneRadioButton.isSelected()) {
-            eReturn = Parameters.TimeTrendAdjustmentType.NOTADJUSTED;
-        }
-        if (_temporalTrendAdjTimeStratifiedRadioButton.isSelected()) {
-            eReturn = Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION;
-        }
-        if (_temporalTrendAdjLogLinearRadioButton.isSelected()) {
+        Parameters.TimeTrendAdjustmentType eReturn = Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED;
+        if (Utils.selected(_temporalTrendAdjNonparametric)) {
+            eReturn = Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION;
+        } else if (Utils.selected(_temporalTrendAdjLogLinear)) {
             eReturn = Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC;
-        }
-        if (_temporalTrendAdjLogLinearCalcRadioButton.isSelected()) {
+        } else if (Utils.selected(_temporalTrendAdjLogLinearCalc)) {
             eReturn = Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC;
-        }
-        if (_temporalTrendAdjQuadCalcRadioButton.isSelected()) {
-            eReturn = Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC;
+        } else if (Utils.selected(_temporalTrendAdjQuadCalc)) {
+            eReturn = Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC;
         }
         return eReturn;
     }
 
-    /**
-     * Sets time trend adjustment control's index
-     */
+    /* Sets time trend adjustment control's index */
     private void setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
         switch (eTimeTrendAdjustmentType) {
-            case NOTADJUSTED:
-                _temporalTrendAdjNoneRadioButton.setSelected(true);
-                break;
-            case NONPARAMETRIC:
-                _temporalTrendAdjTimeStratifiedRadioButton.setSelected(true);
-                break;
             case LOGLINEAR_PERC:
-                _temporalTrendAdjLogLinearRadioButton.setSelected(true);
+                _temporalTrendAdjLogLinear.setSelected(true);
                 break;
             case CALCULATED_LOGLINEAR_PERC:
-                _temporalTrendAdjLogLinearCalcRadioButton.setSelected(true);
+                _temporalTrendAdjLogLinearCalc.setSelected(true);
                 break;
-            case CALCULATED_QUADRATIC_PERC:
-                _temporalTrendAdjQuadCalcRadioButton.setSelected(true);
+            case CALCULATED_QUADRATIC:
+                _temporalTrendAdjQuadCalc.setSelected(true);
                 break;
-            case STRATIFIED_RANDOMIZATION:
-                _temporalTrendAdjTimeStratifiedRadioButton.setSelected(true);
+            case TEMPORAL_NONPARAMETRIC: // Non-parametric isn't an option in the GUI.
+            case TEMPORAL_STRATIFIED_RANDOMIZATION:
+                _temporalTrendAdjNonparametric.setSelected(true);
                 break;
+            case TEMPORAL_NOTADJUSTED:
+            default:
+                _temporalTrendAdjNone.setSelected(true);
         }
     }
 
     /**
      * enables or disables the temporal time trend adjustment control group
      */
-    private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bTimeStratified, boolean bLogYearPercentage, boolean bCalculatedLog) {
+    private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bNonparametric, boolean bLogYearPercentage, boolean bCalculatedLog) {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
 
         // trump control enables
-        bTimeStratified &= bEnable;
+        bNonparametric &= bEnable;
         bLogYearPercentage &= bEnable;
         bCalculatedLog &= bEnable;
 
         _temporalTrendAdjGroup.setEnabled(bEnable);
-        _temporalTrendAdjTimeStratifiedRadioButton.setEnabled(bTimeStratified);
-        if (bEnable && !bTimeStratified && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION) {
-            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+        _temporalTrendAdjNonparametric.setEnabled(bNonparametric);
+        if (bEnable && !bNonparametric && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION) {
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
-        _temporalTrendAdjLogLinearRadioButton.setEnabled(bLogYearPercentage);
+        _temporalTrendAdjLogLinear.setEnabled(bLogYearPercentage);
         _logLinearLabel.setEnabled(bLogYearPercentage);
         _logLinearTextField.setEnabled(bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC);
         if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC) {
-            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
-        _temporalTrendAdjLogLinearCalcRadioButton.setEnabled(bCalculatedLog);
+        _temporalTrendAdjLogLinearCalc.setEnabled(bCalculatedLog);
         if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC) {
-            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
-        _temporalTrendAdjQuadCalcRadioButton.setEnabled(bCalculatedLog);
-        if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC) {
-            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.NOTADJUSTED);
+        _temporalTrendAdjQuadCalc.setEnabled(bCalculatedLog);
+        if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC) {
+            setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
     }
 
-    private void enableAdjustmentForSpatialOptionsGroup(boolean bEnable, boolean bEnableStratified) {
+    private void enableAdjustmentForSpatialOptionsGroup(boolean bEnable, boolean bEnableNonparametric) {
         _spatialAdjustmentsGroup.setEnabled(bEnable);
-        bEnableStratified &= bEnable;
-        _spatialAdjustmentsSpatialStratifiedRadioButton.setEnabled(bEnableStratified);
-        if (bEnable && !bEnableStratified && _spatialAdjustmentsSpatialStratifiedRadioButton.isSelected()) {
-            _spatialAdjustmentsNoneRadioButton.setSelected(true);
+        bEnableNonparametric &= bEnable;
+        _spatialAdjustmentsNonparametric.setEnabled(bEnableNonparametric);
+        if (bEnable && !bEnableNonparametric && _spatialAdjustmentsNonparametric.isSelected()) {
+            _spatialAdjustmentsNone.setSelected(true);
         }
     }
 
@@ -2157,17 +2122,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /**
-     * Sets spatial adjustment control type
-     */
+    /** Sets spatial adjustment control type */
     private void setSpatialAdjustmentTypeControl(Parameters.SpatialAdjustmentType eSpatialAdjustmentType) {
         switch (eSpatialAdjustmentType) {
-            case NO_SPATIAL_ADJUSTMENT:
-                _spatialAdjustmentsNoneRadioButton.setSelected(true);
+            case SPATIAL_NONPARAMETRIC:
+            case SPATIAL_STRATIFIED_RANDOMIZATION:
+                _spatialAdjustmentsNonparametric.setSelected(true);
                 break;
-            case SPATIALLY_STRATIFIED_RANDOMIZATION:
+            case SPATIAL_NOTADJUSTED:
             default:
-                _spatialAdjustmentsSpatialStratifiedRadioButton.setSelected(true);
+                _spatialAdjustmentsNone.setSelected(true);
         }
     }
 
@@ -2254,12 +2218,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             Utils.parseDateStringToControls(parameters.GetEndRangeEndDate(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, true);
         }
         // Space-Time Adjustments tab
-        setSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
-        _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
-        _adjustmentsByRelativeRisksFileTextField.setText(parameters.GetAdjustmentsByRelativeRisksFilename());
         setTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
         _logLinearTextField.setText(parameters.GetTimeTrendAdjustmentPercentage() <= -100 ? "0" : Double.toString(parameters.GetTimeTrendAdjustmentPercentage()));
         _adjustDayOfWeek.setSelected(parameters.getAdjustForWeeklyTrends());
+        setSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
+        _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
+        _adjustmentsByRelativeRisksFileTextField.setText(parameters.GetAdjustmentsByRelativeRisksFilename());
 
         // Inference tab
         setPValueReportingControlType(parameters.GetPValueReportingType());
@@ -2528,16 +2492,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
         _spaceTimeAjustmentsTab = new javax.swing.JPanel();
         _temporalTrendAdjGroup = new javax.swing.JPanel();
-        _temporalTrendAdjNoneRadioButton = new javax.swing.JRadioButton();
-        _temporalTrendAdjTimeStratifiedRadioButton = new javax.swing.JRadioButton();
-        _temporalTrendAdjLogLinearRadioButton = new javax.swing.JRadioButton();
-        _temporalTrendAdjLogLinearCalcRadioButton = new javax.swing.JRadioButton();
+        _temporalTrendAdjNone = new javax.swing.JRadioButton();
+        _temporalTrendAdjNonparametric = new javax.swing.JRadioButton();
+        _temporalTrendAdjLogLinear = new javax.swing.JRadioButton();
+        _temporalTrendAdjLogLinearCalc = new javax.swing.JRadioButton();
         _logLinearTextField = new javax.swing.JTextField();
         _logLinearLabel = new javax.swing.JLabel();
-        _temporalTrendAdjQuadCalcRadioButton = new javax.swing.JRadioButton();
+        _temporalTrendAdjQuadCalc = new javax.swing.JRadioButton();
         _spatialAdjustmentsGroup = new javax.swing.JPanel();
-        _spatialAdjustmentsNoneRadioButton = new javax.swing.JRadioButton();
-        _spatialAdjustmentsSpatialStratifiedRadioButton = new javax.swing.JRadioButton();
+        _spatialAdjustmentsNone = new javax.swing.JRadioButton();
+        _spatialAdjustmentsNonparametric = new javax.swing.JRadioButton();
         _knownAdjustmentsGroup = new javax.swing.JPanel();
         _adjustForKnownRelativeRisksCheckBox = new javax.swing.JCheckBox();
         _adjustmentsByRelativeRisksFileTextField = new javax.swing.JTextField();
@@ -2659,14 +2623,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalOptionsButtonGroup.add(_percentageTemporalRadioButton);
         _temporalOptionsButtonGroup.add(_timeTemporalRadioButton);
 
-        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNoneRadioButton);
-        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsSpatialStratifiedRadioButton);
+        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNone);
+        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNonparametric);
 
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNoneRadioButton);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjTimeStratifiedRadioButton);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearRadioButton);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalcRadioButton);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalcRadioButton);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNone);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNonparametric);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinear);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalc);
+        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalc);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setResizable(true);
@@ -4051,34 +4015,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
         _temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, AppConstants.TEMPORALTRENDADJ_HELPID));
 
-        _temporalTrendAdjNoneRadioButton.setSelected(true);
-        _temporalTrendAdjNoneRadioButton.setText("None"); // NOI18N
-        _temporalTrendAdjNoneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjNoneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _temporalTrendAdjNone.setSelected(true);
+        _temporalTrendAdjNone.setText("None"); // NOI18N
+        _temporalTrendAdjNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjNone.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
                 enableSettingsForAnalysisModelCombination();
             }
         });
 
-        _temporalTrendAdjTimeStratifiedRadioButton.setText("Nonparametric, with time stratified randomization"); // NOI18N
-        _temporalTrendAdjTimeStratifiedRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjTimeStratifiedRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjTimeStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _temporalTrendAdjNonparametric.setText("Nonparametric"); // NOI18N
+        _temporalTrendAdjNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjNonparametric.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    _spatialAdjustmentsSpatialStratifiedRadioButton.setEnabled(true);
                     enableSetDefaultsButton();
                     enableSettingsForAnalysisModelCombination();
                 }
             }
         });
 
-        _temporalTrendAdjLogLinearRadioButton.setText("Log linear trend with"); // NOI18N
-        _temporalTrendAdjLogLinearRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _temporalTrendAdjLogLinear.setText("Log linear trend with"); // NOI18N
+        _temporalTrendAdjLogLinear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjLogLinear.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     _logLinearTextField.setEnabled(true);
@@ -4088,10 +4051,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _temporalTrendAdjLogLinearCalcRadioButton.setText("Log linear with automatically calculated trend"); // NOI18N
-        _temporalTrendAdjLogLinearCalcRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearCalcRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _temporalTrendAdjLogLinearCalc.setText("Log linear with automatically calculated trend"); // NOI18N
+        _temporalTrendAdjLogLinearCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjLogLinearCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjLogLinearCalc.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
                 enableSettingsForAnalysisModelCombination();
@@ -4120,10 +4083,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _logLinearLabel.setText("%  per year"); // NOI18N
 
-        _temporalTrendAdjQuadCalcRadioButton.setText("Log quadratic with automatically calculated trend"); // NOI18N
-        _temporalTrendAdjQuadCalcRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjQuadCalcRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjQuadCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _temporalTrendAdjQuadCalc.setText("Log quadratic with automatically calculated trend"); // NOI18N
+        _temporalTrendAdjQuadCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _temporalTrendAdjQuadCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
                 enableSettingsForAnalysisModelCombination();
@@ -4139,57 +4102,57 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                         .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_temporalTrendAdjLogLinearCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_temporalTrendAdjNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_temporalTrendAdjLogLinearCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_temporalTrendAdjNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalTrendAdjLogLinearRadioButton)
+                                .addComponent(_temporalTrendAdjLogLinear)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(_temporalTrendAdjTimeStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
+                            .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
                         .addGap(2, 2, 2))
                     .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                        .addComponent(_temporalTrendAdjQuadCalcRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())))
         );
         _temporalTrendAdjGroupLayout.setVerticalGroup(
             _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_temporalTrendAdjNoneRadioButton)
+                .addComponent(_temporalTrendAdjNone)
                 .addGap(10, 10, 10)
-                .addComponent(_temporalTrendAdjTimeStratifiedRadioButton)
+                .addComponent(_temporalTrendAdjNonparametric)
                 .addGap(10, 10, 10)
                 .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalTrendAdjLogLinearRadioButton)
+                    .addComponent(_temporalTrendAdjLogLinear)
                     .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_logLinearLabel))
                 .addGap(10, 10, 10)
-                .addComponent(_temporalTrendAdjLogLinearCalcRadioButton)
+                .addComponent(_temporalTrendAdjLogLinearCalc)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_temporalTrendAdjQuadCalcRadioButton)
+                .addComponent(_temporalTrendAdjQuadCalc)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
         _spatialAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialAdjustmentsGroup, AppConstants.SPATIALADJ_HELPID));
 
-        _spatialAdjustmentsNoneRadioButton.setSelected(true);
-        _spatialAdjustmentsNoneRadioButton.setText("None"); // NOI18N
-        _spatialAdjustmentsNoneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialAdjustmentsNoneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialAdjustmentsNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _spatialAdjustmentsNone.setSelected(true);
+        _spatialAdjustmentsNone.setText("None"); // NOI18N
+        _spatialAdjustmentsNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _spatialAdjustmentsNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _spatialAdjustmentsNone.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSettingsForAnalysisModelCombination();
                 enableSetDefaultsButton();
             }
         });
 
-        _spatialAdjustmentsSpatialStratifiedRadioButton.setText("Nonparametric, with spatial stratified randomization"); // NOI18N
-        _spatialAdjustmentsSpatialStratifiedRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialAdjustmentsSpatialStratifiedRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialAdjustmentsSpatialStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _spatialAdjustmentsNonparametric.setText("Nonparametric"); // NOI18N
+        _spatialAdjustmentsNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _spatialAdjustmentsNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _spatialAdjustmentsNonparametric.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
                 enableSettingsForAnalysisModelCombination();
@@ -4203,17 +4166,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_spatialAdjustmentsNoneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
+                    .addComponent(_spatialAdjustmentsNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_spatialAdjustmentsNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
                 .addGap(2, 2, 2))
         );
         _spatialAdjustmentsGroupLayout.setVerticalGroup(
             _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_spatialAdjustmentsNoneRadioButton)
+                .addComponent(_spatialAdjustmentsNone)
                 .addGap(10, 10, 10)
-                .addComponent(_spatialAdjustmentsSpatialStratifiedRadioButton)
+                .addComponent(_spatialAdjustmentsNonparametric)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -5898,8 +5861,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _spaceTimeAjustmentsTab;
     private javax.swing.ButtonGroup _spatialAdjustmentsButtonGroup;
     private javax.swing.JPanel _spatialAdjustmentsGroup;
-    private javax.swing.JRadioButton _spatialAdjustmentsNoneRadioButton;
-    private javax.swing.JRadioButton _spatialAdjustmentsSpatialStratifiedRadioButton;
+    private javax.swing.JRadioButton _spatialAdjustmentsNone;
+    private javax.swing.JRadioButton _spatialAdjustmentsNonparametric;
     private javax.swing.JCheckBox _spatialDistanceCheckBox;
     private javax.swing.JPanel _spatialNeighborsTab;
     private javax.swing.JPanel _spatialOptionsGroup;
@@ -5937,11 +5900,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _temporalOutputTab;
     private javax.swing.ButtonGroup _temporalTrendAdjButtonGroup;
     private javax.swing.JPanel _temporalTrendAdjGroup;
-    private javax.swing.JRadioButton _temporalTrendAdjLogLinearCalcRadioButton;
-    private javax.swing.JRadioButton _temporalTrendAdjLogLinearRadioButton;
-    private javax.swing.JRadioButton _temporalTrendAdjNoneRadioButton;
-    private javax.swing.JRadioButton _temporalTrendAdjQuadCalcRadioButton;
-    private javax.swing.JRadioButton _temporalTrendAdjTimeStratifiedRadioButton;
+    private javax.swing.JRadioButton _temporalTrendAdjLogLinear;
+    private javax.swing.JRadioButton _temporalTrendAdjLogLinearCalc;
+    private javax.swing.JRadioButton _temporalTrendAdjNone;
+    private javax.swing.JRadioButton _temporalTrendAdjNonparametric;
+    private javax.swing.JRadioButton _temporalTrendAdjQuadCalc;
     private javax.swing.JPanel _temporalWindowTab;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _totalPowerCases;

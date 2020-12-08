@@ -11,6 +11,7 @@ package org.satscan.gui.utils;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.undo.UndoManager;
 import org.satscan.app.AppConstants;
 
@@ -20,6 +21,11 @@ import org.satscan.app.AppConstants;
  */
 public class Utils {
 
+    /* Returne whether JToggleButton control is enabled and selected */
+    public static boolean selected(JToggleButton component) {
+        return component.isEnabled() && component.isSelected();
+    }
+    
     /**
      * Validates that key typed is a positive integer or back space; otherwise consumes key.
      */

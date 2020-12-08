@@ -229,7 +229,7 @@ void stsRunHistoryFile::GetRatesString(std::string& sTempValue, AnalysisType eAn
 }
 
 // converts the iType to a legible string for printing
-//  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
+//  pre : iType is conatined in (TEMPORAL_NOTADJUSTED, TEMPORAL_NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
 // post : string will be assigned a formatted value based upon iType
 void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iType, AnalysisType eAnalysisType,
                                                 ProbabilityModelType eProbabilityModelType) {
@@ -241,11 +241,11 @@ void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iTy
     sTempValue = "n/a";
   else {
     switch(iType) {
-      case NOTADJUSTED               : sTempValue = "None"; break;
-      case NONPARAMETRIC             : sTempValue = "Non-parametric"; break;
-      case LOGLINEAR_PERC            : sTempValue = "Linear"; break;
-      case CALCULATED_LOGLINEAR_PERC : sTempValue = "Log Linear"; break;
-      case STRATIFIED_RANDOMIZATION  : sTempValue = "Time Stratified"; break;
+      case TEMPORAL_NOTADJUSTED              : sTempValue = "None"; break;
+      case TEMPORAL_NONPARAMETRIC            : sTempValue = "Non-parametric"; break;
+      case LOGLINEAR_PERC                    : sTempValue = "Linear"; break;
+      case CALCULATED_LOGLINEAR_PERC         : sTempValue = "Log Linear"; break;
+      case TEMPORAL_STRATIFIED_RANDOMIZATION : sTempValue = "Time Stratified"; break;
       default : throw prg_error("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
     }
   }

@@ -1051,12 +1051,12 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
         // if the user is specifying the total # of cases, then certain features are not valid
         if (gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES) {
             // temporal adjustments are not available without case data
-            if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+            if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
                 PrintDirection.Printf("%s:\nThe power evaluation can not perform temporal adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 bValid = false;
             }
             // spatial adjustments are not available without case data
-            if (gParameters.GetSpatialAdjustmentType() != NO_SPATIAL_ADJUSTMENT) {
+            if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
                 PrintDirection.Printf("%s:\nThe power evaluation can not perform spatial adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 bValid = false;
             }
@@ -1431,22 +1431,22 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       }
     }
-    if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION) {
+    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization is valid for "
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization is valid for "
                               "either retrospective or prospective space-time analyses only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-      }
-      if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization can not be performed "
-                              "in conjunction with the temporal adjustment by stratified randomization.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetIncludePurelySpatialClusters()) {
         bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization does not permit "
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization does not permit "
                               "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
+    }
+    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC && 
+        !(gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment can only be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
   } catch (prg_exception& x) {
     x.addTrace("ValidateSpatialParameters()","ParametersValidate");
@@ -1615,7 +1615,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       const_cast<CParameters&>(gParameters).SetIncludeClustersType(ALLCLUSTERS);
       const_cast<CParameters&>(gParameters).SetTimeAggregationUnitsType(NONE);
       const_cast<CParameters&>(gParameters).SetTimeAggregationLength(0);
-      const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+      const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
       const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
       return true;
     }
@@ -1662,10 +1662,10 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case BERNOULLI            :
         //The SVTT analysis has hooks for temporal adjustments, but that code needs
         //much closer examination before it can be used, even experimentally.
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the Bernoulli model, adjusting for temporal trends is not permitted. "
                                 "Temporal trends adjustment settings will be ignored.\n", BasePrint::P_NOTICE);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
@@ -1674,43 +1674,41 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
                                 "Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
       case SPACETIMEPERMUTATION :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the space-time permutation model, adjusting for temporal trends "
                                 "is not permitted nor needed, as this model automatically adjusts for "
                                 "any temporal variation. Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
       case POISSON             :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
           bValid = false;
-          PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a spatial variation in "
-                                "temporal trends analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+          PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a spatial variation in temporal trends analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
-            && gParameters.GetPopulationFileName().empty()) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED && gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetPopulationFileName().empty()) {
           bValid = false;
           PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a purely temporal analysis "
                                 "using the Poisson model, when no population file has been specfied.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC && (gParameters.GetAnalysisType() == PURELYTEMPORAL ||gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NONPARAMETRIC && gParameters.GetIsPurelyTemporalAnalysis()) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe non-parametric time trend adjustment cannot be used with a purely temporal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetIsPurelyTemporalAnalysis()) {
           bValid = false;
-          PrintDirection.Printf("%s:\nTemporal adjustment by stratified randomization is not valid "
+          PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
                                  "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         if (gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC && -100.0 >= gParameters.GetTimeTrendAdjustmentPercentage()) {
@@ -1718,7 +1716,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
           PrintDirection.Printf("%s:\nThe time adjustment percentage is '%2g', but must greater than -100.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendAdjustmentPercentage());
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED) {
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
           if (gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) const_cast<CParameters&>(gParameters).SetTimeTrendConvergence(0);
         }

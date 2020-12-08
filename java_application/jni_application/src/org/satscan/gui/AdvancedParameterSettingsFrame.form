@@ -34,12 +34,12 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_spatialAdjustmentsButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNoneRadioButton);&#xa;_spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsSpatialStratifiedRadioButton);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNone);&#xa;_spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNonparametric);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_temporalTrendAdjButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjButtonGroup.add(_temporalTrendAdjNoneRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjTimeStratifiedRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalcRadioButton);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalcRadioButton);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjButtonGroup.add(_temporalTrendAdjNone);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjNonparametric);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinear);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalc);&#xa;_temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalc);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_pValueButtonGroup">
@@ -1957,21 +1957,21 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_temporalTrendAdjLogLinearCalcRadioButton" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="_temporalTrendAdjNoneRadioButton" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjLogLinearCalc" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjNone" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_temporalTrendAdjLogLinearRadioButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="_temporalTrendAdjLogLinear" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_logLinearTextField" min="-2" pref="61" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_logLinearLabel" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="_temporalTrendAdjTimeStratifiedRadioButton" alignment="0" pref="624" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="624" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_temporalTrendAdjQuadCalcRadioButton" max="32767" attributes="0"/>
+                                  <Component id="_temporalTrendAdjQuadCalc" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -1982,26 +1982,26 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_temporalTrendAdjNoneRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_temporalTrendAdjNone" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                          <Component id="_temporalTrendAdjTimeStratifiedRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_temporalTrendAdjNonparametric" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_temporalTrendAdjLogLinearRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_logLinearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_logLinearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                          <Component id="_temporalTrendAdjLogLinearCalcRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_temporalTrendAdjLogLinearCalc" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_temporalTrendAdjQuadCalcRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_temporalTrendAdjQuadCalc" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjNoneRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjNone">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="None" noResource="true"/>
@@ -2015,13 +2015,13 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="AdvancedParameterSettingsFrame__temporalTrendAdjNoneRadioButton"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjTimeStratifiedRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjNonparametric">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Nonparametric, with time stratified randomization" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Nonparametric" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2032,10 +2032,10 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjTimeStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _spatialAdjustmentsSpatialStratifiedRadioButton.setEnabled(true);&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjNonparametric.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinear">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Log linear trend with" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -2048,10 +2048,10 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjLogLinearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _logLinearTextField.setEnabled(true);&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _logLinearTextField.setEnabled(true);&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearCalcRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearCalc">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Log linear with automatically calculated trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -2064,7 +2064,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjLogLinearCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjLogLinearCalc.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_logLinearTextField">
@@ -2080,7 +2080,7 @@
                     <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalcRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalc">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Log quadratic with automatically calculated trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -2093,7 +2093,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjQuadCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -2120,8 +2120,8 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_spatialAdjustmentsNoneRadioButton" max="32767" attributes="0"/>
-                              <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" alignment="0" pref="624" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsNone" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsNonparametric" alignment="0" pref="624" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
@@ -2131,16 +2131,16 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_spatialAdjustmentsNoneRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_spatialAdjustmentsNone" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                          <Component id="_spatialAdjustmentsSpatialStratifiedRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_spatialAdjustmentsNonparametric" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsNoneRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsNone">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="None" noResource="true"/>
@@ -2154,12 +2154,12 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsSpatialStratifiedRadioButton">
+                <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsNonparametric">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Nonparametric, with spatial stratified randomization" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Nonparametric" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2170,7 +2170,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsSpatialStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsNonparametric.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

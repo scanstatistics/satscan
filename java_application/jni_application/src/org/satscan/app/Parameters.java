@@ -22,10 +22,10 @@ public class Parameters implements Cloneable {
     /** area incidence rate types */
     public enum AreaRateType                  {HIGH, LOW, HIGHANDLOW};
     /** time trend adjustment types */
-    public enum TimeTrendAdjustmentType       {NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC,
-                                               CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION, CALCULATED_QUADRATIC_PERC};
+    public enum TimeTrendAdjustmentType       {TEMPORAL_NOTADJUSTED, TEMPORAL_NONPARAMETRIC, LOGLINEAR_PERC,
+                                               CALCULATED_LOGLINEAR_PERC, TEMPORAL_STRATIFIED_RANDOMIZATION, CALCULATED_QUADRATIC};
     /** spatial adjustment types */
-    public enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION};
+    public enum SpatialAdjustmentType         {SPATIAL_NOTADJUSTED, SPATIAL_STRATIFIED_RANDOMIZATION, SPATIAL_NONPARAMETRIC};
     public enum CoordinatesType               {CARTESIAN, LATLON};
     /** criteria for reporting secondary clusters types */
     public enum CriteriaSecondaryClustersType {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
@@ -94,7 +94,7 @@ public class Parameters implements Cloneable {
     private boolean                         gbOutputSimulationData=false; /** indicates whether to output simulation data to file */
     private boolean                         gbAdjustForEarlierAnalyses=false; /** indicates whether to adjust for earlier analyses,
                                                                                   pertinent for prospective analyses */
-    private SpatialAdjustmentType           geSpatialAdjustmentType=SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT; /** type of spatial adjustment*/
+    private SpatialAdjustmentType           geSpatialAdjustmentType=SpatialAdjustmentType.SPATIAL_NOTADJUSTED; /** type of spatial adjustment*/
     private StudyPeriodDataCheckingType     geStudyPeriodDataCheckingType=StudyPeriodDataCheckingType.STRICTBOUNDS; /** study period data checking type */
     private CoordinatesDataCheckingType     geCoordinatesDataCheckingType=CoordinatesDataCheckingType.STRICTCOORDINATES; /** geographical coordinates data checking type */
     private MultipleCoordinatesType         geMultipleCoordinatesType=MultipleCoordinatesType.ONEPERLOCATION; /** multiple locations type */
@@ -127,7 +127,7 @@ public class Parameters implements Cloneable {
     private DatePrecisionType               geTimeAggregationUnitsType=DatePrecisionType.NONE; /** time aggregation units type */
     /* Temporal trend adjusment variables */
     private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
-    private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
+    private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
     /* Input precision variables */
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */

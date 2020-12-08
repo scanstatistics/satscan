@@ -211,9 +211,9 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
   try {
     //display temporal adjustments
     switch (gParameters.GetTimeTrendAdjustmentType()) {
-      case NOTADJUSTED :
+      case TEMPORAL_NOTADJUSTED:
         break;
-      case NONPARAMETRIC :
+      case TEMPORAL_NONPARAMETRIC:
         buffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
         PrintCalculatedTimeTrend(fp, SetHandler); break;
@@ -225,26 +225,27 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
         break;
       case CALCULATED_LOGLINEAR_PERC :
           PrintCalculatedTimeTrend(fp, SetHandler); break;
-      case STRATIFIED_RANDOMIZATION  :
+      case TEMPORAL_STRATIFIED_RANDOMIZATION:
         buffer = "Adjusted for time by stratified randomization."; break;
-      case CALCULATED_QUADRATIC_PERC :
+      case CALCULATED_QUADRATIC:
           PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.",
-                        "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
     }
     if (buffer.size())
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     //display spatial adjustments
     switch (gParameters.GetSpatialAdjustmentType()) {
-      case NO_SPATIAL_ADJUSTMENT :
+      case SPATIAL_NOTADJUSTED:
         break;
-      case SPATIALLY_STRATIFIED_RANDOMIZATION :
+      case SPATIAL_STRATIFIED_RANDOMIZATION:
         buffer = "Adjusted for purely spatial clusters by stratified randomization.";
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
+      case SPATIAL_NONPARAMETRIC:
+          buffer = "Adjusted for purely spatial clusters by space nonparametrically.";
+          PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.",
-                        "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
     }
     //display space-time adjustments
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
@@ -360,12 +361,12 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
 
     if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
-          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC))
+          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC))
         return;
 
     //NOTE: Each dataset has own calculated time trend.
 
-    if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC) {
+    if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC) {
         strBuffer << "Adjusted for log quadratic time trend with:";
         for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
             strBuffer << std::endl << SetHandler.GetDataSet(t).getCalculatedQuadraticTimeTrend().c_str();
@@ -374,7 +375,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
     } else {
         switch (gParameters.GetTimeAggregationUnitsType()) {
             case GENERIC:
-            case YEAR: trend_label = "an annually"; break;
+            case YEAR: trend_label = "an annual"; break;
             case MONTH: trend_label = "a monthly"; break;
             case DAY: trend_label = "a daily"; break;
             case NONE:
@@ -1101,18 +1102,18 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
     try {
         if (bPrintingTemporalAdjustment) {
             switch (gParameters.GetTimeTrendAdjustmentType()) {
-                case NOTADJUSTED               :
+                case TEMPORAL_NOTADJUSTED:
                     settings.push_back(std::make_pair("Temporal Adjustment","None"));break;
-                case NONPARAMETRIC             :
+                case TEMPORAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
                     printString(buffer, "Log linear with %g percent per year", gParameters.GetTimeTrendAdjustmentPercentage());
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
                     settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
-                case STRATIFIED_RANDOMIZATION  :
+                case TEMPORAL_STRATIFIED_RANDOMIZATION:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
-                case CALCULATED_QUADRATIC_PERC :
+                case CALCULATED_QUADRATIC:
                     settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
                                           "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
@@ -1123,10 +1124,12 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
         }
         if (bPrintingSpatialAdjustment) {
             switch (gParameters.GetSpatialAdjustmentType()) {
-                case NO_SPATIAL_ADJUSTMENT              :
+                case SPATIAL_NOTADJUSTED               :
                     settings.push_back(std::make_pair("Spatial Adjustment","None")); break;
-                case SPATIALLY_STRATIFIED_RANDOMIZATION :
-                    settings.push_back(std::make_pair("Spatial Adjustment","Spatial adjustment by stratified randomization")); break;
+                case SPATIAL_STRATIFIED_RANDOMIZATION:
+                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with spatial stratified randomization")); break;
+                case SPATIAL_NONPARAMETRIC:
+                    settings.push_back(std::make_pair("Spatial Adjustment", "Nonparametric")); break;
                 default : throw prg_error("Unknown spatial adjustment type '%d'.\n", "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
             }
         }

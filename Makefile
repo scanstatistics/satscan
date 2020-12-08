@@ -32,12 +32,13 @@ NEWMAT         := $(SATSCAN)/newmat/newmat10
 SHAPELIB       := $(SATSCAN)/shapelib/shapelib_1.2.10
 ZLIB           := $(SATSCAN)/zlib/zlib-1.2.7
 ZLIB_MINIZIP   := $(SATSCAN)/zlib/zlib-1.2.7/contrib/minizip
-#JNI           :=
+JNI            :=
+JNI_PLAT       :=
 INFOPLIST_FILE :=
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(SHAPELIB) -I$(ZLIB) -I$(ZLIB_MINIZIP)\
-	           -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI)
+	           -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI) -I$(JNI_PLAT)
 
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB

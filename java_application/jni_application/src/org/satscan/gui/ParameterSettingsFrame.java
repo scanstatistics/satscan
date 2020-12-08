@@ -390,8 +390,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Hidden features are to be used soley in command line version at this time. */
     private void defaultHiddenParameters() {
         //non-parametric removed from interface, replaced with time stratified
-        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.NONPARAMETRIC) {
-            _parameters.SetTimeTrendAdjustmentType(Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION.ordinal());
+        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.TEMPORAL_NONPARAMETRIC) {
+            _parameters.SetTimeTrendAdjustmentType(Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION.ordinal());
         }
         _parameters.SetTimeTrendConvergence(.0000001); //default value in CParameters
         _parameters.SetSimulationType(Parameters.SimulationType.STANDARD.ordinal());
@@ -410,9 +410,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _parameters.SetIncludeClustersType(Parameters.IncludeClustersType.ALLCLUSTERS.ordinal());
         }
         //prevent stratified temporal and spatial adjustments from being set as same time
-        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.STRATIFIED_RANDOMIZATION &&
-                _parameters.GetSpatialAdjustmentType() == Parameters.SpatialAdjustmentType.SPATIALLY_STRATIFIED_RANDOMIZATION) {
-            _parameters.SetSpatialAdjustmentType(Parameters.SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT.ordinal());
+        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION &&
+                _parameters.GetSpatialAdjustmentType() == Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION) {
+            _parameters.SetSpatialAdjustmentType(Parameters.SpatialAdjustmentType.SPATIAL_NONPARAMETRIC.ordinal());
         }
         _parameters.SetExecutionType(Parameters.ExecutionType.AUTOMATIC.ordinal());
         //before version 6, critical values were always reported

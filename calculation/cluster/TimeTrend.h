@@ -5,6 +5,9 @@
 #include "SaTScan.h"
 #include "Parameters.h"
 
+class CSaTScanData;
+class RealDataSet;
+
 /** Calculates temporal trend. */
 class AbstractTimeTrend {
   public:
@@ -37,7 +40,7 @@ class AbstractTimeTrend {
 
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) = 0;
     double                      GetAnnualTimeTrend() const {return gdAnnualTimeTrend;}
-    static double               GetTimeTrendByAggregationUnits(double beta, Status status);
+    static double               GetTimeTrendByAggregationUnits(double beta, Status status, DatePrecisionType eAggregationPrecision, double dTimeAggregationLength);
     double                      GetAlpha() const {return gdAlpha;}
     double                      GetBeta() const {return gdBeta;}
     virtual double              GetBeta2() const { return 0.0; }
@@ -46,6 +49,8 @@ class AbstractTimeTrend {
     virtual TimeTrendType       getType() const = 0;
     virtual void                Initialize();
     double                      SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength);
+
+    virtual void                printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const = 0;
 
 	static AbstractTimeTrend *  getTimeTrend(const CParameters& parameters);
 };
@@ -66,10 +71,10 @@ class LinearTimeTrend : public AbstractTimeTrend {
     double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge);
     virtual TimeTrendType       getType() const {return LINEAR;};
+
+    virtual void                printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const;
 };
 
-
-class CSaTScanData;
 
 /** Calculates quadratic time trend. */
 class QuadraticTimeTrend : public AbstractTimeTrend {
@@ -88,6 +93,8 @@ class QuadraticTimeTrend : public AbstractTimeTrend {
     void                        getRiskFunction(std::string& functionStr, std::string& definitionStr, const CSaTScanData& DataHub) const;
     virtual TimeTrendType       getType() const {return QUADRATIC;};
     virtual void                Initialize();
+
+    virtual void                printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const;
 };
 //*****************************************************************************
 #endif

@@ -785,7 +785,7 @@ void CParameters::SetAsDefaulted() {
   _critical_value_05                       = 0.0;
   _critical_value_01                       = 0.0;
   _critical_value_001                      = 0.0;
-  geTimeTrendAdjustType                    = NOTADJUSTED;
+  geTimeTrendAdjustType                    = TEMPORAL_NOTADJUSTED;
   gdTimeTrendAdjustPercentage              = 0;
   gbIncludePurelyTemporalClusters          = false;
   gvControlFilenames.resize(1);
@@ -822,7 +822,7 @@ void CParameters::SetAsDefaulted() {
   gsSimulationDataOutputFilename           = "";
   gbAdjustForEarlierAnalyses               = false;
   gbUseAdjustmentsForRRFile                = false;
-  geSpatialAdjustmentType                  = NO_SPATIAL_ADJUSTMENT;
+  geSpatialAdjustmentType                  = SPATIAL_NOTADJUSTED;
   geMultipleSetPurposeType                 = MULTIVARIATE;
   gCreationVersion.iMajor                  = atoi(VERSION_MAJOR);
   gCreationVersion.iMinor                  = atoi(VERSION_MINOR);
@@ -1122,8 +1122,8 @@ void CParameters::setPowerEvaluationSimulationDataSourceFilename(const char * sS
 
 /** Set spatial adjustment type. Throws exception if out of range. */
 void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType) {
-  if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+  if (eSpatialAdjustmentType < SPATIAL_NOTADJUSTED || eSpatialAdjustmentType > SPATIAL_NONPARAMETRIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, SPATIAL_NOTADJUSTED, SPATIAL_NONPARAMETRIC);
   geSpatialAdjustmentType = eSpatialAdjustmentType;
 }
 
@@ -1234,9 +1234,9 @@ void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
-  if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > CALCULATED_QUADRATIC_PERC)
+  if (eTimeTrendAdjustmentType < TEMPORAL_NOTADJUSTED || eTimeTrendAdjustmentType > CALCULATED_QUADRATIC)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
-                    eTimeTrendAdjustmentType, NOTADJUSTED, CALCULATED_QUADRATIC_PERC);
+                    eTimeTrendAdjustmentType, TEMPORAL_NOTADJUSTED, CALCULATED_QUADRATIC);
   geTimeTrendAdjustType = eTimeTrendAdjustmentType;
 }
 

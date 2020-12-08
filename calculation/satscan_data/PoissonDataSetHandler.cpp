@@ -463,9 +463,9 @@ void PoissonDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+          if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
             gvDataSetRandomizers.at(0) = new PoissonTimeStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
-          else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+          else if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
             gvDataSetRandomizers.at(0) = new PoissonSpatialStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else if (gParameters.GetIsPurelyTemporalAnalysis())
             gvDataSetRandomizers.at(0) = new PoissonPurelyTemporalNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
