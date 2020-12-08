@@ -78,7 +78,8 @@ class AnalysisExecution {
 		ExecutionType						_executing_type;
 		unsigned int						_analysis_count;
 		unsigned short						_significant_at005;
-		MLC_Collections_t					_top_clusters_containers;
+        unsigned int                        _significant_clusters;
+        MLC_Collections_t					_top_clusters_containers;
 		MostLikelyClustersContainer			_reportClusters;
 		ClusterRankHelper					_clusterRanker;
 		SimulationVariables					_sim_vars;
@@ -111,6 +112,7 @@ class AnalysisExecution {
 		void								printEarlyTerminationStatus(FILE* fp);
 		void								printGiniCoefficients(FILE* fp);
 		void								printRetainedClustersStatus(FILE* fp, bool bClusterReported);
+        void                                printIgnoredDataSets(FILE* fp);
 		void								printTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
 		void								printTopClusters(const MostLikelyClustersContainer& mlc);
 		void								printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
@@ -130,6 +132,7 @@ class AnalysisExecution {
 		bool                                getIsCalculatingSignificantRatios() const { return _significant_ratios.get() != 0; }
 		const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
 		unsigned short                      getNumSignificantAt005() const { return _significant_at005; }
+        unsigned int                        getNumSignificantClusters() const { return _significant_clusters; }
 		unsigned int                        getNumSimulationsExecuted() const { return _sim_vars.get_sim_count(); }
 		const CParameters                 & getParameters() const { return _parameters; }
 		double                              getSimRatio01() const { return _significant_ratios.get() ? _significant_ratios->getAlpha01().second : 0.0; }
@@ -150,10 +153,11 @@ class AbstractAnalysisDrilldown {
 		std::vector<std::string>            _temp_files;
 		const std::string                 & _base_output;
 		std::string                         _cluster_path;
+        unsigned int                        _significant_clusters;
 
 	public:
 		AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
-			_parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel) {
+			_parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), _significant_clusters(0){
 			// Record start time of drilldown start -- of course this excludes time reading data.
 			time(&_start_time);
 			_cluster_path = (cluster_path ? cluster_path.get() : "");
@@ -165,7 +169,8 @@ class AbstractAnalysisDrilldown {
 		virtual void                        createReducedGridFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, unsigned int downlevel);
 		virtual void                        execute();
 		virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) = 0;
-		virtual const char                * getTypeIdentifier() = 0;
+        unsigned int                        getNumSignificantClusters() const { return _significant_clusters; }
+        virtual const char                * getTypeIdentifier() = 0;
 		const CParameters                 & getParameters() const { return _parameters; }
 		virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
 		static bool                         shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);

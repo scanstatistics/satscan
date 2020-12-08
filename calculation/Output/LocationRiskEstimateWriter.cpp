@@ -62,7 +62,7 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL /*|| gParameters.GetAnalysisType() == SPATIALVARTEMPTREND*/)
             throw prg_error("Risk estimates file not implemented for %s model.", "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
         CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset, 0);
-        if (gParameters.GetNumDataSets() > 1)
+        if (gParameters.getNumFileSets() > 1)
             CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
         if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
             CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -159,7 +159,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
   RecordBuffer          Record(vFieldDefinitions);
 
   try {
-    for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
+    for (size_t i=0; i < DataHub.GetNumDataSets(); ++i) {
        const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(i);
        const PopulationData& Population = DataSet.getPopulationData();
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
@@ -179,8 +179,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
              Record.GetFieldValue(LOC_ID_FIELD).AsString() = sBuffer;
              if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
                Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-             if (gParameters.GetNumDataSets() > 1)
-               Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(i + 1);
+             if (gParameters.getNumFileSets() > 1)
+               Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1);
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = static_cast<double>(j + 1);
              Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
              dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumCategoryTypeCases(j) / DataSet.getTotalPopulation();
@@ -239,8 +239,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
                 }
                 if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
                     Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-                if (gParameters.GetNumDataSets() > 1)
-                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+                if (gParameters.getNumFileSets() > 1)
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
                 if (gParameters.GetProbabilityModelType() == NORMAL) {
                     if (pCases[t]) {
                         Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
@@ -287,8 +287,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsWeightedNormal(const CS
            Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
            if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
              Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-           if (gParameters.GetNumDataSets() > 1)
-             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+           if (gParameters.getNumFileSets() > 1)
+             Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
            Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = statistics.gtMean[t];
            Record.GetFieldValue(WEIGHTED_MEAN_VALUE_FIELD).AsDouble() = statistics.gtWeightedMean[t];
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
@@ -319,7 +319,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
   RecordBuffer                  Record(vFieldDefinitions);
 
   try {
-    for (i=0; i < gParameters.GetNumDataSets(); ++i) {
+    for (i=0; i < DataHub.GetNumDataSets(); ++i) {
        pCases = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData().GetArray()[0];
        pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData().GetArray()[0];
        ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_NC().GetArray();
@@ -335,8 +335,8 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
           if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
-          if (gParameters.GetNumDataSets() > 1)
-            Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+          if (gParameters.getNumFileSets() > 1)
+            Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
           Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;

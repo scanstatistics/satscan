@@ -298,7 +298,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     if (iNumCollapsibleIntervals > 1 
 		&& !(gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends())
 		&& !(gParameters.GetProbabilityModelType() == POISSON && 
-		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
+		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
       // will be cummulated into first interval.
@@ -487,9 +487,9 @@ void CSaTScanData::ReadDataFromFiles() {
 /* Class specific actions to perform after data has been read. */
 void CSaTScanData::PostDataRead() {
 	try {
-		if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || 
+		if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION || 
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
-            gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC)
+            gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC)
 			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
 		CalculateExpectedCases();
 		if (gParameters.UseMetaLocationsFile())

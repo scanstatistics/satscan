@@ -257,8 +257,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
       gPrint.Printf("Please see the 'Adjustments File' section in the user guide for help.\n", BasePrint::P_ERROR);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
+      gPrint.Printf("Warning: %s contains no data.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
     } else {
         // safety check - remove any collections that have no adjustments
         for (RiskAdjustmentsContainer_t::iterator itr=rrAdjustments.begin(); itr != rrAdjustments.end(); ++itr) {
@@ -839,11 +838,12 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 				continue;
 			}
 			gTractHandler.addLocation(networkSource->GetValueAt(0));
-			if (networkSource->GetNumValues() > 1)
+			if (networkSource->GetNumValues() > 1 && networkSource->GetValueAt(1))
 				gTractHandler.addLocation(networkSource->GetValueAt(1));
 			// If any record in the network file excludes distance value, then we need to read coordinates.
-			readCoordiantesFile |= networkSource->GetNumValues() == 2;
+            readCoordiantesFile |= networkSource->GetNumValues() == 2;
 		}
+        if (!bValid) return false;
 		// The network file does not specify the distances between all locations, so the coordinates file must be provided.
 		if (readCoordiantesFile && gParameters.GetCoordinatesFileName().size() == 0) {
 			gPrint.Printf(
@@ -998,7 +998,8 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsOverride() {
 				continue;
 			}
 			secondLocation = gTractHandler.getLocationIndex(networkSource->GetValueAt(1));
-			if (secondLocation == -1) {
+
+            if (secondLocation == -1) {
 				gPrint.Printf("Error: Record %ld, of %s, references an unknown identifier '%s' that is not defined in the coordinates file..\n",
 					BasePrint::P_READERROR, networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), networkSource->GetValueAt(1));
 				bValid = false;

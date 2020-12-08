@@ -98,6 +98,9 @@ class TractHandler {
     class CompareFirstCoordinatePointer {
        public:
          bool operator() (const Location * lhs, const Location * rhs) {
+            // First verify that location defines coordinates - this situation is possible with 
+            if (lhs->getCoordinates().size() == 0 || rhs->getCoordinates().size() == 0)
+                return strcmp(lhs->getIndentifier(), rhs->getIndentifier()) < 0;
             if (lhs->getCoordinates()[0] == rhs->getCoordinates()[0])
               return strcmp(lhs->getIndentifier(), rhs->getIndentifier()) < 0;
             return lhs->getCoordinates()[0] < rhs->getCoordinates()[0];

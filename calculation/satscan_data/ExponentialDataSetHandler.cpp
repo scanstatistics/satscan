@@ -157,87 +157,75 @@ void ExponentialDataSetHandler::RandomizeData(RandomizerContainer_t& Container, 
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-  bool                                  bReadSuccessful=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               tTractIndex;
-  count_t                               tPatients, tCensorAttribute, tTotalCases=0;
-  measure_t                             tContinuousVariable, tTotalMeasure=0;
-  AbstractExponentialRandomizer       * pRandomizer;
-  DataSetHandler::RecordStatusType      eRecordStatus;
+DataSetHandler::CountFileReadStatus ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+    Julian                                Date;
+    tract_t                               tTractIndex;
+    count_t                               tPatients, tCensorAttribute, tTotalCases=0;
+    measure_t                             tContinuousVariable, tTotalMeasure=0;
+    AbstractExponentialRandomizer       * pRandomizer;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
-    pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
-    if (!pRandomizer)
-      throw prg_error("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-             bEmpty = false;
-             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
-                Date = gDataHub.convertToSeasonalDate(Date);
-             pRandomizer->AddPatients(tPatients, Date, tTractIndex, tContinuousVariable, tCensorAttribute);
-             tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
-             //check that addition did not exceed data type limitations
-             if (tTotalCases < 0)
-               throw resolvable_error("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
-                                      std::numeric_limits<count_t>::max());
-             //check numeric limits of data type will not be exceeded
-             if (tContinuousVariable * tPatients > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-               throw resolvable_error("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
-                                      std::numeric_limits<measure_t>::max());
-             tTotalMeasure += tContinuousVariable * tPatients;
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else
-             bReadSuccessful = false;
+    try {
+        // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
+        pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
+        if (!pRandomizer)
+            throw prg_error("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
+        //Read data, parse and if no errors, increment count for tract at date.
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
+                if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+                    Date = gDataHub.convertToSeasonalDate(Date);
+                pRandomizer->AddPatients(tPatients, Date, tTractIndex, tContinuousVariable, tCensorAttribute);
+                tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
+                //check that addition did not exceed data type limitations
+                if (tTotalCases < 0)
+                    throw resolvable_error("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n", std::numeric_limits<count_t>::max());
+                //check numeric limits of data type will not be exceeded
+                if (tContinuousVariable * tPatients > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+                    throw resolvable_error("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n", std::numeric_limits<measure_t>::max());
+                tTotalMeasure += tContinuousVariable * tPatients;
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else
+                readStatus = DataSetHandler::ReadError;
+        }
+        //validate that data set contains minimum number of non-censored cases
+        if (readStatus == DataSetHandler::ReadSuccess && tTotalCases < gtMinimumNotCensoredCases) {
+                gPrint.Printf("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
+                              BasePrint::P_ERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
+                readStatus = DataSetHandler::NotMinimum;
+        } else {
+            pRandomizer->AssignFromAttributes(DataSet);
+            DataSet.setTotalCases(tTotalCases);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCounts()","ExponentialDataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bReadSuccessful)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bReadSuccessful = false;
-    }
-    //validate that data set contains minimum number of non-censored cases
-    else if (tTotalCases < gtMinimumNotCensoredCases) {
-      gPrint.Printf("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
-                    BasePrint::P_ERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
-      bReadSuccessful = false;
-    }
-    else
-      pRandomizer->AssignFromAttributes(DataSet);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCounts()","ExponentialDataSetHandler");
-    throw;
-  }
-  return bReadSuccessful;
+    return readStatus;
 }
 
 /** Attempts to read case data file into class RealDataSet objects. */
 bool ExponentialDataSetHandler::ReadData() {
-  try {
-    SetRandomizers();
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        SetRandomizers();
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t=0; t < numDataSet; ++t) {
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+        }
+        removeDataSetsWithNoData();
+    } catch (prg_exception& x) {
+        x.addTrace("ReadData()","ExponentialDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","ExponentialDataSetHandler");
-    throw;
-  }
-  return true;
+    return true;
 }
 
 /** Parses current file record contained in DataSource object in expected
@@ -319,7 +307,7 @@ void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataCo
 void ExponentialDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
@@ -332,7 +320,7 @@ void ExponentialDataSetHandler::SetRandomizers() {
       default : throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

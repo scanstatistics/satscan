@@ -145,6 +145,7 @@ class CSaTScanData {
     virtual int                                 GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
+    BasePrint                                 & GetPrintDirection() const { return gPrint; }
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
     const std::vector<int>                    & GetProspectiveIntervalCuts() const {return gvProspectiveIntervalCuts;}
     int                                         GetProspectiveStartIndex() const {return m_nProspectiveIntervalStart;}  

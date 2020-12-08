@@ -49,7 +49,7 @@ const RealDataContainer_t & PoissonDataSetHandler::buildOliveiraDataSets() {
         if (gParameters.GetAnalysisType() != PURELYSPATIAL)
             throw prg_error("buildOliveiraDataSets() is not implemented for analysis type '%d'.", "DataSetHandler::buildOliveiraDataSets()", gParameters.GetAnalysisType());
         _oliveira_data_sets.killAll();
-        for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i) {
+        for (unsigned int i=0; i < gDataHub.GetNumDataSets(); ++i) {
             _oliveira_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
             // allocate measure data and initialize from case data in real data set
             RealDataSet & oliveira_dataset = *_oliveira_data_sets.back();
@@ -307,16 +307,16 @@ void PoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
 
 /** Attempts to read population and case data files into class RealDataSet objects. */
 bool PoissonDataSetHandler::ReadData() {
+    DataSetHandler::CountFileReadStatus readStaus;
     try {
         SetRandomizers();
-
-        for (size_t t=0; t < GetNumDataSets(); ++t) {
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t = 0; t < numDataSet; ++t) {
             if (gParameters.UsePopulationFile()) { //read population data file
                 // Set the covariate categories to aggregated if we're doing a power evaluation without reading the case file.
                 if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)
                     GetDataSet(t).setAggregateCovariateCategories(true);
-                if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
-                else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
+                printFileReadMessage(BasePrint::POPFILE, t, numDataSet == 1);
                 if (!ReadPopulationFile(GetDataSet(t))) return false;
             } else { //create population data without input data - uniform population
                 if (GetNumDataSets() == 1) gPrint.Printf("Creating the population\n", BasePrint::P_STDOUT);
@@ -327,14 +327,19 @@ bool PoissonDataSetHandler::ReadData() {
                 // Set the population covariate category equal to the number of user specified power cases.
                 GetDataSet(t).getPopulationData().AddCovariateCategoryCaseCount(0, gParameters.getPowerEvaluationCaseCount());
             else {
-                //  read case data file
-                if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-                else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-                if (!ReadCaseFile(GetDataSet(t))) return false;
-                //  validate population data against case data (if population was read from file)  
-                if (gParameters.UsePopulationFile()) GetDataSet(t).checkPopulationDataCases(gDataHub);
+                // read case data file
+                printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+                readStaus = ReadCaseFile(GetDataSet(t));
+                printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+                if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                    return false;
+                // validate population data against case data (if population was read from file)  
+                if (readStaus == DataSetHandler::ReadSuccess && gParameters.UsePopulationFile())
+                    GetDataSet(t).checkPopulationDataCases(gDataHub);
             } 
         }
+        if (!(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))
+            removeDataSetsWithNoData();
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","PoissonDataSetHandler");
         throw;
@@ -464,12 +469,12 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
 void PoissonDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+          if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
             gvDataSetRandomizers.at(0) = new PoissonTimeStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
-          else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+          else if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
             gvDataSetRandomizers.at(0) = new PoissonSpatialStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else if (gParameters.GetIsPurelyTemporalAnalysis())
             gvDataSetRandomizers.at(0) = new PoissonPurelyTemporalNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
@@ -483,7 +488,7 @@ void PoissonDataSetHandler::SetRandomizers() {
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

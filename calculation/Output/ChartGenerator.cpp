@@ -267,7 +267,7 @@ void TemporalChartGenerator::generateChart() const {
         for (size_t clusterIdx=0; clusterIdx < graphClusters.size(); ++clusterIdx) {
             const CCluster& cluster = *graphClusters[clusterIdx];
             // This graph is only valid for temporal clusters.
-            if (!(cluster.GetClusterType() == PURELYTEMPORALCLUSTER || cluster.GetClusterType() == SPACETIMECLUSTER))
+            if (!(cluster.GetClusterType() == PURELYTEMPORALCLUSTER || cluster.GetClusterType() == SPACETIMECLUSTER || cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER))
                 continue;
             // calculate the graphs interval groups for this cluster
             intervalGroups groups = getIntervalGroups(cluster);

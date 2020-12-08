@@ -215,9 +215,9 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
   try {
     //display temporal adjustments
     switch (gParameters.GetTimeTrendAdjustmentType()) {
-      case NOTADJUSTED :
+      case TEMPORAL_NOTADJUSTED:
         break;
-      case NONPARAMETRIC :
+      case TEMPORAL_NONPARAMETRIC:
         buffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
         PrintCalculatedTimeTrend(fp, SetHandler); break;
@@ -229,26 +229,27 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
         break;
       case CALCULATED_LOGLINEAR_PERC :
           PrintCalculatedTimeTrend(fp, SetHandler); break;
-      case STRATIFIED_RANDOMIZATION  :
+      case TEMPORAL_STRATIFIED_RANDOMIZATION:
         buffer = "Adjusted for time by stratified randomization."; break;
-      case CALCULATED_QUADRATIC_PERC :
+      case CALCULATED_QUADRATIC:
           PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.",
-                        "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
     }
     if (buffer.size())
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     //display spatial adjustments
     switch (gParameters.GetSpatialAdjustmentType()) {
-      case NO_SPATIAL_ADJUSTMENT :
+      case SPATIAL_NOTADJUSTED:
         break;
-      case SPATIALLY_STRATIFIED_RANDOMIZATION :
+      case SPATIAL_STRATIFIED_RANDOMIZATION:
         buffer = "Adjusted for purely spatial clusters by stratified randomization.";
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
+      case SPATIAL_NONPARAMETRIC:
+          buffer = "Adjusted for purely spatial clusters by space nonparametrically.";
+          PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.",
-                        "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
     }
     //display space-time adjustments
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
@@ -339,10 +340,10 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
         fprintf(fp, "Analysis includes purely temporal clusters.\n");
     }
 
-    if (gParameters.GetNumDataSets() > 1) {
+    if (gParameters.getNumFileSets() > 1) {
       switch (gParameters.GetMultipleDataSetPurposeType()) {
-        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", gParameters.GetNumDataSets()); break;
-        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", gParameters.GetNumDataSets()); break;
+        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", gParameters.getNumFileSets()); break;
+        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", gParameters.getNumFileSets()); break;
         default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n",
                                   "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
       }
@@ -358,91 +359,83 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
-  unsigned int                  t;
-  std::string                   buffer, work, trend_label;
-  std::deque<unsigned int>      TrendIncrease, TrendDecrease;
+    unsigned int                  t;
+    std::string                   work, trend_label;
+    std::stringstream             strBuffer;
+    std::deque<unsigned int>      TrendIncrease, TrendDecrease;
 
-  if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC))
-    return;
+    if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
+          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
+          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC))
+        return;
 
-  //NOTE: Each dataset has own calculated time trend.
+    //NOTE: Each dataset has own calculated time trend.
 
-  switch (gParameters.GetTimeAggregationUnitsType()) {
-    case GENERIC:
-    case YEAR: trend_label = "an annually"; break;
-    case MONTH: trend_label = "a monthly"; break;
-    case DAY: trend_label = "a daily"; break;
-    case NONE:
-    default: throw prg_error("Unknown time aggregation type '%d'.\n", "PrintCalculatedTimeTrend()", gParameters.GetTimeAggregationUnitsType());
-  }
-
-  if (SetHandler.GetNumDataSets() == 1) {
-    if (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0)
-      printString(buffer, "Adjusted for time trend with %s decrease ", trend_label.c_str());
-    else
-      printString(buffer, "Adjusted for time trend with %s increase ", trend_label.c_str());
-    printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
-    buffer += work;
-  }
-  else {//multiple datasets print
-    //count number of increasing and decreasing trends
-    for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
-       if (SetHandler.GetDataSet(t).getCalculatedTimeTrendPercentage() < 0)
-         TrendDecrease.push_back(t);
-       else
-         TrendIncrease.push_back(t);
+    if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC) {
+        strBuffer << "Adjusted for log quadratic time trend with:";
+        for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
+            strBuffer << std::endl << SetHandler.GetDataSet(t).getCalculatedQuadraticTimeTrend().c_str();
+            if (SetHandler.GetNumDataSets() > 1) strBuffer << " for data set " << (t + 1);
+        }
+    } else {
+        switch (gParameters.GetTimeAggregationUnitsType()) {
+            case GENERIC:
+            case YEAR: trend_label = "an annual"; break;
+            case MONTH: trend_label = "a monthly"; break;
+            case DAY: trend_label = "a daily"; break;
+            case NONE:
+            default: throw prg_error("Unknown time aggregation type '%d'.\n", "PrintCalculatedTimeTrend()", gParameters.GetTimeAggregationUnitsType());
+         }
+         if (SetHandler.GetNumDataSets() == 1) {
+             strBuffer << "Adjusted for time trend with " << trend_label.c_str();
+             strBuffer << (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0 ? " decrease " : " increase ");
+             strBuffer << printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
+         } else {//multiple datasets print
+            //count number of increasing and decreasing trends
+            for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
+                if (SetHandler.GetDataSet(t).getCalculatedTimeTrendPercentage() < 0)
+                    TrendDecrease.push_back(t);
+                else
+                    TrendIncrease.push_back(t);
+            }
+            //now print
+            strBuffer << "Adjusted for time trend with " << trend_label.c_str() << " ";
+            //print increasing trends first
+            if (TrendIncrease.size()) {
+                strBuffer << printString(work, "increase of %0.2f%%", fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage())).c_str();
+                for (t=1; t < TrendIncrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%", fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage())).c_str();
+                }
+                strBuffer << printString(work, " for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1).c_str();
+                for (t=1; t < TrendIncrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1).c_str();
+                }
+                strBuffer << printString(work, (TrendIncrease.size() > 1 ? " respectively" : "")).c_str();
+                if (TrendDecrease.size() > 0) {
+                    strBuffer << printString(work, " and %s ", trend_label.c_str()).c_str();
+                } else {
+                    strBuffer << ".";
+                }
+            }
+            //print decreasing trends
+            if (TrendDecrease.size()) {
+                strBuffer << printString(work, "decrease of %0.2f%%", fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage())).c_str();
+                for (t=1; t < TrendDecrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%", fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage())).c_str();
+                }
+                strBuffer << printString(work, " for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1).c_str();
+                for (t=1; t < TrendDecrease.size(); ++t) {
+                    strBuffer << printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1).c_str();
+                }
+                strBuffer << printString(work, (TrendDecrease.size() > 1 ? " respectively." : ".")).c_str();
+            }
+        }
     }
-    //now print
-    printString(buffer, "Adjusted for time trend with %s ", trend_label.c_str());
-    //print increasing trends first
-    if (TrendIncrease.size()) {
-       printString(work, "increase of %0.2f%%",
-                         fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage()));
-       buffer += work;
-       for (t=1; t < TrendIncrease.size(); ++t) {
-          printString(work, (t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
-                            fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage()));
-          buffer += work;
-       }
-       printString(work, " for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
-       buffer += work;
-       for (t=1; t < TrendIncrease.size(); ++t) {
-          printString(work, (t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
-          buffer += work;
-       }
-       printString(work, (TrendIncrease.size() > 1 ? " respectively" : ""));
-       buffer += work;
-       if (TrendDecrease.size() > 0) {
-           buffer += printString(work, " and %s ", trend_label.c_str());
-       } else {
-           buffer += ".";
-       }
-    }
-    //print decreasing trends
-    if (TrendDecrease.size()) {
-      printString(work, "decrease of %0.2f%%",
-                        fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage()));
-      buffer += work;
-      for (t=1; t < TrendDecrease.size(); ++t) {
-         printString(work, (t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
-                           fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage()));
-         buffer += work;
-      }
-      printString(work, " for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
-      buffer += work;
-      for (t=1; t < TrendDecrease.size(); ++t) {
-         printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
-         buffer += work;
-      }
-      printString(work, (TrendDecrease.size() > 1 ? " respectively." : "."));
-      buffer += work;
-    }
-  }
-  AsciiPrintFormat PrintFormat;
-  PrintFormat.SetMarginsAsOverviewSection();
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsOverviewSection();
+    work = strBuffer.str();
+    PrintFormat.PrintAlignedMarginsDataString(fp, work);
 }
 
 /** Prints 'Spatial Output' tab parameters to file stream. */
@@ -635,7 +628,7 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.GetNumDataSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+        if (gParameters.getNumFileSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
             if (gParameters.getIsWeightedNormalCovariates() && gParameters.GetAreaScanRateType() == HIGHANDLOW) {
                 // There is a special situation with the weighted normal model with covariates and scanning for low and high rates together.
                 unsigned int minimum = std::max(gParameters.getMinimumCasesLowRateClusters(), gParameters.getMinimumCasesHighRateClusters());
@@ -735,8 +728,8 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
 /** Prints 'Input' tab parameters to file stream. */
 void ParametersPrint::PrintInputParameters(FILE* fp) const {
     DatePrecisionType ePrecision;
-    const char * sDataSetLabel = (gParameters.GetNumDataSets() == 1 ? "" : " (data set 1)");
-    const char * sBlankDataSetLabel = (gParameters.GetNumDataSets() == 1 ? "" : "            ");
+    const char * sDataSetLabel = (gParameters.getNumFileSets() == 1 ? "" : " (data set 1)");
+    const char * sBlankDataSetLabel = (gParameters.getNumFileSets() == 1 ? "" : "            ");
     SettingContainer_t settings;
     std::string buffer;
 
@@ -811,8 +804,8 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.GetNumDataSets() == 1) return;
-        for (unsigned int t=1; t < gParameters.GetNumDataSets(); ++t) {
+        if (gParameters.getNumFileSets() == 1) return;
+        for (unsigned int t=1; t < gParameters.getNumFileSets(); ++t) {
             printString(buffer, "Case File (data set %i)", t + 1);
             settings.push_back(std::make_pair(buffer,gParameters.GetCaseFileName(t + 1)));
             switch (gParameters.GetProbabilityModelType()) {
@@ -1188,18 +1181,18 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
     try {
         if (bPrintingTemporalAdjustment) {
             switch (gParameters.GetTimeTrendAdjustmentType()) {
-                case NOTADJUSTED               :
+                case TEMPORAL_NOTADJUSTED:
                     settings.push_back(std::make_pair("Temporal Adjustment","None"));break;
-                case NONPARAMETRIC             :
+                case TEMPORAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
                     printString(buffer, "Log linear with %g percent per year", gParameters.GetTimeTrendAdjustmentPercentage());
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
                     settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
-                case STRATIFIED_RANDOMIZATION  :
+                case TEMPORAL_STRATIFIED_RANDOMIZATION:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
-                case CALCULATED_QUADRATIC_PERC :
+                case CALCULATED_QUADRATIC:
                     settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
                                           "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
@@ -1210,10 +1203,12 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
         }
         if (bPrintingSpatialAdjustment) {
             switch (gParameters.GetSpatialAdjustmentType()) {
-                case NO_SPATIAL_ADJUSTMENT              :
+                case SPATIAL_NOTADJUSTED               :
                     settings.push_back(std::make_pair("Spatial Adjustment","None")); break;
-                case SPATIALLY_STRATIFIED_RANDOMIZATION :
-                    settings.push_back(std::make_pair("Spatial Adjustment","Spatial adjustment by stratified randomization")); break;
+                case SPATIAL_STRATIFIED_RANDOMIZATION:
+                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with spatial stratified randomization")); break;
+                case SPATIAL_NONPARAMETRIC:
+                    settings.push_back(std::make_pair("Spatial Adjustment", "Nonparametric")); break;
                 default : throw prg_error("Unknown spatial adjustment type '%d'.\n", "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
             }
         }

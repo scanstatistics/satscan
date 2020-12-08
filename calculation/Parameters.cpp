@@ -415,6 +415,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _locations_network_filename = rhs._locations_network_filename;
   _use_locations_network_file = rhs._use_locations_network_file;
   _network_file_purpose = rhs._network_file_purpose;
+  _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -820,7 +821,7 @@ void CParameters::SetAsDefaulted() {
   _critical_value_05                       = 0.0;
   _critical_value_01                       = 0.0;
   _critical_value_001                      = 0.0;
-  geTimeTrendAdjustType                    = NOTADJUSTED;
+  geTimeTrendAdjustType                    = TEMPORAL_NOTADJUSTED;
   gdTimeTrendAdjustPercentage              = 0;
   gbIncludePurelyTemporalClusters          = false;
   gvControlFilenames.resize(1);
@@ -857,7 +858,7 @@ void CParameters::SetAsDefaulted() {
   gsSimulationDataOutputFilename           = "";
   gbAdjustForEarlierAnalyses               = false;
   gbUseAdjustmentsForRRFile                = false;
-  geSpatialAdjustmentType                  = NO_SPATIAL_ADJUSTMENT;
+  geSpatialAdjustmentType                  = SPATIAL_NOTADJUSTED;
   geMultipleSetPurposeType                 = MULTIVARIATE;
   gCreationVersion.iMajor                  = atoi(VERSION_MAJOR);
   gCreationVersion.iMinor                  = atoi(VERSION_MINOR);
@@ -947,6 +948,7 @@ void CParameters::SetAsDefaulted() {
   _locations_network_filename = "";
   _use_locations_network_file = false;
   _network_file_purpose = NETWORK_DEFINITION;
+  _cluster_moniker_prefix = "";
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1004,14 +1006,14 @@ void CParameters::SetNonCompactnessPenalty(NonCompactnessPenaltyType eType) {
 }
 
 /** Adjusts the number of data sets. */
-void CParameters::SetNumDataSets(size_t iNumDataSets) {
-  if (iNumDataSets == 0)
-    throw prg_error("Number of data sets can not be zero.\n", "SetNumDataSets()");
+void CParameters::setNumFileSets(size_t numSets) {
+  if (numSets == 0)
+    throw prg_error("Number of data sets can not be zero.\n", "setNumFileSets()");
 
   //adjust the number of filenames for case, control, and population
-  gvCaseFilenames.resize(iNumDataSets);
-  gvControlFilenames.resize(iNumDataSets);
-  gvPopulationFilenames.resize(iNumDataSets);
+  gvCaseFilenames.resize(numSets);
+  gvControlFilenames.resize(numSets);
+  gvPopulationFilenames.resize(numSets);
 }
 
 /** Sets number of Monte Carlo replications to run. */
@@ -1166,8 +1168,8 @@ void CParameters::setPowerEvaluationSimulationDataSourceFilename(const char * sS
 
 /** Set spatial adjustment type. Throws exception if out of range. */
 void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType) {
-  if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+  if (eSpatialAdjustmentType < SPATIAL_NOTADJUSTED || eSpatialAdjustmentType > SPATIAL_NONPARAMETRIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, SPATIAL_NOTADJUSTED, SPATIAL_NONPARAMETRIC);
   geSpatialAdjustmentType = eSpatialAdjustmentType;
 }
 
@@ -1285,9 +1287,9 @@ void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
-  if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > CALCULATED_QUADRATIC_PERC)
+  if (eTimeTrendAdjustmentType < TEMPORAL_NOTADJUSTED || eTimeTrendAdjustmentType > CALCULATED_QUADRATIC)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
-                    eTimeTrendAdjustmentType, NOTADJUSTED, CALCULATED_QUADRATIC_PERC);
+                    eTimeTrendAdjustmentType, TEMPORAL_NOTADJUSTED, CALCULATED_QUADRATIC);
   geTimeTrendAdjustType = eTimeTrendAdjustmentType;
 }
 

@@ -137,78 +137,79 @@ void SpaceTimePermutationDataSetHandler::RandomizeData(RandomizerContainer_t& Co
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-  int                                   i, iCategoryIndex;
-  bool                                  bReadSuccess=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  count_t                               Count, ** ppCounts, ** ppCategoryCounts;
-  DataSetHandler::RecordStatusType      eRecordStatus;  
+DataSetHandler::CountFileReadStatus SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+    int                                   i, iCategoryIndex;
+    Julian                                Date;
+    tract_t                               TractIndex;
+    count_t                               Count, ** ppCounts, ** ppCategoryCounts, totalCount = 0;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    ppCounts = DataSet.allocateCaseData().GetArray();
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-              bEmpty = false;
-              //cumulatively add count to time by location structure
-              ppCounts[0][TractIndex] += Count;
-              if (ppCounts[0][TractIndex] < 0)
-                throw resolvable_error("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n",
-                                       DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
-              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                ppCounts[i][TractIndex] += Count;
-              //record count as a case
-              DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
-              //record count in structure(s) based upon population category
-              ppCategoryCounts = DataSet.getCategoryCaseData(iCategoryIndex, true).GetArray();
-              ppCategoryCounts[0][TractIndex] += Count;
-              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                 ppCategoryCounts[i][TractIndex] += Count;
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
+    try {
+        ppCounts = DataSet.allocateCaseData().GetArray();
+        //Read data, parse and if no errors, increment count for tract at date.
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
+                //cumulatively add count to time by location structure
+                ppCounts[0][TractIndex] += Count;
+                if (ppCounts[0][TractIndex] < 0)
+                    throw resolvable_error("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n",
+                        DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                    ppCounts[i][TractIndex] += Count;
+                // add to totals and check against numeric limits
+                totalCount += Count;
+                // check that total count does not exceed data type limitations
+                if (totalCount < 0)
+                    throw resolvable_error(
+                        "Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
+                        DataSet.getSetIndex() + 1, std::numeric_limits<count_t>::max()
+                    );
+                //record count as a case
+                DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
+                //record count in structure(s) based upon population category
+                ppCategoryCounts = DataSet.getCategoryCaseData(iCategoryIndex, true).GetArray();
+                ppCategoryCounts[0][TractIndex] += Count;
+                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                    ppCategoryCounts[i][TractIndex] += Count;
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
            else   
-             bReadSuccess = false;
+               readStatus = DataSetHandler::ReadError;
+        }
+        // Record total in data set.
+        if (readStatus == DataSetHandler::ReadSuccess) {
+            DataSet.setTotalCases(totalCount);
+            //if no errors in data read, create randomization data in respective randomizer object
+            if (gParameters.GetSimulationType() != FILESOURCE)
+                ((SpaceTimeRandomizer*)gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))->CreateRandomizationData(DataSet);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCounts()","SpaceTimePermutationDataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (!bReadSuccess)
-      gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bReadSuccess = false;
-    }
-    //if no errors in data read, create randomization data in respective randomizer object
-    if (bReadSuccess && gParameters.GetSimulationType() != FILESOURCE)
-      ((SpaceTimeRandomizer*)gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))->CreateRandomizationData(DataSet);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCounts()","SpaceTimePermutationDataSetHandler");
-    throw;
-  }
-  return bReadSuccess;
+    return readStatus;
 }
 
 /** Read input data in data set handler class objects. */
 bool SpaceTimePermutationDataSetHandler::ReadData() {
-  try {
-    SetRandomizers();
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        SetRandomizers();
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t = 0; t < numDataSet; ++t) {
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+        }
+        removeDataSetsWithNoData();
+    } catch (prg_exception& x) {
+        x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
-    throw;
-  }
   return true;
 }
 
@@ -217,7 +218,7 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
 void SpaceTimePermutationDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           gvDataSetRandomizers.at(0) = new SpaceTimeRandomizer(gParameters.GetRandomizationSeed());
@@ -230,7 +231,7 @@ void SpaceTimePermutationDataSetHandler::SetRandomizers() {
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

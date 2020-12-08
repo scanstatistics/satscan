@@ -201,22 +201,21 @@ void OrdinalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-    bool                                  bReadSuccessful=true, bEmpty=true;
+DataSetHandler::CountFileReadStatus OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
     Julian                                Date;
     tract_t                               tLocationIndex;
     count_t                               tCount, tTotalCases=0, ** ppCategoryCounts;
     std::string                           categoryTypeLabel;
     std::vector<std::string>              vReadCategories;
-    DataSetHandler::RecordStatusType      eRecordStatus;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
     try {
         //read, parse, validate and update data structures for each record in data file
         while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
             //parse record into parts: location index, # of cases, date, ordinal catgory
-            eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, categoryTypeLabel);
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, categoryTypeLabel);
             if (eRecordStatus == Accepted) {
-                bEmpty = false;
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
                 //note each category read from file. since we are ignoring records with zero cases,
                 //we might need this information for error reporting
                 if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), categoryTypeLabel))
@@ -241,65 +240,62 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
             } else if (eRecordStatus == DataSetHandler::Ignored)
                 continue;
             else
-                bReadSuccessful = false;
+                readStatus = DataSetHandler::ReadError;
         }
-        //if invalid at this point then read encountered problems with data format, inform user of section to refer to in user guide for assistance
-        if (!bReadSuccessful)
-            gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-        else if (bEmpty) { //print indication if file contained no data
-            gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-            bReadSuccessful = false;
-        } else if (DataSet.getPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
+
+        if (readStatus == DataSetHandler::ReadSuccess) {
             //validate that input data contained minimum number of ordinal categories
-            if (DataSet.getPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
-                gPrint.Printf("Error: Data set case file specifies %i categories with cases but a minimum\n"
-                              "       of %i categories is required.\n", BasePrint::P_ERROR,
-                              DataSet.getPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
-                bReadSuccessful = false;
-            } else {
-                gPrint.Printf("Error: The number of categories with cases is required to be a mimumum of %i.\n"
-                              "       Data set case file specifies %i categories with %i of them containing no cases.\n",
-                              BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(),
-                              vReadCategories.size() - DataSet.getPopulationData().GetNumOrdinalCategories());
-                bReadSuccessful = false;
+            if (DataSet.getPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
+                readStatus = DataSetHandler::NotMinimum;
+                if (DataSet.getPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
+                    gPrint.Printf(
+                        "Data set case file specifies %i categories with cases but a minimum of %i categories is required.\n", 
+                        BasePrint::P_ERROR, DataSet.getPopulationData().GetNumOrdinalCategories(), gtMinimumCategories
+                    );
+                } else {
+                    gPrint.Printf(
+                        "The number of categories with cases is required to be a mimumum of %i.\n"
+                        "Data set case file specifies %i categories with %i of them containing no cases.\n",
+                        BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(), vReadCategories.size() - DataSet.getPopulationData().GetNumOrdinalCategories()
+                    );
+                }
+            } else if (tTotalCases < gtMinimumCases) { //validate that data set contains at least minimum number of cases
+                readStatus = DataSetHandler::NotMinimum;
+                gPrint.Printf("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
+                              BasePrint::P_ERROR, tTotalCases, gtMinimumCases);
+            } else { //record total cases and total population to data set object
+                DataSet.setTotalCases(tTotalCases);
+                DataSet.setTotalPopulation(tTotalCases);
+                AbstractOrdinalPermutedDataRandomizer * randomizer = dynamic_cast<AbstractOrdinalPermutedDataRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
+                if (randomizer) randomizer->setPermutedData(DataSet);
             }
-        } else if (tTotalCases < gtMinimumCases) { //validate that data set contains at least minimum number of cases
-            gPrint.Printf("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
-                          BasePrint::P_ERROR, tTotalCases, gtMinimumCases);
-            bReadSuccessful = false;
-        } else { //record total cases and total population to data set object
-            DataSet.setTotalCases(tTotalCases);
-            DataSet.setTotalPopulation(tTotalCases);
-            AbstractOrdinalPermutedDataRandomizer * randomizer = dynamic_cast<AbstractOrdinalPermutedDataRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
-            if (randomizer) randomizer->setPermutedData(DataSet);
         }
     } catch (prg_exception& x) {
         x.addTrace("ReadCounts()","OrdinalDataSetHandler");
         throw;
     }
-    return bReadSuccessful;
+    return readStatus;
 }
 
 /** Read data that is particular (case file) to 'Ordinal' model into data set(s). */
 bool OrdinalDataSetHandler::ReadData() {
-  try {
-    //allocate randomizers objects - one for each data set
-    SetRandomizers();
-    //read case file of each data set
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        SetRandomizers();
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t=0; t < numDataSet; ++t) {
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+        }
+        removeDataSetsWithNoData();
+    } catch (prg_exception& x) {
+        x.addTrace("ReadData()","OrdinalDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","OrdinalDataSetHandler");
-    throw;
-  }
-  return true;
+    return true;
 }
 
 /** sets purely temporal structures used in simulations */
@@ -312,7 +308,7 @@ void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContai
 void OrdinalDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis()) {
@@ -335,7 +331,7 @@ void OrdinalDataSetHandler::SetRandomizers() {
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
   }
   catch (prg_exception& x) {

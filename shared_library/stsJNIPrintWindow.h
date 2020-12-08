@@ -34,7 +34,7 @@ class JNIPrintWindow : public BasePrint {
      bool               GetIsCanceled() const;
      virtual void       Printf(const char * sMessage, PrintType ePrintType, ...);
      void               RecordCallpath(const char * sCallpath);
-     virtual void       ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile);
+     virtual void       ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters);
 };
 //******************************************************************************
 #endif

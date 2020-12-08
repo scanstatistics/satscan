@@ -172,164 +172,134 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+DataSetHandler::CountFileReadStatus NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
     return gParameters.getIsWeightedNormal() ? ReadCountsWeighted(DataSet, Source) : ReadCountsStandard(DataSet, Source);
 }
 
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& Source) {
-  bool                                  bValid=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  count_t                               Count, tTotalCases=0;
-  measure_t                             tContinuousVariable;
-  double                                tTotalMeasure=0, tTotalMeasureAux=0;
-  AbstractNormalRandomizer            * pRandomizer=0;
-  DataSetHandler::RecordStatusType      eRecordStatus;
+DataSetHandler::CountFileReadStatus NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& Source) {
+    Julian                                Date;
+    tract_t                               TractIndex;
+    count_t                               Count, tTotalCases=0;
+    measure_t                             tContinuousVariable;
+    double                                tTotalMeasure=0, tTotalMeasureAux=0;
+    AbstractNormalRandomizer            * pRandomizer=0;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
-      throw prg_error("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-             bEmpty = false;
-
-			 if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
-				 Date = gDataHub.convertToSeasonalDate(Date);
-
-             pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
-             tTotalCases += Count;
-             //check that addition did not exceed data type limitations
-             if (tTotalCases < 0)
-               throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
-                                      std::numeric_limits<count_t>::max());
-             for (count_t t=0; t < Count; ++t) {
-               //check numeric limits of data type will not be exceeded
-               if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-                 throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
-                                        std::numeric_limits<measure_t>::max());
-               tTotalMeasure += tContinuousVariable;
-               //check numeric limits of data type will not be exceeded
-               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
-                 throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
-                                        std::numeric_limits<measure_t>::max());
-               tTotalMeasureAux += std::pow(tContinuousVariable, 2);
-             }
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else
-             bValid = false;
+    try {
+        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
+            throw prg_error("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
+        //Read data, parse and if no errors, increment count for tract at date.
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
+			    if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+				    Date = gDataHub.convertToSeasonalDate(Date);
+                pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
+                tTotalCases += Count;
+                //check that addition did not exceed data type limitations
+                if (tTotalCases < 0)
+                    throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n", std::numeric_limits<count_t>::max());
+                for (count_t t=0; t < Count; ++t) {
+                    //check numeric limits of data type will not be exceeded
+                    if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+                        throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n", std::numeric_limits<measure_t>::max());
+                    tTotalMeasure += tContinuousVariable;
+                    //check numeric limits of data type will not be exceeded
+                    if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
+                        throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n", std::numeric_limits<measure_t>::max());
+                    tTotalMeasureAux += std::pow(tContinuousVariable, 2);
+                }
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else
+                readStatus = DataSetHandler::ReadError;
+        }
+        if (readStatus == DataSetHandler::ReadSuccess)
+            pRandomizer->AssignFromAttributes(DataSet);
+        DataSet.setTotalCases(tTotalCases);
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCountsStandard()","NormalDataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
-    }
-    else
-      pRandomizer->AssignFromAttributes(DataSet);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCountsStandard()","NormalDataSetHandler");
-    throw;
-  }
-  return bValid;
+    return readStatus;
 }
 
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source) {
-  bool                                  bValid=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  count_t                               Count, tTotalCases=0;
-  measure_t                             tWeightVariable;
-  double                                tTotalMeasure=0, tTotalMeasureAux=0, dRateVariable;
-  AbstractWeightedNormalRandomizer    * pRandomizer=0;
-  DataSetHandler::RecordStatusType      eRecordStatus;
-  std::vector<double>                   vCovariates;
-  size_t                                tCovariatesFirst=0;
+DataSetHandler::CountFileReadStatus NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source) {
+    Julian                                Date;
+    tract_t                               TractIndex;
+    count_t                               Count, tTotalCases=0;
+    measure_t                             tWeightVariable;
+    double                                tTotalMeasure=0, tTotalMeasureAux=0, dRateVariable;
+    AbstractWeightedNormalRandomizer    * pRandomizer=0;
+    std::vector<double>                   vCovariates;
+    size_t                                tCovariatesFirst=0;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
-      throw prg_error("Data set randomizer not AbstractWeightedNormalRandomizer type.", "ReadCounts()");
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable, &vCovariates);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-             if (bEmpty) {
-                 tCovariatesFirst = vCovariates.size();
-                 const_cast<CParameters&>(gParameters).SetIsWeightedNormalCovariates(tCovariatesFirst > 0);
-                 if (gParameters.getAdjustForWeeklyTrends() && tCovariatesFirst > 0)
-                    throw resolvable_error("Error: The weighted normal model does not implement the day of week adjustment with covariates defined in case file.\n");
-             } else {
-               //if not first record, check covariates count against first record
-               if (tCovariatesFirst != vCovariates.size())
-                throw resolvable_error("Error: The number of covariates is not consistant in all case records.\n"
-                                       "        First record has %ld covariates while %ld record contains %ld covariates." ,
-                                       tCovariatesFirst, Source.GetCurrentRecordIndex(), vCovariates.size());
-             }
-             bEmpty = false;
+    try {
+        if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
+            throw prg_error("Data set randomizer not AbstractWeightedNormalRandomizer type.", "ReadCounts()");
+        //Read data, parse and if no errors, increment count for tract at date.
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable, &vCovariates);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                if (readStatus == DataSetHandler::NoCounts) {
+                    tCovariatesFirst = vCovariates.size();
+                    const_cast<CParameters&>(gParameters).SetIsWeightedNormalCovariates(tCovariatesFirst > 0);
+                    if (gParameters.getAdjustForWeeklyTrends() && tCovariatesFirst > 0)
+                        throw resolvable_error("Error: The weighted normal model does not implement the day of week adjustment with covariates defined in case file.\n");
+                } else {
+                //if not first record, check covariates count against first record
+                if (tCovariatesFirst != vCovariates.size())
+                    throw resolvable_error("Error: The number of covariates is not consistant in all case records.\n"
+                                           "        First record has %ld covariates while %ld record contains %ld covariates." ,
+                                           tCovariatesFirst, Source.GetCurrentRecordIndex(), vCovariates.size());
+                }
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
 
-             //TODO: Doing this to make same as SAS program for now!
-             ///double var = dRateVariable * dRateVariable;
-             ///dRateVariable = 1/var;
+                //TODO: Doing this to make same as SAS program for now!
+                ///double var = dRateVariable * dRateVariable;
+                ///dRateVariable = 1/var;
 
-             // -- input is expected to be actual weight variable; not variance -- dRateVariable = 1/dRateVariable;
-             if (vCovariates.size())
-                pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable, vCovariates);
-             else
-                pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable);
+                // -- input is expected to be actual weight variable; not variance -- dRateVariable = 1/dRateVariable;
+                if (vCovariates.size())
+                    pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable, vCovariates);
+                else
+                    pRandomizer->AddCase(Count, Date, TractIndex, tWeightVariable, dRateVariable);
 
-             tTotalCases += Count;
-             //check that addition did not exceed data type limitations
-             if (tTotalCases < 0)
-               throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
-                                      std::numeric_limits<count_t>::max());
-             for (count_t t=0; t < Count; ++t) {
-               //check numeric limits of data type will not be exceeded
-               if (tWeightVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-                 throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
-                                        std::numeric_limits<measure_t>::max());
-               tTotalMeasure += tWeightVariable * dRateVariable;
-               //check numeric limits of data type will not be exceeded
-               if (std::pow(tWeightVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
-                 throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
-                                        std::numeric_limits<measure_t>::max());
-                 tTotalMeasureAux += dRateVariable;
-             }
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else
-             bValid = false;
+                tTotalCases += Count;
+                //check that addition did not exceed data type limitations
+                if (tTotalCases < 0)
+                    throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n", std::numeric_limits<count_t>::max());
+                for (count_t t=0; t < Count; ++t) {
+                    //check numeric limits of data type will not be exceeded
+                    if (tWeightVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+                        throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n", std::numeric_limits<measure_t>::max());
+                    tTotalMeasure += tWeightVariable * dRateVariable;
+                    //check numeric limits of data type will not be exceeded
+                    if (std::pow(tWeightVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
+                        throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n", std::numeric_limits<measure_t>::max());
+                    tTotalMeasureAux += dRateVariable;
+                }
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else
+                readStatus = DataSetHandler::ReadError;
+        }
+        if (readStatus == DataSetHandler::ReadSuccess)
+            pRandomizer->AssignFromAttributes(DataSet);
+        DataSet.setTotalCases(tTotalCases);
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCountsWeighted()","NormalDataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
-    }
-    else
-      pRandomizer->AssignFromAttributes(DataSet);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCountsWeighted()","NormalDataSetHandler");
-    throw;
-  }
-  return bValid;
+    return readStatus;
 }
 
 /** Scans case input files to determine if data set is weighted. Returns indication
@@ -370,59 +340,56 @@ bool NormalDataSetHandler::setIsWeighted() {
 
 /** Attempts to read case data file into class RealDataSet objects. */
 bool NormalDataSetHandler::ReadData() {
-  try {
-    if (!setIsWeighted())
-        return false;
-    SetRandomizers();
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (gParameters.getIsWeightedNormalCovariates()) {
-         gPrint.Printf("Error: The Normal model with weights permits only one data set when covariates are specified.\n", BasePrint::P_READERROR);
-         return false;
-       }
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
-
-       if (gParameters.getIsWeightedNormalCovariates()) {
-          //Check that analysis type is purely spatial.
-          if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
-            gPrint.Printf("Error: The Normal model with weights is implemented only for the\npurely spatial analysis when covariates are specified.\n", BasePrint::P_READERROR);
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        if (!setIsWeighted())
             return false;
-          }
-
-          //Meta locations are not implemented with covariates. Inorder for meta locations to function
-          //properly, the current process would have to be significantly refactored from what I can tell.
-          //Would probably need to:
-          // - check for overlapping meta locations
-          // - refactor how cluster data 'AddNeighborData' works for NormalCovariateSpatialData
-          // - probably more that I can't think of at the moment
-          if (gParameters.UseMetaLocationsFile()) {
-            gPrint.Printf("Error: The Normal model with weights does not permit meta locations when covariates are specified.\n", BasePrint::P_READERROR);
-            return false;
-          }
-
-          //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
-          // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
-          //        - changes to CentroidHandlerPassThrough (not special grid file)
-          //        - changes to non-Euclidian neighbors (structures already allocated)
-          AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));
-          if (pRandomizer && !pRandomizer->hasUniqueLocationsCoverage(gDataHub)) {
-            gPrint.Printf("Error: The Normal model with weights requires every location defined in the coordinates\n"
-                          "       file to be defined once, only only once, in the case file when covariates are specified.\n"
-                          "       Verify that your coordinates file locations are one to one with the case file locations.\n", BasePrint::P_READERROR);
-            return false;
-          }
-       }
+        size_t numDataSet = GetNumDataSets();
+        SetRandomizers();
+        for (size_t t=0; t < numDataSet; ++t) {
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+            if (gParameters.getIsWeightedNormalCovariates() && numDataSet > 1) {
+                gPrint.Printf("Error: The Normal model with weights permits only one data set when covariates are specified.\n", BasePrint::P_READERROR);
+                return false;
+            }
+            if (gParameters.getIsWeightedNormalCovariates()) {
+                //Check that analysis type is purely spatial.
+                if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+                    gPrint.Printf("Error: The Normal model with weights is implemented only for the\npurely spatial analysis when covariates are specified.\n", BasePrint::P_READERROR);
+                    return false;
+                }
+                //Meta locations are not implemented with covariates. Inorder for meta locations to function
+                //properly, the current process would have to be significantly refactored from what I can tell.
+                //Would probably need to:
+                // - check for overlapping meta locations
+                // - refactor how cluster data 'AddNeighborData' works for NormalCovariateSpatialData
+                // - probably more that I can't think of at the moment
+                if (gParameters.UseMetaLocationsFile()) {
+                    gPrint.Printf("Error: The Normal model with weights does not permit meta locations when covariates are specified.\n", BasePrint::P_READERROR);
+                    return false;
+                }
+                //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
+                // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
+                //        - changes to CentroidHandlerPassThrough (not special grid file)
+                //        - changes to non-Euclidian neighbors (structures already allocated)
+                AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));
+                if (pRandomizer && !pRandomizer->hasUniqueLocationsCoverage(gDataHub)) {
+                    gPrint.Printf("Error: The Normal model with weights requires every location defined in the coordinates\n"
+                                  "       file to be defined once, only only once, in the case file when covariates are specified.\n"
+                                  "       Verify that your coordinates file locations are one to one with the case file locations.\n", BasePrint::P_READERROR);
+                    return false;
+                }
+            }
+        }
+        removeDataSetsWithNoData();
+    }  catch (prg_exception& x) {
+        x.addTrace("ReadData()","NormalDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","NormalDataSetHandler");
-    throw;
-  }
-  return true;
+    return true;
 }
 
 /** Reads the count data source, storing data in RealDataSet object. As a
@@ -538,7 +505,7 @@ void NormalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContain
 void NormalDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis()) {
@@ -559,7 +526,7 @@ void NormalDataSetHandler::SetRandomizers() {
       default : throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

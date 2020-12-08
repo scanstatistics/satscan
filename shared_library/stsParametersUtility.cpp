@@ -475,6 +475,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
         case GRIDFILE : Env.CallVoidMethod(issobject, mid, (jint)4); break;
         case MAXCIRCLEPOPFILE : Env.CallVoidMethod(issobject, mid, (jint)5); break;
         case ADJ_BY_RR_FILE : Env.CallVoidMethod(issobject, mid, (jint)6); break;
+        case NETWORK_FILE : Env.CallVoidMethod(issobject, mid, (jint)7); break;
         default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
 
@@ -1236,6 +1237,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
         case 4/*SpecialGrid*/          : type = GRIDFILE; break;
         case 5/*MaxCirclePopulation*/  : type = MAXCIRCLEPOPFILE; break;
         case 6/*AdjustmentsByRR*/      : type = ADJ_BY_RR_FILE; break;
+        case 7/*NETWORK_FILE*/         : type = NETWORK_FILE; break;
         default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
       Parameters.defineInputSource(type, inputsource, datasetIdx);

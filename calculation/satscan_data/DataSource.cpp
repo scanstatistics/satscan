@@ -391,38 +391,53 @@ bool CsvFileDataSource::ReadRecord() {
     }
 
     ++_readCount;
+
+    if (readbuffer.size() > 0 && _values.size() > 0 && _fields_map.size() > 0) {
+        // translate field mapped values - field maps are all or nothing. 
+        // This means that all fields are defined in mapping or straight from record parse.
+        std::vector<std::string> mapped_values;
+        for (size_t t=0; t < _values.size(); ++t) {
+            const char * val = getMappedValueAt(static_cast<long>(t));
+            if (val) mapped_values.push_back(std::string(val));
+        }
+        // Overwrite the values from file.
+        _values = mapped_values;
+    }
+
     return (readbuffer.size() > 0 && GetNumValues());
 }
 
 /** Returns number of values */
 long CsvFileDataSource::GetNumValues() {
-    // Field maps are all or nothing. This means that all fields are defined in mapping or straight from record parse.
-    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_values.size());
+    return static_cast<long>(_values.size());
 }
 
-const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
+const char * CsvFileDataSource::getMappedValueAt(long iFieldIndex) {
     // see if value at field index is mapped FieldType
     if (_fields_map.size()) {
-        if (iFieldIndex < static_cast<long>(_fields_map.size())) {  
+        if (iFieldIndex < static_cast<long>(_fields_map.size())) {
             if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
                 _read_buffer.clear();
                 FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
                 switch (type) {
-                    case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
-                    case ONECOUNT: _read_buffer = "1"; break;
-                    case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
-                    case BLANK: break;
-                    default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
+                case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
+                case ONECOUNT: _read_buffer = "1"; break;
+                case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
+                case BLANK: break;
+                default: throw prg_error("Unknown FieldType enumeration %d.", "GetValueAt()", type);
                 }
                 return _read_buffer.c_str();
-            } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            }
+            else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
                 // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- they are only for shapefiles.
-                throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.","CsvFileDataSource::GetValueAt()");
-            } else {
+                throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.", "CsvFileDataSource::GetValueAt()");
+            }
+            else {
                 // This field is mapped to another column of the data source.
                 iFieldIndex = tranlateFieldIndex(iFieldIndex);
             }
-        } else {
+        }
+        else {
             // index beyond defined mappings
             return 0;
         }
@@ -430,6 +445,10 @@ const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
     if (iFieldIndex > static_cast<long>(_values.size()) - 1)
         return 0;
     return _values.at(static_cast<size_t>(iFieldIndex)).c_str();
+}
+
+const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
+    return static_cast<size_t>(iFieldIndex) < _values.size() ? _values.at(static_cast<size_t>(iFieldIndex)).c_str() : 0;
 }
 
 void CsvFileDataSource::ThrowUnicodeException() {

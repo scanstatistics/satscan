@@ -222,6 +222,7 @@ class CParameters {
     GiniIndexReportType                 _giniIndexReportType;                   /* type for the gini index cluster reporting */
     bool                                _reportGiniIndexCoefficients;           /* report gini index coefficents to results file */
     mutable std::vector<double>         _executeSpatialWindowStops;
+    mutable std::string                 _cluster_moniker_prefix;                // prefix for cluster moniker
 
     /* Power Calcution variables */
     double                              _critical_value_05;                     /* user specified critical value at .05 */
@@ -285,7 +286,9 @@ class CParameters {
 	NetworkPurposeType                  getNetworkFilePurpose() const { return _network_file_purpose; }
 	void                                setNetworkFilePurpose(NetworkPurposeType e);
 
-	bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
+    const std::string                 & getClusterMonikerPrefix() const { return _cluster_moniker_prefix; }
+    void                                setClusterMonikerPrefix(const std::string& s) { _cluster_moniker_prefix = s; }
+    bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
 	void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
 	bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }
 	void                                setPerformBernoulliDrilldown(bool b) { _perform_bernoulli_drilldown = b; }
@@ -391,7 +394,7 @@ class CParameters {
     MultipleCoordinatesType             GetMultipleCoordinatesType() const {return geMultipleCoordinatesType;}
     double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
     NonCompactnessPenaltyType           GetNonCompactnessPenaltyType() const {return geNonCompactnessPenaltyType;}
-    unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
+    unsigned int                        getNumFileSets() const {return gvCaseFilenames.size();}
     unsigned int                        getNumRequestedOliveiraSets() const {return _num_oliveira_sets;}
     unsigned int                        GetNumRequestedParallelProcesses() const {return giNumRequestedParallelProcesses;}
     unsigned int                        GetNumParallelProcessesToExecute() const;
@@ -527,7 +530,7 @@ class CParameters {
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
     void                                SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType);
     void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
-    void                                SetNumDataSets(size_t iNumDataSets);
+    void                                setNumFileSets(size_t numSets);
     void                                setNumRequestedOliveiraSets(unsigned int i) {_num_oliveira_sets = i;}
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);

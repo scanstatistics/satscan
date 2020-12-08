@@ -51,7 +51,7 @@
         </Property>
         <Property name="dividerLocation" type="int" value="251"/>
         <Property name="orientation" type="int" value="0"/>
-        <Property name="resizeWeight" type="double" value="1.0"/>
+        <Property name="resizeWeight" type="double" value="0.67"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
@@ -67,7 +67,7 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="513" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="_emailButton" min="-2" pref="76" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_cancelButton" min="-2" pref="76" max="-2" attributes="0"/>
@@ -106,12 +106,19 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" alignment="0" pref="686" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane2" pref="666" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" alignment="0" pref="120" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane2" pref="141" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -147,17 +154,23 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <EmptySpace min="0" pref="686" max="32767" attributes="0"/>
-                          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane1" alignment="0" pref="686" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane1" pref="629" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <EmptySpace min="0" pref="120" max="32767" attributes="0"/>
-                          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane1" alignment="1" pref="120" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jScrollPane1" pref="125" max="32767" attributes="0"/>
+                                  <Component id="jPanel1" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -171,14 +184,70 @@
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
                         <Component class="javax.swing.JTree" name="_results_tree">
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="_results_tree.setCellRenderer(new FileTreeCellRenderer());&#xa;_results_tree.setModel(new FilterTreeModel((DefaultMutableTreeNode)_results_tree.getModel().getRoot()));&#xa;_results_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);&#xa;_results_tree.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));&#xa;_results_tree.addMouseMotionListener(new MouseMotionListener() {&#xa;    @Override&#xa;    public void mouseDragged(MouseEvent e) { }&#xa;    @Override&#xa;    public void mouseMoved(MouseEvent e) {&#xa;        TreePath tp = ((JTree)e.getSource()).getPathForLocation(e.getX(), e.getY());&#xa;        if(tp != null) {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));&#xa;        } else {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.DEFAULT_CURSOR));&#xa;        }&#xa;    }&#xa; });&#xa; _results_tree.addTreeSelectionListener(new TreeSelectionListener() {&#xa;    public void valueChanged(TreeSelectionEvent e) {&#xa;        DefaultMutableTreeNode node = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();&#xa;        if (node == null) return;&#xa;        LoadFromFile(_tree_output_map.get(node));&#xa;    }&#xa; });"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="jPanel1">
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="btnSwitchOrientation" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
+                                      <Component id="btnToggleDrilldown" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
+                                      <Component id="btnLaunchActions" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="btnSwitchOrientation" min="-2" pref="23" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="btnToggleDrilldown" min="-2" pref="23" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="btnLaunchActions" min="-2" pref="23" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JButton" name="btnSwitchOrientation">
                           <Properties>
-                            <Property name="model" type="javax.swing.tree.TreeModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="null" type="code"/>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/Window_App_SplitScreen.png"/>
                             </Property>
+                            <Property name="toolTipText" type="java.lang.String" value="Switch Orientation"/>
                           </Properties>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="_results_tree.setCellRenderer(new FileTreeCellRenderer());&#xa;_results_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);&#xa;_results_tree.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));&#xa;_results_tree.addMouseMotionListener(new MouseMotionListener() {&#xa;    @Override&#xa;    public void mouseDragged(MouseEvent e) { }&#xa;    @Override&#xa;    public void mouseMoved(MouseEvent e) {&#xa;        TreePath tp = ((JTree)e.getSource()).getPathForLocation(e.getX(), e.getY());&#xa;        if(tp != null) {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));&#xa;        } else {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.DEFAULT_CURSOR));&#xa;        }&#xa;    }&#xa; });&#xa; _results_tree.addTreeSelectionListener(new TreeSelectionListener() {&#xa;    public void valueChanged(TreeSelectionEvent e) {&#xa;        DefaultMutableTreeNode node = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();&#xa;        if (node == null) return;&#xa;        LoadFromFile(_tree_output_map.get(node), false);&#xa;    }&#xa; });"/>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnSwitchOrientation.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        jSplitPane1.setOrientation(jSplitPane1.getOrientation() == JSplitPane.VERTICAL_SPLIT ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);&#xa;        System.out.print(&quot; width = &quot; + AnalysisRunInternalFrame.this.getWidth());&#xa;        jSplitPane1.setDividerLocation(0.67);&#xa;        _bottom_tabbed_pane.setSelectedIndex(1);&#xa;    }&#xa;});"/>
                           </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="btnToggleDrilldown">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/significant.png"/>
+                            </Property>
+                            <Property name="toolTipText" type="java.lang.String" value="Viewing Only Significant"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnToggleDrilldown.setOpaque(false);&#xa;//btnToggleDrilldown.setContentAreaFilled(false);&#xa;//btnToggleDrilldown.setBorderPainted(false);&#xa;btnToggleDrilldown.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _viewing_only_significant = !_viewing_only_significant;&#xa;        if (_viewing_only_significant) {&#xa;            btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/significant.png&quot;)));&#xa;            btnToggleDrilldown.setToolTipText(&quot;Viewing Only Significant&quot;);&#xa;        } else {&#xa;            btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/all-results.png&quot;)));&#xa;            btnToggleDrilldown.setToolTipText(&quot;Viewing All Analyses&quot;);&#xa;        }&#xa;        loadAnalysisResults(false);&#xa;        _bottom_tabbed_pane.setSelectedIndex(1);&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="btnLaunchActions">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/view.png"/>
+                            </Property>
+                            <Property name="toolTipText" type="java.lang.String" value="View Other Output"/>
+                          </Properties>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -220,7 +289,7 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane3" alignment="0" pref="251" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" alignment="0" pref="231" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

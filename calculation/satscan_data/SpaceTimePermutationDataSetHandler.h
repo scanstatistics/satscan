@@ -7,8 +7,8 @@
 
 class SpaceTimePermutationDataSetHandler : public DataSetHandler {
   protected:
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
-    virtual void                        SetRandomizers();
+    virtual DataSetHandler::CountFileReadStatus  ReadCounts(RealDataSet& DataSet, DataSource& Source);
+    virtual void                                 SetRandomizers();
 
   public:
     SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);

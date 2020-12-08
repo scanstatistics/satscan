@@ -37,7 +37,7 @@ class BasePrint {
     bool                                GetMaximumReadErrorsPrinted() const;
     virtual void                        Print(const char * sMessage, PrintType ePrintType);
     virtual void                        Printf(const char * sMessage, PrintType ePrintType, ...);
-    virtual void                        ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile) {}
+    virtual void                        ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters) {}
     void                                SetImpliedInputFileType(eInputFileType eType);
     void                                SetMaximumReadErrors(int iMaximumReadErrors) {giMaximumReadErrors=iMaximumReadErrors;}
     void                                SetSuppressWarnings(bool b) {gbSuppressWarnings=b;}

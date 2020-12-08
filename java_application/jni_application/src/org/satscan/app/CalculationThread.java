@@ -39,8 +39,8 @@ public class CalculationThread extends Thread {
         AnalysisRun.PrintIssuesWindndow(line);
     }
 
-    synchronized public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile) {
-        AnalysisRun.ReportDrilldownResults(drilldown_resultfile, parent_resultfile);
+    synchronized public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile, int significantClusters) {
+        AnalysisRun.ReportDrilldownResults(drilldown_resultfile, parent_resultfile, significantClusters);
     }
     
     synchronized public void setCallpath(String sCallpath) {
@@ -59,7 +59,7 @@ public class CalculationThread extends Thread {
                     AnalysisRun.setTitle("Job cancelled");
                     AnalysisRun.PrintProgressWindow("Job cancelled by user.");
                 } else {
-                    AnalysisRun.LoadFromFile(Parameters.GetOutputFileName(), true);
+                    AnalysisRun.loadAnalysisResults(true);
                 }
             } else {
                 AnalysisRun.enableEmailButton();

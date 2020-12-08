@@ -94,22 +94,22 @@ bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
         }
     }
     // manually scan for additional data set file parameters
-    size_t numSets = gParameters.GetNumDataSets();
+    size_t numSets = gParameters.getNumFileSets();
     for (size_t t=0; t < ADDITIONAL_DATASETS; ++t) {
         printString(buffer, "%s%d", getOption(CASEFILE), t+2);
         if (vm.count(buffer.c_str())) {
             gParameters.SetCaseFileName(vm[buffer.c_str()].as<std::string>().c_str(), true, t + 2);
-            gParameters.SetNumDataSets(std::max(t+2,numSets));
+            gParameters.setNumFileSets(std::max(t+2,numSets));
         }
         printString(buffer, "%s%d", getOption(CONTROLFILE), t+2);
         if (vm.count(buffer.c_str())) {
             gParameters.SetControlFileName(vm[buffer.c_str()].as<std::string>().c_str(), true, t + 2);
-            gParameters.SetNumDataSets(std::max(t+2,numSets));
+            gParameters.setNumFileSets(std::max(t+2,numSets));
         }
         printString(buffer, "%s%d", getOption(POPFILE), t+2);
         if (vm.count(buffer.c_str())) {
             gParameters.SetPopulationFileName(vm[buffer.c_str()].as<std::string>().c_str(), true, t + 2);
-            gParameters.SetNumDataSets(std::max(t+2,numSets));
+            gParameters.setNumFileSets(std::max(t+2,numSets));
         }
     }
     return !gbReadStatusError;

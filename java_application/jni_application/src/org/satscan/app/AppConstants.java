@@ -18,10 +18,10 @@ public final class AppConstants {
     public static final int MAX_YEAR = 9999;
     public static final int MIN_GENERIC = -219145;
     public static final int MAX_GENERIC = 2921938;
-    public static final int VERSION_MAJOR = 9;
-    public static final int VERSION_MINOR = 7;
+    public static final int VERSION_MAJOR = 10;
+    public static final int VERSION_MINOR = 0;
     public static final int VERSION_RELEASE = 0;
-    public static final String VERSION_PHASE = "Beta 3 Build 1";
+    public static final String VERSION_PHASE = "Beta 1 Build 1";
     
     // Input Tab
     public static final String CASEFILE_HELPID = "Case File";

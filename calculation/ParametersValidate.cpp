@@ -32,7 +32,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         }
 
         if ((gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
-            && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
+            && gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
             bValid = false;
             PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
@@ -287,7 +287,7 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection)
 		PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
 	}
 	if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
-		if (gParameters.GetNumDataSets() > 1) {
+		if (gParameters.getNumFileSets() > 1) {
 			bValid = false;
 			PrintDirection.Printf("%s:\nThe adjustment for weekly trends, with the purely spatial Beroulli drilldown, cannot be performed with multiple data sets.\n",
 				BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -622,7 +622,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 }
 
 /** Validates inference parameters.
-    Prints errors to print direction and returns whether values are vaild.*/
+    Prints errors to print direction and returns whether values are valid.*/
 bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
     if (gParameters.getPerformPowerEvaluation()) return true;
 
@@ -636,10 +636,10 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                                   "number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
 
-        /* Validate any restictions on clusters by relative risk. */
+        /* Validate any restrictions on clusters by relative risk. */
         if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
             // This feature isn't implemented with multiple data sets.
-            if (gParameters.GetNumDataSets() > 1) {
+            if (gParameters.getNumFileSets() > 1) {
                 bValid = false;
                 PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented with multiple data sets.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -676,7 +676,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             }
         }
         /* Validate the settings for minimum number of cases in low rate and high rate clusters. This feature isn't available for multiple data sets and neither ordinal / multinomial models. */
-        if (gParameters.GetNumDataSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+        if (gParameters.getNumFileSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
             /* Validate the minimum number of cases in low rate clusters */
             if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getMinimumCasesLowRateClusters() < 2 && (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
                 /* Since this settings is no present in GUI, just default to minimum value for normal model. */
@@ -876,7 +876,7 @@ bool ParametersValidate::ValidateSpatialOutputParameters(BasePrint & PrintDirect
          PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented for the %s model.\n",
                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
-      if (gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
+      if (gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
           bReturn = false;
           PrintDirection.Printf("%s:\nGini index based collection reporting is not implemented with multiple data sets using the multivariate purpose.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -905,7 +905,7 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
         bReturn = false;
         PrintDirection.Printf("%s:\nThe isotonic scan is implemented only for the purely spatial analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
-      if (gParameters.GetNumDataSets() > 1) {
+      if (gParameters.getNumFileSets() > 1) {
         bReturn = false;
         PrintDirection.Printf("%s:\nThe isotonic scan statistic is not implemented with mulitple data sets.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
@@ -953,6 +953,13 @@ bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirec
             bReturn = false;
             PrintDirection.Printf("%s:\nThe locations network file cannot be used in conjunction with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
+        if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE && gParameters.requestsGeogrphaicalOutput()) {
+            const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
+            PrintDirection.Printf("Parameter Setting Warning:\n"
+                "Geographical output file(s) have been requested in conjuction with a network file which is defined to override euclidean distances of the coordinates file.\n"
+                "File generation is not defined for this combination of settings and output files will not be created in this analysis.\n", BasePrint::P_WARNING
+            );
+        }
 	} catch (prg_exception& x) {
 		x.addTrace("ValidateLocationNetworkParameters()", "ParametersValidate");
 		throw;
@@ -990,7 +997,7 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
       PrintDirection.Printf("%s:\nElliptical scans are not implemented for %s model.\n",
                             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-    if (gParameters.GetNumDataSets() > 1) {
+    if (gParameters.getNumFileSets() > 1) {
        bReturn = false;
        PrintDirection.Printf("%s:\nMultiple data sets are not permitted with %s model.\n",
                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
@@ -1115,7 +1122,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     }
 
     if (gParameters.getOutputTemporalGraphFile() &&
-        (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
+        (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) ||
         !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
           gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL))) {
             const_cast<CParameters&>(gParameters).setOutputTemporalGraphFile(false);
@@ -1156,12 +1163,12 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
         // if the user is specifying the total # of cases, then certain features are not valid
         if (gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES) {
             // temporal adjustments are not available without case data
-            if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+            if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
                 PrintDirection.Printf("%s:\nThe power evaluation can not perform temporal adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 bValid = false;
             }
             // spatial adjustments are not available without case data
-            if (gParameters.GetSpatialAdjustmentType() != NO_SPATIAL_ADJUSTMENT) {
+            if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
                 PrintDirection.Printf("%s:\nThe power evaluation can not perform spatial adjustments without a case file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 bValid = false;
             }
@@ -1223,7 +1230,7 @@ bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDir
                 bValid &= checkFileExists(gParameters.getPowerEvaluationAltHypothesisFilename(), "alternative hypothesis", PrintDirection);
                 break;
             case FILESOURCE       :
-                if (gParameters.GetNumDataSets() > 1){
+                if (gParameters.getNumFileSets() > 1){
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe feature to read power evaluation simulated data from a file is not implemented "
                                           "for analyses that read data from multiple data sets.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -1247,7 +1254,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
 
   if (gParameters.GetNumReplicationsRequested()) {
     if (gParameters.GetIsRandomlyGeneratingSeed()) {
-      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
+      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.getNumFileSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
       boost::minstd_rand generator(static_cast<int>(time(0)));
       const_cast<CParameters&>(gParameters).SetRandomizationSeed(boost::uniform_int<>(1,static_cast<int>(dMaxSeed))(generator));
       return true;
@@ -1261,7 +1268,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
     //validate that generated seeds during randomization will not exceed defined range
     // - note that though the number of data sets has a bearing on the maximum seed, but we
     //   will not indicate to user to reduce the number of data sets in order to correct issues.
-    dMaxRandomizationSeed = (double)gParameters.GetRandomizationSeed() + (double)gParameters.GetNumReplicationsRequested() + (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+    dMaxRandomizationSeed = (double)gParameters.GetRandomizationSeed() + (double)gParameters.GetNumReplicationsRequested() + (double)(gParameters.getNumFileSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
 
     if (dMaxRandomizationSeed >= static_cast<double>(RandomNumberGenerator::glM)) {
       //case #1 - glRandomizationSeed == RandomNumberGenerator::glDefaultSeed
@@ -1269,7 +1276,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       //    changing the initial seed through parameter settings is a 'hidden' parameter;
       //    so no direction should be given regarding the alteration of seed value.
       if (gParameters.GetRandomizationSeed() == RandomNumberGenerator::glDefaultSeed) {
-        dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+        dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.getNumFileSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
         dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
         PrintDirection.Printf("%s:\nRequested number of replications causes randomization seed to exceed defined limit. "
                               "Maximum number of replications is %.0lf.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, dMaxReplications);
@@ -1279,9 +1286,9 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       //    This alternate seed or the number of requested replications could be the problem.
       //    User has two options, either pick a lesser seed or request less replications.
       //calculate maximum seed for requested number of replications
-      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
+      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.getNumFileSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
       //calculate maximum number of replications for requested seed
-      dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+      dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.getNumFileSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
       dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
       //check whether specified combination of seed and requested number of replications fights each other
       if (dMaxReplications < 9 && (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM)) {
@@ -1423,7 +1430,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
                                 "the %s probability model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
                                 ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
-        if (gParameters.GetNumDataSets() > 1){
+        if (gParameters.getNumFileSets() > 1){
           bValid = false;
           PrintDirection.Printf("%s:\nThe feature to read simulated data from a file is not implemented for analyses "
                                 "that read data from multiple data sets.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
@@ -1536,22 +1543,22 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       }
     }
-    if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION) {
+    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization is valid for "
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization is valid for "
                               "either retrospective or prospective space-time analyses only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-      }
-      if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization can not be performed "
-                              "in conjunction with the temporal adjustment by stratified randomization.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetIncludePurelySpatialClusters()) {
         bValid = false;
-        PrintDirection.Printf("%s:\nSpatial adjustment by stratified randomization does not permit "
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization does not permit "
                               "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
+    }
+    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC && 
+        !(gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment can only be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
   } catch (prg_exception& x) {
     x.addTrace("ValidateSpatialParameters()","ParametersValidate");
@@ -1682,7 +1689,7 @@ bool ParametersValidate::ValidateSVTTAnalysisSettings(BasePrint& PrintDirection)
   bool          bValid=true;
 
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-    if (gParameters.GetNumDataSets() > 1) {
+    if (gParameters.getNumFileSets() > 1) {
       bValid = false;
       PrintDirection.Printf("%s:\nMultiple data sets is not implemented with spatial variation in temporal trends.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
@@ -1720,7 +1727,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       const_cast<CParameters&>(gParameters).SetIncludeClustersType(ALLCLUSTERS);
       const_cast<CParameters&>(gParameters).SetTimeAggregationUnitsType(NONE);
       const_cast<CParameters&>(gParameters).SetTimeAggregationLength(0);
-      const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+      const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
       const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
       return true;
     }
@@ -1767,10 +1774,10 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case BERNOULLI            :
         //The SVTT analysis has hooks for temporal adjustments, but that code needs
         //much closer examination before it can be used, even experimentally.
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the Bernoulli model, adjusting for temporal trends is not permitted. "
                                 "Temporal trends adjustment settings will be ignored.\n", BasePrint::P_NOTICE);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
@@ -1780,43 +1787,41 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case NORMAL               :
       case RANK                 :
       case UNIFORMTIME          :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
                                 "Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
       case SPACETIMEPERMUTATION :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the space-time permutation model, adjusting for temporal trends "
                                 "is not permitted nor needed, as this model automatically adjusts for "
                                 "any temporal variation. Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
+          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
       case POISSON             :
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
           bValid = false;
-          PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a spatial variation in "
-                                "temporal trends analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+          PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a spatial variation in temporal trends analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
-            && gParameters.GetPopulationFileName().empty()) {
+        if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED && gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetPopulationFileName().empty()) {
           bValid = false;
           PrintDirection.Printf("%s:\nTemporal adjustments can not be performed for a purely temporal analysis "
                                 "using the Poisson model, when no population file has been specfied.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC && (gParameters.GetAnalysisType() == PURELYTEMPORAL ||gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NONPARAMETRIC && gParameters.GetIsPurelyTemporalAnalysis()) {
           bValid = false;
           PrintDirection.Printf("%s:\nThe non-parametric time trend adjustment cannot be used with a purely temporal analysis.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetIsPurelyTemporalAnalysis()) {
           bValid = false;
-          PrintDirection.Printf("%s:\nTemporal adjustment by stratified randomization is not valid "
+          PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
                                  "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         if (gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC && -100.0 >= gParameters.GetTimeTrendAdjustmentPercentage()) {
@@ -1824,7 +1829,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
           PrintDirection.Printf("%s:\nThe time adjustment percentage is '%2g', but must greater than -100.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendAdjustmentPercentage());
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == NOTADJUSTED) {
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED) {
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
           if (gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) const_cast<CParameters&>(gParameters).SetTimeTrendConvergence(0);
         }

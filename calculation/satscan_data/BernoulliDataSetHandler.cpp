@@ -143,43 +143,40 @@ void BernoulliDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Si
       (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
 }
 
-/** Attempts to read control file data into RealDataSet object. Returns boolean indication of read success. */
-bool BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
-  try {
-    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()), gPrint));
-    return ReadCounts(DataSet, *Source);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadControlFile()","BernoulliDataSetHandler");
-    throw;
-  }
+/** Attempts to read control file data into RealDataSet object. Returns enumeration indication of read success. */
+DataSetHandler::CountFileReadStatus BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
+    try {
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()), gPrint));
+        return ReadCounts(DataSet, *Source);
+    } catch (prg_exception& x) {
+        x.addTrace("ReadControlFile()","BernoulliDataSetHandler");
+        throw;
+    }
 }
 
 /** Attempts to read case and control data files into class RealDataSet objects. */
 bool BernoulliDataSetHandler::ReadData() {
-  try {
-    SetRandomizers();
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       GetDataSet(t).setAggregateCovariateCategories(true);
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the control file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the control file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadControlFile(GetDataSet(t)))
-         return false;
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        SetRandomizers();
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t=0; t < numDataSet; ++t) {
+            GetDataSet(t).setAggregateCovariateCategories(true);
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+            printFileReadMessage(BasePrint::CONTROLFILE, t, numDataSet == 1);
+            readStaus = ReadControlFile(GetDataSet(t));
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+        }
+        removeDataSetsWithNoData();
+    } catch (prg_exception& x) {
+        x.addTrace("ReadData()","BernoulliDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","BernoulliDataSetHandler");
-    throw;
-  }
   return true;
 }
 
@@ -195,7 +192,7 @@ void BernoulliDataSetHandler::removeDataSet(size_t iSetIndex) {
 void BernoulliDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.getAdjustForWeeklyTrends()) {
@@ -218,7 +215,7 @@ void BernoulliDataSetHandler::SetRandomizers() {
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

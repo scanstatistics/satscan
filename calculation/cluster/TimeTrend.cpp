@@ -45,7 +45,7 @@ void AbstractTimeTrend::Initialize() {
 }
 
 /* Calculates the time trend based upon aggregation units. */
-double AbstractTimeTrend::GetTimeTrendByAggregationUnits(double beta, Status status) {
+double AbstractTimeTrend::GetTimeTrendByAggregationUnits(double beta, Status status, DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
     double timeTrend = 0.0;
     switch (status) {
         case NOT_CONVERGED: throw prg_error("Unable to call SetAnnualTimeTrend with non-converged time trend.", "SetAnnualTimeTrend()");
@@ -55,7 +55,7 @@ double AbstractTimeTrend::GetTimeTrendByAggregationUnits(double beta, Status sta
         case CONVERGED: break;
         default: throw prg_error("Unknown time trend status '%d'.", "GetTimeTrendByAggregationUnits()", status);
     }
-    timeTrend = 100.0 * (exp(beta) - 1.0);
+    timeTrend = 100.0 * (exp(beta / static_cast<double>(dTimeAggregationLength) ) - 1.0);
     //If the time trend is very small, then the value assigned above is more likely the result of round-off. In this case, set trend to zero.
     return (-TREND_ZERO < timeTrend && timeTrend < TREND_ZERO) ? 0.0 : timeTrend;
 }
@@ -97,7 +97,7 @@ AbstractTimeTrend * AbstractTimeTrend::getTimeTrend(const CParameters& parameter
         }
     } else if (parameters.GetProbabilityModelType() == POISSON && parameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
         return new LinearTimeTrend();
-    else if (parameters.GetProbabilityModelType() == POISSON && parameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC_PERC)
+    else if (parameters.GetProbabilityModelType() == POISSON && parameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC)
         return new QuadraticTimeTrend();
     else
         return new LinearTimeTrend();
@@ -294,6 +294,40 @@ double LinearTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) 
   return (nSTC * nSTME) - (nSC * nST2ME);
 }
 
+void LinearTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const {
+    DatePrecisionType aggUnits = DataHub.GetParameters().GetTimeAggregationUnitsType();
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "Loglinear time trend series %g (alpha=%g, beta = %g):\ndate, t, count, measure\n", 
+        GetTimeTrendByAggregationUnits(GetBeta(), GetStatus(), DataHub.GetParameters().GetTimeAggregationUnitsType(), DataHub.GetParameters().GetTimeAggregationLength()),
+        gdAlpha, gdBeta
+    );
+    const TwoDimCountArray_t & cases = Set.getCaseData();
+    const TwoDimMeasureArray_t & measure = Set.getMeasureData();
+    std::string buffer;
+    count_t totalCases = 0;
+    measure_t totalMeasure = 0.0;
+    const std::vector<Julian>& intervalStartTimes = DataHub.GetTimeIntervalStartTimes();
+    for (size_t t=0; t < intervalStartTimes.size() - 1; ++t) {
+        count_t startCases = 0;
+        for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
+            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
+        measure_t startMeasure = 0.0;
+        for (int tt = 0; tt < measure.Get2ndDimension(); ++tt)
+            startMeasure += measure.GetArray()[t][tt]; // -(t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
+        fprintf(
+            AppToolkit::getToolkit().openDebugFile(), "%s, %d, %d, %g\n", 
+            JulianToString(buffer, intervalStartTimes[t], aggUnits).c_str(),
+            t, startCases, startMeasure
+        );
+        totalCases += startCases;
+        totalMeasure += startMeasure;
+    }
+    fprintf(
+        AppToolkit::getToolkit().openDebugFile(), "total cases = %d, total measure = %g\n", totalCases, totalMeasure
+    );
+    fflush(AppToolkit::getToolkit().openDebugFile());
+}
+
+
 //----------------------- QuadraticTimeTrend ------------------------------------
 
 /** constructor */
@@ -459,4 +493,38 @@ void QuadraticTimeTrend::getRiskFunction(std::string& functionStr, std::string& 
 void QuadraticTimeTrend::Initialize() {
   AbstractTimeTrend::Initialize();
   gdBeta2           = 0;
+}
+
+void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const {
+    std::string buffer, buffer2;
+    getRiskFunction(buffer, buffer2, DataHub);
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "Log quadratic time trend series (%s %s):\ndate, t, val, count, measure\n", buffer.c_str(), buffer2.c_str());
+    DatePrecisionType aggUnits = DataHub.GetParameters().GetTimeAggregationUnitsType();
+    const std::vector<Julian>& intervalStartTimes = DataHub.GetTimeIntervalStartTimes();
+    double constant = static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength() - 1) / 2.0;
+    const TwoDimCountArray_t & cases = Set.getCaseData();
+    const TwoDimMeasureArray_t & measure = Set.getMeasureData();
+    count_t totalCases = 0;
+    measure_t totalMeasure = 0.0;
+    for (size_t t = 0; t < intervalStartTimes.size() - 1; ++t) {
+        double t_val = static_cast<double>(t * DataHub.GetParameters().GetTimeAggregationLength()) / static_cast<double>(intervalStartTimes.size() - 1) + constant;
+        double val = std::exp(GetAlpha() + GetBeta() * t_val + GetBeta2() * std::pow(t_val, 2));
+        count_t startCases = 0;
+        for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
+            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
+        measure_t startMeasure = 0.0;
+        for (int tt = 0; tt < measure.Get2ndDimension(); ++tt)
+            startMeasure += measure.GetArray()[t][tt];
+        fprintf(
+            AppToolkit::getToolkit().openDebugFile(), "%s, %d, %g, %d, %g\n",
+            JulianToString(buffer, intervalStartTimes[t], aggUnits).c_str(),
+            t, val, startCases, startMeasure
+        );
+        totalCases += startCases;
+        totalMeasure += startMeasure;
+    }
+    fprintf(
+        AppToolkit::getToolkit().openDebugFile(), "total cases = %d, total measure = %g\n", totalCases, totalMeasure
+    );
+    fflush(AppToolkit::getToolkit().openDebugFile());
 }

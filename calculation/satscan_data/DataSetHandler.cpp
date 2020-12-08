@@ -70,9 +70,49 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 /** Fills passed container with DataSet objects. Calls AllocateSimulationData on this container. */
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
-  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
+  for (unsigned int t=0; t < gDataHub.GetNumDataSets(); ++t)
 	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(), gParameters, t + 1));
   return AllocateSimulationData(Container);
+}
+
+/* Prints message to direction class for respective implied file read. */
+void DataSetHandler::printFileReadMessage(BasePrint::eInputFileType impliedFile, size_t iSetIndex, bool oneDataSet) {
+    gPrint.SetImpliedInputFileType(impliedFile);
+    if (oneDataSet)
+        gPrint.Printf("Reading the %s\n", BasePrint::P_STDOUT, gPrint.GetImpliedFileTypeString().c_str());
+    else
+        gPrint.Printf("Reading the %s for data set %u\n", BasePrint::P_STDOUT, gPrint.GetImpliedFileTypeString().c_str(), iSetIndex + 1);
+}
+
+/* Prints appropriate message for case status and data set to print direction class. */
+void DataSetHandler::printReadStatusMessage(DataSetHandler::CountFileReadStatus status, bool isControls, size_t iSetIndex, bool oneDataSet) const {
+    switch (status) {
+        case DataSetHandler::ReadSuccess:
+            break;
+        case DataSetHandler::ReadError:
+            gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+            break;
+        case DataSetHandler::NoCounts:
+            // Skip this message for drilldown analyses since it will be redundantly reported.
+            if (gDataHub.isDrilldown())
+                break;
+            if (oneDataSet)
+                gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+            else
+                gPrint.Printf("Warning: The %s in data set %u does not contain data. This data set will be ignored by analysis.\n", 
+                    BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(), iSetIndex + 1
+                );
+            break;
+        case DataSetHandler::NotMinimum:
+            if (oneDataSet)
+                gPrint.Printf("Error: The %s does not contain the appropriate minimum.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+            else
+                gPrint.Printf("Warning: The %s in data set %u does not contain the appropriate minimum. This data set will be ignored by analysis.\n",
+                    BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(), iSetIndex + 1
+                );
+            break;
+        default: throw prg_error("Unknown DataSetHandler::CountFileReadStatus enumeration (%d).", "printReadStatusMessage()", status);
+    }
 }
 
 /** Randomizes data of passed collection of DataSet objects in concert with
@@ -83,7 +123,7 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
 }
 
 /** Attempts to read case file data into RealDataSet object. Returns boolean indication of read success. */
-bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
+DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint));
@@ -97,64 +137,66 @@ bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-  int                                   i, iCategoryIndex;
-  bool                                  bCaseFile, bValid=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  std::string                           sBuffer;
-  count_t                               Count, ** ppCounts;
-  DataSetHandler::RecordStatusType      eRecordStatus;
+DataSetHandler::CountFileReadStatus DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+    int                                   iCategoryIndex;
+    bool                                  bCaseFile;
+    Julian                                Date;
+    tract_t                               TractIndex;
+    std::string                           sBuffer;
+    count_t                               Count, ** ppCounts, totalCount = 0;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    bCaseFile = gPrint.GetImpliedInputFileType() == BasePrint::CASEFILE;
-    ppCounts = (bCaseFile ? DataSet.allocateCaseData().GetArray() : DataSet.allocateControlData().GetArray());
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-             bEmpty = false;
-             //cumulatively add count to time by location structure
-             ppCounts[0][TractIndex] += Count;
-             if (ppCounts[0][TractIndex] < 0)
-               throw resolvable_error("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
-                                      (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
-
-             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL && gParameters.GetProbabilityModelType() != POISSON) {
-                Date = gDataHub.convertToSeasonalDate(Date);
-                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                    ppCounts[i][TractIndex] += Count;
-             } else {
-                for (i=1; Date >= gDataHub.CSaTScanData::GetTimeIntervalStartTimes()[i]; ++i)
-                    ppCounts[i][TractIndex] += Count;
-             }
-
-             //record count as a case or control
-             if (bCaseFile)
-               DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
-             else
-               DataSet.getPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
-           }
-           else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else
-             bValid = false;
+    try {
+        bCaseFile = gPrint.GetImpliedInputFileType() == BasePrint::CASEFILE;
+        ppCounts = (bCaseFile ? DataSet.allocateCaseData().GetArray() : DataSet.allocateControlData().GetArray());
+        //Read data, parse and if no errors, increment count for tract at date.
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
+                //cumulatively add count to time by location structure
+                ppCounts[0][TractIndex] += Count;
+                if (ppCounts[0][TractIndex] < 0)
+                throw resolvable_error(
+                    "Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
+                    (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max()
+                );
+                if (gParameters.GetAnalysisType() == SEASONALTEMPORAL && gParameters.GetProbabilityModelType() != POISSON) {
+                    Date = gDataHub.convertToSeasonalDate(Date);
+                    for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                        ppCounts[i][TractIndex] += Count;
+                } else {
+                    for (int i=1; Date >= gDataHub.CSaTScanData::GetTimeIntervalStartTimes()[i]; ++i)
+                        ppCounts[i][TractIndex] += Count;
+                }
+                // record count as a case or control
+                if (bCaseFile)
+                    DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
+                else
+                    DataSet.getPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
+                // add to totals and check against numeric limits
+                totalCount += Count;
+                // check that total count does not exceed data type limitations
+                if (totalCount < 0)
+                    throw resolvable_error(
+                        "Error: The total number of %s in dataset %u is greater than the maximum allowed of %ld.\n", 
+                        (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex() + 1, std::numeric_limits<count_t>::max()
+                    );
+            }
+            else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else
+                readStatus = DataSetHandler::ReadError;
+        }
+        // Record total in data set.
+        if (readStatus == DataSetHandler::ReadSuccess) {
+            if (bCaseFile) DataSet.setTotalCases(totalCount); else DataSet.setTotalControls(totalCount);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCounts()","DataSetHandler");
+        throw;
     }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadCounts()","DataSetHandler");
-    throw;
-  }
-  return bValid;
+    return readStatus;
 }
 
 
@@ -163,6 +205,48 @@ void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
   if (!gParameters.GetSuppressingWarnings())
     for (size_t t=0; t < gvDataSets.size(); ++t)
       gvDataSets.at(t)->getPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+}
+
+/* Removes data sets from collection which do not contain case, or potentially control, data. 
+   Throws resolvable_error if no data sets have data.
+*/
+void DataSetHandler::removeDataSetsWithNoData() {
+    size_t numSets = gvDataSets.size();
+    bool casesExist = false, controlsExist = false;
+    for (int d = numSets - 1; d >= 0; --d) {
+        casesExist |= gvDataSets[d]->getTotalCases() > 0;
+        controlsExist |= gvDataSets[d]->getTotalControls() > 0;
+        if (gvDataSets[d]->getTotalCases() == 0) {
+            gvDataSets.kill(gvDataSets.begin() + d);
+            gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + d);
+            _removed_data_sets.push_back(d);
+            //gPrint.Printf("No cases found in data set %u.\n", BasePrint::P_WARNING, d + 1);
+        } else if (gParameters.GetProbabilityModelType() == BERNOULLI && gvDataSets[d]->getTotalControls() == 0) {
+            gvDataSets.kill(gvDataSets.begin() + d);
+            gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + d);
+            _removed_data_sets.push_back(d);
+            //gPrint.Printf("No controls found in data set %u.\n", BasePrint::P_WARNING, d + 1);
+        }
+    }
+    if (!casesExist)
+        throw resolvable_error("Error: Anaylsis stopped. No cases where found in input data.\n");
+    if (gParameters.GetProbabilityModelType() == BERNOULLI && !controlsExist)
+        throw resolvable_error("Error: Anaylsis stopped. No controls where found in input data.\n");
+}
+
+size_t DataSetHandler::getDataSetRelativeIndex(size_t iSet) const {
+    boost::dynamic_bitset<> sets(gParameters.getNumFileSets());
+    sets.set();
+    for (std::vector<unsigned int>::const_iterator itr = _removed_data_sets.begin(); itr != _removed_data_sets.end(); ++itr)
+        sets.set(*itr, false);
+    int idx = -1;
+    for (size_t s=0; s < sets.size(); ++s) {
+        if (sets.test(s))
+            ++idx;
+        if (idx >= 0 && static_cast<size_t>(idx) == iSet)
+            return s;
+    }
+    return 0;
 }
 
 /** Retrieves count date from current record of data source as a julian date. If an error
@@ -238,7 +322,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
                     gParameters.GetStudyPeriodEndDate().c_str());
       return DataSetHandler::Rejected;
     }
-    if (std::find(gmSourceDateWarned.begin(), gmSourceDateWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceDateWarned.end()) {
+    if (!gDataHub.isDrilldown() && std::find(gmSourceDateWarned.begin(), gmSourceDateWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceDateWarned.end()) {
       gPrint.Printf("Warning: Some records in %s are outside the specified Study Period.\n"
                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
       gmSourceDateWarned.push_back(reinterpret_cast<void*>(&Source));
@@ -407,7 +491,7 @@ void DataSetHandler::Setup() {
         // down cast closed loop data to parent class if Poisson model -- we initially want the number of intervals as non-closed loop
         bool downCast = dynamic_cast<ClosedLoopData*>(&gDataHub) != 0 && gParameters.GetProbabilityModelType() == POISSON;
         int intervals = downCast ? gDataHub.CSaTScanData::GetNumTimeIntervals() : gDataHub.GetNumTimeIntervals();
-        for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
+        for (unsigned int i=0; i < gParameters.getNumFileSets(); ++i)
             gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
     } catch (prg_exception& x) {
         x.addTrace("Setup()","DataSetHandler");

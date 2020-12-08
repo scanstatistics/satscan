@@ -17,11 +17,11 @@ class CPoissonModel : public CModel {
     CSaTScanData              & gDataHub; 
     mutable std::vector<double> _alpha;
 
-    void                        AdjustForNonParameteric(RealDataSet& DataSet);
-    void                        AdjustForTrend(RealDataSet& DataSet, double beta, double beta2);
     void                        AdjustForCalculatedTrend(RealDataSet& DataSet);
+    void                        AdjustForSpatialNonParameteric(RealDataSet& DataSet);
+    void                        AdjustForTemporalNonParameteric(RealDataSet& DataSet);
+    void                        AdjustForTrend(RealDataSet& DataSet, double beta, double beta2);
     void                        AdjustMeasure(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
-    void                        StratifiedSpatialAdjustment(RealDataSet& DataSet);
 
   public:
     CPoissonModel(CSaTScanData& DataHub);

@@ -167,9 +167,14 @@ std::stringstream & ClusterMap::templateReplace(std::stringstream& templateText,
 std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
     std::stringstream  lines;
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
+    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
 
     lines << "<div style=\"text-decoration:underline; \">Cluster " << iCluster + 1 << "</div>";
     for (; itr != itr_end; ++itr) {
+        if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
+            lines << "Data Set " << itr->second.second << "<br>";
+            currSetIdx = itr->second.second;
+        }
         lines << itr->first << " : " << itr->second.first << "<br>";
     }
     legend = lines.str();

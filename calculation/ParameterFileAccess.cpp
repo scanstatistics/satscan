@@ -17,8 +17,16 @@ ParameterAccessCoordinator::ParameterAccessCoordinator(CParameters& Parameters)
 ParameterAccessCoordinator::~ParameterAccessCoordinator() {}
 
 CParameters::CreationVersion ParameterAccessCoordinator::getIniVersion(const char* sFilename) {
-    CParameters::CreationVersion default_version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
-    CParameters::CreationVersion version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion default_version = {
+        static_cast<unsigned int>(std::atoi(VERSION_MAJOR)), 
+        static_cast<unsigned int>(std::atoi(VERSION_MINOR)),
+        static_cast<unsigned int>(std::atoi(VERSION_RELEASE))
+    };
+    CParameters::CreationVersion version = {
+        static_cast<unsigned int>(std::atoi(VERSION_MAJOR)),
+        static_cast<unsigned int>(std::atoi(VERSION_MINOR)),
+        static_cast<unsigned int>(std::atoi(VERSION_RELEASE))
+    };
     try {
         if (!access(sFilename, 04)) {
             IniFile ini; ini.Read(sFilename);
@@ -109,7 +117,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWER_EVALUATION             : return "perform power evaluation - Poisson only (y/n)";
       case POWER_05                     : return "power evaluation critical value .05 (> 0)";
       case POWER_01                     : return "power evaluation critical value .001 (> 0)";
-      case TIMETREND                    : return "time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadraticPercentage)";
+      case TIMETREND                    : return "time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic, 1=TemporalNonparametric)";
       case TIMETRENDPERC                : return "time trend adjustment percentage (>-100)";
       case PURETEMPORAL                 : return "include purely temporal clusters? (y/n)";
       case CONTROLFILE                  : return "control data filename";
@@ -149,7 +157,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case SIMULATION_DATA_OUTFILE      : return "simulation data output filename";
       case ADJ_FOR_EALIER_ANALYSES      : return "adjust for earlier analyses(prospective analyses only)? (y/n)";
       case USE_ADJ_BY_RR_FILE           : return "use adjustments by known relative risks file? (y/n)";
-      case SPATIAL_ADJ_TYPE             : return "spatial adjustments type (0=No Spatial Adjustment, 1=Spatially Stratified Randomization)";
+      case SPATIAL_ADJ_TYPE             : return "spatial adjustments type (0=None, 1=SpatiallyStratifiedRandomization, 2=SpatialNonparametric)";
       case MULTI_DATASET_PURPOSE_TYPE   : return "multiple data sets purpose type (0=Multivariate, 1=Adjustment)";
       case CREATION_VERSION             : return "system setting - do not modify";
       case RANDOMIZATION_SEED           : return "randomization seed (0 < Seed < 2147483647)";
@@ -655,7 +663,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POWER_EVALUATION             : gParameters.setPerformPowerEvaluation(ReadBoolean(sParameter, eParameterType)); break;
       case POWER_05                     : gParameters.SetPowerEvaluationCriticalValue05(ReadDouble(sParameter, eParameterType)); break;
       case POWER_01                     : gParameters.SetPowerEvaluationCriticalValue01(ReadDouble(sParameter, eParameterType)); break;
-      case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, CALCULATED_QUADRATIC_PERC);
+      case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, TEMPORAL_NOTADJUSTED, CALCULATED_QUADRATIC);
                                           gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
       case TIMETRENDPERC                : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
       case PURETEMPORAL                 : gParameters.SetIncludePurelyTemporalClusters(ReadBoolean(sParameter, eParameterType)); break;
@@ -726,7 +734,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case SIMULATION_DATA_OUTFILE      : gParameters.SetSimulationDataOutputFileName(sParameter.c_str(), true); break;
       case ADJ_FOR_EALIER_ANALYSES      : gParameters.SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
       case USE_ADJ_BY_RR_FILE           : gParameters.SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
-      case SPATIAL_ADJ_TYPE             : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+      case SPATIAL_ADJ_TYPE             : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, SPATIAL_NOTADJUSTED, SPATIAL_NONPARAMETRIC);
                                           gParameters.SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
       case MULTI_DATASET_PURPOSE_TYPE   : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, MULTIVARIATE, ADJUSTMENT);
                                           gParameters.SetMultipleDataSetPurposeType((MultipleDataSetPurposeType)iValue); break;

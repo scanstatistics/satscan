@@ -12,7 +12,7 @@ class OrdinalDataSetHandler : public DataSetHandler {
     static const size_t                 gtMinimumCategories;
     static const count_t                gtMinimumCases;
 
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
+    virtual CountFileReadStatus         ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, std::string& categoryTypeLabel);
     virtual void                        SetRandomizers();
 

@@ -165,17 +165,21 @@ void UniformTimeDataSetHandler::RandomizeData(RandomizerContainer_t& Container, 
 
 /** Attempts to read population and case data files into class RealDataSet objects. */
 bool UniformTimeDataSetHandler::ReadData() {
+    DataSetHandler::CountFileReadStatus readStaus;
     try {
         SetRandomizers();
-
-        for (size_t t=0; t < GetNumDataSets(); ++t) {
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t = 0; t < numDataSet; ++t) {
             if (GetNumDataSets() == 1) gPrint.Printf("Creating the population\n", BasePrint::P_STDOUT);
             else gPrint.Printf("Creating the population for data set %u\n", BasePrint::P_STDOUT, t + 1);
             if (!CreatePopulationData(GetDataSet(t))) return false;
-            if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-            else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-            if (!ReadCaseFile(GetDataSet(t))) return false;
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
         }
+        removeDataSetsWithNoData();
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","UniformTimeDataSetHandler");
         throw;
@@ -190,7 +194,7 @@ bool UniformTimeDataSetHandler::ReadData() {
 void UniformTimeDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsSpaceTimeAnalysis())
@@ -207,7 +211,7 @@ void UniformTimeDataSetHandler::SetRandomizers() {
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {

@@ -24,6 +24,7 @@ class SimulationVariables {
 
   public:
     SimulationVariables() {init(0.0);}
+    SimulationVariables(const SimulationVariables& other) { *this = other; }
     virtual ~SimulationVariables() {}
 
     void            add_additional_mlc(double mlc_llr) {

@@ -7,7 +7,7 @@
 
 class BernoulliDataSetHandler : public DataSetHandler {
   protected:
-    bool                                ReadControlFile(RealDataSet& DataSet);
+    CountFileReadStatus                 ReadControlFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();
 	virtual void                        removeDataSet(size_t iSetIndex);
 

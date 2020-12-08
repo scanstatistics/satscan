@@ -7,7 +7,7 @@
 
 class RankDataSetHandler : public DataSetHandler {
   protected:
-    virtual bool                         ReadCounts(RealDataSet& DataSet, DataSource& Source);
+    virtual CountFileReadStatus          ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual RecordStatusType             RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual void                         SetRandomizers();
 

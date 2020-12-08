@@ -26,7 +26,6 @@ class BaseClusterKML {
       std::string & encode(const std::string& data, std::string& encoded) const;
       std::string & getClusterBalloonTemplate(const CCluster& cluster, std::string& buffer) const;
       std::string & getClusterExtendedData(const CCluster& cluster, int iCluster, std::string& buffer) const;
-      std::string & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
       std::string & getClusterStyleTags(const CCluster& cluster, int iCluster, std::string& styleString, bool isHighRate) const;
       void writeCloseBlockKML(std::ofstream& outKML) const;
       void writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster, const SimulationVariables& simVars) const;

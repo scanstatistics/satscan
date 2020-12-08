@@ -562,6 +562,13 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
 			//    //skip locations that are marked as not evaluated in cluster expansion
 			//    continue;
 			if (checkOverrides) {
+
+                /*
+                  TODO:
+                  This is not correct since tCentroidIndex is the grid point index, not the location index.
+                  Do we need some sort of map from grid point to location index?
+                */
+
 				std::pair<bool, double> override = gLocationInfo.getLocationsDistanceOverride(tCentroidIndex, k);
 				if (override.first) {
 					gvCentroidToLocationDistances[i].Set(k, override.second, 0);
@@ -721,7 +728,7 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
   }
   std::vector<LocationDistance>::const_iterator itr=gvCentroidToLocationDistances.begin(), itr_end;
   itr_end = (tMaxToPrint >= gvCentroidToLocationDistances.size() ? gvCentroidToLocationDistances.end() : gvCentroidToLocationDistances.begin() + tMaxToPrint);
-  fprintf(stream, "\nCentroidToLocationDistances (size=%d):\n", std::distance(itr, itr_end));
+  fprintf(stream, "\nCentroidToLocationDistances (size=%ld):\n", std::distance(itr, itr_end));
   for (; itr != itr_end; ++itr) {
     if (itr->GetTractNumber() >= gNumTracts) {
       std::vector<tract_t> indexes;

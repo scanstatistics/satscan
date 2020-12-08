@@ -125,7 +125,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                 _risk_function = &AbstractLikelihoodCalculator::getRelativeRisk;
         }
         /* Assign class function pointer which unifies log likelihoods of all data sets. */
-        if (parameters.GetNumDataSets() > 1) {
+        if (DataHub.GetNumDataSets() > 1) {
             switch (parameters.GetMultipleDataSetPurposeType()) {
                 case MULTIVARIATE :
                     _unifier.reset(new MultivariateUnifier(parameters.GetExecuteScanRateType(), parameters.GetProbabilityModelType())); break;

@@ -269,7 +269,7 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
   unsigned int  iLen;
 
   try {
-    if (gParameters.GetNumDataSets() > 1)
+    if (gParameters.getNumFileSets() > 1)
       throw resolvable_error("Error: Lined based parameter file can not write with multiple data sets.\n");
 
     //open output file

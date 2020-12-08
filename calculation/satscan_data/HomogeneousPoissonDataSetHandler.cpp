@@ -328,37 +328,34 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinatesFile(RealDataSet& DataSet)
 
 /** Attempts to read data files into class RealDataSet objects. */
 bool HomogeneousPoissonDataSetHandler::ReadData() {
-  try {
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       //read case data file
-       if (GetNumDataSets() == 1) gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
-       else gPrint.Printf("Reading the coordinates file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCoordinatesFile(GetDataSet(t))) return false;
+    try {
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t=0; t < numDataSet; ++t) {
+            //read case data file
+            printFileReadMessage(BasePrint::COORDFILE, t, numDataSet == 1);
+            if (!ReadCoordinatesFile(GetDataSet(t))) return false;
+        }
+        //signal insertions completed
+        gTractHandler.additionsCompleted();
+        if (gParameters.UseSpecialGrid()) {
+            gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
+            gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
+            std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gParameters.getInputSource(GRIDFILE), gPrint));
+            if (!ReadGridFile(*Source)) return false;
+        }
+        SetRandomizers();
+    } catch (prg_exception& x) {
+        x.addTrace("ReadData()","HomogeneousPoissonDataSetHandler");
+        throw;
     }
-
-    //signal insertions completed
-    gTractHandler.additionsCompleted();
-
-    if (gParameters.UseSpecialGrid()) {
-       gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
-       gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
-       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gParameters.getInputSource(GRIDFILE), gPrint));
-       if (!ReadGridFile(*Source)) return false;
-    }
-    SetRandomizers();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","HomogeneousPoissonDataSetHandler");
-    throw;
-  }
-  return true;
+    return true;
 }
 
 /** Allocates randomizers for data set.  */
 void HomogeneousPoissonDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     // create the randomizer -- only implemented for one data set
     gvDataSetRandomizers.at(0) = new HomogeneousPoissonNullHypothesisRandomizer(gParameters, gPolygons, gParameters.GetRandomizationSeed());
   }

@@ -7,11 +7,11 @@
 
 class NormalDataSetHandler : public DataSetHandler {
   private:
-    bool                                ReadCountsStandard(RealDataSet& DataSet, DataSource& Source);
-    bool                                ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source);
+    CountFileReadStatus                 ReadCountsStandard(RealDataSet& DataSet, DataSource& Source);
+    CountFileReadStatus                 ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source);
 
   protected:
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
+    virtual CountFileReadStatus         ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, 
                                                                count_t& nCount, Julian& nDate, 
                                                                measure_t& tContinuousVariable, double * pRateVariable,

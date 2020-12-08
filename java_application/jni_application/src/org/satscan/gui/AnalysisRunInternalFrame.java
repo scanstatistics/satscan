@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyVetoException;
@@ -29,7 +30,10 @@ import java.util.zip.ZipInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
@@ -68,12 +72,20 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private boolean gbCancel = false;
     private boolean gbCanClose = false;
     private boolean gbCanPrint;
+    private boolean _failed_kml_view = false;
+    private boolean _failed_maps_view = false;
+    private boolean _failed_graph_view = false;
     private final Parameters _parameters;
     private String gsProgramErrorCallPath = "";
     private final int MAXLINES = 999;
     private boolean _warning_errors_encountered = false;
-    Map<DefaultMutableTreeNode, String> _tree_output_map = new HashMap<>();
-    Map<String, DefaultMutableTreeNode> _output_tree_map = new HashMap<>();
+    private Map<FilterTreeNode, String> _tree_output_map = new HashMap<>();
+    private Map<String, FilterTreeNode> _output_tree_map = new HashMap<>();
+    private Map<FilterTreeNode, Integer> _tree_output_significances = new HashMap<>();
+    private boolean _has_insignificant_analyses = false;
+    private boolean _viewing_only_significant = true;
+    private boolean _first_display_occurred = false;
+    private JPopupMenu _launch_output = null;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -90,23 +102,26 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
 
     /* Add drilldown output in relation to outfile file from calling analysis. */
-    public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile) {
-        DefaultMutableTreeNode parent, child;
+    public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile, int significantClusters) {
+        FilterTreeNode parent;
+        FilterTreeNode child;
         if (!_output_tree_map.containsKey(parent_resultfile)) {
-            parent = new DefaultMutableTreeNode(parent_resultfile);
+            parent = new FilterTreeNode(parent_resultfile);
             _output_tree_map.put(parent_resultfile, parent);
             _tree_output_map.put(parent, parent_resultfile);
         } else {
             parent = _output_tree_map.get(parent_resultfile);
         }
         if (!_output_tree_map.containsKey(drilldown_resultfile)) {
-            child = new DefaultMutableTreeNode(drilldown_resultfile);
+            child = new FilterTreeNode(drilldown_resultfile);
             _output_tree_map.put(drilldown_resultfile, child);
             _tree_output_map.put(child, drilldown_resultfile);            
         } else {
             child = _output_tree_map.get(drilldown_resultfile);
         }
-        parent.add(child);        
+        parent.add(child);
+        _tree_output_significances.put(child, significantClusters);
+        _has_insignificant_analyses |= significantClusters == 0;
     }
     
     /**
@@ -207,23 +222,76 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         NodeList nodes = doc.getElementsByTagName("Placemark");
         return nodes.getLength() > 0;
     }
-    
-    /** Loads analysis results from file into memo control */
-    synchronized public void LoadFromFile(final String sFileName, boolean loadTree) {
-        if (loadTree && _tree_output_map.size() > 0) {
-            /* Drilldown analyses exist, add the dridown result tab.*/
+
+    /** Loads the analysis results and drilldown tree, if there is one. */
+    synchronized public void loadAnalysisResults(boolean sortTreeNodes) {
+        btnToggleDrilldown.setEnabled(_has_insignificant_analyses);
+        OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
+        if (_tree_output_map.size() > 0) {
+            /* Drilldown analyses exist, add the drilldown result tab.*/
             _bottom_tabbed_pane.add("Drilldown", _drilldown_results_tab);
             /* Find the node that is the primary analysis and set as root. */
-            for (DefaultMutableTreeNode node : _tree_output_map.keySet()) {
+            for (FilterTreeNode node : _tree_output_map.keySet()) {
                 if (node.getParent() == null) {
-                    sortTree(node);
-                    _results_tree.setModel(new DefaultTreeModel(node));
+                    if (sortTreeNodes) {
+                        // If sorting JTree from root, first turn off filtering so that all nodes sort properly.
+                        ((FilterTreeModel)_results_tree.getModel()).activateFilter(false);
+                        sortTree(node);
+                    }
+                    // Reset the TreeModel for JTree and select root node.
+                    _results_tree.setModel(new FilterTreeModel(node, false, _viewing_only_significant));
                     _results_tree.setSelectionPath(new TreePath(node.getPath()));
                     break;
                 }
             }
+            // Add the ability to launch the additional output files for any of the analyses.
+            btnLaunchActions.setEnabled(_parameters.getOutputKMLFile() || _parameters.getOutputCartesianGraph() || _parameters.getOutputGoogleMapsFile());
+            if (_launch_output == null && btnLaunchActions.isEnabled()) {
+                _launch_output = new JPopupMenu();
+                btnLaunchActions.add(_launch_output);
+                btnLaunchActions.addMouseListener(new MouseAdapter() {
+                    public void mousePressed(MouseEvent e) {
+                        _launch_output.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                });            
+                if (_parameters.getOutputKMLFile()) {
+                    JMenuItem menuItem = new JMenuItem("View Google Earth");
+                    menuItem.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
+                            launchKMLViewer(_tree_output_map.get(selectedNode), false);
+                        }
+                    });            
+                    _launch_output.add(menuItem);
+                }
+                if (_parameters.getOutputGoogleMapsFile()) {
+                    JMenuItem menuItem = new JMenuItem("View Google Map");
+                    menuItem.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
+                            launchGoogleMapsViewer(_tree_output_map.get(selectedNode));
+                        }
+                    });            
+                    _launch_output.add(menuItem);
+                }
+                if (_parameters.getOutputCartesianGraph()) {
+                    JMenuItem menuItem = new JMenuItem("View Cartesian Graph");
+                    menuItem.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
+                            launchCartesianGraphViewer(_tree_output_map.get(selectedNode));
+                        }
+                    });            
+                    _launch_output.add(menuItem);
+                }
+            }
+        } else {
+            LoadFromFile(_parameters.GetOutputFileName());
         }
-        
+    }
+    
+    /** Loads analysis results from file into textarea control */
+    public void LoadFromFile(final String sFileName) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 _progressTextArea.setText("");
@@ -236,98 +304,109 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 } catch (IOException e) {
                     setTitle("Job Completed");
                     _progressTextArea.append("\nSaTScan completed successfully but was unable to read results from file.\n" +
-                            "The results have been written to: \n" + _parameters.GetOutputFileName() + "\n\n");
+                            "The results have been written to: \n" + sFileName + "\n\n");
                 }
                 _progressTextArea.setCaretPosition(0);
-                OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
-            
-                try {
-                    if (_parameters.getOutputKMLFile() && _parameters.getLaunchMapViewer()) {
-                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
-                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
-                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + (_parameters.getCompressClusterKML() ? ".kmz" : ".kml"));
-                        
-                        // Determine if any clusters were reported -- prevent launching Google Earth when no clusters reported.
-                        boolean reallyLaunch = true;
-                        if (_parameters.getCompressClusterKML()) {
-                            // open kmz and check the primary kml file for placemarks
-                            File test = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".kml");
-                            test.createNewFile();
-                            //get the zip file content
-                            ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
-                            //get the zipped file list entry
-                            ZipEntry ze = zis.getNextEntry();  
-                            while(ze != null) {
-                                if (ze.getName().equals(test.getName())) {
-                                   byte[] buffer = new byte[1024];                            
-                                   FileOutputStream fos = new FileOutputStream(test);
-                                   int len;
-                                   while ((len = zis.read(buffer)) > 0) {
-                                        fos.write(buffer, 0, len);
-                                   }
-                                   fos.close();
-                                   break;
-                                }
-                                ze = zis.getNextEntry();
-                            }
-                            reallyLaunch = placemarkExist(test);
-                            test.delete();
-                        } else {
-                            reallyLaunch = placemarkExist(path);
-                        }
-
-                        if (reallyLaunch) {                            
-                            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                                Desktop.getDesktop().open(path);
-                            } else {
-                                String kmlFile = "file://localhost/" + path.getAbsolutePath();
-                                kmlFile = kmlFile.replace('\\', '/');
-                                BareBonesBrowserLaunch.openURL(kmlFile);
-                            }                        
-                        }
-                    }
-                } catch (Throwable t) {
-                    JOptionPane.showMessageDialog(null, "Unable to launch KML file viewer. If you do not have a viewer, you can download Google Earth from http://www.google.com/earth/download/.");
+                // If requested, attempt to launch a KML viewer.
+                if (_parameters.getOutputKMLFile() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_kml_view) {
+                    launchKMLViewer(sFileName, true);
                 }
-                
-                try {
-                    if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchMapViewer()) {
-                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
-                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
-                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".cluster.html");
-                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                            Desktop.getDesktop().open(path);
-                        } else {
-                            String htmlFile = "file://localhost/" + path.getAbsolutePath();
-                            htmlFile = htmlFile.replace('\\', '/');
-                            BareBonesBrowserLaunch.openURL(htmlFile);
-                       }                        
-                    }
-                } catch (Throwable t) {
-                    JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
+                // If requested, attempt to launch browser to view cartesian map.
+                if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_graph_view) {
+                    launchCartesianGraphViewer(sFileName);                      
                 }
-
-                try {
-                    if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchMapViewer()) {
-                        int extIndex = _parameters.GetOutputFileName().lastIndexOf('.');
-                        extIndex = (extIndex == -1 ? _parameters.GetOutputFileName().length() : extIndex);
-                        File path = new File(_parameters.GetOutputFileName().substring(0, extIndex) + ".clustermap.html");
-                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                            Desktop.getDesktop().open(path);
-                        } else {
-                            String htmlFile = "file://localhost/" + path.getAbsolutePath();
-                            htmlFile = htmlFile.replace('\\', '/');
-                            BareBonesBrowserLaunch.openURL(htmlFile);
-                       }                        
-                    }
-                } catch (Throwable t) {
-                    JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
+                // If requested, attempt to launch browser to view Google map.
+                if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_maps_view) {
+                    launchGoogleMapsViewer(sFileName);
                 }
-
+                /* Only automatically launch additional output files if user requests and this is the first time loading results.
+                   This prevents causing the automatic launch with each selection of a treenode in the drilldown tree.
+                */
+                _first_display_occurred = true;
             }
         });
     }
 
+    /* Attempt to launch application which can view KML/KMZ files. */
+    private void launchKMLViewer(final String output_filename, boolean verifyClusters) {
+        try {
+            int extIndex = output_filename.lastIndexOf('.');
+            extIndex = (extIndex == -1 ? output_filename.length() : extIndex);
+            File path = new File(output_filename.substring(0, extIndex) + (_parameters.getCompressClusterKML() ? ".kmz" : ".kml"));
+            // Determine if any clusters were reported -- prevent launching Google Earth when no clusters reported.
+            boolean reallyLaunch = true;
+            if (_parameters.getCompressClusterKML()) {
+                // open kmz and check the primary kml file for placemarks
+                File test = new File(output_filename.substring(0, extIndex) + ".kml");
+                test.createNewFile();
+                //get the zip file content
+                ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
+                //get the zipped file list entry
+                ZipEntry ze = zis.getNextEntry();  
+                while(ze != null) {
+                    if (ze.getName().equals(test.getName())) {
+                        byte[] buffer = new byte[1024];                            
+                        FileOutputStream fos = new FileOutputStream(test);
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                        fos.close();
+                        break;
+                    }
+                    ze = zis.getNextEntry();
+                }
+                reallyLaunch = verifyClusters ? placemarkExist(test) : true;
+                test.delete();
+            } else {
+                reallyLaunch = verifyClusters ? placemarkExist(path) : true;
+            }
+            if (reallyLaunch) { 
+                launchFileViewer(path);
+            }
+        } catch (Throwable t) {
+            _failed_kml_view = true;
+            JOptionPane.showMessageDialog(null, "Unable to launch KML file viewer. If you do not have a viewer, you can download Google Earth from http://www.google.com/earth/download/.");
+        }        
+    }    
+    
+    /* Attempt to launch application which can view Cartesian graph html file. */
+    private void launchCartesianGraphViewer(final String output_filename) {
+        try {
+            int extIndex = output_filename.lastIndexOf('.');
+            extIndex = (extIndex == -1 ? output_filename.length() : extIndex);
+            File path = new File(output_filename.substring(0, extIndex) + ".cluster.html");
+            launchFileViewer(path);                      
+        } catch (Throwable t) {
+            _failed_graph_view = true;
+            JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
+        }        
+    }    
+    
+    /* Attempt to launch application which can view Google Maps html file. */
+    private void launchGoogleMapsViewer(final String output_filename) {
+        try {
+            int extIndex = output_filename.lastIndexOf('.');
+            extIndex = (extIndex == -1 ? output_filename.length() : extIndex);
+            File path = new File(output_filename.substring(0, extIndex) + ".clustermap.html");
+            launchFileViewer(path);
+        } catch (Throwable t) {
+            _failed_maps_view = true;
+            JOptionPane.showMessageDialog(null, "Unable to launch cartesian graph in default browser.");
+        }        
+    }
+    
+    /* Attempt to launch application which can view html files. */
+    private void launchFileViewer(final File path) throws IOException {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+            Desktop.getDesktop().open(path);
+        } else {
+            String htmlFile = "file://localhost/" + path.getAbsolutePath();
+            htmlFile = htmlFile.replace('\\', '/');
+            BareBonesBrowserLaunch.openURL(htmlFile);
+        }                        
+    }    
+    
     /**
      * Sends output window text to printer.
      */
@@ -440,33 +519,31 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }   
     
     /* Sorts tree such that Bernoulli (bin) analyses group together at tree level first. */
-    private static void sortTree(DefaultMutableTreeNode root) {
+    private static void sortTree(FilterTreeNode root) {
       Enumeration e = root.depthFirstEnumeration();
       while (e.hasMoreElements()) {
-        DefaultMutableTreeNode thisnode = (DefaultMutableTreeNode) e.nextElement();
+        FilterTreeNode thisnode = (FilterTreeNode) e.nextElement();
         if (!thisnode.isLeaf()) {
-            List< DefaultMutableTreeNode> children = new ArrayList<>();
+            List< FilterTreeNode> children = new ArrayList<>();
             Enumeration e_nodes = thisnode.children();
             while (e_nodes.hasMoreElements()) {
-              children.add((DefaultMutableTreeNode)e_nodes.nextElement());
+                children.add((FilterTreeNode)e_nodes.nextElement());
             } 
             // Sorts tree such that Bernoulli nodes come first in respective tree level.
             Collections.sort(children, new Comparator< DefaultMutableTreeNode>() {
                 @Override public int compare(DefaultMutableTreeNode a, DefaultMutableTreeNode b) {
                     Pair <String, Boolean> sa = getNodeLabel(a), sb = getNodeLabel(b);
                     // If both are Bernoulli or standard, just compare cluster number.
-                    if ((sa.getValue() && sb.getValue()) || (!sa.getValue() && !sb.getValue())) {
-                        Pattern r = Pattern.compile("^((C(\\d+))+)\\-(std|bin)$");
-                        Matcher m1 = r.matcher(sa.getKey()), m2 = r.matcher(sb.getKey());
-                        if (m1.find() && m2.find()) {
-                            Integer sai = Integer.parseInt(m1.group(3));
-                            Integer sbi = Integer.parseInt(m2.group(3));
-                            return sai - sbi;
-                        }
-                        return sa.getKey().compareToIgnoreCase(sb.getKey());
+                    Pattern r = Pattern.compile("^((C(\\d+))+)\\-(std|bin)$");
+                    Matcher m1 = r.matcher(sa.getKey()), m2 = r.matcher(sb.getKey());
+                    if (m1.find() && m2.find()) {
+                        Integer sai = Integer.parseInt(m1.group(3));
+                        Integer sbi = Integer.parseInt(m2.group(3));
+                        if (sai == sbi)
+                            return sa.getValue() ? -1 : 1; // sort Bernoulli over standard.
+                        return sai - sbi;
                     }
-                    // Otherwise sort Bernoulli over standard.
-                    return sa.getValue() ? -1 : 1;
+                    return sa.getKey().compareToIgnoreCase(sb.getKey());
                 }
             });
             thisnode.removeAllChildren();
@@ -494,6 +571,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         _drilldown_results_tab = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         _results_tree = new javax.swing.JTree();
+        jPanel1 = new javax.swing.JPanel();
+        btnSwitchOrientation = new javax.swing.JButton();
+        btnToggleDrilldown = new javax.swing.JButton();
+        btnLaunchActions = new javax.swing.JButton();
         _cancelButton = new javax.swing.JButton();
         _emailButton = new javax.swing.JButton();
         _primary_panel = new javax.swing.JPanel();
@@ -509,7 +590,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(251);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setResizeWeight(0.67);
 
         _warningsErrorsTextArea.setEditable(false);
         _warningsErrorsTextArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
@@ -519,18 +600,23 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         _warnings_errors_tab.setLayout(_warnings_errors_tabLayout);
         _warnings_errors_tabLayout.setHorizontalGroup(
             _warnings_errors_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+            .addGroup(_warnings_errors_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                .addContainerGap())
         );
         _warnings_errors_tabLayout.setVerticalGroup(
             _warnings_errors_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _warnings_errors_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
         );
 
         _bottom_tabbed_pane.addTab("Warnings/Errors", _warnings_errors_tab);
 
-        _results_tree.setModel(null);
         jScrollPane1.setViewportView(_results_tree);
         _results_tree.setCellRenderer(new FileTreeCellRenderer());
+        _results_tree.setModel(new FilterTreeModel((DefaultMutableTreeNode)_results_tree.getModel().getRoot()));
         _results_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         _results_tree.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         _results_tree.addMouseMotionListener(new MouseMotionListener() {
@@ -550,23 +636,84 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();
                 if (node == null) return;
-                LoadFromFile(_tree_output_map.get(node), false);
+                LoadFromFile(_tree_output_map.get(node));
             }
         });
+
+        btnSwitchOrientation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Window_App_SplitScreen.png"))); // NOI18N
+        btnSwitchOrientation.setToolTipText("Switch Orientation");
+        btnSwitchOrientation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                jSplitPane1.setOrientation(jSplitPane1.getOrientation() == JSplitPane.VERTICAL_SPLIT ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);
+                System.out.print(" width = " + AnalysisRunInternalFrame.this.getWidth());
+                jSplitPane1.setDividerLocation(0.67);
+                _bottom_tabbed_pane.setSelectedIndex(1);
+            }
+        });
+
+        btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/significant.png"))); // NOI18N
+        btnToggleDrilldown.setToolTipText("Viewing Only Significant");
+        btnToggleDrilldown.setOpaque(false);
+        //btnToggleDrilldown.setContentAreaFilled(false);
+        //btnToggleDrilldown.setBorderPainted(false);
+        btnToggleDrilldown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                _viewing_only_significant = !_viewing_only_significant;
+                if (_viewing_only_significant) {
+                    btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/significant.png")));
+                    btnToggleDrilldown.setToolTipText("Viewing Only Significant");
+                } else {
+                    btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/all-results.png")));
+                    btnToggleDrilldown.setToolTipText("Viewing All Analyses");
+                }
+                loadAnalysisResults(false);
+                _bottom_tabbed_pane.setSelectedIndex(1);
+            }
+        });
+
+        btnLaunchActions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view.png"))); // NOI18N
+        btnLaunchActions.setToolTipText("View Other Output");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSwitchOrientation, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnToggleDrilldown, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnLaunchActions, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btnSwitchOrientation, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnToggleDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnLaunchActions, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout _drilldown_results_tabLayout = new javax.swing.GroupLayout(_drilldown_results_tab);
         _drilldown_results_tab.setLayout(_drilldown_results_tabLayout);
         _drilldown_results_tabLayout.setHorizontalGroup(
             _drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 686, Short.MAX_VALUE)
-            .addGroup(_drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE))
+            .addGroup(_drilldown_results_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         _drilldown_results_tabLayout.setVerticalGroup(
             _drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 120, Short.MAX_VALUE)
-            .addGroup(_drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE))
+            .addGroup(_drilldown_results_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         _bottom_tabbed_pane.addTab("Drilldown", _drilldown_results_tab);
@@ -635,7 +782,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         );
         _primary_panelLayout.setVerticalGroup(
             _primary_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
         );
 
         jSplitPane1.setLeftComponent(_primary_panel);
@@ -713,7 +860,11 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             int row,
             boolean hasFocus) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
-            label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-blue-icon.png")));
+            Integer num_significant = _tree_output_significances.get(node);
+            if (num_significant == null || num_significant > 0)
+                label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-blue-icon.png")));
+            else
+                label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-orange-icon.png")));
             label.setText(getNodeLabel(node).getKey());
             label.setToolTipText(node.getUserObject().toString());
             if (selected) {
@@ -723,10 +874,105 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             }
             int width = 10 + label.getIcon().getIconWidth();
             width += SwingUtilities.computeStringWidth(label.getFontMetrics(label.getFont()), label.getText());
-            label.setPreferredSize( new Dimension(width, (int)label.getPreferredSize().getHeight()) );            
+            label.setPreferredSize( new Dimension(width, (int)label.getPreferredSize().getHeight()) );  
             return label;
         }
     }    
+
+    /* Specialize class to faciliate filtering which nodes are displayed in JTree. */
+    class FilterTreeModel extends DefaultTreeModel {
+        protected boolean filterIsActive = false;
+
+        public FilterTreeModel(TreeNode root) {
+            this(root, false);
+        }
+
+        public FilterTreeModel(TreeNode root, boolean asksAllowsChildren) {
+            this(root, false, false);
+        }
+
+        public FilterTreeModel(TreeNode root, boolean asksAllowsChildren, boolean filterIsActive) {
+            super(root, asksAllowsChildren);
+            this.filterIsActive = filterIsActive;
+        }
+
+        public void activateFilter(boolean newValue) {
+            filterIsActive = newValue;
+        }
+
+        public boolean isActivatedFilter() {
+            return filterIsActive;
+        }
+
+        @Override
+        public Object getChild(Object parent, int index) {
+            if (filterIsActive && parent instanceof FilterTreeNode)
+                return ((FilterTreeNode) parent).getChildAt(index, filterIsActive);
+            return ((TreeNode) parent).getChildAt(index);
+        }
+
+        @Override
+        public int getChildCount(Object parent) {
+            if (filterIsActive && parent instanceof FilterTreeNode)
+                return ((FilterTreeNode) parent).getChildCount(filterIsActive);
+            return ((TreeNode) parent).getChildCount();
+        }
+
+    }
+
+    /* Specialize class to faciliate filtering which nodes are displayed in JTree. */
+    class FilterTreeNode extends DefaultMutableTreeNode {
+        public FilterTreeNode() {
+            this(null);
+        }
+
+        public FilterTreeNode(Object userObject) {
+            this(userObject, true);
+        }
+
+        public FilterTreeNode(Object userObject, boolean allowsChildren) {
+            super(userObject, allowsChildren);
+        }
+
+        /* Returns the child node at index. If currently filtering, gets node from children nodes
+           that are signalling visible, otherwise calls parent class to obtain child node. */        
+        public TreeNode getChildAt(int index, boolean filterIsActive) {
+            if (!filterIsActive) return super.getChildAt(index);
+            if (children == null) throw new ArrayIndexOutOfBoundsException("node has no children");
+            int realIndex = -1;
+            int visibleIndex = -1;
+            Enumeration e = children.elements();
+            while (e.hasMoreElements()) {
+                if (((FilterTreeNode) e.nextElement()).isVisible())
+                    visibleIndex++;
+                realIndex++;
+                if (visibleIndex == index)
+                    return (TreeNode) children.elementAt(realIndex);
+            }
+            throw new ArrayIndexOutOfBoundsException("index unmatched");
+        }
+
+        /* Returns the number of children for node. If currently filtering, counts the number of 
+           children nodes that are signalling visible, otherwise calls parent class to obtain count. */
+        public int getChildCount(boolean filterIsActive) {
+            if (!filterIsActive) return super.getChildCount();
+            if (children == null) return 0;
+            int count = 0;
+            Enumeration e = children.elements();
+            while (e.hasMoreElements()) {
+                if (((FilterTreeNode) e.nextElement()).isVisible()) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /* Returns whether treenode is visible based upon whether it's the  root or a significant analysis. */
+        public boolean isVisible() {            
+            Integer num_significant = _tree_output_significances.get(this);
+            return (num_significant == null || num_significant > 0);
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _bottom_panel;
@@ -739,6 +985,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private javax.swing.JTree _results_tree;
     private javax.swing.JTextArea _warningsErrorsTextArea;
     private javax.swing.JPanel _warnings_errors_tab;
+    private javax.swing.JButton btnLaunchActions;
+    private javax.swing.JButton btnSwitchOrientation;
+    private javax.swing.JButton btnToggleDrilldown;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

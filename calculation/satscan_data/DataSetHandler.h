@@ -16,6 +16,10 @@ typedef ptr_vector<RealDataSet> RealDataContainer_t;
 class DataSetHandler {
 	friend class SaTScanDataReader;
 	friend class BernoulliAnalysisDrilldown;
+    friend class AbstractAnalysisDrilldown;
+
+  public:
+     enum CountFileReadStatus { ReadSuccess=0, ReadError, NoCounts, NotMinimum };
 
   private:
     void                                Setup();
@@ -35,9 +39,12 @@ class DataSetHandler {
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
     std::deque<void*>                   gmSourceDateWarned;        /** indicates whether user has already been warned that records are being ignored */
     std::deque<void*>                   gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
+    std::vector<unsigned int>           _removed_data_sets;        /* Index of data set that was removed -- in original data collection. */
 
-    virtual bool                        ReadCaseFile(RealDataSet& DataSet);
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
+    virtual void                        printFileReadMessage(BasePrint::eInputFileType impliedFile, size_t iSetIndex, bool oneDataSet);
+    virtual void                        printReadStatusMessage(CountFileReadStatus status, bool isControls, size_t iSetIndex, bool oneDataSet) const;
+    virtual CountFileReadStatus         ReadCaseFile(RealDataSet& DataSet);
+    virtual CountFileReadStatus         ReadCounts(RealDataSet& DataSet, DataSource& Source);
 	virtual void                        removeDataSet(size_t iSetIndex) { throw prg_error("removeDataSet().", "DataSetHandler()"); }
     RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
@@ -60,6 +67,7 @@ class DataSetHandler {
     virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const = 0;
     virtual bool                        ReadData() = 0;
 
+    const std::vector<unsigned int>   & getRemovedDataSetIndexes() const { return _removed_data_sets; }
     AbstractDataSetGateway            * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
     RealDataContainer_t               & getDataSets() {return gvDataSets;}
@@ -71,6 +79,8 @@ class DataSetHandler {
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     void                                ReportZeroPops(CSaTScanData& Data, FILE* pDisplay, BasePrint* pPrintDirection);
+    void                                removeDataSetsWithNoData();
+    size_t                              getDataSetRelativeIndex(size_t iSet) const;
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet& thisRealSet);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };

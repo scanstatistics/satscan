@@ -195,8 +195,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
 		Build_9_5_x_ParameterList();
 	else if (version.iMajor == 9 && version.iMinor == 6)
 		Build_9_6_x_ParameterList();
-	else
+	else if (version.iMajor == 9 && version.iMinor == 7)
 		Build_9_7_x_ParameterList();
+    else
+        Build_10_0_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -647,22 +649,27 @@ void IniParameterSpecification::Build_9_6_x_ParameterList() {
 /** Version 9.7.x */
 void IniParameterSpecification::Build_9_7_x_ParameterList() {
 	Build_9_6_x_ParameterList();
+}
 
-	_parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 15, _output_section);
+/** Version 9.7.x */
+void IniParameterSpecification::Build_10_0_x_ParameterList() {
+    Build_9_7_x_ParameterList();
 
-	/* This option was combined with another setting. */
-	_parameter_info[PERFORM_STANDARD_DRILLDOWN] = ParamInfo(PERFORM_STANDARD_DRILLDOWN, "PerformStandardDrilldown", 0, _drilldown_section);
-	_parameter_info[PERFORM_BERNOULLI_DRILLDOWN] = ParamInfo(PERFORM_BERNOULLI_DRILLDOWN, "PerformBernoulliDrilldown", 1, _drilldown_section);
-	_parameter_info[DRILLDOWN_MIN_LOCATIONS] = ParamInfo(DRILLDOWN_MIN_LOCATIONS, "DrilldownMinimumClusterLocations", 2, _drilldown_section);
-	_parameter_info[DRILLDOWN_MIN_CASES] = ParamInfo(DRILLDOWN_MIN_CASES, "DrilldownMinimumClusterCases", 3, _drilldown_section);
-	_parameter_info[DRILLDOWN_PVLAUE_CUTOFF] = ParamInfo(DRILLDOWN_PVLAUE_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
-	_parameter_info[DRILLDOWN_ADJ_WEEKLY_TRENDS] = ParamInfo(DRILLDOWN_ADJ_WEEKLY_TRENDS, "DrilldownAdjustForWeeklyTrends", 5, _drilldown_section);
+    _parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 15, _output_section);
 
-	_parameter_info[USE_NETWORK_FILE] = ParamInfo(USE_NETWORK_FILE, "UseLocationsNetworkFile", 1, _locations_network_section);
-	_parameter_info[NETWORK_FILE] = ParamInfo(NETWORK_FILE, "LocationsNetworkFilename", 2, _locations_network_section);
-	_parameter_info[NETWORK_PURPOSE] = ParamInfo(NETWORK_PURPOSE, "PurposeLocationsNetworkFile", 3, _locations_network_section);
+    /* This option was combined with another setting. */
+    _parameter_info[PERFORM_STANDARD_DRILLDOWN] = ParamInfo(PERFORM_STANDARD_DRILLDOWN, "PerformStandardDrilldown", 0, _drilldown_section);
+    _parameter_info[PERFORM_BERNOULLI_DRILLDOWN] = ParamInfo(PERFORM_BERNOULLI_DRILLDOWN, "PerformBernoulliDrilldown", 1, _drilldown_section);
+    _parameter_info[DRILLDOWN_MIN_LOCATIONS] = ParamInfo(DRILLDOWN_MIN_LOCATIONS, "DrilldownMinimumClusterLocations", 2, _drilldown_section);
+    _parameter_info[DRILLDOWN_MIN_CASES] = ParamInfo(DRILLDOWN_MIN_CASES, "DrilldownMinimumClusterCases", 3, _drilldown_section);
+    _parameter_info[DRILLDOWN_PVLAUE_CUTOFF] = ParamInfo(DRILLDOWN_PVLAUE_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
+    _parameter_info[DRILLDOWN_ADJ_WEEKLY_TRENDS] = ParamInfo(DRILLDOWN_ADJ_WEEKLY_TRENDS, "DrilldownAdjustForWeeklyTrends", 5, _drilldown_section);
 
-	assert(_parameter_info.size() == 153);
+    _parameter_info[USE_NETWORK_FILE] = ParamInfo(USE_NETWORK_FILE, "UseLocationsNetworkFile", 1, _locations_network_section);
+    _parameter_info[NETWORK_FILE] = ParamInfo(NETWORK_FILE, "LocationsNetworkFilename", 2, _locations_network_section);
+    _parameter_info[NETWORK_PURPOSE] = ParamInfo(NETWORK_PURPOSE, "PurposeLocationsNetworkFile", 3, _locations_network_section);
+
+    assert(_parameter_info.size() == 153);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

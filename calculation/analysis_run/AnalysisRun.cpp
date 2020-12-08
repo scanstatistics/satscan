@@ -45,6 +45,8 @@
 #include "OliveiraFunctor.h"
 #include "DataSource.h"
 #include "ParametersValidate.h"
+#include "OrdinalLikelihoodCalculation.h"
+#include "CategoricalClusterData.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
@@ -52,25 +54,51 @@ using namespace boost::assign;
 //////////////////////////// AbstractAnalysisDrilldown ///////////////////////////////////
 
 bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
-	if (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL)
-		throw prg_error("TODO: How to get number of cases for ordinal/multinomial probabilty models with case restriction and drilldown?", "shouldDrilldown()");
-	if (parameters.GetNumDataSets() > 1)
-		throw prg_error("TODO: How to get number of cases for mutiple data sets with case restriction and drilldown?", "shouldDrilldown()");
 	bool should = cluster.GetNumTractsInCluster() >= parameters.getDrilldownMinimumLocationsCluster() &&
-		cluster.GetObservedCount() >= parameters.getDrilldownMinimumCasesCluster() &&
 		cluster.reportablePValue(parameters, simvars) &&
-		cluster.getReportingPValue(parameters, simvars, parameters.GetIsIterativeScanning()) <= parameters.getDrilldownPvalueCutoff();
+		cluster.getReportingPValue(parameters, simvars, parameters.GetIsIterativeScanning()) <= parameters.getDrilldownPvalueCutoff() &&
+        cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
 	// One additional check for Bernoulli analysis -- there must be controls as well.
-	if (parameters.GetProbabilityModelType() == BERNOULLI)
-		should &= (static_cast<count_t>(data.GetProbabilityModel().GetPopulation(0, cluster, data)) - cluster.GetObservedCount()) > 0;
-	return should;
+	if (parameters.GetProbabilityModelType() == BERNOULLI) {
+        bool anyControls = false;
+        for (size_t t=0; t < data.GetNumDataSets(); ++t)
+            anyControls |= (static_cast<count_t>(data.GetProbabilityModel().GetPopulation(t, cluster, data)) - cluster.GetObservedCount()) > 0;
+        should &= anyControls;
+    }
+    // Check that the number of cases, across all data sets, meets the minimum number of cases restriction.
+    count_t totalCasesAllSets = 0;
+    if (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL) {
+        // Specialized behavior for ordinal and multinomial models - exclude category with the most cases.
+        const AbstractCategoricalClusterData * pClusterData = 0;
+        if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(cluster.GetClusterData())) == 0)
+            throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n", "shouldDrilldown()");
+        OrdinalLikelihoodCalculator Calculator(data);
+        std::vector<OrdinalCombinedCategory> vCategoryContainer;
+        for (size_t t=0; t < data.GetNumDataSets(); ++t) {
+            pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, t);
+            count_t maxCategory = 0, totalCases = 0;
+            for (std::vector<OrdinalCombinedCategory>::iterator itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+                count_t tObserved = 0;
+                for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+                    tObserved += cluster.GetObservedCountOrdinal(t, itrCategory->GetCategoryIndex(m));
+                totalCases += tObserved;
+                maxCategory = std::max(maxCategory, tObserved);
+            }
+            totalCasesAllSets += totalCases - maxCategory;
+        }
+    } else {
+        for (size_t t=0; t < data.GetNumDataSets(); ++t)
+            totalCasesAllSets += cluster.GetObservedCount(t);
+    }
+    should &= totalCasesAllSets >= parameters.getDrilldownMinimumCasesCluster();
+    return should;
 }
 
 //////////////////////////// AnalysisExecution ///////////////////////////////////
 
 AnalysisExecution::AnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print)
 	:_data_hub(data_hub), _parameters(parameters), _start_time(start), _print_direction(print),	_clustersReported(false), 
-	_executing_type(executing_type), _analysis_count(0), _significant_at005(0), _min_ratio_to_report(0.001), _reportClusters(0) {
+	_executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _min_ratio_to_report(0.001), _reportClusters(0) {
 	try {
 		for (std::vector<double>::const_iterator itr = _parameters.getExecuteSpatialWindowStops().begin(); itr != _parameters.getExecuteSpatialWindowStops().end(); ++itr)
 			_top_clusters_containers.push_back(MostLikelyClustersContainer(*itr));
@@ -312,9 +340,10 @@ void AnalysisExecution::finalizeReport() {
 				"no p-values are reported.";
 			PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 		}
-		if (_parameters.GetProbabilityModelType() == POISSON)
+		if (_parameters.GetProbabilityModelType() == POISSON && !_data_hub.isDrilldown())
 			_data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, fp, &_print_direction);
-		_data_hub.GetTInfo()->reportCombinedLocations(fp);
+        if (!_data_hub.isDrilldown())
+		    _data_hub.GetTInfo()->reportCombinedLocations(fp);
 		ParametersPrint(_parameters).Print(fp);
 		macroRunTimeManagerPrint(fp);
 		time(&CompletionTime);
@@ -526,6 +555,11 @@ void AnalysisExecution::executeCentricEvaluation() {
 /* perform power evaluations */
 void AnalysisExecution::executePowerEvaluations() {
 	try {
+        // If performing drilldown, store current simulation variables - since the power evaluation modifies that structure.
+        std::auto_ptr<SimulationVariables> storeSimVars;
+        if (_parameters.getPerformBernoulliDrilldown() || _parameters.getPerformStandardDrilldown())
+            storeSimVars.reset(new SimulationVariables(_sim_vars));
+
 		FILE * fp = 0;
 		std::string buffer;
 		openReportFile(fp, true);
@@ -622,7 +656,7 @@ void AnalysisExecution::executePowerEvaluations() {
 			++_analysis_count;
 			// create adjusted randomizers
 			randomizers->killAll();
-			randomizers->resize(_parameters.GetNumDataSets(), 0);
+			randomizers->resize(_data_hub.GetNumDataSets(), 0);
 			switch (_parameters.GetPowerEvaluationSimulationType()) {
 			case STANDARD:
 				randomizers->at(0) = new AlternateHypothesisRandomizer(_data_hub, riskAdjustments.at(t), _parameters.GetRandomizationSeed());
@@ -636,7 +670,7 @@ void AnalysisExecution::executePowerEvaluations() {
 			default: throw prg_error("Unknown power evalaution simulation type '%d'.", "executePowerEvaluations()", _parameters.GetPowerEvaluationSimulationType());
 			}
 			// create more if needed
-			for (size_t r = 1; r < _parameters.GetNumDataSets(); ++r)
+			for (size_t r = 1; r < _data_hub.GetNumDataSets(); ++r)
 				randomizers->at(r) = randomizers->at(0)->Clone();
 			_print_direction.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t + 1);
 			runSuccessiveSimulations(randomizers, _parameters.getNumPowerEvalReplicaPowerStep(), simulation_out, true, t + 1);
@@ -665,6 +699,7 @@ void AnalysisExecution::executePowerEvaluations() {
 		}
 		fprintf(fp, "\n");
 		fclose(fp); fp = 0;
+        if (storeSimVars.get()) _sim_vars = *storeSimVars.get();
 	} catch (prg_exception& x) {
 		x.addTrace("executePowerEvaluations()", "AnalysisExecution");
 		throw;
@@ -1030,6 +1065,21 @@ void AnalysisExecution::printEarlyTerminationStatus(FILE* fp) {
 	}
 }
 
+/* Reports dataset that were ignored by analysis. */
+void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
+    if (getDataHub().GetDataSetHandler().getRemovedDataSetIndexes().size()) {
+        std::stringstream s;
+        AsciiPrintFormat printFormat;
+        s << std::endl << "NOTE: The following data sets either did not have count data or did not have the required minimum";
+        s << " and were excluded from the analysis:" << std::endl;
+        for (size_t i = 0; i < getDataHub().GetDataSetHandler().getRemovedDataSetIndexes().size(); ++i) {
+            s << (i == 0 ? "" : ", ") << "Data Set " << (getDataHub().GetDataSetHandler().getRemovedDataSetIndexes()[i] + 1);
+        }
+        s << std::endl;
+        printFormat.PrintAlignedMarginsDataString(fp, s.str());
+    }
+}
+
 /** Print GINI coefficients */
 void AnalysisExecution::printGiniCoefficients(FILE* fp) {
 	if (!(_parameters.getReportGiniOptimizedClusters() && _parameters.getReportGiniIndexCoefficents())) return;
@@ -1362,7 +1412,8 @@ void AnalysisExecution::reportClusters() {
 		else {
 			printTopClusters(_reportClusters);
 			// create temporal graph
-			if ((_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis()) && _parameters.getOutputTemporalGraphFile()) {
+			if ((_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) 
+                && _parameters.getOutputTemporalGraphFile()) {
 				TemporalChartGenerator generator(_data_hub, _reportClusters, _sim_vars);
 				generator.generateChart();
 			}
@@ -1448,6 +1499,9 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
 
 			if (getIsCalculatingSignificantRatios() && macro_less_than(_significant_ratios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
 				++_significant_at005;
+            if (TopCluster.isSignificant(_data_hub, _clusterSupplement->getClusterReportIndex(TopCluster), _sim_vars))
+                ++_significant_clusters;
+
 			//print cluster definition to 'location information' record buffer
 			if (_parameters.GetOutputAreaSpecificFiles())
 				TopCluster.Write(*ClusterLocationWriter, _data_hub, i + 1, _sim_vars, *_relevance_tracker);
@@ -1457,6 +1511,7 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
 		printCriticalValuesStatus(fp);
 		printEarlyTerminationStatus(fp);
 		printGiniCoefficients(fp);
+        printIgnoredDataSets(fp);
 		fclose(fp); fp = 0;
 	}
 	catch (prg_exception& x) {
@@ -1509,6 +1564,8 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 			//check track of whether this cluster was significant in top five percentage
 			if (getIsCalculatingSignificantRatios() && macro_less_than(_significant_ratios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
 				++_significant_at005;
+            if (TopCluster.isSignificant(_data_hub, _clusterSupplement->getClusterReportIndex(TopCluster), _sim_vars))
+                ++_significant_clusters;
 			_clustersReported = true;
 		}
 
@@ -1519,6 +1576,7 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 		printRetainedClustersStatus(fp, _clusterSupplement->size() > 0);
 		printCriticalValuesStatus(fp);
 		printEarlyTerminationStatus(fp);
+        printIgnoredDataSets(fp);
 		fclose(fp); fp = 0;
 	}
 	catch (prg_exception& x) {
@@ -1537,6 +1595,7 @@ void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluste
 	FileName resultsFile(_base_output.c_str());
 	resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s", resultsFile.getFileName().c_str(), _cluster_path.c_str(), getTypeIdentifier()).c_str());
 	_parameters.SetOutputFileName(resultsFile.getFullPath(buffer).c_str());
+    _parameters.setClusterMonikerPrefix(_cluster_path);
 }
 
 AbstractAnalysisDrilldown::~AbstractAnalysisDrilldown() {
@@ -1554,7 +1613,7 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
 	temp_coordinates_filename << GetUserTemporaryDirectory(temp_directory).c_str();
 	buffer = boost::filesystem::path::preferred_separator;
 	temp_coordinates_filename << buffer << "drilldown-" << getTypeIdentifier() << "-" << _cluster_path;
-	temp_coordinates_filename << "-" << RandomNumberGenerator(reinterpret_cast<long>(&detectedCluster)).GetRandomInteger() << extension;
+	temp_coordinates_filename << "-" << RandomNumberGenerator(static_cast<long>(reinterpret_cast<unsigned int>(&detectedCluster))).GetRandomInteger() << extension;
 	filename = temp_coordinates_filename.str();
 	return filename;
 }
@@ -1600,19 +1659,18 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 		_parameters.SetLocationNeighborsFileName(buffer.c_str());
 		neighbors_file.close();
 		_temp_files.push_back(buffer);
-	} else {
-		std::ofstream coordinates_file;
-		coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
-		if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
-
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetCoordinatesFileName(), _parameters.getInputSource(COORDFILE), _print_direction));
+	} else if (_parameters.GetCoordinatesFileName().size()) {
+        std::ofstream coordinates_file;
+        coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
+        if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetCoordinatesFileName(), _parameters.getInputSource(COORDFILE), _print_direction));
 		_print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
 		while (Source->ReadRecord()) {
-			std::string identifier(Source->GetValueAt(0));
+		    std::string identifier(Source->GetValueAt(0));
 			if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) != clusterLocations.end()) {
-				coordinates_file << identifier;
+			    coordinates_file << identifier;
 				for (long idx = 1; idx < Source->GetNumValues(); ++idx)
-					coordinates_file << "," << Source->GetValueAt(idx);
+				    coordinates_file << "," << Source->GetValueAt(idx);
 				coordinates_file << std::endl;
 			}
 		}
@@ -1658,7 +1716,7 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
 		grid_file.open(createTempFilename(detectedCluster, supplementInfo, ".grd", buffer).c_str());
 		if (!grid_file) throw resolvable_error("Error: Could not create grid file '%s'.\n", buffer.c_str());
 
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetSpecialGridFileName(), _parameters.getInputSource(SPECIALGRID), _print_direction));
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetSpecialGridFileName(), _parameters.getInputSource(GRIDFILE), _print_direction));
 		_print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
 		std::vector<double> gridCoordinates(source_data_hub.GetTInfo()->getCoordinateDimensions(), 0.0), clusterCoordinates;
 		short iScanCount;
@@ -1699,10 +1757,6 @@ void AbstractAnalysisDrilldown::execute() {
 	// Sanity check - ensure that parameter settings are correct.
 	if (!ParametersValidate(_parameters).Validate(_print_direction, true))
 		throw prg_error("Drilldown parameter settings are invalid.", "execute()");
-	//validate that data set contains cases
-	for (unsigned int i = 0; i < _data_hub->GetDataSetHandler().GetNumDataSets(); ++i)
-		if (_data_hub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
-			throw prg_error("Error: No cases found in drilldown data set %u.\n", "BernoulliAnalysisDrilldown()", i);
 	if (_print_direction.GetIsCanceled()) return;
 	//calculate number of neighboring locations about each centroid
 	if (_executing_type == SUCCESSIVELY && _parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
@@ -1714,6 +1768,7 @@ void AbstractAnalysisDrilldown::execute() {
 	// Execute the analysis.
 	AnalysisExecution execution(*_data_hub, _parameters, _executing_type, _start_time, _print_direction);
 	execution.execute();
+    _significant_clusters = execution.getNumSignificantClusters();
 	if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
 		// Perform any drilldowns.
 		const MostLikelyClustersContainer & mlc = execution.getLargestMaximaClusterCollection();
@@ -1730,7 +1785,7 @@ void AbstractAnalysisDrilldown::execute() {
                         AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
                         drilldown.execute();
                         _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                     }
                     catch (drilldown_exception& x) {
                         _print_direction.Printf("The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
@@ -1747,7 +1802,7 @@ void AbstractAnalysisDrilldown::execute() {
                         );
                     }
                 }
-                if (_parameters.getPerformBernoulliDrilldown()) {
+                if (_parameters.getPerformBernoulliDrilldown() && cluster.GetClusterType() == SPACETIMECLUSTER /* one additional restriction for Bernoulli */) {
                     try {
                         _print_direction.Printf("Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n",
                             BasePrint::P_STDOUT, _downlevel + 1, ordinal_suffix(_downlevel + 1),
@@ -1756,7 +1811,7 @@ void AbstractAnalysisDrilldown::execute() {
                         BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
                         drilldown.execute();
                         _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                     }
                     catch (drilldown_exception& x) {
                         _print_direction.Printf("The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
@@ -1829,19 +1884,19 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	_parameters.setAdjustForWeeklyTrends(false);
 	_parameters.SetIncludePurelySpatialClusters(false);
 	_parameters.SetIncludePurelyTemporalClusters(false);
-	_parameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
-	_parameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
-	// If performing day of week adjustment on drilldown, potentially defined multiple data sets.
+	_parameters.SetSpatialAdjustmentType(SPATIAL_NOTADJUSTED);
+	_parameters.SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
+    _parameters.setOutputTemporalGraphFile(false);
+	// If performing day of week adjustment on drilldown, potentially define multiple data sets.
 	if (source_parameters.getDrilldownAdjustWeeklyTrends()) {
 		/* The primary analysis is restricted to having a time aggregation length of 1 day and a study period of at least 14 days. But there is the possiblity
 		   that the detected cluster is less than 7 days long and therefore there wouldn't be cases/controls in all 7 data sets. */
-		_parameters.SetNumDataSets(std::min(7, detectedCluster.getClusterLength()));
-	}
-	else {
-		_parameters.SetNumDataSets(source_parameters.GetNumDataSets());
+		_parameters.setNumFileSets(std::min(7, detectedCluster.getClusterLength()));
+	} else {
+		_parameters.setNumFileSets(source_parameters.getNumFileSets());
 	}
 	// Certain parameters become invalidate once we switch to multiple data sets.
-	if (_parameters.GetNumDataSets() > 1) {
+	if (_parameters.getNumFileSets() > 1) {
 		_parameters.setRiskLimitHighClusters(false);
 		_parameters.setRiskLimitLowClusters(false);
 	}
@@ -1857,10 +1912,16 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	SaTScanDataReader(*_data_hub).ReadBernoulliDrilldown();
 	// Get detected clusters case data.
 	if (!source_parameters.getDrilldownAdjustWeeklyTrends()) {
+        // Allocate the case and measure structures in new data hub - this is needed for the rare situation one
+        // of the original data sets was removed because it contained no data.
+        for (size_t d=0; d < _data_hub->GetDataSetHandler().GetNumDataSets(); ++d) {
+            _data_hub->GetDataSetHandler().GetDataSet(d).allocateCaseData();
+            _data_hub->GetDataSetHandler().GetDataSet(d).allocateControlData();
+        }
 		// Transform the data from calling analysis to purely spatial Bernoulli.
 		for (size_t d=0; d < source_data_hub.GetNumDataSets(); ++d) {
-			count_t ** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).allocateCaseData().GetArray(),
-				    ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).allocateControlData().GetArray();
+			count_t ** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().GetArray(),
+				    ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
 			for (tract_t i=1; i <= detectedCluster.GetNumTractsInCluster(); ++i) {
 				tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
 				tract_t drilldown_tract = _data_hub->GetTInfo()->getLocationIndex(source_data_hub.GetTInfo()->getIdentifier(tTract));
@@ -1871,10 +1932,11 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 		// It's possible now that some of the data sets have zero cases or zero controls. Remove those that don't have both.
 		size_t numSets = _data_hub->GetDataSetHandler().GetNumDataSets();
 		for (int d = numSets - 1; d >= 0; --d) {
+            unsigned int num_locations = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().Get2ndDimension();
 			count_t ** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().GetArray(),
-				** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
-			if (std::all_of(ppCases[0], ppCases[0] + sizeof(ppCases[0]) / sizeof(count_t), [](count_t i) { return i == 0; }) ||
-				std::all_of(ppControls[0], ppControls[0] + sizeof(ppControls[0]) / sizeof(count_t), [](count_t i) { return i == 0; }))
+				    ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
+			if (std::all_of(ppCases[0], ppCases[0] + num_locations, [](count_t i) { return i == 0; }) ||
+				std::all_of(ppControls[0], ppControls[0] + num_locations, [](count_t i) { return i == 0; }))
 				_data_hub->GetDataSetHandler().removeDataSet(d);
 		}
 		if (_data_hub->GetDataSetHandler().GetNumDataSets() == 0)
@@ -1889,7 +1951,6 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 			setControls.push_back(_data_hub->GetDataSetHandler().GetDataSet(d).allocateControlData().GetArray());
 		}
 		count_t ** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(0).getCaseData().GetArray();
-		count_t tCaseCount, ** ppCases, ** ppControls;
 		for (tract_t i=1; i <= detectedCluster.GetNumTractsInCluster(); ++i) {
 			tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
 			tract_t drilldown_tract = _data_hub->GetTInfo()->getLocationIndex(source_data_hub.GetTInfo()->getIdentifier(tTract));
@@ -1904,9 +1965,10 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 				setControls[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
 		}
 		// It's possible now that some of the data sets have zero cases or zero controls.
+        unsigned int num_locations = _data_hub->GetDataSetHandler().GetDataSet(0).getCaseData().Get2ndDimension();
 		for (int d=numSets - 1; d >= 0; --d) {
-			if (std::all_of(setCases[d][0], setCases[d][0] + sizeof(setCases[d][0]) / sizeof(count_t), [](count_t i) { return i == 0; }) ||
-				std::all_of(setControls[d][0], setControls[d][0] + sizeof(setControls[d][0]) / sizeof(count_t), [](count_t i) { return i == 0; }))
+			if (std::all_of(setCases[d][0], setCases[d][0] + num_locations, [](count_t i) { return i == 0; }) ||
+				std::all_of(setControls[d][0], setControls[d][0] + num_locations, [](count_t i) { return i == 0; }))
 				_data_hub->GetDataSetHandler().removeDataSet(d);
 		}
 		if (_data_hub->GetDataSetHandler().GetNumDataSets() == 0)
@@ -1914,13 +1976,6 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	}
 	// Run any post data read operations now that cases and controls are populated.
 	_data_hub->PostDataRead();
-	// Ensure that there are cases and controls in data sets at this point.
-	for (unsigned int i = 0; i < _data_hub->GetDataSetHandler().GetNumDataSets(); ++i) {
-		if (_data_hub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
-			throw prg_error("Expecting cases in %u%s data set.", "BernoulliAnalysisDrilldown()", i + 1, ordinal_suffix(i + 1));
-		if (_data_hub->GetDataSetHandler().GetDataSet(i).getTotalControls() == 0)
-			throw prg_error("Expecting controls in %u%s data set.", "BernoulliAnalysisDrilldown()", i + 1, ordinal_suffix(i + 1));
-	}
 }
 
 //////////////////////////// AnalysisRunner //////////////////////////////////////
@@ -1959,10 +2014,6 @@ void AnalysisRunner::run() {
     //read data
     macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
 	_data_hub->ReadDataFromFiles();
-    //validate that data set contains cases
-    for (unsigned int i=0; i < _data_hub->GetDataSetHandler().GetNumDataSets(); ++i)
-       if (_data_hub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
-         throw resolvable_error("Error: No cases found in data set %u.\n", i);
     macroRunTimeStopSerial();
     if (_print_direction.GetIsCanceled()) return;
     //calculation approxiate amount of memory required to run analysis
@@ -2001,7 +2052,7 @@ void AnalysisRunner::run() {
                             );
                             drilldown.execute();
                             const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                         }
                         catch (drilldown_exception& x) {
                             _print_direction.Printf(
@@ -2018,7 +2069,7 @@ void AnalysisRunner::run() {
                             );
                         }
                     }
-                    if (_parameters.getPerformBernoulliDrilldown()) {
+                    if (_parameters.getPerformBernoulliDrilldown() && cluster.GetClusterType() == SPACETIMECLUSTER /* one additional restriction for Bernoulli */ ) {
                         try {
                             _print_direction.Printf(
                                 "Performing purely spatial Bernoulli %u%s level drilldown on %u%s detected cluster\n", BasePrint::P_STDOUT, 1, ordinal_suffix(1),
@@ -2029,7 +2080,7 @@ void AnalysisRunner::run() {
                             );
                             drilldown.execute();
                             const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str());
+                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                         }
                         catch (drilldown_exception& x) {
                             _print_direction.Printf(

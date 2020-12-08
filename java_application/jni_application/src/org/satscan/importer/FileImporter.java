@@ -21,6 +21,7 @@ public class FileImporter {
     private final Vector<ImportVariable> _importVariables;
     private final JProgressBar _progress;
     private boolean _cancelled=false;
+    private boolean _permits_blank_values=false;
     
     public FileImporter(ImportDataSource dataSource, Vector<ImportVariable> importVariables, InputSourceSettings.InputFileType fileType, InputSourceSettings.SourceDataFileType sourceDataFileType, File destinationFile, JProgressBar progress) {
         _dataSource = dataSource;
@@ -29,6 +30,7 @@ public class FileImporter {
         //_sourceDataFileType = sourceDataFileType;
         _destinationFile = destinationFile;
         _progress = progress;
+        _permits_blank_values = fileType == InputSourceSettings.InputFileType.NETWORK;
     }
     
     /** This a temporary hack function that formats date fields to sFormat. This is needed because SaTScan
@@ -92,7 +94,7 @@ public class FileImporter {
                         value = new String( (String)ObjectUtils.defaultIfNull(mappedVariables.get(i).getDefault(), "") );
                     }
                     value = StringUtils.trimToEmpty(value);
-                    if (StringUtils.isEmpty(value) || StringUtils.isBlank(value)) {
+                    if ((StringUtils.isEmpty(value) || StringUtils.isBlank(value)) && !_permits_blank_values) {
                         throw new ImportException(String.format("Record %d contains a 'Source File Variable' that is blank.\nSaTScan does not permit blank variables in data.", _dataSource.getCurrentRecordNum()));
                     } else {
                         if (StringUtils.contains(value, " ")) {

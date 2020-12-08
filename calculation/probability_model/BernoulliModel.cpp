@@ -33,7 +33,6 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet, const CSaTScanData&
                 ppMeasure[i][j]  = ppCases[i][j] + ppControls[i][j];
             }
             tTotalMeasure += ppMeasure[0][j];
-
             // Check to see if total case or control values have wrapped
             if (tTotalCases < 0)
                 throw resolvable_error("Error: : The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
@@ -42,9 +41,6 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet, const CSaTScanData&
                 throw resolvable_error("Error: The total number of controls in dataset %u is greater than the maximum allowed of %ld.\n",
                                        DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
         }
-
-        if (tTotalControls == 0)
-            throw resolvable_error("Error: No controls found in data set %u.\n", DataSet.getSetIndex());
 
         DataSet.setTotalCases(tTotalCases);
         DataSet.setTotalControls(tTotalControls);

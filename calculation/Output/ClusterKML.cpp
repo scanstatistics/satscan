@@ -53,8 +53,11 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
     try {
         outKML << getClusterStyleTags(cluster, iCluster, buffer, isHighRate).c_str() << std::endl;
         outKML << "\t<Placemark>" << std::endl;
-        outKML << "\t\t<name>" << (iCluster + 1) << "</name>" << std::endl;
-        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << "</snippet>" << std::endl;
+        if (_dataHub.GetParameters().getClusterMonikerPrefix().size()) {
+            printString(buffer2, " (%sC%u)", _dataHub.GetParameters().getClusterMonikerPrefix().c_str(), (iCluster + 1));
+        }
+        outKML << "\t\t<name>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</name>" << std::endl;
+        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
         outKML << "\t\t<visibility>" << (iCluster == 0 || cluster.isSignificant(_dataHub, iCluster, simVars) ? "1" : "0") << "</visibility>" << std::endl;
         //outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
@@ -165,32 +168,28 @@ std::string & BaseClusterKML::getClusterStyleTags(const CCluster& cluster, int i
 
 /* Returns cluster balloon template. */
 std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std::string& templateString) const {
-    std::string buffer, bufferSetIdx, bufferSetMargin;
+    std::string buffer, bufferSetIdx;
     std::stringstream  templateLines;
     const CParameters& parameters = _dataHub.GetParameters();
     const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;%s\">%s</th><td style=\"white-space:nowrap;\">$[%s%s]</td></tr>";
     const char * setRowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s</th><td style=\"white-space:nowrap;\"></td></tr>";
-    unsigned int setIdx = 0, currSetIdx = 0, numDataSets = _dataHub.GetNumDataSets();
+    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
 
     templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     for (; itr != itr_end; ++itr) {
-        if (numDataSets > 1) {
-            setIdx = itr->second.second;
-            if (setIdx != 0 && currSetIdx != setIdx) {
-                // add table row for data set label
-                templateLines << printString(buffer, setRowFormat, printString(bufferSetIdx, "Data Set %u", setIdx).c_str()).c_str();
-            }
-            // define padding for data row
-            bufferSetMargin = setIdx > 0 ? "padding-left:10px;" : "";
-            currSetIdx = setIdx;
+        if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
+            // add table row for data set label
+            printString(bufferSetIdx, "Data Set %u", itr->second.second);
+            templateLines << printString(buffer, setRowFormat, bufferSetIdx.c_str()).c_str();
+            currSetIdx = itr->second.second;
         }
         templateLines << printString(buffer,
             rowFormat,
-            bufferSetMargin.c_str(),
+            numFilesSets == 1 || itr->second.second == 0 ? "" : "padding-left:10px;",
             itr->first.c_str(),
             itr->first.c_str(),
-            setIdx == 0 ? "" : printString(bufferSetIdx, " set%u", setIdx).c_str()).c_str();
+            numFilesSets == 1 || itr->second.second == 0 ? "" : printString(bufferSetIdx, " set%u", itr->second.second).c_str()).c_str();
     }
     templateLines << "</table>]]>";
     templateString = templateLines.str();
@@ -215,13 +214,10 @@ std::string & BaseClusterKML::getClusterExtendedData(const CCluster& cluster, in
     std::stringstream lines;
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     std::string bufferSetIdx;
-    unsigned int numDataSets = _dataHub.GetNumDataSets();
+    unsigned int numDataSets = parameters.getNumFileSets();
 
     lines << "<ExtendedData>";
     for (; itr != itr_end; ++itr) {
-        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
-            // skip reporting P-Values for prospective analyses
-            continue;
         lines << "<Data name=\"" << itr->first.c_str()
             << (numDataSets > 1 && itr->second.second != 0 ? printString(bufferSetIdx, " set%u", itr->second.second).c_str() : "")
             << "\"><value>" << encode(itr->second.first, buffer).c_str() << "</value></Data>";
@@ -229,25 +225,6 @@ std::string & BaseClusterKML::getClusterExtendedData(const CCluster& cluster, in
     lines << "</ExtendedData>";
     buffer = lines.str();
     return buffer;
-}
-
-/** Return legend of cluster information to be used as popup in html page. */
-std::string & BaseClusterKML::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
-    const CParameters& parameters = _dataHub.GetParameters();
-    std::stringstream  lines;
-    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
-
-    lines << "<![CDATA[" << std::endl << "<table style=\"font-size:12px;\">";
-    for (; itr != itr_end; ++itr) {
-        if (parameters.GetIsProspectiveAnalysis() && (itr->first == "P-value" || itr->first == "Gumbel P-value"))
-            // skip reporting P-Values for prospective analyses
-            continue;
-        lines << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << itr->first << "</th><td style=\"white-space:nowrap;\">" << itr->second.first << "</td></tr>";
-    }
-    lines << "</table>" << std::endl << "]]>";
-    legend = lines.str();
-    std::replace(legend.begin(), legend.end(), '\n', ' ');
-    return legend;
 }
 
 /** Write the opening block to the KML file. */

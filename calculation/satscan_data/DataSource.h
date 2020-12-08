@@ -130,6 +130,7 @@ class CsvFileDataSource : public DataSource {
         std::string _read_buffer;
 
         bool  parse(const std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
+        const char * getMappedValueAt(long iFieldIndex);
         void  ThrowUnicodeException();
 
    public:

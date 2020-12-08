@@ -8,9 +8,14 @@
  */
 package org.satscan.gui.utils;
 
+import java.awt.Choice;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Objects;
+import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.text.JTextComponent;
 import javax.swing.undo.UndoManager;
 import org.satscan.app.AppConstants;
 
@@ -20,6 +25,49 @@ import org.satscan.app.AppConstants;
  */
 public class Utils {
 
+    /* Returns whether JToggleButton control is enabled and selected. */
+    public static boolean selected(JToggleButton component) {
+        return component.isEnabled() && component.isSelected();
+    }
+    
+    /* If JToggleButton is enabled, returns whether select state matches expected value. Otherwise returns true. */
+    public static boolean selected(JToggleButton component, boolean expected_value) {
+        return component.isEnabled() ? component.isSelected() == expected_value : true;
+    }    
+    
+    /* If JTextComponent is enabled, returns whether text matches expected value. Otherwise returns true. */
+    public static boolean textIs(JTextComponent component, String expected_value) {
+        return component.isEnabled() ? component.getText().equals(expected_value) : true;
+    }     
+    
+    /* If JTextComponent is enabled, returns whether text as Double matches expected value. Otherwise returns true. */
+    public static boolean doubleIs(JTextComponent component, Double expected_value) {
+        try {
+        return component.isEnabled() ? Double.valueOf(component.getText()).equals(expected_value) : true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }       
+
+    /* If JTextComponent is enabled, returns whether text as Integer matches expected value. Otherwise returns true. */
+    public static boolean integerIs(JTextComponent component, Integer expected_value) {
+        try {
+        return component.isEnabled() ? Integer.valueOf(component.getText()).equals(expected_value) : true;
+        } catch (NumberFormatException e) {
+            return false;
+        }        
+    }       
+
+    /* If Choice is enabled, returns whether the selected index matches expected value. Otherwise returns true. */
+    public static boolean selectionIs(Choice component, int expected_value) {
+        return component.isEnabled() ? component.getSelectedIndex() == expected_value : true;
+    }       
+    
+    /* If JList is enabled, returns whether model size matches expected value. Otherwise returns true. */
+    public static boolean sizeIs(JList component, int expected_value) {
+        return component.isEnabled() ? component.getModel().getSize() == expected_value : true;
+    }     
+    
     /**
      * Validates that key typed is a positive integer or back space; otherwise consumes key.
      */

@@ -146,7 +146,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue())  
         CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
 
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
+    if (gParameters.getNumFileSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
       if (gParameters.GetProbabilityModelType() == NORMAL) {
           if (!gParameters.getIsWeightedNormal()) {
@@ -356,7 +356,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     }
 	Record.GetFieldValue(GINI_CLUSTER_FIELD).AsBool() = theCluster.isGiniCluster();
 
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
+    if (gParameters.getNumFileSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
       if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         dObserved = theCluster.GetObservedCount();
@@ -569,10 +569,10 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
      theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
 
-  for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
+  for (unsigned int iSetIndex=0; iSetIndex < gDataHub.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-    Record.GetFieldValue(DATASET_FIELD).AsDouble() = iSetIndex + 1;
+    Record.GetFieldValue(DATASET_FIELD).AsDouble() = gDataHub.GetDataSetHandler().getDataSetRelativeIndex(iSetIndex) + 1;
     Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = 1;
     itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
     if (itr_Index != vComprisedDataSetIndexes.end()) {
@@ -708,7 +708,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        Record.SetAllFieldsBlank(true);
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-       Record.GetFieldValue(DATASET_FIELD).AsDouble() = *itr_Index + 1;
+       Record.GetFieldValue(DATASET_FIELD).AsDouble() = gDataHub.GetDataSetHandler().getDataSetRelativeIndex(*itr_Index) + 1;
        //calculate observed/expected and relative risk for combined categories
        count_t tObserved=0, tTotalCategoryCases=0;
        measure_t tExpected=0;

@@ -25,50 +25,23 @@ CPoissonModel::~CPoissonModel() {}
     These operations are done on the raw measure matrix rather than the
     later on constructed cumulative measure matrix, while the cumulative
     case matrix is used.                                                */
-void CPoissonModel::AdjustForNonParameteric(RealDataSet& DataSet) {
-  unsigned int          i, j, jj, k, tract, AdjustIntervals = DataSet.getIntervalDimension();
-  double                sumcases,summeasure;
-  count_t            ** ppCases = DataSet.getCaseData().GetArray();
-  measure_t          ** pNonCumulativeMeasure = DataSet.getMeasureData().GetArray();
+void CPoissonModel::AdjustForTemporalNonParameteric(RealDataSet& DataSet) {
+    unsigned int          jlast = DataSet.getIntervalDimension() - 1;
+    double                sumcases, summeasure, adjustmentTotal = static_cast<double>(DataSet.getTotalCases()) / DataSet.getTotalMeasure();
+    count_t            ** ppCases = DataSet.getCaseData().GetArray();
+    measure_t          ** pNonCumulative = DataSet.getMeasureData().GetArray();
 
-  k  = 1;
-  j  = 0;
-  jj = 0;
-
-  for (i=0; i<AdjustIntervals; i++)
-  {
-	 sumcases   = 0;
-	 summeasure = 0;
-    while (j < k*DataSet.getIntervalDimension()/AdjustIntervals && j < DataSet.getIntervalDimension())
-    {
-      if (j == DataSet.getIntervalDimension()-1)
-        for (tract=0; tract < DataSet.getLocationDimension(); tract++)
-        {
-          sumcases   = sumcases + ppCases[j][tract];
-          summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
-        } /* for tract */
-      else
-        for (tract=0; tract < DataSet.getLocationDimension(); tract++)
-        {
-          sumcases   = sumcases + (ppCases[j][tract]-ppCases[j+1][tract]);
-          summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
-        } /* for tract */
-
-        j++;
-    }  /* while */
-
-    while (jj < k*DataSet.getIntervalDimension()/AdjustIntervals && jj < DataSet.getIntervalDimension())
-    {
-      for (tract = 0; tract < DataSet.getLocationDimension(); tract++)
-        (pNonCumulativeMeasure)[jj][tract] =
-          (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((DataSet.getTotalCases())/(DataSet.getTotalMeasure()));
-
-      jj++;
-    }  /* while */
-
-    k++;
-  } /* for i<AdjustIntervals */
-
+    for (unsigned int k=0; k < DataSet.getIntervalDimension(); ++k) {
+        // calculate the total cases and measure in curent time interval
+	    sumcases = summeasure = 0;
+        for (unsigned int tract=0; tract < DataSet.getLocationDimension(); ++tract) {
+            sumcases += ppCases[k][tract] - (k == jlast ? 0.0 : ppCases[k + 1][tract]);
+            summeasure += pNonCumulative[k][tract];
+        }
+        // adjust measure for each tract in current time interval
+        for (unsigned int tract=0; tract < DataSet.getLocationDimension(); ++tract)
+            pNonCumulative[k][tract] *= (sumcases / summeasure) / adjustmentTotal;
+    }
 }
 
 /* Adjusts measure for trend beta and beta2. For log linear trends, beta2 should be 0. */
@@ -131,66 +104,85 @@ void CPoissonModel::AdjustForCalculatedTrend(RealDataSet& Set) {
   AdjustForTrend(Set, TimeTrend->GetBeta(), TimeTrend->GetBeta2());
 
   //store calculated time trend adjustment for reporting later
-  Set.setCalculatedTimeTrendPercentage(TimeTrend->GetTimeTrendByAggregationUnits(TimeTrend->GetBeta(), TimeTrend->GetStatus()));
+  const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(TimeTrend.get());
+  if (pQTrend) {
+      std::string buffer, buffer2;
+      pQTrend->getRiskFunction(buffer, buffer2, gDataHub);
+      Set.setCalculatedQuadraticTimeTrend(buffer, buffer2);
+  } else
+    Set.setCalculatedTimeTrendPercentage(
+        TimeTrend->GetTimeTrendByAggregationUnits(
+            TimeTrend->GetBeta(), TimeTrend->GetStatus(), 
+            gDataHub.GetParameters().GetTimeAggregationUnitsType(), gDataHub.GetParameters().GetTimeAggregationLength()
+        )
+    );
+
+  TimeTrend->printSeries(Set, gDataHub);
 }
 
 /** Adjusts passed non-cumulative measure for parameter specified temporal,
     spatial, and space-time adjustments.                                      */
 void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure) {
-  measure_t     AdjustedTotalMeasure_t=0, ** ppNonCumulativeMeasure=DataSet.getMeasureData().GetArray();
-  unsigned int  i, t;
-
-  try {
-    //apply known relative risk adjustments to measure
-    if (gParameters.UseAdjustmentForRelativeRisksFile())
-        gDataHub.getRiskAdjustments()->apply(PopMeasure, DataSet.getPopulationData(), DataSet.getTotalMeasure(), DataSet.getMeasureData(), &DataSet.getCaseData());
-    //apply temporal adjustments to measure
-    if (DataSet.getIntervalDimension() > 1) {
-      switch (gParameters.GetTimeTrendAdjustmentType()) {
-        case NOTADJUSTED               : break;
-        case NONPARAMETRIC             : AdjustForNonParameteric(DataSet); break;
-        case LOGLINEAR_PERC            : {
-            // Derive beta from user specified percentage and time aggregation. (ln(exp(x)) = x)
-            double x = log(static_cast<double>(gParameters.GetTimeTrendAdjustmentPercentage()) / 100.0 + 1.0);
-            double beta = 0.0;
-            switch (gParameters.GetTimeAggregationUnitsType()) {
-                case GENERIC:
-                case YEAR: 
-                    beta = x / static_cast<double>(gParameters.GetTimeAggregationLength()); break;
-                case MONTH: 
-                    beta = x / (12.0 / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
-                case DAY:
-                    beta = x / (AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
-                default: throw prg_error("AdjustMeasure() unknown aggregation '%d'.", "AdjustMeasure()", gParameters.GetTimeAggregationUnitsType());
+    try {
+        //apply known relative risk adjustments to measure
+        if (gParameters.UseAdjustmentForRelativeRisksFile())
+            gDataHub.getRiskAdjustments()->apply(PopMeasure, DataSet.getPopulationData(), DataSet.getTotalMeasure(), DataSet.getMeasureData(), &DataSet.getCaseData());
+        //apply temporal adjustments to measure
+        if (DataSet.getIntervalDimension() > 1) {
+            switch (gParameters.GetTimeTrendAdjustmentType()) {
+                case TEMPORAL_NOTADJUSTED              : break;
+                case LOGLINEAR_PERC                    : {
+                    // Derive beta from user specified percentage and time aggregation. (ln(exp(x)) = x)
+                    double x = log(static_cast<double>(gParameters.GetTimeTrendAdjustmentPercentage()) / 100.0 + 1.0);
+                    double beta = 0.0;
+                    switch (gParameters.GetTimeAggregationUnitsType()) {
+                        case GENERIC:
+                        case YEAR  : beta = x * static_cast<double>(gParameters.GetTimeAggregationLength()); break;
+                        case MONTH : beta = x / (12.0 / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                        case DAY   : beta = x / (AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                        default: throw prg_error("AdjustMeasure() unknown aggregation '%d'.", "AdjustMeasure()", gParameters.GetTimeAggregationUnitsType());
+                    }
+                    fprintf(AppToolkit::getToolkit().openDebugFile(), "Loglinear beta %g \n", beta);
+                    fflush(AppToolkit::getToolkit().openDebugFile());
+                    AdjustForTrend(DataSet, beta, 0.0);
+                    //store calculated time trend adjustment for reporting later
+                    DataSet.setCalculatedTimeTrendPercentage(AbstractTimeTrend::GetTimeTrendByAggregationUnits(beta, AbstractTimeTrend::CONVERGED, gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength()));
+                } break;
+                case CALCULATED_QUADRATIC              :
+                case CALCULATED_LOGLINEAR_PERC         : AdjustForCalculatedTrend(DataSet); break;
+                case TEMPORAL_STRATIFIED_RANDOMIZATION :
+                    // If performing both the non-parametric spatial adjustment and temporal time stratified, first adjust the spatial first.
+                    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC)
+                        AdjustForSpatialNonParameteric(DataSet);
+                case TEMPORAL_NONPARAMETRIC: AdjustForTemporalNonParameteric(DataSet); break;
+                default : throw prg_error("Unknown time trend adjustment type: '%d'.", "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
             }
-            AdjustForTrend(DataSet, beta, 0.0);
-            //store calculated time trend adjustment for reporting later
-            DataSet.setCalculatedTimeTrendPercentage(AbstractTimeTrend::GetTimeTrendByAggregationUnits(beta, AbstractTimeTrend::CONVERGED));
-        } break;
-        case CALCULATED_QUADRATIC_PERC :
-        case CALCULATED_LOGLINEAR_PERC : AdjustForCalculatedTrend(DataSet); break;
-        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet); break;//this adjustment occurs during randomization also
-        default : throw prg_error("Unknown time trend adjustment type: '%d'.", "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
-      }
+        }
+        //apply spatial adjusts to measure
+        switch (gParameters.GetSpatialAdjustmentType()) {
+            case SPATIAL_NOTADJUSTED: break;
+            case SPATIAL_NONPARAMETRIC:
+                // If performing both the non-parametric spatial adjustment and temporal time stratified, then skip since we've already done this adjustment.
+                if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                    break;
+            case SPATIAL_STRATIFIED_RANDOMIZATION: AdjustForSpatialNonParameteric(DataSet); break;
+            default : throw prg_error("Unknown spatial adjustment type: '%d'.","AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
+        }
+        // Bug check, to ensure that adjusted  total measure equals previously determined total measure
+        unsigned int i = 0;
+        measure_t ** ppNonCumulativeMeasure = DataSet.getMeasureData().GetArray(), adjustedTotalMeasure = 0;
+        for (; i < DataSet.getIntervalDimension(); ++i)
+            for (unsigned int t=0; t < DataSet.getLocationDimension(); ++t)
+                adjustedTotalMeasure += ppNonCumulativeMeasure[i][t];
+        if (fabs(adjustedTotalMeasure - DataSet.getTotalMeasure()) > 0.001)
+            throw prg_error(
+                "Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n", "AdjustMeasure()", 
+                adjustedTotalMeasure, DataSet.getTotalMeasure()
+            );
+    } catch (prg_exception &x) {
+        x.addTrace("AdjustMeasure()","CPoissonModel");
+        throw;
     }
-    //apply spatial adjusts to measure
-    switch (gParameters.GetSpatialAdjustmentType()) {
-      case NO_SPATIAL_ADJUSTMENT : break;
-      case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(DataSet); break;
-      default : throw prg_error("Unknown spatial adjustment type: '%d'.","AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
-    }
-    // Bug check, to ensure that adjusted  total measure equals previously determined total measure
-    for (AdjustedTotalMeasure_t=0, i=0; i < DataSet.getIntervalDimension(); ++i)
-       for (t=0; t < DataSet.getLocationDimension(); ++t)
-          AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
-    if (fabs(AdjustedTotalMeasure_t - DataSet.getTotalMeasure()) > 0.001)
-      throw prg_error("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
-                      "AdjustMeasure()", AdjustedTotalMeasure_t, DataSet.getTotalMeasure());
-  }
-  catch (prg_exception &x) {
-    x.addTrace("AdjustMeasure()","CPoissonModel");
-    throw;
-  }
 }
 
 /** Calculates the measure from data set's population data and applies any adjustments. */
@@ -317,7 +309,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
         Set.setMeasureDataToCumulative(); 
         if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure
             throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
-        if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+        if ((gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION ||
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
             gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
             Set.setMeasureData_PT_NC();
@@ -374,23 +366,22 @@ double CPoissonModel::GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, 
 }
 
 /** Adjusts passed non-cumulative measure in a stratified spatial manner.
-    Each time, for a particular tract, is multiplied by the total case divided
-    by total measure of that tract, across all time intervals. */
-void CPoissonModel::StratifiedSpatialAdjustment(RealDataSet& DataSet) {
-  measure_t  ** ppNonCumulativeMeasure=DataSet.getMeasureData().GetArray();
-  count_t    ** ppCases = DataSet.getCaseData().GetArray();
+    Each time, for a particular tract, is multiplied by the total case divided by total measure of that tract, across all time intervals. */
+void CPoissonModel::AdjustForSpatialNonParameteric(RealDataSet& DataSet) {
+    measure_t  ** ppNonCumulativeMeasure=DataSet.getMeasureData().GetArray();
+    count_t    ** ppCases = DataSet.getCaseData().GetArray();
 
-  for (unsigned int t=0; t < DataSet.getLocationDimension(); ++t) {
-     //calculates total measure for current tract across all time intervals
-     measure_t tTotalTractMeasure=0;
-     for (unsigned int i=0; i < DataSet.getIntervalDimension(); ++i)
-        tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
-     if (tTotalTractMeasure) {
-       double dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
-       //now multiply each time interval/tract location by (total cases)/(total measure)
-       for (unsigned int i=0; tTotalTractMeasure && i < DataSet.getIntervalDimension(); ++i)
-          ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
-     }
-  }
+    for (unsigned int t=0; t < DataSet.getLocationDimension(); ++t) {
+        //calculates total measure for current tract across all time intervals
+        measure_t tTotalTractMeasure=0;
+        for (unsigned int i=0; i < DataSet.getIntervalDimension(); ++i)
+            tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
+        if (tTotalTractMeasure) {
+            double dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
+            //now multiply each time interval/tract location by (total cases)/(total measure)
+            for (unsigned int i=0; tTotalTractMeasure && i < DataSet.getIntervalDimension(); ++i)
+                ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
+        }
+    }
 }
 

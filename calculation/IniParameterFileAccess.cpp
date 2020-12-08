@@ -127,7 +127,7 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceF
         //Synchronize collections of dataset filesnames so that we can ask for
         //any file of a particular dataset, even if blank. This keeps the same behavior
         //as when there was only one dataset.
-        gParameters.SetNumDataSets(iMostDataSets);
+        gParameters.setNumFileSets(iMostDataSets);
     } catch (prg_exception& x) {
         x.addTrace("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
         throw;
@@ -154,7 +154,7 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
 
     try {
         // section name for multiple data sets
-        if (!GetSpecifications().GetParameterIniInfo(MULTI_DATASET_PURPOSE_TYPE, &multiple_sets_section, &key) && gParameters.GetNumDataSets() > 1) 
+        if (!GetSpecifications().GetParameterIniInfo(MULTI_DATASET_PURPOSE_TYPE, &multiple_sets_section, &key) && gParameters.getNumFileSets() > 1)
             throw prg_error("Unable to determine section for multiple data sets.", "ReadInputSourceSettings()");
 
         // case file
@@ -163,7 +163,7 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(CASEFILE, source);
             // case for multiple data sets
-            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+            for (unsigned int setIdx=1; setIdx < gParameters.getNumFileSets(); ++setIdx) {
                 printString(buffer, "%s%u", key, (setIdx + 1));
                 CParameters::InputSource sourceset;
                 if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
@@ -176,7 +176,7 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(CONTROLFILE, source);
             // control for multiple data sets
-            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+            for (unsigned int setIdx=1; setIdx < gParameters.getNumFileSets(); ++setIdx) {
                 printString(buffer, "%s%u", key, (setIdx + 1));
                 CParameters::InputSource sourceset;
                 if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
@@ -189,7 +189,7 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(POPFILE, source);
             // population for multiple data sets
-            for (unsigned int setIdx=1; setIdx < gParameters.GetNumDataSets(); ++setIdx) {
+            for (unsigned int setIdx=1; setIdx < gParameters.getNumFileSets(); ++setIdx) {
                 printString(buffer, "%s%u", key, (setIdx + 1));
                 CParameters::InputSource sourceset;
                 if (ReadInputSourceSection(SourceFile, multiple_sets_section, buffer.c_str(), sourceset))
@@ -214,11 +214,17 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(MAXCIRCLEPOPFILE, source);
         }
-        // adjustments population file
+        // adjustments file
         if (GetSpecifications().GetParameterIniInfo(ADJ_BY_RR_FILE, &section, &key)) {
             CParameters::InputSource source;
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(ADJ_BY_RR_FILE, source);
+        }
+        // network file
+        if (GetSpecifications().GetParameterIniInfo(NETWORK_FILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(NETWORK_FILE, source);
         }
     } catch (prg_exception& x) {
         x.addTrace("ReadInputSourceSettings()","IniParameterFileAccess");
@@ -567,7 +573,9 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
 void IniParameterFileAccess::WriteLocationNetworkSettings(IniFile& WriteFile) {
 	std::string  s;
 	try {
-		WriteIniParameter(WriteFile, NETWORK_FILE, GetParameterString(NETWORK_FILE, s).c_str(), GetParameterComment(NETWORK_FILE));
+        GetParameterString(NETWORK_FILE, s);
+        WriteIniParameter(WriteFile, NETWORK_FILE, s.c_str(), GetParameterComment(NETWORK_FILE));
+        if (s.size()) WriteInputSource(WriteFile, NETWORK_FILE, gParameters.getInputSource(NETWORK_FILE));
 		WriteIniParameter(WriteFile, USE_NETWORK_FILE, GetParameterString(USE_NETWORK_FILE, s).c_str(), GetParameterComment(USE_NETWORK_FILE));
 		WriteIniParameter(WriteFile, NETWORK_PURPOSE, GetParameterString(NETWORK_PURPOSE, s).c_str(), GetParameterComment(NETWORK_PURPOSE));
 	}
@@ -651,7 +659,7 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()).c_str(),
                           " multiple data sets purpose type (0=Multivariate, 1=Adjustment)");
 
-        for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
+        for (size_t t=1; t < gParameters.getNumFileSets(); ++t) {
             if (GetSpecifications().GetMultipleParameterIniInfo(CASEFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " case data filename (additional data set %i)", t + 1);

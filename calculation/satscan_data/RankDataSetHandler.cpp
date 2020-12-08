@@ -191,68 +191,67 @@ void RankDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simulat
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-  bool                                  bValid=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  count_t                               Count, tTotalCases=0;
-  measure_t                             tContinuousVariable, tTotalMeasure=0;
-  AbstractRankRandomizer              * pRandomizer;
-  DataSetHandler::RecordStatusType      eRecordStatus;
-  RankRecordCollection_t                records;
+DataSetHandler::CountFileReadStatus RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+    Julian                                Date;
+    tract_t                               TractIndex;
+    count_t                               Count, tTotalCases=0;
+    measure_t                             tContinuousVariable, tTotalMeasure=0;
+    AbstractRankRandomizer              * pRandomizer;
+    RankRecordCollection_t                records;
+    DataSetHandler::CountFileReadStatus   readStatus = DataSetHandler::NoCounts;
 
-  try {
-    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
-      throw prg_error("Data set randomizer not AbstractRankRandomizer type.", "ReadCounts()");
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           bEmpty = false;
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
-           if (eRecordStatus == DataSetHandler::Accepted) {
-                for (tract_t t=0; t < Count; ++t) records.push_back(RankRecord(Date, TractIndex, tContinuousVariable));
-                tTotalCases += Count;
-                tTotalMeasure += tContinuousVariable;
-           } else if (eRecordStatus == DataSetHandler::Ignored)
-             continue;
-           else   
-             bValid = false;
-    }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
-    }
-    else
-      pRandomizer->AssignFromAttributes(records, DataSet);
-  }
-  catch (prg_exception& x) {
+    try {
+        if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
+            throw prg_error("Data set randomizer not AbstractRankRandomizer type.", "ReadCounts()");
+        while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+            DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
+            if (eRecordStatus == DataSetHandler::Accepted) {
+                readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
+                    for (tract_t t=0; t < Count; ++t) records.push_back(RankRecord(Date, TractIndex, tContinuousVariable));
+                    tTotalCases += Count;
+                    // check that total count does not exceed data type limitations
+                    if (tTotalCases < 0)
+                        throw resolvable_error(
+                            "Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
+                            DataSet.getSetIndex() + 1, std::numeric_limits<count_t>::max()
+                        );
+                    tTotalMeasure += tContinuousVariable;
+            } else if (eRecordStatus == DataSetHandler::Ignored)
+                continue;
+            else   
+                readStatus = DataSetHandler::ReadError;
+        }
+        if (readStatus == DataSetHandler::ReadSuccess) {
+            DataSet.setTotalCases(tTotalCases);
+            pRandomizer->AssignFromAttributes(records, DataSet);
+        }
+  } catch (prg_exception& x) {
     x.addTrace("ReadCounts()","RankDataSetHandler");
     throw;
   }
-  return bValid;
+  return readStatus;
 }
 
 /** Attempts to read case data file into class RealDataSet objects. */
 bool RankDataSetHandler::ReadData() {
-  try {
-    SetRandomizers();
-    for (size_t t=0; t < GetNumDataSets(); ++t) {
-       if (GetNumDataSets() == 1)
-         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else
-         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t)))
-         return false;
+    DataSetHandler::CountFileReadStatus readStaus;
+    try {
+        SetRandomizers();
+        size_t numDataSet = GetNumDataSets();
+        for (size_t t = 0; t < numDataSet; ++t) {
+            printFileReadMessage(BasePrint::CASEFILE, t, numDataSet == 1);
+            readStaus = ReadCaseFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, false, t, numDataSet == 1);
+            if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
+                return false;
+        }
+        removeDataSetsWithNoData();
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReadData()","RankDataSetHandler");
-    throw;
-  }
-  return true;
+    catch (prg_exception& x) {
+        x.addTrace("ReadData()", "RankDataSetHandler");
+        throw;
+    }
+    return true;
 }
 
 /** sets purely temporal structures used in simulations */
@@ -265,7 +264,7 @@ void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer
 void RankDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.killAll();
-    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
+    gvDataSetRandomizers.resize(gParameters.getNumFileSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
@@ -278,7 +277,7 @@ void RankDataSetHandler::SetRandomizers() {
       default : throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+    for (size_t t=1; t < gParameters.getNumFileSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (prg_exception& x) {
