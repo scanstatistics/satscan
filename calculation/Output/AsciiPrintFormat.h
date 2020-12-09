@@ -28,8 +28,8 @@ class AsciiPrintFormat {
      AsciiPrintFormat(bool bOneDataSet=true, unsigned int labelextra=0);
      virtual ~AsciiPrintFormat();
 
-     void                       PrintAlignedMarginsDataString(FILE* fp, std::string& sDataString, unsigned int iPostNewlines=1) const;
-     void                       PrintNonRightMarginedDataString(FILE* fp, std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
+     void                       PrintAlignedMarginsDataString(FILE* fp, const std::string& sDataString, unsigned int iPostNewlines=1) const;
+     void                       PrintNonRightMarginedDataString(FILE* fp, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
      void                       PrintSectionLabel(FILE* fp, const char* sText, bool bDataSetParticular, bool bPadLeftMargin) const;
      void                       PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines=1) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');

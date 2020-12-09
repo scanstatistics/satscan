@@ -62,7 +62,7 @@ void AsciiPrintFormat::putChar(char c, FILE* fp, unsigned int num) {
           (giRightMargin - giDataLeftMargin)'th character beyond beginning of a
           line. Subsequent lines that wrap do incorporate appropriate padding of
           blanks. */
-void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, std::string& sDataString, unsigned int iPostNewlines) const {
+void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, const std::string& sDataString, unsigned int iPostNewlines) const {
   unsigned int  iStart, iScan, iPrint, iDataPrintWidth;
 
   iStart = 0;
@@ -109,7 +109,7 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, std::string& sDat
 }
 
 /** Prints data string to file stream without consideration to right margin. */
-void AsciiPrintFormat::PrintNonRightMarginedDataString(FILE* fp, std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
+void AsciiPrintFormat::PrintNonRightMarginedDataString(FILE* fp, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
   unsigned int  iPrint;
 
   //pad with blanks to align data

@@ -59,7 +59,7 @@ const char * IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate 
 /** constructor - builds specification to current version */
 IniParameterSpecification::IniParameterSpecification() {
     // default to current version
-    CParameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion  version;
     setup(version);
 }
 
@@ -97,7 +97,7 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
 /* Returns ini version setting or default. */
 CParameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFile& SourceFile) {
     long                          lSectionIndex, lKeyIndex;
-    CParameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion  version;
     bool                          bHasVersionKey=false;
 
     // search ini for version setting

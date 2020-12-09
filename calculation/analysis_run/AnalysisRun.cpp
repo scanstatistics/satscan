@@ -1613,7 +1613,7 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
 	temp_coordinates_filename << GetUserTemporaryDirectory(temp_directory).c_str();
 	buffer = boost::filesystem::path::preferred_separator;
 	temp_coordinates_filename << buffer << "drilldown-" << getTypeIdentifier() << "-" << _cluster_path;
-	temp_coordinates_filename << "-" << RandomNumberGenerator(static_cast<long>(reinterpret_cast<unsigned int>(&detectedCluster))).GetRandomInteger() << extension;
+	temp_coordinates_filename << "-" << RandomNumberGenerator(reinterpret_cast<long>(&detectedCluster)).GetRandomInteger() << extension;
 	filename = temp_coordinates_filename.str();
 	return filename;
 }

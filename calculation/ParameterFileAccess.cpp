@@ -17,16 +17,8 @@ ParameterAccessCoordinator::ParameterAccessCoordinator(CParameters& Parameters)
 ParameterAccessCoordinator::~ParameterAccessCoordinator() {}
 
 CParameters::CreationVersion ParameterAccessCoordinator::getIniVersion(const char* sFilename) {
-    CParameters::CreationVersion default_version = {
-        static_cast<unsigned int>(std::atoi(VERSION_MAJOR)), 
-        static_cast<unsigned int>(std::atoi(VERSION_MINOR)),
-        static_cast<unsigned int>(std::atoi(VERSION_RELEASE))
-    };
-    CParameters::CreationVersion version = {
-        static_cast<unsigned int>(std::atoi(VERSION_MAJOR)),
-        static_cast<unsigned int>(std::atoi(VERSION_MINOR)),
-        static_cast<unsigned int>(std::atoi(VERSION_RELEASE))
-    };
+    CParameters::CreationVersion default_version;
+    CParameters::CreationVersion version;
     try {
         if (!access(sFilename, 04)) {
             IniFile ini; ini.Read(sFilename);
@@ -56,7 +48,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
 
     // Now correct any current defaults to revert to old defaults.
-    CParameters::CreationVersion  version_9_2_0 = {9, 2, 0};
+    CParameters::CreationVersion  version_9_2_0(9, 2, 0);
     if (gParameters.GetCreationVersion() < version_9_2_0) {
        gParameters.setReportGiniOptimizedClusters(false);
     }

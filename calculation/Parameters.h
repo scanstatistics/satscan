@@ -15,6 +15,11 @@ class CParameters {
         unsigned int iMinor; 
         unsigned int iRelease;
 
+        CreationVersion() : iMajor(static_cast<unsigned int>(std::atoi(VERSION_MAJOR))),
+                            iMinor(static_cast<unsigned int>(std::atoi(VERSION_MINOR))),
+                            iRelease(static_cast<unsigned int>(std::atoi(VERSION_RELEASE))) {}
+        CreationVersion(unsigned int major, unsigned int minor, unsigned int release) : iMajor(major), iMinor(minor), iRelease(release) {}
+
         bool operator<(const CreationVersion& other) const {
             if (iMajor == other.iMajor) {
                 if (iMinor == other.iMinor) {

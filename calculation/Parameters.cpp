@@ -860,9 +860,6 @@ void CParameters::SetAsDefaulted() {
   gbUseAdjustmentsForRRFile                = false;
   geSpatialAdjustmentType                  = SPATIAL_NOTADJUSTED;
   geMultipleSetPurposeType                 = MULTIVARIATE;
-  gCreationVersion.iMajor                  = atoi(VERSION_MAJOR);
-  gCreationVersion.iMinor                  = atoi(VERSION_MINOR);
-  gCreationVersion.iRelease                = atoi(VERSION_RELEASE);
   gbUsePopulationFile                      = false;
   glRandomizationSeed                      = RandomNumberGenerator::glDefaultSeed;
   gbReportCriticalValues                   = false;

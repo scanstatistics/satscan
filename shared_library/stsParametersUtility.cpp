@@ -21,7 +21,7 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read(JNIEnv * pEnv, j
      }
      else {
        //New session - creation version is this version.
-       CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
+       CParameters::CreationVersion vVersion;
        Parameters.SetVersion(vVersion);
      }
      if (iscopy == JNI_TRUE)

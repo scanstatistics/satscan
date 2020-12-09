@@ -196,7 +196,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     gParameters.SetAsDefaulted();
 
     //initialize as 2.1.3, the last version with documentation or with available executable to produce param file
-    CParameters::CreationVersion Version = {2, 1, 3};
+    CParameters::CreationVersion Version(2, 1, 3);
     gParameters.SetVersion(Version);
 
     while (iLinesRead < (size_t)gParameters.GetNumReadParameters() && !bEOF) {

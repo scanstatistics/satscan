@@ -1282,7 +1282,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
 /** Prints 'System' parameters to file stream. */
 void ParametersPrint::PrintSystemParameters(FILE* fp) const {
     const CParameters::CreationVersion & IniVersion = gParameters.GetCreationVersion();
-    CParameters::CreationVersion Current = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion Current;
     SettingContainer_t settings;
     std::string buffer;
 
