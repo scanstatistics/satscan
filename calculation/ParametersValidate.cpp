@@ -1725,6 +1725,11 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
            PrintDirection.Printf("%s:\nTime trend convergence value of '%2g' is less than zero.\n",
                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendConvergence());
         }
+        if ((gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NONPARAMETRIC || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) &&
+            gParameters.getAdjustForWeeklyTrends()) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe non-parametric time trend adjustment cannot be used with the adjustment for weekly trends.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
         break;
       default : throw prg_error("Unknown model type '%d'.", "ValidateTemporalParameters()", gParameters.GetProbabilityModelType());
     }

@@ -309,7 +309,7 @@ void LinearTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& Da
     for (size_t t=0; t < intervalStartTimes.size() - 1; ++t) {
         count_t startCases = 0;
         for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
-            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
+            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0);
         measure_t startMeasure = 0.0;
         for (int tt = 0; tt < measure.Get2ndDimension(); ++tt)
             startMeasure += measure.GetArray()[t][tt]; // -(t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
@@ -511,7 +511,7 @@ void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData&
         double val = std::exp(GetAlpha() + GetBeta() * t_val + GetBeta2() * std::pow(t_val, 2));
         count_t startCases = 0;
         for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
-            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
+            startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0);
         measure_t startMeasure = 0.0;
         for (int tt = 0; tt < measure.Get2ndDimension(); ++tt)
             startMeasure += measure.GetArray()[t][tt];

@@ -226,7 +226,7 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case CALCULATED_LOGLINEAR_PERC :
           PrintCalculatedTimeTrend(fp, SetHandler); break;
       case TEMPORAL_STRATIFIED_RANDOMIZATION:
-        buffer = "Adjusted for time by stratified randomization."; break;
+        buffer = "Adjusted for time with stratified randomization."; break;
       case CALCULATED_QUADRATIC:
           PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
@@ -239,13 +239,17 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case SPATIAL_NOTADJUSTED:
         break;
       case SPATIAL_STRATIFIED_RANDOMIZATION:
-        buffer = "Adjusted for purely spatial clusters by stratified randomization.";
+        buffer = "Adjusted for purely spatial clusters with stratified randomization.";
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       case SPATIAL_NONPARAMETRIC:
-          buffer = "Adjusted for purely spatial clusters by space nonparametrically.";
+          buffer = "Adjusted for purely spatial clusters nonparametrically.";
           PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
         throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+    }
+    if (gParameters.getAdjustForWeeklyTrends()) {
+        buffer = "Adjust for weekly trends nonparametrically.";
+        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
     //display space-time adjustments
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
