@@ -623,6 +623,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
     
     public void enableAdjustDayOfWeek(boolean enable) {
+        enable &= !Utils.selected(_temporalTrendAdjNonparametric);
         _adjustDayOfWeek.setEnabled(enable);
         if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
             _adjustDayOfWeek.setText("Adjust for day-of-week by space interaction");
@@ -2054,7 +2055,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
 
         // trump control enables
-        bNonparametric &= bEnable;
+        bNonparametric &= bEnable && !Utils.selected(_adjustDayOfWeek);
         bLogYearPercentage &= bEnable;
         bCalculatedLog &= bEnable;
 
@@ -4408,6 +4409,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
 
         _adjustDayOfWeek.setText("Adjust for day-of-week ");
+        _adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+                enableSettingsForAnalysisModelCombination();
+            }
+        });
 
         javax.swing.GroupLayout _spaceTimeAjustmentsTabLayout = new javax.swing.GroupLayout(_spaceTimeAjustmentsTab);
         _spaceTimeAjustmentsTab.setLayout(_spaceTimeAjustmentsTabLayout);

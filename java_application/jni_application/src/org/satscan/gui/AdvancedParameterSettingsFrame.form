@@ -2272,6 +2272,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Adjust for day-of-week "/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

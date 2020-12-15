@@ -1111,7 +1111,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
       const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);
 	  const_cast<CParameters&>(gParameters).SetOutputAreaSpecificDBase(true);
 	  PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The shapefiles option requires that the 'Cluster Information' adnd 'Location Information' dBase files also be generated.\nThese options were enabled.\n",
+                            "The shapefiles option requires that the 'Cluster Information' and 'Location Information' dBase files also be generated.\nThese options were enabled.\n",
                             BasePrint::P_WARNING);
     }
     if (gParameters.getOutputCartesianGraph() && gParameters.GetIsPurelyTemporalAnalysis()) {
@@ -1837,6 +1837,11 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
            bValid = false;
            PrintDirection.Printf("%s:\nTime trend convergence value of '%2g' is less than zero.\n",
                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendConvergence());
+        }
+        if ((gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NONPARAMETRIC || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) &&
+            gParameters.getAdjustForWeeklyTrends()) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe non-parametric time trend adjustment cannot be used with the adjustment for weekly trends.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         break;
       default : throw prg_error("Unknown model type '%d'.", "ValidateTemporalParameters()", gParameters.GetProbabilityModelType());

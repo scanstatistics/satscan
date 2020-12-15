@@ -26,12 +26,12 @@ echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to build and s
 read dummy
 
 # Build Windows command-line only archive
-rm -f $installer_version/satscan.9.7_windows.zip
-zip $installer_version/satscan.9.7_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
-zip $installer_version/satscan.9.7_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+rm -f $installer_version/satscan.10.0_windows.zip
+zip $installer_version/satscan.10.0_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
+zip $installer_version/satscan.10.0_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 cd $build/satscan/installers
-zip $installer_version/satscan.9.7_windows.zip -j documents/*
-zip $installer_version/satscan.9.7_windows.zip sample_data/*
+zip $installer_version/satscan.10.0_windows.zip -j documents/*
+zip $installer_version/satscan.10.0_windows.zip sample_data/*
 
 #######   ############ Linux ################################################################################
 # Build the IzPack Java installer for Linux.
@@ -39,13 +39,13 @@ $IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b 
 chmod a+x $installer_version/install-10_0_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/satscan.9.7_linux.tar.bz2
+rm -f $installer_version/satscan.10.0_linux.tar.bz2
 cd $build/binaries/linux
-tar -cf $installer_version/satscan.9.7_linux.tar satscan*
+tar -cf $installer_version/satscan.10.0_linux.tar satscan*
 cd $build/satscan/installers
-tar -rf $installer_version/satscan.9.7_linux.tar documents/*
-tar -rf $installer_version/satscan.9.7_linux.tar sample_data/*
-gzip -f $installer_version/satscan.9.7_linux.tar
+tar -rf $installer_version/satscan.10.0_linux.tar documents/*
+tar -rf $installer_version/satscan.10.0_linux.tar sample_data/*
+gzip -f $installer_version/satscan.10.0_linux.tar
 
 ############ Mac OS X #############################################################################
 # Build SaTScan Mac OS X Application Bundle Directory
@@ -91,13 +91,13 @@ rm -rf $build/satscan/installers/izpack/mac/Install.app
 chmod a+x $installer_version/install-10_0_mac.zip
 
 # Build batch binaries archive for Mac OS X.
-rm -f $installer_version/satscan.9.7_mac.tar.bz2
+rm -f $installer_version/satscan.10.0_mac.tar.bz2
 cd $build/binaries/mac
-tar -cf $installer_version/satscan.9.7_mac.tar satscan
+tar -cf $installer_version/satscan.10.0_mac.tar satscan
 cd $build/satscan/installers
-tar -rf $installer_version/satscan.9.7_mac.tar documents/*
-tar -rf $installer_version/satscan.9.7_mac.tar sample_data/*
-gzip -f $installer_version/satscan.9.7_mac.tar
+tar -rf $installer_version/satscan.10.0_mac.tar documents/*
+tar -rf $installer_version/satscan.10.0_mac.tar sample_data/*
+gzip -f $installer_version/satscan.10.0_mac.tar
 
 #rm -rf $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
 
