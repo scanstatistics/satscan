@@ -18,7 +18,7 @@
     -->
     <info>
         <appname>SaTScan</appname>
-        <appversion>9.6</appversion>
+        <appversion>9.7</appversion>
         <appsubpath>SaTScan</appsubpath>
         <authors>
             <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@satscan.org"/>

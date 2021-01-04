@@ -20,12 +20,12 @@
     <minVersion>1.8.0_1</minVersion>
   </jre>
   <versionInfo>
-    <fileVersion>9.6.0.0</fileVersion>
-    <txtFileVersion>Version 9.6.0</txtFileVersion>
+    <fileVersion>9.7.0.0</fileVersion>
+    <txtFileVersion>Version 9.7.0</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>SaTScan</copyright>
-    <productVersion>9.6.0.0</productVersion>
-    <txtProductVersion>Version 9.6.0</txtProductVersion>
+    <productVersion>9.7.0.0</productVersion>
+    <txtProductVersion>Version 9.7.0</txtProductVersion>
     <productName>SaTScan</productName>
     <companyName>SaTScan.org</companyName>
     <internalName>SaTScan</internalName>

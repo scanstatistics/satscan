@@ -2,7 +2,7 @@
 
 ############ Script Defines #######################################################################
 build="/prj/satscan/build.area"
-installer_version="/prj/satscan/installers/v.9.6.x"
+installer_version="/prj/satscan/installers/v.9.7.x"
 
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.0.1"
 IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.0.8"
@@ -26,40 +26,40 @@ echo "Run the Windows batch file 'signSaTScanGuiApp.bat' now to sign SaTScan.exe
 read dummy
 
 # Build the IzPack Java installer for Windows.
-$IzPack/bin/compile $build/satscan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-9_6_windows.jar -k standard
+$IzPack/bin/compile $build/satscan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-9_7_windows.jar -k standard
 
 # Build Windows installer executable from Java jar file. This is needed for:
 #  - UAC (User Account Control)
 #  - we wanted a message to user when Java not installed
 $launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_install.xml
-rm $installer_version/install-9_6_windows.jar
+rm $installer_version/install-9_7_windows.jar
 
 # prompt user to sign the exe file created by launch4j
 echo
-echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-9_6_windows.exe. Hit <enter> once done ..."
+echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-9_7_windows.exe. Hit <enter> once done ..."
 read dummy
 
 # Build Windows command-line only archive
-rm -f $installer_version/satscan.9.6_windows.zip
-zip $installer_version/satscan.9.6_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
-zip $installer_version/satscan.9.6_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+rm -f $installer_version/satscan.9.7_windows.zip
+zip $installer_version/satscan.9.7_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
+zip $installer_version/satscan.9.7_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 cd $build/satscan/installers
-zip $installer_version/satscan.9.6_windows.zip -j documents/*
-zip $installer_version/satscan.9.6_windows.zip sample_data/*
+zip $installer_version/satscan.9.7_windows.zip -j documents/*
+zip $installer_version/satscan.9.7_windows.zip sample_data/*
 
 #######   ############ Linux ################################################################################
 # Build the IzPack Java installer for Linux.
-$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-9_6_linux.jar -k standard
-chmod a+x $installer_version/install-9_6_linux.jar
+$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-9_7_linux.jar -k standard
+chmod a+x $installer_version/install-9_7_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/satscan.9.6_linux.tar.bz2
+rm -f $installer_version/satscan.9.7_linux.tar.bz2
 cd $build/binaries/linux
-tar -cf $installer_version/satscan.9.6_linux.tar satscan*
+tar -cf $installer_version/satscan.9.7_linux.tar satscan*
 cd $build/satscan/installers
-tar -rf $installer_version/satscan.9.6_linux.tar documents/*
-tar -rf $installer_version/satscan.9.6_linux.tar sample_data/*
-bzip2 -f $installer_version/satscan.9.6_linux.tar
+tar -rf $installer_version/satscan.9.7_linux.tar documents/*
+tar -rf $installer_version/satscan.9.7_linux.tar sample_data/*
+bzip2 -f $installer_version/satscan.9.7_linux.tar
 
 ############ Mac OS X #############################################################################
 # Build SaTScan Mac OS X Application Bundle Directory
@@ -77,12 +77,12 @@ echo "2) Hit <enter> once done ..."
 read dummy
 
 # Build the IzPack Java installer for Mac OS X.
-$IzPack/bin/compile $build/satscan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-9_6_mac.jar -k standard
+$IzPack/bin/compile $build/satscan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-9_7_mac.jar -k standard
 
 # Build Mac OS X Application Bundle from IzPack Java Installer
-rm -rf $installer_version/install-9_6_mac.zip
+rm -rf $installer_version/install-9_7_mac.zip
 rm -rf $build/satscan/installers/izpack/mac/Install.app
-python $build/satscan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-9_6_mac.jar $build/satscan/installers/izpack/mac/Install.app
+python $build/satscan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-9_7_mac.jar $build/satscan/installers/izpack/mac/Install.app
 
 # prompt user to sign the Install.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
 echo
@@ -91,19 +91,19 @@ echo "2) Hit <enter> once done ..."
 read dummy
 
 cd $build/satscan/installers/izpack/mac
-zip $installer_version/install-9_6_mac.zip -r ./Install.app/*
-rm $installer_version/install-9_6_mac.jar
+zip $installer_version/install-9_7_mac.zip -r ./Install.app/*
+rm $installer_version/install-9_7_mac.jar
 rm -rf $build/satscan/installers/izpack/mac/Install.app
-chmod a+x $installer_version/install-9_6_mac.zip
+chmod a+x $installer_version/install-9_7_mac.zip
 
 # Build batch binaries archive for Mac OS X.
-rm -f $installer_version/satscan.9.6_mac.tar.bz2
+rm -f $installer_version/satscan.9.7_mac.tar.bz2
 cd $build/binaries/mac
-tar -cf $installer_version/satscan.9.6_mac.tar satscan
+tar -cf $installer_version/satscan.9.7_mac.tar satscan
 cd $build/satscan/installers
-tar -rf $installer_version/satscan.9.6_mac.tar documents/*
-tar -rf $installer_version/satscan.9.6_mac.tar sample_data/*
-bzip2 -f $installer_version/satscan.9.6_mac.tar
+tar -rf $installer_version/satscan.9.7_mac.tar documents/*
+tar -rf $installer_version/satscan.9.7_mac.tar sample_data/*
+bzip2 -f $installer_version/satscan.9.7_mac.tar
 
 #rm -rf $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
 
