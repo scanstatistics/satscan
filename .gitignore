@@ -8,6 +8,8 @@
 *.o
 build.stderr
 build.stdout
+*.d
+*.a
 
 # Logs
 logs
