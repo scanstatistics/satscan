@@ -13,24 +13,40 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.SystemUtils;
 
 public class FileAccess {
     
-    public static boolean ValidateFileAccess(String filename, boolean bWrite) {
+    public static boolean ValidateFileAccess(String filename, boolean bWrite, boolean temporaryFile) {
         boolean bAccessible=false;
         
         try {
+            String test_filename = getFormatSubstitutedFilename(filename);
+            File file = new File(test_filename + (temporaryFile ? ".writetestjava" : ""));
             if (bWrite) {
-                @SuppressWarnings("unused") FileOutputStream file = new FileOutputStream(filename);
+                @SuppressWarnings("unused") FileOutputStream filestream = new FileOutputStream(file);
+                filestream.close();
             } else {
-                @SuppressWarnings("unused") FileInputStream file = new FileInputStream(filename);
+                @SuppressWarnings("unused") FileInputStream filestream = new FileInputStream(file);
+                filestream.close();
             }
             bAccessible = true;
-        } catch (FileNotFoundException e) {} catch (SecurityException e) {}
+            if (temporaryFile) 
+                file.delete();
+        } catch (FileNotFoundException e) {} catch (SecurityException e) {} catch (IOException ex) {
+            Logger.getLogger(FileAccess.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         return bAccessible;
     }    
+    
+    /**
+     * Native method to obtain filename with format substitutions. 
+     */
+    native static public final String getFormatSubstitutedFilename(final String filename);
     
     /* Get the extension of a file. */
     public static String getExtension(File f) {
@@ -48,6 +64,7 @@ public class FileAccess {
        https://www.squishlist.com/ims/satscan/66273/
     */
     public static boolean isValidFilename(String filename) {
-        return !(SystemUtils.IS_OS_WINDOWS && !filename.matches("\\A\\p{ASCII}*\\z"));
+        String test = getFormatSubstitutedFilename(filename);
+        return !(SystemUtils.IS_OS_WINDOWS && !test.matches("\\A\\p{ASCII}*\\z"));
     }
 }

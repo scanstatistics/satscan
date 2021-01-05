@@ -717,7 +717,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (_showing_maincontent_cardname == _source_settings_cardname) {
                 /* The user might have changed the filename on the File Options panel.
                  * We need to check the SourceDataFileType for specified filename. */
-                if (FileAccess.ValidateFileAccess(getSourceFilename(), false)) {
+                if (FileAccess.ValidateFileAccess(getSourceFilename(), false, false)) {
                     _input_source_settings.setSourceDataFileType(getSourceFileType(getSourceFilename()));
                     if (_input_source_settings.getSourceDataFileType() == SourceDataFileType.CSV) {
                         makeActivePanel(_file_format_cardname);

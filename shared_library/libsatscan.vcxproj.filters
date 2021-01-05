@@ -1214,6 +1214,9 @@
     <ClInclude Include="org_satscan_app_AppConstants.h">
       <Filter>Header Files\jni</Filter>
     </ClInclude>
+    <ClInclude Include="org_satscan_utils_FileAccess.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
     <ClInclude Include="org_satscan_app_CalculationThread.h">
       <Filter>Header Files\jni</Filter>
     </ClInclude>

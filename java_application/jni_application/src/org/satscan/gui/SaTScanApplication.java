@@ -38,6 +38,7 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.WaitCursor;
 import org.satscan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
@@ -52,6 +53,7 @@ import javax.help.HelpSetException;
 import javax.help.Popup;
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
+import static jdk.internal.org.jline.utils.Colors.s;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.FileSelectionDialog;
@@ -96,6 +98,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private HelpSet _mainHS = null;
     private HelpBroker _mainHB = null;
     private Popup _popupHB = null;
+    private BatchAnalysisFrame _batch_analysis_frame = null;
 
     /**
      * Creates new form SaTScanApplication
@@ -144,6 +147,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         return _instance;
     }
 
+    public void AddFrame(Component frame) {
+        this.desktopPane.add(frame);
+    }    
+    
     public HelpBroker getHelpBroker() throws HelpSetException {
         if (_mainHB == null) {        
             final String helpsetName = "help";
@@ -367,6 +374,37 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            }
+        }
+    }
+
+    /**
+     * Save session action; calls ParameterSettingsFrame::WriteSession to
+     * write settings to file.
+     */
+    public class ShowBatchAnalysisFrameAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public ShowBatchAnalysisFrameAction() {
+            super("Show Batch Analysis");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            WaitCursor waitCursor = new WaitCursor(SaTScanApplication.this);
+
+            try {
+                if (_batch_analysis_frame == null) {
+                    _batch_analysis_frame = new BatchAnalysisFrame(getRootPane());
+                    _batch_analysis_frame.addInternalFrameListener(SaTScanApplication.this);
+                    _batch_analysis_frame.setVisible(true);
+                    desktopPane.add(_batch_analysis_frame);
+                }
+                _batch_analysis_frame.setVisible(true);
+            } catch (Throwable t) {
+                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            } finally {
+                waitCursor.restore();
             }
         }
     }
@@ -777,7 +815,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             } catch (Throwable t) {
                 //The JNI method to read the parameters file might have initiated
                 //this exception; so check file access to see if that was infact the problem.
-                if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false)) {
+                if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false, false)) {
                     JOptionPane.showMessageDialog(SaTScanApplication.this,
                             "The parameter file could not be opened for reading:\n " +
                             _file.getAbsolutePath() +
@@ -818,6 +856,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         jSeparator1 = new javax.swing.JToolBar.Separator();
         _executeSessionToolButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
+        _batchAnalysesToolButton = new javax.swing.JButton();
+        jSeparator6 = new javax.swing.JToolBar.Separator();
         _printToolButton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
         _versionUpdateToolButton = new javax.swing.JButton();
@@ -884,6 +924,17 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _executeSessionToolButton.setHideActionText(true);
         _ToolBar.add(_executeSessionToolButton);
         _ToolBar.add(jSeparator2);
+
+        _batchAnalysesToolButton.setAction(new ShowBatchAnalysisFrameAction());
+        _batchAnalysesToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_chart_32.png"))); // NOI18N
+        _batchAnalysesToolButton.setToolTipText("Batch Analyses"); // NOI18N
+        _batchAnalysesToolButton.setEnabled(false);
+        _batchAnalysesToolButton.setFocusable(false);
+        _batchAnalysesToolButton.setHideActionText(true);
+        _batchAnalysesToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        _batchAnalysesToolButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        _ToolBar.add(_batchAnalysesToolButton);
+        _ToolBar.add(jSeparator6);
 
         _printToolButton.setAction(_printResultsAction);
         _printToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/print.png"))); // NOI18N
@@ -1109,7 +1160,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                         openParameterSessionWindow();
                         break;
                     case LAST:
-                        if (FileAccess.ValidateFileAccess(ParameterHistory.getInstance().getHistoryList().get(0).getAbsolutePath(), false)) {
+                        if (FileAccess.ValidateFileAccess(ParameterHistory.getInstance().getHistoryList().get(0).getAbsolutePath(), false, false)) {
                             openNewParameterSessionWindow(ParameterHistory.getInstance().getHistoryList().get(0).getAbsolutePath());
                         }
                         break;
@@ -1255,6 +1306,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
     private javax.swing.JMenuItem _appPreferences;
+    private javax.swing.JButton _batchAnalysesToolButton;
     private javax.swing.JMenuItem _chechVersionMenuItem;
     private javax.swing.JMenuItem _closeSessionMenuItem;
     private javax.swing.JMenuItem _executeOptionsMenuItem;
@@ -1291,6 +1343,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar.Separator jSeparator5;
+    private javax.swing.JToolBar.Separator jSeparator6;
     private javax.swing.JMenuBar menuBar;
     protected javax.swing.JButton softwareUpdateAvailable;
     // End of variables declaration//GEN-END:variables

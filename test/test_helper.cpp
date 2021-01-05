@@ -64,7 +64,7 @@ void run_analysis(const std::string& analysis_name, std::string& results_user_di
     // set results file to the user document directory
     std::stringstream filename;
     filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\" << analysis_name.c_str() << ".txt";
-    parameters.SetOutputFileName(filename.str().c_str());
+    parameters.SetOutputFileNameSetting(filename.str().c_str());
 
     // first validate parameters
     BOOST_CHECK(ParametersValidate(parameters).Validate(print) == true);

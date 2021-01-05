@@ -33,7 +33,7 @@ public class ShapefileDataSource implements ImportDataSource {
             } else {
                 dBaseFilename = dBaseFilename + ".dbf";
             } 
-            if (FileAccess.ValidateFileAccess(dBaseFilename, false)) {
+            if (FileAccess.ValidateFileAccess(dBaseFilename, false, false)) {
                 _dbase_data_source = new DBaseImportDataSource(new File(dBaseFilename), formatDates);
             }
             _column_names.add("Generated Id");

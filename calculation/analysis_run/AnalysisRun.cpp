@@ -410,7 +410,7 @@ void AnalysisExecution::executeCentricEvaluation() {
 				_print_direction.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, _parameters.GetNumReplicationsRequested());
 			if (_parameters.GetOutputSimulationData()) {
 				DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(_parameters));
-				simulation_out = _parameters.GetSimulationDataOutputFilename();
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
 				remove(simulation_out.c_str());
 			}
 			//create simulation data sets -- randomize each and set corresponding data gateway object
@@ -574,7 +574,7 @@ void AnalysisExecution::executePowerEvaluations() {
 			// if writing simulation data to file, delete file now
 			std::string simulation_out;
 			if (_parameters.GetOutputSimulationData()) {
-				simulation_out = _parameters.GetSimulationDataOutputFilename();
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
 				remove(simulation_out.c_str());
 			}
 			runSuccessiveSimulations(randomizers, _parameters.GetNumReplicationsRequested(), simulation_out, false, 1);
@@ -625,7 +625,7 @@ void AnalysisExecution::executePowerEvaluations() {
 		} break;
 		case FILESOURCE: {
 			// determine the number of randomization iterations by counting lines in source file
-			std::ifstream inFile(_parameters.getPowerEvaluationSimulationDataSourceFilename().c_str());
+			std::ifstream inFile(getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename()).c_str());
 			size_t count = std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n');
 			number_randomizations = count / _parameters.getNumPowerEvalReplicaPowerStep();
 		} break;
@@ -634,7 +634,7 @@ void AnalysisExecution::executePowerEvaluations() {
 
 		std::string simulation_out;
 		if (_parameters.getOutputPowerEvaluationSimulationData()) {
-			simulation_out = _parameters.getPowerEvaluationSimulationDataOutputFilename();
+			simulation_out = getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataOutputFilename());
 			remove(simulation_out.c_str());
 		}
 		if (number_randomizations == 0) {
@@ -662,7 +662,7 @@ void AnalysisExecution::executePowerEvaluations() {
 				randomizers->at(0) = new AlternateHypothesisRandomizer(_data_hub, riskAdjustments.at(t), _parameters.GetRandomizationSeed());
 				break;
 			case FILESOURCE: {
-				std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, _parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.GetRandomizationSeed()));
+				std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename()), _parameters.GetRandomizationSeed()));
 				// set file line offset for the current iteration of power step
 				randomizer->setLineOffset(t * _parameters.getNumPowerEvalReplicaPowerStep());
 				randomizers->at(0) = randomizer.release();
@@ -768,7 +768,7 @@ void AnalysisExecution::executeSuccessiveSimulations() {
 			//if writing simulation data to file, delete file now
 			std::string simulation_out;
 			if (_parameters.GetOutputSimulationData()) {
-				simulation_out = _parameters.GetSimulationDataOutputFilename();
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
 				remove(simulation_out.c_str());
 			}
 			boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
@@ -1594,7 +1594,7 @@ void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluste
 	_cluster_path = printString(buffer, "%sC%u", _cluster_path.c_str(), supplementInfo.getClusterReportIndex(detectedCluster));
 	FileName resultsFile(_base_output.c_str());
 	resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s", resultsFile.getFileName().c_str(), _cluster_path.c_str(), getTypeIdentifier()).c_str());
-	_parameters.SetOutputFileName(resultsFile.getFullPath(buffer).c_str());
+	_parameters.SetOutputFileNameSetting(resultsFile.getFullPath(buffer).c_str());
     _parameters.setClusterMonikerPrefix(_cluster_path);
 }
 
@@ -1849,7 +1849,7 @@ AnalysisDrilldown::AnalysisDrilldown(
 		throw prg_error("AnalysisDrilldown is not implemented for Analysis Type '%d'.", "constructor()", _parameters.GetAnalysisType());
 	// Create new data hub that is will be only data from detected cluster.
 	_data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
-    _data_hub->setIsDrilldown(true);
+    _data_hub->setIsDrilldownLevel(downlevel);
 	// Assign output file for this drilldown analysis.
 	setOutputFilename(detectedCluster, supplementInfo);
 	// Create new grid and coordinates file from locations defined in detected cluster.
@@ -1902,7 +1902,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 	}
 	// Create new data hub that is only the data from detected cluster.
 	_data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
-    _data_hub->setIsDrilldown(true);
+    _data_hub->setIsDrilldownLevel(downlevel);
 	// Assign output file for this drilldown analysis.
 	setOutputFilename(detectedCluster, supplementInfo);
 	// Create new grid and coordinates file from locations defined in detected cluster.

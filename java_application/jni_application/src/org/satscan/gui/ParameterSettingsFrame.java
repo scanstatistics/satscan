@@ -63,6 +63,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private DateComponentsGroup _startDateComponentsGroup;
     private DateComponentsGroup _endDateComponentsGroup;
     Map _input_source_map = new HashMap();
+    private BatchAnalysisFrame _batchFrame = null;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -78,6 +79,25 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         pack();
     }
 
+    /**
+     * Creates new form ParameterSettingsFrame
+     */
+    public ParameterSettingsFrame(final JRootPane rootPane, BatchAnalysisFrame batchFrame, Parameters source_parameters) {
+        initComponents();
+        _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
+        _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
+        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
+        _rootPane = rootPane;
+        _batchFrame = batchFrame;
+        addInternalFrameListener(this);
+        defaultHiddenParameters();
+        _parameters = source_parameters;
+        setupInterface(_parameters);
+        saveParameterSettings(_parameters);
+        _initialParameters = (Parameters) _parameters.clone();
+        pack();
+    }    
+    
      /** Returns final reference to Parameters object. */
     public final Parameters getParameters() {
         return _parameters;
@@ -154,7 +174,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (sFilename == null || sFilename.equals("")) {
             bSaved = saveAs();
         } else {
-            if (!FileAccess.ValidateFileAccess(sFilename, true)) {
+            if (!FileAccess.ValidateFileAccess(sFilename, true, false)) {
                 JOptionPane.showInternalMessageDialog(this, "Unable to save session parameters.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.");
             } else {
                 saveParameterSettings(_parameters);
@@ -166,6 +186,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return bSaved;
     }
 
+    /**
+     * Writes session settings to parameter files */
+    public void writeSettingsToParameters() {
+        saveParameterSettings(_parameters);
+        _initialParameters = (Parameters) _parameters.clone();
+    }    
+    
     /**
      * Returns reference to associated advanced parameters frame.
      */
@@ -187,8 +214,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         toFront();
     }
     
-    /** Determines whether window can be closed by comparing parameter settings contained
-     * in window verse intial parameter settings. */
+    /** Determines whether window can be closed by comparing parameter settings contained in window verse initial parameter settings. */
     public boolean queryWindowCanClose() {
         boolean bReturn = true;
 
@@ -201,7 +227,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             focusWindow();
             switch (JOptionPane.showInternalConfirmDialog(this, "Parameter settings have changed. Do you want to save?", "Save?", JOptionPane.YES_NO_CANCEL_OPTION)) {
                 case JOptionPane.YES_OPTION:
-                    if (writeSession("")) {
+                    if (_batchFrame != null) {
+                        writeSettingsToParameters();
+                        gbPromptOnExist = false;
+                    } else if (writeSession("")) {
                         gbPromptOnExist = false;
                     } else {
                         bReturn = false;
@@ -552,9 +581,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }    
     
     /* Validates the source data file against restrictions on source and InputSourceSettings settings. */
-    public String validateInputSourceDataFile(String filepath, String mapKey, String verbosename) {
+    public String validateInputSourceDataFile(final String filepath, String mapKey, String verbosename) {
+        String actual_filepath = FileAccess.getFormatSubstitutedFilename(filepath);
         // First exclude file types that are not readable - namely, Excel97_2003;
-        String extension = FileAccess.getExtension(new File(filepath));
+        String extension = FileAccess.getExtension(new File(actual_filepath));
         extension = extension == null ? "" : extension.toLowerCase();
         if (extension.equals("xls") || extension.equals("xlsx")) {
             return "Excel files (.xls and  xlsx extensions) can only be read directly by SaTScan.\nYou must import this " + verbosename + " file.";
@@ -568,7 +598,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(mapKey);
             // Verify that the input source settings's source data file type matches extension.
             boolean correct_filetype=true;
-            InputSourceSettings.SourceDataFileType extensionType=FileSourceWizard.getSourceFileType(filepath);
+            InputSourceSettings.SourceDataFileType extensionType=FileSourceWizard.getSourceFileType(actual_filepath);
             switch (inputSourceSettings.getSourceDataFileType()) {
                 case CSV : correct_filetype = !(extension.equals("dbf") || extension.equals("shp") || extension.equals("xls") || extension.equals("xlsx")); break;
                 case dBase : correct_filetype = extension.equals("dbf"); break;
@@ -583,7 +613,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             // Verify that the mappings align with the data source available options.
             // Safely get the number of columns in datasource, if mapping references column index greater than # columns, then display error.
             if (inputSourceSettings.isSet()) {
-                int num_cols = getNumImportSourceColumns(inputSourceSettings, filepath);
+                int num_cols = getNumImportSourceColumns(inputSourceSettings, actual_filepath);
                 int max = 0;
                 for (String stdIdx : inputSourceSettings.getFieldMaps()) {
                     if (!stdIdx.isEmpty()) {
@@ -620,7 +650,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (_caseFileTextField.getText().length() == 0) {
                 throw new SettingsException("Please specify a case file.", (Component) _caseFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_caseFileTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_caseFileTextField.getText(), false, false)) {
                 throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",
                         (Component) _caseFileTextField);
             }
@@ -635,7 +665,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (_controlFileTextField.getText().length() == 0) {
                 throw new SettingsException("For the Bernoulli model, please specify a control file.", (Component) _controlFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false, false)) {
                 throw new SettingsException("The control file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from\nthis directory and file.",
                         (Component) _controlFileTextField);
             }
@@ -655,7 +685,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     throw new SettingsException("For the Poisson model, please specify a population file.\n" + "Note that for purely temporal analyses, if the risk does\n" + "not change over time, the population file is optional.",
                             (Component) _populationFileTextField);
                 }
-            } else if (!FileAccess.ValidateFileAccess(_populationFileTextField.getText(), false)) {
+            } else if (!FileAccess.ValidateFileAccess(_populationFileTextField.getText(), false, false)) {
                 throw new SettingsException("The population file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _populationFileTextField);
             }
@@ -691,7 +721,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (bCheckCoordinatesFile) {
             if (_coordiantesFileTextField.getText().length() == 0) {
                 throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
-            } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
+            } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false, false)) {
                 throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
                         (Component) _coordiantesFileTextField);
             }
@@ -702,7 +732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (validationString != null) throw new SettingsException(validationString, (Component) _coordiantesFileTextField);            
             //validate special grid file -- optional
             if (_gridFileTextField.getText().length() > 0 && !getAdvancedParameterInternalFrame().isNetworkFileSelected()) {
-                if (!FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false))
+                if (!FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false, false))
                     throw new SettingsException("The grid file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.", (Component) _gridFileTextField);
                 if (!FileAccess.isValidFilename(_gridFileTextField.getText())) {                
                     throw new SettingsException(String.format(AppConstants.FILENAME_ASCII_ERROR, _gridFileTextField.getText()), (Component) _gridFileTextField);
@@ -842,7 +872,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (_resultsFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _resultsFileTextField);
         }
-        if (!FileAccess.ValidateFileAccess(_resultsFileTextField.getText(), true)) {
+        if (!FileAccess.ValidateFileAccess(_resultsFileTextField.getText(), true, true)) {
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _resultsFileTextField);
         }
@@ -939,7 +969,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationDayRadioButton.setSelected(parameters.GetTimeAggregationUnitsType().equals(Parameters.DatePrecisionType.DAY));
         _timeAggregationLengthTextField.setText(Integer.toString(parameters.GetTimeAggregationLength()));
         //Output File Tab
-        _resultsFileTextField.setText(parameters.GetOutputFileName());
+        _resultsFileTextField.setText(parameters.GetOutputFileNameSetting());
         _resultsFileTextField.setCaretPosition(0);
         _relativeRiskEstimatesAreaAsciiCheckBox.setSelected(parameters.GetOutputRelativeRisksAscii());
         _relativeRiskEstimatesAreaDBaseCheckBox.setSelected(parameters.GetOutputRelativeRisksDBase());
@@ -1053,7 +1083,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetTimeAggregationLength(Integer.parseInt(_timeAggregationLengthTextField.getText()));
 
         //Output File Tab
-        parameters.SetOutputFileName(_resultsFileTextField.getText());
+        parameters.SetOutputFileNameSetting(_resultsFileTextField.getText());
         parameters.SetOutputClusterLevelAscii(_clustersInColumnFormatAsciiCheckBox.isSelected());
         parameters.SetOutputClusterLevelDBase(_clustersInColumnFormatDBaseCheckBox.isSelected());
         parameters.SetOutputClusterCaseAscii(_clusterCaseInColumnFormatAsciiCheckBox.isSelected());
@@ -3342,7 +3372,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
     public void internalFrameClosing(InternalFrameEvent e) {
         if ((gbPromptOnExist ? (queryWindowCanClose() ? true : false) : true) == true) {
-            ParameterHistory.getInstance().AddParameterToHistory(_parameters.GetSourceFileName());
+            // Add parameters settings to history - except skip windows linked to batch frame.
+            if (_batchFrame == null)
+                ParameterHistory.getInstance().AddParameterToHistory(_parameters.GetSourceFileName());
             dispose();
         }
     }

@@ -18,14 +18,15 @@ class AbstractLikelihoodCalculator {
     typedef bool (AbstractLikelihoodCalculator::*SCANRATE_FUNCPTR) (count_t,measure_t,size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATENORMAL_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATEUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
+    typedef bool (AbstractLikelihoodCalculator::*SCANRATEMULTISET_FUNCPTR) (const AbstractLoglikelihoodRatioUnifier&) const;
     typedef double (AbstractLikelihoodCalculator::*RISK_FUNCPTR) (count_t, measure_t, size_t) const;
     typedef double (AbstractLikelihoodCalculator::*RISKUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
+    typedef double (AbstractLikelihoodCalculator::*RISK_MULTISET_FUNCPTR) (count_t, measure_t, count_t, measure_t) const;
 
   protected:
     const CSaTScanData                & gDataHub; /** const reference to data hub */
     boost::shared_ptr<AbstractLoglikelihoodRatioUnifier> _unifier; /** log likelihood ratio unifier for multiple data sets */
-    std::vector<std::pair<count_t,measure_t> > gvDataSetTotals;
-    std::vector<measure_t>              gvDataSetMeasureAuxTotals;
+    //std::vector<double>                 _measure_adjustments   
     count_t                             _min_low_rate_cases;
     count_t                             _min_high_rate_cases;
 
@@ -38,11 +39,16 @@ class AbstractLikelihoodCalculator {
     AbstractLikelihoodCalculator(const CSaTScanData& DataHub);
     virtual ~AbstractLikelihoodCalculator() {}
 
+    std::vector<std::pair<count_t, measure_t> > gvDataSetTotals;
+    std::vector<measure_t>              gvDataSetMeasureAuxTotals;
+
     SCANRATE_FUNCPTR                    gpRateOfInterest;
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
     SCANRATEUNIFORMTIME_FUNCPTR         gpRateOfInterestUniformTime;
+    SCANRATEMULTISET_FUNCPTR            _rate_of_interest_multiset;
     RISK_FUNCPTR                        _risk_function;
     RISKUNIFORMTIME_FUNCPTR             _risk_function_uniformtime;
+    RISK_MULTISET_FUNCPTR               _risk_multiset_function;
 
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const;
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
@@ -63,6 +69,8 @@ class AbstractLikelihoodCalculator {
     virtual double                      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;
     AbstractLoglikelihoodRatioUnifier & GetUnifier() const;
 
+    inline bool                         RateNoOpMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const;
+
     inline bool                         HighOrLowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
     inline bool                         HighRate(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
     inline bool                         LowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
@@ -70,11 +78,16 @@ class AbstractLikelihoodCalculator {
 
     inline double                       getObservedDividedExpected(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
     inline double                       getRelativeRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    inline double                       getObservedDividedExpectedMultiset(count_t avgObserved, measure_t avgExpected, count_t avgTotalCases, measure_t avgTotalMeasure) const;
+    inline double                       getRelativeRiskMultiset(count_t avgObserved, measure_t avgExpected, count_t avgTotalCases, measure_t avgTotalMeasure) const;
     inline bool                         HighRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    bool                                HighRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const;
     inline bool                         LowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
+    bool                                LowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const;
     inline bool                         HighRateOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex=0) const;
     inline bool                         HighRiskOrLowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
     inline bool                         HighRiskOrLowRisk(count_t nCases, measure_t nMeasure, size_t tSetIndex = 0) const;
+    bool                                HighRiskOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const;
 
     inline bool                         HighOrLowRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
     inline bool                         HighRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
@@ -216,9 +229,9 @@ inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateRank(count_t nCase
     /* TODO - Do we incorporate a minimum number of cases here? */
 }
 
-/* Returns the observed / expected -- this function is used as a risk function when restricting clusters by risk level. */
+/* Returns the observed / expected -- this function is used as a risk function when restricting clusters by risk level . 
+   This function is currently used for either space-time permutation or exponential probability models. */
 inline double AbstractLikelihoodCalculator::getObservedDividedExpected(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
-    nMeasure *= _measure_adjustment; // apply measure adjustment --  applicable only to Bernoulli
     return (nMeasure ? static_cast<double>(nCases) / nMeasure : 0.0);
 }
 
@@ -230,6 +243,30 @@ inline double AbstractLikelihoodCalculator::getRelativeRisk(count_t nCases, meas
     if (nMeasure && total_cases - nMeasure && ((total_cases - nMeasure) / (total_cases - nMeasure)))
         return (nCases / nMeasure) / ((total_cases - nCases) / (total_cases - nMeasure));
     return 0.0;
+}
+
+/* Returns the observed / expected -- this function is used as a risk function when restricting clusters by risk level .
+This function is currently used for either space-time permutation or exponential probability models. */
+inline double AbstractLikelihoodCalculator::getObservedDividedExpectedMultiset(count_t avgObserved, measure_t avgExpected, count_t avgTotalCases, measure_t avgTotalMeasure) const {
+    return avgExpected ? static_cast<double>(avgObserved) / avgExpected : 0.0;
+}
+
+/* Returns the relative risk -- this function is used as a risk function when restricting clusters by risk level. */
+inline double AbstractLikelihoodCalculator::getRelativeRiskMultiset(count_t avgObserved, measure_t avgExpected, count_t avgTotalCases, measure_t avgTotalMeasure) const {
+    // It's possible that none of the data sets were signigicant in evaluating cluster - which means that the average total is zero.
+    if (avgTotalCases == 0) return 0.0; 
+    /* If the average observed equals the total case average, then relative risk goes to infinity. This could occur in two situations:
+       - multivariate and only one data set in current cluster was significant
+       - the average observed just happens to equal the average total cases when more than one data set in evaluating cluster  */
+    if (avgObserved == avgTotalCases) return std::numeric_limits<double>::max(); // could use std::numeric_limits<double>::infinity()    
+    if (avgExpected && avgTotalCases - avgExpected && ((avgTotalCases - avgExpected) / (avgTotalCases - avgExpected)))
+        return (avgObserved / avgExpected) / ((avgTotalCases - avgObserved) / (avgTotalCases - avgExpected));
+    return 0.0;
+}
+
+/* Always returns true. */
+inline bool AbstractLikelihoodCalculator::RateNoOpMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+    return true;
 }
 
 /* Returns whether potential cluster is high rate while exceeding high risk level minimum. */

@@ -20,7 +20,7 @@ double                          ReportTimeEstimate(boost::posix_time::ptime Star
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
 double                          GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumMeasureAux);
 double                          GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tMeasureAux, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalMeasureAux);
-bool                            ValidateFileAccess(const std::string& filename, bool bWriteEnable=false);
+bool                            ValidateFileAccess(const std::string& filename, bool bWriteEnable=false, bool useTempFile=false);
 std::string                   & trimString(std::string &source, const char * t=" ");
 std::string                   & lowerString(std::string &source); 
 std::string                   & printString(std::string& s, const char * format, ...);
@@ -30,7 +30,8 @@ std::string                   & getRoundAsString(double value, std::string& s, u
 std::string                   & GetUserDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
-bool                            getlinePortable(std::ifstream& readstream, std::string& line);
+std::string                     getFilenameFormatTime(const std::string& filename);
+bool                            getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
 template <typename T>           bool string_to_type(const char * s, T& t) {
                                     try {

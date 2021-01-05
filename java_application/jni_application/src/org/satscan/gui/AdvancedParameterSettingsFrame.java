@@ -412,11 +412,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }    
     
     public void enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType scanrate) {
-        boolean enableGroup = _additionalDataSetsGroup.isEnabled() == false || _dataSetsListModel.getSize() == 0;
         Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
-        enableGroup &= !(modeltype == Parameters.ProbabilityModelType.ORDINAL ||
-                         modeltype == Parameters.ProbabilityModelType.CATEGORICAL ||
-                         modeltype == Parameters.ProbabilityModelType.NORMAL);
+        boolean enableGroup = !(
+            modeltype == Parameters.ProbabilityModelType.ORDINAL ||
+            modeltype == Parameters.ProbabilityModelType.CATEGORICAL ||
+            modeltype == Parameters.ProbabilityModelType.NORMAL
+        );
         _limit_clusters_risk_group.setEnabled(enableGroup);
         switch (_settings_window.getModelControlType()) {
             case EXPONENTIAL: 
@@ -1224,7 +1225,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_caseFilenames.get(i).length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a case file for this additional data set.", FocusedTabSet.INPUT, (Component) _caseFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_caseFilenames.get(i), false)) {
+            if (!FileAccess.ValidateFileAccess(_caseFilenames.get(i), false, false)) {
                 throw new AdvFeaturesExpection("The case file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _caseFileTextField);
             }
@@ -1238,7 +1239,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (_controlFilenames.get(i).length() == 0) {
                     throw new AdvFeaturesExpection("For the Bernoulli model, please specify a control file for this additional data set.", FocusedTabSet.INPUT, (Component) _controlFileTextField);
                 }
-                if (!FileAccess.ValidateFileAccess(_controlFilenames.get(i), false)) {
+                if (!FileAccess.ValidateFileAccess(_controlFilenames.get(i), false, false)) {
                     throw new AdvFeaturesExpection("The control file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                             FocusedTabSet.INPUT, (Component) _controlFileTextField);
                 }
@@ -1257,13 +1258,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             || (_populationFilenames.get(i).length() > 0 && !bFirstDataSetHasPopulationFile)) {
                         throw new AdvFeaturesExpection("For the Poisson model with purely temporal analyses, the population file is optional but all data\n" + "sets must either specify a population file or omit it.",
                                 FocusedTabSet.INPUT, (Component) _populationFileTextField);
-                    } else if (_populationFilenames.get(i).length() > 0 && !FileAccess.ValidateFileAccess(_populationFilenames.get(i), false)) {
+                    } else if (_populationFilenames.get(i).length() > 0 && !FileAccess.ValidateFileAccess(_populationFilenames.get(i), false, false)) {
                         throw new AdvFeaturesExpection("The population file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                                 FocusedTabSet.INPUT, (Component) _populationFileTextField);
                     }
                 } else if (_populationFilenames.get(i).length() == 0) {
                     throw new AdvFeaturesExpection("For the Poisson model, please specify a population file for this additional data set.", FocusedTabSet.INPUT, (Component) _populationFileTextField);
-                } else if (!FileAccess.ValidateFileAccess(_populationFilenames.get(i), false)) {
+                } else if (!FileAccess.ValidateFileAccess(_populationFilenames.get(i), false, false)) {
                     throw new AdvFeaturesExpection("The population file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                             FocusedTabSet.INPUT, (Component) _populationFileTextField);
                 }
@@ -1294,7 +1295,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_neighborsFileTextField.getText().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a neighbors file.", FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_neighborsFileTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_neighborsFileTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The neighbors file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
             }
@@ -1307,7 +1308,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_metaLocationsFileTextField.getText().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a meta locations file.", FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_metaLocationsFileTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_metaLocationsFileTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The meta locations file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
             }
@@ -1322,7 +1323,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_maxCirclePopulationFilenameTextField.getText().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum circle size file.", FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
@@ -1335,7 +1336,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population at risk,\ncan not be greater than the maximum specifed on Spatial Window tab.",
                         FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialClusterSizeTextField);
             }
-            if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
+            if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
                         FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
@@ -1404,7 +1405,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_adjustmentsByRelativeRisksFileTextField.getText().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify an adjustments file.", FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
-            if (!FileAccess.ValidateFileAccess(_adjustmentsByRelativeRisksFileTextField.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_adjustmentsByRelativeRisksFileTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The adjustments file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
@@ -1604,7 +1605,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_alternativeHypothesisFilename.getText().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify an alternative hypothesis  filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
-            if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
+            if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }

@@ -39,7 +39,7 @@ $IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b 
 chmod a+x $installer_version/install-10_0_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/satscan.10.0_linux.tar.bz2
+rm -f $installer_version/satscan.10.0_linux.tar.gz
 cd $build/binaries/linux
 tar -cf $installer_version/satscan.10.0_linux.tar satscan*
 cd $build/satscan/installers
@@ -91,7 +91,7 @@ rm -rf $build/satscan/installers/izpack/mac/Install.app
 chmod a+x $installer_version/install-10_0_mac.zip
 
 # Build batch binaries archive for Mac OS X.
-rm -f $installer_version/satscan.10.0_mac.tar.bz2
+rm -f $installer_version/satscan.10.0_mac.tar.gz
 cd $build/binaries/mac
 tar -cf $installer_version/satscan.10.0_mac.tar satscan
 cd $build/satscan/installers

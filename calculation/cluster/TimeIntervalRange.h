@@ -54,7 +54,7 @@ class MultiSetTemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Temporal window evaluator for multiple data setsusing uniform model. */
+/** Temporal window evaluator for multiple data sets using uniform model. */
 class MultiSetUniformTimeTemporalDataEvaluator : public CTimeIntervals {
 public:
     MultiSetUniformTimeTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);

@@ -56,7 +56,31 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
         ReadMultipleDataSetsSettings(SourceFile);
         ReadInputSourceSettings(SourceFile);
     } catch (prg_exception& x) {
-        x.addTrace("Read()","IniParameterFileAccess");
+        x.addTrace("Read(const char* sFilename)","IniParameterFileAccess");
+        throw;
+    }
+    return !gbReadStatusError;
+}
+
+/** Reads parameters from stringstream and sets associated CParameter object. */
+bool IniParameterFileAccess::Read(std::stringstream& stream) {
+    try {
+        gvParametersMissingDefaulted.clear();
+        gbReadStatusError = false;
+        gParameters.SetAsDefaulted();
+
+        IniFile SourceFile;
+        SourceFile.Read(stream);
+        gpSpecifications = new IniParameterSpecification(SourceFile, gParameters);
+
+        for (ParameterType eType = ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
+            ReadIniParameter(SourceFile, eType);
+        ReadObservableRegionSettings(SourceFile);
+        ReadMultipleDataSetsSettings(SourceFile);
+        ReadInputSourceSettings(SourceFile);
+    }
+    catch (prg_exception& x) {
+        x.addTrace("Read(std::stringstream& stream)", "IniParameterFileAccess");
         throw;
     }
     return !gbReadStatusError;
@@ -335,6 +359,19 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         writeSections(WriteFile, *gpSpecifications);
         WriteFile.Write(gParameters.GetSourceFileName());
     } catch (prg_exception& x) {
+        x.addTrace("Write()", "IniParameterFileAccess");
+        throw;
+    }
+}
+
+void IniParameterFileAccess::Write(std::stringstream& stream) {
+    try {
+        IniFile WriteFile;
+        gpSpecifications = new IniParameterSpecification();
+        writeSections(WriteFile, *gpSpecifications);
+        WriteFile.Write(stream, false, false);
+    }
+    catch (prg_exception& x) {
         x.addTrace("Write()", "IniParameterFileAccess");
         throw;
     }

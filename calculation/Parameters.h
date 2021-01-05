@@ -186,7 +186,8 @@ class CParameters {
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
     std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
-    std::string                         gsOutputFileName;                       /** results output filename */
+    std::string                         gsOutputFileNameSetting;                /** results output filename - user specified filename to write results - can include subtitution variables */
+    mutable std::string                 _results_filename;                      /** results output filename but with any substitutions (getFilenameFormatTime) */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
     std::string                         gsSimulationDataSourceFileName;         /** simulation data source filename */
     bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
@@ -420,7 +421,8 @@ class CParameters {
     bool                                GetOutputClusterLevelAscii() const {return gbOutputClusterLevelAscii;}
     bool                                GetOutputClusterLevelDBase() const {return gbOutputClusterLevelDBase;}
     bool                                GetOutputClusterLevelFiles() const;
-    const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
+    const std::string                 & GetOutputFileNameSetting() const {return gsOutputFileNameSetting; }
+    const std::string                 & GetOutputFileName() const { return _results_filename; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
     bool                                getOutputCartesianGraph() const {return _output_cartesian_graph;}
     bool                                getOutputKMLFile() const { return _output_kml; }
@@ -552,7 +554,7 @@ class CParameters {
     void                                SetOutputClusterCaseDBase(bool b) {gbOutputClusterCaseDBase = b;}
     void                                SetOutputClusterLevelAscii(bool b) {gbOutputClusterLevelAscii = b;}
     void                                SetOutputClusterLevelDBase(bool b) {gbOutputClusterLevelDBase = b;}
-    void                                SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
+    void                                SetOutputFileNameSetting(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
     void                                SetOutputRelativeRisksAscii(bool b) {gbOutputRelativeRisksAscii = b;}
     void                                SetOutputRelativeRisksDBase(bool b) {gbOutputRelativeRisksDBase = b;}
     void                                SetOutputSimLogLikeliRatiosAscii(bool b) {gbOutputSimLogLikeliRatiosAscii = b;}

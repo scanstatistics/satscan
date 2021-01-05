@@ -259,7 +259,7 @@ const char * IniSection::GetString(std::string& buffer, const char *sKeyName, co
 //    section header or end of file after call
 //  sValue - must use ""s to retain leading or trailing blank (ie. 4="  sub-site"
 //  internal quotes will be retained - only if 1st and last non-blank chars are quotes are they removed
-void IniSection::Read(std::ifstream& readstream) {
+void IniSection::Read(std::istream &readstream) { //std::ifstream& readstream) {
   std::istream::pos_type        filePos = readstream.tellg();
   std::string                   buffer, sKey, sValue;
   bool     bDoneSection = false;
@@ -412,6 +412,45 @@ void IniSection::Write(std::ofstream& writestream) const {
   gbModified = false;
 }
  
+void IniSection::Write(std::stringstream& stream, bool includeNewlines, bool includeComments) const {
+    long lNumLines = GetNumLines();
+    if (lNumLines) {
+        //write section header
+        stream << gsSectionName;
+        if (includeNewlines) stream << std::endl;
+        for (long i = 0; i < lNumLines; ++i) {
+            //write preceding comment lines first
+            for (long j = 0; (unsigned)j < gvCommentLineVectors.at(i).size() && includeComments; ++j) {
+                stream << ";" << gvCommentLineVectors.at(i).at(j);
+                if (includeNewlines) stream << std::endl; else stream << "|";
+            }
+            //then write the IniLine
+            const IniLine * pIniLine = gaIniLines[i];
+            std::string sTemp = pIniLine->GetKey();
+            size_t lLength = sTemp.size();
+            if ((lLength > 0) && (sTemp[0] == ' ' || sTemp[lLength - 1] == ' ')) {
+                printString(sTemp, "\"%s\"", pIniLine->GetKey());
+            }
+            stream << sTemp << "=";
+            sTemp = pIniLine->GetValue();
+            lLength = sTemp.size();
+            if ((lLength > 0) && (sTemp[0] == ' ' || sTemp[lLength - 1] == ' ')) {
+                printString(sTemp, "\"%s\"", pIniLine->GetValue());
+            }
+            stream << sTemp;
+            if (includeNewlines) stream << std::endl; else stream << "|";
+        }
+        //write trailing comment lines
+        for (long j = 0; (unsigned)j < gvCommentLineVectors.back().size(); ++j) {
+            stream << ";" << gvCommentLineVectors.back().at(j);
+            if (includeNewlines) stream << std::endl; else stream << "|";
+        }
+        if (includeNewlines) stream << std::endl;
+    }
+    gbModified = false;
+}
+
+
 //ClassDesc Begin IniFile
 // This class contains an entire ini file as an array of all IniSections. It
 // is important to note that all sections associated with this IniFile will go
@@ -565,7 +604,7 @@ const char * IniFile::GetSectionName(long lIndex) {
 // Internal function to move thru file and point to next section header - even
 // if it is the current pos ( ie. calling multiple times in a row does nothing )
 // This function requires the caller to have placed a READ lock on the file.
-bool IniFile::SeekToNextSection(std::ifstream& readstream) const {
+bool IniFile::SeekToNextSection(std::istream &readstream) const { //std::ifstream& readstream) const {
   std::istream::pos_type        Pos = readstream.tellg();
   std::string                   buffer;
 
@@ -589,13 +628,32 @@ void IniFile::Read(const std::string& file) {
   readstream.open(file.c_str(), std::ios::binary);
   if (!readstream) throw resolvable_error("Error: Could not open file '%s'.\n", file.c_str());
 
-  while (SeekToNextSection(readstream)) {
-      getlinePortable(readstream, buffer);
-      trimString(buffer);
-      std::auto_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
-      pIniSection->Read(readstream);
-      gaSections.push_back(pIniSection.release());
-  }
+  ReadStream(readstream);
+}
+
+void IniFile::Read(std::stringstream &readstream) {
+    std::stringstream formattedstream;
+    char readChar;
+    while (readstream >> readChar) {
+        if (readChar == ']')
+            formattedstream << readChar << std::endl;
+        else if (readChar == '|')
+            formattedstream << std::endl;
+        else 
+            formattedstream << readChar;
+    }
+    ReadStream(formattedstream);
+}
+
+void IniFile::ReadStream(std::istream &readstream) {
+    std::string buffer;
+    while (SeekToNextSection(readstream)) {
+        getlinePortable(readstream, buffer);
+        trimString(buffer);
+        std::auto_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
+        pIniSection->Read(readstream);
+        gaSections.push_back(pIniSection.release());
+    }
 }
 
 void IniFile::Write(const std::string& file) const {
@@ -605,7 +663,13 @@ void IniFile::Write(const std::string& file) const {
   writestream.open(file.c_str(), std::ios::trunc);
   if (!writestream) throw resolvable_error("Error: Could not open file '%s'.\n", file.c_str());
 
-  for (long i=0; i < GetNumSections(); ++i)
-     gaSections[i]->Write(writestream);
+  std::stringstream stream;
+  Write(stream, true, true);
+
+  writestream << stream.str();
 }
 
+void IniFile::Write(std::stringstream& stream, bool includeNewlines, bool includeComments) const {
+    for (long i = 0; i < GetNumSections(); ++i)
+        gaSections[i]->Write(stream, includeNewlines, includeComments);
+}

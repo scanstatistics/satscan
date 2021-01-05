@@ -6,6 +6,7 @@
 #include "SSException.h"
 #include "Toolkit.h"
 #include "newmat.h"
+#include "FileName.h"
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -13,6 +14,9 @@
 #include <iomanip>
 #include "SimulationVariables.h"
 #include <boost/filesystem.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -318,14 +322,22 @@ double GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tMeasur
 }
 
 /** Returns indication of whether file exists and is readable/writable. */
-bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
-  FILE        * fp=0;
-  bool          bReturn=true;
+bool ValidateFileAccess(const std::string& filename, bool bWriteEnable, bool useTempFile) {
+    FILE * fp=0;
+    bool bReturn=true;
 
-  bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
-  if (fp) fclose(fp);
-
-  return bReturn;
+    if (useTempFile) {
+        std::string buffer;
+        FileName test(filename.c_str());
+        test.setExtension("write-test");
+        bReturn = ((fp = fopen(test.getFullPath(buffer).c_str(), bWriteEnable ? "w" : "r")) != NULL);
+        if (fp) fclose(fp);
+        remove(test.getFullPath(buffer).c_str());
+    } else {
+        bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
+        if (fp) fclose(fp);
+    }
+    return bReturn;
 }
 
 /** Trims leading and trailing 't' strings from source, inplace. */
@@ -481,9 +493,59 @@ std::string & GetUserTemporaryDirectory(std::string& s) {
     return s;
 }
 
+/* Replaces format specifiers with values from todays date. Some format specifiers are derived from:
+   https://www.boost.org/doc/libs/1_70_0/doc/html/date_time/date_time_io.html#date_time.format_flags */
+std::string getFilenameFormatTime(const std::string& filename) {
+    // Obtain the  time locally.
+    boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time(); // timeLocal(boost::gregorian::date(1970, 1, 1));
+
+    std::string buffer, mod_filename(filename);
+    std::stringstream bufferStream;
+    using boost::algorithm::replace_all;
+    using boost::algorithm::ireplace_all;
+    boost::posix_time::time_facet * facet = new boost::posix_time::time_facet();
+
+    // Four digit year - we're not doing 2 digit years -- notice using ireplace_all, so either {y} or {Y} works
+    ireplace_all(mod_filename, "<y>", printString(buffer, "%d", timeLocal.date().year()));
+    ireplace_all(mod_filename, "<year>", printString(buffer, "%d", timeLocal.date().year()));
+    // Month name as a decimal 1 to 12 -- not padded
+    ireplace_all(mod_filename, "<m>", printString(buffer, "%d", timeLocal.date().month()));
+    ireplace_all(mod_filename, "<month>", printString(buffer, "%d", timeLocal.date().month()));
+    // Month name as a decimal 01 to 12 -- zero padded
+    ireplace_all(mod_filename, "<0m>", printString(buffer, "%02d", timeLocal.date().month()));
+    ireplace_all(mod_filename, "<0month>", printString(buffer, "%02d", timeLocal.date().month()));
+    // Abbreviated month name
+    facet->format("%b");
+    bufferStream.imbue(std::locale(std::locale::classic(), facet));
+    bufferStream.str(""); bufferStream << timeLocal;
+    replace_all(mod_filename, "<b>", bufferStream.str());
+    // Full month name
+    facet->format("%B");
+    bufferStream.imbue(std::locale(std::locale::classic(), facet));
+    bufferStream.str(""); bufferStream << timeLocal;
+    replace_all(mod_filename, "<B>", bufferStream.str());
+    // Day of the month as decimal 1 to 31 - not padded
+    ireplace_all(mod_filename, "<d>", printString(buffer, "%d", timeLocal.date().day()));
+    ireplace_all(mod_filename, "<day>", printString(buffer, "%d", timeLocal.date().day()));
+    // Day of the month as decimal 1 to 31 - zero padded
+    ireplace_all(mod_filename, "<0d>", printString(buffer, "%02d", timeLocal.date().day()));
+    ireplace_all(mod_filename, "<0day>", printString(buffer, "%02d", timeLocal.date().day()));
+    // Abbreviated weekday name
+    facet->format("%a");
+    bufferStream.imbue(std::locale(std::locale::classic(), facet));
+    bufferStream.str(""); bufferStream << timeLocal;
+    replace_all(mod_filename, "<a>", bufferStream.str());
+    // Long weekday name
+    facet->format("%A");
+    bufferStream.imbue(std::locale(std::locale::classic(), facet));
+    bufferStream.str(""); bufferStream << timeLocal;
+    replace_all(mod_filename, "<A>", bufferStream.str());
+    return mod_filename;
+}
+
 /** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
     Returns whether data was read or end of file encountered. */
-bool getlinePortable(std::ifstream& readstream, std::string& line) {
+bool getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line) {
   std::ifstream::char_type nextChar;
   std::stringstream        readStream;
 

@@ -224,7 +224,7 @@ void SpaceTimePermutationDataSetHandler::SetRandomizers() {
           gvDataSetRandomizers.at(0) = new SpaceTimeRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetSimulationDataSourceFilename(), gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()), gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
       default :

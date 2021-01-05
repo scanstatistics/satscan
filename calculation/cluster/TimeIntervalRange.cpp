@@ -235,6 +235,7 @@ MultiSetTemporalDataEvaluator::MultiSetTemporalDataEvaluator(const CSaTScanData&
 void MultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     AbstractMultiSetTemporalData & Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
     AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
 
     int iWindowStart, iMinWindowStart;
     gpMaxWindowLengthIndicator->reset();
@@ -250,10 +251,12 @@ void MultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CCluste
                 Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, t);
             }
-            Running.m_nFirstInterval = iWindowStart;
-            Running.m_nLastInterval = iWindowEnd;
-            Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
-            clusterSet.update(Running);
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier)) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                clusterSet.update(Running);
+            }
         }
     }
     clusterSet.maximizeClusterSet();
@@ -271,6 +274,7 @@ double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClu
     AbstractMultiSetTemporalData        & Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
     AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
     double                                dRatio(0);
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
 
     //iterate through windows
     int iWindowStart, iMaxStartWindow;
@@ -287,7 +291,8 @@ double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClu
                 Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, t);
             }
-            dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier))
+                dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
         }
     }
     return dRatio;
@@ -403,6 +408,7 @@ ClosedLoopMultiSetTemporalDataEvaluator::ClosedLoopMultiSetTemporalDataEvaluator
 void ClosedLoopMultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     AbstractMultiSetTemporalData & Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
     AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
 
     int iWindowStart, iMinWindowStart;
     gpMaxWindowLengthIndicator->reset();
@@ -421,10 +427,12 @@ void ClosedLoopMultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Runnin
                 Datum.gtMeasure += Datum.gpMeasure[0] - Datum.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, t);
             }
-            Running.m_nFirstInterval = iWindowStart;
-            Running.m_nLastInterval = iWindowEnd;
-            Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
-            clusterSet.update(Running);
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier)) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                clusterSet.update(Running);
+            }
         }
     }
     clusterSet.maximizeClusterSet();
@@ -441,6 +449,7 @@ void ClosedLoopMultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalCl
 double ClosedLoopMultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     AbstractMultiSetTemporalData        & Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
     AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
     double                                dRatio(0);
 
     //iterate through windows
@@ -461,7 +470,8 @@ double ClosedLoopMultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractT
                 Datum.gtMeasure += Datum.gpMeasure[0] - Datum.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, t);
             }
-            dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier))
+                dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
         }
     }
     return dRatio;

@@ -1,11 +1,14 @@
 package org.satscan.app;
 import java.util.*;
 import org.satscan.importer.InputSourceSettings;
+import org.satscan.utils.FileAccess;
 
 public class Parameters implements Cloneable {
 
     public native boolean                     Read(String filename);
+    public native boolean                     ReadFromStringStream(String stringstream);
     public native void                        Write(String filename);
+    public native String                      WriteToStringStream();
 
     /** analysis and cluster types */
     public enum AnalysisType                  {PURELYSPATIAL, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
@@ -684,7 +687,8 @@ public class Parameters implements Cloneable {
     public boolean GetOutputClusterLevelDBase() {return gbOutputClusterLevelDBase;}
     public boolean GetOutputClusterCaseAscii() {return gbOutputClusterCaseAscii;}
     public boolean GetOutputClusterCaseDBase() {return gbOutputClusterCaseDBase;}
-    public final String GetOutputFileName() {return gsOutputFileName; }
+    public final String GetOutputFileNameSetting() {return gsOutputFileName; }
+    public final String GetOutputFileName() {return FileAccess.getFormatSubstitutedFilename(gsOutputFileName); }
     public boolean GetOutputRelativeRisksAscii() {return gbOutputRelativeRisksAscii;}
     public boolean GetOutputRelativeRisksDBase() {return gbOutputRelativeRisksDBase;}
     public boolean GetOutputSimLoglikeliRatiosAscii() {return gbOutputSimLogLikeliRatiosAscii;}
@@ -858,7 +862,7 @@ public class Parameters implements Cloneable {
     public void SetOutputClusterLevelDBase(boolean b) {gbOutputClusterLevelDBase = b;}
     public void SetOutputClusterCaseAscii(boolean b) {gbOutputClusterCaseAscii = b;}
     public void SetOutputClusterCaseDBase(boolean b) {gbOutputClusterCaseDBase = b;}
-    public void SetOutputFileName(final String  sOutPutFileName) {gsOutputFileName = sOutPutFileName;}
+    public void SetOutputFileNameSetting(final String  sOutPutFileName) {gsOutputFileName = sOutPutFileName;}
     public void SetOutputRelativeRisksAscii(boolean b) {gbOutputRelativeRisksAscii = b;}
     public void SetOutputRelativeRisksDBase(boolean b) {gbOutputRelativeRisksDBase = b;}
     public void SetOutputSimLogLikeliRatiosAscii(boolean b) {gbOutputSimLogLikeliRatiosAscii = b;}

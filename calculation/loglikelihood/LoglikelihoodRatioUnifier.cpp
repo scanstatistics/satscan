@@ -5,8 +5,9 @@
 #include "LoglikelihoodRatioUnifier.h"
 #include "LikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
-#include "SSException.h"
 #include "SaTScanData.h"
+
+/////////////////////////////// MultivariateUnifier /////////////////////////////////////////////////
 
 /** class constructor */
 MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea, ProbabilityModelType eProbabilityModelType)
@@ -39,8 +40,7 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
     gdHighRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
-/** Calculates loglikelihood ratio given ordinal data; accumulating like high
-    and low rate separately. */
+/** Calculates loglikelihood ratio given ordinal data; accumulating like high and low rate separately. */
 void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
   if (gbScanLowRates)
     gdLowRateRatios += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
@@ -120,17 +120,32 @@ double MultivariateUnifier::GetLoglikelihoodRatio() const {
   return std::max(gdHighRateRatios, gdLowRateRatios);
 }
 
-/** Resets internal class members for another iteration of computing unified
-    log likelihood ratios.*/
-void MultivariateUnifier::Reset() {
-  gdHighRateRatios = gdLowRateRatios = 0;
+////////////////////////////////////////////// MultivariateUnifierRiskThreshold /////////////////////////////
+
+/** Calculates loglikelihood ratio given parameter data; accumulating like high and low rate separately. */
+void MultivariateUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) {
+    bool set = false;
+    if (gbScanLowRates && Calculator.LowRate(tCases, tMeasure, tSetIndex)) {
+        gdLowRateRatios += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
+        set = true;
+    }
+    if (gbScanHighRates && Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)) {
+        gdHighRateRatios += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
+        set = true;
+    }
+    if (set) {
+        _risk_threshold._sum_observed += tCases;
+        _risk_threshold._sum_expected += tMeasure * Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second;
+        _risk_threshold._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _risk_threshold._sum_expected_totals += Calculator.gvDataSetTotals[tSetIndex].second;
+        ++_risk_threshold._num_in_sum;
+    }
 }
 
-//******************************************************************************
+///////////////////////////////////// AdjustmentUnifier /////////////////////////////////////////
 
 /** class constructor */
-AdjustmentUnifier::AdjustmentUnifier(AreaRateType eScanningArea)
-                  :geScanningArea(eScanningArea) {}
+AdjustmentUnifier::AdjustmentUnifier(AreaRateType eScanningArea) : geScanningArea(eScanningArea) {}
 
 /** Calculates loglikelihood ratio given parameter data. The calculated ratio
     might be adjusted through multiplying by positive or negative one; based
@@ -186,9 +201,26 @@ double AdjustmentUnifier::GetLoglikelihoodRatio() const {
   };
 }
 
-/** Resets internal class members for another iteration of computing unified
-    log likelihood ratios.*/
-void AdjustmentUnifier::Reset() {
-  gdRatio = 0;
-}
+///////////////////////////////////////// AdjustmentUnifierRiskThreshold /////////////////////////
 
+/** Calculates loglikelihood ratio given parameter data. The calculated ratio
+might be adjusted through multiplying by positive or negative one; based
+upon comparing observed to expected cases. */
+void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) {
+    if (Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)) {
+        gdRatio += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
+        _risk_threshold._sum_observed += tCases;
+        _risk_threshold._sum_expected += tMeasure * Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second;
+        _risk_threshold._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _risk_threshold._sum_expected_totals += Calculator.gvDataSetTotals[tSetIndex].second;
+        ++_risk_threshold._num_in_sum;
+    }
+    else if (Calculator.LowRate(tCases, tMeasure, tSetIndex)) {
+        gdRatio += -1 * Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
+        _risk_threshold._sum_observed += tCases;
+        _risk_threshold._sum_expected += tMeasure * Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second;
+        _risk_threshold._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _risk_threshold._sum_expected_totals += Calculator.gvDataSetTotals[tSetIndex].second;
+        ++_risk_threshold._num_in_sum;
+    }
+}

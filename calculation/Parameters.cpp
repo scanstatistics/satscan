@@ -63,7 +63,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsMaxCirclePopulationFileName != rhs.gsMaxCirclePopulationFileName) return false;
   if (gePrecisionOfTimesType != rhs.gePrecisionOfTimesType) return false;
   if (geCoordinatesType != rhs.geCoordinatesType) return false;
-  if (gsOutputFileName != rhs.gsOutputFileName) return false;
+  if (gsOutputFileNameSetting != rhs.gsOutputFileNameSetting) return false;
   if (gbOutputSimLogLikeliRatiosAscii != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
   if (gbOutputRelativeRisksAscii != rhs.gbOutputRelativeRisksAscii) return false;
   if (gbIterativeRuns != rhs.gbIterativeRuns) return false;
@@ -251,7 +251,7 @@ void CParameters::AssignMissingPath(std::string & sInputFilename, bool bCheckWri
       fFilename.setFullPath(sInputFilename.c_str());
       fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
 
-      if (bCheckWritable && !ValidateFileAccess(fFilename.getFullPath(buffer), true)) {
+      if (bCheckWritable && !ValidateFileAccess(fFilename.getFullPath(buffer), true, true)) {
         // if writability fails, then try setting to user documents directory
         std::string temp;
         fFilename.setLocation(GetUserDocumentsDirectory(buffer, fParameterFilename.getLocation(temp)).c_str());
@@ -297,7 +297,8 @@ void CParameters::Copy(const CParameters &rhs) {
   gsMaxCirclePopulationFileName          = rhs.gsMaxCirclePopulationFileName;
   gePrecisionOfTimesType                 = rhs.gePrecisionOfTimesType;
   geCoordinatesType                      = rhs.geCoordinatesType;
-  gsOutputFileName                       = rhs.gsOutputFileName;
+  gsOutputFileNameSetting                = rhs.gsOutputFileNameSetting;
+  _results_filename                      = rhs._results_filename;
   gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
   gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
   gbIterativeRuns                        = rhs.gbIterativeRuns;
@@ -796,7 +797,8 @@ void CParameters::SetAsDefaulted() {
   gvCaseFilenames.resize(1);
   gvPopulationFilenames.resize(1);
   gsCoordinatesFileName                    = "";
-  gsOutputFileName                         = "";
+  gsOutputFileNameSetting                  = "";
+  _results_filename                        = "";
   gsMaxCirclePopulationFileName            = "";
   gePrecisionOfTimesType                   = YEAR;
   gbUseSpecialGridFile                     = false;
@@ -1027,10 +1029,21 @@ void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file
     does not exist. */
-void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
-  gsOutputFileName = sOutPutFileName;
-  if (bCorrectForRelativePath)
-    AssignMissingPath(gsOutputFileName, true);
+void CParameters::SetOutputFileNameSetting(const char * sOutPutFileName, bool bCorrectForRelativePath) {
+    gsOutputFileNameSetting = sOutPutFileName;
+    if (bCorrectForRelativePath && !gsOutputFileNameSetting.empty() && gsOutputFileNameSetting.find(FileName::SLASH) == gsOutputFileNameSetting.npos) {
+        // We're applying relative path to a filename which doesn't appear to have a path.
+        gsOutputFileNameSetting = getFilenameFormatTime(gsOutputFileNameSetting); // apply any formatting so we can properly test write
+        AssignMissingPath(gsOutputFileNameSetting, true); // Assign path to fully formatted filename;
+        FileName resultant(gsOutputFileNameSetting.c_str());
+        // replace original name passed.
+        FileName original(sOutPutFileName);
+        resultant.setFileName(original.getFileName().c_str());
+        resultant.setExtension(original.getExtension().c_str());
+        resultant.getFullPath(gsOutputFileNameSetting);
+    }
+    // gsOutputFileNameSetting could contain substitution variables - resolve now and store in _results_filename. 
+    _results_filename = getFilenameFormatTime(gsOutputFileNameSetting);
 }
 
 /** Sets population data file name.

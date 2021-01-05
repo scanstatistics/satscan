@@ -42,6 +42,41 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read(JNIEnv * pEnv, j
   return true;
 }
 
+/** Reads parameters from stringstream in C++ code and sets class members of Java JParameters class. */
+JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_ReadFromStringStream(JNIEnv * pEnv, jobject jParameters, jstring parameterstream) {
+    CParameters           Parameters;
+    jboolean              iscopy;
+
+    try {
+        const char * sStringStream = pEnv->GetStringUTFChars(parameterstream, &iscopy);
+        if (sStringStream) {
+            PrintNull NoPrint;
+            std::stringstream stream;
+            stream << sStringStream;
+            IniParameterFileAccess(Parameters, NoPrint).Read(stream);
+        } else {
+            //New session - creation version is this version.
+            CParameters::CreationVersion vVersion;
+            Parameters.SetVersion(vVersion);
+        }
+        if (iscopy == JNI_TRUE)
+            pEnv->ReleaseStringUTFChars(parameterstream, sStringStream);
+        ParametersUtility::copyCParametersToJParameters(*pEnv, Parameters, jParameters);
+    }
+    catch (jni_error & x) {
+        return 1; // let the Java exception to be handled in the caller of JNI function
+    }
+    catch (std::exception& x) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+        return 1;
+    }
+    catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return 1;
+    }
+    return true;
+}
+
 /** Set parameters of C++ object from Java object and writes parameters to file 'filename'. */
 JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write(JNIEnv * pEnv, jobject jParameters, jstring) {
   CParameters   Parameters;
@@ -62,6 +97,27 @@ JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write(JNIEnv * pEnv, jobj
 	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return;
   }
+}
+
+/** Set parameters of C++ object from Java object and writes parameters to string. */
+JNIEXPORT jstring JNICALL Java_org_satscan_app_Parameters_WriteToStringStream(JNIEnv * pEnv, jobject jParameters) {
+    CParameters   Parameters;
+
+    try {
+        ParametersUtility::copyJParametersToCParameters(*pEnv, jParameters, Parameters);
+        PrintNull NoPrint;
+        std::stringstream stream;
+        IniParameterFileAccess(Parameters, NoPrint).Write(stream);
+        return pEnv->NewStringUTF(stream.str().c_str());
+    } catch (jni_error & x) {
+        return pEnv->NewStringUTF("");
+    } catch (std::exception& x) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+        return pEnv->NewStringUTF("");
+    } catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return pEnv->NewStringUTF("");
+    }
 }
 
 /** Returns ordinal of enumeration gotten from 'sFunctionName' called. */
@@ -334,8 +390,8 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetMaxCirclePopulationFileName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "SetOutputFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetOutputFileName().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "SetOutputFileNameSetting", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetOutputFileNameSetting().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "SetIsLoggingHistory", "(Z)V");
@@ -988,11 +1044,11 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetMaxCirclePopulationFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetOutputFileName", "()Ljava/lang/String;");
+  mid = _getMethodId_Checked(Env, clazz, "GetOutputFileNameSetting", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.SetOutputFileName(sFilename);
+  Parameters.SetOutputFileNameSetting(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "GetIsLoggingHistory", "()Z");

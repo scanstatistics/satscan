@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE( test_closed_loop_analysis, parameter_fixture ) {
 
     filename.str("");
     filename << GetUserTemporaryDirectory(path).c_str() << "test.txt";
-    _parameters.SetOutputFileName(filename.str().c_str());
+    _parameters.SetOutputFileNameSetting(filename.str().c_str());
 
     // current parameters should validate for Poisson, Bernoulli, Ordinal, Normal, Exponetial, Multinomial, Rank models
     _parameters.SetProbabilityModelType(POISSON);

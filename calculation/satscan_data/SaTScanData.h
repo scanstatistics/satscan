@@ -83,7 +83,7 @@ class CSaTScanData {
     std::vector<tract_t>                        gvNullifiedLocations;
     mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
 	bool                                        _network_can_report_coordinates;
-    bool                                        _is_drilldown;
+    unsigned int                                _drilldown_level;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -160,8 +160,9 @@ class CSaTScanData {
     inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual Julian                              intervalIndexToJulian(unsigned int intervalIdx) const;
-    bool                                        isDrilldown() const { return _is_drilldown; }
-    void                                        setIsDrilldown(bool b) { _is_drilldown = b; }
+    unsigned int                                getDrilldownLevel() const { return _drilldown_level; }
+    bool                                        isDrilldown() const { return _drilldown_level > 0; }
+    void                                        setIsDrilldownLevel(unsigned int u) { _drilldown_level = u; }
 
     virtual Julian                              convertToSeasonalDate(Julian j) const {return j;}
 

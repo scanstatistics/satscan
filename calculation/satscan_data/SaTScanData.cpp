@@ -448,7 +448,7 @@ void CSaTScanData::Init() {
   m_nIntervalCut=1;
   _min_iterval_cut=4;
   _network_can_report_coordinates = false;
-  _is_drilldown = false;
+  _drilldown_level = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection

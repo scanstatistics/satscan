@@ -60,6 +60,7 @@ import org.satscan.app.Parameters;
 import org.satscan.gui.utils.JDocumentRenderer;
 import org.satscan.app.OutputFileRegister;
 import org.satscan.utils.BareBonesBrowserLaunch;
+import org.satscan.utils.FileAccess;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -904,20 +905,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             return filterIsActive;
         }
 
-        @Override
-        public Object getChild(Object parent, int index) {
-            if (filterIsActive && parent instanceof FilterTreeNode)
-                return ((FilterTreeNode) parent).getChildAt(index, filterIsActive);
-            return ((TreeNode) parent).getChildAt(index);
-        }
-
-        @Override
-        public int getChildCount(Object parent) {
-            if (filterIsActive && parent instanceof FilterTreeNode)
-                return ((FilterTreeNode) parent).getChildCount(filterIsActive);
-            return ((TreeNode) parent).getChildCount();
-        }
-
     }
 
     /* Specialize class to faciliate filtering which nodes are displayed in JTree. */
@@ -934,10 +921,15 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             super(userObject, allowsChildren);
         }
 
+        /* Obtains filer status from JTree of containing class. */
+        public boolean isFiltered() {
+            return ((FilterTreeModel)_results_tree.getModel()).isActivatedFilter();
+        }
+        
         /* Returns the child node at index. If currently filtering, gets node from children nodes
            that are signalling visible, otherwise calls parent class to obtain child node. */        
-        public TreeNode getChildAt(int index, boolean filterIsActive) {
-            if (!filterIsActive) return super.getChildAt(index);
+        public TreeNode getChildAt(int index/*, boolean filterIsActive*/) {
+            if (!isFiltered()) return super.getChildAt(index);
             if (children == null) throw new ArrayIndexOutOfBoundsException("node has no children");
             int realIndex = -1;
             int visibleIndex = -1;
@@ -954,8 +946,8 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
         /* Returns the number of children for node. If currently filtering, counts the number of 
            children nodes that are signalling visible, otherwise calls parent class to obtain count. */
-        public int getChildCount(boolean filterIsActive) {
-            if (!filterIsActive) return super.getChildCount();
+        public int getChildCount(/*boolean filterIsActive*/) {
+            if (!isFiltered()) return super.getChildCount();
             if (children == null) return 0;
             int count = 0;
             Enumeration e = children.elements();

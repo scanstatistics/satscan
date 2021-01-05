@@ -162,6 +162,10 @@ LinearTimeTrend::Status LinearTimeTrend::CalculateAndSet(const count_t* pCases, 
 
   Initialize();
 
+  //nTimeIntervals = 20;
+  //double Cases[20] = { 10.0,9.526316,9.052632,8.578947,8.105263,7.631579,7.157895,6.68421,6.210526,5.736842,5.263158,4.789474,4.315789,3.842105,3.368421,2.894737,2.421053,1.947368,1.473684,1.0 };
+  //double Measure[20] = { 1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0 };
+
   // Preliminary calculations that only need to be done once.
   // ********************************************************
   for (t=0; t < nTimeIntervals; t++) {
@@ -189,8 +193,8 @@ LinearTimeTrend::Status LinearTimeTrend::CalculateAndSet(const count_t* pCases, 
   // explicit formula. / MK, March 23, 2004
   // ********************************************************************************
   for (t=0; t < nTimeIntervals; t++) {
-    nSumCasesMinusMsr += pCases[t]-pMeasure[t];
-    nSumTimeCasesMinusMsr += t * (pCases[t]-pMeasure[t]);
+    nSumCasesMinusMsr += pCases[t] - pMeasure[t];
+    nSumTimeCasesMinusMsr += t * (pCases[t] - pMeasure[t]);
     nSumTime += t;
     nSumTimeSquare += t * t;
   }
@@ -296,7 +300,7 @@ double LinearTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) 
 
 void LinearTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const {
     DatePrecisionType aggUnits = DataHub.GetParameters().GetTimeAggregationUnitsType();
-    fprintf(AppToolkit::getToolkit().openDebugFile(), "Loglinear time trend series %g (alpha=%g, beta = %g):\ndate, t, count, measure\n", 
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "Loglinear time trend series %g (alpha=%g, beta = %g):\ndate, t, predicted, count, measure\n", 
         GetTimeTrendByAggregationUnits(GetBeta(), GetStatus(), DataHub.GetParameters().GetTimeAggregationUnitsType(), DataHub.GetParameters().GetTimeAggregationLength()),
         gdAlpha, gdBeta
     );
@@ -306,7 +310,9 @@ void LinearTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& Da
     count_t totalCases = 0;
     measure_t totalMeasure = 0.0;
     const std::vector<Julian>& intervalStartTimes = DataHub.GetTimeIntervalStartTimes();
+    double constant = static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength() - 1) / 2.0;
     for (size_t t=0; t < intervalStartTimes.size() - 1; ++t) {
+        double t_val = (static_cast<double>(t) * static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength())) + constant;
         count_t startCases = 0;
         for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
             startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0);
@@ -314,9 +320,9 @@ void LinearTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& Da
         for (int tt = 0; tt < measure.Get2ndDimension(); ++tt)
             startMeasure += measure.GetArray()[t][tt]; // -(t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0.0);
         fprintf(
-            AppToolkit::getToolkit().openDebugFile(), "%s, %d, %d, %g\n", 
+            AppToolkit::getToolkit().openDebugFile(), "%s, %d, %g, %d, %g\n", 
             JulianToString(buffer, intervalStartTimes[t], aggUnits).c_str(),
-            t, startCases, startMeasure
+            t, std::exp(GetAlpha() + GetBeta() * t_val + GetBeta2() * std::pow(t_val, 2)), startCases, startMeasure
         );
         totalCases += startCases;
         totalMeasure += startMeasure;
@@ -341,126 +347,118 @@ QuadraticTimeTrend::~QuadraticTimeTrend(){}
 
 /* Calculates alpha given a specific beta and beta2. Required sums are recalculated */
 double QuadraticTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const {
-  double nNewSME = 0;
-
-  if (nCases == 0)
-    gbGlobalAlpha = 0;
-  else {
-    for (int i=0; i < nTimeIntervals; ++i) {
-       nNewSME += pMeasure[i] * exp(nBeta * (i + 1) + nBeta2 * std::pow(i + 1, 2.0));
-       gbGlobalAlpha = log (nCases / nNewSME);
+    if (nCases == 0)
+        gbGlobalAlpha = 0;
+    else {
+        double nNewSME = 0;
+        for (int i=0; i < nTimeIntervals; ++i)
+            nNewSME += pMeasure[i] * exp(nBeta * (i + 1) + nBeta2 * std::pow(i + 1, 2.0));
+        gbGlobalAlpha = log(nCases / nNewSME) + nBeta/* see note in time trend calculation */;
     }
-  }
-
-  return gbGlobalAlpha;
+    return gbGlobalAlpha;
 }
 
 QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {
-  bool bConvergence = false;
-  unsigned int        nIterations=0;
-  measure_t           tMean=0;
+    bool bConvergence = false;
+    unsigned int        nIterations=0;
+    measure_t           tMean=0;
 
-  Initialize();
+    Initialize();
 
-  //nTimeIntervals = 20;
-  //double Cases[20] = {10.0,9.526316,9.052632,8.578947,8.105263,7.631579,7.157895,6.68421,6.210526,5.736842,5.263158,4.789474,4.315789,3.842105,3.368421,2.894737,2.421053,1.947368,1.473684,1.0};
-  //double Measure[20] = {1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0};
+    //nTimeIntervals = 20;
+    //double Cases[20] = {10.0,9.526316,9.052632,8.578947,8.105263,7.631579,7.157895,6.68421,6.210526,5.736842,5.263158,4.789474,4.315789,3.842105,3.368421,2.894737,2.421053,1.947368,1.473684,1.0};
+    //double Measure[20] = {1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0};
 
-  // Eliminates situations when the time trend is undefined.
-  // *******************************************************
-  count_t nSumCases = 0;//std::accumulate(pCases, pCases + nTimeIntervals, 0, plus<count_t>());
-  int iIntervalsWithCases=0;
-  for (int i=0; i < nTimeIntervals; ++i) {
-  nSumCases += pCases[i];
-    if (pCases[i]) ++iIntervalsWithCases;
-  }
+    // Eliminates situations when the time trend is undefined.
+    // *******************************************************
+    count_t nSumCases = 0;//std::accumulate(pCases, pCases + nTimeIntervals, 0, plus<count_t>());
+    int iIntervalsWithCases=0;
+    for (int i=0; i < nTimeIntervals; ++i) {
+        nSumCases += pCases[i];
+        if (pCases[i]) ++iIntervalsWithCases;
+    }
 
-  if (nSumCases < 2 || iIntervalsWithCases < 3) {
-    gdAlpha = gdBeta = gdBeta2 = 0;
-    return  (gStatus = QuadraticTimeTrend::UNDEFINED);
-  } else if ((pCases[0] == nSumCases)) {
-    gdAlpha = gdBeta = gdBeta2 = 0;
-    return (gStatus = QuadraticTimeTrend::NEGATIVE_INFINITY);
-  } else if (pCases[nTimeIntervals-1] == nSumCases) {
-    gdAlpha = gdBeta = gdBeta2 = 0;
-    return (gStatus = QuadraticTimeTrend::POSITIVE_INFINITY);
-  } // else ready to calculate
+    if (nSumCases < 2 || iIntervalsWithCases < 3) {
+        gdAlpha = gdBeta = gdBeta2 = 0;
+        return  (gStatus = QuadraticTimeTrend::UNDEFINED);
+    } else if ((pCases[0] == nSumCases)) {
+        gdAlpha = gdBeta = gdBeta2 = 0;
+        return (gStatus = QuadraticTimeTrend::NEGATIVE_INFINITY);
+    } else if (pCases[nTimeIntervals-1] == nSumCases) {
+        gdAlpha = gdBeta = gdBeta2 = 0;
+        return (gStatus = QuadraticTimeTrend::POSITIVE_INFINITY);
+    } // else ready to calculate
     
-  // copy cases in column vector
-  ColumnVector y(nTimeIntervals);
-  for (int r=0; r < y.Nrows(); ++r) {
-     y.element(r) = pCases[r];
-     tMean += pCases[r];
-  }
-  tMean /= (measure_t)nTimeIntervals;
+    // copy cases in column vector
+    ColumnVector y(nTimeIntervals);
+    for (int r=0; r < y.Nrows(); ++r) {
+        y.element(r) = pCases[r];
+        tMean += pCases[r];
+    }
+    tMean /= (measure_t)nTimeIntervals;
     
-  // copy measure in column vector
-  ColumnVector m(nTimeIntervals);
-  for (int r=0; r < m.Nrows(); ++r)
-     m.element(r) = pMeasure[r];
+    // copy measure in column vector
+    ColumnVector m(nTimeIntervals);
+    for (int r=0; r < m.Nrows(); ++r)
+        m.element(r) = pMeasure[r];
    
-  //column vector: alpha, beta1, beta2
-  ColumnVector b(3);
-  b.element(0) = log(tMean);
-  b.element(1) = 0.0;
-  b.element(2) = 0.0;
+    //column vector: alpha, beta1, beta2
+    ColumnVector b(3);
+    b.element(0) = log(tMean);
+    b.element(1) = 0.0;
+    b.element(2) = 0.0;
     
-  Matrix X(nTimeIntervals,3);
-  for (int r=0; r < X.Nrows(); ++r) {
-    for (int c=0; c < X.Ncols(); ++c) {
-      if (c == 0)
-        X.element(r,c) = 1;
-      else if (c == 1)
-        X.element(r,c) = r + 1;
-      else
-        X.element(r,c) = std::pow(r + 1,2.0);
+    Matrix X(nTimeIntervals,3);
+    for (int r=0; r < X.Nrows(); ++r) {
+        X.element(r, 0) = 1;
+        X.element(r, 1) = r + 1;
+        X.element(r, 2) = std::pow(r + 1, 2.0);
     }
-  }
 
-  try {
-    while (!bConvergence && nIterations < MAX_CONVERGENCE_ITERATIONS) {
-        Matrix mu(X * b);
-        for (int r=0; r < mu.Nrows(); ++r) {
-            for (int c=0; c < mu.Ncols(); ++c) {
-                mu.element(r,c) = exp(mu.element(r,c)) * m.element(r);
+    try {
+        while (!bConvergence && nIterations < MAX_CONVERGENCE_ITERATIONS) {
+            Matrix mu(X * b);
+            for (int r=0; r < mu.Nrows(); ++r) {
+                for (int c=0; c < mu.Ncols(); ++c) {
+                    mu.element(r,c) = exp(mu.element(r,c)) * m.element(r);
+                }
             }
+            Matrix A = (X.t() * mu.AsDiagonal()) * X;
+            Matrix bnew = b - ((A.i() * ((X * -1.0).t())) * (y - mu));
+            double dif=0;
+            for (int r=0; r < b.Nrows(); ++r) { //Norm of the difference of 2 column vectors
+                dif += std::pow(b.element(r) - bnew.element(r,0), 2.0);
+            }
+            bConvergence = std::sqrt(dif) <= nConverge;
+            b = bnew;
+            ++nIterations;
+        }    
+        if (bConvergence) {
+            //printoutMatrix("b", b, stdout);
+            /* Note: The original algorithm implemented in R used 1 based matrices. Martin and I spent considerable time trying to determine 
+               whether 'r + 1' vs just 'r' was the correct value when creating matrice X above. It was ultimately determined to use 'r + 1'
+               and revise alpha variable to equal alpha + beta -- b.element(0) +  b.element(1). See issue #66235. */
+            gdAlpha = b.element(0) + b.element(1);
+            gdBeta = b.element(1);
+            gdBeta2 = b.element(2);
+            gStatus = QuadraticTimeTrend::CONVERGED;
+        } else {
+            gdAlpha = gdBeta = gdBeta2 = 0;
+            gStatus = QuadraticTimeTrend::NOT_CONVERGED;
         }
-        Matrix A = (X.t() * mu.AsDiagonal()) * X;
-        Matrix bnew = b - ((A.i() * ((X * -1.0).t())) * (y - mu));
-        double dif=0;
-        for (int r=0; r < b.Nrows(); ++r) { //Norm of the difference of 2 column vectors
-           dif += std::pow(b.element(r) - bnew.element(r,0), 2.0);
-        }
-        bConvergence = std::sqrt(dif) <= nConverge;
-        b = bnew;
-        ++nIterations;
+    } catch (SingularException& x) {
+        gdAlpha = gdBeta = gdBeta2 = 0;
+	    gStatus = QuadraticTimeTrend::SINGULAR_MATRIX;
     }
-    
-    if (bConvergence) {
-      //printoutMatrix("b", b, stdout);
-      gdAlpha = b.element(0);
-      gdBeta = b.element(1);
-      gdBeta2 = b.element(2);
-      gStatus = QuadraticTimeTrend::CONVERGED;
-    } else {
-      gdAlpha = gdBeta = gdBeta2 = 0;
-      gStatus = QuadraticTimeTrend::NOT_CONVERGED;
-    }
-  } catch (SingularException& x) {
-    gdAlpha = gdBeta = gdBeta2 = 0;
-	gStatus = QuadraticTimeTrend::SINGULAR_MATRIX;
-  }
-
-  //if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
-  //  fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
-  //      (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
-    //printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
-    //printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
-    //printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
-    //printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
-  //}
-
-  return gStatus;
+    //if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
+    //  fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
+    //      (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
+    //  printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
+    //  printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
+    //  printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
+    //  printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
+    //}
+    return gStatus;
 }
 
 /** Returns temporal trend expressed as a function of date precision. */
@@ -481,10 +479,9 @@ void QuadraticTimeTrend::getRiskFunction(std::string& functionStr, std::string& 
   if (constant != 0.0)
       printString(buffer3, " + %g", constant);
 
-  printString(definitionStr, "where t=(%s - %s)/%u%s",
+  printString(definitionStr, "where t=(%s - %s)%s",
               buffer.c_str(),
               JulianToString(buffer2, DataHub.GetTimeIntervalStartTimes()[0], params.GetTimeAggregationUnitsType()).c_str(),
-              DataHub.GetNumTimeIntervals(),
               buffer3.c_str());
 }
 
@@ -498,7 +495,7 @@ void QuadraticTimeTrend::Initialize() {
 void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const {
     std::string buffer, buffer2;
     getRiskFunction(buffer, buffer2, DataHub);
-    fprintf(AppToolkit::getToolkit().openDebugFile(), "Log quadratic time trend series (%s %s):\ndate, t, val, count, measure\n", buffer.c_str(), buffer2.c_str());
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "Log quadratic time trend series (%s %s):\ndate, t, predicted, count, measure\n", buffer.c_str(), buffer2.c_str());
     DatePrecisionType aggUnits = DataHub.GetParameters().GetTimeAggregationUnitsType();
     const std::vector<Julian>& intervalStartTimes = DataHub.GetTimeIntervalStartTimes();
     double constant = static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength() - 1) / 2.0;
@@ -507,8 +504,7 @@ void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData&
     count_t totalCases = 0;
     measure_t totalMeasure = 0.0;
     for (size_t t = 0; t < intervalStartTimes.size() - 1; ++t) {
-        double t_val = static_cast<double>(t * DataHub.GetParameters().GetTimeAggregationLength()) / static_cast<double>(intervalStartTimes.size() - 1) + constant;
-        double val = std::exp(GetAlpha() + GetBeta() * t_val + GetBeta2() * std::pow(t_val, 2));
+        double t_val = (static_cast<double>(t) * static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength())) + constant;
         count_t startCases = 0;
         for (int tt = 0; tt < cases.Get2ndDimension(); ++tt)
             startCases += cases.GetArray()[t][tt] - (t < cases.Get1stDimension() - 1 ? cases.GetArray()[t + 1][tt] : 0);
@@ -518,7 +514,7 @@ void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData&
         fprintf(
             AppToolkit::getToolkit().openDebugFile(), "%s, %d, %g, %d, %g\n",
             JulianToString(buffer, intervalStartTimes[t], aggUnits).c_str(),
-            t, val, startCases, startMeasure
+            t, std::exp(GetAlpha() + GetBeta() * t_val + GetBeta2() * std::pow(t_val, 2)), startCases, startMeasure
         );
         totalCases += startCases;
         totalMeasure += startMeasure;

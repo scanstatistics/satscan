@@ -56,8 +56,8 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         if (_dataHub.GetParameters().getClusterMonikerPrefix().size()) {
             printString(buffer2, " (%sC%u)", _dataHub.GetParameters().getClusterMonikerPrefix().c_str(), (iCluster + 1));
         }
-        outKML << "\t\t<name>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</name>" << std::endl;
-        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
+        outKML << "\t\t<name>#" << (iCluster + 1) << buffer2.c_str() << "</name>" << std::endl;
+        outKML << "\t\t<snippet>#" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
         outKML << "\t\t<visibility>" << (iCluster == 0 || cluster.isSignificant(_dataHub, iCluster, simVars) ? "1" : "0") << "</visibility>" << std::endl;
         //outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
@@ -153,13 +153,36 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
     }
 }
 
+/* Returns the kml color - including opacity. Full opacity is 100% otherwise 25%.  The label and colors change by drilldown index. */
+std::string& BaseClusterKML::getStyleColor(bool isHighRate, bool fullOpacity, std::string& buffer) const {
+    std::stringstream styleColor;
+    styleColor << (fullOpacity ? "ff" : "40");
+    if (!_dataHub.isDrilldown())
+        styleColor  << (isHighRate ? "0000aa" : "ff0000");
+    else if (_dataHub.getDrilldownLevel() == 1)
+        styleColor << (isHighRate ? "00aaff" : "005500");
+    else if (_dataHub.getDrilldownLevel() == 2)
+        styleColor << (isHighRate ? "00ffff" : "000055");
+    else if (_dataHub.getDrilldownLevel() == 3)
+        styleColor << (isHighRate ? "147ab2" : "005555");
+    else
+        styleColor << (isHighRate ? "1232b0" : "555555");
+    buffer = styleColor.str();
+    return buffer;
+}
+
 /** Returns style and stylemap tags for cluster. */
 std::string & BaseClusterKML::getClusterStyleTags(const CCluster& cluster, int iCluster, std::string& styleString, bool isHighRate) const {
-    std::stringstream  lines;
+    std::stringstream lines;
     std::string buffer;
 
-    lines << "\t<Style id=\"cluster-" << (iCluster + 1) << "-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>1.0</scale></LabelStyle>";
-    lines << "<LineStyle><color>" << (isHighRate ? "ff0000aa" : "ffff0000") << "</color></LineStyle><PolyStyle><color>" << (isHighRate ? "400000aa" : "40ff0000") << "</color></PolyStyle>";
+    // Calculate the label scale -- decreasing as we drilldown but no lower than 0.7 -- empirically determined to be best minimum.
+    double labelScale = std::max(_dataHub.isDrilldown() ? (1.0 - (static_cast<double>(_dataHub.getDrilldownLevel()) * 0.1)) : 1.0, 0.7);
+    // Calculate the line width -- increasing as we drilldown but no greater than 5 -- empirically determined to be best maximum.
+    unsigned int lineWidth = std::min(_dataHub.isDrilldown() ? _dataHub.getDrilldownLevel() + 2 : (unsigned int)1, (unsigned int)5);
+    lines << std::setprecision(1) << "\t<Style id=\"cluster-" << (iCluster + 1) << "-style\"><IconStyle><Icon></Icon></IconStyle><LabelStyle><scale>" << labelScale << "</scale></LabelStyle>";
+    lines << "<LineStyle><color>" << getStyleColor(isHighRate, true, buffer) << "</color><width>" << lineWidth << "</width></LineStyle>";
+    lines << "<PolyStyle><color>" << getStyleColor(isHighRate, false, buffer) << "</color></PolyStyle>";
     lines << "<BalloonStyle><text>" << getClusterBalloonTemplate(cluster, buffer).c_str() << "</text></BalloonStyle></Style>" << std::endl;
     lines << "\t<StyleMap id=\"cluster-" << (iCluster + 1) << "-stylemap\"><Pair><key>normal</key><styleUrl>#cluster-" << (iCluster + 1) << "-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#cluster-" << (iCluster + 1) << "-style</styleUrl></Pair></StyleMap>";
     styleString = lines.str();
@@ -229,13 +252,14 @@ std::string & BaseClusterKML::getClusterExtendedData(const CCluster& cluster, in
 
 /** Write the opening block to the KML file. */
 void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
+    std::string buffer;
     outKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     outKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
-    outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><color>ff0000aa</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-    outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>ffff0000</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    outKML << "\t<Style id=\"high-rate-placemark\"><IconStyle><color>" << getStyleColor(true, true, buffer) << "</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>" << getStyleColor(false, true, buffer) << "</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"location-placemark\"><IconStyle><color>ff019399</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
-	outKML << "\t<StyleMap id=\"high-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>ff0000aa</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>ff0000aa</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
-	outKML << "\t<StyleMap id=\"low-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>ffff0000</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>ffff0000</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+	outKML << "\t<StyleMap id=\"high-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << getStyleColor(true, true, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>" << getStyleColor(true, false, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+	outKML << "\t<StyleMap id=\"low-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << getStyleColor(false, true, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>" << getStyleColor(false, false, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
 
     FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
     outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;

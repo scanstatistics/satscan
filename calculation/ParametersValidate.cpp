@@ -400,8 +400,8 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
 
 /**/
 bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck) const {
-    std::string buffer = filename;
-
+    // Trim whitespace and apply any time formats.
+    std::string buffer = getFilenameFormatTime(filename);    
     trimString(buffer);
     if (buffer.empty()) {
         PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
@@ -638,12 +638,6 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
 
         /* Validate any restrictions on clusters by relative risk. */
         if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
-            // This feature isn't implemented with multiple data sets.
-            if (gParameters.getNumFileSets() > 1) {
-                bValid = false;
-                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented with multiple data sets.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-            }
             // Validate the risk thresholds by probability model.
             switch (gParameters.GetProbabilityModelType()) {
             case EXPONENTIAL:
@@ -672,6 +666,13 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             default:
                 bValid = false;
                 PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented for the %s model.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
+            // During development of version 10, Martin and I were unable able to determine how this should work with multiple data sets.
+            // As a matter of fact, Martin was questioning the formulas for relative risk and LLR but other pressing matters made us put this down.
+            if (gParameters.GetProbabilityModelType() == UNIFORMTIME && gParameters.getNumFileSets() > 1) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe option to limit clusters by risk level is not implemented for the %s model and multiple data sets.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
             }
         }
@@ -1439,10 +1440,8 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
           bValid = false;
           PrintDirection.Printf("%s:\nThe simulated data input file was not specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        else if (access(gParameters.GetSimulationDataSourceFilename().c_str(), 00)) {
+        else if (!checkFileExists(gParameters.GetSimulationDataSourceFilename(), "simulation source", PrintDirection)) {
           bValid = false;
-          PrintDirection.Printf("%s:\nThe simulated data input file '%s' does not exist. Please ensure the path is correct.\n",
-                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetSimulationDataSourceFilename().c_str());
         }
         if (gParameters.GetOutputSimulationData() && gParameters.GetSimulationDataSourceFilename() == gParameters.GetSimulationDataOutputFilename()) {
           bValid = false;

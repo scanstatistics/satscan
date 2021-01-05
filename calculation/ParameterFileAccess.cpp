@@ -256,7 +256,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case CASEFILE                     : s = gParameters.GetCaseFileName().c_str(); return s;
       case POPFILE                      : s = gParameters.GetPopulationFileName().c_str(); return s;
       case COORDFILE                    : s = gParameters.GetCoordinatesFileName().c_str(); return s;
-      case OUTPUTFILE                   : s = gParameters.GetOutputFileName().c_str(); return s;
+      case OUTPUTFILE                   : s = gParameters.GetOutputFileNameSetting().c_str(); return s;
       case PRECISION                    : return AsString(s, gParameters.GetPrecisionOfTimesType());
       case DIMENSION                    : s = "0"; return s;
       case SPECIALGRID                  : return AsString(s, gParameters.UseSpecialGrid());
@@ -630,7 +630,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case CASEFILE                     : gParameters.SetCaseFileName(sParameter.c_str(), true); break;
       case POPFILE                      : gParameters.SetPopulationFileName(sParameter.c_str(), true); break;
       case COORDFILE                    : gParameters.SetCoordinatesFileName(sParameter.c_str(), true); break;
-      case OUTPUTFILE                   : gParameters.SetOutputFileName(sParameter.c_str(), true); break;
+      case OUTPUTFILE                   : gParameters.SetOutputFileNameSetting(sParameter.c_str(), true); break;
       case PRECISION                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
                                           gParameters.SetPrecisionOfTimesType((DatePrecisionType)iValue); break;
       case DIMENSION                    : //Dimensions no longer read from file.
@@ -938,6 +938,13 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
     return source;
 }
 
+bool AbtractParameterFileAccess::Read(std::stringstream& stream) {
+    throw prg_error("AbtractParameterFileAccess::Read(std::stringstream& stream) not implemented.", "Read(std::stringstream& stream)");
+}
+
+void AbtractParameterFileAccess::Write(std::stringstream& stream) {
+    throw prg_error("AbtractParameterFileAccess::Write(std::stringstream& stream) not implemented.", "Write(std::stringstream& stream)");
+}
 
 parameter_error::parameter_error(const char * format, ...) : resolvable_error() {
   try {

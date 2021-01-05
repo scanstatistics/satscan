@@ -11,6 +11,7 @@ extern "C" {
 #define org_satscan_app_Parameters_MAXIMUM_ITERATIVE_ANALYSES 32000L
 #undef org_satscan_app_Parameters_MAXIMUM_ELLIPSOIDS
 #define org_satscan_app_Parameters_MAXIMUM_ELLIPSOIDS 10L
+
 /*
  * Class:     org_satscan_app_Parameters
  * Method:    Read
@@ -21,11 +22,27 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read
 
 /*
  * Class:     org_satscan_app_Parameters
+ * Method:    ReadFromStringStream
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_ReadFromStringStream
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_satscan_app_Parameters
  * Method:    Write
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write
   (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_satscan_app_Parameters
+ * Method:    Write
+ * Signature: (V)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_satscan_app_Parameters_WriteToStringStream
+  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

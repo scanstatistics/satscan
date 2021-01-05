@@ -24,6 +24,7 @@
 #include "org_satscan_gui_ParameterSettingsFrame.h"
 #include "org_satscan_gui_OberservableRegionsFrame.h"
 #include "org_satscan_app_AppConstants.h"
+#include "org_satscan_utils_FileAccess.h"
 #include "org_satscan_importer_ShapefileDataSource.h"
 #include "FileName.h"
 #include "JNIException.h"
@@ -230,6 +231,28 @@ JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getReleaseDate(JNIEn
 
 JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getVersionId(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(VERSION_ID);
+}
+
+/** Calcuates the number of time intervals given study period start and end dates. */
+JNIEXPORT jstring JNICALL Java_org_satscan_utils_FileAccess_getFormatSubstitutedFilename(JNIEnv * pEnv, jclass, jstring jfilename) {
+    jboolean iscopy;
+    try {
+        const char * sfilename = pEnv->GetStringUTFChars(jfilename, &iscopy);
+        std::string substitutedfilename(getFilenameFormatTime(std::string(sfilename)));
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jfilename, sfilename);
+        return pEnv->NewStringUTF(substitutedfilename.c_str());
+    }
+    catch (jni_error & x) {
+        return pEnv->NewStringUTF("");
+    }
+    catch (std::exception& x) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+        return pEnv->NewStringUTF("");
+    }
+    catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return pEnv->NewStringUTF("");
+    }
 }
 
 JNIEXPORT jstring JNICALL Java_org_satscan_gui_OberservableRegionsFrame__1getRegionIsValid(JNIEnv  * pEnv, jobject , jstring regions) {

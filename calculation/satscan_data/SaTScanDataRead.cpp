@@ -1101,7 +1101,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
 /** Opens meta locations file data source and parses meta location definitions. */
 bool SaTScanDataReader::ReadMetaLocationsFile() {
   bool                  bValid=true, bEmpty=true, bStructuredMetaData;
-  std::string           sIdentifier, sLocations;
+  std::string           sIdentifier, sLocations, metaLocationsFilename(getFilenameFormatTime(gParameters.getMetaLocationsFilename()));
   long                  uLocation0ffset;
 
   try {
@@ -1114,11 +1114,11 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
     //determine format of file, either:
     // meta1=loc1,loc2, loc3
     // meta1 loc1 loc2 loc3
-    std::ifstream SourceFile(gParameters.getMetaLocationsFilename().c_str());
+    std::ifstream SourceFile(metaLocationsFilename.c_str());
     getlinePortable(SourceFile, sIdentifier);
     bStructuredMetaData = (sIdentifier.find("=") == sIdentifier.npos ? false : true);
     SourceFile.close();
-    AsciiFileDataSource Source(gParameters.getMetaLocationsFilename().c_str(), gPrint, (bStructuredMetaData ? '=' : ' '));
+    AsciiFileDataSource Source(metaLocationsFilename.c_str(), gPrint, (bStructuredMetaData ? '=' : ' '));
 
     //first pass on neighbors file to determine all location identifiers referenced
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {

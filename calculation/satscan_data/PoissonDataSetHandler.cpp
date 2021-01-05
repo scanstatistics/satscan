@@ -482,7 +482,7 @@ void PoissonDataSetHandler::SetRandomizers() {
             gvDataSetRandomizers.at(0) = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetSimulationDataSourceFilename(), gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()), gParameters.GetRandomizationSeed());
           break;
       default :
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

@@ -62,7 +62,7 @@ class IniSection {
     const char                * GetName() const;
     long                        GetNumLines() const;
     const char                * GetString(std::string& buffer, const char *sKeyName, const char *sDefault = "") const;
-    void                        Read(std::ifstream& readstream);
+    void                        Read(std::istream &readstream); // std::ifstream& readstream);
     bool                        RemoveLine( const char *sKeyName, const char *sEntry = 0 );
     void                        RemoveLine( long lIndex );
     void                        SetBool(const char *sKeyName, bool bValue);
@@ -70,13 +70,15 @@ class IniSection {
     void                        SetName(const char *sSectionName);
     void                        SetString(const char *sKeyName, const char *sEntry);
     void                        Write(std::ofstream& writestream) const;
+    void                        Write(std::stringstream& stream, bool includeNewlines, bool includeComments) const;
 };
 
 class IniFile {
   private:
     mutable ptr_vector<IniSection> gaSections;
 
-    bool                        SeekToNextSection(std::ifstream& readstream) const;
+    void                        ReadStream(std::istream &readstream);
+    bool                        SeekToNextSection(std::istream &readstream) const; // std::ifstream& readstream) const;
 
   public:
     IniFile();
@@ -98,7 +100,9 @@ class IniFile {
     long                        GetSectionIndex(const char *sSectionName, long lStartPosition = 0) const;
     const char                * GetSectionName(long lIndex);
     void                        Read(const std::string& file);
+    void                        Read(std::stringstream &readstream);
     void                        Write(const std::string& file) const;
+    void                        Write(std::stringstream& stream, bool includeNewlines, bool includeComments) const;
 };
 //******************************************************************************
 #endif

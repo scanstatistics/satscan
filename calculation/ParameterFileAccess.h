@@ -62,6 +62,7 @@ class AbtractParameterFileAccess {
      virtual ~AbtractParameterFileAccess();
 
      virtual bool               Read(const char* szFilename) = 0;
+     virtual bool               Read(std::stringstream& stream);
      void                       SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
      CParameters::InputSource & setInputSource(CParameters::InputSource & source,
                                                const std::string& typeStr,
@@ -72,6 +73,7 @@ class AbtractParameterFileAccess {
                                                const std::string& headerStr,
                                                BasePrint& PrintDirection);
      virtual void               Write(const char * szFilename) = 0;
+     virtual void               Write(std::stringstream& stream);
 };
 
 /** Execption class of invalid parameters */
