@@ -4,8 +4,8 @@
 build="/prj/satscan/build.area"
 installer_version="/prj/satscan/installers/v.9.7.x"
 
-launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.0.1"
-IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.0.8"
+launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
+IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 
 #### Windows ##############################################################################
 
