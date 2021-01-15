@@ -116,8 +116,6 @@ void CPoissonModel::AdjustForCalculatedTrend(RealDataSet& Set) {
             gDataHub.GetParameters().GetTimeAggregationUnitsType(), gDataHub.GetParameters().GetTimeAggregationLength()
         )
     );
-
-  TimeTrend->printSeries(Set, gDataHub);
 }
 
 /** Adjusts passed non-cumulative measure for parameter specified temporal,

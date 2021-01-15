@@ -12,7 +12,7 @@ fi
 (
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
-osx_min_version="-mmacosx-version-min=10.6"
+osx_min_version="-mmacosx-version-min=10.9"
 binaries="$3"
 satscan_src="$1"
 boost_src="$2"
@@ -23,27 +23,14 @@ rm -f $binaries/*
 
 # Intel command-line binaries
 
-echo building SaTScan for 32-bit system using gcc4.0.1 - i386
-./makescript.mac.sh $binaries/satscan_gcc4.0.1_i386_32bit $satscan_src $boost_src -m32 -O3 $cpp_compiler $c_compiler "-arch i386" $osx_min_version $processors
-
 echo building SaTScan for 64-bit system using gcc4.0.1 - x86_64
 ./makescript.mac.sh $binaries/satscan_gcc4.0.1_x86_64_64bit $satscan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch x86_64" $osx_min_version $processors
 
-# Create universal binary - only interested in Intel architectures
-echo creating universal binary for 32-bit and 64-bit systems
-lipo -create $binaries/satscan_gcc4.0.1_i386_32bit $binaries/satscan_gcc4.0.1_x86_64_64bit -output $binaries/satscan
-
 # Intel JNI libraries
-
-echo building SaTScan shared object for 32-bit system using gcc4.0.1 - i386
-./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_i386_32bit.jnilib $satscan_src $boost_src -m32 -O3 $cpp_compiler $c_compiler "-arch i386"  $osx_min_version $processors
 
 echo building SaTScan shared object for 64-bit system using gcc4.0.1 - x86_64
 ./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_x86_64_64bit.jnilib $satscan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch x86_64" $osx_min_version $processors
 
-# Create universal binary - only interested in Intel architectures
-echo creating universal shared object binary for 32-bit and 64-bit systems
-lipo -create $binaries/libsatscan.gcc4.0.1_i386_32bit.jnilib $binaries/libsatscan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libsatscan.jnilib
 
 # codesign binaries
 security unlock-keychain $HOME/Library/Keychains/login.keychain

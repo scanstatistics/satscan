@@ -83,7 +83,7 @@ void MultiSetSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
 void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                             AbstractLikelihoodCalculator& Calculator,
                                                             std::vector<unsigned int>& vDataSetIndexes) const {
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {
@@ -191,7 +191,7 @@ const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetTemporalData::getRatio
 void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                             AbstractLikelihoodCalculator& Calculator,
                                                             std::vector<unsigned int>& vDataSetIndexes) const {
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {

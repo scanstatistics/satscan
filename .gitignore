@@ -63,3 +63,5 @@ test/Release
 /java_application/updater_application/dist/
 /java_application/updater_application/build/
 /java_application/jni_application/nbproject/private/
+
+*.dylib

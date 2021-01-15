@@ -77,7 +77,7 @@ void MultiSetNormalSpatialData::GetDataSetIndexesComprisedInRatio(double dTarget
                                                                   AbstractLikelihoodCalculator& Calculator,
                                                                   std::vector<unsigned int>& vDataSetIndexes) const {
 
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {
@@ -186,7 +186,7 @@ const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetNormalTemporalData::ge
 void AbstractMultiSetNormalTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                            AbstractLikelihoodCalculator& Calculator,
                                                                            std::vector<unsigned int>& vDataSetIndexes) const {
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {

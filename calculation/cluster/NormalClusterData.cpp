@@ -46,7 +46,7 @@ void NormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
     return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux);
   return 0;
 }
@@ -67,7 +67,7 @@ void NormalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs
 /** Calculates and returns maximizing value given accumulated cluster data. If data
     is not significant given scanning rate, negation of maximum double returned. */
 double NormalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
     return Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux);
   return -std::numeric_limits<double>::max();
 }
@@ -209,14 +209,14 @@ double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelih
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
   gtMeasureAux = gpMeasureAux[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
       dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux));
   }
   return dMaxLoglikelihoodRatio;
@@ -232,15 +232,15 @@ double NormalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcul
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
   gtMeasureAux = gpMeasureAux[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux, 0);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+    dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux, 0));
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux));
   }
   return dMaxValue;
 }
@@ -593,7 +593,7 @@ void NormalCovariateSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     calculated by probability model. */
 double NormalCovariateSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
    assert(geEvaluationAssistDataStatus == Allocated);
-   if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0)) {
+   if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux)) {
       double ratio = Calculator.CalcLogLikelihoodRatioNormal(*_xg, *_tobeinversed,*_xgsigmaw);
       return ratio;
    }
@@ -630,7 +630,7 @@ void NormalCovariateSpatialData::DeallocateEvaluationAssistClassMembers() {
     is not significant given scanning rate, negation of maximum double returned. */
 double NormalCovariateSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
   assert(geEvaluationAssistDataStatus == Allocated);
-  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
     return Calculator.CalculateMaximizingValueNormal(*_xg, *_tobeinversed,*_xgsigmaw);   
   return -std::numeric_limits<double>::max();
 }

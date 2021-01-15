@@ -85,7 +85,7 @@ void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dT
                                                                     AbstractLikelihoodCalculator& Calculator,
                                                                     std::vector<unsigned int>& vDataSetIndexes) const {
 
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {
@@ -197,7 +197,7 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
                                                                     AbstractLikelihoodCalculator& Calculator,
                                                                     std::vector<unsigned int>& vDataSetIndexes) const {
 
-  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
   vDataSetIndexes.clear();
   if (pUnifier) {

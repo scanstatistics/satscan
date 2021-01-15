@@ -50,7 +50,7 @@ void TemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& cl
         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure,0)) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
                 Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatio(Data.gtCases, Data.gtMeasure);
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
@@ -99,7 +99,7 @@ double TemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, 0))
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, 0));
         }
     }
@@ -155,7 +155,7 @@ void ClosedLoopTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClus
             Data.gtCases += pCases[0] - pCases[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[std::min(iWindowEnd, _extended_period_start)];
             Data.gtMeasure += pMeasure[0] - pMeasure[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure,0)) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
                 Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatio(Data.gtCases, Data.gtMeasure);
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
@@ -215,7 +215,7 @@ double ClosedLoopTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalC
             Data.gtCases += pCases[0] - pCases[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[std::min(iWindowEnd, _extended_period_start)];
             Data.gtMeasure += pMeasure[0] - pMeasure[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, 0))
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, 0));
         }
     }
@@ -508,7 +508,7 @@ void NormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterS
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
             Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
             Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0)) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux)) {
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux);
@@ -543,7 +543,7 @@ double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClust
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
             Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
             Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0))
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0));
         }
     }
@@ -699,7 +699,7 @@ void ClosedLoopNormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running,
             Data.gtMeasure += Data.gpMeasure[0] - Data.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[std::min(iWindowEnd, _extended_period_start)];
             Data.gtMeasureAux += Data.gpMeasureAux[0] - Data.gpMeasureAux[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0)) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux)) {
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux);
@@ -738,7 +738,7 @@ double ClosedLoopNormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTem
             Data.gtMeasure += Data.gpMeasure[0] - Data.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[std::min(iWindowEnd, _extended_period_start)];
             Data.gtMeasureAux += Data.gpMeasureAux[0] - Data.gpMeasureAux[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0))
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0));
         }
     }

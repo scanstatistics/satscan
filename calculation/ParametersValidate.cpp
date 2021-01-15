@@ -676,8 +676,8 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
             }
         }
-        /* Validate the settings for minimum number of cases in low rate and high rate clusters. This feature isn't available for multiple data sets and neither ordinal / multinomial models. */
-        if (gParameters.getNumFileSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+        /* Validate the settings for minimum number of cases in low rate and high rate clusters. This feature isn't available for ordinal / multinomial models. */
+        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
             /* Validate the minimum number of cases in low rate clusters */
             if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getMinimumCasesLowRateClusters() < 2 && (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW)) {
                 /* Since this settings is no present in GUI, just default to minimum value for normal model. */

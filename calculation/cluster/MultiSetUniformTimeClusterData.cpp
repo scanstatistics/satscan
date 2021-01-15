@@ -69,7 +69,7 @@ comprised target ratio. */
 void MultiSetUniformTimeTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
     AbstractLikelihoodCalculator& Calculator,
     std::vector<unsigned int>& vDataSetIndexes) const {
-    MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
     vDataSetIndexes.clear();
     if (pUnifier) {
@@ -216,7 +216,7 @@ comprised target ratio. */
 void MultiSetUniformTimeSpaceTimeData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
     AbstractLikelihoodCalculator& Calculator,
     std::vector<unsigned int>& vDataSetIndexes) const {
-    MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
 
     vDataSetIndexes.clear();
     if (pUnifier) {

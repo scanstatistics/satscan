@@ -37,7 +37,7 @@ void SpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
   return 0;
 }
@@ -45,7 +45,7 @@ double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Ca
 /** Calculates and returns maximizing value given accumulated data. If accumulated data
     is not significant, the negation of the maximum double is returned. */
 double SpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     return Calculator.CalculateMaximizingValue(gtCases, gtMeasure);
   return -std::numeric_limits<double>::max();
 }
@@ -108,7 +108,7 @@ void SpatialHomogeneousData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double SpatialHomogeneousData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
   return 0;
 }
@@ -116,7 +116,7 @@ double SpatialHomogeneousData::CalculateLoglikelihoodRatio(AbstractLikelihoodCal
 /** Calculates and returns maximizing value given accumulated data. If accumulated data
     is not significant, the negation of the maximum double is returned. */
 double SpatialHomogeneousData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     return Calculator.CalculateMaximizingValue(gtCases, gtMeasure);
   return -std::numeric_limits<double>::max();
 }
@@ -517,13 +517,13 @@ double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCal
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
     dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
       dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure));
   }
   return dMaxLoglikelihoodRatio;
@@ -556,14 +556,14 @@ double ProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& 
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    dMaxValue = Calculator.CalculateMaximizingValue(gtCases, gtMeasure, 0);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+    dMaxValue = Calculator.CalculateMaximizingValue(gtCases, gtMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValue(gtCases, gtMeasure, 0));
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValue(gtCases, gtMeasure));
   }
   return dMaxValue;
 }

@@ -401,7 +401,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public void enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType scanrate) {
-        boolean enableGroup = _additionalDataSetsGroup.isEnabled() == false || _dataSetsListModel.getSize() == 0;
+        boolean enableGroup = true;
         Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
         enableGroup &= !(modeltype == Parameters.ProbabilityModelType.ORDINAL || modeltype == Parameters.ProbabilityModelType.CATEGORICAL);
         enableGroup &= (scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW);

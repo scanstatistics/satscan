@@ -632,7 +632,7 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.getNumFileSets() == 1 && !(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
+        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
             if (gParameters.getIsWeightedNormalCovariates() && gParameters.GetAreaScanRateType() == HIGHANDLOW) {
                 // There is a special situation with the weighted normal model with covariates and scanning for low and high rates together.
                 unsigned int minimum = std::max(gParameters.getMinimumCasesLowRateClusters(), gParameters.getMinimumCasesHighRateClusters());

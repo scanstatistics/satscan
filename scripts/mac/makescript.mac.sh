@@ -12,28 +12,28 @@ fi
 echo building xbase library ...
 cd $2/xbase/xbase_2.0.0/xbase
 make clean
-make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10}
+make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" CFLAGS="-stdlib=libc++" ${10}
 echo xbase done
 echo
 
 echo building newmat library ...
 cd $2/newmat/newmat10
 make -f nm_gnu.mak clean
-make -f nm_gnu.mak libnewmat.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-O2 -Wall $4" ${10}
+make -f nm_gnu.mak libnewmat.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4" ${10}
 echo newmat done
 echo
 
 echo building shapelib library ...
 cd $2/shapelib/shapelib_1.2.10
 make clean
-make libshape.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-O2 -Wall $4" ${10}
+make libshape.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4" ${10}
 echo shapelib done
 echo
 
 echo building zlib library ...
 cd $2/zlib/zlib-1.2.7
 make clean
-make libz.dylib CC="$7 $8 $9 -dynamiclib" CFLAGS="-O3 -Wall $4 -DHAVE_HIDDEN" ${10}
+make libz.dylib CC="$7 $8 $9 -dynamiclib" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -DHAVE_HIDDEN  -DHAVE_UNISTD_H" ${10}
 echo zlib done
 echo
 
