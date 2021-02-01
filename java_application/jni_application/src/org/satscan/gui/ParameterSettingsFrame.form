@@ -1549,7 +1549,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_lowRatesRadioButton">
@@ -1565,7 +1565,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_highOrLowRatesRadioButton">
@@ -1581,7 +1581,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;        getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

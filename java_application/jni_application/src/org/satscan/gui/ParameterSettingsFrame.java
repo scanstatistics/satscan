@@ -82,7 +82,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * Creates new form ParameterSettingsFrame
      */
-    public ParameterSettingsFrame(final JRootPane rootPane, BatchAnalysisFrame batchFrame, Parameters source_parameters) {
+    public ParameterSettingsFrame(final JRootPane rootPane, BatchAnalysisFrame batchFrame, final Parameters source_parameters) {
         initComponents();
         _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
         _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
@@ -91,10 +91,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _batchFrame = batchFrame;
         addInternalFrameListener(this);
         defaultHiddenParameters();
-        _parameters = source_parameters;
+        // Clone parameters -- we'll copy any updates when closing window.
+        _parameters = (Parameters)source_parameters.clone();
         setupInterface(_parameters);
         saveParameterSettings(_parameters);
         _initialParameters = (Parameters) _parameters.clone();
+        setTitle("Batch Analysis Settings");
         pack();
     }    
     
@@ -235,6 +237,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     } else {
                         bReturn = false;
                     }
+                    break;
+                case JOptionPane.NO_OPTION:
+                    // If this is a settings window opened from batch frame, reset parameters to match initial settings.
+                    if (_batchFrame != null)
+                        _parameters = (Parameters)_initialParameters.clone();
                     break;
                 case JOptionPane.CANCEL_OPTION:
                     bReturn = false;
@@ -2753,8 +2760,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _highRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);
-                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);
+                //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);
+                //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForAnalysisModelCombination();
+                }
             }
         });
 
@@ -2763,8 +2773,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _lowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);
-                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);
+                //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);
+                //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForAnalysisModelCombination();
+                }
             }
         });
 
@@ -2773,8 +2786,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _highOrLowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);
-                getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);
+                //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);
+                //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForAnalysisModelCombination();
+                }
             }
         });
 

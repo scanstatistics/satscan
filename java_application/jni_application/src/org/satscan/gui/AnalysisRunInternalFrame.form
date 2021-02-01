@@ -70,7 +70,7 @@
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="_emailButton" min="-2" pref="76" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_cancelButton" min="-2" pref="76" max="-2" attributes="0"/>
+                      <Component id="_user_cancel_button" min="-2" pref="76" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="_bottom_tabbed_pane" alignment="0" max="32767" attributes="0"/>
@@ -82,7 +82,7 @@
                       <Component id="_bottom_tabbed_pane" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="_cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_user_cancel_button" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="_emailButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -255,12 +255,12 @@
                 </Container>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JButton" name="_cancelButton">
+            <Component class="javax.swing.JButton" name="_user_cancel_button">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Cancel"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cancelButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        if (_cancelButton.getText().equals(&quot;Close&quot;)) {&#xa;            try {&#xa;                AnalysisRunInternalFrame.this.setClosed(true);&#xa;            } catch (PropertyVetoException e1) {&#xa;                // TODO Auto-generated catch block&#xa;                e1.printStackTrace();&#xa;            }&#xa;        } else {&#xa;            PrintProgressWindow(&quot;Cancelling job, please wait...&quot;);&#xa;            gbCancel = true;&#xa;        }&#xa;        // gRegistry.Release(gsOutputFileName);&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_user_cancel_button.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        if (_user_cancel_button.getText().equals(&quot;Close&quot;)) {&#xa;            try {&#xa;                AnalysisRunInternalFrame.this.setClosed(true);&#xa;            } catch (PropertyVetoException e1) {&#xa;                e1.printStackTrace();&#xa;            }&#xa;        } else {&#xa;            PrintProgressWindow(&quot;Cancelling job, please wait while execution is interrupted ...&quot;);&#xa;            _user_cancelled = true;&#xa;        }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_emailButton">

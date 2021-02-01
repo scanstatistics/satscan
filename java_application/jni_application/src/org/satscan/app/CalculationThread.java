@@ -7,78 +7,72 @@ import org.satscan.gui.AnalysisRunInternalFrame;
  */
 public class CalculationThread extends Thread {
 
-    private final AnalysisRunInternalFrame AnalysisRun;
-    final private Parameters Parameters;
-    String gsProgramErrorCallPath = "";
+    private final AnalysisRunInternalFrame _analysis_run_frame;
+    final private Parameters _parameters;
+    String _program_error_callpath = "";
 
     public native int RunAnalysis(Parameters jparameters);
 
-    public CalculationThread(AnalysisRunInternalFrame AnalysisRun, final Parameters Parameters) {
-        super(Parameters.GetSourceFileName());
-        this.AnalysisRun = AnalysisRun;
-        this.Parameters = Parameters;
+    public CalculationThread(AnalysisRunInternalFrame analysis_run_frame, final Parameters parameters) {
+        super(parameters.GetOutputFileName());
+        _analysis_run_frame = analysis_run_frame;
+        _parameters = parameters;
     }
 
     synchronized private boolean IsCancelled() {
-        return AnalysisRun.IsJobCanceled();
+        return _analysis_run_frame.userCancelled();
     }
 
     synchronized private void PrintStandard(java.lang.String line) {
-        AnalysisRun.PrintProgressWindow(line);
+        _analysis_run_frame.PrintProgressWindow(line);
     }
 
     synchronized public void PrintError(String line) {
-        AnalysisRun.PrintIssuesWindndow(line);
+        _analysis_run_frame.PrintIssuesWindndow(line);
     }
 
     synchronized public void PrintWarning(String line) {
-        AnalysisRun.PrintIssuesWindndow(line);
+        _analysis_run_frame.PrintIssuesWindndow(line);
     }
 
     synchronized public void PrintNotice(String line) {
-        AnalysisRun.PrintIssuesWindndow(line);
+        _analysis_run_frame.PrintIssuesWindndow(line);
     }
 
     synchronized public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile, int significantClusters) {
-        AnalysisRun.ReportDrilldownResults(drilldown_resultfile, parent_resultfile, significantClusters);
+        _analysis_run_frame.ReportDrilldownResults(drilldown_resultfile, parent_resultfile, significantClusters);
     }
     
-    synchronized public void setCallpath(String sCallpath) {
-        gsProgramErrorCallPath = sCallpath;
+    synchronized public void setCallpath(String call_path) {
+        _program_error_callpath = call_path;
     }
 
-    /**
-     * Starts thread execution -- makes call to native code through JNI function. 
-     */
+    /** Starts thread execution -- makes call to native code through JNI function. */
     @Override
     public void run() {
         try {
-            if (RunAnalysis(Parameters) == 0) {
-                if (AnalysisRun.IsJobCanceled()) {
-                    //analysis cancelled by user -- acknowledge that engine has teminated
-                    AnalysisRun.setTitle("Job cancelled");
-                    AnalysisRun.PrintProgressWindow("Job cancelled by user.");
+            if (RunAnalysis(_parameters) == 0) {
+                // Analysis execution terminated normally.
+                if (_analysis_run_frame.userCancelled()) {
+                    // Analysis cancelled by user -- acknowledge that engine has terminated.
+                    _analysis_run_frame.setTitle("Job cancelled");
+                    _analysis_run_frame.PrintProgressWindow("Job cancelled by user.");
                 } else {
-                    AnalysisRun.loadAnalysisResults(true);
+                    // Cause analysis run framer to load results of a successful analysis.
+                    _analysis_run_frame.loadAnalysisResults(true);
                 }
             } else {
-                AnalysisRun.enableEmailButton();
-                AnalysisRun.setProgramErrorCallpathExplicit(gsProgramErrorCallPath);
-                AnalysisRun.CancelJob();
+                // Analysis execution terminated with some kind of error.
+                _analysis_run_frame.setExceptionalTermination(_program_error_callpath);
             }
-
-            AnalysisRun.setCanClose(true);
-            AnalysisRun.setCloseButton();
-            AnalysisRun.setPrintEnabled();
-            if (!AnalysisRun.getWarningsErrorsEncountered()) {
-                AnalysisRun.PrintIssuesWindndow("No Warnings or Errors.");
-            }
+            // If no warnings or errors reported at this point, so that to user.
+            if (!_analysis_run_frame.issuesReported())
+                _analysis_run_frame.PrintIssuesWindndow("No Warnings or Errors.");
+            _analysis_run_frame.setPrintEnabled();
+            _analysis_run_frame.setCanClose(true);
+            _analysis_run_frame.setCloseButton();
         } catch (Throwable t) {
-            PrintError(t.getMessage());
-            AnalysisRun.setProgramErrorCallpath(t.getStackTrace());
-            AnalysisRun.enableEmailButton();
-            AnalysisRun.CancelJob();
+            _analysis_run_frame.setExceptionOccurred(t.getMessage(), t.getStackTrace());
         }
-
     }
 }

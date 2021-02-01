@@ -522,8 +522,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableBorderAnalysisGroup(false);
                 break;
             case SPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
+                enableAdjustmentForTimeTrendOptionsGroup(
+                    bPoisson || (false && bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
+                    (bPoisson || (false && bBernoulli && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION)), 
+                    bPoisson, bPoisson
+                );
+                enableAdjustmentForSpatialOptionsGroup(
+                    bPoisson || (false && bBernoulli), 
+                    (bPoisson) || (false && bBernoulli && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION)
+                );
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
@@ -542,8 +549,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableBorderAnalysisGroup(false);
                 break;
             case PROSPECTIVESPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
+                enableAdjustmentForTimeTrendOptionsGroup(
+                    bPoisson || (false && bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
+                    (bPoisson || (false && bBernoulli && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION)), 
+                    bPoisson, bPoisson
+                );
+                enableAdjustmentForSpatialOptionsGroup(
+                    bPoisson || (false && bBernoulli), 
+                    (bPoisson) || (false && bBernoulli && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION)
+                );
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);
@@ -610,6 +624,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         updateMonteCarloTextCaptions();
         enableMapsOutputGroup();
         enableDrilldownGroup();
+        setSpatialDistanceCaption();
     }
 
     public boolean isAdjustingForDayOfWeek() {
@@ -640,20 +655,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void setSpatialDistanceCaption() {
         String sRadioCaption = "", sLabelCaption = "";
 
-        sRadioCaption = String.format("is %1$s with a", (_circularRadioButton.isSelected() ? "a circle" : "an ellipse"));
+        if (Utils.selected(_locations_network))
+            sRadioCaption = "is a distance of ";
+        else
+            sRadioCaption = String.format("is %1$s with a", (_circularRadioButton.isSelected() ? "a circle" : "an ellipse"));
         _distancePrefixLabel.setText(sRadioCaption);
-        //getJEdtMaxSpatialRadius().setLocation(new java.awt.Point(getJRdoCircular().isSelected() ? 159 : 168, getJEdtMaxSpatialRadius().getLocation().y));
-        //jLblMaxRadius.setLocation(new java.awt.Point(getJRdoCircular().isSelected() ? 227 : 236 , jLblMaxRadius.getLocation().y));
-        sRadioCaption = String.format("%1$s with a", (_circularRadioButton.isSelected() ? "a circle" : "an ellipse"));
         _reportedMaxDistanceLabel.setText(sRadioCaption);
-        //getJEdtMaxReportedSpatialRadius().setLocation(new java.awt.Point(getJRdoCircular().isSelected() ? 170 : 178 , getJEdtMaxReportedSpatialRadius().getLocation().y));
-        //_maxRadiusLabel.setLocation(new java.awt.Point(getJRdoCircular().isSelected() ? 238 : 245, jLblMaxReportedRadius.getLocation().y));
         switch (_settings_window.getCoordinatesType()) {
             case CARTESIAN:
                 sLabelCaption = String.format("Cartesian units %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
             case LATLON:
-                sLabelCaption = String.format("kilometer %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
+                if (Utils.selected(_locations_network))
+                    sLabelCaption = "kilometers";
+                else
+                    sLabelCaption = String.format("kilometer %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
         }
         _maxRadiusLabel.setText(sLabelCaption);
@@ -1925,9 +1941,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxCirclePopFileBrowseButton.setEnabled(bEnablePopulationFile);
 
         _spatialDistanceCheckBox.setEnabled(bEnable && !_specifiyNeighborsFileCheckBox.isSelected());
-        _maxSpatialRadiusTextField.setEnabled(_spatialDistanceCheckBox.isEnabled() && _spatialDistanceCheckBox.isSelected());
-        _distancePrefixLabel.setEnabled(_spatialDistanceCheckBox.isEnabled());
-        _maxRadiusLabel.setEnabled(_spatialDistanceCheckBox.isEnabled());
+        _maxSpatialRadiusTextField.setEnabled(Utils.selected(_spatialDistanceCheckBox));
+        _distancePrefixLabel.setEnabled(Utils.selected(_spatialDistanceCheckBox));
+        _maxRadiusLabel.setEnabled(Utils.selected(_spatialDistanceCheckBox));
 
         _inclPureTempClustCheckBox.setEnabled(bEnable && bEnableIncludePurelyTemporal);
         enableReportedSpatialOptionsGroup(bEnable);
@@ -1961,17 +1977,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrictReportedClustersCheckBox.setEnabled(bEnable);
 
         boolean bEnablePopPercentage = true;
-        _maxReportedSpatialClusterSizeTextField.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
-        _reportedPercentOfPopulationLabel.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
+        _maxReportedSpatialClusterSizeTextField.setEnabled(Utils.selected(_restrictReportedClustersCheckBox) && bEnablePopPercentage);
+        _reportedPercentOfPopulationLabel.setEnabled(Utils.selected(_restrictReportedClustersCheckBox) && bEnablePopPercentage);
         boolean bEnablePopulationFile = bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
-        _reportedSpatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected());
-        _maxReportedSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected() && _reportedSpatialPopulationFileCheckBox.isSelected());
-        _reportedPercentageOfPopFileLabel.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected());
+        _reportedSpatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile && Utils.selected(_restrictReportedClustersCheckBox));
+        _maxReportedSpatialPercentFileTextField.setEnabled(Utils.selected(_reportedSpatialPopulationFileCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
+        _reportedPercentageOfPopFileLabel.setEnabled(Utils.selected(_reportedSpatialPopulationFileCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
 
-        _reportedSpatialDistanceCheckBox.setEnabled(bEnable && !_specifiyNeighborsFileCheckBox.isSelected() && _restrictReportedClustersCheckBox.isSelected());
-        _reportedMaxDistanceLabel.setEnabled(_reportedSpatialDistanceCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected());
-        _maxReportedSpatialRadiusTextField.setEnabled(_reportedSpatialDistanceCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected() && _reportedSpatialDistanceCheckBox.isSelected());
-        _maxReportedRadiusLabel.setEnabled(_reportedSpatialDistanceCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected());
+        _reportedSpatialDistanceCheckBox.setEnabled(bEnable && !Utils.selected(_specifiyNeighborsFileCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
+        _reportedMaxDistanceLabel.setEnabled(Utils.selected(_reportedSpatialDistanceCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
+        _maxReportedSpatialRadiusTextField.setEnabled(Utils.selected(_reportedSpatialDistanceCheckBox) && Utils.selected(_restrictReportedClustersCheckBox) && Utils.selected(_reportedSpatialDistanceCheckBox));
+        _maxReportedRadiusLabel.setEnabled(Utils.selected(_reportedSpatialDistanceCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
     }
 
     /**
@@ -2062,24 +2078,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _temporalTrendAdjGroup.setEnabled(bEnable);
         _temporalTrendAdjNonparametric.setEnabled(bNonparametric);
-        if (bEnable && !bNonparametric && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        if (!bNonparametric && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
         _temporalTrendAdjLogLinear.setEnabled(bLogYearPercentage);
         _logLinearLabel.setEnabled(bLogYearPercentage);
         _logLinearTextField.setEnabled(bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC);
-        if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC) {
+        if (!bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
         _temporalTrendAdjLogLinearCalc.setEnabled(bCalculatedLog);
-        if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC) {
+        if (!bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
 
         _temporalTrendAdjQuadCalc.setEnabled(bCalculatedLog);
-        if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC) {
+        if (!bCalculatedLog && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
     }

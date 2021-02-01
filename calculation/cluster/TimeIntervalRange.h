@@ -27,6 +27,38 @@ class TemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
+/** Temporal window evaluator used with Bernoulli model and adjusting for temporal trends nonparametrically. */
+class BeronulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    count_t   *  _pt_counts_nc;
+    measure_t * _pt_measure_nc;
+    /* feature which saves execution time by stopping weakened clusters */
+    bool        _stop_weakened_clusters;
+
+public:
+    BeronulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator used with Bernoulli model and adjusting for purely spatial clusters nonparametrically. */
+class BeronulliSpatialStratifiedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    count_t    ** _pp_counts;
+    measure_t  ** _pp_measure;
+
+public:
+    BeronulliSpatialStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
 /** Temporal window evaluator for seasonal analysis. */
 class ClosedLoopTemporalDataEvaluator : public CTimeIntervals {
     private:

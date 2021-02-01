@@ -540,6 +540,12 @@ std::string getFilenameFormatTime(const std::string& filename) {
     bufferStream.imbue(std::locale(std::locale::classic(), facet));
     bufferStream.str(""); bufferStream << timeLocal;
     replace_all(mod_filename, "<A>", bufferStream.str());
+
+    if (mod_filename.find_first_of("<>") != std::string::npos) {
+        throw resolvable_error(
+            "Filename '%s' contains substitutions which could not be converted.\nSubstituted filename resulted in: %s.", 
+            "getFilenameFormatTime()", filename.c_str(), mod_filename.c_str());
+    }
     return mod_filename;
 }
 

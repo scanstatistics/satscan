@@ -3,11 +3,11 @@
 <Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JInternalFrameFormInfo">
   <Properties>
     <Property name="closable" type="boolean" value="true"/>
-    <Property name="defaultCloseOperation" type="int" value="1"/>
+    <Property name="defaultCloseOperation" type="int" value="0"/>
     <Property name="resizable" type="boolean" value="true"/>
-    <Property name="title" type="java.lang.String" value="Batch Analyses"/>
+    <Property name="title" type="java.lang.String" value="Multiple Analyses"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[700, 400]"/>
+      <Dimension value="[900, 400]"/>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -28,190 +28,166 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="_actionitems_panel" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="_actions_panel" min="-2" max="-2" attributes="0"/>
-          </Group>
+          <Component id="_actionitems_panel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_actions_panel" max="32767" attributes="0"/>
           <Component id="_actionitems_panel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JPanel" name="_actions_panel">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-            <EtchetBorder/>
-          </Border>
-        </Property>
-      </Properties>
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_modify_analysis" alignment="1" max="32767" attributes="0"/>
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_add_analysis" alignment="1" min="-2" pref="71" max="-2" attributes="0"/>
-                              <Component id="_remove_analysis" alignment="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_add_analysis" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_modify_analysis" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Component id="_remove_analysis" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-      <SubComponents>
-        <Component class="javax.swing.JButton" name="_add_analysis">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="New"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_add_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        AnalysisPanel jPanelNew = new AnalysisPanel();&#xd;&#xa;&#xd;&#xa;        //jPanelNew.setBorder(javax.swing.BorderFactory.createEtchedBorder());&#xd;&#xa;        //jPanelNew.setMaximumSize(new java.awt.Dimension(32767, 75));&#xd;&#xa;        //jPanelNew.setPreferredSize(new java.awt.Dimension(50, 75));&#xd;&#xa;&#xd;&#xa;        jpanelLayoutNew = new javax.swing.GroupLayout(jPanelNew);&#xd;&#xa;        jPanelNew.setLayout(jpanelLayoutNew);&#xd;&#xa;        jpanelLayoutNew.setHorizontalGroup(&#xd;&#xa;            jpanelLayoutNew.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)&#xd;&#xa;            .addGap(0, 612, Short.MAX_VALUE)&#xd;&#xa;        );&#xd;&#xa;        jpanelLayoutNew.setVerticalGroup(&#xd;&#xa;            jpanelLayoutNew.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)&#xd;&#xa;            .addGap(0, 96, Short.MAX_VALUE)&#xd;&#xa;        );&#xd;&#xa;&#xd;&#xa;        _analyses_panel.remove(_empty_panel);&#xd;&#xa;        _analyses_panel.add(jPanelNew);&#xd;&#xa;        jPanelNew.setSelected(true);&#xd;&#xa;        BatchAnalysisFrame.this.removeSelection(jPanelNew);&#xd;&#xa;        validate();&#xd;&#xa;&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;&#xd;&#xa;        try {&#xd;&#xa;            Parameters parameters = new Parameters();&#xd;&#xa;            _panel_analysis.put(jPanelNew, parameters);&#xd;&#xa;            ParameterSettingsFrame _test_frame = new ParameterSettingsFrame(BatchAnalysisFrame.this._rootPane, BatchAnalysisFrame.this, parameters);&#xd;&#xa;            _test_frame.setIconifiable(false);&#xd;&#xa;            _test_frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            _test_frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(_test_frame);&#xd;&#xa;            _test_frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;&#xd;&#xa;&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JButton" name="_remove_analysis">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Remove"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_remove_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        for (java.awt.Component component : _analyses_panel.getComponents()) {&#xd;&#xa;            if (((AnalysisPanel)component).isSelected) {&#xd;&#xa;                _analyses_panel.remove(component);&#xd;&#xa;                break;&#xd;&#xa;            }&#xd;&#xa;        }&#xd;&#xa;        if (_analyses_panel.getComponentCount() == 0) {&#xd;&#xa;            _analyses_panel.add(_empty_panel);&#xd;&#xa;            _remove_analysis.setEnabled(false);&#xd;&#xa;        }&#xd;&#xa;        revalidate();&#xd;&#xa;        repaint();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JButton" name="_modify_analysis">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Modify"/>
-            <Property name="enabled" type="boolean" value="false"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_modify_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        AnalysisPanel jPanel = getSelectedAnalysis();&#xd;&#xa;        try {&#xd;&#xa;            ParameterSettingsFrame parameters_frame = new ParameterSettingsFrame(BatchAnalysisFrame.this._rootPane, BatchAnalysisFrame.this, _panel_analysis.get(jPanel));&#xd;&#xa;            parameters_frame.setIconifiable(false);&#xd;&#xa;            parameters_frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            parameters_frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(parameters_frame);&#xd;&#xa;            parameters_frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;&#xd;&#xa;&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
-          </AuxValues>
-        </Component>
-      </SubComponents>
-    </Container>
     <Container class="javax.swing.JPanel" name="_actionitems_panel">
 
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_analyses_scrollpane" pref="525" max="32767" attributes="0"/>
-                  <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="_actions_panel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="_analysesScrollpane" pref="599" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_analyses_scrollpane" pref="400" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="_analysesScrollpane" alignment="0" pref="348" max="32767" attributes="0"/>
+                      <Component id="_actions_panel" alignment="0" max="32767" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Container class="javax.swing.JScrollPane" name="_analyses_scrollpane">
+        <Container class="javax.swing.JPanel" name="_actions_panel">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="null"/>
+              <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                <EtchetBorder/>
+              </Border>
             </Property>
-            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="_modify_analysis" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_add_analysis" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_remove_analysis" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_execute_selected" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_duplicate_analysis" alignment="0" pref="93" max="32767" attributes="0"/>
+                          <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_execute_progress" alignment="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_add_analysis" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_modify_analysis" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_duplicate_analysis" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_remove_analysis" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="_execute_progress" min="-2" pref="23" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_execute_selected" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JButton" name="_add_analysis">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="New"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_add_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        // Create new BatchAnalysis object and add to collection.&#xd;&#xa;        BatchAnalysis newAnalysis = new BatchAnalysis();&#xd;&#xa;        _batch_analyses.add(newAnalysis);&#xd;&#xa;        // Add record to table.&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;        model.addRow(getRowForBatchAnalysis(newAnalysis, Boolean.TRUE));&#xd;&#xa;        // Remove selection from any other records in table - to focus on new record.&#xd;&#xa;        removeSelection(newAnalysis);&#xd;&#xa;        // Show settngs window for new reocrd.&#xd;&#xa;        try {&#xd;&#xa;            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, newAnalysis.getParameters());&#xd;&#xa;            frame.setTitle(newAnalysis.getDescription().toString());&#xd;&#xa;            frame.setIconifiable(false);&#xd;&#xa;            frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(frame);&#xd;&#xa;            _open_settings_frames.put(newAnalysis, frame);&#xd;&#xa;            frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_remove_analysis">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_remove_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;        for (int i=model.getRowCount(); i &gt; 0; i--) {&#xd;&#xa;            BatchAnalysis selected = _batch_analyses.get(i - 1);&#xd;&#xa;            Boolean obj = (Boolean)model.getValueAt(i - 1, SELECT_IDX);&#xd;&#xa;            ParameterSettingsFrame settings_frame = _open_settings_frames.get(selected);&#xd;&#xa;            if (obj.booleanValue()) {&#xd;&#xa;                if (settings_frame != null) {                &#xd;&#xa;                    // There is an open settings window for it - bring to focus verses removing.&#xd;&#xa;                    settings_frame.toFront();&#xd;&#xa;                    return;&#xd;&#xa;                } else {&#xd;&#xa;                    model.removeRow(i - 1);&#xd;&#xa;                    _batch_analyses.remove(selected);&#xd;&#xa;                }&#xd;&#xa;            }&#xd;&#xa;        }&#xd;&#xa;        writeBatchAnalysesFromFile();&#xd;&#xa;        enableButtons();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_modify_analysis">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Modify"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_modify_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        try {&#xd;&#xa;            ImmutablePair&lt;BatchAnalysis, Integer&gt; selected = getSelectedAnalysis().get(0);&#xd;&#xa;            ParameterSettingsFrame settings_frame = _open_settings_frames.get(selected.left);&#xd;&#xa;            if (settings_frame != null) {&#xd;&#xa;                settings_frame.toFront();&#xd;&#xa;                return;&#xd;&#xa;            }&#xd;&#xa;            ParameterSettingsFrame parameters_frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, selected.left.getParameters());&#xd;&#xa;            parameters_frame.setIconifiable(false);&#xd;&#xa;            parameters_frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            parameters_frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(parameters_frame);&#xd;&#xa;            _open_settings_frames.put(selected.left, parameters_frame);&#xd;&#xa;            parameters_frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_execute_selected">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Execute"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_execute_selected.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        _execute_progress.setValue(0);&#xd;&#xa;        _execute_progress.setString(&quot;&quot;);&#xd;&#xa;        _execute_progress.setVisible(true);&#xd;&#xa;        ExecuteAnalysisTask task = new ExecuteAnalysisTask();&#xd;&#xa;        task.addPropertyChangeListener(new PropertyChangeListener() {&#xd;&#xa;                public  void propertyChange(PropertyChangeEvent evt) {&#xd;&#xa;                    if (&quot;progress&quot;.equals(evt.getPropertyName())) {&#xd;&#xa;                        _execute_progress.setValue((Integer)evt.getNewValue());&#xd;&#xa;                        System.out.println(&quot;progress&quot;);&#xd;&#xa;                    }&#xd;&#xa;                }&#xd;&#xa;        });&#xd;&#xa;        task.execute();&#xd;&#xa;    }&#xd;&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_duplicate_analysis">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Duplicate"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_duplicate_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        try {&#xd;&#xa;            ImmutablePair&lt;BatchAnalysis, Integer&gt; selected = getSelectedAnalysis().get(0);&#xd;&#xa;            BatchAnalysis duplicated = (BatchAnalysis)selected.left.clone();&#xd;&#xa;            duplicated.setDescription(&quot;Copy - &quot; + duplicated.getDescription());&#xd;&#xa;            duplicated.setLastExecutedDate(null);&#xd;&#xa;            duplicated.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);&#xd;&#xa;            _batch_analyses.add(selected.right + 1, duplicated);&#xd;&#xa;            // Add record to table.&#xd;&#xa;            DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;            model.insertRow(selected.right + 1, getRowForBatchAnalysis(duplicated, Boolean.TRUE));&#xd;&#xa;            // Remove selection from any other records in table - to focus on new record.&#xd;&#xa;            removeSelection(duplicated);&#xd;&#xa;            // Show settngs window for new reocrd.&#xd;&#xa;            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, duplicated.getParameters());&#xd;&#xa;            frame.setTitle(duplicated.getDescription().toString());&#xd;&#xa;            frame.setIconifiable(false);&#xd;&#xa;            frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(frame);&#xd;&#xa;            _open_settings_frames.put(duplicated, frame);&#xd;&#xa;            frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JSeparator" name="jSeparator2">
+            </Component>
+            <Component class="javax.swing.JProgressBar" name="_execute_progress">
+              <Properties>
+                <Property name="stringPainted" type="boolean" value="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_execute_progress.setVisible(false);&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JScrollPane" name="_analysesScrollpane">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Container class="javax.swing.JPanel" name="_analyses_panel">
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
-                <Property name="axis" type="int" value="1"/>
-              </Layout>
-              <SubComponents>
-                <Container class="javax.swing.JPanel" name="_empty_panel">
-                  <Properties>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </Property>
-                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[32767, 100]"/>
-                    </Property>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[32767, 200]"/>
-                    </Property>
-                  </Properties>
-
-                  <Layout>
-                    <DimensionLayout dim="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jScrollPane1" min="-2" pref="519" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="32213" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                    <DimensionLayout dim="1">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="96" max="32767" attributes="0"/>
-                      </Group>
-                    </DimensionLayout>
-                  </Layout>
-                  <SubComponents>
-                    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
-                      <Properties>
-                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                          <Border info="null"/>
-                        </Property>
-                        <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                      </AuxValues>
-
-                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                      <SubComponents>
-                        <Component class="javax.swing.JTextPane" name="jTextPane1">
-                          <Properties>
-                            <Property name="editable" type="boolean" value="false"/>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="f0" green="f0" red="f0" type="rgb"/>
-                            </Property>
-                            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xd;&#xa;  &lt;head&gt;&#xd;&#xa;&#xd;&#xa;  &lt;/head&gt;&#xd;&#xa;  &lt;body&gt;&#xd;&#xa;    &lt;p style=&quot;margin: 0 0 0 0;font-style:italic;font-size:1.01em;font-weight:normal;&quot;&gt;&#xd;space-time Poisson, 50% maximum temporal, 25% maximum spatial&lt;/p&gt;&#xa;  &lt;/body&gt;&#xd;&#xa;&lt;/html&gt;&#xd;&#xa;"/>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                    </Container>
-                  </SubComponents>
-                </Container>
-              </SubComponents>
-            </Container>
+            <Component class="javax.swing.JTable" name="_analyses_table">
+              <Properties>
+                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;    new Object [][] {},&#xa;    new String [] { &quot;&quot;, &quot;Description&quot;, &quot;Analysis&quot;, &quot;Model&quot;, &quot;Study Length&quot;, &quot;Lag&quot;, &quot;Status&quot; }){&#xa;    Class[] types = new Class [] {&#xa;        java.lang.Boolean.class, String.class, String.class, String.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.class&#xa;    };&#xa;    boolean[] canEdit = new boolean [] { true, true, false, false, true, true, false };&#xa;    public Class getColumnClass(int columnIndex) {&#xa;        return types [columnIndex];&#xa;    }&#xa;    public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;        return canEdit [columnIndex];&#xa;    }&#xa;}" type="code"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analyses_table.getTableHeader().setOpaque(false);&#xd;&#xa;// Set custom header renderer for the row selection header.&#xd;&#xa;TableColumn column = _analyses_table.getColumnModel().getColumn(SELECT_IDX);&#xd;&#xa;column.setHeaderRenderer(new CheckBoxHeaderRenderer());&#xd;&#xa;column.setHeaderValue(Boolean.FALSE);&#xd;&#xa;// Add listeners for user selection on table header and rows.&#xd;&#xa;CheckBoxHeaderHandler handler = new CheckBoxHeaderHandler(_analyses_table, SELECT_IDX);&#xd;&#xa;_analyses_table.getModel().addTableModelListener(handler);&#xd;&#xa;_analyses_table.getTableHeader().addMouseListener(handler);&#xd;&#xa;&#xd;&#xa;_analyses_table.setRowHeight(30);&#xd;&#xa;_analyses_table.setIntercellSpacing(new Dimension(10,1));&#xd;&#xa;_analyses_table.setDefaultRenderer(Parameters.class, new ParametersRenderer());&#xd;&#xa;_analyses_table.setDefaultRenderer(BatchAnalysis.StudyPeriodOffset.class, new StudyPeriodOffsetRenderer());&#xd;&#xa;_analyses_table.setDefaultRenderer(BatchAnalysis.class, new BatchStatusRenderer());&#xd;&#xa;_analyses_table.setDefaultEditor(BatchAnalysis.StudyPeriodOffset.class, new StudyPeriodOffsetEditor());&#xd;&#xa;_analyses_table.setDefaultEditor(String.class, new StringEditor());&#xd;&#xa;((DefaultCellEditor)_analyses_table.getDefaultEditor(BatchAnalysis.StudyPeriodOffset.class)).setClickCountToStart(1);&#xd;&#xa;((DefaultCellEditor)_analyses_table.getDefaultEditor(String.class)).setClickCountToStart(1);&#xd;&#xa;_analyses_table.setRowSelectionAllowed(false);&#xd;&#xa;_analyses_table.getTableHeader().setReorderingAllowed(false);&#xd;&#xa;setJTableColumnsWidth(_analyses_table, _analyses_table.getPreferredSize().width, 1, 30, 12, 12, 10, 6, 29);&#xd;&#xa;_analyses_table.getModel().addTableModelListener(new TableModelListener() {&#xd;&#xa;    @Override&#xd;&#xa;    public void tableChanged(TableModelEvent e) {&#xd;&#xa;        enableButtons();&#xd;&#xa;        if (_table_initiallized) {&#xd;&#xa;            int row = e.getFirstRow();&#xd;&#xa;            int column = e.getColumn();&#xd;&#xa;            if (column == DESCRIPTION_IDX) {&#xd;&#xa;                DefaultTableModel model = (DefaultTableModel)e.getSource();&#xd;&#xa;                _batch_analyses.get(row).setDescription((String)model.getValueAt(row, column));&#xd;&#xa;                writeBatchAnalysesFromFile();&#xd;&#xa;            }&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+              </AuxValues>
+            </Component>
           </SubComponents>
         </Container>
       </SubComponents>

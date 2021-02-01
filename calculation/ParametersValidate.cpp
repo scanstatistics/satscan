@@ -1545,19 +1545,19 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
     if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
-        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization is valid for "
+        PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment by stratified randomization is valid for "
                               "either retrospective or prospective space-time analyses only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
       if (gParameters.GetIncludePurelySpatialClusters()) {
         bValid = false;
-        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment by stratified randomization does not permit "
+        PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment by stratified randomization does not permit "
                               "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
     }
     if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC && 
         !(gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
         bValid = false;
-        PrintDirection.Printf("%s:\nThe non-parametric spatial adjustment can only be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment can only be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
   } catch (prg_exception& x) {
     x.addTrace("ValidateSpatialParameters()","ParametersValidate");
@@ -1771,13 +1771,27 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     //validate time trend adjustment
     switch (gParameters.GetProbabilityModelType()) {
       case BERNOULLI            :
-        //The SVTT analysis has hooks for temporal adjustments, but that code needs
-        //much closer examination before it can be used, even experimentally.
         if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
-          PrintDirection.Printf("Notice:\nFor the Bernoulli model, adjusting for temporal trends is not permitted. "
-                                "Temporal trends adjustment settings will be ignored.\n", BasePrint::P_NOTICE);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
-          const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
+            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+                if (gParameters.GetIsPurelyTemporalAnalysis()) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
+                        "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                } else if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe Bernoulli model does not permit the nonparametric temporal trends adjustment\n"
+                        "in conjunction with the nonparametric spatial adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
+                if (gParameters.GetAreaScanRateType() != HIGH) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe Bernoulli model permits the nonparametric temporal trends adjustment\n"
+                        "in conjunction with high scanning rates only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
+            } else {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe Bernoulli model permits only the nonparametric temporal trends adjustment. Other temporal trend adjustments are not implemented.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            }
         }
         break;
       case CATEGORICAL          :

@@ -53,7 +53,6 @@ import javax.help.HelpSetException;
 import javax.help.Popup;
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
-import static jdk.internal.org.jline.utils.Colors.s;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.FileSelectionDialog;
@@ -122,7 +121,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         softwareUpdateAvailable.setVisible(false);
         setLocationRelativeTo(null);
         _updateCheck = new UpdateCheckDialog(this);
-
+        
         // Define the paths to application jar file and installed user guide.
         if (SystemUtils.IS_OS_MAC) {
             /* The 'user.dir' property is different on Mac. We're defining the 'java.library.path' in the Info.plist file to be
@@ -399,8 +398,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     _batch_analysis_frame.addInternalFrameListener(SaTScanApplication.this);
                     _batch_analysis_frame.setVisible(true);
                     desktopPane.add(_batch_analysis_frame);
-                }
-                _batch_analysis_frame.setVisible(true);
+                } else
+                    _batch_analysis_frame.redisplay();
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             } finally {
@@ -551,11 +550,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     frame.addInternalFrameListener(this);
                     frame.setVisible(true);
                     desktopPane.add(frame);
+                    frame.getCalculationThread().start();
                     try {
                         frame.setSelected(true);
                     } catch (java.beans.PropertyVetoException e) {
                     }
-
                 }
             }
         }
@@ -928,7 +927,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _batchAnalysesToolButton.setAction(new ShowBatchAnalysisFrameAction());
         _batchAnalysesToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_chart_32.png"))); // NOI18N
         _batchAnalysesToolButton.setToolTipText("Batch Analyses"); // NOI18N
-        _batchAnalysesToolButton.setEnabled(false);
         _batchAnalysesToolButton.setFocusable(false);
         _batchAnalysesToolButton.setHideActionText(true);
         _batchAnalysesToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1191,6 +1189,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             return;
         }
         if (!CloseParameterSettingsWindows()) {
+            return;
+        }
+        if (_batch_analysis_frame != null && _batch_analysis_frame.isVisible() && !_batch_analysis_frame.queryCanClose()) {
             return;
         }
         CloseRunningAnalysesWindows();

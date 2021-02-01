@@ -11,7 +11,6 @@ package org.satscan.gui.utils;
 
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -27,16 +26,18 @@ import javax.swing.JLabel;
 
 public class JHyperLink extends JLabel {
     protected final Color LINK_COLOR  = Color.blue;
-    protected LinkedList<ActionListener> actionListenerList = new LinkedList<ActionListener>();
+    protected LinkedList<ActionListener> actionListenerList = new LinkedList<>();
     protected boolean underline;
     private JHyperLink _instance;
     
     protected MouseListener mouseListener = new MouseAdapter() {
+        @Override
         public void mouseEntered(MouseEvent me) {
             underline = _instance.isEnabled();
             repaint();
         }
         
+        @Override
         public void mouseExited(MouseEvent me) {
             underline = false;
             repaint();
@@ -45,6 +46,7 @@ public class JHyperLink extends JLabel {
         //public void mouseClicked(MouseEvent me) {
         //    fireActionEvent();
         //}
+        @Override
         public void mousePressed(MouseEvent me) {
             fireActionEvent();
         }        
@@ -53,6 +55,10 @@ public class JHyperLink extends JLabel {
     public JHyperLink() {
         this("");
         _instance = this;
+
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));        
+        setForeground(LINK_COLOR);        
+        addMouseListener( mouseListener );           
     }
     
     public JHyperLink(String text) {

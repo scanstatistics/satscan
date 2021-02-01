@@ -204,6 +204,10 @@ void BernoulliDataSetHandler::SetRandomizers() {
           }
           else if (gParameters.GetIsPurelyTemporalAnalysis())
             gvDataSetRandomizers.at(0) = new BernoulliPurelyTemporalNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
+          else if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+              gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisTimeStratifiedRandomizer(gParameters.GetRandomizationSeed());
+          else if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
+              gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisSpatialStratifiedRandomizer(gParameters.GetRandomizationSeed());
           else
             gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           break;

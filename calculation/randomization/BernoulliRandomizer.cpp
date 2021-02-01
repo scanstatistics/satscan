@@ -19,6 +19,30 @@ void BernoulliNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet
                        RealSet.getMeasureData().GetArray(), RealSet.getLocationDimension(), RealSet.getIntervalDimension());
 }
 
+//******************** BernoulliNullHypothesisTimeStratifiedRandomizer **************************************************************
+
+/** Creates randomized data under the null hypothesis for Bernoulli model while adjusting for temporal trends nonparametrically. 
+    Assignsdata to DataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void BernoulliNullHypothesisTimeStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+    //reset seed of random number generator
+    SetSeed(iSimulation, SimSet.getSetIndex());
+    SimSet.getCaseData().Set(0);
+    //randomize data
+    RandomizeOrdinalDataTimeStratified(RealSet, SimSet);
+}
+
+//******************** BernoulliNullHypothesisSpatialStratifiedRandomizer **************************************************************
+
+/** Creates randomized data under the null hypothesis for Bernoulli model while adjusting for purely spatial clusters with stratified randomization.
+Assignsdata to DataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void BernoulliNullHypothesisSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+    //reset seed of random number generator
+    SetSeed(iSimulation, SimSet.getSetIndex());
+    SimSet.getCaseData().Set(0);
+    //randomize data
+    RandomizeOrdinalDataSpatialStratified(RealSet, SimSet);
+}
+
 //******************** BernoulliPurelyTemporalNullHypothesisRandomizer ************************************************
 
 /** Creates randomized under the null hypothesis for Bernoulli model, assigning data to DataSet objects structures.

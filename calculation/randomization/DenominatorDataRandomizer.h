@@ -27,7 +27,9 @@ class AbstractOrdinalDenominatorDataRandomizer : public AbstractDenominatorDataR
                                              measure_t** ppMeasure, 
                                              int tNumTracts, 
                                              int tNumTimeIntervals);
-    void                RandomizePurelyTemporalOrdinalData(count_t tNumCases, 
+    void                RandomizeOrdinalDataTimeStratified(const RealDataSet& RealSet, DataSet& SimSet);
+    void                RandomizeOrdinalDataSpatialStratified(const RealDataSet& RealSet, DataSet& SimSet);
+    void                RandomizePurelyTemporalOrdinalData(count_t tNumCases,
                                                            count_t tNumControls,
                                                            count_t* pSimCases, 
                                                            measure_t* pMeasure, 

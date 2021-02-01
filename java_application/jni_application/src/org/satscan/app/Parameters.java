@@ -618,6 +618,9 @@ public class Parameters implements Cloneable {
           }
         return sAnalysisType;
     }
+    public String GetModelTypeAsString() {
+        return GetProbabilityModelTypeAsString(geProbabilityModelType);
+    }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
     public final Vector<String> GetObservableRegions() {return gvObservableRegions;}
     public final String GetCaseFileName(int iSetIndex/*=1*/) {

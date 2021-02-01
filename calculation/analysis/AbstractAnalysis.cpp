@@ -136,6 +136,11 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
             if (gDataHub.GetNumDataSets() == 1)
                 return new UniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
             return new MultiSetUniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+        case BERNOULLI:
+            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                return new BeronulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
+                return new BeronulliSpatialStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
         default :
             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 if (gDataHub.GetNumDataSets() == 1)
@@ -179,6 +184,8 @@ void AbstractAnalysis::Setup() {
     } else {
       gpClusterDataFactory = new ClusterDataFactory();
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
+        geReplicationsProcessType = ClusterEvaluation;
+      else if (gParameters.GetProbabilityModelType() == BERNOULLI && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
         geReplicationsProcessType = ClusterEvaluation;
       else
         geReplicationsProcessType = MeasureListEvaluation;

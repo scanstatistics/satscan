@@ -297,7 +297,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
 	*/
     if (iNumCollapsibleIntervals > 1 
 		&& !(gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends())
-		&& !(gParameters.GetProbabilityModelType() == POISSON && 
+		&& !((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) &&
 		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
@@ -492,6 +492,8 @@ void CSaTScanData::PostDataRead() {
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC)
 			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
 		CalculateExpectedCases();
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetProbabilityModelType() == BERNOULLI)
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
 		if (gParameters.UseMetaLocationsFile())
 			gDataSets->assignMetaLocationData(gDataSets->getDataSets());
 	} catch (prg_exception& x) {

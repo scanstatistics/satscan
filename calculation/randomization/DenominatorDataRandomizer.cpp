@@ -86,6 +86,85 @@ void AbstractOrdinalDenominatorDataRandomizer::RandomizeOrdinalData(count_t tNum
   }
 }
 
+/** Distributes cases into simulation case array where individuals are initially dichotomized into cases and controls 
+   then each randomly assigned to be a case or a control. This procedure is specialized for time stratification - meaning that
+   cases and controls are randomized and distributed in each time interval separately. */
+void AbstractOrdinalDenominatorDataRandomizer::RandomizeOrdinalDataTimeStratified(const RealDataSet& RealSet, DataSet& SimSet) {
+    std::vector<count_t> RandCounts;
+    int tNumTracts = RealSet.getLocationDimension(), tNumTimeIntervals = RealSet.getIntervalDimension();
+    count_t intervalCases, intervalControls, cumulativeCounts, cumulativeMeasure, * pCasesPerInterval = RealSet.getCaseData_PT_NC(), ** ppSimCases = SimSet.getCaseData().GetArray();
+    measure_t * pMeasurePerInterval = RealSet.getMeasureData_PT_NC(), ** ppMeasure = RealSet.getMeasureData().GetArray();
+
+    // randomize and distribute cases/controls in each time interval separately
+    for (int i = tNumTimeIntervals - 1; i >= 0; --i) {
+        intervalCases = pCasesPerInterval[i];
+        intervalControls = (count_t)pMeasurePerInterval[i] - intervalCases;
+        if (intervalCases == 0 && intervalControls == 0)
+            continue; // No cases or controls, move to next interval.
+        cumulativeCounts = intervalCases < intervalControls ? intervalCases : intervalControls;
+        MakeDataB(cumulativeCounts, intervalCases + intervalControls, RandCounts);
+        cumulativeMeasure = intervalCases + intervalControls - 1;
+        // Distribute counts among tracts in this time interval.
+        for (int t=tNumTracts-1; t >= 0; --t) {
+            // Decrement cumulative measure by the measure of this tract, in this time interval.
+            cumulativeMeasure -= (i == tNumTimeIntervals - 1 ? (count_t)(ppMeasure[i][t]) : (count_t)(ppMeasure[i][t] - ppMeasure[i + 1][t]));
+            while (cumulativeCounts > 0 && RandCounts[cumulativeCounts - 1] > cumulativeMeasure) {
+                ++ppSimCases[i][t];
+                --cumulativeCounts;
+            }
+        }
+        // Now reverse everything if Controls < Cases in current time interval -- ppSimCases is not cumulative but ppMeasure is.
+        if (intervalControls <= intervalCases) {
+            for (int t = tNumTracts - 1; t >= 0; --t)
+                ppSimCases[i][t] = (count_t)(ppMeasure[i][t] - (i == tNumTimeIntervals - 1 ? 0.0 : ppMeasure[i + 1][t])) - ppSimCases[i][t];
+        }
+    }
+    // now set as cumulative in respect to time intervals
+    for (int i = tNumTimeIntervals - 2; i >= 0; i--)
+        for (int t = 0; t < tNumTracts; t++)
+            ppSimCases[i][t] += ppSimCases[i + 1][t];
+}
+
+
+/** Distributes cases into simulation case array where individuals are initially dichotomized into cases and controls
+then each randomly assigned to be a case or a control. This procedure is specialized for spatial stratification - meaning that
+cases and controls are randomized and distributed for each location separately. */
+void AbstractOrdinalDenominatorDataRandomizer::RandomizeOrdinalDataSpatialStratified(const RealDataSet& RealSet, DataSet& SimSet) {
+    std::vector<count_t> RandCounts;
+    int tNumTracts = RealSet.getLocationDimension(), tNumTimeIntervals = RealSet.getIntervalDimension();
+    count_t locCases, locControls, cumulativeCounts, cumulativeMeasure, ** ppCases = RealSet.getCaseData().GetArray(), ** ppSimCases = SimSet.getCaseData().GetArray();
+    measure_t ** ppMeasure = RealSet.getMeasureData().GetArray();
+
+    // randomize and distribute cases/controls in each location separately
+    for (int t = tNumTracts - 1; t >= 0; --t) {
+        locCases = ppCases[0][t];
+        locControls = (count_t)ppMeasure[0][t] - locCases;
+        if (locCases == 0 && locControls == 0)
+            continue; // No cases or controls, move to next location.
+        cumulativeCounts = locCases < locControls ? locCases : locControls;
+        MakeDataB(cumulativeCounts, locCases + locControls, RandCounts);
+        cumulativeMeasure = locCases + locControls - 1;
+        // Distribute counts among intervals of this tract.
+        for (int i = tNumTimeIntervals - 1; i >= 0; --i) {
+            // Decrement cumulative measure by the measure of this interval, for current tract.
+            cumulativeMeasure -= (i == tNumTimeIntervals - 1 ? (count_t)(ppMeasure[i][t]) : (count_t)(ppMeasure[i][t] - ppMeasure[i + 1][t]));
+            while (cumulativeCounts > 0 && RandCounts[cumulativeCounts - 1] > cumulativeMeasure) {
+                ++ppSimCases[i][t];
+                --cumulativeCounts;
+            }
+        }
+        // Now reverse everything if Controls < Cases in current time interval -- ppSimCases is not cumulative but ppMeasure is.
+        if (locControls <= locCases) {
+            for (int i = tNumTimeIntervals - 1; i >= 0; --i)
+                ppSimCases[i][t] = (count_t)(ppMeasure[i][t] - (i == tNumTimeIntervals - 1 ? 0.0 : ppMeasure[i + 1][t])) - ppSimCases[i][t];
+        }
+    }
+    // now set as cumulative in respect to time intervals
+    for (int i = tNumTimeIntervals - 2; i >= 0; i--)
+        for (int t = 0; t < tNumTracts; t++)
+            ppSimCases[i][t] += ppSimCases[i + 1][t];
+}
+
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
     controls then each randomly assigned to be a case or a control. optimized for purely temporal analyses.
     Caller is responsible for ensuring that passed array pointers are allocated and dimensions match that of

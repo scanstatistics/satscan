@@ -54,32 +54,32 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.app.AppConstants;
+import org.satscan.app.BatchAnalysis;
 import org.satscan.app.CalculationThread;
 import org.satscan.utils.EmailClientLauncher;
 import org.satscan.app.Parameters;
 import org.satscan.gui.utils.JDocumentRenderer;
 import org.satscan.app.OutputFileRegister;
 import org.satscan.utils.BareBonesBrowserLaunch;
-import org.satscan.utils.FileAccess;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/**
- * Analysis execution progress/cancellation and results window.
- * @author  Hostovic
- */
+/** Analysis execution progress/cancellation and results window. */
 public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame implements InternalFrameListener {
 
-    private boolean gbCancel = false;
-    private boolean gbCanClose = false;
-    private boolean gbCanPrint;
+    private CalculationThread _thread;
+    private final Parameters _parameters;
+    private boolean _can_close = false;
+    private boolean _can_print;
+    private boolean _user_cancelled = false;
+    private boolean _exception_occured = false;
+    private String _exception_callpath = "";
     private boolean _failed_kml_view = false;
     private boolean _failed_maps_view = false;
     private boolean _failed_graph_view = false;
-    private final Parameters _parameters;
-    private String gsProgramErrorCallPath = "";
     private final int MAXLINES = 999;
     private boolean _warning_errors_encountered = false;
+    private int _message_workers_pending = 0;
     private Map<FilterTreeNode, String> _tree_output_map = new HashMap<>();
     private Map<String, FilterTreeNode> _output_tree_map = new HashMap<>();
     private Map<FilterTreeNode, Integer> _tree_output_significances = new HashMap<>();
@@ -88,9 +88,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private boolean _first_display_occurred = false;
     private JPopupMenu _launch_output = null;
 
-    /**
-     * Creates new form ParameterSettingsFrame
-     */
+    /* Creates new form ParameterSettingsFrame */
     public AnalysisRunInternalFrame(final Parameters parameters) {
         initComponents();
         /* Remove the drilldown tab initially - we'll add back if analysis completes any drilldowns. */
@@ -99,9 +97,36 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         super.addInternalFrameListener(this);
         _parameters = (Parameters)parameters.clone();
         super.setTitle("Running " + (_parameters.GetSourceFileName().equals("") ? "Session" : _parameters.GetSourceFileName()));
-        new CalculationThread(this, _parameters).start();
+        _thread = new CalculationThread(this, _parameters);
     }
 
+    /* Creates new form ParameterSettingsFrame */
+    public AnalysisRunInternalFrame(final BatchAnalysis analysis) {
+        initComponents();
+        /* Remove the drilldown tab initially - we'll add back if analysis completes any drilldowns. */
+        _bottom_tabbed_pane.remove(_drilldown_results_tab);
+        super.setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
+        super.addInternalFrameListener(this);
+        _parameters = analysis.getParameters();
+        super.setTitle("Results " + analysis.getDescription());
+        setCloseButton();
+        _can_close = true;
+        _warningsErrorsTextArea.setText(analysis.getLastExecutedMessage());
+        if (analysis.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS)
+           loadAnalysisResults(true);
+        else
+            _progressTextArea.setText("Analysis did not complete. Please review warnings and errors below.");
+    }
+    
+    /* Returns associated CalculationThread object. */
+    public CalculationThread getCalculationThread() {
+        return _thread;
+    }
+    
+    public boolean messageWorkersPending() {
+        return _message_workers_pending > 0;
+    }
+    
     /* Add drilldown output in relation to outfile file from calling analysis. */
     public void ReportDrilldownResults(String drilldown_resultfile, String parent_resultfile, int significantClusters) {
         FilterTreeNode parent;
@@ -129,14 +154,18 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      * Returns whether window can close.
      */
     public boolean GetCanClose() {
-        return gbCanClose;
+        return _can_close;
     }
 
+    public String getWarningsErrorsText() {
+        return _warningsErrorsTextArea.getText();
+    }
+    
     /**
      * Sets whether window can close.
      */
     public void setCanClose(boolean b) {
-        gbCanClose = b;
+        _can_close = b;
     }
 
     /**
@@ -150,16 +179,26 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      * Set property that indicates whether printing is enabled.
      */
     public void setPrintEnabled() {
-        gbCanPrint = true;
+        _can_print = true;
     }
 
+    /* Returns whether user has cancelled analysis. */
+    synchronized public boolean userCancelled() {
+        return _user_cancelled;
+    }
+
+    /* Returns whether analysis reported exceptional termination. */
+    synchronized public boolean exceptionOccurred() {
+        return _exception_occured;
+    }
+    
     /**
      * Returns whether user has cancelled analysis.
      */
-    synchronized public boolean IsJobCanceled() {
-        return gbCancel;
+    public boolean isSuccessful() {
+        return !userCancelled() && !exceptionOccurred();
     }
-
+    
     /**
      * This method returns a new String object, ensuring it ends in newline.
      * The intended use for this method is to append text to the JTextArea
@@ -173,44 +212,44 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      * on same String object?
      */
     private String getNewInvokeLaterString(final String s) {
-        return new String(s + (s.endsWith("\n") ? "" : "\n"));
+        return s + (s.endsWith("\n") ? "" : "\n");
     }
     
-    /**
-     * Prints progress string to output textarea.
-     */
+    /** Prints progress string to output textarea. */
     synchronized public void PrintProgressWindow(final String ProgressString) {
+        ++_message_workers_pending;
         final String progress = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 _progressTextArea.append(progress);
+                --_message_workers_pending;
+
+                //Limit number of lines to specified maximum. The JTextArea control is a real
+                //memory hog once the number of lines gets large. With default java heap, memory
+                //exhausts around the 143,000 line appended. When printing simulations to window, 
+                //it's had to believe anyone would be interested in more than MAXLINES lines.
+                Element root = _progressTextArea.getDocument().getDefaultRootElement();
+                if (root.getElementCount() > MAXLINES) {
+                    Element firstLine = root.getElement(0);
+                    try {
+                        _progressTextArea.getDocument().remove(0, firstLine.getEndOffset());
+                    } catch(BadLocationException e) {
+                        _can_close = true; 
+                    }
+                }
             }
         }); 
-        
-        //Limit number of lines to specified maximum. The JTextArea control is a real
-        //memory hog once the number of lines gets large. With default java heap, memory
-        //exhausts around the 143,000 line appended. When printing simulations to window, 
-        //it's had to believe anyone would be interested in more than MAXLINES lines.
-        Element root = _progressTextArea.getDocument().getDefaultRootElement();
-        if (root.getElementCount() > MAXLINES) {
-           Element firstLine = root.getElement(0);
-           try {
-             _progressTextArea.getDocument().remove(0, firstLine.getEndOffset());
-           } catch(BadLocationException e) {
-             gbCanClose = true; 
-           }                
-        }
     }
 
-    /**
-     * Prints warning/error string to output textarea.
-     */
+    /** Prints warning/error string to output textarea. */
     synchronized public void PrintIssuesWindndow(final String ProgressString) {
+        ++_message_workers_pending;
         _warning_errors_encountered = true;
-        final String progress = getNewInvokeLaterString(ProgressString);
+        final String text = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                _warningsErrorsTextArea.append(progress);
+                _warningsErrorsTextArea.append(text);
+                --_message_workers_pending;
             }
         });
     }
@@ -292,7 +331,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
     
     /** Loads analysis results from file into textarea control */
-    public void LoadFromFile(final String sFileName) {
+    private void LoadFromFile(final String sFileName) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 _progressTextArea.setText("");
@@ -304,7 +343,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                     setTitle(sFileName);
                 } catch (IOException e) {
                     setTitle("Job Completed");
-                    _progressTextArea.append("\nSaTScan completed successfully but was unable to read results from file.\n" +
+                    _progressTextArea.append("SaTScan completed successfully but was unable to read results from file.\n" +
                             "The results have been written to: \n" + sFileName + "\n\n");
                 }
                 _progressTextArea.setCaretPosition(0);
@@ -413,7 +452,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      */
     public void printWindow() {
         try {
-            if (gbCanPrint) {
+            if (_can_print) {
                 String sPrintText = _progressTextArea.getText() +
                         "\n\n\nWARNINGS / ERRORS\n" +
                         _warningsErrorsTextArea.getText();
@@ -436,9 +475,9 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         messageBody.append(_progressTextArea.getText());
         messageBody.append("\n\n\n--Warnings/Errors Information--\n");
         messageBody.append(_warningsErrorsTextArea.getText());
-        if (gsProgramErrorCallPath.length() > 0) {
+        if (_exception_callpath.length() > 0) {
             messageBody.append("\n\n--Call Path Information--\n\n");
-            messageBody.append(gsProgramErrorCallPath);
+            messageBody.append(_exception_callpath);
             messageBody.append("\n\n");
         }
         messageBody.append("\n--End Of Error Message--");
@@ -459,45 +498,42 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         dispose();
     }
 
-    /**
-     *
-     */
     public void setCloseButton() {
-        _cancelButton.setText("Close");
+        _user_cancel_button.setText("Close");
     }
 
-    /**
-     *
-     */
-    public void CancelJob() {
-        if (getWarningsErrorsEncountered() == false) {
-            _progressTextArea.append("Job cancelled. Please review 'Warnings/Errors' window below.");
-        } else {
-            _progressTextArea.append("Job cancelled.");
-        }
+    /** Updates analysis run frame to indicate that the analysis was either cancelled or aborted
+        and indicates to user that execution has finished. */
+    public void reportJobCancelled() {
+        _progressTextArea.append("Job cancelled." + (issuesReported() ? "" : " Please review 'Warnings/Errors' window below."));
         setTitle("Job cancelled");
-        setCloseButton();
-        gbCancel = true;
-        OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
         setCanClose(true);
+        setCloseButton();
+        enableEmailButton();
+        OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
     }
 
-    /** */
-    public void setProgramErrorCallpathExplicit(String path) {
-        gsProgramErrorCallPath = path;
+    /** Notes that analysis execution terminated with non-successfully return code. */
+    public void setExceptionalTermination(String call_path) {
+        _exception_occured = true;
+        _exception_callpath = call_path;
+        reportJobCancelled();
     }
 
-    /** */
-    public void setProgramErrorCallpath(StackTraceElement[] stackTrace) {
+    /** Notes that analysis execution terminated with an java exception. */
+    public void setExceptionOccurred(String message, StackTraceElement[] stackTrace) {
+        _exception_occured = true;
+        PrintIssuesWindndow(message);
         StringBuilder trace = new StringBuilder();
         for (int i = 0; i < stackTrace.length; ++i) {
             trace.append(stackTrace[i].getMethodName() + " of " + stackTrace[i].getClassName() + "\n");
         }
-        gsProgramErrorCallPath = trace.toString();
+        _exception_callpath = trace.toString();
+        reportJobCancelled();
     }
 
-    /** */
-    public boolean getWarningsErrorsEncountered() {
+    /** Returns indication of whether any warning or errors where reported. */
+    public boolean issuesReported() {
         return _warning_errors_encountered;
     }
 
@@ -576,7 +612,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         btnSwitchOrientation = new javax.swing.JButton();
         btnToggleDrilldown = new javax.swing.JButton();
         btnLaunchActions = new javax.swing.JButton();
-        _cancelButton = new javax.swing.JButton();
+        _user_cancel_button = new javax.swing.JButton();
         _emailButton = new javax.swing.JButton();
         _primary_panel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -719,21 +755,19 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
         _bottom_tabbed_pane.addTab("Drilldown", _drilldown_results_tab);
 
-        _cancelButton.setText("Cancel");
-        _cancelButton.addActionListener(new java.awt.event.ActionListener() {
+        _user_cancel_button.setText("Cancel");
+        _user_cancel_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (_cancelButton.getText().equals("Close")) {
+                if (_user_cancel_button.getText().equals("Close")) {
                     try {
                         AnalysisRunInternalFrame.this.setClosed(true);
                     } catch (PropertyVetoException e1) {
-                        // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                 } else {
-                    PrintProgressWindow("Cancelling job, please wait...");
-                    gbCancel = true;
+                    PrintProgressWindow("Cancelling job, please wait while execution is interrupted ...");
+                    _user_cancelled = true;
                 }
-                // gRegistry.Release(gsOutputFileName);
             }
         });
 
@@ -753,7 +787,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(_emailButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_user_cancel_button, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addComponent(_bottom_tabbed_pane)
         );
@@ -763,7 +797,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 .addComponent(_bottom_tabbed_pane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_bottom_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_cancelButton)
+                    .addComponent(_user_cancel_button)
                     .addComponent(_emailButton)))
         );
 
@@ -852,14 +886,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         }
 
         @Override
-        public Component getTreeCellRendererComponent(
-            JTree tree,
-            Object value,
-            boolean selected,
-            boolean expanded,
-            boolean leaf,
-            int row,
-            boolean hasFocus) {
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
             Integer num_significant = _tree_output_significances.get(node);
             if (num_significant == null || num_significant > 0)
@@ -969,12 +996,12 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _bottom_panel;
     private javax.swing.JTabbedPane _bottom_tabbed_pane;
-    private javax.swing.JButton _cancelButton;
     private javax.swing.JPanel _drilldown_results_tab;
     private javax.swing.JButton _emailButton;
     private javax.swing.JPanel _primary_panel;
     private javax.swing.JTextArea _progressTextArea;
     private javax.swing.JTree _results_tree;
+    private javax.swing.JButton _user_cancel_button;
     private javax.swing.JTextArea _warningsErrorsTextArea;
     private javax.swing.JPanel _warnings_errors_tab;
     private javax.swing.JButton btnLaunchActions;

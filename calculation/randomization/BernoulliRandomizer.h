@@ -16,6 +16,34 @@ class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataR
     virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
+/** Bernoulli randomizer for null hypothesis - adjusting for temporal trends nonparametrically. 
+    This is done by stratifying the randomization by the aggregated time intervals, so that each time interval has the same
+    number of cases in the real and random data sets. That is, it is only the spatial location of a case that is randomized. */
+class BernoulliNullHypothesisTimeStratifiedRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
+
+public:
+    BernoulliNullHypothesisTimeStratifiedRandomizer(long lInitialSeed = RandomNumberGenerator::glDefaultSeed) : AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
+    virtual ~BernoulliNullHypothesisTimeStratifiedRandomizer() {}
+
+    virtual BernoulliNullHypothesisTimeStratifiedRandomizer * Clone() const { return new BernoulliNullHypothesisTimeStratifiedRandomizer(*this); }
+
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
+};
+
+/** Bernoulli randomizer for null hypothesis - adjusting for temporal trends nonparametrically.
+This is done by stratifying the randomization by the aggregated time intervals, so that each time interval has the same
+number of cases in the real and random data sets. That is, it is only the spatial location of a case that is randomized. */
+class BernoulliNullHypothesisSpatialStratifiedRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
+
+public:
+    BernoulliNullHypothesisSpatialStratifiedRandomizer(long lInitialSeed = RandomNumberGenerator::glDefaultSeed) : AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
+    virtual ~BernoulliNullHypothesisSpatialStratifiedRandomizer() {}
+
+    virtual BernoulliNullHypothesisSpatialStratifiedRandomizer * Clone() const { return new BernoulliNullHypothesisSpatialStratifiedRandomizer(*this); }
+
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
+};
+
 /** Bernoulli randomizer for null hypothesis, optimized for purely temporal analyses. */
 class BernoulliPurelyTemporalNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
   public:
