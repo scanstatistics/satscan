@@ -7,7 +7,7 @@ MOUNT_DIR="/Volumes/SaTScan"
 DMG_NAME="SaTScan.dmg"
 RW_DMG_NAME="SaTScan-rw.dmg"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
-APP=BSI.app
+APP=SaTScan.app
 XCRUN="/usr/bin/xcrun"
 ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
 STAPLER="/Applications/Xcode.app/Contents/Developer/usr/bin/stapler"
@@ -72,7 +72,7 @@ if [[ $OPTION == "pull" ]]; then
   # Unlock the keychain
   security unlock-keychain $HOME/Library/Keychains/login.keychain
   # Remove extended attributes
-  xattr -cr BSI.app
+  xattr -cr SaTScan.app
   # # Sign java resources
   ## codesign --options runtime --force --deep --timestamp --verbose -s "${SIGN_KEY}" SaTScan.app/Contents/Resources/jre/lib/{libdecora_sse,*fx*,libglass,libglib-lite,libgstreamer-lite,libprism*}.dylib
   #codesign --entitlements ./Entitlements.plist --options runtime --force --timestamp --verbose -s "${SIGN_KEY}" BSI.app/Contents/MacOS/launchbsi
@@ -94,7 +94,7 @@ elif [[ $OPTION == "push" ]]; then
   create_dmg
 
   ssh satscsvc@gen-btp-01.imsweb.com "mkdir -p /Users/satscsvc/prj/satscan.development/satscan.home/build.area/satscan/installers/izpack/mac/satscan2app/signed"
-  scp -r "${DMG_NAME}" satscsvc@gen-btp-01.imsweb.com:/home/bsiadmin/launcher/launcher/dist/signed/
+  scp -r "${DMG_NAME}" satscsvc@gen-btp-01.imsweb.com:/Users/satscsvc/prj/satscan.development/satscan.home/build.area/satscan/installers/izpack/mac/satscan2app/signed
   exit
 fi
 
