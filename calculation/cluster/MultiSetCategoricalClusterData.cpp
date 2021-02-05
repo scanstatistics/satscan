@@ -77,57 +77,6 @@ count_t MultiSetCategoricalSpatialData::GetCategoryCaseCount(unsigned int iCateg
   return gvSetClusterData.at(tSetIndex)->GetCategoryCaseCount(iCategoryIndex);
 }
 
-/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
-    If specified purpose for multiple data sets is multivariate, recalculates high and low
-    LLR values to determine which data sets comprised target ratio; else all data sets
-    comprised target ratio. */
-void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                                    AbstractLikelihoodCalculator& Calculator,
-                                                                    std::vector<unsigned int>& vDataSetIndexes) const {
-
-    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
-
-  vDataSetIndexes.clear();
-  if (pUnifier) {
-    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    double                                              dHighRatios=0, dLowRatios=0;
-
-    //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
-       unsigned int iIndex = std::distance(vHighLowRatios.begin(), itr_pair);
-       pUnifier->GetHighLowRatioOrdinal(Calculator, gvSetClusterData[iIndex]->gvCasesPerCategory, iIndex, *itr_pair);
-       dHighRatios += itr_pair->first;
-       dLowRatios += itr_pair->second;
-    }
-    //assess collected llr values to determine which data sets created target ratios
-    // - if scanning for high and low ratios, determine which corresponding rate produced
-    //   target ratio - high wins if they are equal
-    bool bHighRatios=false;
-    if (dHighRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = true;
-    else if (dLowRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = false;
-    else {//target ratio does not equal high or low ratios
-     //likely round-off error 
-      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = true;
-      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = false;
-      else
-        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetCategoricalSpatialData",
-                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
-    }
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
-       if ((bHighRatios ? itr_pair->first : itr_pair->second))
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-  }
-  else {
-    size_t t=0;
-    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
-  }
-}
-
 /** Implements interface that calculates maximizing value - for multiple data set, maximizing
     value is the full test statistic/ratio. */
 double MultiSetCategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
@@ -188,56 +137,6 @@ const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetCategoricalTemporalDat
     Caller responsible for ensuring that 'iCategoryIndex' and 'tSetIndex' are valid indexes. */
 count_t AbstractMultiSetCategoricalTemporalData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetCategoryCaseCount(iCategoryIndex);
-}
-
-/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
-    -- This base class implementation handles all cluster data objects for which there is only one
-       data set analyzed. */
-void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                                    AbstractLikelihoodCalculator& Calculator,
-                                                                    std::vector<unsigned int>& vDataSetIndexes) const {
-
-    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
-
-  vDataSetIndexes.clear();
-  if (pUnifier) {
-    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    double                                              dHighRatios=0, dLowRatios=0;
-
-    //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
-       unsigned int iIndex = std::distance(vHighLowRatios.begin(), itr_pair);
-       pUnifier->GetHighLowRatioOrdinal(Calculator, gvSetClusterData.at(iIndex)->gvCasesPerCategory, iIndex, *itr_pair);
-       dHighRatios += itr_pair->first;
-       dLowRatios += itr_pair->second;
-    }
-    //assess collection of llr values to determine which data sets created target ratios
-    // - if scanning for high and low ratios, determine which corresponding rate produced
-    //   target ratio - high wins if they are equal
-    bool bHighRatios=false;
-    if (dHighRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = true;
-    else if (dLowRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = false;
-    else {//target ratio does not equal high or low ratios
-     //likely round-off error 
-      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = true;
-      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = false;
-      else
-        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetCategoricalTemporalData",
-                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
-     }
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
-       if ((bHighRatios ? itr_pair->first : itr_pair->second))
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-  }
-  else {
-    size_t t=0;
-    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
-  }
 }
 
 /** Not implemented - throws prg_error. */

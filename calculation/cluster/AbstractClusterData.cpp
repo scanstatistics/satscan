@@ -26,14 +26,6 @@ const AbstractLoglikelihoodRatioUnifier & AbstractClusterData::getRatioUnified(A
   throw prg_error("getRatioUnified(AbstractLikelihoodCalculator&) not implemented.","AbstractClusterData");
 }
 
-/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
-    -- This base class implementation handles all cluster data objects for which there is only one
-       data set analyzed. */
-void AbstractClusterData::GetDataSetIndexesComprisedInRatio(double, AbstractLikelihoodCalculator&, std::vector<unsigned int>& vDataSetIndexes) const {
-  vDataSetIndexes.clear();
-  vDataSetIndexes.push_back(0);
-}
-
 //******************************************************************************
 
 /** class constructor */

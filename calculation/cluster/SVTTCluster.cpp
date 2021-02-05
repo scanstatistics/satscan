@@ -251,15 +251,6 @@ void MultiSetSVTTClusterData::setCaseCount(count_t t, unsigned int tSetIndex) {
   gvSetClusterData.at(tSetIndex)->setCaseCount(t);
 }
 
-/** Returns the data sets indexes that comprise the target ratio value. */
-void MultiSetSVTTClusterData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                                AbstractLikelihoodCalculator& Calculator,
-                                                                std::vector<unsigned int>& vDataSetIndexes) const {
-  printf("MultiSetSVTTClusterData::GetDataSetIndexesComprisedInRatio() not implemented. -- returning value of first data set -- unifer updates needed\n");
-  vDataSetIndexes.clear();
-  vDataSetIndexes.push_back(0);
-}
-
 /** Returns the number of expected cases in data set as index. */
 measure_t MultiSetSVTTClusterData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData[tSetIndex]->GetMeasure();
@@ -346,6 +337,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   m_nTracts                     = rhs.m_nTracts;
   m_CartesianRadius             = rhs.m_CartesianRadius;  
   m_nRatio                      = rhs.m_nRatio;
+  _ratio_sets                   = rhs._ratio_sets;
   m_nRank                       = rhs.m_nRank;
   m_nFirstInterval              = rhs.m_nFirstInterval;
   m_nLastInterval               = rhs.m_nLastInterval;

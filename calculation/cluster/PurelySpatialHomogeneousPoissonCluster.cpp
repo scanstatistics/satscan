@@ -48,6 +48,7 @@ PurelySpatialHomogeneousPoissonCluster& PurelySpatialHomogeneousPoissonCluster::
   m_nTracts               = rhs.m_nTracts;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
+  _ratio_sets             = rhs._ratio_sets;
   m_nRank                 = rhs.m_nRank;
   m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
   m_nFirstInterval        = rhs.m_nFirstInterval;
@@ -63,6 +64,7 @@ void PurelySpatialHomogeneousPoissonCluster::CopyEssentialClassMembers(const CCl
   m_nTracts               = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nTracts;
   m_CartesianRadius       = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_CartesianRadius;
   m_nRatio                = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nRatio;
+  _ratio_sets             = ((const PurelySpatialHomogeneousPoissonCluster&)rhs)._ratio_sets;
   m_nRank                 = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nRank;
   m_NonCompactnessPenalty = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_NonCompactnessPenalty;
   m_nFirstInterval        = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nFirstInterval;

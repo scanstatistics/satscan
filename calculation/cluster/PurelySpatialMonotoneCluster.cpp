@@ -50,6 +50,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs)
     m_MostCentralLocation = rhs.m_MostCentralLocation;
     m_nTracts             = rhs.m_nTracts;
     m_nRatio              = rhs.m_nRatio;
+    _ratio_sets           = rhs._ratio_sets;
     m_nRank               = rhs.m_nRank;
     m_nFirstInterval      = rhs.m_nFirstInterval;
     m_nLastInterval       = rhs.m_nLastInterval;

@@ -48,6 +48,7 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalC
   m_MostCentralLocation = rhs.m_MostCentralLocation;
   m_nTracts             = rhs.m_nTracts;
   m_nRatio              = rhs.m_nRatio;
+  _ratio_sets           = rhs._ratio_sets;
   m_nRank               = rhs.m_nRank;
   m_nFirstInterval      = rhs.m_nFirstInterval;
   m_nLastInterval       = rhs.m_nLastInterval;
@@ -60,6 +61,7 @@ void CPurelyTemporalCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_MostCentralLocation = ((CPurelyTemporalCluster&)rhs).m_MostCentralLocation;
   m_nTracts             = ((CPurelyTemporalCluster&)rhs).m_nTracts; m_nTracts=1;
   m_nRatio              = ((CPurelyTemporalCluster&)rhs).m_nRatio;
+  _ratio_sets           = ((const CPurelyTemporalCluster&)rhs)._ratio_sets;
   m_nRank               = ((CPurelyTemporalCluster&)rhs).m_nRank;
   m_nFirstInterval      = ((CPurelyTemporalCluster&)rhs).m_nFirstInterval;
   m_nLastInterval       = ((CPurelyTemporalCluster&)rhs).m_nLastInterval;

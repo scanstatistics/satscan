@@ -37,6 +37,7 @@ class DataStreamAccumulator {
 class AbstractLoglikelihoodRatioUnifier {
     protected:
         ProbabilityModelType _probability_model;
+        DataSetIndexes_t     _unified_sets;
 
     public:
         typedef std::pair<double, const DataStreamAccumulator*> AccumulationPair_t;
@@ -47,12 +48,16 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) = 0;
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
 
         virtual double GetLoglikelihoodRatio() const = 0;
         virtual void Reset() = 0;
+        const DataSetIndexes_t & getUnifiedSets() const {
+            return _unified_sets;
+        }
 
         virtual count_t getObservedCount() const {
             throw prg_error("Not implemented", "getObservedCount()"); return 0;
@@ -73,44 +78,27 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual measure_t getExpected() const { throw prg_error("Not implemented", "getExpected()"); return 0.0; }
 };
 
-/* Abstract base class for multivariate unification. */
-class AbstractMultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
-    public:
-        AbstractMultivariateUnifier(ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model) {}
-        virtual ~AbstractMultivariateUnifier() {}
-
-
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) = 0;
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) = 0;
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) = 0;
-        virtual void GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) = 0;
-};
-
 /* Multivariate unification class for high rating scanning - log likelihoods are simply added together. */
-class MultivariateUnifierHighRate : public AbstractMultivariateUnifier {
+class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
     protected:
         double _llr;
         DataStreamAccumulator _data_stream_accumulator;
 
     public:
-        MultivariateUnifierHighRate(ProbabilityModelType probability_model) : AbstractMultivariateUnifier(probability_model), _llr(0.0) {}
+        MultivariateUnifierHighRate(ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {}
         virtual ~MultivariateUnifierHighRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighRate(*this); };
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
 
         virtual double GetLoglikelihoodRatio() const { return _llr; }
-        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
-
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
+        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.clear(); }
 
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -121,30 +109,28 @@ class MultivariateUnifierHighRate : public AbstractMultivariateUnifier {
 };
 
 /* Multivariate unification class for low rating scanning - log likelihoods are simply added together. */
-class MultivariateUnifierLowRate : public AbstractMultivariateUnifier {
+class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
     protected:
         double _llr;
         DataStreamAccumulator _data_stream_accumulator;
 
     public:
-        MultivariateUnifierLowRate(ProbabilityModelType probability_model) : AbstractMultivariateUnifier(probability_model), _llr(0.0) {}
+        MultivariateUnifierLowRate(ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {}
         virtual ~MultivariateUnifierLowRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierLowRate(*this); };
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
+            throw prg_error("Not implemented", "AdjoinRatio(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
+        }
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
 
         virtual double GetLoglikelihoodRatio() const { return _llr; }
-        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
-
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
+        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.clear(); }
 
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -157,18 +143,21 @@ class MultivariateUnifierLowRate : public AbstractMultivariateUnifier {
 /* Multivariate unification class for simultaneous high and low rating scanning. 
    High log likelihoods ratios and low log likelihood ratios are maintained separately. 
    The greater log likelihood summation determines whether cluster is high or low. */
-class MultivariateUnifierHighLowRate : public AbstractMultivariateUnifier {
+class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier {
     MultivariateUnifierLowRate _low_rate;
     MultivariateUnifierHighRate _high_rate;
 
     public:
         MultivariateUnifierHighLowRate(ProbabilityModelType probability_model) : 
-            AbstractMultivariateUnifier(probability_model), _low_rate(probability_model), _high_rate(probability_model) {}
+            AbstractLoglikelihoodRatioUnifier(probability_model), _low_rate(probability_model), _high_rate(probability_model) {}
         virtual ~MultivariateUnifierHighLowRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighLowRate(*this); };
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
+            throw prg_error("Not implemented", "AdjoinRatio(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
+        }
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
@@ -182,11 +171,6 @@ class MultivariateUnifierHighLowRate : public AbstractMultivariateUnifier {
         virtual AccumulationPair_t getLowRateAccumulationPair() const {
             return std::make_pair(_low_rate.GetLoglikelihoodRatio(), _low_rate.getDataStreamAccumulator());
         }
-
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
-        virtual void GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios);
 };
 
 /* Adjustment unification class. Calculates data set loglikelihood ratios, in such a way, that if scanning rate is:
@@ -206,6 +190,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
@@ -228,6 +213,7 @@ class AdjustmentUnifierRiskThreshold : public AdjustmentUnifier {
         virtual ~AdjustmentUnifierRiskThreshold() {}
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
 };
 //******************************************************************************
 #endif

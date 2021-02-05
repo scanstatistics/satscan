@@ -50,6 +50,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   m_nTracts                     = rhs.m_nTracts;
   m_CartesianRadius             = rhs.m_CartesianRadius;
   m_nRatio                      = rhs.m_nRatio;
+  _ratio_sets                   = rhs._ratio_sets;
   m_nRank                       = rhs.m_nRank;
   m_NonCompactnessPenalty       = rhs.m_NonCompactnessPenalty;
   m_nFirstInterval              = rhs.m_nFirstInterval;
@@ -65,6 +66,7 @@ void CPurelySpatialProspectiveCluster::CopyEssentialClassMembers(const CCluster&
   m_nTracts                     = ((CPurelySpatialProspectiveCluster&)rhs).m_nTracts;
   m_CartesianRadius             = ((CPurelySpatialProspectiveCluster&)rhs).m_CartesianRadius;
   m_nRatio                      = ((CPurelySpatialProspectiveCluster&)rhs).m_nRatio;
+  _ratio_sets                   = ((const CPurelySpatialProspectiveCluster&)rhs)._ratio_sets;
   m_nRank                       = ((CPurelySpatialProspectiveCluster&)rhs).m_nRank;
   m_NonCompactnessPenalty       = ((CPurelySpatialProspectiveCluster&)rhs).m_NonCompactnessPenalty;
   m_nFirstInterval              = ((CPurelySpatialProspectiveCluster&)rhs).m_nFirstInterval;

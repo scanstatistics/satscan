@@ -99,9 +99,6 @@ class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
     virtual AbstractTimeTrend        & getOutsideTrend(size_t tSetIndex=0);
     virtual const AbstractTimeTrend  & getInsideTrend(size_t tSetIndex=0) const;
     virtual const AbstractTimeTrend  & getOutsideTrend(size_t tSetIndex=0) const;
-    virtual void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                                  AbstractLikelihoodCalculator& Calculator,
-                                                                  std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual size_t              getNumSets() const {return gvSetClusterData.size();}

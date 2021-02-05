@@ -26,9 +26,6 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual void        setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
-    void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                          AbstractLikelihoodCalculator& Calculator,
-                                                          std::vector<unsigned int>& vDataSetIndexes) const;
     virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        setMeasure(measure_t m, unsigned int tSetIndex=0);
@@ -53,9 +50,6 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual void        setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
-    void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                          AbstractLikelihoodCalculator& Calculator,
-                                                          std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,

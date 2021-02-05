@@ -232,13 +232,13 @@ double AbstractLikelihoodCalculator::CalculateMaximizingValueUniformTime(count_t
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, int interval) const {
-    throw prg_error("CalcLogLikelihoodBernoulliTimeStratified(count_t, measure_t, int) not implementated.", "AbstractLikelihoodCalculator");
+double AbstractLikelihoodCalculator::CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, int interval, size_t setIdx) const {
+    throw prg_error("CalcLogLikelihoodBernoulliTimeStratified(count_t, measure_t, int, size_t) not implementated.", "AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcLogLikelihoodBernoulliSpatialStratified(count_t n, measure_t u, tract_t tract) const {
-    throw prg_error("CalcLogLikelihoodBernoulliSpatialStratified(count_t, measure_t, tract_t) not implementated.", "AbstractLikelihoodCalculator");
+double AbstractLikelihoodCalculator::CalcLogLikelihoodBernoulliSpatialStratified(count_t n, measure_t u, tract_t tract, size_t setIdx) const {
+    throw prg_error("CalcLogLikelihoodBernoulliSpatialStratified(count_t, measure_t, tract_t, size_t) not implementated.", "AbstractLikelihoodCalculator");
 }
 
 /** returns log likelihood for total - not implemented - throws exception. */

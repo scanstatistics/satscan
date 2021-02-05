@@ -76,56 +76,6 @@ void MultiSetSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
   return gvSetClusterData.at(tSetIndex)->setCaseCount(t);
 }
 
-/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
-    If specified purpose for multiple data sets is multivariate, recalculates high and low
-    LLR values to determine which data sets comprised target ratio; else all data sets
-    comprised target ratio. */
-void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                            AbstractLikelihoodCalculator& Calculator,
-                                                            std::vector<unsigned int>& vDataSetIndexes) const {
-    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
-
-  vDataSetIndexes.clear();
-  if (pUnifier) {
-    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    double                                              dHighRatios=0, dLowRatios=0;
-
-    //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
-       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t, vHighLowRatios[t]);
-       dHighRatios += vHighLowRatios[t].first;
-       dLowRatios += vHighLowRatios[t].second;
-    }
-    //assess collection of llr values to determine which data sets created target ratios
-    // - if scanning for high and low ratios, determine which corresponding rate produced
-    //   target ratio - high wins if they are equal
-    bool        bHighRatios=false;
-    if (dHighRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = true;
-    else if (dLowRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = false;
-    else {//target ratio does not equal high or low ratios
-     //likely round-off error
-      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = true;
-      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = false;
-      else
-        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetSpatialData",
-                        dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
-    }
-
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
-       if ((bHighRatios ? itr_pair->first : itr_pair->second))
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-  }
-  else {
-    size_t t=0;
-    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
-  }
-}
-
 /** Implements interface that calculates maximizing value - for multiple data sets, maximizing
     value is the full test statistic/ratio. */
 double MultiSetSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
@@ -182,56 +132,6 @@ const AbstractLoglikelihoodRatioUnifier & AbstractMultiSetTemporalData::getRatio
         Unifier.AdjoinRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t);
     }
     return Unifier;
-}
-
-/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
-    If specified purpose for multiple data sets is multivariate, recalculates high and low
-    LLR values to determine which data sets comprised target ratio; else all data sets
-    comprised target ratio. */
-void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                                            AbstractLikelihoodCalculator& Calculator,
-                                                            std::vector<unsigned int>& vDataSetIndexes) const {
-    AbstractMultivariateUnifier * pUnifier = dynamic_cast<AbstractMultivariateUnifier*>(&Calculator.GetUnifier());
-
-  vDataSetIndexes.clear();
-  if (pUnifier) {
-    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    double                                              dHighRatios=0, dLowRatios=0;
-
-    //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
-       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t, vHighLowRatios[t]);
-       dHighRatios += vHighLowRatios[t].first;
-       dLowRatios += vHighLowRatios[t].second;
-    }
-    //assess collection of llr values to determine which data sets created target ratios
-    // - if scanning for high and low ratios, determine which corresponding rate produced
-    //   target ratio - high wins if they are equal
-    bool        bHighRatios=false;
-    if (dHighRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = true;
-    else if (dLowRatios == dTargetLoglikelihoodRatio)
-      bHighRatios = false;
-    else {//target ratio does not equal high or low ratios
-     //likely round-off error
-      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = true;
-      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
-        bHighRatios = false;
-      else
-        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
-                        dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
-    }
-
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
-       if ((bHighRatios ? itr_pair->first : itr_pair->second))
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-  }
-  else {
-    size_t t=0;
-    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
-  }
 }
 
 /** Returns expected number of cases in accumulated respective data sets' cluster data.

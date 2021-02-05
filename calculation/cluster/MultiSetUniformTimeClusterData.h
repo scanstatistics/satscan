@@ -31,7 +31,6 @@ class MultiSetUniformTimeTemporalData : public AbstractMultiSetUniformTimeTempor
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual UniformTimeClusterDataInterface& getUniformTimeClusterDataInterface(unsigned int tSetIndex);
-    virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio, AbstractLikelihoodCalculator& Calculator, std::vector<unsigned int>& vDataSetIndexes) const;
     virtual count_t          GetCaseCount(unsigned int tSetIndex = 0) const { return gvSetClusterData.at(tSetIndex)->gtCases; }
     virtual void             setCaseCount(count_t t, unsigned int tSetIndex = 0) { gvSetClusterData.at(tSetIndex)->setCaseCount(t); }
     virtual count_t          GetCasesInPeriod(unsigned int tSetIndex) const { return gvSetClusterData.at(tSetIndex)->gtCasesInPeriod; }
@@ -66,7 +65,6 @@ class MultiSetUniformTimeSpaceTimeData : public AbstractMultiSetUniformTimeTempo
     virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
 
     virtual UniformTimeClusterDataInterface& getUniformTimeClusterDataInterface(unsigned int tSetIndex);
-    virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio, AbstractLikelihoodCalculator& Calculator, std::vector<unsigned int>& vDataSetIndexes) const;
     virtual count_t          GetCaseCount(unsigned int tSetIndex = 0) const { return gvSetClusterData.at(tSetIndex)->gtCases; }
     virtual void             setCaseCount(count_t t, unsigned int tSetIndex = 0) { gvSetClusterData.at(tSetIndex)->setCaseCount(t); }
     virtual count_t          GetCasesInPeriod(unsigned int tSetIndex) const { return gvSetClusterData.at(tSetIndex)->gtCasesInPeriod; }

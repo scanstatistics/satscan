@@ -13,6 +13,7 @@
 #include <climits>
 #include <cmath>
 #include <ctime>
+#include <set>
 #ifdef _WINDOWS_
   #include <io.h>
 #else
@@ -90,6 +91,8 @@ typedef double          measure_t;
 typedef int             tract_t;
 /** unsigned int type declaration */
 typedef unsigned int    UInt;
+/** data set index collection type */
+typedef std::set<size_t> DataSetIndexes_t;
 /** date precision units */
 enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 /** va_copy not defined on all compilers */

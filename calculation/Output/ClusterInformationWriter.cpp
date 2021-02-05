@@ -551,31 +551,24 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 
 /** Writes obvserved, expected and  observed/expected to file(s).*/
 void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iClusterNumber) const {
-  double                                        dExpected, dUnbiasedVariance, dRelativeRisk;
-  count_t                                       dObserved, dCasesOutside;
-  RecordBuffer                                  Record(vDataFieldDefinitions);
-  std::vector<unsigned int>                     vComprisedDataSetIndexes;
-  std::vector<unsigned int>::iterator           itr_Index;
-  std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
-  const DataSetHandler                        & Handler = gDataHub.GetDataSetHandler();
-  std::vector<tract_t>                          tractIndexes;
-
-  if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
-    vComprisedDataSetIndexes.push_back(0);
-  else
-    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), *Calculator.get(), vComprisedDataSetIndexes);
+  double dExpected, dUnbiasedVariance, dRelativeRisk;
+  count_t dObserved, dCasesOutside;
+  RecordBuffer Record(vDataFieldDefinitions);
+  const DataSetHandler & Handler = gDataHub.GetDataSetHandler();
+  std::vector<tract_t> tractIndexes;
 
   // Calculate cluster location indexes once for weight normal model.
   if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
      theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
 
+  const DataSetIndexes_t & setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
   for (unsigned int iSetIndex=0; iSetIndex < gDataHub.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
     Record.GetFieldValue(DATASET_FIELD).AsDouble() = gDataHub.GetDataSetHandler().getDataSetRelativeIndex(iSetIndex) + 1;
     Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = 1;
-    itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
-    if (itr_Index != vComprisedDataSetIndexes.end()) {
+    DataSetIndexes_t::const_iterator itr_Index = std::find(setIndexes.begin(), setIndexes.end(), iSetIndex);
+    if (itr_Index != setIndexes.end()) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
       if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         dObserved = theCluster.GetObservedCount(iSetIndex);
@@ -687,35 +680,32 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
 
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
 void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster, int iClusterNumber) const {
-  OrdinalLikelihoodCalculator                           Calculator(gDataHub);
-  std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
-  std::vector<OrdinalCombinedCategory>::iterator        itrCategory;
-  const AbstractCategoricalClusterData                * pClusterData=0;
+  OrdinalLikelihoodCalculator Calculator(gDataHub);
   measure_t                                             tObservedDivExpected;
   double                                                tRelativeRisk;
   RecordBuffer                                          Record(vDataFieldDefinitions);
-  std::vector<unsigned int>                             vComprisedDataSetIndexes;
-  std::vector<unsigned int>::iterator                   itr_Index;
+  const DataSetIndexes_t        & setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
 
+  const AbstractCategoricalClusterData * pClusterData = 0;
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
     throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n","WriteCountOrdinalData()");
 
-  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), Calculator, vComprisedDataSetIndexes);
-  for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
+  for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
     //retrieve ordinal categories in combined state
-    pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, *itr_Index);
+    std::vector<OrdinalCombinedCategory> vCategoryContainer;
+    pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, *itr);
     //for each combined category
-    for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+    for (std::vector<OrdinalCombinedCategory>::iterator itrC=vCategoryContainer.begin(); itrC != vCategoryContainer.end(); ++itrC) {
        Record.SetAllFieldsBlank(true);
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-       Record.GetFieldValue(DATASET_FIELD).AsDouble() = gDataHub.GetDataSetHandler().getDataSetRelativeIndex(*itr_Index) + 1;
+       Record.GetFieldValue(DATASET_FIELD).AsDouble() = gDataHub.GetDataSetHandler().getDataSetRelativeIndex(*itr) + 1;
        //calculate observed/expected and relative risk for combined categories
        count_t tObserved=0, tTotalCategoryCases=0;
        measure_t tExpected=0;
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-          tObserved += theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
-          tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumCategoryTypeCases(itrCategory->GetCategoryIndex(m));
+       for (size_t m=0; m < itrC->GetNumCombinedCategories(); ++m) {
+          tObserved += theCluster.GetObservedCountOrdinal(*itr, itrC->GetCategoryIndex(m));
+          tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, *itr, itrC->GetCategoryIndex(m));
+          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr).getPopulationData().GetNumCategoryTypeCases(itrC->GetCategoryIndex(m));
        }
        //record observed/expected cases - categories which were combined will have the same value
        tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);
@@ -724,13 +714,13 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
        tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
        if (tRelativeRisk != -1 /*indicator of infinity*/)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
-       double dTotalCasesInClusterDataSet = gDataHub.GetProbabilityModel().GetPopulation(*itr_Index, theCluster, gDataHub);
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-          Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = itrCategory->GetCategoryIndex(m) + 1;
+       double dTotalCasesInClusterDataSet = gDataHub.GetProbabilityModel().GetPopulation(*itr, theCluster, gDataHub);
+       for (size_t m=0; m < itrC->GetNumCombinedCategories(); ++m) {
+          Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = itrC->GetCategoryIndex(m) + 1;
           //record observed cases - not combining categories
-          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
+          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(*itr, itrC->GetCategoryIndex(m));
           //record expected cases - not combining categories
-          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
+          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, *itr, itrC->GetCategoryIndex(m));
           //record percentage cases per category
           Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / dTotalCasesInClusterDataSet;
           if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);

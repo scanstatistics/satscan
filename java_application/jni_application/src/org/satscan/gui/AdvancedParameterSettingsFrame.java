@@ -523,14 +523,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || (false && bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
-                    (bPoisson || (false && bBernoulli && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION)), 
+                    bPoisson, 
+                    bPoisson && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION, 
                     bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(
-                    bPoisson || (false && bBernoulli), 
-                    (bPoisson) || (false && bBernoulli && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION)
-                );
+                    bPoisson, 
+                    bPoisson && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
@@ -550,13 +549,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || (false && bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
-                    (bPoisson || (false && bBernoulli && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION)), 
+                    bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
+                    (bPoisson && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION) || bBernoulli,
                     bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(
-                    bPoisson || (false && bBernoulli), 
-                    (bPoisson) || (false && bBernoulli && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION)
+                    bPoisson, 
+                    bPoisson && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION
                 );
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
@@ -2830,9 +2829,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));
 
                 // enable and clear the edit boxes
-                enableDataSetList();
-                enableDataSetPurposeControls();
-                enableInputFileEdits();
                 _caseFilenames.addElement("");
                 _controlFilenames.addElement("");
                 _populationFilenames.addElement("");
@@ -2842,12 +2838,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _controlFileTextField.setText("");
                 _populationFileTextField.setText("");
                 _caseFileTextField.requestFocusInWindow();
-                enableNewButton();
-                enableRemoveButton();
-                enableSetDefaultsButton();
-                enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
-                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
-                enableDrilldownGroup();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 
@@ -2896,15 +2887,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     _inputDataSetsList.setSelectedIndex(0);
                     _inputDataSetsList.ensureIndexIsVisible(0);
                 }
-                enableDataSetList();
-                enableDataSetPurposeControls();
-                enableInputFileEdits();
-                enableNewButton();
-                enableRemoveButton();
-                enableSetDefaultsButton();
-                enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
-                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
-                enableDrilldownGroup();
+                enableSettingsForAnalysisModelCombination();
             }
         });
 

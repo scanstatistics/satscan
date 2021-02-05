@@ -1548,6 +1548,13 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
         PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment by stratified randomization is valid for "
                               "either retrospective or prospective space-time analyses only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
+      if (gParameters.GetProbabilityModelType() != POISSON) {
+          bValid = false;
+          PrintDirection.Printf(
+              "%s:\nThe nonparametric spatial adjustment by stratified randomization is valid only for Poisson model currently.\n", 
+              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+          );
+      }
       if (gParameters.GetIncludePurelySpatialClusters()) {
         bValid = false;
         PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment by stratified randomization does not permit "
@@ -1777,11 +1784,15 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
                         "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                } else if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
+                } else if (!gParameters.GetIsProspectiveAnalysis()) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is valid "
+                        "only for prospective space-time analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                } /* else if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe Bernoulli model does not permit the nonparametric temporal trends adjustment\n"
                         "in conjunction with the nonparametric spatial adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                }
+                }*/
                 if (gParameters.GetAreaScanRateType() != HIGH) {
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe Bernoulli model permits the nonparametric temporal trends adjustment\n"

@@ -44,6 +44,7 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator=(const CSpaceTimeCluster& rhs) {
   m_nTracts                     = rhs.m_nTracts;
   m_CartesianRadius             = rhs.m_CartesianRadius;
   m_nRatio                      = rhs.m_nRatio;
+  _ratio_sets                   = rhs._ratio_sets;
   m_nRank                       = rhs.m_nRank;
   m_NonCompactnessPenalty       = rhs.m_NonCompactnessPenalty;
   m_nFirstInterval              = rhs.m_nFirstInterval;
@@ -64,6 +65,7 @@ void CSpaceTimeCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_nTracts                     = ((const CSpaceTimeCluster&)rhs).m_nTracts;
   m_CartesianRadius             = ((const CSpaceTimeCluster&)rhs).m_CartesianRadius;
   m_nRatio                      = ((const CSpaceTimeCluster&)rhs).m_nRatio;
+  _ratio_sets                   = ((const CSpaceTimeCluster&)rhs)._ratio_sets;
   m_nRank                       = ((const CSpaceTimeCluster&)rhs).m_nRank;
   m_NonCompactnessPenalty       = ((const CSpaceTimeCluster&)rhs).m_NonCompactnessPenalty;
   m_nFirstInterval              = ((const CSpaceTimeCluster&)rhs).m_nFirstInterval;

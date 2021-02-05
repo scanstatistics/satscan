@@ -106,29 +106,27 @@ double TemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData
     return dMaxValue;
 }
 
-//********** BeronulliTimeStratifiedTemporalDataEvaluator *******
+//********** BernoulliTimeStratifiedTemporalDataEvaluator *******
 
 /** constructor */
-BeronulliTimeStratifiedTemporalDataEvaluator::BeronulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
+BernoulliTimeStratifiedTemporalDataEvaluator::BernoulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
     IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType)
     :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
     if (DataHub.GetParameters().GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
-        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator not implemented for selected time trend adjustment type.", "BeronulliTimeStratifiedTemporalDataEvaluator");
+        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator not implemented for selected time trend adjustment type.", "BernoulliTimeStratifiedTemporalDataEvaluator");
+    if (DataHub.GetParameters().GetAnalysisType() != PROSPECTIVESPACETIME)
+        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator only implemented for prospective space-time analyses.", "BernoulliTimeStratifiedTemporalDataEvaluator");
+    if (DataHub.GetParameters().GetAreaScanRateType() != HIGH)
+        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator only implemented for high scanning areas.", "BernoulliTimeStratifiedTemporalDataEvaluator");
     // get pointers to non-cumulative case and measure data, we'll need these during scanning
     _pt_counts_nc = DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT_NC();
     _pt_measure_nc = DataHub.GetDataSetHandler().GetDataSet().getMeasureData_PT_NC();
-    _stop_weakened_clusters = true; // TODO - make this a parameter.
-
-    /*
-     Questions:
-     1) Are we going to implement this for retrospective or not? If yes then I think we could store calculated time interval llr to save computations.
-     2 Are we implementing this for multiple data sets? What are the details?
-    */
+    _stop_weakened_clusters = true; // TODO - make this a parameter "save execution time by stopping weakened clusters."
 }
 
 /** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
 of clusters that have rates of which we are interested in and updates clusterset accordingly. */
-void BeronulliTimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+void BernoulliTimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     TemporalData & Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
     count_t * pCases = Data.gpCases, intervalCases;
     measure_t * pMeasure = Data.gpMeasure, intervalMeasure;
@@ -177,14 +175,14 @@ void BeronulliTimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& R
 }
 
 /** No implemented for this class */
-void BeronulliTimeStratifiedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
-    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "BeronulliTimeStratifiedTemporalDataEvaluator");
+void BernoulliTimeStratifiedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "BernoulliTimeStratifiedTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
 Calculates greatest loglikelihood ratio among clusterings that have rates
 which we are interested in. Returns greatest loglikelihood ratio. */
-double BeronulliTimeStratifiedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+double BernoulliTimeStratifiedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     TemporalData & Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
     count_t * pCases = Data.gpCases, intervalCases;
     measure_t * pMeasure = Data.gpMeasure, intervalMeasure;
@@ -227,14 +225,149 @@ double BeronulliTimeStratifiedTemporalDataEvaluator::ComputeMaximizingValue(Abst
     return dMaxValue;
 }
 
-//********** BeronulliSpatialStratifiedTemporalDataEvaluator *******
+//********** MultiSetBernoulliTimeStratifiedTemporalDataEvaluator ****/
 
 /** constructor */
-BeronulliSpatialStratifiedTemporalDataEvaluator::BeronulliSpatialStratifiedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
+MultiSetBernoulliTimeStratifiedTemporalDataEvaluator::MultiSetBernoulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& DataHub,
+    AbstractLikelihoodCalculator & Calculator,
+    IncludeClustersType eIncludeClustersType)
+    :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
+    if (DataHub.GetParameters().GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
+        throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator not implemented for selected time trend adjustment type.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
+    if (DataHub.GetParameters().GetAnalysisType() != PROSPECTIVESPACETIME)
+        throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator only implemented for prospective space-time analyses.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
+    if (DataHub.GetParameters().GetAreaScanRateType() != HIGH)
+        throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator only implemented for high scanning areas.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
+    // get pointers to non-cumulative case and measure data, we'll need these during scanning
+    for (size_t d=0; d < DataHub.GetDataSetHandler().GetNumDataSets(); ++d) {
+        _pt_counts_nc.push_back(DataHub.GetDataSetHandler().GetDataSet(d).getCaseData_PT_NC());
+        _pt_measure_nc.push_back(DataHub.GetDataSetHandler().GetDataSet(d).getMeasureData_PT_NC());
+    }
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void MultiSetBernoulliTimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    AbstractMultiSetTemporalData & Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
+    AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+
+    count_t intervalCases;
+    measure_t intervalMeasure;
+    std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
+
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        std::fill(cumulative_llr.begin(), cumulative_llr.end(), 0.0);
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t d = 0; d < Data.gvSetClusterData.size(); ++d) {
+                TemporalData & Datum = *(Data.gvSetClusterData[d]);
+                Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+                Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+
+                /* Now calculate the LLR of this time interval separate from others.
+                We'll add the LLR for intervals with higher that expected cases and substrate those intervals
+                with less than expected number of cases. (note this is only implemented for high rate scans)
+                */
+                intervalCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowStart + 1];
+                intervalMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1];
+                // skip to next interval if measure is zero
+                if (intervalMeasure == 0)
+                    continue;
+
+                // Calculate the LLR of time interval in this data set.
+                if (intervalCases * _pt_measure_nc[d][iWindowStart] > intervalMeasure * _pt_counts_nc[d][iWindowStart])
+                    cumulative_llr[d] += gLikelihoodCalculator.CalcLogLikelihoodBernoulliTimeStratified(intervalCases, intervalMeasure, iWindowStart, d);
+                else
+                    cumulative_llr[d] -= gLikelihoodCalculator.CalcLogLikelihoodBernoulliTimeStratified(intervalCases, intervalMeasure, iWindowStart, d);
+
+                // Adjoin the calculated log likelihood value for this data set.
+                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, d, cumulative_llr[d]);
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier)) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                Running._ratio_sets = Unifier.getUnifiedSets();
+                clusterSet.update(Running);
+            }
+        }
+    }
+    clusterSet.maximizeClusterSet();
+}
+
+/** Not implemented - throws prg_error */
+void MultiSetBernoulliTimeStratifiedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+Calculates greatest loglikelihood ratio among clusterings that have rates
+which we are interested in. Returns greatest loglikelihood ratio. */
+double MultiSetBernoulliTimeStratifiedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    AbstractMultiSetTemporalData        & Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
+    AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
+    double                                dRatio(0);
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+
+    count_t intervalCases;
+    measure_t intervalMeasure;
+    std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
+
+    //iterate through windows
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        std::fill(cumulative_llr.begin(), cumulative_llr.end(), 0.0);
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t d = 0; d < Data.gvSetClusterData.size(); ++d) {
+                TemporalData & Datum = *(Data.gvSetClusterData[d]);
+                Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+                Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+
+                /* Now calculate the LLR of this time interval separate from others.
+                We'll add the LLR for intervals with higher that expected cases and substrate those intervals
+                with less than expected number of cases. (note this is only implemented for high rate scans)
+                */
+                intervalCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowStart + 1];
+                intervalMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1];
+                // skip to next interval if measure is zero
+                if (intervalMeasure == 0)
+                    continue;
+
+                // Calculate the LLR of time interval in this data set.
+                if (intervalCases * _pt_measure_nc[d][iWindowStart] > intervalMeasure * _pt_counts_nc[d][iWindowStart])
+                    cumulative_llr[d] += gLikelihoodCalculator.CalcLogLikelihoodBernoulliTimeStratified(intervalCases, intervalMeasure, iWindowStart, d);
+                else
+                    cumulative_llr[d] -= gLikelihoodCalculator.CalcLogLikelihoodBernoulliTimeStratified(intervalCases, intervalMeasure, iWindowStart, d);
+
+                // Adjoin the calculated log likelihood value for this data set.
+                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, d, cumulative_llr[d]);
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier))
+                dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+        }
+    }
+    return dRatio;
+}
+
+//********** BernoulliSpatialStratifiedTemporalDataEvaluator *******
+
+/** constructor */
+BernoulliSpatialStratifiedTemporalDataEvaluator::BernoulliSpatialStratifiedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
     IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType)
     :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
     if (DataHub.GetParameters().GetSpatialAdjustmentType() != SPATIAL_STRATIFIED_RANDOMIZATION)
-        throw prg_error("BeronulliSpatialStratifiedTemporalDataEvaluator not implemented for selected spatial adjustment type.", "BeronulliSpatialStratifiedTemporalDataEvaluator");
+        throw prg_error("BernoulliSpatialStratifiedTemporalDataEvaluator not implemented for selected spatial adjustment type.", "BernoulliSpatialStratifiedTemporalDataEvaluator");
     // get pointers to non-cumulative case and measure data, we'll need these during scanning
     _pp_counts = DataHub.GetDataSetHandler().GetDataSet().getCaseData().GetArray();
     _pp_measure = DataHub.GetDataSetHandler().GetDataSet().getMeasureData().GetArray();
@@ -242,7 +375,7 @@ BeronulliSpatialStratifiedTemporalDataEvaluator::BeronulliSpatialStratifiedTempo
 
 /** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
 of clusters that have rates of which we are interested in and updates clusterset accordingly. */
-void BeronulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+void BernoulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     TemporalData & Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
     count_t * pCases = Data.gpCases;
     measure_t * pMeasure = Data.gpMeasure;
@@ -263,13 +396,10 @@ void BeronulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster
 
                 throw prg_error("Not implemented yet.", "BeronulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet");
 
-                /* TODO:
-                  What is the specialization for this routine? Is there one?
-                  I can't quite see a clear port over from the time stratified implementation. As we expand cluster, we're adding another
-                  tract's data to the cluster then iterating over time intervals. Do we need to calculate llr cumulatively in a similar
-                  way to the time stratified? 
-                  
-                  Probably best to wait for Martin to give me direction here rather than guess at this implementation.
+                /* Note:
+                   We've decided to suspend this feature at this point. The process here is similar logically to the time stratified
+                   (except by tract vs interval) but the algorithm is a major deviation from the current. We'll leave the spatially straified
+                   code in place -- should we someday decide this feature is worth the effort.
                 */
 
                 Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodBernoulliSpatialStratified(Data.gtCases, Data.gtMeasure, 0/* ?? */);
@@ -283,14 +413,14 @@ void BeronulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster
 }
 
 /** No implemented for this class */
-void BeronulliSpatialStratifiedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
+void BernoulliSpatialStratifiedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
     throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "BeronulliSpatialStratifiedTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
 Calculates greatest loglikelihood ratio among clusterings that have rates
 which we are interested in. Returns greatest loglikelihood ratio. */
-double BeronulliSpatialStratifiedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+double BernoulliSpatialStratifiedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     TemporalData & Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
     count_t * pCases = Data.gpCases;
     measure_t * pMeasure = Data.gpMeasure;
@@ -469,6 +599,7 @@ void MultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CCluste
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                Running._ratio_sets = Unifier.getUnifiedSets();
                 clusterSet.update(Running);
             }
         }
@@ -550,6 +681,7 @@ void MultiSetUniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Runni
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
             Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            Running._ratio_sets = Unifier.getUnifiedSets();
             clusterSet.update(Running);
         }
     }
@@ -645,6 +777,7 @@ void ClosedLoopMultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Runnin
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                Running._ratio_sets = Unifier.getUnifiedSets();
                 clusterSet.update(Running);
             }
         }
@@ -991,6 +1124,7 @@ void MultiSetNormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
             Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            Running._ratio_sets = Unifier.getUnifiedSets();
             clusterSet.update(Running);
         }
     }
@@ -1079,6 +1213,7 @@ void ClosedLoopMultiSetNormalTemporalDataEvaluator::CompareClusterSet(CCluster& 
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
             Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            Running._ratio_sets = Unifier.getUnifiedSets();
             clusterSet.update(Running);
         }
     }
@@ -1299,6 +1434,7 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusterSet(CCluster& Runni
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
             Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            Running._ratio_sets = Unifier.getUnifiedSets();
             clusterSet.update(Running);
         }
     }
@@ -1384,6 +1520,7 @@ void ClosedLoopMultiSetCategoricalTemporalDataEvaluator::CompareClusterSet(CClus
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
             Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+            Running._ratio_sets = Unifier.getUnifiedSets();
             clusterSet.update(Running);
         }
     }

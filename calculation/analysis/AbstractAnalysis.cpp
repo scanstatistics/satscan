@@ -138,9 +138,11 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
             return new MultiSetUniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
         case BERNOULLI:
             if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                return new BeronulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                if (gDataHub.GetNumDataSets() == 1)
+                    return new BernoulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new MultiSetBernoulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
             if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
-                return new BeronulliSpatialStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new BernoulliSpatialStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
         default :
             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 if (gDataHub.GetNumDataSets() == 1)

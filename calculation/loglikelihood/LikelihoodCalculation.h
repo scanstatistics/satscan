@@ -64,8 +64,8 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalculateMaximizingValueNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double                      CalculateMaximizingValueUniformTime(count_t cases, measure_t measure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex=0) const;
-    virtual double                      CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, int interval) const;
-    virtual double                      CalcLogLikelihoodBernoulliSpatialStratified(count_t n, measure_t u, tract_t tract) const;
+    virtual double                      CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, int interval, size_t setIdx = 0) const;
+    virtual double                      CalcLogLikelihoodBernoulliSpatialStratified(count_t n, measure_t u, tract_t tract, size_t setIdx = 0) const;
     const CSaTScanData                & GetDataHub() const {return gDataHub;}
     virtual double                      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;
     AbstractLoglikelihoodRatioUnifier & GetUnifier() const;

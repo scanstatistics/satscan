@@ -47,6 +47,7 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
   m_nTracts               = rhs.m_nTracts;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
+  _ratio_sets             = rhs._ratio_sets;
   m_nRank                 = rhs.m_nRank;
   m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
   m_nFirstInterval        = rhs.m_nFirstInterval;
@@ -62,6 +63,7 @@ void CPurelySpatialCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_nTracts               = ((CPurelySpatialCluster&)rhs).m_nTracts;
   m_CartesianRadius       = ((CPurelySpatialCluster&)rhs).m_CartesianRadius;
   m_nRatio                = ((CPurelySpatialCluster&)rhs).m_nRatio;
+  _ratio_sets             = ((const CPurelySpatialCluster&)rhs)._ratio_sets;
   m_nRank                 = ((CPurelySpatialCluster&)rhs).m_nRank;
   m_NonCompactnessPenalty = ((CPurelySpatialCluster&)rhs).m_NonCompactnessPenalty;
   m_nFirstInterval        = ((CPurelySpatialCluster&)rhs).m_nFirstInterval;

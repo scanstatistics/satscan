@@ -28,7 +28,7 @@ class TemporalDataEvaluator : public CTimeIntervals {
 };
 
 /** Temporal window evaluator used with Bernoulli model and adjusting for temporal trends nonparametrically. */
-class BeronulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
+class BernoulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
 private:
     count_t   *  _pt_counts_nc;
     measure_t * _pt_measure_nc;
@@ -36,7 +36,7 @@ private:
     bool        _stop_weakened_clusters;
 
 public:
-    BeronulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+    BernoulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
         IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
 
     virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
@@ -44,14 +44,28 @@ public:
     virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
+/** Temporal window evaluator used with Bernoulli model and adjusting for temporal trends nonparametrically with multiple data sets. */
+class MultiSetBernoulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    std::vector<count_t*>  _pt_counts_nc;
+    std::vector<measure_t*> _pt_measure_nc;
+public:
+    MultiSetBernoulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+
 /** Temporal window evaluator used with Bernoulli model and adjusting for purely spatial clusters nonparametrically. */
-class BeronulliSpatialStratifiedTemporalDataEvaluator : public CTimeIntervals {
+class BernoulliSpatialStratifiedTemporalDataEvaluator : public CTimeIntervals {
 private:
     count_t    ** _pp_counts;
     measure_t  ** _pp_measure;
 
 public:
-    BeronulliSpatialStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+    BernoulliSpatialStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
         IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
 
     virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);

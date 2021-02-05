@@ -19,6 +19,20 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _unified_sets.insert(tSetIndex);
+    }
+}
+
+/** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
+    This particular method is intended for the Bernoulli time stratified adjustment, where we're calculating the data sets
+    loglikelihood ratio by intervals separately in process previous to this call. */
+void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
+    if (llr > 0.0) { // The sign of the passed loglikelihood ratio indicates whether high or low.
+        _llr += llr;
+        _data_stream_accumulator._sum_observed += tCases;
+        _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
+        _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _unified_sets.insert(tSetIndex);
     }
 }
 
@@ -29,6 +43,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
     if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex)) {
         _llr += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.insert(tSetIndex);
     }
 }
 
@@ -41,6 +56,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         if (bWeightedNormal ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.HighRateDataStream(tCases, tMeasure, tSetIndex)) {
             _llr += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
             _data_stream_accumulator._sum_observed += tCases;
+            _unified_sets.insert(tSetIndex);
         }
     }
 }
@@ -48,42 +64,8 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
 /** Calculates loglikelihood ratio given ordinal data; adding log likelihood ratio to accumulation. */
 void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     _llr += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
+    _unified_sets.insert(tSetIndex);
 }
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierHighRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases.
-    if (tMeasure > 0.0 && Calculator.HighRateDataStream(tCases, tMeasure, tSetIndex))
-        prHighLowRatios.first = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
-    else 
-        prHighLowRatios.first = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierHighRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases and there are cases in period
-    if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
-        prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
-    else 
-        prHighLowRatios.first = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierHighRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases.
-    if (tMeasure > 0.0) { 
-        bool bWeightedNormal = _probability_model == NORMAL && Calculator.GetDataHub().GetParameters().getIsWeightedNormal();
-        if (bWeightedNormal ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.HighRateDataStream(tCases, tMeasure, tSetIndex))
-            prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
-    } else
-        prHighLowRatios.first = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierHighRate::GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    prHighLowRatios.first = ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
-}
-
 
 /////////////////////////////// MultivariateUnifierLowRate //////////////////////////////////////////
 
@@ -96,6 +78,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _unified_sets.insert(tSetIndex);
     }
 }
 
@@ -106,6 +89,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
     if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsLowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex)) {
         _llr += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.insert(tSetIndex);
     }
 }
 
@@ -118,6 +102,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
         if (bWeightedNormal ? Calculator.MultipleSetsLowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRateDataStream(tCases, tMeasure, tSetIndex)) {
             _llr += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
             _data_stream_accumulator._sum_observed += tCases;
+            _unified_sets.insert(tSetIndex);
         }
     }
 }
@@ -125,42 +110,8 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
 /** Calculates loglikelihood ratio given ordinal data; adding log likelihood ratio to accumulation. */
 void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     _llr += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
+    _unified_sets.insert(tSetIndex);
 }
-
-/** Populates prHighLowRatios structure such that the second element in pair is the calculated low rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases.
-    if (tMeasure > 0.0 && Calculator.LowRateDataStream(tCases, tMeasure, tSetIndex))
-        prHighLowRatios.second = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
-    else
-        prHighLowRatios.second = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the second element in pair is the calculated low rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases and there are cases in period
-    if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsLowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex))
-        prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
-    else
-        prHighLowRatios.second = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the second element in pair is the calculated low rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    // perform check only if expected cases.
-    if (tMeasure > 0.0) { 
-        bool bWeightedNormal = _probability_model == NORMAL && Calculator.GetDataHub().GetParameters().getIsWeightedNormal();
-        if (bWeightedNormal ? Calculator.MultipleSetsLowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRateDataStream(tCases, tMeasure, tSetIndex))
-            prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
-    } else
-        prHighLowRatios.second = 0.0;
-}
-
-/** Populates prHighLowRatios structure such that the second element in pair is the calculated low rate log likelihood ratio for cluster data of data stream. */
-void MultivariateUnifierLowRate::GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    prHighLowRatios.second = ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
-}
-
 
 /////////////////////////////// MultivariateUnifierHighLowRate //////////////////////////////////////
 
@@ -188,34 +139,6 @@ void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& C
     _low_rate.AdjoinRatio(Calculator, vOrdinalCases, tSetIndex);
 }
 
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream
-and the second is that of the low rate log likelihood ratio. */
-void MultivariateUnifierHighLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    _high_rate.GetHighLowRatio(Calculator, tCases, tMeasure, tSetIndex, prHighLowRatios);
-    _low_rate.GetHighLowRatio(Calculator, tCases, tMeasure, tSetIndex, prHighLowRatios);
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream
-and the second is that of the low rate log likelihood ratio. */
-void MultivariateUnifierHighLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    _high_rate.GetHighLowRatio(Calculator, tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex, prHighLowRatios);
-    _low_rate.GetHighLowRatio(Calculator, tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex, prHighLowRatios);
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream
-and the second is that of the low rate log likelihood ratio. */
-void MultivariateUnifierHighLowRate::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    _high_rate.GetHighLowRatio(Calculator, tCases, tMeasure, tMeasureAux, tSetIndex, prHighLowRatios);
-    _low_rate.GetHighLowRatio(Calculator, tCases, tMeasure, tMeasureAux, tSetIndex, prHighLowRatios);
-}
-
-/** Populates prHighLowRatios structure such that the first element in pair is the calculated high rate log likelihood ratio for cluster data of data stream
-    and the second is that of the low rate log likelihood ratio. */
-void MultivariateUnifierHighLowRate::GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex, std::pair<double, double>& prHighLowRatios) {
-    _high_rate.GetHighLowRatioOrdinal(Calculator, vOrdinalCases, tSetIndex, prHighLowRatios);
-    _low_rate.GetHighLowRatioOrdinal(Calculator, vOrdinalCases, tSetIndex, prHighLowRatios);
-}
-
 ///////////////////////////////////// AdjustmentUnifier /////////////////////////////////////////
 
 /** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
@@ -228,6 +151,13 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
         _llr += -1 * Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
     }
+}
+
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
+    _llr += llr; // The sign of the passed loglikelihood ratio already indicates whether high or low.
+    _data_stream_accumulator._sum_observed += tCases;
 }
 
 /** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation. 
@@ -283,4 +213,14 @@ void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& C
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
     }
+}
+
+/** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
+This particular method is intended for the Bernoulli time stratified adjustment, where we're calculating the data sets
+loglikelihood ratio by intervals separately in process previous to this call. */
+void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
+    _llr += llr; // The sign of the passed loglikelihood ratio already indicates whether high or low.
+    _data_stream_accumulator._sum_observed += tCases;
+    _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
+    _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
 }
