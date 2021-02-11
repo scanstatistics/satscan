@@ -118,8 +118,8 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
      */
     private void showStatus() {
         try {
-            /* Application updater is not working currently -- only inform user about update. */
-            if (SystemUtils.IS_OS_WINDOWS) {
+            /* Application updater is not working currently for Windows and Mac -- only inform user about update. */
+            if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC) {
                 _applicationFrame.softwareUpdateAvailable.setVisible(false);
                 _applicationFrame._versionUpdateToolButton.setVisible(true);
             } else {
@@ -128,7 +128,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             }
             CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
             if (_updateExists) {
-                if (SystemUtils.IS_OS_WINDOWS) {
+                if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC) {
                     cl.show(_cardsPanel, CARD_UPDATEINFOONLY);
                     _updateInfoOnlyText.setText("Newer version " + getNewVersionNumber() + " is available at:");
                 } else {

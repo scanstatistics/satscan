@@ -49,8 +49,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Q:\build.area\satscan\installers\sample_data\*"; DestDir: "{app}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "Q:\build.area\satscan\installers\java\win32-jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstallMode
-Source: "Q:\build.area\satscan\installers\java\win64-jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstallMode
+Source: "Q:\build.area\satscan\installers\java\jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Q:\build.area\satscan\installers\documents\eula.html"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\installers\documents\SaTScan_Users_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Q:\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
