@@ -1,13 +1,13 @@
 #!/bin/sh
 
 ############ Script Defines #######################################################################
-build="/prj/satscan/build.area"
-installer_version="/prj/satscan/installers/v.10.0.x"
-binaries="/prj/satscan/build.area/binaries/linux"
 version="10.0"
 versionf="10_0"
+build="/prj/satscan/build.area"
+installer_version="/prj/satscan/installers/v.$version.x"
+binaries="/prj/satscan/build.area/binaries/linux"
 
-javabin="/prj/satscan/installers/install.applications/java/jdk-15.0.2/bin"
+javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2/jdk-15.0.2-linux_x64"
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
 IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 
@@ -64,26 +64,6 @@ read dummy
 #       1) The update application is written in Java. So that application would need redesign.
 #       2) I'm no longer certain how to update Mac dmg currently.
 
-# Combined Windows/Linux update archive
-#  -- Starting with the release featuring the Mac, this archive was not needed;
-#     so only add Windows and Linux relevant files.
-rm -f $installer_version/update_data_combined.zip
-
-zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
-zip $installer_version/update_data_combined.zip -j $build/satscan/shared_library/Release/satscan32.dll
-zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
-zip $installer_version/update_data_combined.zip -j $build/satscan/shared_library/x64/Release/satscan64.dll
-zip $installer_version/update_data_combined.zip -j $build/binaries/linux/*
-zip $installer_version/update_data_combined.zip -j $build/satscan/installers/documents/*
-zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
-zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.exe
-cd $build/satscan/java_application/jni_application/dist
-zip $installer_version/update_data_combined.zip -r lib
-cd $build/satscan/installers/java
-zip $installer_version/update_data_combined.zip -r jre
-cd $build/satscan/installers
-zip $installer_version/update_data_combined.zip -r sample_data
-
 # Windows update archive
 rm -f $installer_version/update_data_windows.zip
 
@@ -97,7 +77,7 @@ zip $installer_version/update_data_windows.zip -j $build/satscan/java_applicatio
 cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers/java
-zip $installer_version/update_data_windows.zip -r jre
+zip $installer_version/update_data_windows.zip -r jre_windows_x64 jre
 cd $build/satscan/installers
 zip $installer_version/update_data_windows.zip -r sample_data
 

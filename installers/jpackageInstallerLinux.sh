@@ -6,7 +6,7 @@
 # until it attempts to create deb or rpm file. Perhaps I just need other packages installed
 # into my local java or this really needs to be done on RedHat or Ubuntu.
 
-javabin="/prj/satscan/installers/install.applications/java/jdk-15.0.2/bin"
+javabin="/prj/satscan/installers/install.applications/java/jdk-15.0.2-linux_x64/bin"
 version="10.0"
 srcdir="/prj/satscan/build.area/satscan"
 bundledir="/prj/satscan/build.area/jpackage"
