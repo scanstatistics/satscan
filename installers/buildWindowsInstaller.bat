@@ -22,6 +22,7 @@ set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-s
 set timestamp=http://timestamp.digicert.com/
 set password="&4L(JyhyOmwF)$Z"
 
+
 REM Codesigning a GUI exe file.
 %signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscanexe%
 
@@ -29,13 +30,13 @@ REM Verify the GUI exe file is codesigned correctly.
 %signtool% verify /pa /v %satscanexe%
 
 REM Create Java runtime
-rmdir %runtimeoutput% /s /q
-%javajdk%\bin\jlink --module-path %javajdk%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto --output %runtimeoutput% --strip-debug --compress 2 --no-header-files --no-man-pages
+if exist %runtimeoutput% rmdir %runtimeoutput% /s /q
+%javajdk%\bin\jlink.exe --module-path %javajdk%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto --output %runtimeoutput% --strip-debug --compress 2 --no-header-files --no-man-pages
 
 REM Build InnoSetup installer.
 %innosetup% %innoiss%
 
-REM Codesigning a installer exe file.
+REM Codesign installer exe file.
 %signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscaninstaller%
 
 REM Verify the installer exe file is codesigned correctly.

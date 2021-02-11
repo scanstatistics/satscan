@@ -42,6 +42,8 @@ satscanproject.VC.db
 installers/izpack/mac/satscan2app/SaTScan.app
 installers/sample_data/*.txt
 installers/java/jre
+installers/java/jre_windows_x64/
+installers/java/jre_linux_x64/
 
 newmat/Win32/Release
 newmat/x64/Release

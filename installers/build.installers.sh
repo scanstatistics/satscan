@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 ############ Script Defines #######################################################################
 version="10.0"
 versionf="10_0"
 build="/prj/satscan/build.area"
-installer_version="/prj/satscan/installers/v.$version.x"
+installer_version="/prj/satscan/installers/v.${version}.x"
 binaries="/prj/satscan/build.area/binaries/linux"
 
 javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2/jdk-15.0.2-linux_x64"
@@ -23,28 +23,28 @@ echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to sign SaTSca
 read dummy
 
 # Build Windows command-line only archive. This is an alternative download option that is command-line only (no GUI/Java).
-rm -f $installer_version/satscan.$version_windows.zip
-zip $installer_version/satscan.$version_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
-zip $installer_version/satscan.$version_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+rm -f $installer_version/satscan.${version}_windows.zip
+zip $installer_version/satscan.${version}_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
+zip $installer_version/satscan.${version}_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 cd $build/satscan/installers
-zip $installer_version/satscan.$version_windows.zip -j documents/*
-zip $installer_version/satscan.$version_windows.zip sample_data/*
+zip $installer_version/satscan.${version}_windows.zip -j documents/*
+zip $installer_version/satscan.${version}_windows.zip sample_data/*
 
 #######   ############ Linux ################################################################################
 # Build the IzPack Java installer for Linux. (Note that someday we might replace this process with jpackageInstallerLinux.sh)
 
 # Build Linux installer. 
-$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-$versionf_linux.jar -k standard
-chmod a+x $installer_version/install-$versionf_linux.jar
+$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-${versionf}_linux.jar -k standard
+chmod a+x $installer_version/install-${versionf}_linux.jar
 
 # Build batch binaries archive for Linux. This is an alternative download option that is command-line only (no GUI/Java).
-rm -f $installer_version/satscan.$version_linux.tar.gz
+rm -f $installer_version/satscan.${version}_linux.tar.gz
 cd $build/binaries/linux
-tar -cf $installer_version/satscan.$version_linux.tar satscan*
+tar -cf $installer_version/satscan.${version}_linux.tar satscan*
 cd $build/satscan/installers
-tar -rf $installer_version/satscan.$version_linux.tar documents/*
-tar -rf $installer_version/satscan.$version_linux.tar sample_data/*
-gzip -f $installer_version/satscan.$version_linux.tar
+tar -rf $installer_version/satscan.${version}_linux.tar documents/*
+tar -rf $installer_version/satscan.${version}_linux.tar sample_data/*
+gzip -f $installer_version/satscan.${version}_linux.tar
 
 ### ############ Mac OS X #############################################################################
 ### # Build SaTScan Mac OS X Application Bundle Directory
@@ -77,7 +77,10 @@ zip $installer_version/update_data_windows.zip -j $build/satscan/java_applicatio
 cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers/java
-zip $installer_version/update_data_windows.zip -r jre_windows_x64 jre
+mv jre_windows_x64 jre
+zip $installer_version/update_data_windows.zip -r jre
+# We can delete the generated Windows Java runtime now.
+rm -f $build/satscan/installers/java/jre
 cd $build/satscan/installers
 zip $installer_version/update_data_windows.zip -r sample_data
 
@@ -92,5 +95,3 @@ zip $installer_version/update_data_linux.zip -r lib
 cd $build/satscan/installers
 zip $installer_version/update_data_linux.zip -r sample_data
 
-# We can delete the generated Java runtime now.
-rm -f $build/satscan/installers/java/jre
