@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.io.File;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -21,10 +23,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.utils.FileAccess;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/* XML file class to to reda and write BatchAnalysis objects. */
 public class BatchXMLFile {
 
     private static final String ANALYSES = "analyses";
@@ -39,6 +44,10 @@ public class BatchXMLFile {
     public static final String LAST_EXEC_DATE_FORMAT = "yyyy-MM-dd kk:mm:ss";
     private static final String LAST_EXEC_STATUS = "last-execution-status";
     private static final String LAST_EXEC_MSSG = "last-execution-warnings-errors";
+    private static final String DRILLDOWN_TREE = "drilldown-tree";
+    private static final String DRILLDOWN_NODE = "drilldown-node";
+    private static final String DRILLDOWN_RESULTS = "results-filename";
+    private static final String DRILLDOWN_SIGNIFICANT = "significant";
     
     private static final String YEAR = "year";
     private static final String MONTH = "month";
@@ -129,14 +138,8 @@ public class BatchXMLFile {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXmlFile);
-            
-            //optional, but recommended
-            //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
             NodeList nList = doc.getElementsByTagName(ANALYSIS);
-            System.out.println("----------------------------");
-
             for (int temp=0; temp < nList.getLength(); temp++) {
                 Node nNode = nList.item(temp);
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -162,11 +165,31 @@ public class BatchXMLFile {
                         );
                     }                    
                     BatchAnalysis batchAnalysis = new BatchAnalysis(
-                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), parameters, study_length, lag
+                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), parameters, study_length, lag, null
                     );                    
                     batchAnalysis.setLastExecutedDate(parseDate(eElement.getElementsByTagName(LAST_EXEC_DATE).item(0).getTextContent()));
                     batchAnalysis.setLastExecutedStatus(parseStatus(eElement.getElementsByTagName(LAST_EXEC_STATUS).item(0).getTextContent()));
                     batchAnalysis.setLastExecutedMessage(eElement.getElementsByTagName(LAST_EXEC_MSSG).item(0).getTextContent());
+                    
+                    // Attempt to read drilldown results tree.
+                    NodeList drilldown_tree = eElement.getElementsByTagName(DRILLDOWN_TREE);
+                    NodeList drilldown_nodes = eElement.getElementsByTagName(DRILLDOWN_NODE);
+                    if (drilldown_tree != null && drilldown_tree.getLength() > 0 && drilldown_nodes.getLength() > 0) {
+                        Map<String, BatchAnalysis.TreeNode<Pair<String, Integer>>> tree_map = new HashMap<>();
+                        for (int i=0; i < drilldown_nodes.getLength(); ++i) {
+                            Element e = (Element)drilldown_nodes.item(i);
+                            String results_filename = e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
+                            Integer significant = Integer.parseInt(e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getAttributes().getNamedItem(DRILLDOWN_SIGNIFICANT).getNodeValue());
+                            String parent_filename = ((Element)e.getParentNode()).getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
+                            if (parent_filename.equals(results_filename)) { // Root node
+                                BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = batchAnalysis.getNewTreeNode(results_filename, significant);
+                                tree_map.put(results_filename, rootNode);
+                                batchAnalysis.setDrilldownRoot(rootNode);
+                            } else {
+                                tree_map.put(results_filename, tree_map.get(parent_filename).addChild(Pair.of(results_filename, significant)));
+                            }
+                        }
+                    }
                     _batch_analyses.add(batchAnalysis);
                 }
             }
@@ -229,7 +252,11 @@ public class BatchXMLFile {
 
                 Element last_exec_mssg = doc.createElement(LAST_EXEC_MSSG);
                 last_exec_mssg.appendChild(doc.createTextNode(batchAnalysis.getLastExecutedMessage()));
-                analysis.appendChild(last_exec_mssg);                
+                analysis.appendChild(last_exec_mssg);
+                
+                BatchAnalysis.TreeNode<Pair<String, Integer>> dd_root = batchAnalysis.getDrilldownRoot();
+                if (dd_root != null) // Create the drilldown tree element and add all descendents in tree to document.
+                    analysis.appendChild(addDrilldownNodes(doc, dd_root, doc.createElement(DRILLDOWN_TREE)));
             }
 
             // write the content into xml file
@@ -242,5 +269,25 @@ public class BatchXMLFile {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public static Element addDrilldownNodes(Document doc, BatchAnalysis.TreeNode<Pair<String, Integer>> treeNode, Element parentElement) {
+        // Create new drilldown node element for this treeNode.
+        Element nodeElement = doc.createElement(DRILLDOWN_NODE);
+        // Create results elements and add child filename node.
+        Element resultsElement = doc.createElement(DRILLDOWN_RESULTS);
+        resultsElement.appendChild(doc.createTextNode(treeNode.getData().getLeft()));
+        // Create an attribute to store number of significant clusters and assign to results element.
+        Attr significantAttribute = doc.createAttribute(DRILLDOWN_SIGNIFICANT);
+        significantAttribute.setValue(treeNode.getData().getRight().toString());
+        resultsElement.setAttributeNode(significantAttribute);                    
+        nodeElement.appendChild(resultsElement);
+        // Now add drilldown node to parent element.
+        parentElement.appendChild(nodeElement);
+        // Recurisvely dive down children of this treeNode.
+        for (int i=0; i < treeNode.getNumChildren(); ++i) {
+            addDrilldownNodes(doc, treeNode.getChild(i), nodeElement);
+        }
+        return parentElement;
     }
 }

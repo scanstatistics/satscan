@@ -109,6 +109,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         setVisible(true);
         removeSelection(null);
         enableButtons();
+        toFront();
     }    
     
     /* Returns date as string in defined format or empty string. */
@@ -180,6 +181,38 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         enableButtons();
     }
     
+    /* Creates new multiple analysis from existing ParameterSettingsFrame object. */
+    public void addParametersFromSessionWindow(final ParameterSettingsFrame other_frame) {
+        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);
+        try {
+            BatchAnalysis copyAnalysis = new BatchAnalysis();
+            copyAnalysis.setDescription("New Analysis");
+            copyAnalysis.setLastExecutedDate(null);
+            copyAnalysis.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);
+            copyAnalysis.setParameters(other_frame.getParameterSettings());
+            _batch_analyses.add(copyAnalysis);
+            // Add record to table.
+            DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
+            model.addRow(getRowForBatchAnalysis(copyAnalysis, Boolean.TRUE));
+            // Remove selection from any other records in table - to focus on new record.
+            removeSelection(copyAnalysis);
+            // Show settngs window for new reocrd.
+            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, copyAnalysis.getParameters());
+            frame.setTitle(copyAnalysis.getDescription());
+            frame.setIconifiable(false);
+            frame.addInternalFrameListener(BatchAnalysisFrame.this);
+            frame.setVisible(true);
+            SaTScanApplication.getInstance().AddFrame(frame);
+            _open_settings_frames.put(copyAnalysis, frame);
+            frame.setSelected(true);
+        } catch (Throwable t) {
+            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+        } finally {
+            waitCursor.restore();
+        }        
+    }    
+    
+    /* Queries whether this window can close */
     public boolean queryCanClose() {
         if (_open_settings_frames.isEmpty()) {
             return true;
@@ -259,11 +292,12 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 // Show settngs window for new reocrd.
                 try {
                     ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, newAnalysis.getParameters());
-                    frame.setTitle(newAnalysis.getDescription().toString());
+                    frame.setTitle(newAnalysis.getDescription());
                     frame.setIconifiable(false);
                     frame.addInternalFrameListener(BatchAnalysisFrame.this);
                     frame.setVisible(true);
                     SaTScanApplication.getInstance().AddFrame(frame);
+                    frame.addInternalFrameListener(SaTScanApplication.getInstance());
                     _open_settings_frames.put(newAnalysis, frame);
                     frame.setSelected(true);
                 } catch (Throwable t) {
@@ -316,6 +350,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     parameters_frame.addInternalFrameListener(BatchAnalysisFrame.this);
                     parameters_frame.setVisible(true);
                     SaTScanApplication.getInstance().AddFrame(parameters_frame);
+                    parameters_frame.addInternalFrameListener(SaTScanApplication.getInstance());
                     _open_settings_frames.put(selected.left, parameters_frame);
                     parameters_frame.setSelected(true);
                 } catch (Throwable t) {
@@ -337,7 +372,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     public  void propertyChange(PropertyChangeEvent evt) {
                         if ("progress".equals(evt.getPropertyName())) {
                             _execute_progress.setValue((Integer)evt.getNewValue());
-                            System.out.println("progress");
                         }
                     }
                 });
@@ -356,6 +390,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     duplicated.setDescription("Copy - " + duplicated.getDescription());
                     duplicated.setLastExecutedDate(null);
                     duplicated.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);
+                    duplicated.setDrilldownRoot(null);
                     _batch_analyses.add(selected.right + 1, duplicated);
                     // Add record to table.
                     DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
@@ -364,11 +399,12 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     removeSelection(duplicated);
                     // Show settngs window for new reocrd.
                     ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, duplicated.getParameters());
-                    frame.setTitle(duplicated.getDescription().toString());
+                    frame.setTitle(duplicated.getDescription());
                     frame.setIconifiable(false);
                     frame.addInternalFrameListener(BatchAnalysisFrame.this);
                     frame.setVisible(true);
                     SaTScanApplication.getInstance().AddFrame(frame);
+                    frame.addInternalFrameListener(SaTScanApplication.getInstance());
                     _open_settings_frames.put(duplicated, frame);
                     frame.setSelected(true);
                 } catch (Throwable t) {
@@ -875,6 +911,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                         Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, "Unknown execution status.");
                     analysis.setLastExecutedDate(new Date());
                     analysis.setLastExecutedMessage(frame.getWarningsErrorsText());
+                    frame.setDrilldownRoot(analysis);
                     frame.setClosed(true); // Close analysis run frame.
             } catch (java.lang.InterruptedException ie) {
                 Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, null, ie);

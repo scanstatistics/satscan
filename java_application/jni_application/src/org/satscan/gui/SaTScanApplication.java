@@ -53,17 +53,12 @@ import javax.help.HelpSetException;
 import javax.help.Popup;
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
-import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.FileSelectionDialog;
-import org.satscan.gui.utils.MacOSApplication;
 import org.satscan.gui.utils.help.HelpShow;
 import org.satscan.utils.Elevator;
         
-/**
- *
- * @author  Hostovic
- */
+/* SaTScan main class and window. */
 public class SaTScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener, ClipboardOwner {
 
     private static String _application = null;
@@ -74,6 +69,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
     private final ExecuteOptionsAction _executeOptionsAction = new ExecuteOptionsAction();
+    private final ImportMultipleAnalysesAction _importMultipleAnalysesAction = new ImportMultipleAnalysesAction();
+    private final ExportMultipleAnalysesAction _exportMultipleAnalysesAction = new ExportMultipleAnalysesAction();
     private final CloseSessionAction _closeSessionAction = new CloseSessionAction();
     private final SaveSessionAction _saveSessionAction = new SaveSessionAction();
     private final SaveSessionAsAction _saveSessionAsAction = new SaveSessionAsAction();
@@ -93,11 +90,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static String RELAUNCH_TOKEN = "&";
     private static String CHECK_UPDATE_START = "true";    
     private final UpdateCheckDialog _updateCheck;
-    private Object _mac_os_app = null;
     private HelpSet _mainHS = null;
     private HelpBroker _mainHB = null;
     private Popup _popupHB = null;
-    private BatchAnalysisFrame _batch_analysis_frame = null;
+    private BatchAnalysisFrame _multiple_analysis_frame = null;
 
     /**
      * Creates new form SaTScanApplication
@@ -114,7 +110,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         menuBar.add(windowsMenu, 2);
         setTitle(AppConstants.getSoftwareTitle());
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/SaTScan.png")));
-        enableActions(false, false);
+        enableActions(false, false, false);
         addWindowFocusListener(this);
         addWindowListener(this);
         refreshOpenList();
@@ -126,16 +122,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         if (SystemUtils.IS_OS_MAC) {
             /* The 'user.dir' property is different on Mac. We're defining the 'java.library.path' in the Info.plist file to be
                "$APP_ROOT/Contents/Java/", so we'll derive needed directories from that value. */
-            String java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH).getAbsolutePath();
+            File java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH);
             // The jar is in the folder referenced by "java.library.path".
-            _application = java_lib_path + File.separator + "SaTScan.jar";
+            _application = java_lib_path.getAbsolutePath() + File.separator + "SaTScan.jar";
             // The user guide is on the directory above the application root.
-            _user_guide = java_lib_path.substring(0, java_lib_path.substring(0, java_lib_path.lastIndexOf(".app")).lastIndexOf(File.separator)) + File.separator + "SaTScan_Users_Guide.pdf";            
-            /* Java 9 removed underlying interface for the MacOSApplication class. Skip this class for Java 9+ until we move beyond Java 8. 
-               This implementation isn't ideal but don't see a way to support both at the same time. */
-            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) == false) {
-                _mac_os_app = new MacOSApplication();
-            }
+            _user_guide = java_lib_path.getParentFile().getParent() + File.separator + "SaTScan_Users_Guide.pdf";            
         } else {
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "SaTScan.jar";
             _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";            
@@ -377,34 +368,36 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
     }
 
-    /**
-     * Save session action; calls ParameterSettingsFrame::WriteSession to
-     * write settings to file.
-     */
-    public class ShowBatchAnalysisFrameAction extends AbstractAction {
+    /* Shows the multiple analysis frames. */
+    private void showMultipleAnalysisFrame() {
+        WaitCursor waitCursor = new WaitCursor(SaTScanApplication.this);
+        try {
+            if (_multiple_analysis_frame == null) {
+                _multiple_analysis_frame = new BatchAnalysisFrame(getRootPane());
+                _multiple_analysis_frame.addInternalFrameListener(SaTScanApplication.this);
+                _multiple_analysis_frame.setVisible(true);
+                desktopPane.add(_multiple_analysis_frame);
+                _multiple_analysis_frame.toFront();
+            } else
+                _multiple_analysis_frame.redisplay();
+        } catch (Throwable t) {
+            new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+        } finally {
+            waitCursor.restore();
+        }        
+    }
+    
+    /* Show multiple analysis window action. */
+    public class ShowMultipleAnalysisFrameAction extends AbstractAction {
 
         private static final long serialVersionUID = 1L;
 
-        public ShowBatchAnalysisFrameAction() {
+        public ShowMultipleAnalysisFrameAction() {
             super("Show Batch Analysis");
         }
 
         public void actionPerformed(ActionEvent e) {
-            WaitCursor waitCursor = new WaitCursor(SaTScanApplication.this);
-
-            try {
-                if (_batch_analysis_frame == null) {
-                    _batch_analysis_frame = new BatchAnalysisFrame(getRootPane());
-                    _batch_analysis_frame.addInternalFrameListener(SaTScanApplication.this);
-                    _batch_analysis_frame.setVisible(true);
-                    desktopPane.add(_batch_analysis_frame);
-                } else
-                    _batch_analysis_frame.redisplay();
-            } catch (Throwable t) {
-                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
-            } finally {
-                waitCursor.restore();
-            }
+            showMultipleAnalysisFrame();
         }
     }
 
@@ -446,8 +439,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
                 try {
                     _focusedInternalFrame.setClosed(true);
-                } catch (PropertyVetoException e1) {
-                }
+                } catch (PropertyVetoException e1) {}
             }
         }
     }
@@ -582,6 +574,67 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
     }
 
+    /**
+     * Imports active session window to multiple analyses window.
+     */
+    public class ImportMultipleAnalysesAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public ImportMultipleAnalysesAction() {
+            super("Add Multiple Analyses");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                if (_focusedInternalFrame instanceof ParameterSettingsFrame) {
+                    if (JOptionPane.showConfirmDialog(
+                        SaTScanApplication.this, 
+                        "Add this analysis to the Multiple Analyses collection?"
+                        + "\nNote that these analysis settings will be maintained separately.", 
+                        "Add Multiple Analyses?",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null
+                    ) == JOptionPane.YES_OPTION) {
+                        showMultipleAnalysisFrame();
+                        _multiple_analysis_frame.addParametersFromSessionWindow(((ParameterSettingsFrame) _focusedInternalFrame));
+                    }
+                }
+            } catch (Throwable t) {
+                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            }
+        }
+    }
+
+    /**
+     * Exports active multiple analysis settings window to file..
+     */
+    public class ExportMultipleAnalysesAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public ExportMultipleAnalysesAction() {
+            super("Save Analysis to File");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                if (_focusedInternalFrame instanceof ParameterSettingsFrame && ((ParameterSettingsFrame)_focusedInternalFrame).isMultipleAnalysisSettings()) {
+                    if (JOptionPane.showConfirmDialog(
+                        SaTScanApplication.this, 
+                        "Save this analysis from Multiple Analyses collection to parameter file (prm)?"
+                        + "\nNote that the analysis settings will be maintained separately.", 
+                        "Save to Parameter File?",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null
+                    ) == JOptionPane.YES_OPTION) {
+                        ((ParameterSettingsFrame) _focusedInternalFrame).saveAs();
+                    }
+                }
+            } catch (Throwable t) {
+                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            }
+        }
+    }
+    
     /**
      * Help system action, launches the help system.
      * TODO: The current help system is Windows only, will this stay?
@@ -735,12 +788,17 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      * Enables/disables various actions based upon whether they are related to
      * the setting windows or the execution/results window.
      */
-    private void enableActions(boolean enableSettingActions, boolean enableResultsActions) {
+    private void enableActions(boolean enableSettingActions, boolean enableMultipleSettingsActions, boolean enableResultsActions) {
+        // Parameter settings actions.
         _executeSessionAction.setEnabled(enableSettingActions);
         _executeOptionsAction.setEnabled(enableSettingActions);
         _closeSessionAction.setEnabled(enableSettingActions);
         _saveSessionAction.setEnabled(enableSettingActions);
         _saveSessionAsAction.setEnabled(enableSettingActions);
+        _importMultipleAnalysisjMenuItem.setEnabled(enableSettingActions);
+        // Multiple analysis settings actions.
+        _exportMultipleAnalysesAction.setEnabled(enableMultipleSettingsActions);
+        // Analysis results actions.
         _printResultsAction.setEnabled(enableResultsActions);
     }
 
@@ -880,6 +938,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _sessionMenu = new javax.swing.JMenu();
         _executeSessionMenuItem = new javax.swing.JMenuItem();
         _executeOptionsMenuItem = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        _importMultipleAnalysisjMenuItem = new javax.swing.JMenuItem();
+        _exportMultipleAnalysisjMenuItem = new javax.swing.JMenuItem();
         _helpMenu = new javax.swing.JMenu();
         _userGuideMenuItem = new javax.swing.JMenuItem();
         _helpContentMenuItem = new javax.swing.JMenuItem();
@@ -924,7 +985,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _ToolBar.add(_executeSessionToolButton);
         _ToolBar.add(jSeparator2);
 
-        _batchAnalysesToolButton.setAction(new ShowBatchAnalysisFrameAction());
+        _batchAnalysesToolButton.setAction(new ShowMultipleAnalysisFrameAction());
         _batchAnalysesToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_chart_32.png"))); // NOI18N
         _batchAnalysesToolButton.setToolTipText("Batch Analyses"); // NOI18N
         _batchAnalysesToolButton.setFocusable(false);
@@ -1036,6 +1097,13 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _executeOptionsMenuItem.setIcon(null);
         _executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _sessionMenu.add(_executeOptionsMenuItem);
+        _sessionMenu.add(jSeparator7);
+
+        _importMultipleAnalysisjMenuItem.setAction(_importMultipleAnalysesAction);
+        _sessionMenu.add(_importMultipleAnalysisjMenuItem);
+
+        _exportMultipleAnalysisjMenuItem.setAction(_exportMultipleAnalysesAction);
+        _sessionMenu.add(_exportMultipleAnalysisjMenuItem);
 
         menuBar.add(_sessionMenu);
 
@@ -1191,7 +1259,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         if (!CloseParameterSettingsWindows()) {
             return;
         }
-        if (_batch_analysis_frame != null && _batch_analysis_frame.isVisible() && !_batch_analysis_frame.queryCanClose()) {
+        if (_multiple_analysis_frame != null && _multiple_analysis_frame.isVisible() && !_multiple_analysis_frame.queryCanClose()) {
             return;
         }
         CloseRunningAnalysesWindows();
@@ -1287,7 +1355,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     public void internalFrameActivated(InternalFrameEvent e) {
         _focusedInternalFrame = e.getInternalFrame();
-        enableActions((_focusedInternalFrame instanceof ParameterSettingsFrame), (_focusedInternalFrame instanceof AnalysisRunInternalFrame));
+        enableActions(
+            (_focusedInternalFrame instanceof ParameterSettingsFrame && !((ParameterSettingsFrame)_focusedInternalFrame).isMultipleAnalysisSettings()),
+            (_focusedInternalFrame instanceof ParameterSettingsFrame && ((ParameterSettingsFrame)_focusedInternalFrame).isMultipleAnalysisSettings()),
+            (_focusedInternalFrame instanceof AnalysisRunInternalFrame)
+        );
     }
 
     /**
@@ -1297,7 +1369,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         if (_focusedInternalFrame == e.getInternalFrame()) {
             _focusedInternalFrame = null;
         }
-        enableActions(false, false);
+        enableActions(false, false, false);
     }
 
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
@@ -1314,6 +1386,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JMenuItem _executeSessionMenuItem;
     private javax.swing.JButton _executeSessionToolButton;
     private javax.swing.JMenuItem _exitMenuItem;
+    private javax.swing.JMenuItem _exportMultipleAnalysisjMenuItem;
     private javax.swing.JMenu _fileMenu;
     private javax.swing.JSeparator _fileMenuSeparator1;
     private javax.swing.JSeparator _fileMenuSeparator2;
@@ -1323,6 +1396,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JSeparator _helpMenuSeparator1;
     private javax.swing.JSeparator _helpMenuSeparator2;
     private javax.swing.JSeparator _helpMenuSeparator3;
+    private javax.swing.JMenuItem _importMultipleAnalysisjMenuItem;
     private javax.swing.JMenuItem _newSessionMenuItem;
     private javax.swing.JButton _newSessionToolButton;
     private javax.swing.JMenuItem _openSessionMenuItem;
@@ -1345,6 +1419,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JToolBar.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JMenuBar menuBar;
     protected javax.swing.JButton softwareUpdateAvailable;
     // End of variables declaration//GEN-END:variables

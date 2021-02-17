@@ -139,6 +139,22 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeOptionsMenuItem.setIcon(null);&#xd;&#xa;_executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));"/>
               </AuxValues>
             </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="_importMultipleAnalysisjMenuItem">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="_importMultipleAnalysesAction" type="code"/>
+                </Property>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="_exportMultipleAnalysisjMenuItem">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="_exportMultipleAnalysesAction" type="code"/>
+                </Property>
+              </Properties>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="_helpMenu">
@@ -333,7 +349,7 @@
         <Component class="javax.swing.JButton" name="_batchAnalysesToolButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new ShowBatchAnalysisFrameAction()" type="code"/>
+              <Connection code="new ShowMultipleAnalysisFrameAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/database_chart_32.png"/>

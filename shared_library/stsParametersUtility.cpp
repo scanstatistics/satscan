@@ -52,6 +52,7 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_ReadFromStringStream(
         if (sStringStream) {
             PrintNull NoPrint;
             std::stringstream stream;
+            stream >> std::noskipws; // Make sure stream doesn't skip whitespace.
             stream << sStringStream;
             IniParameterFileAccess(Parameters, NoPrint).Read(stream);
         } else {
@@ -61,6 +62,7 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_ReadFromStringStream(
         }
         if (iscopy == JNI_TRUE)
             pEnv->ReleaseStringUTFChars(parameterstream, sStringStream);
+
         ParametersUtility::copyCParametersToJParameters(*pEnv, Parameters, jParameters);
     }
     catch (jni_error & x) {

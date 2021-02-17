@@ -63,7 +63,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private DateComponentsGroup _startDateComponentsGroup;
     private DateComponentsGroup _endDateComponentsGroup;
     Map _input_source_map = new HashMap();
-    private BatchAnalysisFrame _batchFrame = null;
+    private BatchAnalysisFrame _multipleAnaylsisFrame = null;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -88,7 +88,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
-        _batchFrame = batchFrame;
+        _multipleAnaylsisFrame = batchFrame;
         addInternalFrameListener(this);
         defaultHiddenParameters();
         // Clone parameters -- we'll copy any updates when closing window.
@@ -119,6 +119,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         getAdvancedParameterInternalFrame().setVisible(b, null);
     }
 
+    /* Returns whther this parameter settings window is associated with multiple analysis window. */
+    public boolean isMultipleAnalysisSettings() {
+        return _multipleAnaylsisFrame != null;
+    }
+    
     /**
      * Returns whether the associated AdvancedParameterSettingsFrame object is visible.
      */
@@ -134,15 +139,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /**
-     * Returns reference to associated obserbable regions parameters frame.
+     * Returns reference to associated observable regions parameters frame.
      */
     private OberservableRegionsFrame geObservableRegionsParameterInternalFrame() {
         return _oberservableRegionsFrame;
     }
 
-    /**
-     * launches 'save as' dialog to permit user saving current settings to parameter file
-     */
+    /* Launches 'save as' dialog to permit saving current settings to parameter file. */
     public boolean saveAs() {
         boolean bSaved = true;
         List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
@@ -154,9 +157,21 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             String filename = file.getAbsolutePath();
             if (new File(filename).getName().lastIndexOf('.') == -1){
                 filename = filename + ".prm";
-            } 
-            writeSession(filename);
-            setTitle(filename);
+            }
+            // Test write access to ensure that file exists and user has write permission.
+            if (!FileAccess.ValidateFileAccess(filename, true, false)) {
+                JOptionPane.showInternalMessageDialog(this, "Unable to save session parameters.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.");
+                return false;
+            }
+            if (isMultipleAnalysisSettings()) {
+                // If this action is being done froma multiple analsis settings window, just write the parameters to specified file.
+                Parameters _writeParameters = (Parameters) _parameters.clone();
+                _writeParameters.SetSourceFileName(filename);
+                _writeParameters.Write(filename);
+            } else {
+                writeSession(filename);
+                setTitle(filename);                
+            }
         } else {
             bSaved = false;
         }
@@ -202,16 +217,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return _advancedParametersSetting;
     }
 
-    /**
-     * If necessary, removes from from iconized state and brings to front.
-     */
+    /* If necessary, removes from from iconized state and brings to front. */
     public void focusWindow() {
-        if (this.isIcon()) {
+        if (isIcon()) {
             try {
-                this.setIcon(false);
-            } catch (PropertyVetoException e) {
-                return;
-            }
+                setIcon(false);
+            } catch (PropertyVetoException e) { return; }
         }
         toFront();
     }
@@ -229,7 +240,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             focusWindow();
             switch (JOptionPane.showInternalConfirmDialog(this, "Parameter settings have changed. Do you want to save?", "Save?", JOptionPane.YES_NO_CANCEL_OPTION)) {
                 case JOptionPane.YES_OPTION:
-                    if (_batchFrame != null) {
+                    if (_multipleAnaylsisFrame != null) {
                         writeSettingsToParameters();
                         gbPromptOnExist = false;
                     } else if (writeSession("")) {
@@ -240,7 +251,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     break;
                 case JOptionPane.NO_OPTION:
                     // If this is a settings window opened from batch frame, reset parameters to match initial settings.
-                    if (_batchFrame != null)
+                    if (_multipleAnaylsisFrame != null)
                         _parameters = (Parameters)_initialParameters.clone();
                     break;
                 case JOptionPane.CANCEL_OPTION:
@@ -3389,7 +3400,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public void internalFrameClosing(InternalFrameEvent e) {
         if ((gbPromptOnExist ? (queryWindowCanClose() ? true : false) : true) == true) {
             // Add parameters settings to history - except skip windows linked to batch frame.
-            if (_batchFrame == null)
+            if (_multipleAnaylsisFrame == null)
                 ParameterHistory.getInstance().AddParameterToHistory(_parameters.GetSourceFileName());
             dispose();
         }

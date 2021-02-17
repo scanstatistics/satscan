@@ -422,7 +422,7 @@ void IniSection::Write(std::stringstream& stream, bool includeNewlines, bool inc
             //write preceding comment lines first
             for (long j = 0; (unsigned)j < gvCommentLineVectors.at(i).size() && includeComments; ++j) {
                 stream << ";" << gvCommentLineVectors.at(i).at(j);
-                if (includeNewlines) stream << std::endl; else stream << "|";
+                if (includeNewlines) stream << std::endl; else stream << (i + 1 == lNumLines ? "" : "|");
             }
             //then write the IniLine
             const IniLine * pIniLine = gaIniLines[i];
@@ -438,12 +438,14 @@ void IniSection::Write(std::stringstream& stream, bool includeNewlines, bool inc
                 printString(sTemp, "\"%s\"", pIniLine->GetValue());
             }
             stream << sTemp;
-            if (includeNewlines) stream << std::endl; else stream << "|";
+            if (includeNewlines) stream << std::endl; else stream << (i + 1 == lNumLines ? "" : "|");
         }
-        //write trailing comment lines
-        for (long j = 0; (unsigned)j < gvCommentLineVectors.back().size(); ++j) {
-            stream << ";" << gvCommentLineVectors.back().at(j);
-            if (includeNewlines) stream << std::endl; else stream << "|";
+        if (includeComments) {
+            //write trailing comment lines
+            for (long j = 0; (unsigned)j < gvCommentLineVectors.back().size(); ++j) {
+                stream << ";" << gvCommentLineVectors.back().at(j);
+                if (includeNewlines) stream << std::endl; else stream << (j + 1 == lNumLines ? "" : "|");
+            }
         }
         if (includeNewlines) stream << std::endl;
     }
@@ -632,10 +634,14 @@ void IniFile::Read(const std::string& file) {
 }
 
 void IniFile::Read(std::stringstream &readstream) {
+    readstream >> std::noskipws;
     std::stringstream formattedstream;
+    formattedstream >> std::noskipws; // Make sure stream doesn't skip whitespace.
     char readChar;
     while (readstream >> readChar) {
-        if (readChar == ']')
+        if (readChar == '[')
+            formattedstream << std::endl << readChar;
+        else if (readChar == ']')
             formattedstream << readChar << std::endl;
         else if (readChar == '|')
             formattedstream << std::endl;
@@ -664,12 +670,14 @@ void IniFile::Write(const std::string& file) const {
   if (!writestream) throw resolvable_error("Error: Could not open file '%s'.\n", file.c_str());
 
   std::stringstream stream;
+  stream >> std::noskipws;
   Write(stream, true, true);
 
   writestream << stream.str();
 }
 
 void IniFile::Write(std::stringstream& stream, bool includeNewlines, bool includeComments) const {
+    stream >> std::noskipws; // Make sure stream doesn't skip whitespace.
     for (long i = 0; i < GetNumSections(); ++i)
         gaSections[i]->Write(stream, includeNewlines, includeComments);
 }

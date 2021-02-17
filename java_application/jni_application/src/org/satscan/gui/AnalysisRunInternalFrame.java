@@ -112,9 +112,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         setCloseButton();
         _can_close = true;
         _warningsErrorsTextArea.setText(analysis.getLastExecutedMessage());
-        if (analysis.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS)
+        if (analysis.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS) {
+           loadDrilldownResultsFromTreeNode(analysis.getDrilldownRoot());
            loadAnalysisResults(true);
-        else
+        } else
             _progressTextArea.setText("Analysis did not complete. Please review warnings and errors below.");
     }
     
@@ -123,8 +124,65 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         return _thread;
     }
     
+    /* Returns indication of whether there are working threads that hanven't finished writing messages to textarea control. */
     public boolean messageWorkersPending() {
         return _message_workers_pending > 0;
+    }
+    
+    /* A recursive function that loads the drilldown class members - starting at root node of drilldown
+       tree (i.e. primary analysis). This function is used to reload this class for display of a
+       BatchAnalysis object. */
+    private void loadDrilldownResultsFromTreeNode(BatchAnalysis.TreeNode<Pair<String, Integer>> node) {
+        if (node == null) return; // Skip if node is null (most likely root node).
+        // Add current node to class data structures -- but skip the root.
+        if (node.getParent() != null)
+            ReportDrilldownResults(node.getData().getLeft(), node.getParent().getData().getLeft(), node.getData().getRight());
+        // Recursively dive child nodes.
+        for (int i=0; i < node.getNumChildren(); ++i)
+            loadDrilldownResultsFromTreeNode(node.getChild(i));
+    }
+    
+    /* Copies drilldown data structures to BatchAnalysis drilldown tree. */
+    public void setDrilldownRoot(BatchAnalysis analysis) {
+        // Drilldown tree is empty, so this was either not an analysis with drilldown or none occurred.
+        if (_tree_output_map.isEmpty()) {
+            analysis.setDrilldownRoot(null);
+            return;
+        }
+        /* We can use the JTree TreeModel to iterate over the nodes of tree but we need to ensure
+           that all nodes are displaying. Toggle off filter and store the current status. */
+        boolean currentFilter = ((FilterTreeModel)_results_tree.getModel()).isActivatedFilter();
+        ((FilterTreeModel)_results_tree.getModel()).activateFilter(false);
+        // Iterate over TreeModel nodes -- searching for root node as starting point.
+        for (FilterTreeNode filternode : _tree_output_map.keySet()) {
+            if (filternode.getParent() == null) {
+                // Found root node - add it to the BatchAnalysis tree a root.
+                BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = analysis.getNewTreeNode(
+                    filternode.getUserObject().toString(), Integer.valueOf(1)
+                );
+                analysis.setDrilldownRoot(rootNode);
+                // Recusively dive descendants of the root.
+                populateBatchAnalysisTreeNode(analysis, filternode, rootNode);
+                break;
+            }
+        }
+        // Restore initial filter status.
+       ((FilterTreeModel)_results_tree.getModel()).activateFilter(currentFilter);
+    }
+    
+    /* Recursive function to populate BatchAnalysis drilldown tree. */
+    private void populateBatchAnalysisTreeNode(BatchAnalysis analysis, FilterTreeNode filternode, BatchAnalysis.TreeNode<Pair<String, Integer>> parentNode) {
+        // Iterate over children nodes 
+        for (int i=0; i < filternode.getChildCount(); ++i) {
+            // Add node to BatchAnalysis object tree for current FilterTreeNode.
+            FilterTreeNode child = (FilterTreeNode)filternode.getChildAt(i);
+            BatchAnalysis.TreeNode<Pair<String, Integer>> childNode = parentNode.addChild(Pair.of(
+                child.getUserObject().toString(), 
+                _tree_output_significances.get(child)
+            ));
+            // Dive decendents of this child node.
+            populateBatchAnalysisTreeNode(analysis, child, childNode);
+        }
     }
     
     /* Add drilldown output in relation to outfile file from calling analysis. */
