@@ -19,7 +19,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
-        _unified_sets.insert(tSetIndex);
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -32,7 +32,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
-        _unified_sets.insert(tSetIndex);
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -43,7 +43,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
     if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsHighRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex)) {
         _llr += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
-        _unified_sets.insert(tSetIndex);
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -56,7 +56,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         if (bWeightedNormal ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.HighRateDataStream(tCases, tMeasure, tSetIndex)) {
             _llr += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
             _data_stream_accumulator._sum_observed += tCases;
-            _unified_sets.insert(tSetIndex);
+            _unified_sets.set(tSetIndex);
         }
     }
 }
@@ -64,7 +64,7 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
 /** Calculates loglikelihood ratio given ordinal data; adding log likelihood ratio to accumulation. */
 void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     _llr += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
-    _unified_sets.insert(tSetIndex);
+    _unified_sets.set(tSetIndex);
 }
 
 /////////////////////////////// MultivariateUnifierLowRate //////////////////////////////////////////
@@ -78,7 +78,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
-        _unified_sets.insert(tSetIndex);
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -89,7 +89,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
     if (tMeasure > 0.0 && casesInPeriod >= 0 && Calculator.MultipleSetsLowRateUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex)) {
         _llr += Calculator.CalcLogLikelihoodRatioUniformTime(tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
-        _unified_sets.insert(tSetIndex);
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -102,7 +102,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
         if (bWeightedNormal ? Calculator.MultipleSetsLowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRateDataStream(tCases, tMeasure, tSetIndex)) {
             _llr += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
             _data_stream_accumulator._sum_observed += tCases;
-            _unified_sets.insert(tSetIndex);
+            _unified_sets.set(tSetIndex);
         }
     }
 }
@@ -110,7 +110,7 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
 /** Calculates loglikelihood ratio given ordinal data; adding log likelihood ratio to accumulation. */
 void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     _llr += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
-    _unified_sets.insert(tSetIndex);
+    _unified_sets.set(tSetIndex);
 }
 
 /////////////////////////////// MultivariateUnifierHighLowRate //////////////////////////////////////
