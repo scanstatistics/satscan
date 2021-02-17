@@ -56,11 +56,11 @@ class CCluster {
     virtual ClusterType                 GetClusterType() const {throw prg_error("GetClusterType().", "GetClusterType()"); return PURELYSPATIALCLUSTER; }//= 0;
     //public data members - speed considerations
     double                        m_nRatio;             // Likelihood ratio
-    mutable DataSetIndexes_t      _ratio_sets;          // With multiple data set and multivariate scans, potentially not all data sets comprised the LLR.
+    mutable boost::dynamic_bitset<> _ratio_sets;        // With multiple data set and multivariate scans, potentially not all data sets comprised the LLR.
     int                           m_nFirstInterval;     // Index # of first time interval
     int                           m_nLastInterval;      // Index # of last time interval
 
-    const DataSetIndexes_t      & getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const;
+    DataSetIndexes_t              getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const;
 	int                           getClusterLength() const { return m_nLastInterval - m_nFirstInterval + 1;	}
     virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
     virtual bool                  ClusterDefined() const {return m_nTracts > 0;}

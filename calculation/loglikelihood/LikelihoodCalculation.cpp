@@ -136,9 +136,9 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
             switch (parameters.GetMultipleDataSetPurposeType()) {
                 case MULTIVARIATE :
                     switch (parameters.GetExecuteScanRateType()) {
-                        case HIGH: _unifier.reset(new MultivariateUnifierHighRate(parameters.GetProbabilityModelType())); break;
-                        case LOW: _unifier.reset(new MultivariateUnifierLowRate(parameters.GetProbabilityModelType())); break;
-                        case HIGHANDLOW: _unifier.reset(new MultivariateUnifierHighLowRate(parameters.GetProbabilityModelType())); break;
+                        case HIGH: _unifier.reset(new MultivariateUnifierHighRate(DataHub.GetNumDataSets(), parameters.GetProbabilityModelType())); break;
+                        case LOW: _unifier.reset(new MultivariateUnifierLowRate(DataHub.GetNumDataSets(), parameters.GetProbabilityModelType())); break;
+                        case HIGHANDLOW: _unifier.reset(new MultivariateUnifierHighLowRate(DataHub.GetNumDataSets(), parameters.GetProbabilityModelType())); break;
                         default: throw prg_error("Unknown area scan type '%d'.", "constructor()", parameters.GetExecuteScanRateType());
                     } break;
                 case ADJUSTMENT :

@@ -46,6 +46,7 @@
 
 #include "boost/tuple/tuple.hpp"
 #include <boost/any.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include "BasePrint.h"
 
 /**********************************************************************

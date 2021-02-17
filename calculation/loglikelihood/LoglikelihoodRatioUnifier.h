@@ -37,7 +37,7 @@ class DataStreamAccumulator {
 class AbstractLoglikelihoodRatioUnifier {
     protected:
         ProbabilityModelType _probability_model;
-        DataSetIndexes_t     _unified_sets;
+        boost::dynamic_bitset<> _unified_sets;
 
     public:
         typedef std::pair<double, const DataStreamAccumulator*> AccumulationPair_t;
@@ -55,7 +55,7 @@ class AbstractLoglikelihoodRatioUnifier {
 
         virtual double GetLoglikelihoodRatio() const = 0;
         virtual void Reset() = 0;
-        const DataSetIndexes_t & getUnifiedSets() const {
+        virtual const boost::dynamic_bitset<>& getUnifiedSets() const {
             return _unified_sets;
         }
 
@@ -85,7 +85,9 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         DataStreamAccumulator _data_stream_accumulator;
 
     public:
-        MultivariateUnifierHighRate(ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {}
+        MultivariateUnifierHighRate(size_t numSets, ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {
+            _unified_sets.resize(numSets);
+        }
         virtual ~MultivariateUnifierHighRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighRate(*this); };
@@ -98,7 +100,7 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
 
         virtual double GetLoglikelihoodRatio() const { return _llr; }
-        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.clear(); }
+        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.reset(); }
 
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -115,7 +117,9 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         DataStreamAccumulator _data_stream_accumulator;
 
     public:
-        MultivariateUnifierLowRate(ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {}
+        MultivariateUnifierLowRate(size_t numSets, ProbabilityModelType probability_model) : AbstractLoglikelihoodRatioUnifier(probability_model), _llr(0.0) {
+            _unified_sets.resize(numSets);
+        }
         virtual ~MultivariateUnifierLowRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierLowRate(*this); };
@@ -130,7 +134,7 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
 
         virtual double GetLoglikelihoodRatio() const { return _llr; }
-        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.clear(); }
+        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.reset(); }
 
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -148,8 +152,8 @@ class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier 
     MultivariateUnifierHighRate _high_rate;
 
     public:
-        MultivariateUnifierHighLowRate(ProbabilityModelType probability_model) : 
-            AbstractLoglikelihoodRatioUnifier(probability_model), _low_rate(probability_model), _high_rate(probability_model) {}
+        MultivariateUnifierHighLowRate(size_t numSets, ProbabilityModelType probability_model) :
+            AbstractLoglikelihoodRatioUnifier(probability_model), _low_rate(numSets, probability_model), _high_rate(numSets, probability_model) {}
         virtual ~MultivariateUnifierHighLowRate() {}
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighLowRate(*this); };
@@ -161,6 +165,12 @@ class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+
+        virtual const boost::dynamic_bitset<>& getUnifiedSets() const {
+            if (_high_rate.GetLoglikelihoodRatio() > _low_rate.GetLoglikelihoodRatio())
+                return _high_rate.getUnifiedSets();
+            return _low_rate.getUnifiedSets();
+        }
 
         virtual double GetLoglikelihoodRatio() const { return std::max(_low_rate.GetLoglikelihoodRatio(), _high_rate.GetLoglikelihoodRatio()); }
         virtual void Reset() { _low_rate.Reset(); _high_rate.Reset(); }

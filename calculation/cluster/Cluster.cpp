@@ -113,7 +113,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
                     throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n", "getAreaRateForCluster()");                
                 bool increasing = true;
                 OrdinalLikelihoodCalculator Calculator(DataHub);
-                const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+                DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
                 for (DataSetIndexes_t::const_iterator itr_Index=setIndexes.begin(); itr_Index != setIndexes.end(); ++itr_Index) {
                     //retrieve collection of ordinal categories in combined state
                     std::vector<OrdinalCombinedCategory> categories;
@@ -149,7 +149,8 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
             case NORMAL: {
                 // High if the mean inside the cluster is higher than the mean outside the cluster, otherwise low.
                 const DataSetHandler& handler = DataHub.GetDataSetHandler();
-                unsigned int firstSetIdx = *(getDataSetIndexesComprisedInRatio(DataHub).begin());
+                DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+                unsigned int firstSetIdx = *(setIndexes.begin());
                 double meanInside=0, meanOutside=0;
                 if (DataHub.GetParameters().getIsWeightedNormal()) {
                     const AbstractWeightedNormalRandomizer * pRandomizer=0;
@@ -330,8 +331,9 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
-  const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+  DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
+  
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
      unsigned int set_number = *itr + 1;
      //print data set number if analyzing more than data set
@@ -362,9 +364,9 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
 void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
     std::string buffer, work;
     double dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance, n1, n2, r1, r2;
-
+    DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
     const DataSetHandler& Handler = DataHub.GetDataSetHandler();
-    const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+
     for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
         unsigned int set_number = *itr + 1;
         //print data set number if analyzing more than data set
@@ -410,13 +412,14 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
   double dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance;
   count_t tObserved;
   measure_t tExpected;
+  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
   const AbstractNormalClusterData * pClusterData = 0;
   if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(GetClusterData())) == 0)
     throw prg_error("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
                     "DisplayClusterDataNormal()");
-  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
-  const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+  
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
      unsigned int set_number = *itr + 1;
      //print data set number if analyzing more than data set
@@ -453,11 +456,12 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
   std::string work, buffer, work2;
   double dTotalCasesInClusterDataSet=0;
   OrdinalLikelihoodCalculator Calculator(DataHub);
+  DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
   const AbstractCategoricalClusterData * pClusterData = 0;
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(GetClusterData())) == 0)
     throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n", "DisplayClusterDataOrdinal()");
-  const DataSetIndexes_t & setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
      //retrieve collection of ordinal categories in combined state
      std::vector<OrdinalCombinedCategory> vCategoryContainer;
@@ -563,9 +567,9 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
+  DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
   DisplayPopulation(fp, DataHub, PrintFormat);
-  const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
      unsigned int set_number = *itr + 1;
      //print data set number if analyzing more than data set
@@ -596,10 +600,10 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
 void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
   std::vector<tract_t> tractIndexes;
   getLocationIndexes(DataHub, tractIndexes, true);
-  const DataSetIndexes_t& setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
       const RealDataSet& dataSet = Handler.GetDataSet(*itr);
       //get randomizer for data set to retrieve various information
@@ -927,14 +931,20 @@ void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const Asc
 /* Returns data sets comprised in LLR calculation. This method is for the most part only relevent for multiple data set using
    the multivariate purpose -- and this variable is set during cluster scannning. Otherwise it's either just the one data or
    all the data sets when using adjustment purpose. */
-const DataSetIndexes_t& CCluster::getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const {
-    // If set was already populated, just return. This will be the case if this analysis is multivariate or previously called.
+DataSetIndexes_t CCluster::getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const {
+    DataSetIndexes_t setIndexes;
     if (_ratio_sets.size() == 0) {
-        // Otherwise this is a single data set or multiple set w/ adjustment, in which case it is all the data sets.
+        // This is a single data set or multiple set w/ adjustment, in which case it is all the data sets.
         for (size_t d=0; d < DataHub.GetNumDataSets(); ++d)
-            _ratio_sets.insert(d);
+            setIndexes.insert(d);
+    } else {
+        // This will be the case if this analysis is multivariate.
+        for (size_t t=0; t < _ratio_sets.size(); ++t) {
+            if (_ratio_sets.test(t))
+                setIndexes.insert(t);
+        }
     }
-    return _ratio_sets;
+    return setIndexes;
 }
 
 /** returns end date of defined cluster as formated string */

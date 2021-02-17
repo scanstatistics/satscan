@@ -556,12 +556,12 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   RecordBuffer Record(vDataFieldDefinitions);
   const DataSetHandler & Handler = gDataHub.GetDataSetHandler();
   std::vector<tract_t> tractIndexes;
+  DataSetIndexes_t setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
 
   // Calculate cluster location indexes once for weight normal model.
   if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
      theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
 
-  const DataSetIndexes_t & setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
   for (unsigned int iSetIndex=0; iSetIndex < gDataHub.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
@@ -681,10 +681,10 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
 void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster, int iClusterNumber) const {
   OrdinalLikelihoodCalculator Calculator(gDataHub);
-  measure_t                                             tObservedDivExpected;
-  double                                                tRelativeRisk;
-  RecordBuffer                                          Record(vDataFieldDefinitions);
-  const DataSetIndexes_t        & setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
+  measure_t tObservedDivExpected;
+  double tRelativeRisk;
+  RecordBuffer Record(vDataFieldDefinitions);
+  DataSetIndexes_t setIndexes(theCluster.getDataSetIndexesComprisedInRatio(gDataHub));
 
   const AbstractCategoricalClusterData * pClusterData = 0;
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
