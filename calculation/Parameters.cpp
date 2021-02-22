@@ -417,6 +417,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _use_locations_network_file = rhs._use_locations_network_file;
   _network_file_purpose = rhs._network_file_purpose;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
+  _local_timestamp = rhs._local_timestamp;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -948,6 +949,7 @@ void CParameters::SetAsDefaulted() {
   _use_locations_network_file = false;
   _network_file_purpose = NETWORK_DEFINITION;
   _cluster_moniker_prefix = "";
+  _local_timestamp = boost::posix_time::second_clock::local_time();
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1033,7 +1035,7 @@ void CParameters::SetOutputFileNameSetting(const char * sOutPutFileName, bool bC
     gsOutputFileNameSetting = sOutPutFileName;
     if (bCorrectForRelativePath && !gsOutputFileNameSetting.empty() && gsOutputFileNameSetting.find(FileName::SLASH) == gsOutputFileNameSetting.npos) {
         // We're applying relative path to a filename which doesn't appear to have a path.
-        gsOutputFileNameSetting = getFilenameFormatTime(gsOutputFileNameSetting); // apply any formatting so we can properly test write
+        gsOutputFileNameSetting = getFilenameFormatTime(gsOutputFileNameSetting, getTimestamp()); // apply any formatting so we can properly test write
         AssignMissingPath(gsOutputFileNameSetting, true); // Assign path to fully formatted filename;
         FileName resultant(gsOutputFileNameSetting.c_str());
         // replace original name passed.
@@ -1043,7 +1045,7 @@ void CParameters::SetOutputFileNameSetting(const char * sOutPutFileName, bool bC
         resultant.getFullPath(gsOutputFileNameSetting);
     }
     // gsOutputFileNameSetting could contain substitution variables - resolve now and store in _results_filename. 
-    _results_filename = getFilenameFormatTime(gsOutputFileNameSetting);
+    _results_filename = getFilenameFormatTime(gsOutputFileNameSetting, getTimestamp());
 }
 
 /** Sets population data file name.

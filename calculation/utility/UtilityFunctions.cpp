@@ -13,10 +13,7 @@
 #include <sstream>
 #include <iomanip>
 #include "SimulationVariables.h"
-#include <boost/filesystem.hpp>
-#include <boost/date_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/posix_time/posix_time_io.hpp>
+
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -495,9 +492,7 @@ std::string & GetUserTemporaryDirectory(std::string& s) {
 
 /* Replaces format specifiers with values from todays date. Some format specifiers are derived from:
    https://www.boost.org/doc/libs/1_70_0/doc/html/date_time/date_time_io.html#date_time.format_flags */
-std::string getFilenameFormatTime(const std::string& filename) {
-    // Obtain the  time locally.
-    boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time(); // timeLocal(boost::gregorian::date(1970, 1, 1));
+std::string getFilenameFormatTime(const std::string& filename, boost::posix_time::ptime timeLocal, bool testUnknown) {
 
     std::string buffer, mod_filename(filename);
     std::stringstream bufferStream;
@@ -541,10 +536,10 @@ std::string getFilenameFormatTime(const std::string& filename) {
     bufferStream.str(""); bufferStream << timeLocal;
     replace_all(mod_filename, "<A>", bufferStream.str());
 
-    if (mod_filename.find_first_of("<>") != std::string::npos) {
+    if (testUnknown && mod_filename.find_first_of("<>") != std::string::npos) {
         throw resolvable_error(
             "Filename '%s' contains substitutions which could not be converted.\nSubstituted filename resulted in: %s.", 
-            "getFilenameFormatTime()", filename.c_str(), mod_filename.c_str());
+            filename.c_str(), mod_filename.c_str());
     }
     return mod_filename;
 }

@@ -5,7 +5,11 @@
 #include <cstdarg>
 #include <map>
 
+class PrintProxy;
+
 class BasePrint {
+    friend class PrintProxy;
+
   public:
     enum eInputFileType {
 		CASEFILE, CONTROLFILE, POPFILE, COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE, ADJ_BY_RR_FILE,

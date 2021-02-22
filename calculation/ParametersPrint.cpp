@@ -740,16 +740,16 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     try {
         if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
             (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
-            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(gParameters.GetCaseFileName(1))));
+            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(gParameters.GetCaseFileName(1), gParameters.getTimestamp())));
             settings.back().first += sDataSetLabel;
         }
         switch (gParameters.GetProbabilityModelType()) {
             case POISSON :
                 if (!gParameters.UsePopulationFile()) break;
-                settings.push_back(std::make_pair("Population File", getFilenameFormatTime(gParameters.GetPopulationFileName(1))));
+                settings.push_back(std::make_pair("Population File", getFilenameFormatTime(gParameters.GetPopulationFileName(1), gParameters.getTimestamp())));
                 settings.back().first += sDataSetLabel; break;
             case BERNOULLI :
-                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(gParameters.GetControlFileName(1))));
+                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(gParameters.GetControlFileName(1), gParameters.getTimestamp())));
                 settings.back().first += sDataSetLabel; break;
             case SPACETIMEPERMUTATION :
             case CATEGORICAL          :
@@ -782,11 +782,11 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("End Time",gParameters.GetStudyPeriodEndDate()));
         }
         if (gParameters.UseCoordinatesFile())
-            settings.push_back(std::make_pair("Coordinates File", getFilenameFormatTime(gParameters.GetCoordinatesFileName())));
+            settings.push_back(std::make_pair("Coordinates File", getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp())));
         if (gParameters.UseSpecialGrid())
-            settings.push_back(std::make_pair("Grid File", getFilenameFormatTime(gParameters.GetSpecialGridFileName())));
+            settings.push_back(std::make_pair("Grid File", getFilenameFormatTime(gParameters.GetSpecialGridFileName(), gParameters.getTimestamp())));
         if (gParameters.GetSimulationType() == FILESOURCE)
-            settings.push_back(std::make_pair("Simulated Data Import File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename())));
+            settings.push_back(std::make_pair("Simulated Data Import File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp())));
         if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid())) {
             buffer = "Coordinates";
             switch (gParameters.GetCoordinatesType()) {
@@ -811,15 +811,15 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
         if (gParameters.getNumFileSets() == 1) return;
         for (unsigned int t=1; t < gParameters.getNumFileSets(); ++t) {
             printString(buffer, "Case File (data set %i)", t + 1);
-            settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetCaseFileName(t + 1))));
+            settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetCaseFileName(t + 1), gParameters.getTimestamp())));
             switch (gParameters.GetProbabilityModelType()) {
                 case POISSON :
                     if (!gParameters.UsePopulationFile()) break;
                     printString(buffer, "Population File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetPopulationFileName(t + 1)))); break;
+                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetPopulationFileName(t + 1), gParameters.getTimestamp()))); break;
                 case BERNOULLI :
                     printString(buffer, "Control File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetControlFileName(t + 1)))); break;
+                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetControlFileName(t + 1), gParameters.getTimestamp()))); break;
                 case SPACETIMEPERMUTATION :
                 case CATEGORICAL          :
                 case ORDINAL              :
@@ -986,11 +986,11 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Number of Replications",buffer));
             switch (gParameters.GetPowerEvaluationSimulationType()) {
                 case STANDARD         : 
-                    settings.push_back(std::make_pair("Alternative Hypothesis File", getFilenameFormatTime(gParameters.getPowerEvaluationAltHypothesisFilename())));
+                    settings.push_back(std::make_pair("Alternative Hypothesis File", getFilenameFormatTime(gParameters.getPowerEvaluationAltHypothesisFilename(), gParameters.getTimestamp())));
                     break;
                 case FILESOURCE       :
                     settings.push_back(std::make_pair("Power Step Randomization Method","File Source"));
-                    settings.push_back(std::make_pair("Randomization Source File", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataSourceFilename()))); break;
+                    settings.push_back(std::make_pair("Randomization Source File", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataSourceFilename(), gParameters.getTimestamp()))); break;
                 case HA_RANDOMIZATION :
                 default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.GetPowerEvaluationSimulationType());
             }
@@ -998,7 +998,7 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
             if (gParameters.getOutputPowerEvaluationSimulationData()) {
                 settings.push_back(std::make_pair("Output Power Step Simulation Data","Yes"));
                 if (gParameters.getOutputPowerEvaluationSimulationData()) {
-                    settings.push_back(std::make_pair("Power Step Simulation Data Filename", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataOutputFilename())));
+                    settings.push_back(std::make_pair("Power Step Simulation Data Filename", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataOutputFilename(), gParameters.getTimestamp())));
                 }
             }
             // loglikelihood ratio files for power evaluations
@@ -1029,14 +1029,14 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
             case STANDARD         : break;
             case FILESOURCE       :
                 settings.push_back(std::make_pair(buffer,"File Source")); break;
-                settings.push_back(std::make_pair("Randomization File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()))); break;
+                settings.push_back(std::make_pair("Randomization File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp()))); break;
                 break;
             case HA_RANDOMIZATION :
             default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
         };
         if (gParameters.GetOutputSimulationData()) {
             settings.push_back(std::make_pair("Output Simulation Data","Yes"));
-            settings.push_back(std::make_pair("Simulation Data Output", getFilenameFormatTime(gParameters.GetSimulationDataOutputFilename())));
+            settings.push_back(std::make_pair("Simulation Data Output", getFilenameFormatTime(gParameters.GetSimulationDataOutputFilename(), gParameters.getTimestamp())));
         }
         WriteSettingsContainer(settings, "Power Simulations", fp);
     } catch (prg_exception& x) {
@@ -1115,10 +1115,10 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
             settings.push_back(std::make_pair("Use Non-Euclidian Neighbors file",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
             if (gParameters.UseLocationNeighborsFile())
-                settings.push_back(std::make_pair("Non-Euclidian Neighbors file", getFilenameFormatTime(gParameters.GetLocationNeighborsFileName())));
+                settings.push_back(std::make_pair("Non-Euclidian Neighbors file", getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp())));
             settings.push_back(std::make_pair("Use Meta Locations File",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
             if (gParameters.UseMetaLocationsFile())
-                settings.push_back(std::make_pair("Meta Locations File", getFilenameFormatTime(gParameters.getMetaLocationsFilename())));
+                settings.push_back(std::make_pair("Meta Locations File", getFilenameFormatTime(gParameters.getMetaLocationsFilename(), gParameters.getTimestamp())));
         }
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || 
               gParameters.UseLocationNeighborsFile() || 
@@ -1153,7 +1153,7 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
 	try {
 		if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
 			settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
-			settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename())));
+			settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
 			switch (gParameters.getNetworkFilePurpose()) {
 				case COORDINATES_OVERRIDE: buffer = "Coordinates File Override"; break;
 				case NETWORK_DEFINITION: buffer = "Network Definition"; break;
@@ -1219,7 +1219,7 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
         if (gParameters.GetProbabilityModelType() == POISSON) {
             settings.push_back(std::make_pair("Adjust for known relative risks",(gParameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
             if (gParameters.UseAdjustmentForRelativeRisksFile())
-                settings.push_back(std::make_pair("Adjustments File", getFilenameFormatTime(gParameters.GetAdjustmentsByRelativeRisksFilename())));
+                settings.push_back(std::make_pair("Adjustments File", getFilenameFormatTime(gParameters.GetAdjustmentsByRelativeRisksFilename(), gParameters.getTimestamp())));
             //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
             if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC)
                 settings.push_back(std::make_pair("Time Trend Type (SVTT)","Quadratic"));
@@ -1248,7 +1248,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
         }
         if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
-            settings.push_back(std::make_pair("Max Circle Size File", getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName())));
+            settings.push_back(std::make_pair("Max Circle Size File", getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName(), gParameters.getTimestamp())));
         if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
             printString(buffer, "%g%s", gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
             settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));

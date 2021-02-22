@@ -17,6 +17,7 @@
 #include "Toolkit.h"
 #include "newmat.h"
 #include "ParameterProgramOptions.h"
+#include "MultipleAnalyses.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -64,7 +65,7 @@ void usage_message(std::string program, po::options_description& desc, const Par
 }
 
 int main(int argc, char *argv[]) {
-  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false;
+  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false, execMultipleAnalyses;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]) {
         ("write-parameters,w", po::value<std::string>(), "write parameters to file")
         ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
         ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
+        ("multiple-analyses,m", po::bool_switch(&execMultipleAnalyses), "execute defined multiple analyses")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -143,6 +145,14 @@ int main(int argc, char *argv[]) {
     if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console); return 0;}
     if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
     if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
+
+    //potentially perform execution of multiple analyses, if user requested
+    if (execMultipleAnalyses) {
+        Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
+        MultipleAnalyses().execute(Console);
+        return 0;
+    }
+
     //if (!vm.count("parameter-file")) {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); usage_message(argv[0], opt_descriptions, application, Console); return 1;}
     /* read parameter file */
     if (vm.count("parameter-file")) {

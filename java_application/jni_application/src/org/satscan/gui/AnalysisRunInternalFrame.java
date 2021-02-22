@@ -87,6 +87,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private boolean _viewing_only_significant = true;
     private boolean _first_display_occurred = false;
     private JPopupMenu _launch_output = null;
+    private boolean _disable_auto_launch = false;
 
     /* Creates new form ParameterSettingsFrame */
     public AnalysisRunInternalFrame(final Parameters parameters) {
@@ -107,13 +108,17 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         _bottom_tabbed_pane.remove(_drilldown_results_tab);
         super.setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         super.addInternalFrameListener(this);
-        _parameters = analysis.getParameters();
+        // Clone parameters -- so we can change attributes without affecting those assocaited with BatchAnalysis.
+        _parameters = (Parameters)analysis.getParameters().clone();
         super.setTitle("Results " + analysis.getDescription());
         setCloseButton();
         _can_close = true;
         _warningsErrorsTextArea.setText(analysis.getLastExecutedMessage());
         if (analysis.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS) {
            loadDrilldownResultsFromTreeNode(analysis.getDrilldownRoot());
+           /* Since the date format substitution was based off date this analysis last executed,
+              we need to use that output file vs one derived from todays date. */
+           _parameters.SetOutputFileNameSetting(analysis.getLastResultsFilename());
            loadAnalysisResults(true);
         } else
             _progressTextArea.setText("Analysis did not complete. Please review warnings and errors below.");
@@ -122,6 +127,11 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     /* Returns associated CalculationThread object. */
     public CalculationThread getCalculationThread() {
         return _thread;
+    }
+    
+    /* Option to disable automatic launching of additional output files -- primarily intended for multiple analyses. */
+    public void disableAdditionalOutputAutoLaunch(boolean b) {
+        _disable_auto_launch = b;
     }
     
     /* Returns indication of whether there are working threads that hanven't finished writing messages to textarea control. */
@@ -406,15 +416,15 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 }
                 _progressTextArea.setCaretPosition(0);
                 // If requested, attempt to launch a KML viewer.
-                if (_parameters.getOutputKMLFile() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_kml_view) {
+                if (_parameters.getOutputKMLFile() && (_parameters.getLaunchMapViewer() && !_disable_auto_launch) && !_first_display_occurred && !_failed_kml_view) {
                     launchKMLViewer(sFileName, true);
                 }
                 // If requested, attempt to launch browser to view cartesian map.
-                if (_parameters.getOutputCartesianGraph() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_graph_view) {
+                if (_parameters.getOutputCartesianGraph() && (_parameters.getLaunchMapViewer() && !_disable_auto_launch) && !_first_display_occurred && !_failed_graph_view) {
                     launchCartesianGraphViewer(sFileName);                      
                 }
                 // If requested, attempt to launch browser to view Google map.
-                if (_parameters.getOutputGoogleMapsFile() && _parameters.getLaunchMapViewer()&& !_first_display_occurred && !_failed_maps_view) {
+                if (_parameters.getOutputGoogleMapsFile() && (_parameters.getLaunchMapViewer() && !_disable_auto_launch) && !_first_display_occurred && !_failed_maps_view) {
                     launchGoogleMapsViewer(sFileName);
                 }
                 /* Only automatically launch additional output files if user requests and this is the first time loading results.

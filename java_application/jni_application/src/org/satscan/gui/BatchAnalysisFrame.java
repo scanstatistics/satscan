@@ -35,6 +35,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -763,6 +764,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     if (row >= 0 && col == STATUS_IDX) { 
                         BatchAnalysis ba = _batch_analyses.get(row);
                         AnalysisRunInternalFrame frame = new AnalysisRunInternalFrame(ba);
+                        frame.disableAdditionalOutputAutoLaunch(true);
                         // Add application as listener, set visiable and add frame to application document.
                         frame.addInternalFrameListener(SaTScanApplication.getInstance());
                         frame.setVisible(true);
@@ -825,7 +827,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             currentOffset = (BatchAnalysis.StudyPeriodOffset)value;
             SwingUtilities.invokeLater(() -> {
-                _editor_dialog.setStudyPeriodOffset((column == LAG_IDX ? "Edit Lag Time" : "Edit Study Period"), currentOffset );
+                _editor_dialog.setStudyPeriodOffset(
+                    (column == LAG_IDX ? "Edit Lag Time" : "Edit Study Period"), 
+                    currentOffset,
+                    (column == LAG_IDX ? 0 : 1)
+                );
                 Point p = editorComponent.getLocationOnScreen();
                 _editor_dialog.setLocation(p.x, p.y + editorComponent.getSize().height);
                 _editor_dialog.setVisible(true);
@@ -853,15 +859,19 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         private static final int SLEEP_MAXIMUM = 100;
         private double _num_records;
         private double _num_executed = 0;
+        // Store execution start date to ensure that all analyses use todays's date.
+        private LocalDate _start_date = LocalDate.now();
 
-        private LocalDate getLocalDate(LocalDate initial, BatchAnalysis.StudyPeriodOffset offset) {
-            if (offset == null || offset.getOffset() == 0)
+        private LocalDate getLocalDate(LocalDate initial, BatchAnalysis.StudyPeriodOffset offset, boolean isStudyPeriod) {
+            if (offset == null)
                 return initial;
             switch (offset.getUnits()) {
                 case YEAR : return initial.minusYears(offset.getOffset());
                 case MONTH : return initial.minusMonths(offset.getOffset());
-                case DAY : 
-                case GENERIC: return initial.minusDays(offset.getOffset());
+                case DAY :  
+                case GENERIC: 
+                    // special case with study period - since end date is included
+                    return initial.minusDays(offset.getOffset() - (isStudyPeriod ? 1 : 0));
             }
             return initial;
         }
@@ -873,15 +883,18 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     // Clone the paramters so we can modifiy the study period dates.
                     Parameters run_parameters = (Parameters)analysis.getParameters().clone();
                     // set study period based on study period length and lag settings.
-                    LocalDate enddate = getLocalDate(LocalDate.now(), analysis.getLag());
+                    LocalDate enddate = getLocalDate(_start_date, analysis.getLag(), false);
                     if (analysis.getLag() != null)
                         run_parameters.SetStudyPeriodEndDate(enddate.format(DateTimeFormatter.ofPattern(DATE_FORMAT)));
+                    else // otherwise define enddate per paramemter settings - for possible study period offset
+                        enddate = LocalDate.parse(run_parameters.GetStudyPeriodEndDate().replaceAll("/", "-"));
                     // base the study period start as an offset from the lag period.
-                    LocalDate startdate = getLocalDate(enddate, analysis.getStudyPeriodLength());
+                    LocalDate startdate = getLocalDate(enddate, analysis.getStudyPeriodLength(), true);
                     if (analysis.getStudyPeriodLength() != null)
                         run_parameters.SetStudyPeriodStartDate(startdate.format(DateTimeFormatter.ofPattern(DATE_FORMAT)));
                     
                     frame = new AnalysisRunInternalFrame(run_parameters);
+                    frame.disableAdditionalOutputAutoLaunch(true);
                     frame.setTitle("Running " + analysis.getDescription());
                     // Register this analysis as executing -- in case user attempts to close application.
                     OutputFileRegister.getInstance().register(run_parameters.GetOutputFileName());
@@ -899,9 +912,10 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                         ++sleep_iterations;
                     }
                     // Update attributes of BatchAnalysis to reflect this execution.
-                    if (frame.isSuccessful())
+                    if (frame.isSuccessful()) {
                         analysis.setLastExecutedStatus(BatchAnalysis.STATUS.SUCCESS);
-                    else if (frame.userCancelled()) {
+                        analysis.setLastResultsFilename(run_parameters.GetOutputFileName());
+                    } else if (frame.userCancelled()) {
                         analysis.setLastExecutedStatus(BatchAnalysis.STATUS.CANCELLED);
                         // Assume that if user cancelled current analysis, they wish to abort any further analyses.
                         cancel(true);
@@ -917,7 +931,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, null, ie);
             } catch (Exception e) {
                 Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, "Execution failed with error: " + e.toString());
-                throw new RuntimeException(e.getMessage(), e);
+                JOptionPane.showInternalMessageDialog(BatchAnalysisFrame.this, e.getMessage());
+                //throw new RuntimeException(e.getMessage(), e);
             } finally {
                 if (frame != null) try {
                     frame.setClosed(true);

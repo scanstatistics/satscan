@@ -8,6 +8,10 @@
 #include "FileName.h"
 #include "ParameterTypes.h"
 
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
+
 class CParameters {
   public:
     struct CreationVersion {
@@ -268,6 +272,8 @@ class CParameters {
 	bool                                _use_locations_network_file;
 	NetworkPurposeType                  _network_file_purpose;
 
+    boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
+
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -285,6 +291,8 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    boost::posix_time::ptime            getTimestamp() const { return _local_timestamp; }
+    void                                setTimestamp(boost::posix_time::ptime ts) { _local_timestamp = ts; }
 	bool                                getUseLocationsNetworkFile() const { return _use_locations_network_file; }
 	void                                setUseLocationsNetworkFile(bool b) { _use_locations_network_file = b; }
 	const std::string                 & getLocationsNetworkFilename() const { return _locations_network_filename; }

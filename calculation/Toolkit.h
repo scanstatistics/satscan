@@ -33,6 +33,7 @@ class AppToolkit {
     static const char         * _run_history;
     static const char         * _history_filename_property;
     static const char         * _debug_filename;
+    static const char         * _multiple_analysis_filename;
 
     // default defines
     static const char         * _default_run_history_filename;
@@ -42,6 +43,7 @@ class AppToolkit {
 
     boost::filesystem::path     _ini_filepath;
     boost::filesystem::path     _satscan_appdata_folder;
+    boost::filesystem::path     _multi_analysis_filepath;
     std::string                 _application_fullpath;
     std::string                 _version;
     RunTimeComponentManager     _runtime_component_manager;
@@ -68,6 +70,7 @@ class AppToolkit {
    const char                 * GetWebSite() const;
    bool                         is64Bit() const;
    FILE                       * openDebugFile(); 
+   std::string                  getMultipleAnalysisFullpath() const { return _multi_analysis_filepath.string(); }
 
    static AppToolkit     &      getToolkit() {return *_tool_kit;}
    static void                  ToolKitCreate(const char * sApplicationFullPath);

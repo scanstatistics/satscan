@@ -4,7 +4,8 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include <string>
-#include "boost/date_time/gregorian/gregorian.hpp"
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/gregorian_calendar.hpp>
 
 /* Date module header file - SaTScan                      */
 /*                                                        */
@@ -34,6 +35,8 @@ bool                            IsLeapYear(UInt year);
 char                          * JulianToChar(char* szDateString, Julian JNum);
 void                            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
 std::string                   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep="/", bool isEndDate=false, bool asSeasonal = false);
+std::string                     gregorianToString(boost::gregorian::date dateObj);
+boost::gregorian::date          gregorianFromString(const std::string& s);
 void                            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 Julian                          MDYToJulian(UInt m, UInt d, UInt y);
 void                            printDateRange(FILE * pFile);

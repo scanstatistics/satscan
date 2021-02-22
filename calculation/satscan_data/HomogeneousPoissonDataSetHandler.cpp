@@ -340,7 +340,10 @@ bool HomogeneousPoissonDataSetHandler::ReadData() {
         if (gParameters.UseSpecialGrid()) {
             gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
             gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
-            std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gParameters.getInputSource(GRIDFILE), gPrint));
+            std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+                getFilenameFormatTime(gParameters.GetSpecialGridFileName(), gParameters.getTimestamp(), true),
+                gParameters.getInputSource(GRIDFILE), gPrint)
+            );
             if (!ReadGridFile(*Source)) return false;
         }
         SetRandomizers();

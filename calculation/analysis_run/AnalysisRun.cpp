@@ -410,7 +410,7 @@ void AnalysisExecution::executeCentricEvaluation() {
 				_print_direction.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, _parameters.GetNumReplicationsRequested());
 			if (_parameters.GetOutputSimulationData()) {
 				DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(_parameters));
-				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
 				remove(simulation_out.c_str());
 			}
 			//create simulation data sets -- randomize each and set corresponding data gateway object
@@ -574,7 +574,7 @@ void AnalysisExecution::executePowerEvaluations() {
 			// if writing simulation data to file, delete file now
 			std::string simulation_out;
 			if (_parameters.GetOutputSimulationData()) {
-				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
 				remove(simulation_out.c_str());
 			}
 			runSuccessiveSimulations(randomizers, _parameters.GetNumReplicationsRequested(), simulation_out, false, 1);
@@ -625,7 +625,7 @@ void AnalysisExecution::executePowerEvaluations() {
 		} break;
 		case FILESOURCE: {
 			// determine the number of randomization iterations by counting lines in source file
-			std::ifstream inFile(getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename()).c_str());
+			std::ifstream inFile(getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true).c_str());
 			size_t count = std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n');
 			number_randomizations = count / _parameters.getNumPowerEvalReplicaPowerStep();
 		} break;
@@ -634,7 +634,7 @@ void AnalysisExecution::executePowerEvaluations() {
 
 		std::string simulation_out;
 		if (_parameters.getOutputPowerEvaluationSimulationData()) {
-			simulation_out = getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataOutputFilename());
+			simulation_out = getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
 			remove(simulation_out.c_str());
 		}
 		if (number_randomizations == 0) {
@@ -662,7 +662,7 @@ void AnalysisExecution::executePowerEvaluations() {
 				randomizers->at(0) = new AlternateHypothesisRandomizer(_data_hub, riskAdjustments.at(t), _parameters.GetRandomizationSeed());
 				break;
 			case FILESOURCE: {
-				std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename()), _parameters.GetRandomizationSeed()));
+				std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true), _parameters.GetRandomizationSeed()));
 				// set file line offset for the current iteration of power step
 				randomizer->setLineOffset(t * _parameters.getNumPowerEvalReplicaPowerStep());
 				randomizers->at(0) = randomizer.release();
@@ -768,7 +768,7 @@ void AnalysisExecution::executeSuccessiveSimulations() {
 			//if writing simulation data to file, delete file now
 			std::string simulation_out;
 			if (_parameters.GetOutputSimulationData()) {
-				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename());
+				simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
 				remove(simulation_out.c_str());
 			}
 			boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
@@ -1641,7 +1641,10 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 		neighbors_file.open(createTempFilename(detectedCluster, supplementInfo, ".nei", buffer).c_str());
 		if (!neighbors_file) throw resolvable_error("Error: Could not create neighbors file '%s'.\n", buffer.c_str());
 
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetLocationNeighborsFileName().c_str(), _parameters.getInputSource(LOCATION_NEIGHBORS_FILE), _print_direction));
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(_parameters.GetLocationNeighborsFileName(), _parameters.getTimestamp(), true),
+            _parameters.getInputSource(LOCATION_NEIGHBORS_FILE), _print_direction)
+        );
 		_print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
 		while (Source->ReadRecord()) {
 			unsigned int written = 0;
@@ -1663,7 +1666,10 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         std::ofstream coordinates_file;
         coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
         if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetCoordinatesFileName(), _parameters.getInputSource(COORDFILE), _print_direction));
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(_parameters.GetCoordinatesFileName(), _parameters.getTimestamp(), true),
+            _parameters.getInputSource(COORDFILE), _print_direction)
+        );
 		_print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
 		while (Source->ReadRecord()) {
 		    std::string identifier(Source->GetValueAt(0));
@@ -1685,7 +1691,10 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 		network_file.open(createTempFilename(detectedCluster, supplementInfo, ".ntk", buffer).c_str());
 		if (!network_file) throw resolvable_error("Error: Could not create locations network file '%s'.\n", buffer.c_str());
 
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.getLocationsNetworkFilename().c_str(), _parameters.getInputSource(NETWORK_FILE), _print_direction));
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(_parameters.getLocationsNetworkFilename(), _parameters.getTimestamp(), true),
+            _parameters.getInputSource(NETWORK_FILE), _print_direction)
+        );
 		_print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
 		while (Source->ReadRecord()) {
 			std::string identifier(Source->GetValueAt(0));
@@ -1716,7 +1725,10 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
 		grid_file.open(createTempFilename(detectedCluster, supplementInfo, ".grd", buffer).c_str());
 		if (!grid_file) throw resolvable_error("Error: Could not create grid file '%s'.\n", buffer.c_str());
 
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(_parameters.GetSpecialGridFileName(), _parameters.getInputSource(GRIDFILE), _print_direction));
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp(), true),
+            _parameters.getInputSource(GRIDFILE), _print_direction)
+        );
 		_print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
 		std::vector<double> gridCoordinates(source_data_hub.GetTInfo()->getCoordinateDimensions(), 0.0), clusterCoordinates;
 		short iScanCount;
@@ -1769,6 +1781,8 @@ void AbstractAnalysisDrilldown::execute() {
 	AnalysisExecution execution(*_data_hub, _parameters, _executing_type, _start_time, _print_direction);
 	execution.execute();
     _significant_clusters = execution.getNumSignificantClusters();
+    // Register this drilldowns results.
+    _print_direction.ReportDrilldownResults(_parameters.GetOutputFileName().c_str(), _parent_filename.c_str(), _significant_clusters);
 	if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
 		// Perform any drilldowns.
 		const MostLikelyClustersContainer & mlc = execution.getLargestMaximaClusterCollection();
@@ -1785,7 +1799,6 @@ void AbstractAnalysisDrilldown::execute() {
                         AnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
                         drilldown.execute();
                         _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                     }
                     catch (drilldown_exception& x) {
                         _print_direction.Printf("The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
@@ -1811,7 +1824,6 @@ void AbstractAnalysisDrilldown::execute() {
                         BernoulliAnalysisDrilldown drilldown(cluster, execution.getClusterSupplement(), *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1, _cluster_path);
                         drilldown.execute();
                         _parameters.addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                        _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
                     }
                     catch (drilldown_exception& x) {
                         _print_direction.Printf("The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n",
@@ -2052,16 +2064,13 @@ void AnalysisRunner::run() {
                             );
                             drilldown.execute();
                             const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
-                        }
-                        catch (drilldown_exception& x) {
+                        } catch (drilldown_exception& x) {
                             _print_direction.Printf(
                                 "The main analysis %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_WARNING,
                                 1, ordinal_suffix(1),
                                 execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
                             );
-                        }
-                        catch (resolvable_error& x) {
+                        } catch (resolvable_error& x) {
                             _print_direction.Printf(
                                 "The main analysis %u%s level drilldown stopped execution on %u%s detected cluster:\n%s\n", BasePrint::P_WARNING,
                                 1, ordinal_suffix(1),
@@ -2080,15 +2089,12 @@ void AnalysisRunner::run() {
                             );
                             drilldown.execute();
                             const_cast<CParameters&>(_parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
-                            _print_direction.ReportDrilldownResults(drilldown.getParameters().GetOutputFileName().c_str(), _parameters.GetOutputFileName().c_str(), drilldown.getNumSignificantClusters());
-                        }
-                        catch (drilldown_exception& x) {
+                        } catch (drilldown_exception& x) {
                             _print_direction.Printf(
                                 "The purely spatial Bernoulli %u%s level drilldown did not execute on %u%s detected cluster:\n%s\n", BasePrint::P_WARNING, 1, ordinal_suffix(1),
                                 execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()
                             );
-                        }
-                        catch (resolvable_error& x) {
+                        } catch (resolvable_error& x) {
                             _print_direction.Printf(
                                 "The purely spatial Bernoulli %u%s level drilldown stopped execution on %u%s detected cluster:\n%s\n", BasePrint::P_WARNING, 1, ordinal_suffix(1),
                                 execution->getClusterSupplement().getClusterReportIndex(cluster), ordinal_suffix(execution->getClusterSupplement().getClusterReportIndex(cluster)), x.what()

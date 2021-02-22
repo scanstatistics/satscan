@@ -371,7 +371,10 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gParameters.getInputSource(POPFILE, DataSet.getSetIndex()), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        getFilenameFormatTime(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
+        gParameters.getInputSource(POPFILE, DataSet.getSetIndex()), gPrint)
+    );
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
 		// Skip ignored records based on locations.
@@ -482,7 +485,7 @@ void PoissonDataSetHandler::SetRandomizers() {
             gvDataSetRandomizers.at(0) = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()), gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp(), true), gParameters.GetRandomizationSeed());
           break;
       default :
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

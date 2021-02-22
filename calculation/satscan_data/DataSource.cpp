@@ -11,19 +11,16 @@
 
 /** Static method which returns newly allocated DataSource object. */
 DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, const CParameters::InputSource * source, BasePrint& Print) {
-    // Apply any time formats now - since we're about to open the file.
-    std::string filename(getFilenameFormatTime(sSourceFilename));
-
     // if a InputSource is not defined, default to space delimited ascii source
     if (!source)
-        return new CsvFileDataSource(filename, Print, " ", "\"", 0, false);
+        return new CsvFileDataSource(sSourceFilename, Print, " ", "\"", 0, false);
     // return data source object by input source type
     DataSource * dataSource=0;
     switch (source->getSourceType()) {
-        case DBASE           : dataSource = new dBaseFileDataSource(filename); break;
-        case SHAPE           : dataSource = new ShapeFileDataSource(filename); break;
-        case CSV             : dataSource = new CsvFileDataSource(filename, Print, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
-        default              : dataSource = new CsvFileDataSource(filename, Print, " ");
+        case DBASE           : dataSource = new dBaseFileDataSource(sSourceFilename); break;
+        case SHAPE           : dataSource = new ShapeFileDataSource(sSourceFilename); break;
+        case CSV             : dataSource = new CsvFileDataSource(sSourceFilename, Print, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
+        default              : dataSource = new CsvFileDataSource(sSourceFilename, Print, " ");
     }
     dataSource->setFieldsMap(source->getFieldsMap());
     return dataSource;

@@ -44,6 +44,7 @@ public class BatchXMLFile {
     public static final String LAST_EXEC_DATE_FORMAT = "yyyy-MM-dd kk:mm:ss";
     private static final String LAST_EXEC_STATUS = "last-execution-status";
     private static final String LAST_EXEC_MSSG = "last-execution-warnings-errors";
+    private static final String LAST_RESULTS = "last-results-filename";
     private static final String DRILLDOWN_TREE = "drilldown-tree";
     private static final String DRILLDOWN_NODE = "drilldown-node";
     private static final String DRILLDOWN_RESULTS = "results-filename";
@@ -163,9 +164,10 @@ public class BatchXMLFile {
                             Integer.parseInt(eElement.getElementsByTagName(LAG).item(0).getTextContent()),
                             parseUnit(eElement.getElementsByTagName(LAG_UNIT).item(0).getTextContent())
                         );
-                    }                    
+                    }
+                    String last_results_filename = eElement.getElementsByTagName(LAST_RESULTS).item(0).getTextContent();
                     BatchAnalysis batchAnalysis = new BatchAnalysis(
-                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), parameters, study_length, lag, null
+                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), parameters, study_length, lag, null, last_results_filename
                     );                    
                     batchAnalysis.setLastExecutedDate(parseDate(eElement.getElementsByTagName(LAST_EXEC_DATE).item(0).getTextContent()));
                     batchAnalysis.setLastExecutedStatus(parseStatus(eElement.getElementsByTagName(LAST_EXEC_STATUS).item(0).getTextContent()));
@@ -253,6 +255,10 @@ public class BatchXMLFile {
                 Element last_exec_mssg = doc.createElement(LAST_EXEC_MSSG);
                 last_exec_mssg.appendChild(doc.createTextNode(batchAnalysis.getLastExecutedMessage()));
                 analysis.appendChild(last_exec_mssg);
+                
+                Element last_results = doc.createElement(LAST_RESULTS);
+                last_results.appendChild(doc.createTextNode(batchAnalysis.getLastResultsFilename()));
+                analysis.appendChild(last_results);                  
                 
                 BatchAnalysis.TreeNode<Pair<String, Integer>> dd_root = batchAnalysis.getDrilldownRoot();
                 if (dd_root != null) // Create the drilldown tree element and add all descendents in tree to document.

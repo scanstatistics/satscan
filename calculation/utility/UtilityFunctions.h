@@ -3,7 +3,11 @@
 #define __UTILITYFUNCTIONS_H
 //******************************************************************************
 #include "SaTScan.h"
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 
 class Matrix; // forward declaration
 class SimulationVariables;
@@ -30,7 +34,7 @@ std::string                   & getRoundAsString(double value, std::string& s, u
 std::string                   & GetUserDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
-std::string                     getFilenameFormatTime(const std::string& filename);
+std::string                     getFilenameFormatTime(const std::string& filename, boost::posix_time::ptime timeLocal, bool testUnknown=false);
 bool                            getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
 template <typename T>           bool string_to_type(const char * s, T& t) {

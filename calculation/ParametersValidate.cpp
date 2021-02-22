@@ -401,7 +401,7 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
 /**/
 bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck) const {
     // Trim whitespace and apply any time formats.
-    std::string buffer = getFilenameFormatTime(filename);    
+    std::string buffer = getFilenameFormatTime(filename, gParameters.getTimestamp(), true);
     trimString(buffer);
     if (buffer.empty()) {
         PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());

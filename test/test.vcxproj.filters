@@ -171,6 +171,9 @@
     <ClInclude Include="..\calculation\Toolkit.h">
       <Filter>Header Files\source\calculation</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\MultipleAnalyses.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp">
       <Filter>Header Files\source\calculation\analysis</Filter>
     </ClInclude>
@@ -693,6 +696,9 @@
       <Filter>Source Files\source\calculation</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\Toolkit.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\MultipleAnalyses.cpp">
       <Filter>Source Files\source\calculation</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\analysis\AbstractAnalysis.cpp">

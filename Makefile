@@ -219,6 +219,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParametersValidate.cpp \
                $(CALCULATION)/Toolkit.cpp \
+               $(CALCULATION)/MultipleAnalyses.cpp \
                $(CALCULATION)/ParameterFileAccess.cpp \
                $(CALCULATION)/ScanLineParameterFileAccess.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \

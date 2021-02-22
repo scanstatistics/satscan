@@ -170,6 +170,7 @@
     <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp" />
     <ClCompile Include="..\calculation\ScanLineParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Toolkit.cpp" />
+    <ClCompile Include="..\calculation\MultipleAnalyses.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractBruteForceAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\AbstractCentricAnalysis.cpp" />
@@ -347,6 +348,7 @@
     <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h" />
     <ClInclude Include="..\calculation\ScanLineParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Toolkit.h" />
+    <ClInclude Include="..\calculation\MultipleAnalyses.h" />
     <ClInclude Include="..\calculation\analysis\AbstractAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\AbstractBruteForceAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\AbstractCentricAnalysis.h" />

@@ -99,6 +99,7 @@ public class BatchAnalysis implements Cloneable {
     private STATUS _last_executed_status = STATUS.NEVER;
     private String _last_executed_mssg = null;
     private TreeNode<Pair<String, Integer>> _drilldown_root = null;
+    private String _last_results_filename;
 
     public BatchAnalysis() {
         super();
@@ -107,13 +108,15 @@ public class BatchAnalysis implements Cloneable {
 
     }
 
-    public BatchAnalysis(String description, Parameters parameters, StudyPeriodOffset study_length, StudyPeriodOffset lag, TreeNode<Pair<String, Integer>> drilldown_root) {
+    public BatchAnalysis(String description, Parameters parameters, StudyPeriodOffset study_length, 
+                         StudyPeriodOffset lag, TreeNode<Pair<String, Integer>> drilldown_root, String last_results_filename) {
         super();
         _description = description;
         _parameters = parameters;
         _lag = lag;
         _study_length = study_length;
         _drilldown_root = drilldown_root;
+        _last_results_filename = last_results_filename;
     }
 
     @Override
@@ -232,4 +235,12 @@ public class BatchAnalysis implements Cloneable {
     public void setLastExecutedMessage(String s) {
         _last_executed_mssg = s;
     }
+    
+    public String getLastResultsFilename() {
+        return _last_results_filename;
+    }
+
+    public void setLastResultsFilename(final String s) {
+        _last_results_filename = new String(s);
+    }    
 }

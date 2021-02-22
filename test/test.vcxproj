@@ -244,6 +244,7 @@
     <ClInclude Include="..\calculation\satscan_data\Tracts.h" />
     <ClInclude Include="..\calculation\ScanLineParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Toolkit.h" />
+    <ClInclude Include="..\calculation\MultipleAnalyses.h" />
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h" />
     <ClInclude Include="..\calculation\utility\contractor.h" />
     <ClInclude Include="..\calculation\utility\DateStringParser.h" />
@@ -458,6 +459,7 @@
     <ClCompile Include="..\calculation\satscan_data\Tracts.cpp" />
     <ClCompile Include="..\calculation\ScanLineParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Toolkit.cpp" />
+    <ClCompile Include="..\calculation\MultipleAnalyses.cpp" />
     <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp" />
     <ClCompile Include="..\calculation\utility\contractor.cpp" />
     <ClCompile Include="..\calculation\utility\DateStringParser.cpp" />

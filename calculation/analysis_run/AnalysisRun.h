@@ -154,6 +154,7 @@ class AbstractAnalysisDrilldown {
 		const std::string                 & _base_output;
 		std::string                         _cluster_path;
         unsigned int                        _significant_clusters;
+        std::string                         _parent_filename;
 
 	public:
 		AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
@@ -161,6 +162,15 @@ class AbstractAnalysisDrilldown {
 			// Record start time of drilldown start -- of course this excludes time reading data.
 			time(&_start_time);
 			_cluster_path = (cluster_path ? cluster_path.get() : "");
+            // Derive the parent analysis result filename from base output variable and cluster path.
+            if (_cluster_path.empty()) // No cluster path, so parent analysis is the primary analysis.
+                _parent_filename = _base_output;
+            else {
+                // Parent analysis is another drilldown with passed cluster path - note only standard drilldowns can be recursive.
+                FileName parentFile(_base_output.c_str());
+                parentFile.setFileName(printString(_parent_filename, "%s-drilldown-%s-std", parentFile.getFileName().c_str(), _cluster_path.c_str()).c_str());
+                parentFile.getFullPath(_parent_filename);
+            }
 		}
 		virtual ~AbstractAnalysisDrilldown();
 

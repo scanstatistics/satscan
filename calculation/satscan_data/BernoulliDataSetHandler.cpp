@@ -146,7 +146,10 @@ void BernoulliDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Si
 /** Attempts to read control file data into RealDataSet object. Returns enumeration indication of read success. */
 DataSetHandler::CountFileReadStatus BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
     try {
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()), gPrint));
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
+            gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()
+        ), gPrint));
         return ReadCounts(DataSet, *Source);
     } catch (prg_exception& x) {
         x.addTrace("ReadControlFile()","BernoulliDataSetHandler");
@@ -212,7 +215,7 @@ void BernoulliDataSetHandler::SetRandomizers() {
             gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()), gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp(), true), gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
       default :

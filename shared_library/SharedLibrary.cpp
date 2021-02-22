@@ -233,12 +233,12 @@ JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getVersionId(JNIEnv 
    return pEnv->NewStringUTF(VERSION_ID);
 }
 
-/** Calcuates the number of time intervals given study period start and end dates. */
+/** Returns the date format substituted filename. */
 JNIEXPORT jstring JNICALL Java_org_satscan_utils_FileAccess_getFormatSubstitutedFilename(JNIEnv * pEnv, jclass, jstring jfilename) {
     jboolean iscopy;
     try {
         const char * sfilename = pEnv->GetStringUTFChars(jfilename, &iscopy);
-        std::string substitutedfilename(getFilenameFormatTime(std::string(sfilename)));
+        std::string substitutedfilename(getFilenameFormatTime(std::string(sfilename), boost::posix_time::second_clock::local_time()));
         if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jfilename, sfilename);
         return pEnv->NewStringUTF(substitutedfilename.c_str());
     }

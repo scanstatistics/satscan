@@ -21,6 +21,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
     private BatchAnalysis.StudyPeriodOffset _study_period_offset;
     private boolean _updated = false;
     private final UndoManager undo = new UndoManager();
+    private int _minimum_value = 0;
     
     /**
      * Creates new form StudyPeriodOffsetDialog
@@ -33,7 +34,8 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
         enableControls();
     }
 
-    public void setStudyPeriodOffset(String title, BatchAnalysis.StudyPeriodOffset obj) {
+    public void setStudyPeriodOffset(String title, BatchAnalysis.StudyPeriodOffset obj, int minumum_value) {
+        _minimum_value = minumum_value;
         setTitle(title);
         _study_period_offset = obj;
         if (_study_period_offset == null) {
@@ -42,7 +44,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
             _offset_units.setSelectedItem("day");
         } else {
             _toggle_no_offset.setSelected(false);
-            _offset_value.setText(Integer.toString(obj.getOffset()));
+            _offset_value.setText(Integer.toString(Math.max(obj.getOffset(), _minimum_value)));
             switch (obj.getUnits()) {
                 case YEAR : _offset_units.setSelectedItem("year"); break;
                 case MONTH : _offset_units.setSelectedItem("month"); break;
@@ -111,8 +113,14 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
         _offset_value.setText("365");
         _offset_value.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                while (_offset_value.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _offset_value.setText("0");
+                while (_offset_value.getText().length() == 0) {
+                    if (undo.canUndo())
+                    undo.undo();
+                    else
+                    _offset_value.setText(Integer.toString(_minimum_value));
+                }
+                if (Integer.parseInt(_offset_value.getText()) < _minimum_value)
+                _offset_value.setText(Integer.toString(_minimum_value));
             }
         });
         _offset_value.addKeyListener(new java.awt.event.KeyAdapter() {

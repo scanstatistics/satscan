@@ -154,7 +154,9 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
     gPrint.SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
 
     gPrint.Printf("Reading the adjustments file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(filename, gParameters.getInputSource(ADJ_BY_RR_FILE), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        getFilenameFormatTime(filename, gParameters.getTimestamp(), true), gParameters.getInputSource(ADJ_BY_RR_FILE), gPrint)
+    );
     // start with one collection of adjustments
     rrAdjustments.clear();
     rrAdjustments.push_back(RiskAdjustments_t(new RelativeRiskAdjustmentHandler(gDataHub)));
@@ -344,7 +346,10 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
 	} else {
 		gDataHub.gTractHandler->getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
 		gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gParameters.getInputSource(COORDFILE), gPrint));
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
+            gParameters.getInputSource(COORDFILE), gPrint)
+        );
 		gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
 		switch (gParameters.GetCoordinatesType()) {
 			case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source); break;
@@ -532,7 +537,10 @@ bool SaTScanDataReader::ReadGridFile() {
   try {
     gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetSpecialGridFileName(), gParameters.getInputSource(GRIDFILE), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        getFilenameFormatTime(gParameters.GetSpecialGridFileName(), gParameters.getTimestamp(), true),
+        gParameters.getInputSource(GRIDFILE), gPrint)
+    );
     switch (gParameters.GetCoordinatesType()) {
       case CARTESIAN : bReturn = ReadGridFileAsCartiesian(*Source); break;
       case LATLON    : bReturn = ReadGridFileAsLatitudeLongitude(*Source); break;
@@ -828,7 +836,10 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 
 		gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
 		gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
-		std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(gParameters.getLocationsNetworkFilename(), gParameters.getInputSource(NETWORK_FILE), gPrint));
+		std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp(), true),
+            gParameters.getInputSource(NETWORK_FILE), gPrint)
+        );
 		// First pass - determine all location identifiers referenced in network file and define as tract in handler.
 		while (!gPrint.GetMaximumReadErrorsPrinted() && networkSource->ReadRecord()) {
 			if (!(networkSource->GetNumValues() >= 1 && networkSource->GetNumValues() <= 3)) {
@@ -857,7 +868,10 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 			// Now read the coordinates file - so we can have the location coordinates on hand when we need to calculate euclidean distances or write to geographical output files.
 			gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
 			gPrint.Printf("Reading the coordinates file to obtain location distances\n", BasePrint::P_STDOUT);
-			std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gParameters.getInputSource(COORDFILE), gPrint));
+			std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
+                getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
+                gParameters.getInputSource(COORDFILE), gPrint)
+            );
 			gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
 			switch (gParameters.GetCoordinatesType()) {
 				case CARTESIAN:	bValid = ReadCoordinatesFileAsCartesian(*coordinatesSource); break;
@@ -980,8 +994,10 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsOverride() {
 
 		gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
 		gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
-		std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(gParameters.getLocationsNetworkFilename(), gParameters.getInputSource(NETWORK_FILE), gPrint));
-
+		std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp(), true),
+            gParameters.getInputSource(NETWORK_FILE), gPrint)
+        );
 		while (!gPrint.GetMaximumReadErrorsPrinted() && networkSource->ReadRecord()) {
 			bEmpty = false;
 			if (networkSource->GetNumValues() != 3) {
@@ -1037,7 +1053,10 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
     gPrint.SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
 
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetMaxCirclePopulationFileName(), gParameters.getInputSource(MAXCIRCLEPOPFILE), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName(), gParameters.getTimestamp(), true),
+        gParameters.getInputSource(MAXCIRCLEPOPFILE), gPrint)
+    );
     //initialize circle-measure array
     gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts + gDataHub.GetTInfo()->getMetaLocations().getNumReferencedLocations(), 0);
 
@@ -1101,7 +1120,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
 /** Opens meta locations file data source and parses meta location definitions. */
 bool SaTScanDataReader::ReadMetaLocationsFile() {
   bool                  bValid=true, bEmpty=true, bStructuredMetaData;
-  std::string           sIdentifier, sLocations, metaLocationsFilename(getFilenameFormatTime(gParameters.getMetaLocationsFilename()));
+  std::string           sIdentifier, sLocations, metaLocationsFilename(getFilenameFormatTime(gParameters.getMetaLocationsFilename(), gParameters.getTimestamp(), true));
   long                  uLocation0ffset;
 
   try {
@@ -1315,7 +1334,10 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
     gTractHandler.setCoordinateDimensions(0);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetLocationNeighborsFileName().c_str(), gParameters.getInputSource(LOCATION_NEIGHBORS_FILE), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp(), true),
+        gParameters.getInputSource(LOCATION_NEIGHBORS_FILE), gPrint)
+    );
     //first pass on neighbors file to determine all location identifiers referenced
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
       uLocation0ffset=0;

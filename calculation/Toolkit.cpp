@@ -62,6 +62,8 @@ const char * AppToolkit::_run_history = "[RunHistory]";
 const char * AppToolkit::_history_filename_property = "FileName";
 /** debug file name */
 const char * AppToolkit::_debug_filename = "_debug_";
+/** multiple analysis file name */
+const char * AppToolkit::_multiple_analysis_filename = "batch-settings.xml";
 
 /** analysis history filename */
 const char * AppToolkit::_default_run_history_filename = "AnalysisHistory";
@@ -242,7 +244,8 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
         // define filename of ini settings file
         _ini_filepath = _satscan_appdata_folder;
         _ini_filepath.concat(_ini_filename);
-
+        _multi_analysis_filepath = _satscan_appdata_folder;
+        _multi_analysis_filepath.concat(_multiple_analysis_filename);
         try {
             //Open or create system ini file.
             _session.read(_ini_filepath.string());

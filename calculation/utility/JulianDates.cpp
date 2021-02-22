@@ -5,8 +5,6 @@
 #include "JulianDates.h"
 #include "SSException.h"
 #include "UtilityFunctions.h"
-#include "boost/date_time/gregorian/gregorian.hpp"
-#include "boost/date_time/gregorian_calendar.hpp"
 
 /* Date module - SaTScan                                  */
 /*                                                        */
@@ -182,6 +180,21 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
       default      : throw prg_error("Wrong date precision specified '%d'.","JulianToString()", eDatePrint);
   }
   return sDate;
+}
+
+std::string gregorianToString(boost::gregorian::date dateObj) {
+    const std::locale fmt(std::locale::classic(), new boost::gregorian::date_facet("%Y/%m/%d"));
+    std::ostringstream os;
+    os.imbue(fmt);
+    os << dateObj;
+    return os.str();
+}
+
+boost::gregorian::date gregorianFromString(const std::string& s) {
+    UInt month, day, year;
+    if (CharToMDY(&month, &day, &year, s.c_str()) < 3)
+        throw prg_error("Unable to parse string to date: '%s'.", "gregorianFromString()", s.c_str());
+    return boost::gregorian::date(year, month, day);
 }
 
 /* JulianToMDY converts a Julian day number to a Gregorian calendar date. */

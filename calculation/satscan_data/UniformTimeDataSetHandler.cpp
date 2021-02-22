@@ -205,7 +205,7 @@ void UniformTimeDataSetHandler::SetRandomizers() {
             throw prg_error("Cannot determine randomizer class.", "SetRandomizers()");
           break;
       case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename()), gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp(), true), gParameters.GetRandomizationSeed());
           break;
       default :
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
