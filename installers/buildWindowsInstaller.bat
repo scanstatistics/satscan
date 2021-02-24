@@ -11,8 +11,8 @@ set satscanversionf=10_0
 set satscanexe=%fileshare%\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.exe
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdk=%fileshare%\satscan\installers\install.applications\java\jdk-15.0.2_windows_x64
-set runtimeoutput=%fileshare%\satscan\build.area\satscan\installers\java\jre_windows_x64
+set javajdk=%fileshare%\satscan\installers\install.applications\java\jdk-15.0.2+7_adopt_windows_x64
+set runtimeoutput=%fileshare%\satscan\build.area\satscan\installers\java\jre
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\satscan\build.area\satscan\installers\inno-setup\satscan.iss
@@ -24,7 +24,7 @@ set password="&4L(JyhyOmwF)$Z"
 
 
 REM Codesigning a GUI exe file.
-%signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscanexe%
+%fileshare%\satscan\build.area\satscan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscanexe%
 
 REM Verify the GUI exe file is codesigned correctly.
 %signtool% verify /pa /v %satscanexe%

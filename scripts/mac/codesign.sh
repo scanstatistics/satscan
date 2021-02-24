@@ -13,7 +13,7 @@ echo "   example: `basename $0` ./Install.app"
 exit 1
 fi
 
-security unlock-keychain $HOME/Library/Keychains/login.keychain && codesign --force -v --deep -s "${SIGN_KEY}" $1
+security unlock-keychain $HOME/Library/Keychains/login.keychain && codesign --options runtime --timestamp --force -v --deep -s "${SIGN_KEY}" $1
 
 spctl --assess --verbose=4 --raw $1
 # spctl -a -t exec -vv $1

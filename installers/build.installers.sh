@@ -15,7 +15,7 @@ IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
 
 # Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
-$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
+$javajdk/bin/java -jar $launch4j/launch4j.jar $build/satscan/installers/izpack/windows/launch4j_app.xml
 
 # Prompt user to codesign SaTScan.exe then build installer and codesign that file as well.
 echo
@@ -46,14 +46,6 @@ tar -rf $installer_version/satscan.${version}_linux.tar documents/*
 tar -rf $installer_version/satscan.${version}_linux.tar sample_data/*
 gzip -f $installer_version/satscan.${version}_linux.tar
 
-### ############ Mac OS X #############################################################################
-### # Build SaTScan Mac OS X Application Bundle Directory
-
-# Prompt user to execute Mac installer build process -- work in progress
-echo
-echo "1) Execute Mac dmg build script ...<???>. Hit <enter> once done ..."
-read dummy
-
 ############ Java Application Update Archive ######################################################
 # Build update archive files -- relative paths are important; must be the same as installation.
 #
@@ -77,10 +69,9 @@ zip $installer_version/update_data_windows.zip -j $build/satscan/java_applicatio
 cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers/java
-mv jre_windows_x64 jre
 zip $installer_version/update_data_windows.zip -r jre
 # We can delete the generated Windows Java runtime now.
-rm -f $build/satscan/installers/java/jre
+rm -rf $build/satscan/installers/java/jre
 cd $build/satscan/installers
 zip $installer_version/update_data_windows.zip -r sample_data
 
@@ -95,3 +86,16 @@ zip $installer_version/update_data_linux.zip -r lib
 cd $build/satscan/installers
 zip $installer_version/update_data_linux.zip -r sample_data
 
+### ############ Mac OS X #############################################################################
+### Build SaTScan Mac OS X Application DMG
+
+# Prompt user to execute Mac dmg build process.
+# https://pwvault.imsweb.com/SecretServer/app/#/secret/2733/general
+# Not static IP -- see 'ST-MacPublic' at https://vcenter-vdi.imsweb.com/ui/
+# Should be able to ssh directly to IP and execute local file '/Users/satscsvc/prj/satscan.development/buildMacDMG.sh'.
+#  #!/bin/bash
+#  #Unlock the keychain
+#  security unlock-keychain $HOME/Library/Keychains/login.keychain
+#  /Users/satscsvc/prj/satscan.development/satscan/installers/jpackageInstallerMac.sh <- https://pwvault.imsweb.com/SecretServer/app/#/secret/25934/general ->
+# Or login into 'ST-MacPublic' at https://vcenter-vdi.imsweb.com/ui/ and execute 'jpackageInstallerMac.sh'.
+echo "*** Execute Mac dmg build script ... buildMacDMG.sh from Mac shell or login into VM and execute jpackageInstallerMac.sh."
