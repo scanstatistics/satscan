@@ -25,8 +25,11 @@ mkdir $BUNDLEDIR
 
 # Create collection of files that will be the application.
 mkdir $BUNDLEDIR/imagesrc
-cp -rf $SRCDIR/java_application/jni_application/dist/* $BUNDLEDIR/imagesrc
-cp -rf $SRCDIR/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
+# Copy SaTScan.jar from fileshare -- maybe we can build this locally at some point.
+echo Copying SaTScan.jar from fileshare
+scp -r satscsvc@gen-btp-01.imsweb.com:/prj/satscan/build.area/satscan/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
+#cp -rf $SRCDIR/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
+cp -rf $SRCDIR/java_application/jni_application/libs $BUNDLEDIR/imagesrc
 cp -rf $SRCDIR/installers/sample_data $BUNDLEDIR/imagesrc
 cp -f $SRCDIR/installers/documents/SaTScan_Users_Guide.pdf $BUNDLEDIR/imagesrc
 cp -f $SRCDIR/installers/documents/eula.html $BUNDLEDIR/imagesrc
@@ -95,5 +98,6 @@ codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -f -v -s 
 codesign -vvv --deep --force $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
 # push over to fileshare installers directory
+echo Copying dmg to fileshare
 scp -r $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
 
