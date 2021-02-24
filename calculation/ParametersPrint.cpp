@@ -976,9 +976,9 @@ void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
             }
             buffer = "Power Estimation";
             switch (gParameters.getPowerEstimationType()) {
-                case CV_MONTECARLO: 
+                case PE_MONTECARLO: 
                     settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
-                case CV_GUMBEL: 
+                case PE_GUMBEL: 
                     settings.push_back(std::make_pair(buffer,"Gumbel")); break;
                 default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEstimationType());
             }
@@ -1397,7 +1397,7 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
 
       //print section label
       fprintf(fp, "\n");
-      fprintf(fp, section.c_str());
+      fprintf(fp, "%s", section.c_str());
       fprintf(fp, "\n");
       for (size_t t=0; t < section.size(); ++t)
           fprintf(fp, "-");
@@ -1412,11 +1412,11 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
       //print settings
       for (itr=settings.begin(); itr != settings.end(); ++itr) {
           fprintf(fp, "  ");
-          fprintf(fp, itr->first.c_str());
+          fprintf(fp, "%s", itr->first.c_str());
           for (size_t t=itr->first.size(); t < tMaxLabel; ++t)
             fprintf(fp, " ");
           fprintf(fp, " : ");
-          fprintf(fp, itr->second.c_str());
+          fprintf(fp, "%s", itr->second.c_str());
           fprintf(fp, "\n");
       }
   }

@@ -12,28 +12,28 @@ fi
 echo building xbase library ...
 cd $2/xbase/xbase_2.0.0/xbase
 make clean CFLAGS=-fPIC
-make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9 -dynamiclib" ${10}  CFLAGS="-stdlib=libc++ -fPIC"
+make libxbase.dylib DEBUG= COMPILATION=$4 CC="$6 $8 $9" ${10}  CFLAGS="-stdlib=libc++ -fPIC"
 echo xbase done
 echo
 
 echo building newmat library ...
 cd $2/newmat/newmat10
 make -f nm_gnu.mak clean
-make -f nm_gnu.mak libnewmat.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4 -fPIC" ${10}
+make -f nm_gnu.mak libnewmat.dylib CXX="$6 $8 $9" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4 -fPIC" ${10}
 echo newmat done
 echo
 
 echo building shapelib library ...
 cd $2/shapelib/shapelib_1.2.10
 make clean
-make libshape.dylib CXX="$6 $8 $9 -dynamiclib" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4 -fPIC" ${10}
+make libshape.dylib CXX="$6 $8 $9" CXXFLAGS="-stdlib=libc++ -O2 -Wall $4 -fPIC" ${10}
 echo shapelib done
 echo
 
 echo building zlib library ...
 cd $2/zlib/zlib-1.2.7
 make clean
-make libz.dylib CC="$7 $8 $9 -dynamiclib" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -fPIC -DHAVE_HIDDEN -DHAVE_UNISTD_H" AR="/usr/bin/libtool" ARFLAGS="-o" ${10}
+make libz.dylib CC="$7 $8 $9" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -fPIC -DHAVE_HIDDEN -DHAVE_UNISTD_H" AR="/usr/bin/libtool" ARFLAGS="-o" ${10}
 echo zlib done
 echo
 
@@ -43,7 +43,7 @@ JNI_PLAT="/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/in
 echo building SaTScan binary ...
 cd $2
 make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
-make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9 -dynamiclib" ${10} M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include/darwin
+make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9" ${10} M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include/darwin
 strip libsatscan.jnilib
 mv libsatscan.jnilib $1
 

@@ -147,7 +147,7 @@ void ShapeFile::_createDefaultProjectionFile() {
         FILE * pFile = fopen(projection.c_str(), "w");
         if (pFile == NULL)
             throw resolvable_error("Error: Unable to create projection file '%s'.\n", projection.c_str());
-        fprintf(pFile, Projection::WGS_1984);
+        fprintf(pFile, "%s", Projection::WGS_1984);
         fclose(pFile);
         _projection.reset(new Projection((Projection::WGS_1984)));
     }
