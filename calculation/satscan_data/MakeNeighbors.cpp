@@ -361,7 +361,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData
     std::pair<int, std::vector<int> >   prNeighborsCount;
 
     //only perform calculation if ellipses requested
-    if (!gParameters.GetSpatialWindowType() == ELLIPTIC)
+    if (gParameters.GetSpatialWindowType() != ELLIPTIC)
         return;
 
     bool frequent_estimations = false;

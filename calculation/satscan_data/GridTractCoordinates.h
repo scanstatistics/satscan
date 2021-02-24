@@ -13,6 +13,7 @@ class GInfo {
 
     public:
         GInfo() : _has_focus_intervals(false) {}
+        virtual ~GInfo() {}
 
         typedef std::pair<bool, IntervalRange_t> FocusInterval_t;
 

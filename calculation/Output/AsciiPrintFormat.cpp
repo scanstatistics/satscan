@@ -135,7 +135,7 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
        ++iStringLength;
   }
   //add label
-  iStringLength += fprintf(fp, sText);
+  iStringLength += fprintf(fp, "%s", sText);
   //add 'per data set' text if requested and there is more than one dataset
   if (bDataSetParticular && !gbOneDataSet)
     iStringLength += fprintf(fp, " %s", gsPerDataSetText);
@@ -162,7 +162,7 @@ void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText
        ++iStringLength;
   }
   //add label
-  iStringLength += fprintf(fp, sText);
+  iStringLength += fprintf(fp, "%s", sText);
   //check that created label fits in data section
   if (iStringLength > giRightMargin)
     throw prg_error("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);

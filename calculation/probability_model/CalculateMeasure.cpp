@@ -267,7 +267,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     		sprintf(sMessage, "The maximum circle size is less than the expected number\n");
     		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);
                 strcat(sMessage, sTemp);
-                fprintf(stderr, sMessage);
+                fprintf(stderr, "%s", sMessage);
 
                 //DO NOT THROW EXCEPTION HERE... PRINT THE INFO...
                 //EXCEPTION THROW BELOW !!!
@@ -282,7 +282,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     	 sprintf(sMessage, "\nError: To perform an analysis, the maximum geographic\n");
     	 sprintf(sTemp, "  cluster size needs to be increased to at least %i%%.\n\n", nMinGeoSize);
          strcat(sMessage, sTemp);
-    	 fprintf(stderr, sMessage);
+    	 fprintf(stderr, "%s", sMessage);
          throw resolvable_error(sMessage);
       }
       }

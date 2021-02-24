@@ -1,6 +1,6 @@
 //******************************************************************************
 #ifndef __ClusterScatterChart_H
-#define __ClusterScatterChart_h
+#define __ClusterScatterChart_H
 //******************************************************************************
 #include<vector>
 #include "SimulationVariables.h"

@@ -31,6 +31,7 @@ class CTimeIntervals {
 
     public:
         CTimeIntervals(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+        virtual ~CTimeIntervals() {}
 
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet) = 0;
         virtual void CompareMeasures(AbstractTemporalClusterData& StreamData, CMeasureList& MeasureList) = 0;
