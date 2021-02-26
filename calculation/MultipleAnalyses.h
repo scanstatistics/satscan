@@ -26,22 +26,25 @@ class AnalysisDefinition {
 
     public:
         typedef std::pair<DatePrecisionType, unsigned int> Offset_t;
-
-    protected:
         static const std::string _YEAR;
         static const std::string _MONTH;
         static const std::string _DAY;
         static const std::string _GENERIC;
+        static const std::string _SUCCESS;
+        static const std::string _FAILED;
 
+    protected:
         Tree _drilldown_tree;
-        std::string description, parameters, studyperiod, studyperiodunit, lag, lagunit, 
-                    lastexecution_date, lastexecutionstatus, lastexecutionwarningserrors, lastresultsfilename;
+        std::string description, parameters, studyperiodunit, lagunit, lastexecution_date, lastexecutionstatus, lastexecutionwarningserrors, lastresultsfilename;
+        unsigned int studyperiod, lag;
+        bool selected;
 
         static DatePrecisionType parseDateUnit(const std::string& val) {
             if (val == _YEAR) return YEAR;
             if (val == _MONTH) return MONTH;
             if (val == _GENERIC) return GENERIC;
-            return DAY;
+            if (val == _DAY) return DAY;
+            return NONE;
         }
 
         void setExecutionDateNow() {
@@ -55,27 +58,19 @@ class AnalysisDefinition {
     public:
 
         void signalSuccess() {
-            lastexecutionstatus = "Success";
+            lastexecutionstatus = _SUCCESS;
             setExecutionDateNow();
         }
         void signalFailure() {
-            lastexecutionstatus = "Failed";
+            lastexecutionstatus = _FAILED;
             setExecutionDateNow();
         }
         Offset_t getGetStudyPeriodOffset() const {
-            if (studyperiod.empty() || studyperiodunit.empty()) return Offset_t(NONE, 0);
-            unsigned int offset;
-            if (!string_to_type(studyperiod.c_str(), offset))
-                throw prg_error("Unable to convert study period offset to unsigned integer '%s'.", studyperiod.c_str());
-            return Offset_t(parseDateUnit(studyperiodunit), offset);
+            return Offset_t(parseDateUnit(studyperiodunit), studyperiod);
         }
 
         Offset_t getLagOffset() const {
-            if (lag.empty() || lagunit.empty()) return Offset_t(NONE, 0);
-            unsigned int offset;
-            if (!string_to_type(lag.c_str(), offset))
-                throw prg_error("Unable to convert lag offset to unsigned integer '%s'.", lag.c_str());
-            return Offset_t(parseDateUnit(lagunit), offset);
+            return Offset_t(parseDateUnit(lagunit), lag);
         }
 
         /* Returns a date as an offset from the passed initial date. */
@@ -100,6 +95,7 @@ class MultipleAnalyses {
     public:
         static const std::string _ANALYSES_TAG;
         static const std::string _ANALYSIS_TAG;
+        static const std::string _ANALYSIS_SELECTED_TAG;
         static const std::string _DESCRIPTION_TAG;
         static const std::string _PARAMETERS_TAG;
         static const std::string _STUDYPERIOD_TAG;
@@ -141,16 +137,22 @@ class MultipleAnalyses {
 
         /* Reads analysis definition from property tree. */
         void read_analysis(Tree const& tree, AnalysisDefinition& into) {
+            into.selected = tree.get<bool>(_ANALYSIS_SELECTED_TAG, false);
             into.description = tree.get(_DESCRIPTION_TAG, "");
             into.parameters = tree.get(_PARAMETERS_TAG, "");
-            into.studyperiod = tree.get(_STUDYPERIOD_TAG, "");
+            into.studyperiod = tree.get<unsigned int>(_STUDYPERIOD_TAG, 0);
             into.studyperiodunit = tree.get(_STUDYPERIOD_UNITS_TAG, "");
-            into.lag = tree.get(_LAG_TAG, "");
+            into.lag = tree.get<unsigned int>(_LAG_TAG, 0);
             into.lagunit = tree.get(_LAG_UNITS_TAG, "");
             into.lastexecution_date = tree.get(_LAST_EXEC_DATE_TAG, "");
             into.lastexecutionstatus = tree.get(_LAST_EXEC_STATUS_TAG, "");
             into.lastexecutionwarningserrors = tree.get(_LAG_EXEC_MSSG_TAG, "");
             into.lastresultsfilename = tree.get(_LAG_EXEC_RESULTS_TAG, "");
+            // If this analysis isn't selected, copy drilldown property tree for write.
+            if (!into.selected) {
+                pt::ptree empty_tree;
+                into._drilldown_tree = tree.get_child(_DRILLDOWN_TREE_TAG, empty_tree);
+            }
         }
 
         /* Reads analysis property tree from file. */
@@ -170,6 +172,7 @@ class MultipleAnalyses {
             pt::ptree tree;
             for (AnalysesContainer_t::const_iterator itr = _analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
                 pt::ptree subtree;
+                subtree.put<bool>(_ANALYSIS_SELECTED_TAG, itr->selected);
                 subtree.put(_DESCRIPTION_TAG, itr->description);
                 subtree.put(_PARAMETERS_TAG, itr->parameters);
                 subtree.put(_STUDYPERIOD_TAG, itr->studyperiod);
@@ -189,7 +192,7 @@ class MultipleAnalyses {
     public:
         MultipleAnalyses() {}
 
-        void execute(BasePrint& print);
+        void execute(BasePrint& print, bool includeUnSelected);
         static bool addResults(const std::string& resultsname, const std::string& parentname, unsigned int significant, pt::ptree &pt_parent, pt::ptree &pt_child, bool target = false);
 };
 

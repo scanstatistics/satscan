@@ -10,6 +10,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -136,9 +138,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         return status.toString();
     }    
     
-    private Object[] getRowForBatchAnalysis(BatchAnalysis obj, Boolean selected) {
+    private Object[] getRowForBatchAnalysis(BatchAnalysis obj) {
         return new Object[]{ 
-            selected, obj.getDescription(), obj.getParameters().GetAnalysisTypeAsString(),
+            obj.getSelected(), obj.getDescription(), obj.getParameters().GetAnalysisTypeAsString(),
             obj.getParameters().GetModelTypeAsString(), obj.getStudyPeriodLength(), obj.getLag(), obj
         };        
     }
@@ -149,7 +151,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         model.setRowCount(0);
         _batch_analyses = org.satscan.app.BatchXMLFile.read(_saved_filename);
         for (BatchAnalysis batchAnalysis: _batch_analyses)
-            model.addRow(getRowForBatchAnalysis(batchAnalysis, Boolean.FALSE));
+            model.addRow(getRowForBatchAnalysis(batchAnalysis));
         _table_initiallized = true;
     }
     
@@ -191,10 +193,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             copyAnalysis.setLastExecutedDate(null);
             copyAnalysis.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);
             copyAnalysis.setParameters(other_frame.getParameterSettings());
+            copyAnalysis.setSelected(true);
             _batch_analyses.add(copyAnalysis);
             // Add record to table.
             DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
-            model.addRow(getRowForBatchAnalysis(copyAnalysis, Boolean.TRUE));
+            model.addRow(getRowForBatchAnalysis(copyAnalysis));
             // Remove selection from any other records in table - to focus on new record.
             removeSelection(copyAnalysis);
             // Show settngs window for new reocrd.
@@ -284,10 +287,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);
                 // Create new BatchAnalysis object and add to collection.
                 BatchAnalysis newAnalysis = new BatchAnalysis();
+                newAnalysis.setSelected(true);
                 _batch_analyses.add(newAnalysis);
                 // Add record to table.
                 DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
-                model.addRow(getRowForBatchAnalysis(newAnalysis, Boolean.TRUE));
+                model.addRow(getRowForBatchAnalysis(newAnalysis));
                 // Remove selection from any other records in table - to focus on new record.
                 removeSelection(newAnalysis);
                 // Show settngs window for new reocrd.
@@ -392,10 +396,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     duplicated.setLastExecutedDate(null);
                     duplicated.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);
                     duplicated.setDrilldownRoot(null);
+                    duplicated.setSelected(true);
                     _batch_analyses.add(selected.right + 1, duplicated);
                     // Add record to table.
                     DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
-                    model.insertRow(selected.right + 1, getRowForBatchAnalysis(duplicated, Boolean.TRUE));
+                    model.insertRow(selected.right + 1, getRowForBatchAnalysis(duplicated));
                     // Remove selection from any other records in table - to focus on new record.
                     removeSelection(duplicated);
                     // Show settngs window for new reocrd.
@@ -479,7 +484,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _analyses_table.getModel().addTableModelListener(handler);
         _analyses_table.getTableHeader().addMouseListener(handler);
 
-        _analyses_table.setRowHeight(30);
+        _analyses_table.setRowHeight(35);
         _analyses_table.setIntercellSpacing(new Dimension(10,1));
         _analyses_table.setDefaultRenderer(Parameters.class, new ParametersRenderer());
         _analyses_table.setDefaultRenderer(BatchAnalysis.StudyPeriodOffset.class, new StudyPeriodOffsetRenderer());
@@ -498,7 +503,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 if (_table_initiallized) {
                     int row = e.getFirstRow();
                     int column = e.getColumn();
-                    if (column == DESCRIPTION_IDX) {
+                    if (column == SELECT_IDX) {
+                        DefaultTableModel model = (DefaultTableModel)e.getSource();
+                        _batch_analyses.get(row).setSelected((boolean)model.getValueAt(row, column));
+                        writeBatchAnalysesFromFile();
+                    } else if (column == DESCRIPTION_IDX) {
                         DefaultTableModel model = (DefaultTableModel)e.getSource();
                         _batch_analyses.get(row).setDescription((String)model.getValueAt(row, column));
                         writeBatchAnalysesFromFile();

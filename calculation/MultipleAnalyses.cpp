@@ -13,9 +13,12 @@ const std::string AnalysisDefinition::_YEAR = "year";
 const std::string AnalysisDefinition::_MONTH = "month";
 const std::string AnalysisDefinition::_DAY = "day";
 const std::string AnalysisDefinition::_GENERIC = "generic";
+const std::string AnalysisDefinition::_SUCCESS = "Success";
+const std::string AnalysisDefinition::_FAILED = "Failed";
 
 const std::string MultipleAnalyses::_ANALYSES_TAG = "analyses";
 const std::string MultipleAnalyses::_ANALYSIS_TAG = "analysis";
+const std::string MultipleAnalyses::_ANALYSIS_SELECTED_TAG = "<xmlattr>.selected";
 const std::string MultipleAnalyses::_DESCRIPTION_TAG = "description";
 const std::string MultipleAnalyses::_PARAMETERS_TAG = "parameter-settings";
 const std::string MultipleAnalyses::_STUDYPERIOD_TAG = "studyperiod";
@@ -48,7 +51,7 @@ bool MultipleAnalyses::addResults(const std::string& resultsname, const std::str
 }
 
 /* Reads multiple analysis definitions from xml filee, executes each analysis then writes results to file. */
-void MultipleAnalyses::execute(BasePrint& print) {
+void MultipleAnalyses::execute(BasePrint& print, bool includeUnSelected) {
     boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
     // read analyses from xml file.
     if (!read_file(AppToolkit::getToolkit().getMultipleAnalysisFullpath())) {
@@ -59,10 +62,16 @@ void MultipleAnalyses::execute(BasePrint& print) {
         print.Printf("No analyses defined in multiple analyses configuration file. Use SaTScan GUI to define multiple analyses.", BasePrint::P_STDOUT);
         return;
     }
+    print.Printf("%u analyses defined in multiple analyses configuration file.", BasePrint::P_STDOUT, _analysis_defs.size());
     // Iterate over each defined analysis and execute the analysis.
     for (AnalysesContainer_t::iterator itr=_analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
+        if (!itr->selected && !includeUnSelected) {
+            print.Printf("Analysis '%s' is not selected for execution. Skipping.\n", BasePrint::P_STDOUT, itr->description.c_str());
+            continue;
+        }
+        print.Printf("Executing analysis '%s'.\n", BasePrint::P_STDOUT, itr->description.c_str());
         PrintProxy proxyPrint(*itr, print); // Create print direction proxy so was can record certain actions.
-        try {            
+        try {
             CParameters parameters; // Read parameters settings in CParameters object.
             std::stringstream readstream;
             readstream >> std::noskipws; // Make sure stream doesn't skip whitespace.

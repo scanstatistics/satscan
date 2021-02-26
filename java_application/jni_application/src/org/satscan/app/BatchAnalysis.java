@@ -91,6 +91,7 @@ public class BatchAnalysis implements Cloneable {
             return (StudyPeriodOffset) super.clone();
         }
     }
+    private boolean _selected;
     private String _description;
     private Parameters _parameters;
     private StudyPeriodOffset _lag = null;
@@ -108,9 +109,10 @@ public class BatchAnalysis implements Cloneable {
 
     }
 
-    public BatchAnalysis(String description, Parameters parameters, StudyPeriodOffset study_length, 
+    public BatchAnalysis(boolean selected, String description, Parameters parameters, StudyPeriodOffset study_length, 
                          StudyPeriodOffset lag, TreeNode<Pair<String, Integer>> drilldown_root, String last_results_filename) {
         super();
+        _selected = selected;
         _description = description;
         _parameters = parameters;
         _lag = lag;
@@ -124,6 +126,14 @@ public class BatchAnalysis implements Cloneable {
         return (BatchAnalysis) super.clone();
     }
 
+    public boolean getSelected() {
+        return _selected;
+    }
+
+    public void setSelected(boolean b) {
+        _selected = b;
+    }
+    
     /* Returns new TreeNode for pair. */
     public TreeNode<Pair<String, Integer>> getNewTreeNode(String f, Integer i) {
         return new TreeNode<>(Pair.of(f, i));

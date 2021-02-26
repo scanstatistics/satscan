@@ -65,7 +65,7 @@ void usage_message(std::string program, po::options_description& desc, const Par
 }
 
 int main(int argc, char *argv[]) {
-  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false, execMultipleAnalyses;
+  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false, execMultipleAnalyses=false, execAllMultipleAnalyses=false;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
         ("write-parameters,w", po::value<std::string>(), "write parameters to file")
         ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
         ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
-        ("multiple-analyses,m", po::bool_switch(&execMultipleAnalyses), "execute defined multiple analyses")
+        ("multiple-analyses,m", po::bool_switch(&execMultipleAnalyses), "execute selected multiple analyses")
+        ("multiple-analyses-all,m", po::bool_switch(&execAllMultipleAnalyses), "execute all multiple analyses")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -147,9 +148,9 @@ int main(int argc, char *argv[]) {
     if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
 
     //potentially perform execution of multiple analyses, if user requested
-    if (execMultipleAnalyses) {
+    if (execMultipleAnalyses || execAllMultipleAnalyses) {
         Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
-        MultipleAnalyses().execute(Console);
+        MultipleAnalyses().execute(Console, execAllMultipleAnalyses);
         return 0;
     }
 

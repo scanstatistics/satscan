@@ -34,6 +34,7 @@ public class BatchXMLFile {
 
     private static final String ANALYSES = "analyses";
     private static final String ANALYSIS = "analysis";
+    private static final String ANALYSIS_SELECTED = "selected";
     private static final String DESCRIPTION = "description";
     private static final String PARAMETER_SETTINGS = "parameter-settings";
     private static final String STUDYPERIOD = "studyperiod";
@@ -167,7 +168,9 @@ public class BatchXMLFile {
                     }
                     String last_results_filename = eElement.getElementsByTagName(LAST_RESULTS).item(0).getTextContent();
                     BatchAnalysis batchAnalysis = new BatchAnalysis(
-                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), parameters, study_length, lag, null, last_results_filename
+                        Boolean.parseBoolean(eElement.getAttributes().getNamedItem(ANALYSIS_SELECTED).getNodeValue()),
+                        eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), 
+                        parameters, study_length, lag, null, last_results_filename
                     );                    
                     batchAnalysis.setLastExecutedDate(parseDate(eElement.getElementsByTagName(LAST_EXEC_DATE).item(0).getTextContent()));
                     batchAnalysis.setLastExecutedStatus(parseStatus(eElement.getElementsByTagName(LAST_EXEC_STATUS).item(0).getTextContent()));
@@ -213,8 +216,13 @@ public class BatchXMLFile {
 
             for (BatchAnalysis batchAnalysis: batchAnalyses) {
                 Element analysis = doc.createElement(ANALYSIS);
-                rootElement.appendChild(analysis);
-
+                // Create an attribute to indicate selection.
+                Attr selectionAttribute = doc.createAttribute(ANALYSIS_SELECTED);
+                selectionAttribute.setValue(Boolean.toString(batchAnalysis.getSelected()));
+                analysis.setAttributeNode(selectionAttribute);                    
+                
+                rootElement.appendChild(analysis);               
+                
                 Element description = doc.createElement(DESCRIPTION);
                 description.appendChild(doc.createTextNode(batchAnalysis.getDescription()));
                 analysis.appendChild(description);                                
