@@ -63,6 +63,8 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 # Create SaTScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar --icon $SRCDIR/installers/izpack/mac/satscan2app/Mac-App-Template/Contents/Resources/SaTScan.icns --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" --mac-sign --mac-package-signing-prefix VF82MCMA83 --mac-signing-key-user-name "Information Management Services, Inc."
 
+xattr -cr $BUNDLEDIR/SaTScan.app
+
 # Set application not writeable??
 # chmod -R o-w $BUNDLEDIR/SaTScan.app
 
@@ -97,7 +99,41 @@ $JAVAJDK/bin/jpackage --verbose --type dmg --app-image $BUNDLEDIR/SaTScan.app --
 codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 codesign -vvv --deep --force $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
+# Update on splitting this into 2 steps - build app/notarize then build dmg. When I tested downloading from our website
+# the dmg was marked as quarantined, suggested to move to trash and wouldn't allow aapp to open. I tried adding the code
+# below to notarize the dmg but no surprises there failed with same problem:
+# "path": "SaTScan-10.0.dmg/SaTScan.app/Contents/MacOS/SaTScan", "message": "The signature of the binary is invalid.",
+# "path": "SaTScan-10.0.dmg/SaTScan.app/Contents/runtime/Contents/MacOS/libjli.dylib", "message": "The signature of the binary is invalid.",
+#
+# Well we've got the app notarized and a zip file is considered a valid delivery method in some Apple documentation. So we can just run with
+# that for now and keep revisiting the problem as time permits. And note that this doesn't entirely sidestep the issue since the downloaded zip,
+# in Safari, automatically opens and extracts SaTScan.app in the Downloads directory. On top of that, the app is still labeled as quarantined
+# and displays a warning to user – but at least it will open and allow the app to run!
+# see https://squishlist.com/ims/satscan/66528/?search=469678&page=1#comment-1607792 for more details.
+
+## echo notarizing dmg now ...
+## 
+## # Notorize dmg
+## $XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.satscan.gui.SaTScanApplication" --username "meagherk@imsweb.com" --password "${PASSWORD}" --file $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
+## #REQUEST_UUID=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.satscan.gui.SaTScanApplication" --username "meagherk@imsweb.com" --password "${PASSWORD}" --file $BUNDLEDIR/SaTScan.zip | grep RequestUUID | awk '{print $3}')
+## 
+## # Prompt user to import request uuid. We could probably get this value using grep and awk but the proxy message ... 
+## Echo What is the request uuid?
+## read REQUEST_UUID
+## 
+## # Poll for verification completion.
+## while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
+##     echo "Verification in progress..."
+##     sleep 30
+## done
+## 
+## echo Results of notarization
+## $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID" -u "meagherk@imsweb.com" -p "${PASSWORD}"
+## 
+## # staple application -- assumes notarization succeeds.
+## $XCRUN $STAPLER staple $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
+
 # push over to fileshare installers directory
 echo Copying dmg to fileshare
-scp -r $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
+scp -r $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg $BUNDLEDIR/SaTScan.zpp satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
 
