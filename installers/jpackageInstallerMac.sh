@@ -63,6 +63,7 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 # Create SaTScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar --icon $SRCDIR/installers/izpack/mac/satscan2app/Mac-App-Template/Contents/Resources/SaTScan.icns --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" --mac-sign --mac-package-signing-prefix VF82MCMA83 --mac-signing-key-user-name "Information Management Services, Inc."
 
+# Clear any extended attributes - not really sure if this is needed.
 xattr -cr $BUNDLEDIR/SaTScan.app
 
 # Set application not writeable??
@@ -90,6 +91,9 @@ $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID" -u "meagherk@imsweb.com" -p "
 
 # staple application -- assumes notarization succeeds.
 $XCRUN $STAPLER staple $BUNDLEDIR/SaTScan.app
+
+# Test notarized
+codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/SaTScan.app
 
 # Create dmg with notarized application - but codesign separately.
 $JAVAJDK/bin/jpackage --verbose --type dmg --app-image $BUNDLEDIR/SaTScan.app --app-version $APPVERSION --name SaTScan --dest $BUNDLEDIR/bin --description "Software for the spatial, temporal, and space-time scan statistics" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved" --resource-dir $BUNDLEDIR/dmgresources
