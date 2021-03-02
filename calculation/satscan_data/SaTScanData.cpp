@@ -298,7 +298,9 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     if (iNumCollapsibleIntervals > 1 
 		&& !(gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends())
 		&& !((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) &&
-		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))) {
+		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))
+        && !gParameters.getOutputTemporalGraphFile()
+    ) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
       // will be cummulated into first interval.
