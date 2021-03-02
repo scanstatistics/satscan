@@ -7,7 +7,7 @@ build="/prj/satscan/build.area"
 installer_version="/prj/satscan/installers/v.${version}.x"
 binaries="/prj/satscan/build.area/binaries/linux"
 
-javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2/jdk-15.0.2-linux_x64"
+javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2-linux_x64"
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
 IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 
