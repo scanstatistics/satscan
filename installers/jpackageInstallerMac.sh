@@ -139,5 +139,5 @@ codesign -vvv --deep --force $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
 # push over to fileshare installers directory
 echo Copying dmg to fileshare
-scp -r $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg $BUNDLEDIR/SaTScan.zpp satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
+scp -r $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg $BUNDLEDIR/SaTScan.zip satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
 
