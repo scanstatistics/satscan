@@ -59,14 +59,15 @@ class IniParameterSpecification {
     SectionInfo                 _data_checking_section;
     SectionInfo                 _non_eucledian_section;
     SectionInfo                 _spatial_neighbors_section;
-	SectionInfo                 _locations_network_section;
-	SectionInfo                 _spatial_window_section;
+    SectionInfo                 _locations_network_section;
+    SectionInfo                 _spatial_window_section;
     SectionInfo                 _temporal_window_section;
     SectionInfo                 _cluster_restrictions_section;
     SectionInfo                 _space_time_adjustments_section;
     SectionInfo                 _inference_section;
-	SectionInfo                 _drilldown_section;
-	SectionInfo                 _border_analysis_section;
+    SectionInfo                 _drilldown_section;
+    SectionInfo                 _border_analysis_section;
+    SectionInfo                 _miscellaneous_analysis_section;
     SectionInfo                 _power_evaluation_section;
     SectionInfo                 _clusters_reported_section;
     SectionInfo                 _spatial_output_section;
@@ -88,11 +89,11 @@ class IniParameterSpecification {
     static const char         * Input;
     static const char         * MultipleDataSets;
     static const char         * DataChecking;
-	static const char         * Drilldown;
-	static const char         * NeighborsFile;
+    static const char         * Drilldown;
+    static const char         * NeighborsFile;
     static const char         * SpatialNeighbors;
-	static const char         * LocationsNetwork;
-	static const char         * Analysis;
+    static const char         * LocationsNetwork;
+    static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
     static const char         * ClusterRestrictions;
@@ -100,6 +101,7 @@ class IniParameterSpecification {
     static const char         * SpaceAndTimeAdjustments;
     static const char         * Inference;
     static const char         * BorderAnalysis;
+    static const char         * MiscellaneousAnalysis;
     static const char         * Output;
     static const char         * ClustersReported;
     static const char         * AdditionalOutput;
@@ -155,7 +157,7 @@ class IniParameterSpecification {
     void                        Build_9_4_x_ParameterList();
     void                        Build_9_5_x_ParameterList();
     void                        Build_9_6_x_ParameterList();
-	void                        Build_9_7_x_ParameterList();
+    void                        Build_9_7_x_ParameterList();
     void                        Build_10_0_x_ParameterList();
 
    public:

@@ -184,9 +184,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Cluster Restrictions", null, _cluster_restrictions_tab, null);
                 jTabbedPane1.addTab("Space and Time Adjustments", null, _spaceTimeAjustmentsTab, null);
                 jTabbedPane1.addTab("Inference", null, _inferenceTab, null);
-                jTabbedPane1.addTab("Border Analysis", null, _border_analysis_tab, null);
                 jTabbedPane1.addTab("Power Evaluation", null, _powerEvaluationTab, null);
                 jTabbedPane1.addTab("Drilldown", null, _drilldown_tab, null);
+                jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, null);
                 break;
             case OUTPUT:
                 setTitle("Advanced Output Features");
@@ -498,7 +498,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(false);
                 enableTemporalGraphsGroup(false);
-                enableBorderAnalysisGroup(bPoisson);
+                enableMiscellaneousAnalysisGroup(bPoisson, false);
                 break;
             case PURELYTEMPORAL:
             case SEASONALTEMPORAL:
@@ -519,7 +519,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
-                enableBorderAnalysisGroup(false);
+                enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
@@ -545,7 +545,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
-                enableBorderAnalysisGroup(false);
+                enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
@@ -572,7 +572,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
-                enableBorderAnalysisGroup(false);
+                enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -592,7 +592,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
-                enableBorderAnalysisGroup(false);
+                enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case SPATIALVARTEMPTREND:
                 enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
@@ -612,7 +612,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(false);                
-                enableBorderAnalysisGroup(false);
+                enableMiscellaneousAnalysisGroup(false, false);
                 break;
         }
         enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
@@ -626,17 +626,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setSpatialDistanceCaption();
     }
 
+    /* Enables controls on the 'Miscellaneous' tab. */
+    public void enableMiscellaneousAnalysisGroup(boolean enableOliveira, boolean enableProspectiveFreq) {
+        _oliveiras_f_group.setEnabled(enableOliveira);
+        _calculate_oliveiras_f.setEnabled(enableOliveira);
+        _number_oliveira_data_sets_label.setEnabled(enableOliveira);
+        _number_oliveira_data_sets.setEnabled(enableOliveira);
+        _prospective_frequency_group.setEnabled(enableProspectiveFreq);
+        _label_prospective_frequency.setEnabled(enableProspectiveFreq);
+        _prospective_frequency.setEnabled(enableProspectiveFreq);
+    }
+        
     public boolean isAdjustingForDayOfWeek() {
         return _adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected();
     }
 
-    public void enableBorderAnalysisGroup(boolean enable) {
-        _oliveiras_f_group.setEnabled(enable);
-        _calculate_oliveiras_f.setEnabled(enable);
-        _number_oliveira_data_sets_label.setEnabled(enable);
-        _number_oliveira_data_sets.setEnabled(enable);
-    }
-    
     public void enableAdjustDayOfWeek(boolean enable) {
         enable &= !Utils.selected(_temporalTrendAdjNonparametric);
         _adjustDayOfWeek.setEnabled(enable);
@@ -864,6 +868,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.integerIs(_drilldown_restriction_cases, 10);
         bReturn &= Utils.selected(_drilldown_restriction_dow, false);
         
+        // Miscellaneous
+        bReturn &= Utils.selected(_calculate_oliveiras_f, false);
+        bReturn &= Utils.integerIs(_number_oliveira_data_sets, 1000);
+        bReturn &= Utils.selectionIs(_prospective_frequency, 0);
+        
         return bReturn;
     }
     
@@ -952,6 +961,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         return eReturn;
     }
+
+    private Parameters.ProspectiveFrequency getProspectiveFrequencyControlType() {
+        Parameters.ProspectiveFrequency eReturn = null;
+
+        if (_prospective_frequency.getSelectedIndex() == 0) {
+            eReturn = Parameters.ProspectiveFrequency.SAME_TIMEAGGREGATION;
+        } else if (_prospective_frequency.getSelectedIndex() == 1) {
+            eReturn = Parameters.ProspectiveFrequency.DAILY;
+        } else if (_prospective_frequency.getSelectedIndex() == 2) {
+            eReturn = Parameters.ProspectiveFrequency.WEEKLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 3) {
+            eReturn = Parameters.ProspectiveFrequency.MONTHLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 4) {
+            eReturn = Parameters.ProspectiveFrequency.QUARTERLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 5) {
+            eReturn = Parameters.ProspectiveFrequency.YEARLY;
+        } else {
+            throw new IllegalArgumentException("No prospective frequency option selected.");
+        }
+        return eReturn;
+    }    
 
     private Parameters.PowerEvaluationMethodType getPowerEvaluationMethodType() {
         Parameters.PowerEvaluationMethodType eReturn = null;
@@ -1122,9 +1152,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setCompressClusterKML(_createCompressedKMZ.isSelected());
         parameters.setLaunchMapViewer(_launch_map_viewer.isSelected());
 
-        // border analysis tab
+        // Miscellaneous analysis tab
         parameters.setCalculateOliveirasF(_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected());
         parameters.setNumRequestedOliveiraSets(Integer.parseInt(_number_oliveira_data_sets.getText()));
+        parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
         
         // Power Evaluations tab
         parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
@@ -1874,6 +1905,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_locations.setText("2");
         _drilldown_restriction_cases.setText("10");
         _drilldown_restriction_dow.setSelected(false);
+        
+        // Miscellaneous
+        _calculate_oliveiras_f.setSelected(false);
+        _number_oliveira_data_sets.setText("1000");
+        _prospective_frequency.select(0);      
     }
 
     /**
@@ -2006,7 +2042,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         return eReturn;
     }
-
+    
     /**
      * sets p-value reporting option type control index
      */
@@ -2338,9 +2374,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _iterativeScanCutoffTextField.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.GetNumReplicationsRequested()));
 
-        // border analysis tab
+        // Miscellaneous analysis tab
         _calculate_oliveiras_f.setSelected(parameters.getCalculateOliveirasF());
         _number_oliveira_data_sets.setText(Integer.toString(parameters.getNumRequestedOliveiraSets()));
+        _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
         
         // Spatial Clusters tab
         _mostLikelyClustersHierarchically.setSelected(parameters.getReportHierarchicalClusters());
@@ -2739,11 +2776,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numMostLikelyClustersGraphLabel = new javax.swing.JLabel();
         _temporalGraphSignificant = new javax.swing.JRadioButton();
         _temporalGraphPvalueCutoff = new javax.swing.JTextField();
-        _border_analysis_tab = new javax.swing.JPanel();
+        _miscellaneous_analysis_tab = new javax.swing.JPanel();
         _oliveiras_f_group = new javax.swing.JPanel();
         _calculate_oliveiras_f = new javax.swing.JCheckBox();
         _number_oliveira_data_sets_label = new javax.swing.JLabel();
         _number_oliveira_data_sets = new javax.swing.JTextField();
+        _prospective_frequency_group = new javax.swing.JPanel();
+        _label_prospective_frequency = new javax.swing.JLabel();
+        _prospective_frequency = new java.awt.Choice();
         _cluster_restrictions_tab = new javax.swing.JPanel();
         _limit_clusters_risk_group = new javax.swing.JPanel();
         _limit_low_clusters = new javax.swing.JCheckBox();
@@ -5621,24 +5661,64 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout _border_analysis_tabLayout = new javax.swing.GroupLayout(_border_analysis_tab);
-        _border_analysis_tab.setLayout(_border_analysis_tabLayout);
-        _border_analysis_tabLayout.setHorizontalGroup(
-            _border_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_border_analysis_tabLayout.createSequentialGroup()
+        _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
+
+        _label_prospective_frequency.setText("How frequencly are analyses performed?");
+
+        _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _prospective_frequency.add("Same as Time Aggregation");
+        _prospective_frequency.add("Daily");
+        _prospective_frequency.add("Weekly");
+        _prospective_frequency.add("Monthly");
+        _prospective_frequency.add("Quarterly");
+        _prospective_frequency.add("Yearly");
+
+        javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
+        _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
+        _prospective_frequency_groupLayout.setHorizontalGroup(
+            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        _border_analysis_tabLayout.setVerticalGroup(
-            _border_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_border_analysis_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(320, Short.MAX_VALUE))
+        _prospective_frequency_groupLayout.setVerticalGroup(
+            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 14, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Border Analysis", _border_analysis_tab);
+        javax.swing.GroupLayout _miscellaneous_analysis_tabLayout = new javax.swing.GroupLayout(_miscellaneous_analysis_tab);
+        _miscellaneous_analysis_tab.setLayout(_miscellaneous_analysis_tabLayout);
+        _miscellaneous_analysis_tabLayout.setHorizontalGroup(
+            _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _miscellaneous_analysis_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _miscellaneous_analysis_tabLayout.setVerticalGroup(
+            _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_miscellaneous_analysis_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(270, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
 
         _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
         _limit_clusters_risk_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_limit_clusters_risk_group, AppConstants.RESTRICTRELRISK_HELPID));
@@ -6120,7 +6200,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JRadioButton _atLeastOneRadioButton;
-    private javax.swing.JPanel _border_analysis_tab;
     private javax.swing.JButton _browse_network_filename;
     protected javax.swing.JCheckBox _calculate_oliveiras_f;
     private javax.swing.JButton _caseFileBrowseButton;
@@ -6188,6 +6267,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JLabel _label_kml_options;
+    private javax.swing.JLabel _label_prospective_frequency;
     private javax.swing.JCheckBox _launch_map_viewer;
     private javax.swing.JPanel _limit_clusters_risk_group;
     private javax.swing.JCheckBox _limit_high_clusters;
@@ -6223,6 +6303,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _min_cases_label2;
     private javax.swing.JPanel _minimum_clusters_group;
     private javax.swing.JTextField _minimum_number_cases_cluster;
+    private javax.swing.JPanel _miscellaneous_analysis_tab;
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JPanel _monteCarloGroup;
     private javax.swing.JCheckBox _mostLikelyClustersHierarchically;
@@ -6276,6 +6357,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JTextField _printTitle;
+    private java.awt.Choice _prospective_frequency;
+    private javax.swing.JPanel _prospective_frequency_group;
     private javax.swing.JCheckBox _purelySpatialDrilldown;
     private javax.swing.JRadioButton _radioDefaultPValues;
     private javax.swing.JRadioButton _radioEarlyTerminationPValues;

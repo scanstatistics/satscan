@@ -15,11 +15,11 @@ class ParametersPrint {
     const CParameters & gParameters;
 
     void                PrintAnalysisParameters(FILE* fp) const;
-    void                PrintBorderAnalysisParameters(FILE* fp) const;
+    void                PrintMiscellaneousAnalysisParameters(FILE* fp) const;
     void                PrintSpatialOutputParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
-	void                PrintDrilldownParameters(FILE* fp) const;
-	void                PrintEllipticScanParameters(FILE* fp) const;
+    void                PrintDrilldownParameters(FILE* fp) const;
+    void                PrintEllipticScanParameters(FILE* fp) const;
     void                PrintClusterRestrictionsParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
@@ -32,7 +32,7 @@ class ParametersPrint {
     void                PrintRunOptionsParameters(FILE* fp) const;
     void                PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const;
     void                PrintSpatialNeighborsParameters(FILE* fp) const;
-	void                PrintLocationNetworkParameters(FILE* fp) const;
+    void                PrintLocationNetworkParameters(FILE* fp) const;
     void                PrintSpatialWindowParameters(FILE* fp) const;
     void                PrintSystemParameters(FILE* fp) const;
     void                PrintTemporalWindowParameters(FILE* fp) const;

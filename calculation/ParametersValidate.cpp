@@ -45,6 +45,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
                                       BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
             }
         }
+        const_cast<CParameters&>(gParameters).setProspectiveFrequency(std::max(gParameters.getProspectiveFrequency(), 1u));
 
         bValid &= ValidateMonotoneRisk(PrintDirection);
         bValid &= ValidateSVTTAnalysisSettings(PrintDirection);
@@ -52,14 +53,14 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateDateParameters(PrintDirection);
         bValid &= ValidateSpatialParameters(PrintDirection);
         bValid &= ValidateContinuousPoissonParameters(PrintDirection);
-		if (!excludeFileValidation)
-			bValid &= ValidateFileParameters(PrintDirection);
-		bValid &= ValidateLocationNetworkParameters(PrintDirection);
+        if (!excludeFileValidation)
+            bValid &= ValidateFileParameters(PrintDirection);
+        bValid &= ValidateLocationNetworkParameters(PrintDirection);
         bValid &= ValidateOutputOptionParameters(PrintDirection);
         bValid &= ValidateRangeParameters(PrintDirection);
         bValid &= ValidateIterativeScanParameters(PrintDirection);
         bValid &= ValidateInferenceParameters(PrintDirection);
-		bValid &= ValidateDrilldownParameters(PrintDirection);
+        bValid &= ValidateDrilldownParameters(PrintDirection);
         bValid &= ValidateBorderAnalysisParameters(PrintDirection);
         bValid &= ValidateEllipseParameters(PrintDirection);
         bValid &= ValidateSimulationDataParameters(PrintDirection);

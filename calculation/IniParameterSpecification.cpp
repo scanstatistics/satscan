@@ -22,6 +22,7 @@ const char * IniParameterSpecification::Polygons                  = "Polygons";
 const char * IniParameterSpecification::SpaceAndTimeAdjustments   = "Space and Time Adjustments";
 const char * IniParameterSpecification::Inference                 = "Inference";
 const char * IniParameterSpecification::BorderAnalysis            = "Border Analysis";
+const char * IniParameterSpecification::MiscellaneousAnalysis     = "Miscellaneous Analysis";
 const char * IniParameterSpecification::Output                    = "Output";
 const char * IniParameterSpecification::ClustersReported          = "Clusters Reported";
 const char * IniParameterSpecification::AdditionalOutput          = "Additional Output";
@@ -142,15 +143,16 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _data_checking_section = SectionInfo(DataChecking, 522);
     _non_eucledian_section = SectionInfo(NeighborsFile, 524);
     _spatial_neighbors_section = SectionInfo(SpatialNeighbors, 526);
-	_locations_network_section = SectionInfo(LocationsNetwork, 527);
-	_spatial_window_section = SectionInfo(SpatialWindow, 530);
+    _locations_network_section = SectionInfo(LocationsNetwork, 527);
+    _spatial_window_section = SectionInfo(SpatialWindow, 530);
     _temporal_window_section = SectionInfo(TemporalWindow, 540);
     _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
     _inference_section = SectionInfo(Inference, 550);
-	_drilldown_section = SectionInfo(Drilldown, 560);
-	_border_analysis_section = SectionInfo(BorderAnalysis, 561);
+    _drilldown_section = SectionInfo(Drilldown, 560);
+    _border_analysis_section = SectionInfo(BorderAnalysis, 561);
+    _miscellaneous_analysis_section = SectionInfo(MiscellaneousAnalysis, 562);
     _power_evaluation_section = SectionInfo(PowerEvaluations, 564);
     _clusters_reported_section = SectionInfo(ClustersReported, 570);
     _temporal_output_section = SectionInfo(TemporalOutput, 572);
@@ -657,6 +659,10 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
 
     _parameter_info[OUTPUT_GOOGLE_MAP] = ParamInfo(OUTPUT_GOOGLE_MAP, "OutputGoogleMaps", 15, _output_section);
 
+    _parameter_info[CALCULATE_OLIVEIRA] = ParamInfo(CALCULATE_OLIVEIRA, "CalculateOliveira", 1, _miscellaneous_analysis_section);
+    _parameter_info[NUM_OLIVEIRA_SETS] = ParamInfo(NUM_OLIVEIRA_SETS, "NumBootstrapReplications", 2, _miscellaneous_analysis_section);
+    _parameter_info[OLIVEIRA_CUTOFF] = ParamInfo(OLIVEIRA_CUTOFF, "OliveiraPvalueCutoff", 3, _miscellaneous_analysis_section);
+
     /* This option was combined with another setting. */
     _parameter_info[PERFORM_STANDARD_DRILLDOWN] = ParamInfo(PERFORM_STANDARD_DRILLDOWN, "PerformStandardDrilldown", 0, _drilldown_section);
     _parameter_info[PERFORM_BERNOULLI_DRILLDOWN] = ParamInfo(PERFORM_BERNOULLI_DRILLDOWN, "PerformBernoulliDrilldown", 1, _drilldown_section);
@@ -669,7 +675,10 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
     _parameter_info[NETWORK_FILE] = ParamInfo(NETWORK_FILE, "LocationsNetworkFilename", 2, _locations_network_section);
     _parameter_info[NETWORK_PURPOSE] = ParamInfo(NETWORK_PURPOSE, "PurposeLocationsNetworkFile", 3, _locations_network_section);
 
-    assert(_parameter_info.size() == 153);
+    _parameter_info[PROSPECTIVE_FREQ_TYPE] = ParamInfo(PROSPECTIVE_FREQ_TYPE, "ProspectiveFreqencyType", 4, _miscellaneous_analysis_section);
+    _parameter_info[PROSPECTIVE_FREQ] = ParamInfo(PROSPECTIVE_FREQ, "ProspectiveFreqency", 5, _miscellaneous_analysis_section);
+
+    assert(_parameter_info.size() == 155);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -766,6 +766,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNetworkFilePurpose());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setProspectiveFrequencyType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getProspectiveFrequencyType());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1472,6 +1476,9 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   Parameters.setNetworkFilePurpose((NetworkPurposeType)getEnumTypeOrdinalIndex(Env, jParameters, "getNetworkFilePurpose", "Lorg/satscan/app/Parameters$NetworkPurposeType;"));
+  jni_error::_detectError(Env);
+
+  Parameters.setProspectiveFrequencyType((ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/satscan/app/Parameters$ProspectiveFrequency;"));
   jni_error::_detectError(Env);
 
   return Parameters;

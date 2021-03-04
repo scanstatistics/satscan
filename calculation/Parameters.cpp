@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 153;
+const int CParameters::giNumParameters                = 155;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -183,6 +183,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_locations_network_filename != rhs._locations_network_filename) return false;
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
   if (_network_file_purpose != rhs._network_file_purpose) return false;
+  if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
+  if (_prospective_frequency != rhs._prospective_frequency) return false;
 
   return true;
 }
@@ -418,6 +420,8 @@ void CParameters::Copy(const CParameters &rhs) {
   _network_file_purpose = rhs._network_file_purpose;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
   _local_timestamp = rhs._local_timestamp;
+  _prospective_frequency_type = rhs._prospective_frequency_type;
+  _prospective_frequency = rhs._prospective_frequency;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -771,9 +775,9 @@ void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool
 If bCorrectForRelativePath is true, an attempt is made to modify filename
 to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath) {
-	_locations_network_filename = filename;
-	if (bCorrectForRelativePath)
-		AssignMissingPath(_locations_network_filename);
+    _locations_network_filename = filename;
+    if (bCorrectForRelativePath)
+        AssignMissingPath(_locations_network_filename);
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
@@ -781,6 +785,13 @@ void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
   if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
   geCoordinatesType = eCoordinatesType;
+}
+
+/** Sets prospective frequency type. Throws exception if out of range. */
+void CParameters::setProspectiveFrequencyType(ProspectiveFrequency e) {
+    if (e < SAME_TIMEAGGREGATION || e > YEARLY)
+        throw prg_error("Enumeration %d out of range [%d,%d].", "setProspectiveFrequencyType()", e, SAME_TIMEAGGREGATION, YEARLY);
+    _prospective_frequency_type = e;
 }
 
 /** Sets criteria for reporting secondary clusters. Throws exception if out of range. */
@@ -950,6 +961,8 @@ void CParameters::SetAsDefaulted() {
   _network_file_purpose = NETWORK_DEFINITION;
   _cluster_moniker_prefix = "";
   _local_timestamp = boost::posix_time::second_clock::local_time();
+  _prospective_frequency_type = SAME_TIMEAGGREGATION;
+  _prospective_frequency = 1;
 }
 
 /** Sets start range start date. Throws exception. */

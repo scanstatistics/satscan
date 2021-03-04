@@ -53,6 +53,7 @@ public class Parameters implements Cloneable {
     public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
     public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY, GENERIC };
     public enum NetworkPurposeType            { COORDINATES_OVERRIDE, NETWORK_DEFINITION };
+    public enum ProspectiveFrequency          { SAME_TIMEAGGREGATION, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY};
     public class CreationVersion {
       public int giMajor;
       public int giMinor;
@@ -244,6 +245,7 @@ public class Parameters implements Cloneable {
     private String                          _locations_network_filename="";
     private boolean                         _use_locations_network_file=false;
     private NetworkPurposeType              _network_file_purpose=NetworkPurposeType.NETWORK_DEFINITION;
+    private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -252,26 +254,26 @@ public class Parameters implements Cloneable {
       super();
 
       gCreationVersion = new CreationVersion(7,0,0);
-      gvCaseFilenames = new Vector<String>();
+      gvCaseFilenames = new Vector<>();
       gvCaseFilenames.addElement("");
-      gvControlFilenames = new Vector<String>();
+      gvControlFilenames = new Vector<>();
       gvControlFilenames.addElement("");
-      gvPopulationFilenames = new Vector<String>();
+      gvPopulationFilenames = new Vector<>();
       gvPopulationFilenames.addElement("");
-      gvEllipseShapes = new Vector<Double>();
+      gvEllipseShapes = new Vector<>();
       gvEllipseShapes.addElement(1.5);
       gvEllipseShapes.addElement(2.0);
       gvEllipseShapes.addElement(3.0);
       gvEllipseShapes.addElement(4.0);
       gvEllipseShapes.addElement(5.0);
-      gvEllipseRotations = new Vector<Integer>();
+      gvEllipseRotations = new Vector<>();
       gvEllipseRotations.addElement(4);
       gvEllipseRotations.addElement(6);
       gvEllipseRotations.addElement(9);
       gvEllipseRotations.addElement(12);
       gvEllipseRotations.addElement(15);
-      gvObservableRegions = new Vector<String>();
-      _input_sources = new Vector<InputSourceSettings>();
+      gvObservableRegions = new Vector<>();
+      _input_sources = new Vector<>();
     }
 
     @Override
@@ -312,6 +314,12 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
+    public void setProspectiveFrequencyType(int iOrdinal) {
+        try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _prospective_frequency.values()); }
+    }    
+    
     public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
     public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
     public String getLocationsNetworkFilename() { return _locations_network_filename; }
@@ -549,10 +557,10 @@ public class Parameters implements Cloneable {
         if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
         if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
         if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
-
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
         if (_network_file_purpose != rhs._network_file_purpose) return false;
+        if (_prospective_frequency != rhs._prospective_frequency) return false;
         
         return true;
     }

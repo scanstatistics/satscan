@@ -772,45 +772,53 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   }
 }
 
-/** Returns recurrence interval interms of years and interms of days. */
-CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanData& Data, 
-                                                               unsigned int iReportedCluster, 
-                                                               const SimulationVariables& simVars) const {
-  double        dIntervals, dPValue, dAdjustedP_Value, dUnitsInOccurrence;
-  const CParameters & parameters(Data.GetParameters());
+/** Calculates recurrence interval and returns pair (recurrence in years, recurrence in days). */
+CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+    double dIntervals, dPValue, dAdjustedP_Value, dUnitsInOccurrence;
+    const CParameters & parameters(Data.GetParameters());
 
-  if (!parameters.GetIsProspectiveAnalysis())
-     throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
-
-  dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
-
-  bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
-                                parameters.GetAnalysisType() == SPACETIME || 
-                                parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
-                                && 
-                               (parameters.GetProbabilityModelType() == POISSON || 
-                                parameters.GetProbabilityModelType() == BERNOULLI ||
-                                parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
-
-  if ((bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) ||
-       parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
-      std::pair<double,double> p = GetGumbelPValue(simVars);
-      dPValue = std::max(p.first, p.second);
-      dAdjustedP_Value = std::max(1.0 - pow(1.0 - dPValue, 1.0/dIntervals),p.second);
-  } else {
-      dPValue = GetMonteCarloPValue(Data.GetParameters(), simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1);
-      dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
-  }
-  dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength())/dAdjustedP_Value;
-
-  switch (parameters.GetTimeAggregationUnitsType()) {
-      case YEAR    : return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR,1.0));
-      case MONTH   : return std::make_pair(dUnitsInOccurrence/12.0, std::max((dUnitsInOccurrence/12.0) * AVERAGE_DAYS_IN_YEAR,1.0));
-      case DAY     : return std::make_pair(dUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence,1.0));
-      case GENERIC : return std::make_pair(std::max(dUnitsInOccurrence,1.0), std::max(dUnitsInOccurrence,1.0));
-      default      : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
-                                    "GetRecurrenceInterval()", parameters.GetTimeAggregationUnitsType());
-  }
+    if (!parameters.GetIsProspectiveAnalysis())
+        throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
+    dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
+    bool bReportsDefaultGumbel = (
+        parameters.GetAnalysisType() == PURELYSPATIAL || parameters.GetAnalysisType() == SPACETIME || parameters.GetAnalysisType() == PROSPECTIVESPACETIME
+    ) && (
+        parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI || parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+    );
+    if ((bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
+        std::pair<double,double> p = GetGumbelPValue(simVars);
+        dPValue = std::max(p.first, p.second);
+        dAdjustedP_Value = std::max(1.0 - pow(1.0 - dPValue, 1.0/dIntervals),p.second);
+    } else {
+        dPValue = GetMonteCarloPValue(Data.GetParameters(), simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1);
+        dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
+    }
+    // Special case the recurrance interval for GENERIC units - which don't translate to the prospective frequency units.
+    if (parameters.GetTimeAggregationUnitsType() == GENERIC) {
+        dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength()) / dAdjustedP_Value;
+        return std::make_pair(std::max(dUnitsInOccurrence, 1.0), std::max(dUnitsInOccurrence, 1.0));
+    }
+    // Determine the number of units in occurrence - either per time aggregation or user selection.
+    ProspectiveFrequency frequency = parameters.getProspectiveFrequencyType();
+    dUnitsInOccurrence = static_cast<double>(parameters.getProspectiveFrequency()) / dAdjustedP_Value;
+    if (frequency == SAME_TIMEAGGREGATION) {
+        dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength()) / dAdjustedP_Value;
+        switch (parameters.GetTimeAggregationUnitsType()) { //translate time aggregation units to prospective frequency
+            case YEAR: frequency = YEARLY; break;
+            case MONTH: frequency = MONTHLY; break;
+            case DAY: frequency = DAILY; break;
+            default: throw prg_error("Invalid enum for time aggregation type '%d'.", "GetRecurrenceInterval()", parameters.GetTimeAggregationUnitsType());
+        }
+    }
+    // Now calculate recurrance interval as years and days based on frequency.
+    switch (frequency) {
+        case YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case QUARTERLY: return std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));
+        default: throw prg_error("Invalid enum '%d' for prospective analysis frequency type.", "GetRecurrenceInterval()", parameters.getProspectiveFrequencyType());
+    }
 }
 
 /** Writes clusters null occurance rate in format required by result output file. */
@@ -822,13 +830,15 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
          //PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
          RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
          if (ri.first < 1.0) {
-            printString(buffer, "%.0lf %s%s", ri.second, 
-                                              Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "day",
-                                              (ri.second < 1.5 ? "" : "s"));
+            printString(
+                buffer, "%.0lf %s%s", ri.second, 
+                Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "day", (ri.second < 1.5 ? "" : "s")
+            );
          } else if (ri.first <= 10.0) {
-            printString(buffer, "%.1lf %s%s", ri.first, 
-                                              Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "year",
-                                              (ri.first < 1.05 ? "" : "s"));
+            printString(
+                buffer, "%.1lf %s%s", ri.first, 
+                Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "year", (ri.first < 1.05 ? "" : "s")
+            );
          } else {
             printString(buffer, "%.0lf %s", ri.first, Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "units" : "years");
          }
@@ -1178,18 +1188,39 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
 
 /** Returns whether cluster is significant. */
 boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
+    const double SIGNIFICANCE_MULTIPLIER = 100.0; // I'm not sure how Martin picked this number.
     boost::logic::tribool significance(boost::logic::indeterminate);
     const CParameters& params = Data.GetParameters();
     if (reportableRecurrenceInterval(params, simVars)) {
-        // recurrence interval greater than one year is significant
         RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
         // 365 days or 100*(# time aggregation units), whichever is larger (e.g., if time aggregation is 3 months, only report clusters with RI>300 months)
-        switch (params.GetTimeAggregationUnitsType()) {
-            case YEAR    : significance = (ri.first > 100.0 * static_cast<double>(params.GetTimeAggregationLength())); break;
-            case MONTH   : significance = (ri.first * 12.0 > 100.0 * static_cast<double>(params.GetTimeAggregationLength())); break;
-            case DAY     : significance = (ri.second > std::max(365.0, 100.0 * static_cast<double>(params.GetTimeAggregationLength()))); break;
-            case GENERIC : significance = (ri.first > 100.0); break; // I'm not sure how Martin picked this number.
-            default      : throw prg_error("Unknown time aggregation type '%d'.", "isSignificant()", params.GetTimeAggregationUnitsType());
+        if (params.GetTimeAggregationUnitsType() == GENERIC)
+            significance = (ri.first > SIGNIFICANCE_MULTIPLIER);
+        else {
+            double frequency_length = static_cast<double>(params.getProspectiveFrequency()); // defaulted to one.
+            ProspectiveFrequency frequency = params.getProspectiveFrequencyType();
+            // Potientially translate time aggregation type to prospective frequency type.
+            if (frequency == SAME_TIMEAGGREGATION) {
+                /* When frequency is that of time aggregation, the assumed frequency is the time aggregation.
+                   (e.g. 1 day aggregation assumes daily frequency, 20 day aggregation assmes a frequency of every 20 days, etc.) */
+                frequency_length = static_cast<double>(params.GetTimeAggregationLength());
+                switch (params.GetTimeAggregationUnitsType()) {
+                    case YEAR: frequency = YEARLY; break;
+                    case MONTH: frequency = MONTHLY; break;
+                    case DAY: frequency = DAILY; break;
+                    default: throw prg_error("Invalid enum for time aggregation type '%d'.", "significant()", params.GetTimeAggregationUnitsType());
+                }
+            }
+            /* Now calculate significance per frequency unit and frequency length (typically one or that of time agregation length).
+               For instance with prospective frequency as weekly, a significant cluster would be greater than 100 weeks. */
+            switch (frequency) {
+                case YEARLY   : significance = (ri.first > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case QUARTERLY: significance = (ri.first * 4.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case MONTHLY  : significance = (ri.first * 12.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case WEEKLY   : significance = (ri.first * 52.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case DAILY    : significance = (ri.second > std::max(365.0, SIGNIFICANCE_MULTIPLIER * frequency_length)); break;
+                default       : throw prg_error("Unknown prospective frequency type '%d'.", "isSignificant()", frequency);
+            }
         }
     } else if (reportablePValue(params, simVars)) {
         // p-value  less than 0.05 is significant

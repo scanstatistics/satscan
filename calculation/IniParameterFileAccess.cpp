@@ -323,15 +323,15 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteObservableRegionSettings(ini);
         WriteMultipleDataSetsSettings(ini);
         WriteDataCheckingSettings(ini);
-		WriteLocationNetworkSettings(ini);
+        WriteLocationNetworkSettings(ini);
         WriteSpatialNeighborsSettings(ini);
         WriteSpatialWindowSettings(ini);
         WriteTemporalWindowSettings(ini);
         WriteClusterRestrictionsSettings(ini);
         WriteSpaceAndTimeAdjustmentSettings(ini);
         WriteInferenceSettings(ini);
-		WriteDrilldownSettings(ini);
-        WriteBorderAnalysisSettings(ini);
+        WriteDrilldownSettings(ini);
+        WriteMiscellaneousAnalysisSettings(ini);
         WritePowerEvaluationsSettings(ini);
         WriteSpatialOutputSettings(ini);
         WriteTemporalGraphSettings(ini);
@@ -392,14 +392,16 @@ void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
 }
 
 /** Writes parameter settings grouped under 'Border Analysis'. */
-void IniParameterFileAccess::WriteBorderAnalysisSettings(IniFile& WriteFile) {
+void IniParameterFileAccess::WriteMiscellaneousAnalysisSettings(IniFile& WriteFile) {
     std::string s;
     try {
         WriteIniParameter(WriteFile, CALCULATE_OLIVEIRA, GetParameterString(CALCULATE_OLIVEIRA, s).c_str(), GetParameterComment(CALCULATE_OLIVEIRA));
         WriteIniParameter(WriteFile, NUM_OLIVEIRA_SETS, GetParameterString(NUM_OLIVEIRA_SETS, s).c_str(), GetParameterComment(NUM_OLIVEIRA_SETS));
         WriteIniParameter(WriteFile, OLIVEIRA_CUTOFF, GetParameterString(OLIVEIRA_CUTOFF, s).c_str(), GetParameterComment(OLIVEIRA_CUTOFF));
+        WriteIniParameter(WriteFile, PROSPECTIVE_FREQ_TYPE, GetParameterString(PROSPECTIVE_FREQ_TYPE, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ_TYPE));
+        WriteIniParameter(WriteFile, PROSPECTIVE_FREQ, GetParameterString(PROSPECTIVE_FREQ, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ));
     } catch (prg_exception& x) {
-        x.addTrace("WriteBorderAnalysisSettings()","IniParameterFileAccess");
+        x.addTrace("WriteMiscellaneousAnalysisSettings()","IniParameterFileAccess");
         throw;
     }
 }

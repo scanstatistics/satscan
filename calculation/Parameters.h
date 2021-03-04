@@ -272,6 +272,9 @@ class CParameters {
 	bool                                _use_locations_network_file;
 	NetworkPurposeType                  _network_file_purpose;
 
+    ProspectiveFrequency                _prospective_frequency_type;
+    unsigned int                        _prospective_frequency;
+
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
@@ -290,6 +293,11 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+    ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
+    void                                setProspectiveFrequencyType(ProspectiveFrequency e);
+    unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
+    void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
 
     boost::posix_time::ptime            getTimestamp() const { return _local_timestamp; }
     void                                setTimestamp(boost::posix_time::ptime ts) { _local_timestamp = ts; }

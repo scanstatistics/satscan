@@ -148,14 +148,14 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintMultipleDataSetParameters(fp);
         PrintDataCheckingParameters(fp);
         PrintSpatialNeighborsParameters(fp);
-		PrintLocationNetworkParameters(fp);
-		PrintSpatialWindowParameters(fp);
+        PrintLocationNetworkParameters(fp);
+        PrintSpatialWindowParameters(fp);
         PrintTemporalWindowParameters(fp);
         PrintClusterRestrictionsParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
-		PrintDrilldownParameters(fp);
-        PrintBorderAnalysisParameters(fp);
+        PrintDrilldownParameters(fp);
+        PrintMiscellaneousAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
@@ -192,18 +192,44 @@ void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     }
 }
 
-/** Print parameters of 'Border Analysis' tab/section. */
-void ParametersPrint::PrintBorderAnalysisParameters(FILE* fp) const {
+/** Print parameters of 'Miscellaneous Analysis' tab/section. */
+void ParametersPrint::PrintMiscellaneousAnalysisParameters(FILE* fp) const {
     SettingContainer_t settings;
+    std::string buffer;
 
     if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() == PURELYSPATIAL) {
         settings.push_back(std::make_pair("Report Oliveira's F", (gParameters.getCalculateOliveirasF() ? "Yes" : "No")));
-        if (gParameters.getCalculateOliveirasF()) {
-            std::string buffer;
+        if (gParameters.getCalculateOliveirasF())
             settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
-        }
-        WriteSettingsContainer(settings, "Border Analysis", fp);
     }
+    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetTimeAggregationUnitsType() != GENERIC) {
+        switch (gParameters.getProspectiveFrequencyType()) {
+        case SAME_TIMEAGGREGATION: buffer = "Same As Time Aggregation"; break;
+        case DAILY:
+            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", gParameters.getProspectiveFrequency());
+            else buffer = "Daily";
+            break;
+        case WEEKLY:
+            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", gParameters.getProspectiveFrequency());
+            else buffer = "Weekly";
+            break;
+        case MONTHLY:
+            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", gParameters.getProspectiveFrequency());
+            else buffer = "Monthly";
+            break;
+        case QUARTERLY:
+            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", gParameters.getProspectiveFrequency());
+            else buffer = "Quarterly";
+            break;
+        case YEARLY:
+            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", gParameters.getProspectiveFrequency());
+            else buffer = "Yearly";
+            break;
+        default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", gParameters.getProspectiveFrequencyType());
+        }
+        settings.push_back(std::make_pair("Prospective Analysis Frequency", buffer));
+    }
+    if (settings.size()) WriteSettingsContainer(settings, "Miscellaneous Analysis", fp);
 }
 
 
@@ -234,7 +260,7 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case CALCULATED_QUADRATIC:
           PrintCalculatedTimeTrend(fp, SetHandler); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
     }
     if (buffer.size())
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -249,7 +275,7 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
           buffer = "Adjusted for purely spatial clusters nonparametrically.";
           PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
-        throw prg_error("Unknown time trend adjustment type '%d'\n.", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
     }
     if (gParameters.getAdjustForWeeklyTrends()) {
         buffer = "Adjust for weekly trends nonparametrically.";
