@@ -10,8 +10,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -110,7 +108,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     
     public void redisplay() {
         setVisible(true);
-        removeSelection(null);
         enableButtons();
         toFront();
     }    
@@ -896,7 +893,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     if (analysis.getLag() != null)
                         run_parameters.SetStudyPeriodEndDate(enddate.format(DateTimeFormatter.ofPattern(DATE_FORMAT)));
                     else // otherwise define enddate per paramemter settings - for possible study period offset
-                        enddate = LocalDate.parse(run_parameters.GetStudyPeriodEndDate().replaceAll("/", "-"));
+                        enddate = LocalDate.parse(run_parameters.GetStudyPeriodEndDate(), DateTimeFormatter.ofPattern("yyyy/M/d"));
                     // base the study period start as an offset from the lag period.
                     LocalDate startdate = getLocalDate(enddate, analysis.getStudyPeriodLength(), true);
                     if (analysis.getStudyPeriodLength() != null)

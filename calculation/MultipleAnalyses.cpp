@@ -90,6 +90,8 @@ void MultipleAnalyses::execute(BasePrint& print, bool includeUnSelected) {
                     parameters.SetStudyPeriodStartDate(gregorianToString(startdate).c_str());
                 if (!ParametersValidate(parameters).Validate(proxyPrint))
                     throw resolvable_error("The parameter settings prevent SaTScan from continuing this analysis. Please review above message(s) and modify parameter settings accordingly.");
+                // Set the last results filename -- which might have date format substitutions.
+                itr->lastresultsfilename = parameters.GetOutputFileName();
                 //create analysis runner object and execute analysis
                 time_t RunTime; time(&RunTime);
                 AnalysisRunner(parameters, RunTime, proxyPrint).run();
