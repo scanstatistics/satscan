@@ -588,6 +588,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame instanceof ParameterSettingsFrame) {
+                    ParameterSettingsFrame _settings_frame = (ParameterSettingsFrame)_focusedInternalFrame;
                     if (JOptionPane.showConfirmDialog(
                         SaTScanApplication.this, 
                         "Add this analysis to the Multiple Analyses collection?"
@@ -596,7 +597,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null
                     ) == JOptionPane.YES_OPTION) {
                         showMultipleAnalysisFrame();
-                        _multiple_analysis_frame.addParametersFromSessionWindow(((ParameterSettingsFrame) _focusedInternalFrame));
+                        _multiple_analysis_frame.addParametersFromSessionWindow(_settings_frame);
                     }
                 }
             } catch (Throwable t) {

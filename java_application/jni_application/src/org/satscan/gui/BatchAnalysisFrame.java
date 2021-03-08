@@ -137,8 +137,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     
     private Object[] getRowForBatchAnalysis(BatchAnalysis obj) {
         return new Object[]{ 
-            obj.getSelected(), obj.getDescription(), obj.getParameters().GetAnalysisTypeAsString(),
-            obj.getParameters().GetModelTypeAsString(), obj.getStudyPeriodLength(), obj.getLag(), obj
+            obj.getSelected(), obj.getDescription(), obj.getParameters().GetAnalysisTypeAsString(true),
+            obj.getParameters().GetModelTypeAsString(true), obj.getStudyPeriodLength(), obj.getLag(), obj
         };        
     }
     
@@ -196,7 +196,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
             model.addRow(getRowForBatchAnalysis(copyAnalysis));
             // Remove selection from any other records in table - to focus on new record.
-            removeSelection(copyAnalysis);
+            //removeSelection(copyAnalysis);
             // Show settngs window for new reocrd.
             ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, copyAnalysis.getParameters());
             frame.setTitle(copyAnalysis.getDescription());
@@ -492,7 +492,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         ((DefaultCellEditor)_analyses_table.getDefaultEditor(String.class)).setClickCountToStart(1);
         _analyses_table.setRowSelectionAllowed(false);
         _analyses_table.getTableHeader().setReorderingAllowed(false);
-        setJTableColumnsWidth(_analyses_table, _analyses_table.getPreferredSize().width, 1, 30, 12, 12, 10, 6, 29);
+        setJTableColumnsWidth(_analyses_table, _analyses_table.getPreferredSize().width, 1, 30, 16, 8, 10, 6, 29);
         _analyses_table.getModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -576,9 +576,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     writeBatchAnalysesFromFile();
                     // Fresh table cell to reflect any updates.
                     int idx = _batch_analyses.indexOf(batchAnaylsis);
-                    _analyses_table.getModel().setValueAt(batchAnaylsis.getParameters().GetAnalysisTypeAsString(), idx, ANALYSIS_IDX);
+                    _analyses_table.getModel().setValueAt(batchAnaylsis.getParameters().GetAnalysisTypeAsString(true), idx, ANALYSIS_IDX);
                     _analyses_table.getModel().setValueAt(
-                        batchAnaylsis.getParameters().GetProbabilityModelTypeAsString(batchAnaylsis.getParameters().GetProbabilityModelType()), idx, MODEL_IDX
+                        batchAnaylsis.getParameters().GetProbabilityModelTypeAsString(batchAnaylsis.getParameters().GetProbabilityModelType(), true), idx, MODEL_IDX
                     );
                     break;
                 }
@@ -769,15 +769,17 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     int col = _analyses_table.columnAtPoint(evt.getPoint());
                     if (row >= 0 && col == STATUS_IDX) { 
                         BatchAnalysis ba = _batch_analyses.get(row);
-                        AnalysisRunInternalFrame frame = new AnalysisRunInternalFrame(ba);
-                        frame.disableAdditionalOutputAutoLaunch(true);
-                        // Add application as listener, set visiable and add frame to application document.
-                        frame.addInternalFrameListener(SaTScanApplication.getInstance());
-                        frame.setVisible(true);
-                        SaTScanApplication.getInstance().AddFrame(frame);
-                        try {
-                            frame.setSelected(true);
-                        } catch (java.beans.PropertyVetoException x) {}
+                        if (ba.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS || ba.getLastExecutedStatus() == BatchAnalysis.STATUS.FAILED) {
+                            AnalysisRunInternalFrame frame = new AnalysisRunInternalFrame(ba);
+                            frame.disableAdditionalOutputAutoLaunch(true);
+                            // Add application as listener, set visiable and add frame to application document.
+                            frame.addInternalFrameListener(SaTScanApplication.getInstance());
+                            frame.setVisible(true);
+                            SaTScanApplication.getInstance().AddFrame(frame);
+                            try {
+                                frame.setSelected(true);
+                            } catch (java.beans.PropertyVetoException x) {}
+                        }
                     }                
                 }                                    
             });               

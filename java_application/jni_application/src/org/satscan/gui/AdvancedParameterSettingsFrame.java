@@ -522,14 +522,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case SPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson, 
-                    bPoisson && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION, 
-                    bPoisson, bPoisson
-                );
-                enableAdjustmentForSpatialOptionsGroup(
-                    bPoisson, 
-                    bPoisson && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
@@ -550,13 +544,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
                     bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
-                    (bPoisson && getSpatialAdjustmentType() != Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION) || bBernoulli,
+                    bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH),
                     bPoisson, bPoisson
                 );
-                enableAdjustmentForSpatialOptionsGroup(
-                    bPoisson, 
-                    bPoisson && getAdjustmentTimeTrendControlType() != Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION
-                );
+                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);
@@ -1488,7 +1479,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (_settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL) {
                     sErrorMessage += "Seasonal analysis";
                 } else {
-                    sErrorMessage += Parameters.GetProbabilityModelTypeAsString(_settings_window.getModelControlType()) + " model";
+                    sErrorMessage += Parameters.GetProbabilityModelTypeAsString(_settings_window.getModelControlType(), false) + " model";
                 }
                 sErrorMessage += ", the maximum temporal cluster size as a percent of the study period is " + maximum + " percent.";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);

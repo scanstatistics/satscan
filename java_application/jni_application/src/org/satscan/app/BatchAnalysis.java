@@ -149,8 +149,8 @@ public class BatchAnalysis implements Cloneable {
     
     static public String getDescription(final Parameters parameters) {
         StringBuilder description = new StringBuilder();
-        description.append(parameters.GetAnalysisTypeAsString());
-        description.append(", ").append(parameters.GetModelTypeAsString());
+        description.append(parameters.GetAnalysisTypeAsString(true));
+        description.append(", ").append(parameters.GetModelTypeAsString(true));
         Parameters.AnalysisType analysisType = parameters.GetAnalysisType();
         if (!(analysisType == Parameters.AnalysisType.PURELYSPATIAL || analysisType == Parameters.AnalysisType.SPATIALVARTEMPTREND)) {
             if (parameters.GetMaximumTemporalClusterSizeType() == Parameters.TemporalSizeType.TIMETYPE) {

@@ -614,20 +614,20 @@ public class Parameters implements Cloneable {
     public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
     public String GetAdjustmentsByRelativeRisksFilename() {return gsAdjustmentsByRelativeRisksFileName;}
     public AnalysisType GetAnalysisType() {return geAnalysisType;}
-    public String GetAnalysisTypeAsString() {
+    public String GetAnalysisTypeAsString(boolean abbr) {
         String sAnalysisType = null;
         switch (geAnalysisType) {
             case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
-            case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
-            case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
-            case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
-            case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
-            case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
+            case PURELYTEMPORAL            : sAnalysisType = (abbr ? "Retro. Purely Temporal" : "Retrospective Purely Temporal"); break;
+            case SPACETIME                 : sAnalysisType = (abbr ? "Retro. Space-Time" : "Retrospective Space-Time"); break;
+            case PROSPECTIVESPACETIME      : sAnalysisType = (abbr ? "Prosp. Space-Time" : "Prospective Space-Time"); break;
+            case SPATIALVARTEMPTREND       : sAnalysisType = (abbr ? "SVTT" : "Spatial Variation in Temporal Trends"); break;
+            case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = (abbr ? "Prosp. Purely Temporal" : "Prospective Purely Temporal"); break;
           }
         return sAnalysisType;
     }
-    public String GetModelTypeAsString() {
-        return GetProbabilityModelTypeAsString(geProbabilityModelType);
+    public String GetModelTypeAsString(boolean abbr) {
+        return GetProbabilityModelTypeAsString(geProbabilityModelType, abbr);
     }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
     public final Vector<String> GetObservableRegions() {return gvObservableRegions;}
@@ -723,17 +723,17 @@ public class Parameters implements Cloneable {
     public final Vector<String> GetPopulationFileNames() {return gvPopulationFilenames;}
     public DatePrecisionType GetPrecisionOfTimesType() {return gePrecisionOfTimesType;}
     public ProbabilityModelType GetProbabilityModelType() {return geProbabilityModelType;}
-    public static final String GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) {
+    public static final String GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType, boolean abbr) {
         String sProbabilityModel = null;
         switch (eProbabilityModelType) {
             case POISSON              : sProbabilityModel = "Poisson"; break;
             case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
-            case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
+            case SPACETIMEPERMUTATION : sProbabilityModel = (abbr ? "STP": "Space-Time Permutation"); break;
             case ORDINAL              : sProbabilityModel = "Ordinal"; break;
             case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
             case NORMAL               : sProbabilityModel = "Normal"; break;
             case RANK                 : sProbabilityModel = "Rank"; break;
-            case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
+            case HOMOGENEOUSPOISSON   : sProbabilityModel = (abbr ? "H. Poisson" : "Homogeneous Poisson"); break;
             case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
             case UNIFORMTIME          : sProbabilityModel = "Uniform-Time"; break;
         }

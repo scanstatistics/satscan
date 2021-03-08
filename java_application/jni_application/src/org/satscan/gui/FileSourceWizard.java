@@ -360,7 +360,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         builder.append("<p style=\"margin-top: 0;\">The expected format of the ");
         builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file");
         if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Case) {
-            builder.append(", using the ").append(Parameters.GetProbabilityModelTypeAsString(getModelControlType())).append(" probability model");
+            builder.append(", using the ").append(Parameters.GetProbabilityModelTypeAsString(getModelControlType(), false)).append(" probability model");
         } else if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates ||
                    _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
             builder.append(", using ").append(getCoorinatesControlType() == Parameters.CoordinatesType.LATLON ? "Latitude/Longitude" : "Cartesian").append(" coordinates");
