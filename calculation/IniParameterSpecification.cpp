@@ -675,8 +675,8 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
     _parameter_info[NETWORK_FILE] = ParamInfo(NETWORK_FILE, "LocationsNetworkFilename", 2, _locations_network_section);
     _parameter_info[NETWORK_PURPOSE] = ParamInfo(NETWORK_PURPOSE, "PurposeLocationsNetworkFile", 3, _locations_network_section);
 
-    _parameter_info[PROSPECTIVE_FREQ_TYPE] = ParamInfo(PROSPECTIVE_FREQ_TYPE, "ProspectiveFreqencyType", 4, _miscellaneous_analysis_section);
-    _parameter_info[PROSPECTIVE_FREQ] = ParamInfo(PROSPECTIVE_FREQ, "ProspectiveFreqency", 5, _miscellaneous_analysis_section);
+    _parameter_info[PROSPECTIVE_FREQ_TYPE] = ParamInfo(PROSPECTIVE_FREQ_TYPE, "ProspectiveFrequencyType", 4, _miscellaneous_analysis_section);
+    _parameter_info[PROSPECTIVE_FREQ] = ParamInfo(PROSPECTIVE_FREQ, "ProspectiveFrequency", 5, _miscellaneous_analysis_section);
 
     assert(_parameter_info.size() == 155);
 }
