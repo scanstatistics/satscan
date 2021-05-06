@@ -3895,7 +3895,7 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_label_prospective_frequency">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="How frequencly are analyses performed?"/>
+                    <Property name="text" type="java.lang.String" value="How frequently are analyses performed?"/>
                   </Properties>
                 </Component>
                 <Component class="java.awt.Choice" name="_prospective_frequency">

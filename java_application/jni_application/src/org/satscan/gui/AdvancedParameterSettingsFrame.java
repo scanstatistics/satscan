@@ -5654,7 +5654,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
 
-        _label_prospective_frequency.setText("How frequencly are analyses performed?");
+        _label_prospective_frequency.setText("How frequently are analyses performed?");
 
         _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
