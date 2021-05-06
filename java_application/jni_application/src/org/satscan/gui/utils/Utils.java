@@ -219,7 +219,7 @@ public class Utils {
     }
 
     /** parses up a date string and places it into the given month, day, year
-     * interace text control (TEdit *). Defaults prospective survallience start
+     * interface text control (TEdit *). Defaults prospective survallience start
      * date to months/days to like study period end date.                       */
     public static void parseDateStringToControls(String sDateString, JTextField Year, JTextField Month, JTextField Day, boolean bEndDate) {
         String[] dateParts = sDateString.split("/");

@@ -84,7 +84,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private final int LAG_IDX = 5;
     private final int STATUS_IDX = 6;
     private boolean _table_initiallized = false;
-    //private Status
+    private String _lag_helptext = "If specified, the Study Period End Date is replaced with a value relative to today’s date. For example, a Lag Time of 3 days would set the Study Period End Date equal to today’s date minus 3 days. If the No Lag box is checked, the Study Period End Date defaults to the date specified in the parameter settings.";
+    private String _study_period_helptext = "Study Length is the length of time between the Study Period Start Date and the Study Period End Date (inclusive). If specified, the Study Period Start Date is replaced with a value relative to the Study Period End Date. If the No Offset box is checked, the Study Period Start Date defaults to the date specified in the parameter settings.";
     
     /* Creates new form AnalysisBatchFrame */
     public BatchAnalysisFrame(final JRootPane root_pane) {
@@ -206,6 +207,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             SaTScanApplication.getInstance().AddFrame(frame);
             _open_settings_frames.put(copyAnalysis, frame);
             frame.setSelected(true);
+            enableButtons();
         } catch (Throwable t) {
             new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
         } finally {
@@ -355,6 +357,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     parameters_frame.addInternalFrameListener(SaTScanApplication.getInstance());
                     _open_settings_frames.put(selected.left, parameters_frame);
                     parameters_frame.setSelected(true);
+                    enableButtons();
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
                 } finally {
@@ -836,7 +839,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             currentOffset = (BatchAnalysis.StudyPeriodOffset)value;
             SwingUtilities.invokeLater(() -> {
                 _editor_dialog.setStudyPeriodOffset(
-                    (column == LAG_IDX ? "Edit Lag Time" : "Edit Study Period"), 
+                    (column == LAG_IDX ? "Edit Lag Time" : "Edit Study Length"), 
+                    (column == LAG_IDX ? "No Lag" : "No Offset"), 
+                    (column == LAG_IDX ? _lag_helptext : _study_period_helptext), 
                     currentOffset,
                     (column == LAG_IDX ? 0 : 1)
                 );
