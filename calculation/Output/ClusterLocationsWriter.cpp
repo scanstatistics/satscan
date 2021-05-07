@@ -160,23 +160,23 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
 
-		/* Define location specific coordinate fields. */
-		if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
+        /* Define location specific coordinate fields. */
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
               (gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates())))) {
-			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
-				gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
-			CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
-				gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
+            CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
+                gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
+            CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
+                gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
 
-			//only Cartesian coordinates can have more than two dimensions
-			if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetTInfo()->getCoordinateDimensions() > 2)
-				for (unsigned int i=3; i <= (unsigned int)DataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
-					printString(buffer, "%s%i", LOC_COORD_Z_FIELD, i - 2);
-					CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
-				}
-		}
-		
-		if (gParameters.getCalculateOliveirasF()) {
+            //only Cartesian coordinates can have more than two dimensions
+            if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetTInfo()->getCoordinateDimensions() > 2)
+                for (unsigned int i=3; i <= (unsigned int)DataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
+                    printString(buffer, "%s%i", LOC_COORD_Z_FIELD, i - 2);
+                    CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
+                }
+        }
+        
+        if (gParameters.getCalculateOliveirasF()) {
             short precision;
             if (gParameters.getNumRequestedOliveiraSets() <= 100) { precision = 2; 
             } else if (gParameters.getNumRequestedOliveiraSets() <= 1000) { precision = 3;
@@ -217,9 +217,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
     double dRelativeRisk;
     RecordBuffer Record(vFieldDefinitions);
     const DataSetHandler & Handler = DataHub.GetDataSetHandler();
-	std::vector<double> locationCoordinates;
-	std::pair<double, double> prLatitudeLongitude;
-	unsigned int loc_first_coord_idx, loc_second_coord_idx;
+    std::vector<double> locationCoordinates;
+    std::pair<double, double> prLatitudeLongitude;
+    unsigned int loc_first_coord_idx, loc_second_coord_idx;
     std::string buffer;
 
     try {
@@ -229,21 +229,19 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
         //do not report locations for which iterative scan has nullified its data
         if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
-		/* Get coordinates for the cluster. */
+        /* Get coordinates for the cluster. */
         if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
-			loc_first_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD);
-			loc_second_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD);
-		}
+            loc_first_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LAT_FIELD : LOC_COORD_X_FIELD);
+            loc_second_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD);
+        }
 
         DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
         if (gpShapeDataFileWriter) {
-            std::vector<double> vCoordinates;
-            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, vCoordinates);
+            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, locationCoordinates);
             std::pair<double, double> prLatitudeLongitude;
-            prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-            gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
+            prLatitudeLongitude = ConvertToLatLong(locationCoordinates);
+            gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first, vIdentifiers.size());
         }
-
         for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
             Record.SetAllFieldsBlank(true);
             Record.GetFieldValue(LOC_ID_FIELD).AsString() = vIdentifiers[i].c_str();
@@ -276,25 +274,25 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                 */
             }
 
-			/* Report coordinate fields for location. */
+            /* Report coordinate fields for location. */
             if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
-				/* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
-				DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
-				/* Write records to record buffer. */
-				switch (gParameters.GetCoordinatesType()) {
-					case CARTESIAN : Record.GetFieldValue(loc_first_coord_idx).AsDouble() =  locationCoordinates[0];
-									 Record.GetFieldValue(loc_second_coord_idx).AsDouble() =  locationCoordinates[1];
-									 for (size_t i=2; i < locationCoordinates.size(); ++i) {
-										printString(buffer, "%s%d", LOC_COORD_Z_FIELD, (i - 1));
-										Record.GetFieldValue(buffer).AsDouble() = locationCoordinates[i];
-									} break;
-					case LATLON    : prLatitudeLongitude = ConvertToLatLong(locationCoordinates);
-							         Record.GetFieldValue(loc_first_coord_idx).AsDouble() = prLatitudeLongitude.first;
-									 Record.GetFieldValue(loc_second_coord_idx).AsDouble() = prLatitudeLongitude.second;
-									 break;
-					default : throw prg_error("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());
-				}
-			}
+                /* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
+                DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
+                /* Write records to record buffer. */
+                switch (gParameters.GetCoordinatesType()) {
+                    case CARTESIAN : Record.GetFieldValue(loc_first_coord_idx).AsDouble() =  locationCoordinates[0];
+                                     Record.GetFieldValue(loc_second_coord_idx).AsDouble() =  locationCoordinates[1];
+                                     for (size_t i=2; i < locationCoordinates.size(); ++i) {
+                                        printString(buffer, "%s%d", LOC_COORD_Z_FIELD, (i - 1));
+                                        Record.GetFieldValue(buffer).AsDouble() = locationCoordinates[i];
+                                    } break;
+                    case LATLON    : prLatitudeLongitude = ConvertToLatLong(locationCoordinates);
+                                     Record.GetFieldValue(loc_first_coord_idx).AsDouble() = prLatitudeLongitude.first;
+                                     Record.GetFieldValue(loc_second_coord_idx).AsDouble() = prLatitudeLongitude.second;
+                                     break;
+                    default : throw prg_error("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());
+                }
+            }
 
             //location information fields are only present for one dataset and not ordinal model
             if (gParameters.getNumFileSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME) {

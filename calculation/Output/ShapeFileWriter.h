@@ -23,9 +23,9 @@ public:
         ~ShapeDataFileWriter();
 
         int                         getShapeType() const {return _file->getType();}
-        void                        writeCoordinates(double x, double y);
+        void                        writeCoordinates(double x, double y, unsigned int num=1);
         void                        writePolygon(const std::vector<double>& polygonX, const std::vector<double>& polygonY);
-		void                        writePolyline(const std::vector<double>& polylineX, const std::vector<double>& polylineY);
+        void                        writePolyline(const std::vector<double>& polylineX, const std::vector<double>& polylineY);
 };
 //******************************************************************************
 #endif
