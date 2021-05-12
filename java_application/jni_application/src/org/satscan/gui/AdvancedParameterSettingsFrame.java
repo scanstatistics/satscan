@@ -518,7 +518,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case SPACETIME:
@@ -538,7 +538,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case PROSPECTIVESPACETIME:
@@ -562,7 +562,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
@@ -582,7 +582,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case SPATIALVARTEMPTREND:

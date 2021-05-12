@@ -1334,7 +1334,8 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
         // The temporal graph is option for purely temporal/space-time analyses with Poisson, Bernoulli, STP and Exponential.
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
             !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
-            gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL)) return;
+              gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL ||
+              gParameters.GetProbabilityModelType() == UNIFORMTIME)) return;
 
         settings.push_back(std::make_pair("Produce Temporal Graphs",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
         if (gParameters.getOutputTemporalGraphFile()) {

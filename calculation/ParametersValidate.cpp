@@ -1126,10 +1126,10 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     if (gParameters.getOutputTemporalGraphFile() &&
         (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) ||
         !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
-          gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL))) {
+          gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == UNIFORMTIME))) {
             const_cast<CParameters&>(gParameters).setOutputTemporalGraphFile(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The temporal graph option is only available for temporal analyses with Poisson, Bernoulli, STP and Exponential models.\nThe option was disabled.\n",
+                            "The temporal graph option is only available for temporal analyses with Poisson, Bernoulli, STP, Exponential and Uniform Time models.\nThe option was disabled.\n",
                             BasePrint::P_WARNING);
     }
     if (!ValidateSpatialOutputParameters(PrintDirection))
