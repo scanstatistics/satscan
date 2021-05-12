@@ -47,7 +47,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="_actions_panel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_analysesScrollpane" pref="599" max="32767" attributes="0"/>
+                  <Component id="_analysesScrollpane" pref="787" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -85,9 +85,15 @@
                           <Component id="_add_analysis" alignment="0" max="32767" attributes="0"/>
                           <Component id="_remove_analysis" alignment="1" max="32767" attributes="0"/>
                           <Component id="_execute_selected" alignment="1" max="32767" attributes="0"/>
-                          <Component id="_duplicate_analysis" alignment="0" pref="93" max="32767" attributes="0"/>
+                          <Component id="_duplicate_analysis" alignment="0" max="32767" attributes="0"/>
                           <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
-                          <Component id="_execute_progress" alignment="0" pref="0" max="32767" attributes="0"/>
+                          <Component id="_execute_progress" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jSeparator3" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_moveUp" min="-2" pref="68" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="32767" attributes="0"/>
+                              <Component id="_moveDown" min="-2" pref="68" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -102,8 +108,15 @@
                       <Component id="_modify_analysis" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_duplicate_analysis" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                      <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator3" min="-2" pref="5" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="_moveUp" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_moveDown" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator2" min="-2" pref="5" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_remove_analysis" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
@@ -130,7 +143,7 @@
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_remove_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;        for (int i=model.getRowCount(); i &gt; 0; i--) {&#xd;&#xa;            BatchAnalysis selected = _batch_analyses.get(i - 1);&#xd;&#xa;            Boolean obj = (Boolean)model.getValueAt(i - 1, SELECT_IDX);&#xd;&#xa;            ParameterSettingsFrame settings_frame = _open_settings_frames.get(selected);&#xd;&#xa;            if (obj.booleanValue()) {&#xd;&#xa;                if (settings_frame != null) {                &#xd;&#xa;                    // There is an open settings window for it - bring to focus verses removing.&#xd;&#xa;                    settings_frame.toFront();&#xd;&#xa;                    return;&#xd;&#xa;                } else {&#xd;&#xa;                    model.removeRow(i - 1);&#xd;&#xa;                    _batch_analyses.remove(selected);&#xd;&#xa;                }&#xd;&#xa;            }&#xd;&#xa;        }&#xd;&#xa;        writeBatchAnalysesFromFile();&#xd;&#xa;        enableButtons();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_remove_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;        ArrayList&lt;ImmutablePair&lt;BatchAnalysis, Integer&gt;&gt; selectedAnalyses = getSelectedAnalysis();&#xd;&#xa;        if (JOptionPane.showInternalConfirmDialog(&#xd;&#xa;            BatchAnalysisFrame.this, &#xd;&#xa;            &quot;Remove &quot; + selectedAnalyses.size() + &quot; selected analy&quot; + (selectedAnalyses.size() == 1 ? &quot;sis&quot; : &quot;ses&quot;) + &quot;?&quot;, &quot;Remove?&quot;, &#xd;&#xa;            JOptionPane.OK_CANCEL_OPTION&#xd;&#xa;        ) == JOptionPane.OK_OPTION) {&#xd;&#xa;            for (ImmutablePair&lt;BatchAnalysis, Integer&gt; selectedAnalysis : selectedAnalyses) {&#xd;&#xa;                ParameterSettingsFrame settings_frame = _open_settings_frames.get(selectedAnalysis.left);&#xd;&#xa;                if (settings_frame != null) {                &#xd;&#xa;                    // There is an open settings window for it - bring to focus verses removing.&#xd;&#xa;                    settings_frame.toFront();&#xd;&#xa;                    return;&#xd;&#xa;                } else {&#xd;&#xa;                    model.removeRow(selectedAnalysis.right);&#xd;&#xa;                    _batch_analyses.remove(selectedAnalysis.left);&#xd;&#xa;                }&#xd;&#xa;            }&#xd;&#xa;            writeBatchAnalysesFromFile();&#xd;&#xa;            enableButtons();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_modify_analysis">
@@ -156,7 +169,7 @@
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_duplicate_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        try {&#xd;&#xa;            ImmutablePair&lt;BatchAnalysis, Integer&gt; selected = getSelectedAnalysis().get(0);&#xd;&#xa;            BatchAnalysis duplicated = (BatchAnalysis)selected.left.clone();&#xd;&#xa;            duplicated.setDescription(&quot;Copy - &quot; + duplicated.getDescription());&#xd;&#xa;            duplicated.setLastExecutedDate(null);&#xd;&#xa;            duplicated.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);&#xd;&#xa;            duplicated.setDrilldownRoot(null);&#xd;&#xa;            duplicated.setSelected(true);&#xd;&#xa;            _batch_analyses.add(selected.right + 1, duplicated);&#xd;&#xa;            // Add record to table.&#xd;&#xa;            DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;            model.insertRow(selected.right + 1, getRowForBatchAnalysis(duplicated));&#xd;&#xa;            // Remove selection from any other records in table - to focus on new record.&#xd;&#xa;            removeSelection(duplicated);&#xd;&#xa;            // Show settngs window for new reocrd.&#xd;&#xa;            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, duplicated.getParameters());&#xd;&#xa;            frame.setTitle(duplicated.getDescription());&#xd;&#xa;            frame.setIconifiable(false);&#xd;&#xa;            frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(frame);&#xd;&#xa;            frame.addInternalFrameListener(SaTScanApplication.getInstance());&#xd;&#xa;            _open_settings_frames.put(duplicated, frame);&#xd;&#xa;            frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_duplicate_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        try {&#xd;&#xa;            ImmutablePair&lt;BatchAnalysis, Integer&gt; selected = getSelectedAnalysis().get(0);&#xd;&#xa;            BatchAnalysis duplicated = (BatchAnalysis)selected.left.clone();&#xd;&#xa;            duplicated.setDescription(&quot;Copy - &quot; + duplicated.getDescription());&#xd;&#xa;            duplicated.setLastExecutedDate(null);&#xd;&#xa;            duplicated.setLastExecutedStatus(BatchAnalysis.STATUS.NEVER);&#xd;&#xa;            duplicated.setDrilldownRoot(null);&#xd;&#xa;            duplicated.setSelected(true);&#xd;&#xa;            _batch_analyses.add(selected.right + 1, duplicated);&#xd;&#xa;            // Add record to table.&#xd;&#xa;            DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;            model.insertRow(selected.right + 1, getRowForBatchAnalysis(duplicated));&#xd;&#xa;            // Remove selection from any other records in table - to focus on new record.&#xd;&#xa;            removeSelection(duplicated);&#xd;&#xa;            // Show settngs window for new reocrd.&#xd;&#xa;            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, duplicated.getParameters());&#xd;&#xa;            frame.setTitle(duplicated.getDescription());&#xd;&#xa;            frame.setIconifiable(false);&#xd;&#xa;            frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(frame);&#xd;&#xa;            frame.addInternalFrameListener(SaTScanApplication.getInstance());&#xd;&#xa;            _open_settings_frames.put(duplicated, frame);&#xd;&#xa;            frame.setSelected(true);&#xd;&#xa;            _duplicate_analysis.requestFocusInWindow();&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JSeparator" name="jSeparator2">
@@ -168,6 +181,46 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_execute_progress.setVisible(false);&#xd;&#xa;"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JSeparator" name="jSeparator3">
+            </Component>
+            <Component class="javax.swing.JButton" name="_moveUp">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/arrow-up.png"/>
+                </Property>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_moveUpActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="_moveDown">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/arrow-down.png"/>
+                </Property>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[49, 23]"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_moveDownActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

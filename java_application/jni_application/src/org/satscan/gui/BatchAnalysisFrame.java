@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import static java.util.Collections.swap;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -96,6 +98,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         pack();
         readBatchAnalysesFromFile();
         enableButtons();
+        _add_analysis.requestFocusInWindow();
     }
 
     /* Enables side buttons based on table and selection. */
@@ -105,6 +108,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _modify_analysis.setEnabled(selected.size() == 1);
         _duplicate_analysis.setEnabled(selected.size() == 1);
         _execute_selected.setEnabled(!selected.isEmpty() && _open_settings_frames.isEmpty());
+        _moveUp.setEnabled(selected.size() == 1 && selected.get(0).right > 0);
+        _moveDown.setEnabled(selected.size() == 1 && selected.get(0).right < _analyses_table.getModel().getRowCount() - 1);
     }
     
     public void redisplay() {
@@ -269,6 +274,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _duplicate_analysis = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         _execute_progress = new javax.swing.JProgressBar();
+        jSeparator3 = new javax.swing.JSeparator();
+        _moveUp = new javax.swing.JButton();
+        _moveDown = new javax.swing.JButton();
         _analysesScrollpane = new javax.swing.JScrollPane();
         _analyses_table = new javax.swing.JTable();
 
@@ -317,23 +325,26 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _remove_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
-                for (int i=model.getRowCount(); i > 0; i--) {
-                    BatchAnalysis selected = _batch_analyses.get(i - 1);
-                    Boolean obj = (Boolean)model.getValueAt(i - 1, SELECT_IDX);
-                    ParameterSettingsFrame settings_frame = _open_settings_frames.get(selected);
-                    if (obj.booleanValue()) {
+                ArrayList<ImmutablePair<BatchAnalysis, Integer>> selectedAnalyses = getSelectedAnalysis();
+                if (JOptionPane.showInternalConfirmDialog(
+                    BatchAnalysisFrame.this, 
+                    "Remove " + selectedAnalyses.size() + " selected analy" + (selectedAnalyses.size() == 1 ? "sis" : "ses") + "?", "Remove?", 
+                    JOptionPane.OK_CANCEL_OPTION
+                ) == JOptionPane.OK_OPTION) {
+                    for (ImmutablePair<BatchAnalysis, Integer> selectedAnalysis : selectedAnalyses) {
+                        ParameterSettingsFrame settings_frame = _open_settings_frames.get(selectedAnalysis.left);
                         if (settings_frame != null) {                
                             // There is an open settings window for it - bring to focus verses removing.
                             settings_frame.toFront();
                             return;
                         } else {
-                            model.removeRow(i - 1);
-                            _batch_analyses.remove(selected);
+                            model.removeRow(selectedAnalysis.right);
+                            _batch_analyses.remove(selectedAnalysis.left);
                         }
                     }
+                    writeBatchAnalysesFromFile();
+                    enableButtons();
                 }
-                writeBatchAnalysesFromFile();
-                enableButtons();
             }
         });
 
@@ -413,6 +424,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     frame.addInternalFrameListener(SaTScanApplication.getInstance());
                     _open_settings_frames.put(duplicated, frame);
                     frame.setSelected(true);
+                    _duplicate_analysis.requestFocusInWindow();
                 } catch (Throwable t) {
                     new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
                 } finally {
@@ -423,6 +435,26 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
         _execute_progress.setStringPainted(true);
         _execute_progress.setVisible(false);
+
+        _moveUp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-up.png"))); // NOI18N
+        _moveUp.setMaximumSize(new java.awt.Dimension(49, 23));
+        _moveUp.setMinimumSize(new java.awt.Dimension(49, 23));
+        _moveUp.setPreferredSize(new java.awt.Dimension(49, 23));
+        _moveUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _moveUpActionPerformed(evt);
+            }
+        });
+
+        _moveDown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
+        _moveDown.setMaximumSize(new java.awt.Dimension(49, 23));
+        _moveDown.setMinimumSize(new java.awt.Dimension(49, 23));
+        _moveDown.setPreferredSize(new java.awt.Dimension(49, 23));
+        _moveDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _moveDownActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout _actions_panelLayout = new javax.swing.GroupLayout(_actions_panel);
         _actions_panel.setLayout(_actions_panelLayout);
@@ -435,9 +467,14 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addComponent(_add_analysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_remove_analysis, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_execute_selected, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_duplicate_analysis, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                    .addComponent(_duplicate_analysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator2)
-                    .addComponent(_execute_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(_execute_progress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jSeparator3)
+                    .addGroup(_actions_panelLayout.createSequentialGroup()
+                        .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _actions_panelLayout.setVerticalGroup(
@@ -449,8 +486,14 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addComponent(_modify_analysis)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_duplicate_analysis)
-                .addGap(8, 8, 8)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_actions_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_remove_analysis)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -525,7 +568,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addContainerGap()
                 .addComponent(_actions_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_analysesScrollpane, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE)
+                .addComponent(_analysesScrollpane, javax.swing.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _actionitems_panelLayout.setVerticalGroup(
@@ -551,6 +594,36 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void _moveUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__moveUpActionPerformed
+        ImmutablePair<BatchAnalysis, Integer> selected = getSelectedAnalysis().get(0);
+        if(selected.right > 0){
+            // move rows from the index to index into the position index -1
+            DefaultTableModel model = (DefaultTableModel)_analyses_table.getModel();
+            model.moveRow(selected.right, selected.right, selected.right - 1);
+            // set selection to the new position
+            _analyses_table.setRowSelectionInterval(selected.right - 1, selected.right - 1);            
+            Collections.swap(_batch_analyses, selected.right, selected.right - 1);
+            writeBatchAnalysesFromFile();
+            _moveUp.setEnabled(selected.right - 1 > 0);
+            if (_moveUp.isEnabled()) _moveUp.requestFocusInWindow();
+        }
+    }//GEN-LAST:event__moveUpActionPerformed
+
+    private void _moveDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__moveDownActionPerformed
+        ImmutablePair<BatchAnalysis, Integer> selected = getSelectedAnalysis().get(0);
+        if(selected.right < _analyses_table.getModel().getRowCount() - 1){
+            // move rows from the index to index into the position index -1
+            DefaultTableModel model = (DefaultTableModel)_analyses_table.getModel();
+            model.moveRow(selected.right, selected.right, selected.right + 1);
+            // set selection to the new position
+            _analyses_table.setRowSelectionInterval(selected.right + 1, selected.right + 1);
+            Collections.swap(_batch_analyses, selected.right, selected.right + 1);
+            writeBatchAnalysesFromFile();
+            _moveDown.setEnabled(selected.right + 1 < _analyses_table.getModel().getRowCount() - 1);
+            if (_moveDown.isEnabled()) _moveDown.requestFocusInWindow();
+        }
+    }//GEN-LAST:event__moveDownActionPerformed
 
     @Override
     public void internalFrameOpened(InternalFrameEvent e) {
@@ -1001,7 +1074,10 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private javax.swing.JProgressBar _execute_progress;
     private javax.swing.JButton _execute_selected;
     private javax.swing.JButton _modify_analysis;
+    private javax.swing.JButton _moveDown;
+    private javax.swing.JButton _moveUp;
     private javax.swing.JButton _remove_analysis;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
     // End of variables declaration//GEN-END:variables
 }
