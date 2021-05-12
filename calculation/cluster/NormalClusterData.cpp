@@ -338,79 +338,73 @@ NormalSpaceTimeData::NormalSpaceTimeData(const DataSetInterface& Interface)
 }
 
 /** constructor */
-NormalSpaceTimeData::NormalSpaceTimeData(const AbstractDataSetGateway& DataGateway)
-                    :NormalTemporalData(), geEvaluationAssistDataStatus(Allocated) {
-  try {
-    Setup(DataGateway.GetDataSetInterface());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor(const AbstractDataSetGateway&)","NormalSpaceTimeData");
-    throw;
-  }
+NormalSpaceTimeData::NormalSpaceTimeData(const AbstractDataSetGateway& DataGateway): NormalTemporalData(), geEvaluationAssistDataStatus(Allocated), _start_index(0) {
+    try {
+        Setup(DataGateway.GetDataSetInterface());
+    } catch (prg_exception& x) {
+        x.addTrace("constructor(const AbstractDataSetGateway&)","NormalSpaceTimeData");
+        throw;
+    }
 }
 
 /** class copy constructor */
-NormalSpaceTimeData::NormalSpaceTimeData(const NormalSpaceTimeData& rhs)
-                    :NormalTemporalData() {
-  try {
-    *this = rhs;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor(const NormalSpaceTimeData&)","NormalSpaceTimeData");
-    throw;
-  }
+NormalSpaceTimeData::NormalSpaceTimeData(const NormalSpaceTimeData& rhs): NormalTemporalData(), _start_index(0) {
+    try {
+        *this = rhs;
+    } catch (prg_exception& x) {
+        x.addTrace("constructor(const NormalSpaceTimeData&)","NormalSpaceTimeData");
+        throw;
+    }
 }
 
 /** class destructor */
 NormalSpaceTimeData::~NormalSpaceTimeData() {
-  try {
-    delete[] gpCases;
-    delete[] gpMeasure;
-    delete[] gpMeasureAux;
-  }
-  catch (...){}
+    try {
+        delete[] gpCases;
+        delete[] gpMeasure;
+        delete[] gpMeasureAux;
+    } catch (...){}
 }
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void NormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
-  assert(geEvaluationAssistDataStatus == Allocated);
-  count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
-  measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
-  measure_t  ** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
+    assert(geEvaluationAssistDataStatus == Allocated);
+    count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
+    measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
+    measure_t  ** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
 
-  for (unsigned int i=0; i < giAllocationSize - 1; ++i) {
-     gpCases[i] += ppCases[i][tNeighborIndex];
-     gpMeasure[i] += ppMeasure[i][tNeighborIndex];
-     gpMeasureAux[i] += ppMeasureAux[i][tNeighborIndex];
-  }
+    for (unsigned int i= _start_index; i < giAllocationSize - 1; ++i) {
+        gpCases[i] += ppCases[i][tNeighborIndex];
+        gpMeasure[i] += ppMeasure[i][tNeighborIndex];
+        gpMeasureAux[i] += ppMeasureAux[i][tNeighborIndex];
+    }
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
     can be casted to 'NormalSpaceTimeData' object. */
 void NormalSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
-  *this = (const NormalSpaceTimeData&)rhs;
+    *this = (const NormalSpaceTimeData&)rhs;
 }
 
 /** Returns newly cloned NormalSpaceTimeData object. Caller responsible for deletion
     of object. */
 NormalSpaceTimeData * NormalSpaceTimeData::Clone() const {
-   return new NormalSpaceTimeData(*this);
+    return new NormalSpaceTimeData(*this);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.
     Once this function is called various class member functions become invalid
     and an assertion will fail if called. */
 void NormalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
-  try {
-    delete[] gpCases; gpCases=0;
-    delete[] gpMeasure; gpMeasure=0;
-    delete[] gpMeasureAux; gpMeasureAux=0;
-    giAllocationSize=0;
-    geEvaluationAssistDataStatus = Deallocated;
-  }
-  catch (...){}
+    try {
+        delete[] gpCases; gpCases=0;
+        delete[] gpMeasure; gpMeasure=0;
+        delete[] gpMeasureAux; gpMeasureAux=0;
+        giAllocationSize=0;
+        geEvaluationAssistDataStatus = Deallocated;
+    } catch (...){}
 }
 
 /** re-initialize data */
@@ -460,6 +454,7 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
     gpMeasureAux = new measure_t[giAllocationSize];
     memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
+    _start_index = Interface.getDataStartIndex();
   }
   catch (prg_exception& x) {
     delete[] gpCases;

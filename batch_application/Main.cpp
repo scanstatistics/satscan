@@ -144,7 +144,12 @@ int main(int argc, char *argv[]) {
     }
     /* program options processing */
     if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console); return 0;}
-    if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
+    if (vm.count("version")) {
+        Console.Printf(
+            "SaTScan %s.%s.%s %s (%s-bit)\n", BasePrint::P_STDOUT, 
+            VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE, AppToolkit::getToolkit().is64Bit() ? "64": "32");
+        return 0;
+    }
     if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
 
     //potentially perform execution of multiple analyses, if user requested

@@ -340,102 +340,98 @@ void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const Da
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Interface)
-                         :CategoricalTemporalData(Interface), geEvaluationAssistDataStatus(Allocated) {
-  try {
-    Setup(Interface);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor(const DataSetInterface&)","CategoricalSpaceTimeData");
-    throw;
-  }
+                         :CategoricalTemporalData(Interface), geEvaluationAssistDataStatus(Allocated), _start_index(0){
+    try {
+        Setup(Interface);
+    } catch (prg_exception& x) {
+        x.addTrace("constructor(const DataSetInterface&)","CategoricalSpaceTimeData");
+        throw;
+    }
 }
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbstractDataSetGateway& DataGateway)
-                         :CategoricalTemporalData(DataGateway), geEvaluationAssistDataStatus(Allocated) {
-  try {
-    Setup(DataGateway.GetDataSetInterface());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor(const AbstractDataSetGateway&)","CategoricalSpaceTimeData");
-    throw;
-  }
+                         :CategoricalTemporalData(DataGateway), geEvaluationAssistDataStatus(Allocated), _start_index(0) {
+    try {
+        Setup(DataGateway.GetDataSetInterface());
+    } catch (prg_exception& x) {
+        x.addTrace("constructor(const AbstractDataSetGateway&)","CategoricalSpaceTimeData");
+        throw;
+    }
 }
 
 /** class copy constructor */
-CategoricalSpaceTimeData::CategoricalSpaceTimeData(const CategoricalSpaceTimeData& rhs)
-                         :CategoricalTemporalData(rhs) {
-  try {
-    *this = rhs;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor(const CategoricalSpaceTimeData&)","CategoricalSpaceTimeData");
-    throw;
-  }
+CategoricalSpaceTimeData::CategoricalSpaceTimeData(const CategoricalSpaceTimeData& rhs) : CategoricalTemporalData(rhs), _start_index(0) {
+    try {
+        *this = rhs;
+    } catch (prg_exception& x) {
+        x.addTrace("constructor(const CategoricalSpaceTimeData&)","CategoricalSpaceTimeData");
+        throw;
+    }
 }
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
-  assert(geEvaluationAssistDataStatus == Allocated);
-  count_t            ** ppCases=0;
-  unsigned int          i, iMaxWindow = gCategoryCasesHandler->Get2ndDimension() - 1;
+     assert(geEvaluationAssistDataStatus == Allocated);
+    count_t            ** ppCases=0;
+    unsigned int          i, iMaxWindow = gCategoryCasesHandler->Get2ndDimension() - 1;
 
-  for (size_t t=0; t < gvCasesPerCategory.size(); ++t) {
-    ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCategoryCaseArrays()[t];
-    for (i=0; i < iMaxWindow; ++i)
-       gppCategoryCases[t][i] += ppCases[i][tNeighborIndex];
-  }
+    for (size_t t=0; t < gvCasesPerCategory.size(); ++t) {
+        ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCategoryCaseArrays()[t];
+        for (i= _start_index; i < iMaxWindow; ++i)
+            gppCategoryCases[t][i] += ppCases[i][tNeighborIndex];
+    }
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
     can be casted to 'CategoricalSpaceTimeData' object. */
 void CategoricalSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
-  *this = (const CategoricalSpaceTimeData&)rhs;
+    *this = (const CategoricalSpaceTimeData&)rhs;
 }
 
 /** Returns newly cloned CategoricalSpaceTimeData object. Caller responsible for
     deletion of object. */
 CategoricalSpaceTimeData * CategoricalSpaceTimeData::Clone() const {
-   return new CategoricalSpaceTimeData(*this);
+    return new CategoricalSpaceTimeData(*this);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.
     Once this function is called various class member functions become invalid
     and on assertion will fail if called. */
 void CategoricalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
-  gCategoryCasesHandler.reset(0); gppCategoryCases = 0;
+    gCategoryCasesHandler.reset(0); gppCategoryCases = 0;
 }
 
 /** overloaded assignement operator */
 CategoricalSpaceTimeData & CategoricalSpaceTimeData::operator=(const CategoricalSpaceTimeData& rhs) {
-  if (rhs.geEvaluationAssistDataStatus == Allocated) {
-    if (!gCategoryCasesHandler.get())
-      gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(rhs.gCategoryCasesHandler->Get1stDimension(), rhs.gCategoryCasesHandler->Get2ndDimension(), 0));
-    *gCategoryCasesHandler = *(rhs.gCategoryCasesHandler);
-    gppCategoryCases = gCategoryCasesHandler->GetArray();
-  }
-  else {
-    gCategoryCasesHandler.reset(0); gppCategoryCases=0;
-  }
-  gvCasesPerCategory = rhs.gvCasesPerCategory;
-  geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
-  return *this;
+    if (rhs.geEvaluationAssistDataStatus == Allocated) {
+        if (!gCategoryCasesHandler.get())
+            gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(rhs.gCategoryCasesHandler->Get1stDimension(), rhs.gCategoryCasesHandler->Get2ndDimension(), 0));
+        *gCategoryCasesHandler = *(rhs.gCategoryCasesHandler);
+        gppCategoryCases = gCategoryCasesHandler->GetArray();
+    } else {
+        gCategoryCasesHandler.reset(0); gppCategoryCases=0;
+    }
+    gvCasesPerCategory = rhs.gvCasesPerCategory;
+    geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
+    _start_index = rhs._start_index;
+    return *this;
 }
 
 /** internal setup function */
 void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
-  try {
-    //Note that second dimension is number of time intervals plus one - this permits
-    //us to evaluate last time intervals data with same code as other time intervals
-    //in CTimeIntervals object.
-    gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0));
-    gppCategoryCases = gCategoryCasesHandler->GetArray();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Setup(const DataSetInterface&)","CategoricalSpaceTimeData");
-    throw;
-  }
+    try {
+        //Note that second dimension is number of time intervals plus one - this permits
+        //us to evaluate last time intervals data with same code as other time intervals
+        //in CTimeIntervals object.
+        gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0));
+        gppCategoryCases = gCategoryCasesHandler->GetArray();
+        _start_index = Interface.getDataStartIndex();
+    } catch (prg_exception& x) {
+        x.addTrace("Setup(const DataSetInterface&)","CategoricalSpaceTimeData");
+        throw;
+    }
 }
 

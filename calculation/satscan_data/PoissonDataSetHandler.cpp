@@ -144,7 +144,11 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();
@@ -202,7 +206,11 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
     location relavance for locations and the Poisson probablity model.
     Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-    DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+    DataSetInterface Interface(
+        gDataHub.GetNumTimeIntervals(), 
+        gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+        gDataHub.getDataInterfaceIntervalStartIndex()
+    );
 
     try {
         DataGatway.Clear();
@@ -243,7 +251,11 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDa
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(), 
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();

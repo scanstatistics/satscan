@@ -111,7 +111,7 @@ const char * AppToolkit::GetAcknowledgment(std::string & Acknowledgment) const {
     printString(Acknowledgment, "You are running SaTScan v%s%s.\n\nSaTScan is free, available for download from %s"
                                   ".\nIt may be used free of charge as long as proper "
                                   "citations are given\nto both the SaTScan software and the underlying "
-                                  "statistical methodology.\n\n", GetVersion(), is64Bit() ? " (64-bit)" : "", GetWebSite());
+                                  "statistical methodology.\n\n", GetVersion(), is64Bit() ? " " : " (32-bit)", GetWebSite());
     return Acknowledgment.c_str();
 }
 

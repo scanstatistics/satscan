@@ -5,8 +5,8 @@
 #include "DataSetInterface.h"
 
 /** constructor */
-DataSetInterface::DataSetInterface(unsigned int iNumTimeIntervals, unsigned int iNumTracts)
-                 :giNumTimeIntervals(iNumTimeIntervals), giNumTracts(iNumTracts) {
+DataSetInterface::DataSetInterface(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int add_data_start_index)
+                 :giNumTimeIntervals(iNumTimeIntervals), giNumTracts(iNumTracts), _add_data_start_index(add_data_start_index){
   Init();
 }
 

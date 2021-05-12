@@ -47,7 +47,11 @@ void SpaceTimePermutationDataSetHandler::assignMetaLocationData(RealDataContaine
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in internal data set collection. */
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();
@@ -87,7 +91,11 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(), 
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();

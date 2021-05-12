@@ -120,7 +120,8 @@ class CategoricalSpaceTimeData : public CategoricalTemporalData {
      void                                Setup(const DataSetInterface& Interface);
 
   protected:
-     EvaluationAssistDataStatus          geEvaluationAssistDataStatus;
+      unsigned int                       _start_index;
+      EvaluationAssistDataStatus         geEvaluationAssistDataStatus;
      std::auto_ptr<TwoDimensionArrayHandler<count_t> > gCategoryCasesHandler;
 
   public:

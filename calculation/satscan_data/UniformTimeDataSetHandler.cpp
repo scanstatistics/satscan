@@ -70,7 +70,11 @@ bool UniformTimeDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & UniformTimeDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();
@@ -115,7 +119,11 @@ AbstractDataSetGateway & UniformTimeDataSetHandler::GetDataGateway(AbstractDataS
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & UniformTimeDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();

@@ -282,34 +282,15 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
         // When the maximum temporal cluster size is a fixed period, the number of intervals
         // to collapse is simplier to calculate.
         iNumCollapsibleIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
-    }
-    else
+    } else {
       // Else we are either not performing simulations, and therefore not evaluating prospective clusters,
       // or we are not adjusting for previous analyses, and therefore only evaluating 'alive' clusters
       // in both real data and simulated data.
       iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
-
-    /* If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
-       iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
-       first time interval, which will be the bucket for the collapsed intervals.
-	   Additionally we can't collapse intervals when performing any temporal adjustments - technically these adjustments
-	   are only implemented for Poisson as of now.
-	*/
-    if (iNumCollapsibleIntervals > 1 
-		&& !(gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends())
-		&& !((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) &&
-		     (gParameters.UseAdjustmentForRelativeRisksFile() || gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED || gParameters.getAdjustForWeeklyTrends()))
-        && !gParameters.getOutputTemporalGraphFile()
-    ) {
-      // Removes collaped intervals from the data structure which details time interval start times.
-      // When input data is read, what would have gone into the respective second interval, third, etc.
-      // will be cummulated into first interval.
-      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iNumCollapsibleIntervals);
-      // Re-calculate number of time intervals.
-      m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
-      // Re-calculate index of prospective start date
-      m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-    }  
+    }
+    // Once we're determined which intervals are not evaluated, store that index for use in data infterface code.
+    if (iNumCollapsibleIntervals > 1)
+        _data_interface_start_idex = std::max(0, iNumCollapsibleIntervals);
   }
 }
 
@@ -451,6 +432,7 @@ void CSaTScanData::Init() {
   _min_iterval_cut=4;
   _network_can_report_coordinates = false;
   _drilldown_level = 0;
+  _data_interface_start_idex = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection

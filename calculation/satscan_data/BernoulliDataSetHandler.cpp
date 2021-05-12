@@ -40,7 +40,11 @@ void BernoulliDataSetHandler::assignMetaLocationData(RealDataContainer_t& Contai
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(), 
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();
@@ -88,7 +92,11 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
 
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(), 
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();

@@ -50,7 +50,11 @@ void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in internal data set collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();
@@ -105,7 +109,11 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+  DataSetInterface Interface(
+      gDataHub.GetNumTimeIntervals(),
+      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.getDataInterfaceIntervalStartIndex()
+  );
 
   try {
     DataGatway.Clear();

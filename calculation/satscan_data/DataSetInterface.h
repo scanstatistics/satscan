@@ -26,10 +26,12 @@ class DataSetInterface {
     unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
     const AbstractRandomizer  * _randomizer;            /** pointer to data set randomizer */
 
+    unsigned int               _add_data_start_index;
+
     void                        Init();
 
   public:
-    DataSetInterface(unsigned int iNumTimeIntervals=0, unsigned int iNumTracts=0);
+    DataSetInterface(unsigned int iNumTimeIntervals=0, unsigned int iNumTracts=0, unsigned int add_data_start_index=0);
     virtual ~DataSetInterface();
 
     count_t                  ** gppCaseArray;           /** pointer to dataset case array */
@@ -64,6 +66,7 @@ class DataSetInterface {
     inline measure_t                   * GetPSMeasureAuxArray() const {return gpPSMeasureAuxArray;}
     inline measure_t                   * GetPTMeasureAuxArray() const {return gpPTMeasureAuxArray;}
     inline const AbstractRandomizer    * GetRandomizer() const {return _randomizer;}
+    unsigned int                         getDataStartIndex() const { return _add_data_start_index; }
     inline const AbstractTimeTrend     * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t                       GetTotalCasesCount() const {return gTotalCases;}
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}

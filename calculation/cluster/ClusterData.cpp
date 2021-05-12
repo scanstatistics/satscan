@@ -656,11 +656,10 @@ SpaceTimeData::SpaceTimeData(const SpaceTimeData& rhs)
 
 /** class destructor */
 SpaceTimeData::~SpaceTimeData() {
-  try {
-    delete[] gpCases;
-    delete[] gpMeasure;
-  }
-  catch (...){}
+    try {
+        delete[] gpCases;
+        delete[] gpMeasure;
+    } catch (...){}
 }
 
 /** Adds neighbor data to accumulated data and updates CMeasureList object accordingly. */
@@ -683,7 +682,7 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   for (t=0; t < tNumNeighbors; ++t) {
      tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
-     for (i=0; i < iIntervals; ++i) {
+     for (i= _start_index; i < iIntervals; ++i) {
        gpCases[i] += ppCases[i][tNeighborIndex];
        gpMeasure[i] += ppMeasure[i][tNeighborIndex];
      }
@@ -699,7 +698,7 @@ void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSe
   count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
 
-  for (unsigned int i=0; i < giAllocationSize - 1; ++i) {
+  for (unsigned int i= _start_index; i < giAllocationSize - 1; ++i) {
      gpCases[i] += ppCases[i][tNeighborIndex];
      gpMeasure[i] += ppMeasure[i][tNeighborIndex];
   }
@@ -732,40 +731,40 @@ void SpaceTimeData::DeallocateEvaluationAssistClassMembers() {
 
 /** overloaded assignement operator */
 SpaceTimeData & SpaceTimeData::operator=(const SpaceTimeData& rhs) {
-  gtCases = rhs.gtCases;
-  gtMeasure = rhs.gtMeasure;
-  giAllocationSize = rhs.giAllocationSize;
-  if (rhs.geEvaluationAssistDataStatus == Allocated) {
-    if(!gpCases) gpCases = new count_t[rhs.giAllocationSize];
-    if (!gpMeasure) gpMeasure = new measure_t[rhs.giAllocationSize];
-    memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
-    memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
-  }
-  else {
-    delete[] gpCases; gpCases=0;
-    delete[] gpMeasure; gpMeasure=0;
-  }
-  geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
-  return *this;
+    gtCases = rhs.gtCases;
+    gtMeasure = rhs.gtMeasure;
+    giAllocationSize = rhs.giAllocationSize;
+    _start_index = rhs._start_index;
+    if (rhs.geEvaluationAssistDataStatus == Allocated) {
+        if(!gpCases) gpCases = new count_t[rhs.giAllocationSize];
+        if (!gpMeasure) gpMeasure = new measure_t[rhs.giAllocationSize];
+        memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
+        memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
+    } else {
+        delete[] gpCases; gpCases=0;
+        delete[] gpMeasure; gpMeasure=0;
+    }
+    geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
+    return *this;
 }
 
 /** internal setup function */
 void SpaceTimeData::Setup(const DataSetInterface& Interface) {
-  try {
-    //Note that giAllocationSize is number of time intervals plus one - this permits
-    //us to evaluate last time intervals data with same code as other time intervals
-    //in CTimeIntervals object.
-    giAllocationSize = Interface.GetNumTimeIntervals() + 1;
-    gpCases = new count_t[giAllocationSize];
-    memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
-    gpMeasure = new measure_t[giAllocationSize];
-    memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-  }
-  catch (prg_exception& x) {
-    delete[] gpCases;
-    delete[] gpMeasure;
-    x.addTrace("Setup(const DataSetInterface&)","SpaceTimeData");
-    throw;
-  }
+    try {
+        //Note that giAllocationSize is number of time intervals plus one - this permits
+        //us to evaluate last time intervals data with same code as other time intervals
+        //in CTimeIntervals object.
+        giAllocationSize = Interface.GetNumTimeIntervals() + 1;
+        gpCases = new count_t[giAllocationSize];
+        memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+        gpMeasure = new measure_t[giAllocationSize];
+        memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+        _start_index = Interface.getDataStartIndex();
+    } catch (prg_exception& x) {
+        delete[] gpCases;
+        delete[] gpMeasure;
+        x.addTrace("Setup(const DataSetInterface&)","SpaceTimeData");
+        throw;
+    }
 }
 

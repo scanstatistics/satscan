@@ -106,6 +106,7 @@ class NormalSpaceTimeData : public NormalTemporalData {
   protected:
      EvaluationAssistDataStatus   geEvaluationAssistDataStatus;
      unsigned int                 giAllocationSize;  /** size of allocated arrays */
+     unsigned int                 _start_index;
 
   public:
     NormalSpaceTimeData(const DataSetInterface& Interface);

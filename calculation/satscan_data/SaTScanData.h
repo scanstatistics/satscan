@@ -65,6 +65,7 @@ class CSaTScanData {
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
     std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
     int                                         m_nTimeIntervals;
+    int                                         _data_interface_start_idex;
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
@@ -104,15 +105,15 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
-	Network & getLocationNetwork() {
-		return  _locations_network;
-	}
+    Network & getLocationNetwork() {
+        return  _locations_network;
+    }
 
-	const Network & refLocationNetwork() const {
-		return  _locations_network;
-	}
+    const Network & refLocationNetwork() const {
+        return  _locations_network;
+    }
 
-
+    int                                         getDataInterfaceIntervalStartIndex() const { return _data_interface_start_idex; }
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
@@ -120,7 +121,7 @@ class CSaTScanData {
     virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
-	bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }
+    bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
     const DataSetHandler                      & GetDataSetHandler() const {return *gDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;

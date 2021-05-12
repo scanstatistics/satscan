@@ -62,8 +62,8 @@ class CParameters {
                 _source_type(type), _fields_map(map), 
                 _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false) {}
 
-			InputSource(SourceType type, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers) :
-				_source_type(type), _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers) {}
+            InputSource(SourceType type, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers) :
+                _source_type(type), _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers) {}
 
 
             InputSource(SourceType type, FieldMapContainer_t map, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers):

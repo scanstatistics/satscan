@@ -231,11 +231,12 @@ class SpaceTimeData : public TemporalData {
   private:
      EvaluationAssistDataStatus geEvaluationAssistDataStatus;
      
-     void                       Init() {gpCases=0;gpMeasure=0;}
+     void                       Init() { gpCases=0; gpMeasure=0; _start_index =0; }
      void                       Setup(const DataSetInterface& Interface);
 
   protected:
      unsigned int               giAllocationSize;
+     unsigned int               _start_index;
 
      SpaceTimeData();
 
