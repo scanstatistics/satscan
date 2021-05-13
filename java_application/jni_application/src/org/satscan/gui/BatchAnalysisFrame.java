@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import static java.util.Collections.swap;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -331,6 +331,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     "Remove " + selectedAnalyses.size() + " selected analy" + (selectedAnalyses.size() == 1 ? "sis" : "ses") + "?", "Remove?", 
                     JOptionPane.OK_CANCEL_OPTION
                 ) == JOptionPane.OK_OPTION) {
+                    Collections.sort(selectedAnalyses, Comparator.comparing(p -> -p.getRight()));
                     for (ImmutablePair<BatchAnalysis, Integer> selectedAnalysis : selectedAnalyses) {
                         ParameterSettingsFrame settings_frame = _open_settings_frames.get(selectedAnalysis.left);
                         if (settings_frame != null) {                
@@ -489,7 +490,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_actions_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_actions_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
