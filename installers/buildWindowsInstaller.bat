@@ -17,14 +17,15 @@ set runtimeoutput=%fileshare%\satscan\build.area\satscan\installers\java\jre
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\satscan\build.area\satscan\installers\inno-setup\satscan.iss
 
-set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe
-set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx
+                         
+set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth\signtool.exe
+set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
 set timestamp=http://timestamp.digicert.com/
 set password="&4L(JyhyOmwF)$Z"
 
 
 REM Codesigning a GUI exe file.
-%fileshare%\satscan\build.area\satscan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscanexe%
+%fileshare%\satscan\build.area\satscan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %satscanexe%
 
 REM Verify the GUI exe file is codesigned correctly.
 %signtool% verify /pa /v %satscanexe%
@@ -37,7 +38,7 @@ REM Build InnoSetup installer.
 %innosetup% %innoiss%
 
 REM Codesign installer exe file.
-%signtool% sign /f %certificate% /p %password% /t %timestamp% /v %satscaninstaller%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %satscaninstaller%
 
 REM Verify the installer exe file is codesigned correctly.
 %signtool% verify /pa /v %satscaninstaller%
