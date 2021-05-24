@@ -11,7 +11,7 @@ set satscanversionf=10_0
 set satscanexe=%fileshare%\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.exe
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdk=%fileshare%\satscan\installers\install.applications\java\jdk-15.0.2+7_adopt_windows_x64
+set javajdk=%fileshare%\satscan\installers\install.applications\java\jdk-16.0.1+9_adopt_windows_x64
 set runtimeoutput=%fileshare%\satscan\build.area\satscan\installers\java\jre
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
