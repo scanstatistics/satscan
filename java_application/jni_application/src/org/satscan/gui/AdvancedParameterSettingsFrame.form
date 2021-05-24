@@ -3873,7 +3873,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_label_prospective_frequency" min="-2" pref="219" max="-2" attributes="0"/>
+                          <Component id="_label_prospective_frequency" min="-2" pref="268" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_prospective_frequency" min="-2" pref="190" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
@@ -4144,28 +4144,21 @@
                               <Component id="_mainAnalysisDrilldown" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_drilldown_restrictions" alignment="0" min="-2" pref="349" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_drilldown_restriction_cutoff_label" pref="191" max="32767" attributes="0"/>
+                                              <Component id="_drilldown_restriction_locations_label" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="_drilldown_restriction_cases_label" alignment="0" max="32767" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Group type="102" alignment="1" attributes="0">
-                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                      <Component id="_drilldown_restriction_cases_label" alignment="0" max="32767" attributes="0"/>
-                                                      <Component id="_drilldown_restriction_locations_label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                      <Component id="_drilldown_restriction_locations" max="32767" attributes="0"/>
-                                                      <Component id="_drilldown_restriction_cases" min="-2" pref="57" max="-2" attributes="0"/>
-                                                  </Group>
-                                              </Group>
-                                              <Group type="102" alignment="1" attributes="0">
-                                                  <Component id="_drilldown_restriction_cutoff_label" min="-2" pref="151" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_drilldown_restriction_cutoff" min="-2" pref="57" max="-2" attributes="1"/>
-                                              </Group>
+                                              <Component id="_drilldown_restriction_locations" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="_drilldown_restriction_cases" alignment="0" min="-2" pref="57" max="-2" attributes="0"/>
+                                              <Component id="_drilldown_restriction_cutoff" alignment="1" min="-2" pref="57" max="-2" attributes="1"/>
                                           </Group>
                                       </Group>
+                                      <Component id="_drilldown_restrictions" alignment="0" min="-2" pref="349" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_purelySpatialDrilldown" min="-2" pref="222" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
@@ -4329,12 +4322,12 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_locations_network" pref="628" max="32767" attributes="0"/>
+                              <Component id="_locations_network" pref="624" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   <Component id="_network_file_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_network_filename" min="-2" pref="508" max="-2" attributes="0"/>
+                                  <Component id="_network_filename" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_browse_network_filename" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>

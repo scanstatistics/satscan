@@ -323,6 +323,12 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable, bool use
     FILE * fp=0;
     bool bReturn=true;
 
+#ifdef __APPLE__
+    // Hack for Mac application - where sample_data is in application bundle. We don't want to write rsult files to the bundle.
+    if (bWriteEnable && filename.find("/Contents/app/sample_data/") != std::string::npos)
+        return false;
+#endif
+
     if (useTempFile) {
         std::string buffer;
         FileName test(filename.c_str());

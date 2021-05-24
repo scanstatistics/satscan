@@ -126,7 +126,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             // The jar is in the folder referenced by "java.library.path".
             _application = java_lib_path.getAbsolutePath() + File.separator + "SaTScan.jar";
             // The user guide is on the directory above the application root.
-            _user_guide = java_lib_path.getParentFile().getParent() + "Contents" + File.separator + "app" + File.separator + "SaTScan_Users_Guide.pdf";            
+            _user_guide = java_lib_path.getParentFile().getParent() + File.separator  + "Contents" + File.separator + "app" + File.separator + "SaTScan_Users_Guide.pdf";            
         } else {
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "SaTScan.jar";
             _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";            
