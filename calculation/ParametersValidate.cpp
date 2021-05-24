@@ -249,67 +249,67 @@ bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, Parameter
 }
 
 bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection) const {
-	bool bValid = true;
+    bool bValid = true;
 
-	if (!(gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()))
-		return bValid;
+    if (!(gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()))
+        return bValid;
 
-	if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe standard cluster drilldown is not implemented for %s analysis.\n",
-			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
-		return bValid;
-	}
-	if (gParameters.getPerformBernoulliDrilldown() && 
-		!(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
-			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
-		return bValid;
-	}
-	if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
-		bValid = false;
-		PrintDirection.Printf(
-			"%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", 
-			BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-		);
-	}
-	if (gParameters.getDrilldownMinimumLocationsCluster() < 2) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe minimum number of locations in detected cluster for drilldown cannot be less than 2.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-	}
-	if (gParameters.getDrilldownMinimumCasesCluster() < 10) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-	}
-	double cutoff = gParameters.getDrilldownPvalueCutoff();
-	if (cutoff <= 0.0 || 1.0 <= cutoff) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-	}
-	if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
-		if (gParameters.getNumFileSets() > 1) {
-			bValid = false;
-			PrintDirection.Printf("%s:\nThe adjustment for weekly trends, with the purely spatial Beroulli drilldown, cannot be performed with multiple data sets.\n",
-				BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-		}
-		if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
-			bValid = false;
-			PrintDirection.Printf("%s:\nThe adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.\n",
-				BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-		}
-		double dStudyPeriodLengthInUnits = ceil(
-			CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-			DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()), gParameters.GetTimeAggregationUnitsType(), 1)
-		);
-		// Primary analysis must adhere to study period restriction length.
-		if (gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
-			PrintDirection.Printf("%s:\nThe adjustment for day of week, in the purely spatial Beroulli drilldown, cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-			return false;
-		}
-	}
+    if (gParameters.getPerformStandardDrilldown() && !(gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe standard cluster drilldown is not implemented for %s analysis.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+        return bValid;
+    }
+    if (gParameters.getPerformBernoulliDrilldown() && 
+        !(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+        return bValid;
+    }
+    if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
+        bValid = false;
+        PrintDirection.Printf(
+            "%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", 
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+        );
+    }
+    if (gParameters.getDrilldownMinimumLocationsCluster() < 2) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe minimum number of locations in detected cluster for drilldown cannot be less than 2.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    }
+    if (gParameters.getDrilldownMinimumCasesCluster() < 10) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    }
+    double cutoff = gParameters.getDrilldownPvalueCutoff();
+    if (cutoff <= 0.0 || 1.0 <= cutoff) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    }
+    if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
+        if (gParameters.getNumFileSets() > 1) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe adjustment for weekly trends, with the purely spatial Beroulli drilldown, cannot be performed with multiple data sets.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        double dStudyPeriodLengthInUnits = ceil(
+            CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+            DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()), gParameters.GetTimeAggregationUnitsType(), 1)
+        );
+        // Primary analysis must adhere to study period restriction length.
+        if (gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
+            PrintDirection.Printf("%s:\nThe adjustment for day of week, in the purely spatial Beroulli drilldown, cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            return false;
+        }
+    }
 
-	return bValid;
+    return bValid;
 }
 
 /** Validates ellipse parameters if number of ellipses greater than zero.
@@ -320,10 +320,10 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
 
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
-	if (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.getUseLocationsNetworkFile()) {
-		bValid = false;
-		PrintDirection.Printf("%s:\nThe option to use elliptic spatial windows cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-	}
+    if (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.getUseLocationsNetworkFile()) {
+        bValid = false;
+        PrintDirection.Printf("%s:\nThe option to use elliptic spatial windows cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    }
     if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
       PrintDirection.Printf("%s:\nThe number of requested ellipses '%d' is not within allowable range of 1 - %d.\n",
@@ -609,10 +609,10 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.UseMetaLocationsFile()) {
        bValid &= checkFileExists(gParameters.getMetaLocationsFilename(), "meta locations", PrintDirection);
     }
-	//validate locations network file
-	if (gParameters.getUseLocationsNetworkFile()) {
-		bValid &= checkFileExists(gParameters.getLocationsNetworkFilename(), "locations network", PrintDirection);
-	}
+    //validate locations network file
+    if (gParameters.getUseLocationsNetworkFile()) {
+        bValid &= checkFileExists(gParameters.getLocationsNetworkFilename(), "locations network", PrintDirection);
+    }
     //validate output file
     bValid &= checkFileExists(gParameters.GetOutputFileName(), "results", PrintDirection, true);
   } catch (prg_exception& x) {
@@ -778,19 +778,19 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
         return false;
       }
 
-	  //validate the time aggregation length agree with the study period and maximum temporal cluster size
-	  dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-		                                                                   DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-		                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
-	  dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize() / 100.0);
-	  if (dMaxTemporalLengthInUnits < 1) {
-		  GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-		  PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
-			                    "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
-			                    gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
-			                    sPrecisionString.c_str(), sPrecisionString.c_str());
-		  return false;
-	  }
+      //validate the time aggregation length agree with the study period and maximum temporal cluster size
+      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                           DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                           gParameters.GetTimeAggregationUnitsType(), 1));
+      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize() / 100.0);
+      if (dMaxTemporalLengthInUnits < 1) {
+          GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
+          PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
+                                "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
+                                gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
+                                sPrecisionString.c_str(), sPrecisionString.c_str());
+          return false;
+      }
     } else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
       //validate for maximum specified as time aggregation unit
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
@@ -804,7 +804,7 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                            DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                            gParameters.GetTimeAggregationUnitsType(), 1));
-	  double maximum = (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 50.0 : 90.0);
+      double maximum = (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 50.0 : 90.0);
       dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * maximum /100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
         PrintDirection.Printf("%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
@@ -928,32 +928,37 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
 }
 
 bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirection) const {
-	bool  bReturn = true;
-	try {
+    bool  bReturn = true;
+    try {
         if (!gParameters.getUseLocationsNetworkFile())
             return bReturn;
 
-		if (gParameters.GetIsPurelyTemporalAnalysis()) {
-			const_cast<CParameters&>(gParameters).setUseLocationsNetworkFile(false);
-		}
-		if (gParameters.UseLocationNeighborsFile()) {
-			bReturn = false;
-			PrintDirection.Printf("%s:\nThe non-euclidean neighbors file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-		}
-		if (gParameters.UseSpecialGrid()) {
-			bReturn = false;
-			PrintDirection.Printf("%s:\nThe special grid file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-		}
-		if (gParameters.requestsGeogrphaicalOutput() && gParameters.GetCoordinatesFileName().size() == 0) {
-			const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
-			PrintDirection.Printf("Parameter Setting Warning:\n"
-				"Geographical output file(s) have been requested in conjuction with a network file yet a coordinates file has not been provided.\n"
-				"A coordinates file is required to place locations geograghically. Geographical output files will not be created in this analysis.\n", BasePrint::P_WARNING
-			);
-		}
+        if (gParameters.GetIsPurelyTemporalAnalysis()) {
+            const_cast<CParameters&>(gParameters).setUseLocationsNetworkFile(false);
+        }
+        if (gParameters.UseLocationNeighborsFile()) {
+            bReturn = false;
+            PrintDirection.Printf("%s:\nThe non-euclidean neighbors file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        if (gParameters.UseSpecialGrid()) {
+            bReturn = false;
+            PrintDirection.Printf("%s:\nThe special grid file cannot be used in conjuction with the locations network file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        if (gParameters.requestsGeogrphaicalOutput() && gParameters.GetCoordinatesFileName().size() == 0) {
+            const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
+            PrintDirection.Printf("Parameter Setting Warning:\n"
+                "Geographical output file(s) have been requested in conjuction with a network file yet a coordinates file has not been provided.\n"
+                "A coordinates file is required to place locations geograghically. Geographical output files will not be created in this analysis.\n", BasePrint::P_WARNING
+            );
+        }
         if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
             bReturn = false;
             PrintDirection.Printf("%s:\nThe locations network file cannot be used in conjunction with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+        if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE) {
+            // There is a problem that has not been resolved yet -- see CentroidNeighborCalculator::CenterLocationDistancesAbout.
+            bReturn = false;
+            PrintDirection.Printf("%s:\nThe locations network file defined to override euclidean distances of the coordinates file is not currently implemented.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
         if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE && gParameters.requestsGeogrphaicalOutput()) {
             const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
@@ -962,11 +967,11 @@ bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirec
                 "File generation is not defined for this combination of settings and output files will not be created in this analysis.\n", BasePrint::P_WARNING
             );
         }
-	} catch (prg_exception& x) {
-		x.addTrace("ValidateLocationNetworkParameters()", "ParametersValidate");
-		throw;
-	}
-	return bReturn;
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateLocationNetworkParameters()", "ParametersValidate");
+        throw;
+    }
+    return bReturn;
 }
 
 /** Validates observable regions parameters. */
@@ -1111,8 +1116,8 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
 
     if (gParameters.getOutputShapeFiles() && !(gParameters.GetOutputClusterLevelDBase() || gParameters.GetOutputAreaSpecificDBase())) {
       const_cast<CParameters&>(gParameters).SetOutputClusterLevelDBase(true);
-	  const_cast<CParameters&>(gParameters).SetOutputAreaSpecificDBase(true);
-	  PrintDirection.Printf("Parameter Setting Warning:\n"
+      const_cast<CParameters&>(gParameters).SetOutputAreaSpecificDBase(true);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
                             "The shapefiles option requires that the 'Cluster Information' and 'Location Information' dBase files also be generated.\nThese options were enabled.\n",
                             BasePrint::P_WARNING);
     }
