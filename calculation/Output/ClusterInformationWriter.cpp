@@ -614,7 +614,8 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
           gParameters.GetProbabilityModelType() == BERNOULLI)
           Record.GetFieldValue(POPULATION_FIELD).AsDouble() = gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
       if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-          double percentCases = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
+          double clusterSetPopulation = gDataHub.GetProbabilityModel().GetPopulation(iSetIndex, theCluster, gDataHub);
+          double percentCases = (clusterSetPopulation ? 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / clusterSetPopulation : 0.0);
           Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = percentCases;
       }
 
@@ -722,7 +723,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
           //record expected cases - not combining categories
           Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, *itr, itrC->GetCategoryIndex(m));
           //record percentage cases per category
-          Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / dTotalCasesInClusterDataSet;
+          Record.GetFieldValue(PERCENTAGE_CASES_FIELD).AsDouble() = (dTotalCasesInClusterDataSet ? 100.0 * Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / dTotalCasesInClusterDataSet : 0.0);
           if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
           if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
        }

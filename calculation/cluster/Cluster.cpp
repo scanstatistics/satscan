@@ -556,7 +556,10 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        count_t tObserved=0;
        for (size_t m=0; m < itrC->GetNumCombinedCategories(); ++m)
           tObserved += GetObservedCountOrdinal(*itr, itrC->GetCategoryIndex(m));
-       printString(work, "%s%s", (itrC == vCategoryContainer.begin() ? "" : ", "), getValueAsString(100.0 * tObserved / dTotalCasesInClusterDataSet, work2,1).c_str());
+       printString(
+           work, "%s%s", (itrC == vCategoryContainer.begin() ? "" : ", "), 
+           getValueAsString(dTotalCasesInClusterDataSet ? 100.0 * tObserved / dTotalCasesInClusterDataSet : 0.0, work2, 1).c_str()
+       );
        buffer += work;
      }     
      printClusterData(fp, PrintFormat, "Percent cases in area", buffer, true, set_number);
@@ -589,7 +592,8 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
        DisplayRelativeRisk(fp, *itr, DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
         //percent cases in an area
-        double percentCases = 100.0 * GetObservedCount(*itr) / DataHub.GetProbabilityModel().GetPopulation(*itr, *this, DataHub);
+        double clusterSetPopulation = DataHub.GetProbabilityModel().GetPopulation(*itr, *this, DataHub);
+        double percentCases = (clusterSetPopulation ? 100.0 * GetObservedCount(*itr) / clusterSetPopulation: 0.0);
         printClusterData(fp, PrintFormat, "Percent cases in area", getValueAsString(percentCases, buffer,1), true, set_number);
      }
    }
