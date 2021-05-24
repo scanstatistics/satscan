@@ -76,8 +76,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     /* Full path of the xml file which stores analysis. */
     private final String _saved_filename = System.getProperty("user.home") + System.getProperty("file.separator") + ".satscan" + System.getProperty("file.separator") + "batch-settings.xml";
     public static final String DATE_FORMAT = "yyyy-MM-dd hh:mm aa";
-    private static String DEFAULT_STUDY_PERIOD = "Per Settings";
-    private static String DEFAULT_LAG = "No Lag";
+    private static final String DEFAULT_STUDY_PERIOD = "Per Settings";
+    private static final String DEFAULT_LAG = "No Lag";
     private final int SELECT_IDX = 0;
     private final int DESCRIPTION_IDX = 1;
     private final int ANALYSIS_IDX = 2;
@@ -86,8 +86,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private final int LAG_IDX = 5;
     private final int STATUS_IDX = 6;
     private boolean _table_initiallized = false;
-    private String _lag_helptext = "If specified, the Study Period End Date is replaced with a value relative to today’s date. For example, a Lag Time of 3 days would set the Study Period End Date equal to today’s date minus 3 days. If the No Lag box is checked, the Study Period End Date defaults to the date specified in the parameter settings.";
-    private String _study_period_helptext = "Study Length is the length of time between the Study Period Start Date and the Study Period End Date (inclusive). If specified, the Study Period Start Date is replaced with a value relative to the Study Period End Date. If the No Offset box is checked, the Study Period Start Date defaults to the date specified in the parameter settings.";
+    private final String _lag_helptext = "If specified, the Study Period End Date is replaced with a value relative to today’s date. For example, a Lag Time of 3 days would set the Study Period End Date equal to today’s date minus 3 days. If the No Lag box is checked, the Study Period End Date defaults to the date specified in the parameter settings.";
+    private final String _study_period_helptext = "Study Length is the length of time between the Study Period Start Date and the Study Period End Date (inclusive). If specified, the Study Period Start Date is replaced with a value relative to the Study Period End Date. If the No Offset box is checked, the Study Period Start Date defaults to the date specified in the parameter settings.";
     
     /* Creates new form AnalysisBatchFrame */
     public BatchAnalysisFrame(final JRootPane root_pane) {
@@ -288,7 +288,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
         _actions_panel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        _add_analysis.setText("New");
+        _add_analysis.setText("New Settings");
         _add_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);
@@ -320,7 +320,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
-        _remove_analysis.setText("Remove");
+        _remove_analysis.setText("Remove Selected");
         _remove_analysis.setEnabled(false);
         _remove_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -349,7 +349,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
-        _modify_analysis.setText("Modify");
+        _modify_analysis.setText("Modify Selected");
         _modify_analysis.setEnabled(false);
         _modify_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -378,7 +378,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
-        _execute_selected.setText("Execute");
+        _execute_selected.setText("Execute Selected");
         _execute_selected.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 _execute_progress.setValue(0);
@@ -396,7 +396,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
-        _duplicate_analysis.setText("Duplicate");
+        _duplicate_analysis.setText("Create Duplicate");
         _duplicate_analysis.setEnabled(false);
         _duplicate_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {

@@ -131,7 +131,7 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="_add_analysis">
               <Properties>
-                <Property name="text" type="java.lang.String" value="New"/>
+                <Property name="text" type="java.lang.String" value="New Settings"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_add_analysis.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);&#xd;&#xa;        // Create new BatchAnalysis object and add to collection.&#xd;&#xa;        BatchAnalysis newAnalysis = new BatchAnalysis();&#xd;&#xa;        newAnalysis.setSelected(true);&#xd;&#xa;        _batch_analyses.add(newAnalysis);&#xd;&#xa;        // Add record to table.&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();&#xd;&#xa;        model.addRow(getRowForBatchAnalysis(newAnalysis));&#xd;&#xa;        // Remove selection from any other records in table - to focus on new record.&#xd;&#xa;        removeSelection(newAnalysis);&#xd;&#xa;        // Show settngs window for new reocrd.&#xd;&#xa;        try {&#xd;&#xa;            ParameterSettingsFrame frame = new ParameterSettingsFrame(SaTScanApplication.getInstance().getRootPane(), BatchAnalysisFrame.this, newAnalysis.getParameters());&#xd;&#xa;            frame.setTitle(newAnalysis.getDescription());&#xd;&#xa;            frame.setIconifiable(false);&#xd;&#xa;            frame.addInternalFrameListener(BatchAnalysisFrame.this);&#xd;&#xa;            frame.setVisible(true);&#xd;&#xa;            SaTScanApplication.getInstance().AddFrame(frame);&#xd;&#xa;            frame.addInternalFrameListener(SaTScanApplication.getInstance());&#xd;&#xa;            _open_settings_frames.put(newAnalysis, frame);&#xd;&#xa;            frame.setSelected(true);&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
@@ -139,7 +139,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="_remove_analysis">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Remove"/>
+                <Property name="text" type="java.lang.String" value="Remove Selected"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AuxValues>
@@ -148,7 +148,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="_modify_analysis">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Modify"/>
+                <Property name="text" type="java.lang.String" value="Modify Selected"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AuxValues>
@@ -157,7 +157,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="_execute_selected">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Execute"/>
+                <Property name="text" type="java.lang.String" value="Execute Selected"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_execute_selected.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        _execute_progress.setValue(0);&#xd;&#xa;        _execute_progress.setString(&quot;&quot;);&#xd;&#xa;        _execute_progress.setVisible(true);&#xd;&#xa;        ExecuteAnalysisTask task = new ExecuteAnalysisTask();&#xd;&#xa;        task.addPropertyChangeListener(new PropertyChangeListener() {&#xd;&#xa;                public  void propertyChange(PropertyChangeEvent evt) {&#xd;&#xa;                    if (&quot;progress&quot;.equals(evt.getPropertyName())) {&#xd;&#xa;                        _execute_progress.setValue((Integer)evt.getNewValue());&#xd;&#xa;                    }&#xd;&#xa;                }&#xd;&#xa;        });&#xd;&#xa;        task.execute();&#xd;&#xa;    }&#xd;&#xa;});"/>
@@ -165,7 +165,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="_duplicate_analysis">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Duplicate"/>
+                <Property name="text" type="java.lang.String" value="Create Duplicate"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AuxValues>
