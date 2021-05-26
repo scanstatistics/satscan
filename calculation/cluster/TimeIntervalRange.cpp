@@ -114,14 +114,14 @@ BernoulliTimeStratifiedTemporalDataEvaluator::BernoulliTimeStratifiedTemporalDat
     :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
     if (DataHub.GetParameters().GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
         throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator not implemented for selected time trend adjustment type.", "BernoulliTimeStratifiedTemporalDataEvaluator");
-    if (DataHub.GetParameters().GetAnalysisType() != PROSPECTIVESPACETIME)
-        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator only implemented for prospective space-time analyses.", "BernoulliTimeStratifiedTemporalDataEvaluator");
+    if (!DataHub.GetParameters().GetIsSpaceTimeAnalysis())
+        throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator only implemented for space-time analyses.", "BernoulliTimeStratifiedTemporalDataEvaluator");
     if (DataHub.GetParameters().GetAreaScanRateType() != HIGH)
         throw prg_error("BeronulliTimeStratifiedTemporalDataEvaluator only implemented for high scanning areas.", "BernoulliTimeStratifiedTemporalDataEvaluator");
     // get pointers to non-cumulative case and measure data, we'll need these during scanning
     _pt_counts_nc = DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT_NC();
     _pt_measure_nc = DataHub.GetDataSetHandler().GetDataSet().getMeasureData_PT_NC();
-    _stop_weakened_clusters = true; // TODO - make this a parameter "save execution time by stopping weakened clusters."
+    _stop_weakened_clusters = DataHub.GetParameters().GetIsProspectiveAnalysis(); // TODO - make this a parameter "save execution time by stopping weakened clusters."
 }
 
 /** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
@@ -234,8 +234,8 @@ MultiSetBernoulliTimeStratifiedTemporalDataEvaluator::MultiSetBernoulliTimeStrat
     :CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
     if (DataHub.GetParameters().GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
         throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator not implemented for selected time trend adjustment type.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
-    if (DataHub.GetParameters().GetAnalysisType() != PROSPECTIVESPACETIME)
-        throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator only implemented for prospective space-time analyses.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
+    if (!DataHub.GetParameters().GetIsSpaceTimeAnalysis())
+        throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator only implemented for space-time analyses.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
     if (DataHub.GetParameters().GetAreaScanRateType() != HIGH)
         throw prg_error("MultiSetBernoulliTimeStratifiedTemporalDataEvaluator only implemented for high scanning areas.", "MultiSetBernoulliTimeStratifiedTemporalDataEvaluator");
     // get pointers to non-cumulative case and measure data, we'll need these during scanning

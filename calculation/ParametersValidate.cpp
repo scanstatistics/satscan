@@ -1790,10 +1790,10 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
                         "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                } else if (!gParameters.GetIsProspectiveAnalysis()) {
+                } else if (!gParameters.GetIsSpaceTimeAnalysis()) {
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is valid "
-                        "only for prospective space-time analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                        "only for space-time analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 } /* else if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe Bernoulli model does not permit the nonparametric temporal trends adjustment\n"

@@ -523,7 +523,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
+                enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
@@ -547,7 +547,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH),
                     bPoisson, bPoisson
                 );
-                enableAdjustmentForSpatialOptionsGroup(bPoisson, true);
+                enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);

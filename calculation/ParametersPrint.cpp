@@ -1201,7 +1201,7 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                                         gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL ||
                                         gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ||
                                         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) &&
-                                        gParameters.GetProbabilityModelType() == POISSON;
+                                        (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI);
     bool bPrintingSpatialAdjustment =  (gParameters.GetAnalysisType() == SPACETIME ||
                                         gParameters.GetAnalysisType() == PROSPECTIVESPACETIME) &&
                                         gParameters.GetProbabilityModelType() == POISSON;
