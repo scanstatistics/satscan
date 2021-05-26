@@ -14,10 +14,7 @@
   <manifest>launch4j_updater.manifest</manifest>
   <icon>/prj/satscan/build.area/satscan/installers/resources/SaTScan.ico</icon>
   <jre>
-    <path></path>
-    <minVersion>1.8.0_01</minVersion>
-    <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
+    <path>jre</path>
   </jre>
   <versionInfo>
     <fileVersion>10.0.0.0</fileVersion>

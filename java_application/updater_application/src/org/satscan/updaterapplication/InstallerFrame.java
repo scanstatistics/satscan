@@ -13,7 +13,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +61,7 @@ public class InstallerFrame extends javax.swing.JFrame {
             java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                            
             // Build command to relaunch SaTScan
             Vector<String> execute = new Vector<String>();
-            if (System.getProperty("os.name").startsWith("Mac")) {
+            if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
                 execute.add("open");
                 //change from likely name 'SaTScan.jar' to 'SaTScan.app'
                 execute.add(_launchApp.getName().replace(".jar", ".app"));
@@ -78,20 +86,28 @@ public class InstallerFrame extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * Invokes worker process to install updates.
-     */
+    /* Invokes worker process to install updates. */
     public void installUpdate(boolean showEULA) throws Exception {
         try {
             setVisible(true);
-            if (showEULA) {
-                ULADialog ula = new ULADialog(this);
-                ula.setVisible(true);
-                if (ula._accepted == false) {
-                    throw new updateCancelledException("User License Agreement not accepted.");
+            if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+                /* The application update process on the Mac is no longer valid. Teh user must uninstall then download new version. */
+                JOptionPane.showMessageDialog(this, 
+                    "SaTScan updater is no longer in service on the macOS.\n" +
+                    "Please uninstall the current SaTScan version then install the last release from SaTScan website.", 
+                    "SaTScan Update Cancelled", JOptionPane.INFORMATION_MESSAGE
+                );
+                relaunchApplication();
+            } else {            
+                if (showEULA) {
+                    ULADialog ula = new ULADialog(this);
+                    ula.setVisible(true);
+                    if (ula._accepted == false) {
+                        throw new updateCancelledException("User License Agreement not accepted.");
+                    }
                 }
+                new Extracter().execute();
             }
-            new Extracter().execute();
         } catch (updateCancelledException e) {
             JOptionPane.showMessageDialog(this, "SaTScan update was cancelled. Please try to update again at a later time.", "SaTScan Update Cancelled", JOptionPane.INFORMATION_MESSAGE);
             deleteArchive();
@@ -118,52 +134,20 @@ public class InstallerFrame extends javax.swing.JFrame {
 
         private static final int _bufferSize = 4096;
 
-        /**
-         * This function determines whether the ZipEntry should be extracted
-         * given the OS it is being installed on. The current implementation
-         * is very limited, we probably should make this more robust in the future.
-         * For now, this hack will work ...
-         */
+        /*This function determines whether the ZipEntry should be extracted. */
         private boolean isExtracted(ZipEntry entry) {
-            if (entry.getName().endsWith(".jar") ||
-                entry.getName().endsWith(".prm") ||
-                entry.getName().endsWith(".cas") ||
-                entry.getName().endsWith(".ctl") ||
-                entry.getName().endsWith(".pop") ||
-                entry.getName().endsWith(".geo") ||
-                entry.getName().endsWith(".grd") ||
-                entry.getName().endsWith(".pdf")) {
-                return true;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-                return entry.getName().endsWith(".exe") || 
-                       entry.getName().endsWith(".dll") ? true : false;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("linux")) {
-                return entry.getName().endsWith("_x86_64_32bit") || 
-                       entry.getName().endsWith("_x86_64_64bit") || 
-                       entry.getName().endsWith("_x86_64_32bit.so") || 
-                       entry.getName().endsWith("_x86_64_64bit.so") ? true : false;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("mac") || System.getProperty("os.name").toLowerCase().startsWith("darwin")) {
-                return true; // Mac update should never be bundled with other platform updates ... so extract all files.
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("sunos") || System.getProperty("os.name").toLowerCase().startsWith("solaris")) {
-                return entry.getName().endsWith("_sparc_32bit") || 
-                       entry.getName().endsWith("_sparc_64bit") || 
-                       entry.getName().endsWith("_sparc_32bit.so") || 
-                       entry.getName().endsWith("_sparc_64bit.so") ? true : false;
-            } else {//Unknown platform - default to true
-                return true;
-            }
+            return true;
         }
 
-        /** 
-         * Determines write access of archive file.
-         */
+        /* Determines write access of archive file. */
         private void checkAccess(File f) throws Exception {
             if (f.exists() && !f.isDirectory()) {
+                //System.out.println("checkAccess file " + f.toString());
                 boolean attemptAgain = true;
                 while (attemptAgain) {
                     OutputStream outStream = null;
                     try {
-                        outStream = new BufferedOutputStream(new FileOutputStream(f));
+                        outStream = new BufferedOutputStream(new FileOutputStream(f, true));
                     } catch (Exception e) {
                         String message = "The updater have determined that file '" + f.getAbsolutePath() +
                                 "'\nis open or active and can not be correctly updated.\n\n" +
@@ -202,24 +186,32 @@ public class InstallerFrame extends javax.swing.JFrame {
          * Attempts to extract archive member to hard drive.
          */
         private void extractMember(ZipEntry entry) {
+            
             InputStream inStream = null;
             OutputStream outStream = null;
             try {
                 File targetFile = getCompleteFile(entry);
-                if (targetFile.isDirectory()) { //skip directories
-                    return;
-                }
-                targetFile.getParentFile().mkdirs();
-                inStream = new BufferedInputStream(_archive.getInputStream(entry));
-                outStream = new BufferedOutputStream(new FileOutputStream(targetFile));
+                if (entry.isDirectory()) {
+                    //System.out.println("Extracting directory " + targetFile.toString());
+                    targetFile.mkdir();
+                    targetFile.setWritable(true);
+                } else {
+                    //System.out.println("Extracting file " + targetFile.toString());
+                    targetFile.setWritable(true);                
 
-                byte[] b = new byte[_bufferSize];
-                int readCount;
-                while ((readCount = inStream.read(b, 0, b.length)) > 0) {
-                    outStream.write(b, 0, readCount);
+                    targetFile.getParentFile().mkdirs();
+                    inStream = new BufferedInputStream(_archive.getInputStream(entry));
+                    outStream = new BufferedOutputStream(new FileOutputStream(targetFile));
+
+                    byte[] b = new byte[_bufferSize];
+                    int readCount;
+                    while ((readCount = inStream.read(b, 0, b.length)) > 0) {
+                        outStream.write(b, 0, readCount);
+                    }
+                    outStream.close();
+                    inStream.close();
+                    //System.out.println("Done with " + targetFile.toString());
                 }
-                outStream.close();
-                inStream.close();
             } catch (IOException e) {
                 throw new archiveException(e.getMessage());
             } finally {
@@ -239,26 +231,61 @@ public class InstallerFrame extends javax.swing.JFrame {
         @Override
         protected Void doInBackground() throws Exception {
             try {
+                // Determine which files are currently installed.
+                Set<String> existing = new HashSet<>();                
+                Files.walkFileTree(Paths.get(_launchApp.getParent()), new HashSet<>(), 2, new FileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        existing.add(dir.toString());
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        existing.add(file.toString());
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        return FileVisitResult.CONTINUE;
+                    }
+                });                        
+                
                 _progressBar.setMaximum(_archive.size() * 2);
                 _progressBar.setValue(0);
+                //System.out.println("check file access ...");
                 //check file access...
                 Enumeration checkEntries = _archive.entries();
                 while (checkEntries.hasMoreElements()) {
                     ZipEntry entry = (ZipEntry) checkEntries.nextElement();
-                    if (isExtracted(entry)) {
+                    if (isExtracted(entry) && !entry.isDirectory()) {
                         checkAccess(getCompleteFile(entry));
                     }
                     _progressBar.setValue(_progressBar.getValue() + 1);
                 }
+                //System.out.println("extract files...");
                 //extract files...
                 Enumeration extractEntries = _archive.entries();
                 while (extractEntries.hasMoreElements()) {
                     ZipEntry entry = (ZipEntry) extractEntries.nextElement();
                     if (isExtracted(entry)) {
                         extractMember(entry);
+                        existing.remove(getCompleteFile(entry).toString());
                     }
                     _progressBar.setValue(_progressBar.getValue() + 1);
                 }
+                
+                System.out.println("Orphaned files .. ");
+                for (String temp : existing) {
+                    System.out.println(temp);
+                }                
+                System.out.println(" .. done.");
             } catch (archiveException e) {
                 JOptionPane.showMessageDialog(InstallerFrame.this, String.format("SaTScan update was aborted due to an error while reading updates.\nPlease email SaTScan with the following information:\n\n%s.", e.getMessage()), "SaTScan Update Aborted", JOptionPane.ERROR_MESSAGE);
                 deleteArchive();

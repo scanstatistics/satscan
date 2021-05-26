@@ -32,7 +32,7 @@ REM Verify the GUI exe file is codesigned correctly.
 
 REM Create Java runtime
 if exist %runtimeoutput% rmdir %runtimeoutput% /s /q
-%javajdk%\bin\jlink.exe --module-path %javajdk%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto --output %runtimeoutput% --strip-debug --compress 2 --no-header-files --no-man-pages
+%javajdk%\bin\jlink.exe --module-path %javajdk%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki --output %runtimeoutput% --strip-debug --compress 2 --no-header-files --no-man-pages
 
 REM Build InnoSetup installer.
 %innosetup% %innoiss%
