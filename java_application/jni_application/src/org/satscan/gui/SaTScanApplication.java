@@ -1273,15 +1273,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                     //JOptionPane.showMessageDialog(null, "Calling Elevator " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     StringBuilder args = new StringBuilder();
-                    args.append("-jar ").append(UpdateCheckDialog._updaterFilename.getName()).append(" ");
-                    args.append(UpdateCheckDialog._updateArchiveName.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
+                    args.append("-jar ").append(UpdateCheckDialog._updater_filename.getName()).append(" ");
+                    args.append(UpdateCheckDialog._update_archivename.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
                     Elevator.executeAsAdministrator(java_path.toString(), args.toString(), UpdateCheckDialog.getDownloadTempDirectory().toString());                    
                 } else {                
                     //JOptionPane.showMessageDialog(null, "Calling getRuntime " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     String[] commandline = new String[]{java_path.toString(),
                         "-jar",
-                        UpdateCheckDialog._updaterFilename.getName(),
-                        UpdateCheckDialog._updateArchiveName.getName(),
+                        UpdateCheckDialog._updater_filename.getName(),
+                        UpdateCheckDialog._update_archivename.getName(),
                         _application,
                         getRelaunchArgs()
                     };
