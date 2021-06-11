@@ -393,7 +393,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         private static final long serialVersionUID = 1L;
 
         public ShowMultipleAnalysisFrameAction() {
-            super("Show Batch Analysis");
+            super("Multiple Analyses");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -989,7 +989,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         _batchAnalysesToolButton.setAction(new ShowMultipleAnalysisFrameAction());
         _batchAnalysesToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_chart_32.png"))); // NOI18N
-        _batchAnalysesToolButton.setToolTipText("Batch Analyses"); // NOI18N
+        _batchAnalysesToolButton.setToolTipText("Multiple Analyses"); // NOI18N
         _batchAnalysesToolButton.setHideActionText(true);
         _batchAnalysesToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _batchAnalysesToolButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -1067,6 +1067,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _fileMenu.add(_fileMenuSeparator2);
 
         _batchAnalyses.setAction(new ShowMultipleAnalysisFrameAction());
+        _batchAnalyses.setToolTipText("");
         _appPreferences.setIcon(null);
         _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_batchAnalyses);

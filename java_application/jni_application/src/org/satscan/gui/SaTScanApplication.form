@@ -81,6 +81,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new ShowMultipleAnalysisFrameAction()" type="code"/>
                 </Property>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
@@ -364,7 +365,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/database_chart_32.png"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Batch Analyses" noResource="true"/>
+            <Property name="toolTipText" type="java.lang.String" value="Multiple Analyses" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>

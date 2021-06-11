@@ -561,7 +561,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 _applicationFrame._versionUpdateToolButton.setVisible(!_updateExists);
                 if (_updateExists) {
                     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC) {
-                        _installer_download_link.setVisible(SystemUtils.IS_OS_WINDOWS);
+                        _installer_download_link.setVisible(true);
                         _updateInfoOnlyText.setText("Newer version " + _new_update_version + " is available.");
                         ((CardLayout)_cardsPanel.getLayout()).show(_cardsPanel, CARD_UPDATEINFOONLY);
                     } else {
