@@ -55,14 +55,14 @@ void MultipleAnalyses::execute(BasePrint& print, bool includeUnSelected) {
     boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
     // read analyses from xml file.
     if (!read_file(AppToolkit::getToolkit().getMultipleAnalysisFullpath())) {
-        print.Printf("The multiple analyses configuration file could not be opened. Use the SaTScan GUI to define multiple analyses.", BasePrint::P_STDOUT);
+        print.Printf("The multiple analyses configuration file could not be opened. Use the SaTScan GUI to define multiple analyses.\n", BasePrint::P_STDOUT);
         return;
     }
     if (_analysis_defs.empty()) {
-        print.Printf("No analyses defined in multiple analyses configuration file. Use SaTScan GUI to define multiple analyses.", BasePrint::P_STDOUT);
+        print.Printf("No analyses defined in multiple analyses configuration file. Use SaTScan GUI to define multiple analyses.\n", BasePrint::P_STDOUT);
         return;
     }
-    print.Printf("%u analyses defined in multiple analyses configuration file.", BasePrint::P_STDOUT, _analysis_defs.size());
+    print.Printf("%u analyses defined in multiple analyses configuration file.\n", BasePrint::P_STDOUT, _analysis_defs.size());
     // Iterate over each defined analysis and execute the analysis.
     for (AnalysesContainer_t::iterator itr=_analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
         if (!itr->selected && !includeUnSelected) {

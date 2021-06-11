@@ -932,6 +932,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionMenuItem = new javax.swing.JMenuItem();
         _saveSessionAsMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator2 = new javax.swing.JSeparator();
+        _batchAnalyses = new javax.swing.JMenuItem();
         _appPreferences = new javax.swing.JMenuItem();
         _printMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator3 = new javax.swing.JSeparator();
@@ -989,7 +990,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _batchAnalysesToolButton.setAction(new ShowMultipleAnalysisFrameAction());
         _batchAnalysesToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_chart_32.png"))); // NOI18N
         _batchAnalysesToolButton.setToolTipText("Batch Analyses"); // NOI18N
-        _batchAnalysesToolButton.setFocusable(false);
         _batchAnalysesToolButton.setHideActionText(true);
         _batchAnalysesToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _batchAnalysesToolButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -1006,7 +1006,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _versionUpdateToolButton.setAction(new CheckNewVersionAction());
         _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/refresh.png"))); // NOI18N
         _versionUpdateToolButton.setToolTipText("Check for New Version"); // NOI18N
-        _versionUpdateToolButton.setFocusable(false);
         _versionUpdateToolButton.setHideActionText(true);
         _versionUpdateToolButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _versionUpdateToolButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -1018,7 +1017,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         softwareUpdateAvailable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/download.png"))); // NOI18N
         softwareUpdateAvailable.setText("");
         softwareUpdateAvailable.setToolTipText("Software Update Ready for Download"); // NOI18N
-        softwareUpdateAvailable.setFocusable(false);
         softwareUpdateAvailable.setHideActionText(true);
         softwareUpdateAvailable.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         softwareUpdateAvailable.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -1067,6 +1065,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _fileMenu.add(_saveSessionAsMenuItem);
         _fileMenu.add(_fileMenuSeparator2);
+
+        _batchAnalyses.setAction(new ShowMultipleAnalysisFrameAction());
+        _appPreferences.setIcon(null);
+        _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _fileMenu.add(_batchAnalyses);
 
         _appPreferences.setAction(_applicationPreferencesAction);
         _appPreferences.setIcon(null);
@@ -1380,6 +1383,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
     private javax.swing.JMenuItem _appPreferences;
+    private javax.swing.JMenuItem _batchAnalyses;
     private javax.swing.JButton _batchAnalysesToolButton;
     private javax.swing.JMenuItem _chechVersionMenuItem;
     private javax.swing.JMenuItem _closeSessionMenuItem;
