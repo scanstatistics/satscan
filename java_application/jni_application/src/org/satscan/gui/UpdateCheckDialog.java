@@ -132,16 +132,28 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     }
 
     /* Returns HttpURLConnection for URL -- applying Authorization as requested by user. */
-    private HttpURLConnection getHttpURLConnection(URL url) throws IOException {
+    private HttpURLConnection getHttpURLConnection(URL url, boolean setDoOutput) throws IOException {
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
         HttpURLConnection.setFollowRedirects(true);
+        if (setDoOutput) connection.setDoInput(true);
         // Apply authentication if specified by user.s
         if (SaTScanApplication.getDebugAuth().length() > 0) {
             connection.setRequestProperty(
                 "Authorization", "Basic " + new String(Base64.encode(SaTScanApplication.getDebugAuth().getBytes()))
             );
         }
-        return connection;
+        connection.connect();
+        switch (connection.getResponseCode()) {
+            case HttpURLConnection.HTTP_OK:
+                return connection;
+            case HttpURLConnection.HTTP_MOVED_PERM:
+            case HttpURLConnection.HTTP_MOVED_TEMP:
+            case HttpURLConnection.HTTP_SEE_OTHER:
+                connection.disconnect();
+                return (HttpURLConnection)getHttpURLConnection(new URL(connection.getHeaderField("Location")), setDoOutput);
+            default:
+                throw new RuntimeException("Application update failed with error code " + connection.getResponseCode());
+        }
     }    
     
     /** This method is called from within the constructor to
@@ -393,6 +405,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         _installer_download_link.setText("Download Installer Now");
         _installer_download_link.setToolTipText("");
+        _installer_download_link.setText(SystemUtils.IS_OS_MAC ? "Download App Now" : "Download Installer Now");
         ((JHyperLink)_installer_download_link).addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -526,20 +539,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 String baseurl = (SaTScanApplication.getDebugURL().length() > 0 ? SaTScanApplication.getDebugURL(): AppConstants.getWebSite());
                 String updateURL = String.format(_URLFormat, baseurl);
                 updateURL = updateURL.replace(" ", "%20") + _get_params;
-                boolean completed=false;
-                do {
-                    HttpURLConnection connection = (HttpURLConnection)getHttpURLConnection(new URL(updateURL));
-                    connection.setRequestMethod("GET");
-                    connection.connect();
-                    switch (connection.getResponseCode()) {
-                        case HttpURLConnection.HTTP_OK: readUpdateInfo(connection); completed = true; break;
-                        case HttpURLConnection.HTTP_MOVED_PERM:
-                        case HttpURLConnection.HTTP_MOVED_TEMP:
-                        case HttpURLConnection.HTTP_SEE_OTHER: updateURL = connection.getHeaderField("Location"); break;
-                        default: _error_code = connection.getResponseCode(); completed = true;
-                    }
-                    connection.disconnect();
-                } while(!completed);
+                readUpdateInfo((HttpURLConnection)getHttpURLConnection(new URL(updateURL), false));
             } catch (FileNotFoundException e) {
                 _error_code = HttpURLConnection.HTTP_GONE;
                 System.out.println(e.getMessage());
@@ -591,9 +591,8 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         private void downloadFile(FileInfo info, int index) {                        
             try {
-                // Open a connection
-                HttpURLConnection connection = (HttpURLConnection)getHttpURLConnection(info._url);
-                connection.setDoOutput(true);
+                // Open a connection -- following redirects
+                HttpURLConnection connection = (HttpURLConnection)getHttpURLConnection(info._url, true);
                 // Read from the connection                
                 int contentSize = connection.getContentLength();
                 _downloadProgressBar.setValue(0);
@@ -650,21 +649,19 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         
         private final int _readBufferSize = 4096;
         private final WaitCursor waitCursor = new WaitCursor(UpdateCheckDialog.this);
-        private String _filename = null;
+        private String _filename = SystemUtils.IS_OS_MAC ? ("SaTScan_" + _new_update_version + "_mac.zip") : ("install-SaTScan" + _new_update_version + ".exe");
 
         private void downloadFile(FileInfo info) {                        
             try {
                 // Open a connection
-                HttpURLConnection connection = (HttpURLConnection)getHttpURLConnection(info._url);
-                connection.setDoOutput(true);
+                System.out.println(info._url);
+                HttpURLConnection connection = (HttpURLConnection)getHttpURLConnection(info._url, true);
                 int contentSize = connection.getContentLength();
                 String contentDisposition = connection.getHeaderField("Content-Disposition");
                 if (contentDisposition != null) {
                     Matcher matcher = Pattern.compile(".+filename=\"?(.+)\"?").matcher(contentDisposition);
                     if (matcher.find()) 
                         _filename = matcher.group(1);
-                    else
-                        _filename = SystemUtils.IS_OS_MAC ? ("SaTScan_" + _new_update_version + "_mac.zip") : ("install-SaTScan" + _new_update_version + ".exe");
                 }
                 byte[] b = new byte[_readBufferSize];
                 InputStream input = connection.getInputStream();
