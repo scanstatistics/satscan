@@ -506,15 +506,18 @@ std::string getFilenameFormatTime(const std::string& filename, boost::posix_time
     using boost::algorithm::ireplace_all;
     boost::posix_time::time_facet * facet = new boost::posix_time::time_facet();
 
-    // Four digit year - we're not doing 2 digit years -- notice using ireplace_all, so either {y} or {Y} works
-    ireplace_all(mod_filename, "<y>", printString(buffer, "%d", timeLocal.date().year()));
-    ireplace_all(mod_filename, "<year>", printString(buffer, "%d", timeLocal.date().year()));
+    // Four digit year - we're not doing 2 digit years -- notice using ireplace_all, so either <y> or <Y> works
+    bufferStream.str(""); bufferStream << timeLocal.date().year();
+    ireplace_all(mod_filename, "<y>", bufferStream.str());
+    ireplace_all(mod_filename, "<year>", bufferStream.str());
     // Month name as a decimal 1 to 12 -- not padded
-    ireplace_all(mod_filename, "<m>", printString(buffer, "%d", timeLocal.date().month()));
-    ireplace_all(mod_filename, "<month>", printString(buffer, "%d", timeLocal.date().month()));
+    bufferStream.str(""); bufferStream << timeLocal.date().month().as_number();
+    ireplace_all(mod_filename, "<m>", bufferStream.str());
+    ireplace_all(mod_filename, "<month>", bufferStream.str());
     // Month name as a decimal 01 to 12 -- zero padded
-    ireplace_all(mod_filename, "<0m>", printString(buffer, "%02d", timeLocal.date().month()));
-    ireplace_all(mod_filename, "<0month>", printString(buffer, "%02d", timeLocal.date().month()));
+    bufferStream.str(""); bufferStream << std::setfill('0') << std::setw(2) << timeLocal.date().month().as_number();
+    ireplace_all(mod_filename, "<0m>", bufferStream.str());
+    ireplace_all(mod_filename, "<0month>", bufferStream.str());
     // Abbreviated month name
     facet->format("%b");
     bufferStream.imbue(std::locale(std::locale::classic(), facet));
@@ -526,11 +529,13 @@ std::string getFilenameFormatTime(const std::string& filename, boost::posix_time
     bufferStream.str(""); bufferStream << timeLocal;
     replace_all(mod_filename, "<B>", bufferStream.str());
     // Day of the month as decimal 1 to 31 - not padded
-    ireplace_all(mod_filename, "<d>", printString(buffer, "%d", timeLocal.date().day()));
-    ireplace_all(mod_filename, "<day>", printString(buffer, "%d", timeLocal.date().day()));
+    bufferStream.str(""); bufferStream << timeLocal.date().day().as_number();
+    ireplace_all(mod_filename, "<d>", bufferStream.str());
+    ireplace_all(mod_filename, "<day>", bufferStream.str());
     // Day of the month as decimal 1 to 31 - zero padded
-    ireplace_all(mod_filename, "<0d>", printString(buffer, "%02d", timeLocal.date().day()));
-    ireplace_all(mod_filename, "<0day>", printString(buffer, "%02d", timeLocal.date().day()));
+    bufferStream.str(""); bufferStream << std::setfill('0') << std::setw(2) << timeLocal.date().day().as_number();
+    ireplace_all(mod_filename, "<0d>", bufferStream.str());
+    ireplace_all(mod_filename, "<0day>", bufferStream.str());
     // Abbreviated weekday name
     facet->format("%a");
     bufferStream.imbue(std::locale(std::locale::classic(), facet));
@@ -545,7 +550,8 @@ std::string getFilenameFormatTime(const std::string& filename, boost::posix_time
     if (testUnknown && mod_filename.find_first_of("<>") != std::string::npos) {
         throw resolvable_error(
             "Filename '%s' contains substitutions which could not be converted.\nSubstituted filename resulted in: %s.", 
-            filename.c_str(), mod_filename.c_str());
+            filename.c_str(), mod_filename.c_str()
+        );
     }
     return mod_filename;
 }
