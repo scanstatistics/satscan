@@ -122,6 +122,7 @@ class CsvFileDataSource : public DataSource {
         std::ifstream _sourceFile;
         std::string _delimiter;
         std::string _grouper;
+        std::string _grouper_escape;
         unsigned long _skip;
         bool _firstRowHeaders;
         bool _ignore_empty_fields;
@@ -129,7 +130,7 @@ class CsvFileDataSource : public DataSource {
         BasePrint & _print;
         std::string _read_buffer;
 
-        bool  parse(const std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
+        bool  parse(std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
         const char * getMappedValueAt(long iFieldIndex);
         void  ThrowUnicodeException();
 
