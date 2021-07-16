@@ -382,7 +382,7 @@ bool NormalDataSetHandler::ReadData() {
                 //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
                 // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
                 //        - changes to CentroidHandlerPassThrough (not special grid file)
-                //        - changes to non-Euclidian neighbors (structures already allocated)
+                //        - changes to non-Euclidean neighbors (structures already allocated)
                 AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));
                 if (pRandomizer && !pRandomizer->hasUniqueLocationsCoverage(gDataHub)) {
                     gPrint.Printf("Error: The Normal model with weights requires every location defined in the coordinates\n"

@@ -1139,9 +1139,9 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
 
     try {
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
-            settings.push_back(std::make_pair("Use Non-Euclidian Neighbors file",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Use Non-Euclidean Neighbors file",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
             if (gParameters.UseLocationNeighborsFile())
-                settings.push_back(std::make_pair("Non-Euclidian Neighbors file", getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp())));
+                settings.push_back(std::make_pair("Non-Euclidean Neighbors file", getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp())));
             settings.push_back(std::make_pair("Use Meta Locations File",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
             if (gParameters.UseMetaLocationsFile())
                 settings.push_back(std::make_pair("Meta Locations File", getFilenameFormatTime(gParameters.getMetaLocationsFilename(), gParameters.getTimestamp())));

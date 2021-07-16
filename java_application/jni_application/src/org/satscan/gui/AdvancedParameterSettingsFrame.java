@@ -3299,10 +3299,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
 
-        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidian Neighbors"));
+        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
         _specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, AppConstants.NONEUCLIDIANFILE_HELPID));
 
-        _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidian neighbors file"); // NOI18N
+        _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file"); // NOI18N
         _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {

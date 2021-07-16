@@ -1378,7 +1378,7 @@ bool CParameters::UseMetaLocationsFile() const {
            gbUseMetaLocationsFile;
 }
 
-/** Returns indication of whether non-Euclidian neighbors file parameter is used. */
+/** Returns indication of whether non-Euclidean neighbors file parameter is used. */
 bool CParameters::UseLocationNeighborsFile() const {
     return !GetIsPurelyTemporalAnalysis() && 
             gbUseLocationNeighborsFile &&

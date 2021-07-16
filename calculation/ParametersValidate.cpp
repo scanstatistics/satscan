@@ -270,7 +270,7 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection)
     if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
         bValid = false;
         PrintDirection.Printf(
-            "%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidian Neighbors file in conjunction with the Meta Location file.\n", 
+            "%s:\nThe cluster drilldown is not implemented for analyses using the Non-Euclidean Neighbors file in conjunction with the Meta Location file.\n", 
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
         );
     }
