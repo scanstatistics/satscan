@@ -33,6 +33,7 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
     const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
+    virtual boost::dynamic_bitset<> getRatioSets(AbstractLikelihoodCalculator& Calculator) const;
     virtual void        InitializeData();
     virtual size_t      getNumSets() const {return gvSetClusterData.size();}
 };

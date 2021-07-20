@@ -96,6 +96,7 @@ class NormalProspectiveSpatialData : public NormalTemporalData, public AbstractP
     NormalProspectiveSpatialData & operator=(const NormalProspectiveSpatialData& rhs);
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual unsigned int     GetAllocationSize() const { return giAllocationSize; }
 };
 
 /** Class representing accumulated data of space-time clustering for normal probability model. */

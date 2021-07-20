@@ -209,14 +209,14 @@ double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelih
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
   gtMeasureAux = gpMeasureAux[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
     dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+    if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
       dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux));
   }
   return dMaxLoglikelihoodRatio;
@@ -232,14 +232,14 @@ double NormalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcul
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
   gtMeasureAux = gpMeasureAux[0];
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
     dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure))
+    if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux))
       dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux));
   }
   return dMaxValue;

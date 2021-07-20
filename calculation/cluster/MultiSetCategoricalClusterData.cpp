@@ -48,6 +48,10 @@ double MultiSetCategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikel
     return getRatioUnified(Calculator).GetLoglikelihoodRatio();
 }
 
+boost::dynamic_bitset<> MultiSetCategoricalSpatialData::getRatioSets(AbstractLikelihoodCalculator& Calculator) const {
+    return Calculator.GetUnifier().getUnifiedSets();
+}
+
 /** Returns newly cloned MultiSetCategoricalSpatialData object. Caller is
     responsible for deletion of object. */
 MultiSetCategoricalSpatialData * MultiSetCategoricalSpatialData::Clone() const {

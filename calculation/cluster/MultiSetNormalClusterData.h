@@ -32,6 +32,7 @@ class MultiSetNormalSpatialData : public AbstractSpatialClusterData, public Abst
     virtual void        InitializeData();
     virtual size_t      getNumSets() const {return gvSetClusterData.size();}
     virtual const AbstractLoglikelihoodRatioUnifier & getRatioUnified(AbstractLikelihoodCalculator& Calculator) const;
+    virtual boost::dynamic_bitset<> getRatioSets(AbstractLikelihoodCalculator& Calculator) const;
 };
 
 /** Abstract class representing accumulated data of temporal clustering in multiple data sets. */

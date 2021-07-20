@@ -41,6 +41,10 @@ const AbstractLoglikelihoodRatioUnifier & MultiSetNormalSpatialData::getRatioUni
     return Unifier;
 }
 
+boost::dynamic_bitset<> MultiSetNormalSpatialData::getRatioSets(AbstractLikelihoodCalculator& Calculator) const {
+    return Calculator.GetUnifier().getUnifiedSets();
+}
+
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together. */
 double MultiSetNormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
@@ -189,7 +193,7 @@ void MultiSetNormalTemporalData::Reassociate(const AbstractDataSetGateway& DataG
 
 /** class constructor */
 MultiSetNormalProspectiveSpatialData::MultiSetNormalProspectiveSpatialData(const NormalClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
-                                     :AbstractMultiSetNormalTemporalData() {
+                                     :AbstractMultiSetNormalTemporalData(), geEvaluationAssistDataStatus(Allocated){
   //Allocate ProspectiveSpatialData object for each data set.
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvSetClusterData.push_back(dynamic_cast<NormalTemporalData*>(DataFactory.GetNewProspectiveSpatialClusterData(Data, DataGateway.GetDataSetInterface(t))));

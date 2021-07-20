@@ -47,7 +47,8 @@ class AbstractSpatialClusterData : public AbstractClusterData {
     virtual void                         Assign(const AbstractSpatialClusterData& rhs) = 0;
     virtual AbstractSpatialClusterData * Clone() const = 0;
 
-    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) = 0;
+    virtual double                       GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) = 0;
+    virtual boost::dynamic_bitset<>      getRatioSets(AbstractLikelihoodCalculator& Calculator) const { return boost::dynamic_bitset<>(); }
 };
 
 /**Abstract base class for all categorical cluster data. */

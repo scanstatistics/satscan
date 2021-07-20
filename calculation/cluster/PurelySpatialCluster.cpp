@@ -84,6 +84,7 @@ void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const Abs
     ++m_nTracts;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
+    _ratio_sets = gpClusterData->getRatioSets(Calculator);
     clusterSet.update(*this);
   }
   clusterSet.maximizeClusterSet();
