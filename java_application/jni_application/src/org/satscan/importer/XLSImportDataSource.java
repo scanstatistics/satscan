@@ -213,7 +213,7 @@ public class XLSImportDataSource implements ImportDataSource {
      * cell is blank or unsupported an empty String is returned.
      */
     private String getCellValue(Cell cell) {
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 double cellValue = cell.getNumericCellValue();
                 //check if this is a date
