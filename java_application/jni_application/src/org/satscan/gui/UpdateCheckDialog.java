@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.swing.SwingWorker;
+import java.util.Base64;
 import org.satscan.gui.utils.WaitCursor;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.BareBonesBrowserLaunch;
@@ -32,7 +33,6 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.xmlbeans.impl.util.Base64;
 
 /** @author  Hostovic */
 public class UpdateCheckDialog extends javax.swing.JDialog {
@@ -139,7 +139,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         // Apply authentication if specified by user.s
         if (SaTScanApplication.getDebugAuth().length() > 0) {
             connection.setRequestProperty(
-                "Authorization", "Basic " + new String(Base64.encode(SaTScanApplication.getDebugAuth().getBytes()))
+                "Authorization", "Basic " + new String(Base64.getEncoder().encode(SaTScanApplication.getDebugAuth().getBytes()))
             );
         }
         connection.connect();

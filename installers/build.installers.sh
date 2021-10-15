@@ -18,6 +18,7 @@ IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 $javajdk/bin/java -jar $launch4j/launch4j.jar $build/satscan/installers/izpack/windows/launch4j_app.xml
 
 # Prompt user to codesign SaTScan.exe then build installer and codesign that file as well.
+chmod g+w $build/satscan/java_application/jni_application/dist/SaTScan.exe
 echo
 echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to sign SaTScan.exe then build and sign the Windows installer. Hit <enter> once done ..."
 read dummy

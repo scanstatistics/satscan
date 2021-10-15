@@ -8,6 +8,7 @@
  */
 package org.satscan.importer;
 
+import com.linuxense.javadbf.DBFDataType;
 import com.linuxense.javadbf.DBFException;
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
@@ -77,7 +78,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     public boolean isColumnDate(int iColumn) {
         try {
             if (iColumn <= 1) return false; // generatedId, oneCount columns are not date field
-            return _reader.getField(iColumn - 2).getDataType() == DBFField.FIELD_TYPE_D;
+            return _reader.getField(iColumn - 2).getType() == DBFDataType.DATE;
         } catch (DBFException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -87,7 +88,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     public boolean isColumnNumeric(int iColumn) {
         try {
             if (iColumn <= 1) return false; // custom columns aren't numeric field
-            return _reader.getField(iColumn - 2).getDataType() == DBFField.FIELD_TYPE_N;
+            return _reader.getField(iColumn - 2).getType() == DBFDataType.NUMERIC;
         } catch (DBFException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
