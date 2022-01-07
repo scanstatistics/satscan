@@ -20,7 +20,7 @@ public final class AppConstants {
     public static final int MAX_GENERIC = 2921938;
     public static final int VERSION_MAJOR = 10;
     public static final int VERSION_MINOR = 0;
-    public static final int VERSION_RELEASE = 1;
+    public static final int VERSION_RELEASE = 2;
     public static final String VERSION_PHASE = "";
     
     // Input Tab
