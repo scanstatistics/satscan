@@ -47,6 +47,9 @@ tar -rf $installer_version/satscan.${version}_linux.tar documents/*
 tar -rf $installer_version/satscan.${version}_linux.tar sample_data/*
 gzip -f $installer_version/satscan.${version}_linux.tar
 
+# Build the linux rpm -- still a work in progress.
+$build/satscan/installers/jpackageInstallerLinux.sh $version $installer_version
+
 ############ Java Application Update Archive ######################################################
 # Build update archive files -- relative paths are important; must be the same as installation.
 #
