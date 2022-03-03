@@ -52,7 +52,9 @@
     <resources>
         <res id="HTMLLicencePanel.licence" src="/prj/satscan/build.area/satscan/installers/documents/eula.html" />
         <res id="Unix_shortcutSpec.xml" src="/prj/satscan/build.area/satscan/installers/izpack/linux/Unix_shortcutSpec.xml" />
+		<!--
         <res id="ProcessPanel.Spec.xml" src="/prj/satscan/build.area/satscan/installers/izpack/linux/ProcessPanel.Spec.xml" />
+		-->
         <res id="Installer.image" src="/prj/satscan/build.area/satscan/installers/resources/SaTScan.gif" />
     </resources>
 
@@ -75,8 +77,8 @@
         <panel classname="TargetPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
-        <panel classname="ProcessPanel"/>
         <!--
+        <panel classname="ProcessPanel"/>
         <panel classname="SimpleFinishPanel"/>
         -->
         <panel classname="FinishPanel"/>
@@ -95,18 +97,18 @@
 
         <pack name="Linux Specific Files" required="yes">
             <description>Linux Specific Files</description>
-            <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++6_x86_64_32bit" targetdir="$INSTALL_PATH" />
-            <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++6_x86_64_64bit" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/satscan_stdc++6_x86_64_32bit" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/satscan_stdc++6_x86_64_64bit" type="bin" keep="true" stage="never" />
+            <file src="/prj/satscan/build.area/binaries/linux/satscan32" targetdir="$INSTALL_PATH" />
+            <file src="/prj/satscan/build.area/binaries/linux/satscan64" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/satscan32" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/satscan64" type="bin" keep="true" stage="never" />
 
             <file src="/prj/satscan/build.area/satscan/installers/izpack/linux/symbolic.link.sh" targetdir="$INSTALL_PATH" />
             <executable targetfile="$INSTALL_PATH/symbolic.link.sh" type="bin" keep="false" stage="never" />
 
-            <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++6_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
-            <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++6_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/libsatscan_stdc++6_x86_64_32bit.so" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/libsatscan_stdc++6_x86_64_64bit.so" type="bin" keep="true" stage="never" />
+            <file src="/prj/satscan/build.area/binaries/linux/libsatscan32.so" targetdir="$INSTALL_PATH" />
+            <file src="/prj/satscan/build.area/binaries/linux/libsatscan64.so" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/libsatscan32.so" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/libsatscan64.so" type="bin" keep="true" stage="never" />
 
             <file src="/prj/satscan/build.area/satscan/installers/resources/SaTScan.png" targetdir="$INSTALL_PATH" />
         </pack>
