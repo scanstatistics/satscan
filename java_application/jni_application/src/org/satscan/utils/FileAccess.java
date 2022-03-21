@@ -10,38 +10,35 @@
 package org.satscan.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.apache.commons.lang3.SystemUtils;
 
 public class FileAccess {
     
-    public static boolean ValidateFileAccess(String filename, boolean bWrite, boolean temporaryFile) {
+    public static boolean ValidateFileAccess(String filename, boolean bWrite, boolean na) {
         boolean bAccessible=false;
-        
         try {
             String test_filename = getFormatSubstitutedFilename(filename);
-            File file = new File(test_filename + (temporaryFile ? ".writetestjava" : ""));
+            Path fpath = FileSystems.getDefault().getPath(test_filename);
             if (bWrite) {
-                @SuppressWarnings("unused") FileOutputStream filestream = new FileOutputStream(file);
-                filestream.close();
+                if (Files.exists(fpath)) { // File exists - test whether it is writable.
+                    bAccessible = Files.isWritable(fpath);
+                } else { // File doesn't exist, create temporary file then test whether it is writable.
+                    @SuppressWarnings("unused") 
+                    FileOutputStream file = new FileOutputStream(test_filename);
+                    file.close();
+                    bAccessible = true;
+                    Files.deleteIfExists(fpath);
+                }
             } else {
-                @SuppressWarnings("unused") FileInputStream filestream = new FileInputStream(file);
-                filestream.close();
+                bAccessible = Files.isReadable(fpath);
             }
-            bAccessible = true;
-            if (temporaryFile) 
-                file.delete();
-        } catch (FileNotFoundException e) {} catch (SecurityException e) {} catch (IOException ex) {
-            Logger.getLogger(FileAccess.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        } catch (java.io.IOException | SecurityException e) {}
         return bAccessible;
-    }    
+    }      
     
     /**
      * Native method to obtain filename with format substitutions. 

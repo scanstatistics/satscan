@@ -2019,7 +2019,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_endDateDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_studyPeriodEndDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(149, Short.MAX_VALUE))
+                .addContainerGap(190, Short.MAX_VALUE))
         );
         _studyPeriodCompleteLayout.setVerticalGroup(
             _studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2116,7 +2116,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_endDateYearLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_studyPeriodEndDateGenericTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
-                .addContainerGap(189, Short.MAX_VALUE))
+                .addContainerGap(234, Short.MAX_VALUE))
         );
         _studyPeriodGenericLayout.setVerticalGroup(
             _studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2428,7 +2428,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2971,7 +2971,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 154, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 163, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2987,42 +2987,72 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _clustersInColumnFormatLabel.setText("Cluster Information"); // NOI18N
 
+        _clustersInColumnFormatAsciiCheckBox.setText("      ");
         _clustersInColumnFormatAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _clustersInColumnFormatAsciiCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _clustersInColumnFormatAsciiCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _clustersInColumnFormatAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        _clustersInColumnFormatDBaseCheckBox.setText("      ");
         _clustersInColumnFormatDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _clustersInColumnFormatDBaseCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _clustersInColumnFormatDBaseCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _clustersInColumnFormatDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         _clusterCaseInColumnFormatLabel.setText("Stratified Cluster Information"); // NOI18N
 
+        _clusterCaseInColumnFormatAsciiCheckBox.setText("      ");
         _clusterCaseInColumnFormatAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _clusterCaseInColumnFormatAsciiCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _clusterCaseInColumnFormatAsciiCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _clusterCaseInColumnFormatAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        _clusterCaseInColumnFormatDBaseCheckBox.setText("      ");
         _clusterCaseInColumnFormatDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _clusterCaseInColumnFormatDBaseCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _clusterCaseInColumnFormatDBaseCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _clusterCaseInColumnFormatDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         _censusAreasReportedClustersLabel.setText("Location Information"); // NOI18N
 
+        _censusAreasReportedClustersAsciiCheckBox.setText("      ");
         _censusAreasReportedClustersAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _censusAreasReportedClustersAsciiCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _censusAreasReportedClustersAsciiCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _censusAreasReportedClustersAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        _censusAreasReportedClustersDBaseCheckBox.setText("      ");
         _censusAreasReportedClustersDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _censusAreasReportedClustersDBaseCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _censusAreasReportedClustersDBaseCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _censusAreasReportedClustersDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         _relativeRiskEstimatesAreaLabel.setText("Risk Estimates for Each Location"); // NOI18N
 
+        _relativeRiskEstimatesAreaAsciiCheckBox.setText("      ");
         _relativeRiskEstimatesAreaAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _relativeRiskEstimatesAreaAsciiCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _relativeRiskEstimatesAreaAsciiCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _relativeRiskEstimatesAreaAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        _relativeRiskEstimatesAreaDBaseCheckBox.setText("      ");
         _relativeRiskEstimatesAreaDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _relativeRiskEstimatesAreaDBaseCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _relativeRiskEstimatesAreaDBaseCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _relativeRiskEstimatesAreaDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios/Test Statistics"); // NOI18N
 
+        _simulatedLogLikelihoodRatiosAsciiCheckBox.setText("      ");
         _simulatedLogLikelihoodRatiosAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _simulatedLogLikelihoodRatiosAsciiCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _simulatedLogLikelihoodRatiosAsciiCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _simulatedLogLikelihoodRatiosAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        _simulatedLogLikelihoodRatiosDBaseCheckBox.setText("      ");
         _simulatedLogLikelihoodRatiosDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _simulatedLogLikelihoodRatiosDBaseCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _simulatedLogLikelihoodRatiosDBaseCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         _simulatedLogLikelihoodRatiosDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         javax.swing.GroupLayout _additionalOutputFilesGroupLayout = new javax.swing.GroupLayout(_additionalOutputFilesGroup);
@@ -3036,7 +3066,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGroup(_additionalOutputFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_clustersInColumnFormatLabel)
                             .addComponent(_clusterCaseInColumnFormatLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 246, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 294, Short.MAX_VALUE)
                         .addGroup(_additionalOutputFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_asciiLabel)
                             .addGroup(_additionalOutputFilesGroupLayout.createSequentialGroup()
@@ -3198,8 +3228,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
-                    .addComponent(_reportShapefile, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
+                    .addComponent(_reportCartesianGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(_reportShapefile, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                     .addComponent(_reportGoogleMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -3241,7 +3271,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 72, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
