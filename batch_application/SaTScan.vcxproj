@@ -367,6 +367,7 @@
     <ClCompile Include="..\calculation\satscan_data\DataSetReader.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSetWriter.cpp" />
     <ClCompile Include="..\calculation\satscan_data\DataSource.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataDemographics.cpp" />
     <ClCompile Include="..\calculation\utility\DateStringParser.cpp" />
     <ClCompile Include="..\calculation\satscan_data\ExponentialDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\GridTractCoordinates.cpp" />
@@ -559,6 +560,7 @@
     <ClInclude Include="..\calculation\satscan_data\DataSetReader.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetWriter.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSource.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataDemographics.h" />
     <ClInclude Include="..\calculation\utility\DateStringParser.h" />
     <ClInclude Include="..\calculation\satscan_data\ExponentialDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\GridTractCoordinates.h" />

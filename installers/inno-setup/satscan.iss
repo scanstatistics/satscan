@@ -58,6 +58,7 @@ Source: "Q:\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe"
 Source: "Q:\build.area\satscan\shared_library\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "Q:\build.area\satscan\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Q:\build.area\satscan\installers\inno-setup\curl.exe"; DestDir: "{app}"; OnlyBelowVersion: 10.0
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

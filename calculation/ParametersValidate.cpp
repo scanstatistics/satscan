@@ -57,6 +57,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
             bValid &= ValidateFileParameters(PrintDirection);
         bValid &= ValidateLocationNetworkParameters(PrintDirection);
         bValid &= ValidateOutputOptionParameters(PrintDirection);
+        bValid &= ValidateLinelistParameters(PrintDirection);
         bValid &= ValidateRangeParameters(PrintDirection);
         bValid &= ValidateIterativeScanParameters(PrintDirection);
         bValid &= ValidateInferenceParameters(PrintDirection);
@@ -748,6 +749,30 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
     throw;
   }
   return bValid;
+}
+
+/* Validate line list parameters. */
+bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) const {
+    try {
+        if (gParameters.getOutputKMLFile() && gParameters.getGroupLinelistEventsKML()) {
+            if (gParameters.getKmlEventGroupAttribute().size() == 0) {
+                PrintDirection.Printf(
+                    "%s:\nThe option to output a KML file has been selected along with line list event grouping\n"
+                    "yet no grouping characteristic has been specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+                return false;
+            }
+        }
+        if (!gParameters.getEventCacheFileName().empty()) {
+            if (boost::filesystem::exists(gParameters.getEventCacheFileName().c_str()) && 
+                !checkFileExists(gParameters.getEventCacheFileName(), "event cache", PrintDirection, false))
+                return false;
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateLinelistParameters()", "ParametersValidate");
+        throw;
+    }
+    return true;
 }
 
 /** Validates the temporal cluster size parameters. */

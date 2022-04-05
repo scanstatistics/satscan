@@ -17,9 +17,9 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
                                      break;
     case PURELYTEMPORAL            :
-	case PROSPECTIVEPURELYTEMPORAL :
-	case SEASONALTEMPORAL          :
-		                             std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+    case PROSPECTIVEPURELYTEMPORAL :
+    case SEASONALTEMPORAL          :
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
                                      break;
     case SPACETIME                 :
@@ -75,7 +75,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-		case SEASONALTEMPORAL           :
+        case SEASONALTEMPORAL           :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           Interface.SetPTMeasureAuxArray(DataSet.getMeasureData_PT_Aux());
@@ -135,7 +135,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-		case SEASONALTEMPORAL           :
+        case SEASONALTEMPORAL           :
           Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
           Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
           Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
@@ -204,8 +204,8 @@ DataSetHandler::CountFileReadStatus NormalDataSetHandler::ReadCountsStandard(Rea
             DataSetHandler::RecordStatusType eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
             if (eRecordStatus == DataSetHandler::Accepted) {
                 readStatus = readStatus == DataSetHandler::NoCounts ? DataSetHandler::ReadSuccess : readStatus;
-			    if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
-				    Date = gDataHub.convertToSeasonalDate(Date);
+                if (gParameters.GetAnalysisType() == SEASONALTEMPORAL)
+                    Date = gDataHub.convertToSeasonalDate(Date);
                 pRandomizer->AddCase(Count, Date, TractIndex, tContinuousVariable);
                 tTotalCases += Count;
                 //check that addition did not exceed data type limitations
@@ -310,8 +310,7 @@ DataSetHandler::CountFileReadStatus NormalDataSetHandler::ReadCountsWeighted(Rea
     return readStatus;
 }
 
-/** Scans case input files to determine if data set is weighted. Returns indication
-    of whether it was able to determine weighted status. */
+/** Scans case input files to determine if data set is weighted. Returns indication of whether it was able to determine weighted status. */
 bool NormalDataSetHandler::setIsWeighted() {
   std::vector<int> setColumns(GetNumDataSets(), 0);
 
@@ -414,34 +413,18 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
     DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-        if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
-            gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
-                          "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
-                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(),
-                          gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
-            return DataSetHandler::Rejected;
-        }
-	    if (gParameters.getIsWeightedNormal() && nCount > 1) {
-		    // For weighted normal data, the count column can only be zero or one. This was decided due to
-		    // users incorrectly using this column in their data.
-            gPrint.Printf("Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
-                          BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
-                          Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-            return DataSetHandler::Rejected;
-	    }
-        if (nCount == 0) return DataSetHandler::Ignored;
+    eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
+    if (eStatus != DataSetHandler::Accepted) return eStatus;
+    if (gParameters.getIsWeightedNormal() && nCount > 1) {
+        // For weighted normal data, the count column can only be zero or one. This was decided due to users incorrectly using this column in their data.
+        gPrint.Printf(
+            "Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
+            BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+        );
+        return DataSetHandler::Rejected;
     }
-    else {
-      gPrint.Printf("Error: Record %ld in the %s does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-
-    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
-    if (eDateStatus != DataSetHandler::Accepted)
-      return eDateStatus;
-
+    eStatus = RetrieveCountDate(Source, nDate); // read and validate date
+    if (eStatus != DataSetHandler::Accepted) return eStatus;
     uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex);
     // read continuous variable
     if (!Source.GetValueAt(uOffset)) {

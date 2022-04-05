@@ -54,6 +54,7 @@ class CParameters {
             std::string _grouper;
             unsigned int _skip;
             bool _first_row_headers;
+            LineListFieldMapContainer_t _ll_fields_map;
 
         public:
             InputSource() : _skip(0), _first_row_headers(false) {}
@@ -84,6 +85,10 @@ class CParameters {
             void setSkip(unsigned int u) {_skip = u;}
             bool getFirstRowHeader() const {return _first_row_headers;}
             void setFirstRowHeader(bool b) {_first_row_headers = b;}
+
+            const LineListFieldMapContainer_t & getLinelistFieldsMap() const { return _ll_fields_map; }
+            void setLinelistFieldsMap(const LineListFieldMapContainer_t& m) { _ll_fields_map = m; }
+            void clearLinelistFieldsMap() { _ll_fields_map.clear(); }
     };
 
   public:
@@ -104,7 +109,7 @@ class CParameters {
     unsigned int                        giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gdTimeTrendConverge;                    /** time trend convergence value for SVTT */
-    SimulationType                      _simulationType;                       /** indicates simulation procedure */
+    SimulationType                      _simulationType;                        /** indicates simulation procedure */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
     bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
                                                                                     pertinent for prospective analyses */
@@ -182,10 +187,14 @@ class CParameters {
     /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
+    bool                                _casefile_includes_linedata;            /* indication whether case file contains line list data, and therefore a first row meta-line */
+    bool                                _casefile_includes_header;              /* indication whether case file contains header row, used for line list labels */
+    bool                                _group_kml_linelist_attribute;          /* indication whether to include linelist events in kml output, grouped */
+    std::string                         _kml_event_group_attribute;             /* label of line-list colummn that should be used to group events in KML file */
+    std::string                         _event_cache_filename;
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
     std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
-    bool                                gbUsePopulationFile;                    /** indicates whether population data will be read
-                                                                                    given other parameter settings */
+    bool                                gbUsePopulationFile;                    /** indicates whether population data will be read given other parameter settings */
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
@@ -260,17 +269,17 @@ class CParameters {
     unsigned int                        _minimum_low_rate_cases;                 /** minimum number of cases in cluster when scanning low rates */
     unsigned int                        _minimum_high_rate_cases;                /** minimum number of cases in cluster when scanning high rates */
 
-	bool                                _perform_standard_drilldown;
-	bool                                _perform_bernoulli_drilldown;
-	unsigned int                        _drilldown_minimum_locations;
-	unsigned int                        _drilldown_minimum_cases;
-	double                              _drilldown_pvalue_cutoff;
-	bool                                _drilldown_adjust_weekly_trends;
-	std::vector<std::string>            _drilldown_result_filenames;
+    bool                                _perform_standard_drilldown;
+    bool                                _perform_bernoulli_drilldown;
+    unsigned int                        _drilldown_minimum_locations;
+    unsigned int                        _drilldown_minimum_cases;
+    double                              _drilldown_pvalue_cutoff;
+    bool                                _drilldown_adjust_weekly_trends;
+    std::vector<std::string>            _drilldown_result_filenames;
 
-	std::string                         _locations_network_filename;
-	bool                                _use_locations_network_file;
-	NetworkPurposeType                  _network_file_purpose;
+    std::string                         _locations_network_filename;
+    bool                                _use_locations_network_file;
+    NetworkPurposeType                  _network_file_purpose;
 
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
@@ -299,34 +308,44 @@ class CParameters {
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
     void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
 
+    bool                                getCasefileIncludesLineData() const { return _casefile_includes_linedata; }
+    void                                setCasefileIncludesLineData(bool b) { _casefile_includes_linedata = b; }
+    bool                                getCasefileIncludesHeader() const { return _casefile_includes_header; }
+    void                                setCasefileIncludesHeader(bool b) { _casefile_includes_header = b; }
+    bool                                getGroupLinelistEventsKML() const { return _group_kml_linelist_attribute; }
+    void                                setGroupLinelistEventsKML(bool b) { _group_kml_linelist_attribute = b; }
+    const std::string                 & getKmlEventGroupAttribute() const { return _kml_event_group_attribute; }
+    void                                setKmlEventGroupAttribute(const char * attr) { _kml_event_group_attribute = attr; }
+    bool                                getReadingLineDataFromCasefile() const;
+
     boost::posix_time::ptime            getTimestamp() const { return _local_timestamp; }
     void                                setTimestamp(boost::posix_time::ptime ts) { _local_timestamp = ts; }
-	bool                                getUseLocationsNetworkFile() const { return _use_locations_network_file; }
-	void                                setUseLocationsNetworkFile(bool b) { _use_locations_network_file = b; }
-	const std::string                 & getLocationsNetworkFilename() const { return _locations_network_filename; }
-	void                                setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath = false);
-	NetworkPurposeType                  getNetworkFilePurpose() const { return _network_file_purpose; }
-	void                                setNetworkFilePurpose(NetworkPurposeType e);
+    bool                                getUseLocationsNetworkFile() const { return _use_locations_network_file; }
+    void                                setUseLocationsNetworkFile(bool b) { _use_locations_network_file = b; }
+    const std::string                 & getLocationsNetworkFilename() const { return _locations_network_filename; }
+    void                                setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath = false);
+    NetworkPurposeType                  getNetworkFilePurpose() const { return _network_file_purpose; }
+    void                                setNetworkFilePurpose(NetworkPurposeType e);
 
     const std::string                 & getClusterMonikerPrefix() const { return _cluster_moniker_prefix; }
     void                                setClusterMonikerPrefix(const std::string& s) { _cluster_moniker_prefix = s; }
     bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
-	void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
-	bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }
-	void                                setPerformBernoulliDrilldown(bool b) { _perform_bernoulli_drilldown = b; }
-	unsigned int                        getDrilldownMinimumLocationsCluster() const { return _drilldown_minimum_locations; }
-	void                                setDrilldownMinimumLocationsCluster(unsigned int u) { _drilldown_minimum_locations = u; }
-	unsigned int                        getDrilldownMinimumCasesCluster() const { return _drilldown_minimum_cases; }
-	void                                setDrilldownMinimumCasesCluster(unsigned int u) { _drilldown_minimum_cases = u; }
-	double                              getDrilldownPvalueCutoff() const { return _drilldown_pvalue_cutoff; }
-	void                                setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
-	bool                                getDrilldownAdjustWeeklyTrends() const { return _drilldown_adjust_weekly_trends; }
-	void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
-	void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
-	const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
+    void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
+    bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }
+    void                                setPerformBernoulliDrilldown(bool b) { _perform_bernoulli_drilldown = b; }
+    unsigned int                        getDrilldownMinimumLocationsCluster() const { return _drilldown_minimum_locations; }
+    void                                setDrilldownMinimumLocationsCluster(unsigned int u) { _drilldown_minimum_locations = u; }
+    unsigned int                        getDrilldownMinimumCasesCluster() const { return _drilldown_minimum_cases; }
+    void                                setDrilldownMinimumCasesCluster(unsigned int u) { _drilldown_minimum_cases = u; }
+    double                              getDrilldownPvalueCutoff() const { return _drilldown_pvalue_cutoff; }
+    void                                setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+    bool                                getDrilldownAdjustWeeklyTrends() const { return _drilldown_adjust_weekly_trends; }
+    void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
+    void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
+    const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
 
-	bool                                requestsGeogrphaicalOutput() const {	return _output_google_map || _output_kml || _output_shapefiles || _output_cartesian_graph;	}
-	void                                toggleGeogrphaicalOutput(bool b) { _output_google_map = b; _output_kml = b; _output_shapefiles = b; _output_cartesian_graph = b; }
+    bool                                requestsGeogrphaicalOutput() const {	return _output_google_map || _output_kml || _output_shapefiles || _output_cartesian_graph;	}
+    void                                toggleGeogrphaicalOutput(bool b) { _output_google_map = b; _output_kml = b; _output_shapefiles = b; _output_cartesian_graph = b; }
 
     bool                                getOutputGoogleMapsFile() const { return _output_google_map; }
     void                                setOutputGoogleMapsFile(bool b) { _output_google_map = b; }
@@ -398,8 +417,8 @@ class CParameters {
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsPurelySpatialAnalysis() const;
-	bool                                GetIsPurelyTemporalAnalysis() const;
-	bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
+    bool                                GetIsPurelyTemporalAnalysis() const;
+    bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
     bool                                getLaunchMapViewer() const {return _launch_map_viewer;}
@@ -439,6 +458,7 @@ class CParameters {
     bool                                GetOutputClusterLevelFiles() const;
     const std::string                 & GetOutputFileNameSetting() const {return gsOutputFileNameSetting; }
     const std::string                 & GetOutputFileName() const { return _results_filename; }
+    const std::string                 & getEventCacheFileName() const { return _event_cache_filename; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
     bool                                getOutputCartesianGraph() const {return _output_cartesian_graph;}
     bool                                getOutputKMLFile() const { return _output_kml; }
@@ -606,6 +626,7 @@ class CParameters {
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationSimulationDataSourceFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);
+    void                                setEventCacheFileName(const char * filename, bool bCorrectForRelativePath = false);
     void                                setPowerEvaluationSimulationType(SimulationType eSimulationType);
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);
@@ -622,7 +643,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
-	void                                setTimeTrendType(TimeTrendType eTimeTrendType);
+    void                                setTimeTrendType(TimeTrendType eTimeTrendType);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetIsWeightedNormal(bool b) {gbWeightedNormal = b;}
     void                                SetIsWeightedNormalCovariates(bool b) {gbWeightedNormalCovariates = b;}    
@@ -639,7 +660,7 @@ class CParameters {
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
-	void                                SetTitleName(const char * sTitleName);
+    void                                SetTitleName(const char * sTitleName);
 };
 //*****************************************************************************
 #endif

@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 155;
+const int CParameters::giNumParameters                = 160;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -185,6 +185,11 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_network_file_purpose != rhs._network_file_purpose) return false;
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
   if (_prospective_frequency != rhs._prospective_frequency) return false;
+  if (_casefile_includes_linedata != rhs._casefile_includes_linedata) return false;
+  if (_casefile_includes_header != rhs._casefile_includes_header) return false;
+  if (_kml_event_group_attribute != rhs._kml_event_group_attribute) return false;
+  if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
+  if (_event_cache_filename != rhs._event_cache_filename) return false;
 
   return true;
 }
@@ -301,6 +306,7 @@ void CParameters::Copy(const CParameters &rhs) {
   geCoordinatesType                      = rhs.geCoordinatesType;
   gsOutputFileNameSetting                = rhs.gsOutputFileNameSetting;
   _results_filename                      = rhs._results_filename;
+  _event_cache_filename                  = rhs._event_cache_filename;
   gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
   gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
   gbIterativeRuns                        = rhs.gbIterativeRuns;
@@ -321,7 +327,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
   gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
   gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
-  gdTimeTrendConverge			         = rhs.gdTimeTrendConverge;
+  gdTimeTrendConverge                    = rhs.gdTimeTrendConverge;
   gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
   _simulationType                        = rhs._simulationType;
   gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
@@ -422,6 +428,19 @@ void CParameters::Copy(const CParameters &rhs) {
   _local_timestamp = rhs._local_timestamp;
   _prospective_frequency_type = rhs._prospective_frequency_type;
   _prospective_frequency = rhs._prospective_frequency;
+  _casefile_includes_linedata = rhs._casefile_includes_linedata;
+  _casefile_includes_header = rhs._casefile_includes_header;
+  _kml_event_group_attribute = rhs._kml_event_group_attribute;
+  _group_kml_linelist_attribute = rhs._group_kml_linelist_attribute;
+}
+
+/* Returns whether line list data is read from case file - which is indicated in two exclusive ways:
+   - user included line list meta row in case file
+   - user used file wizard to define line list columns
+*/
+bool CParameters::getReadingLineDataFromCasefile() const {
+    const InputSource * source = getInputSource(CASEFILE);
+    return _casefile_includes_linedata || (source && source->getLinelistFieldsMap().size());
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -811,6 +830,7 @@ void CParameters::SetAsDefaulted() {
   gsCoordinatesFileName                    = "";
   gsOutputFileNameSetting                  = "";
   _results_filename                        = "";
+  _event_cache_filename                    = "";
   gsMaxCirclePopulationFileName            = "";
   gePrecisionOfTimesType                   = YEAR;
   gbUseSpecialGridFile                     = false;
@@ -963,6 +983,10 @@ void CParameters::SetAsDefaulted() {
   _local_timestamp = boost::posix_time::second_clock::local_time();
   _prospective_frequency_type = SAME_TIMEAGGREGATION;
   _prospective_frequency = 1;
+  _casefile_includes_linedata = false;
+  _casefile_includes_header = false;
+  _kml_event_group_attribute = "";
+  _group_kml_linelist_attribute = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1189,6 +1213,11 @@ void CParameters::setPowerEvaluationSimulationDataSourceFilename(const char * sS
   _power_simulation_source_filename = sSourceFileName;
   if (bCorrectForRelativePath)
     AssignMissingPath(_power_simulation_source_filename);
+}
+
+void CParameters::setEventCacheFileName(const char * filename, bool bCorrectForRelativePath) {
+    _event_cache_filename = filename;
+    if (bCorrectForRelativePath) AssignMissingPath(_event_cache_filename);
 }
 
 /** Set spatial adjustment type. Throws exception if out of range. */

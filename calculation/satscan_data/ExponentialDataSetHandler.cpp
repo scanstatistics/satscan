@@ -241,67 +241,51 @@ bool ExponentialDataSetHandler::ReadData() {
     DataSetHandler::Accepted if no errors in data were found, else prints error
     messages to BasePrint object and returns RecordStatusType. */
 DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute) {
-  short   iContiVariableIndex, iCensoredAttributeIndex;
-
-  try {
-    //read and validate that tract identifier exists in coordinates file
-    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
-    if (eStatus != DataSetHandler::Accepted) return eStatus;
-    //read and validate count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), tPatients) || tPatients < 0) {
-          gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
-                        "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
-                        Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
-          return DataSetHandler::Rejected;
-      } 
-      if (tPatients == 0) return DataSetHandler::Ignored;    
-    }
-    else {
-      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-
-    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
-    if (eDateStatus != DataSetHandler::Accepted)
-      return eDateStatus;
-
-    // read continuous variable
-    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
-    if (!Source.GetValueAt(iContiVariableIndex)) {
-      gPrint.Printf("Error: Record %d of the %s is missing the survival time.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    if (!string_to_type<measure_t>(Source.GetValueAt(iContiVariableIndex), tContinuousVariable) || tContinuousVariable <= 0) {
-        gPrint.Printf("Error: The survival time value '%s' in record %ld of the %s is not valid.\n"
-                      "       Survival time must be a decimal value greater than 0.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-        return DataSetHandler::Rejected;
-    }
-
-    //read and validate censore attribute
-    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
-    if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
-        if (!string_to_type<count_t>(Source.GetValueAt(iCensoredAttributeIndex), tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
-            gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as valid censoring attribute.\n"
-                          "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
-                          Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+    try {
+        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid); //read and validate that tract identifier
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCaseCounts(Source, tPatients); // read and validate count
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCountDate(Source, nDate); // read and validate date
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        // read continuous variable
+        short iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
+        if (!Source.GetValueAt(iContiVariableIndex)) {
+            gPrint.Printf(
+                "Error: Record %d of the %s is missing the survival time.\n",
+                BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
             return DataSetHandler::Rejected;
         }
-        //treat values greater than one as indication that patient was censored
-        tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
+        if (!string_to_type<measure_t>(Source.GetValueAt(iContiVariableIndex), tContinuousVariable) || tContinuousVariable <= 0) {
+            gPrint.Printf(
+                "Error: The survival time value '%s' in record %ld of the %s is not valid.\n"
+                "       Survival time must be a decimal value greater than 0.\n",
+                BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
+            return DataSetHandler::Rejected;
+        }
+        //read and validate censore attribute
+        short iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
+        if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
+            if (!string_to_type<count_t>(Source.GetValueAt(iCensoredAttributeIndex), tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
+                gPrint.Printf(
+                    "Error: The value '%s' of record %ld, in the %s, could not be read as valid censoring attribute.\n"
+                    "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
+                    Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+                );
+                return DataSetHandler::Rejected;
+            }
+            //treat values greater than one as indication that patient was censored
+            tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
+        }
+    else //censored attribute optional - default to not censored
+        tCensorAttribute = 0;
+    } catch (prg_exception& x) {
+        x.addTrace("RetrieveCaseRecordData()","ExponentialDataSetHandler");
+        throw;
     }
-    else
-      //censored attribute optional - default to not censored
-      tCensorAttribute = 0;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RetrieveCaseRecordData()","ExponentialDataSetHandler");
-    throw;
-  }
-  return DataSetHandler::Accepted;
+    return DataSetHandler::Accepted;
 }
 
 /** sets purely temporal structures used in simulations */

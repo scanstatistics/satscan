@@ -18,16 +18,16 @@
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
 //
-//		d = latitude
-//		l = longitude
-//		a = radius (fixed = 6367 km)
+//  d = latitude
+//  l = longitude
+//  a = radius (fixed = 6367 km)
 //
-//		x = a cos(l) cos(d)
-//		y = a sin(l) cos(d)
-//		z = a sin(d)
+//  x = a cos(l) cos(d)
+//  y = a sin(l) cos(d)
+//  z = a sin(d)
 //
-//		Latitude and Longitude values should be float, ie, real numbers
-//		with ranges [-90,90] and [-180,180] (in degrees) respectively.
+//  Latitude and Longitude values should be float, ie, real numbers
+//  with ranges [-90,90] and [-180,180] (in degrees) respectively.
 void ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates) {
   double RADIUS = 6367; // Constant; radius of earth in km)
 
@@ -367,16 +367,16 @@ std::string& printString(std::string& destination, const char * format, ...) {
     va_end(varArgs);
 #else
     std::vector<char> temp(1);    
-	va_list varArgs_static;
+    va_list varArgs_static;
     va_start (varArgs_static, format);
 
-	std::va_list arglist_test; 
-	macro_va_copy(arglist_test, varArgs_static);
+    std::va_list arglist_test; 
+    macro_va_copy(arglist_test, varArgs_static);
     size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, arglist_test);
     temp.resize(iStringLength + 1);
 
-	std::va_list arglist;
-	macro_va_copy(arglist, varArgs_static);
+    std::va_list arglist;
+    macro_va_copy(arglist, varArgs_static);
     vsnprintf(&temp[0], iStringLength + 1, format, arglist);
     va_end(varArgs_static);
 #endif
@@ -491,8 +491,17 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
 }    
 #endif
 
+/* Returns user temporary directory. */
 std::string & GetUserTemporaryDirectory(std::string& s) {
     s = boost::filesystem::temp_directory_path().string();
+    return s;
+}
+
+/* Returns a unique filename in user temporary directory. */
+std::string & GetUserTemporaryFilename(std::string& s) {
+    GetUserTemporaryDirectory(s);
+    s += boost::filesystem::path::separator;
+    s += boost::filesystem::unique_path().string();
     return s;
 }
 
@@ -564,20 +573,20 @@ bool getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ st
 
   while (!(readstream.eof() || readstream.fail())) {
 
-	  if (!readstream.get(nextChar)) {//Does reading next char bring us to end of file?
+      if (!readstream.get(nextChar)) {//Does reading next char bring us to end of file?
          break;
       }
       if (nextChar == readstream.widen('\r')) {
           // could be either DOS or Mac 9 end of line -- peek at next char
           nextChar = readstream.peek();
           if (nextChar == readstream.widen('\n')) {
-		      //DOS end of line characters -- read it.
+              //DOS end of line characters -- read it.
               readstream.get(nextChar);
           }
           break;
       }
       if (nextChar == readstream.widen('\n')) {
-	      //UNIX or Mac OS X end of line character.
+          //UNIX or Mac OS X end of line character.
           break;
       }
       readStream << nextChar;
@@ -604,7 +613,7 @@ void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {
 std::pair<double,double> calculateGumbelPValue(const SimulationVariables& simVars, double critical_value) {
     double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
     double mu = simVars.get_mean() - EULER * beta;
-	double p = 1 - std::exp(-std::exp((mu - critical_value)/beta));
+    double p = 1 - std::exp(-std::exp((mu - critical_value)/beta));
     // Determine the alternative minimum p-value. Very strong clusters will cause 
     // the calculated p-value to be computed as zero in above statement.    
     double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
@@ -615,7 +624,7 @@ std::pair<double,double> calculateGumbelPValue(const SimulationVariables& simVar
 std::pair<double,double> calculateGumbelCriticalValue(const SimulationVariables& simVars, double p_value) {
     double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
     double mu = simVars.get_mean() - EULER * beta;
-	double critical_value = mu - beta * std::log(std::log( 1 /( 1 - p_value )));
+    double critical_value = mu - beta * std::log(std::log( 1 /( 1 - p_value )));
     // Determine the alternative minimum p-value. Very strong clusters will cause 
     // the calculated p-value to be computed as zero in above statement.    
     double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
@@ -623,10 +632,10 @@ std::pair<double,double> calculateGumbelCriticalValue(const SimulationVariables&
 }
 
 const char * ordinal_suffix(unsigned int n) {
-	static const char suffixes[][3] = { "th", "st", "nd", "rd" };
-	unsigned int ord = n % 100;
-	if (ord / 10 == 1) ord = 0; 
-	ord = ord % 10;
-	if (ord > 3) ord = 0;
-	return suffixes[ord];
+    static const char suffixes[][3] = { "th", "st", "nd", "rd" };
+    unsigned int ord = n % 100;
+    if (ord / 10 == 1) ord = 0; 
+    ord = ord % 10;
+    if (ord > 3) ord = 0;
+    return suffixes[ord];
 }

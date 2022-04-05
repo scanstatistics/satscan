@@ -23,10 +23,44 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
         default              : dataSource = new CsvFileDataSource(sSourceFilename, Print, " ");
     }
     dataSource->setFieldsMap(source->getFieldsMap());
+    dataSource->setLinelistFieldsMap(source->getLinelistFieldsMap());
     return dataSource;
 }
 
-void DataSource::setFieldsMap(const std::vector<boost::any> map) {
+/* Returns whether event id is in defined in list list attributes. */
+bool DataSource::hasEventIdLinelistMapping() const {
+    for (auto fieldMap : _linelist_fields_map)
+        if (fieldMap.second.get<0>() == EVENT_ID)
+            return true;
+    return false;
+}
+
+/* Returns whether event x/y are defined in list list attributes. */
+bool DataSource::hasEventCoordinatesLinelistMapping() const {
+    bool x = false, y = false;
+    for (auto fieldMap : _linelist_fields_map) {
+        x |= fieldMap.second.get<0>() == EVENT_COORD_X;
+        y |= fieldMap.second.get<0>() == EVENT_COORD_Y;
+    }
+    return x && y;
+}
+
+/* Returns whether column is used only for line-list purposes - meaning not input data used in analyses (e.g identifier, case count, covariate, etc.). */
+bool DataSource::isLinelistOnlyColumn(long iFieldIndex) const {
+    // We can only determine this situation when the user has utilized the file wizard.
+    if (_fields_map.size() == 0) return false;
+    // User might have used file wizard but didn't define any line list columns.
+    if (_linelist_fields_map.size() == 0) return false;
+    // Is this field index not defined as line list column?
+    if (_linelist_fields_map.find(static_cast<size_t>(iFieldIndex)) == _linelist_fields_map.end()) return false;
+    // It is a line list column, but is it also an input data column?
+    for (auto itr = _fields_map.begin(); itr != _fields_map.end(); ++itr) {
+        if (itr->type() == typeid(long) && boost::any_cast<long>(*itr) == iFieldIndex)
+            return false;
+    } return true;
+}
+
+void DataSource::setFieldsMap(const FieldMapContainer_t& map) {
     _fields_map = map;
     // Strip out any FieldType::BLANK field maps -- which generally are in place of date fields.
     // The data set handler classes adjust column indexes when calling GetValueAt(idx) when such fields
@@ -216,24 +250,19 @@ void AsciiFileDataSource::ThrowUnicodeException() {
 //******************* class dBaseFileDataSource ***********************************
 
 /** constructor */
-dBaseFileDataSource::dBaseFileDataSource(const std::string& sSourceFilename)
-                 :DataSource(), gwCurrentFieldIndex(-1), glCurrentRecord(0) {
-  try {
-    gSourceFile.reset(new dBaseFile());
-    gSourceFile->Open(sSourceFilename.c_str());
-    glNumRecords = gSourceFile->GetNumRecords();
-  }
-  catch (prg_exception & x) {
-    throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
-  }
+dBaseFileDataSource::dBaseFileDataSource(const std::string& sSourceFilename): DataSource(), glCurrentRecord(0) {
+    try {
+        gSourceFile.reset(new dBaseFile());
+        gSourceFile->Open(sSourceFilename.c_str());
+        glNumRecords = gSourceFile->GetNumRecords();
+    } catch (prg_exception & x) {
+        throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
+    }
 }
-
-/** destructor */
-dBaseFileDataSource::~dBaseFileDataSource() {}
 
 /** Returns current record index. */
 long dBaseFileDataSource::GetCurrentRecordIndex() const {
-  return static_cast<long>(glCurrentRecord);
+    return static_cast<long>(glCurrentRecord);
 }
 
 /** Returns the number of fields in record buffer. */
@@ -260,28 +289,22 @@ const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
                     default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
                 }
                 return gsValue.c_str();
-            } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
+            } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType))
                 // dBaseFileDataSource does not implemenet the ShapeFieldType mapping -- that's only for shapefiles.
                 throw prg_error("dBaseFileDataSource::GetValueAt() not supported with ShapeFieldType.","dBaseFileDataSource::GetValueAt()");
-            } else {
-                // This field is mapped to another column of the data source.
+            else // This field is mapped to another column of the data source.
                 iFieldIndex = tranlateFieldIndex(iFieldIndex);
-            }
-        } else {
-            // index beyond defined mappings
+        } else // index beyond defined mappings
             return 0;
-        }
     }
+    return GetValueAtUnmapped(iFieldIndex);
+}
 
-    // now retrieve value
-    if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
-        return 0;
+const char * dBaseFileDataSource::GetValueAtUnmapped(long iFieldIndex) {
+    if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1)) return 0;
     gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
-    if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
-        //format date fields -- read process currently expects yyyy/mm/dd
-        gsValue.insert(4, "/");
-        gsValue.insert(7, "/");
-    }
+    if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN)
+        gsValue.insert(4, "/").insert(7, "/"); //format date fields -- read process currently expects yyyy/mm/dd
     return gsValue.c_str();
 }
 
@@ -290,14 +313,12 @@ void dBaseFileDataSource::GotoFirstRecord() {
     if (glNumRecords) {
         gSourceFile->GotoRecord(1);
         glCurrentRecord = 0;
-        gwCurrentFieldIndex=-1;
     }  
 }
 
 /** Either reads first file record in file or next after current record. */
 bool dBaseFileDataSource::ReadRecord() {
     if (glCurrentRecord >= glNumRecords) return false;
-    gwCurrentFieldIndex=-1;
     gSourceFile->GotoRecord(++glCurrentRecord);
     return true;  
 }
@@ -354,24 +375,23 @@ bool CsvFileDataSource::parse(std::string& s, const std::string& delimiter, cons
     boost::replace_all(s, escaped_group_seq.str(), _grouper_escape); // Replace escaped group sequence in parsing string.
     // Define tokenizer without escape character and specified delimiter and group characters.
     boost::tokenizer<boost::escaped_list_separator<char> > values(s, boost::escaped_list_separator<char>(std::string(""), delimiter, grouper));
-    _values.clear();
-    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=values.begin(); itr != values.end(); ++itr) {
-        _values.push_back(*itr);
+    _read_values.clear();
+    for (auto itr=values.begin(); itr != values.end(); ++itr) {
+        _read_values.push_back(*itr);
         // Replace the escaped grouping sequence - now that token has been parsed.
-        boost::replace_all(_values.back(), _grouper_escape, grouper);
+        boost::replace_all(_read_values.back(), _grouper_escape, grouper);
         //trim any whitespace around value
-        boost::trim(_values.back());
+        boost::trim(_read_values.back());
         // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
-        if (!_values.back().size() && _ignore_empty_fields)
-            _values.pop_back();
+        if (!_read_values.back().size() && _ignore_empty_fields)
+            _read_values.pop_back();
     }
     // if all fields are empty string, then treat this as empty record
     size_t blanks=0;
-    for (std::vector<std::string>::const_iterator itr= _values.begin(); itr != _values.end(); ++itr)
+    for (auto itr=_read_values.begin(); itr != _read_values.end(); ++itr)
         if (itr->empty()) ++blanks;
-    if (blanks == _values.size()) _values.clear();
-
-    return _values.size() > 0;
+    if (blanks == _read_values.size()) _read_values.clear();
+    return _read_values.size() > 0;
 }
 
 /** Attempts to read line from source and parse into 'words'. 
@@ -386,7 +406,7 @@ bool CsvFileDataSource::ReadRecord() {
         getlinePortable(_sourceFile, readbuffer);
         ++_readCount;
     }
-    _values.clear();
+    _read_values.clear();
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
         try {
             isBlank = !parse(readbuffer, _delimiter, _grouper);
@@ -400,68 +420,46 @@ bool CsvFileDataSource::ReadRecord() {
         }
     }
     ++_readCount;
-    if (readbuffer.size() > 0 && _values.size() > 0 && _fields_map.size() > 0) {
-        // translate field mapped values - field maps are all or nothing. 
-        // This means that all fields are defined in mapping or straight from record parse.
-        std::vector<std::string> mapped_values;
-        for (size_t t=0; t < _values.size(); ++t) {
-            const char * val = getMappedValueAt(static_cast<long>(t));
-            if (val) mapped_values.push_back(std::string(val));
-        }
-        // Overwrite the values from file.
-        _values = mapped_values;
-    }
-
     return (readbuffer.size() > 0 && GetNumValues());
 }
 
-/** Returns number of values */
+/** Returns number of values in record -- if fields are being mapped, fields are restricted them only. */
 long CsvFileDataSource::GetNumValues() {
-    return static_cast<long>(_values.size());
+    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_read_values.size());
 }
 
-const char * CsvFileDataSource::getMappedValueAt(long iFieldIndex) {
-    // see if value at field index is mapped FieldType
-    if (_fields_map.size()) {
-        if (iFieldIndex < static_cast<long>(_fields_map.size())) {
-            if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
-                _read_buffer.clear();
-                FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
-                switch (type) {
+const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
+    if (_fields_map.size()) { // see if value at field index is mapped FieldType
+        if (iFieldIndex >= static_cast<long>(_fields_map.size())) return 0; // index beyond defined mappings
+        if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
+            _read_buffer.clear();
+            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            switch (type) {
                 case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: _read_buffer = "1"; break;
                 case DEFAULT_DATE: _read_buffer = DateStringParser::UNSPECIFIED; break;
                 case BLANK: break;
                 default: throw prg_error("Unknown FieldType enumeration %d.", "GetValueAt()", type);
-                }
-                return _read_buffer.c_str();
             }
-            else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-                // CsvFileDataSource does not implemenet the ShapeFieldType mapping -- they are only for shapefiles.
-                throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.", "CsvFileDataSource::GetValueAt()");
-            }
-            else {
-                // This field is mapped to another column of the data source.
-                iFieldIndex = tranlateFieldIndex(iFieldIndex);
-            }
-        }
-        else {
-            // index beyond defined mappings
-            return 0;
-        }
+            return _read_buffer.c_str();
+        } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType))
+            throw prg_error("CsvFileDataSource::GetValueAt() not supported with ShapeFieldType.", "CsvFileDataSource::GetValueAt()");
+        else // This field is mapped to another column of the data source.
+            iFieldIndex = tranlateFieldIndex(iFieldIndex);
     }
-    if (iFieldIndex > static_cast<long>(_values.size()) - 1)
-        return 0;
-    return _values.at(static_cast<size_t>(iFieldIndex)).c_str();
+    return GetValueAtUnmapped(iFieldIndex); // Return the value at field index read data record.
 }
 
-const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
-    return static_cast<size_t>(iFieldIndex) < _values.size() ? _values.at(static_cast<size_t>(iFieldIndex)).c_str() : 0;
+/* Returns the string at field index or null pointer if index is out of range. */
+const char * CsvFileDataSource::GetValueAtUnmapped(long iFieldIndex) { 
+    return static_cast<size_t>(iFieldIndex) < _read_values.size() ? _read_values[static_cast<size_t>(iFieldIndex)].c_str() : 0;
 }
 
 void CsvFileDataSource::ThrowUnicodeException() {
-    throw resolvable_error("Error: The %s contains data that is Unicode formatted.\n       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                             _print.GetImpliedFileTypeString().c_str());
+    throw resolvable_error(
+        "Error: The %s contains data that is Unicode formatted.\n       Please see 'ASCII Input File Format' in the user guide for help.\n",
+        _print.GetImpliedFileTypeString().c_str()
+    );
 }
 
 //******************* class ShapeFileDataSource ********************************
@@ -500,8 +498,7 @@ std::pair<bool, std::string> ShapeFileDataSource::isSupportedShapeType(const std
     return std::make_pair(true, buffer);
 }
 
-ShapeFileDataSource::ShapeFileDataSource(const std::string& sSourceFilename)
-                :DataSource(), _current_field_idx(-1), _current_record(0), _convert_utm(false) {
+ShapeFileDataSource::ShapeFileDataSource(const std::string& sSourceFilename): DataSource(), _current_record(0), _convert_utm(false) {
     // check that shape type is supported
     std::pair<bool, std::string> supportedType = isSupportedShapeType(sSourceFilename);
     if (!supportedType.first)
@@ -528,10 +525,7 @@ long ShapeFileDataSource::GetCurrentRecordIndex() const {
 
 /** Returns the number of fields in record buffer. */
 long ShapeFileDataSource::GetNumValues() {
-    //long count=4; /* the generatedid, onecount, latitude/longitude coordinates are implicit in the count */
-    //if (_dbase_file.get())
-    //    count += _dbase_file->GetNumFields();
-    return static_cast<long>(_fields_map.size());
+    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_dbase_file->GetNumFields());
 }
 
 /** Returns iFieldIndex'th field value from current record. */
@@ -548,48 +542,46 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
                 case BLANK: break;
                 default : throw prg_error("Unknown FieldType enumeration %d.","GetValueAt()", type);
             }
+            return _read_buffer.size() ? _read_buffer.c_str() : 0;
         } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
             ShapeFieldType type = boost::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
             switch (type) {
-                case POINTX:
-                case POINTY: {
-                    double x, y;
-                    _shape_file->getShapeAsXY(static_cast<int>(_current_record - 1), x, y);
-                    if (_convert_utm) {
-                        UTM_To_LatitudeLongitude(y, x, _hemisphere, _zone, y, x);
-                    }
-                    printString(_read_buffer, "%lf", (type == POINTX ? y : x));
-                } break;
+                case POINTX: iFieldIndex = 1; break;
+                case POINTY: iFieldIndex = 0; break;
                 default : throw prg_error("Unknown ShapeFieldType enumeration %d.","GetValueAt()", type);
             }
-        } else {
-            iFieldIndex = boost::any_cast<long>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
-            if (!_dbase_file.get() || iFieldIndex > (long)(_dbase_file->GetNumFields()))
-                return 0;
-            _dbase_file->GetSystemRecord()->GetFieldValue(iFieldIndex - 1, _read_buffer);
-            if (_dbase_file->GetSystemRecord()->GetFieldType(iFieldIndex - 1) == FieldValue::DATE_FLD && _read_buffer.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
-                //format date fields -- read process currently expects yyyy/mm/dd
-                _read_buffer.insert(4, "/");
-                _read_buffer.insert(7, "/");
-            }
-        }
-        _current_field_idx = iFieldIndex;
+        } else // Transform field index - with indexes 0 and 1 reserved for points x/y - results is index in dbase fields.
+            iFieldIndex = tranlateFieldIndex(iFieldIndex) + 2;
+    }
+    return GetValueAtUnmapped(iFieldIndex);
+}
+
+const char * ShapeFileDataSource::GetValueAtUnmapped(long iFieldIndex) {
+    if (iFieldIndex == 0 || iFieldIndex == 1) {
+        double x, y;
+        _shape_file->getShapeAsXY(static_cast<int>(_current_record - 1), x, y);
+        if (_convert_utm) UTM_To_LatitudeLongitude(y, x, _hemisphere, _zone, y, x);
+        printString(_read_buffer, "%lf", (iFieldIndex == 1 ? y : x));
+    } else {
+        iFieldIndex -= 2; // Account for x/y columns being offset 0 and 1 when getting unmapped values.
+        if (!_dbase_file.get() || iFieldIndex > (long)(_dbase_file->GetNumFields()))
+            return 0;
+        _dbase_file->GetSystemRecord()->GetFieldValue(iFieldIndex, _read_buffer);
+        if (_dbase_file->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && _read_buffer.size() == SaTScan::Timestamp::DATE_FLD_LEN)
+            _read_buffer.insert(4, "/").insert(7, "/"); //format date fields -- read process currently expects yyyy/mm/dd
     }
     return _read_buffer.size() ? _read_buffer.c_str() : 0;
 }
 
 /** Positions read cursor to first record. */
 void ShapeFileDataSource::GotoFirstRecord() {
-    if (_num_records) {
+    if (_num_records)
         _current_record = 0;
-        _current_field_idx=-1;
-    }  
 }
 
 /** Either reads first file record in file or next after current record. */
 bool ShapeFileDataSource::ReadRecord() {
     if (_current_record >= _num_records) return false;
-    _current_field_idx=-1;
     ++_current_record;
     if (_dbase_file.get())
         _dbase_file->GotoRecord(_current_record);

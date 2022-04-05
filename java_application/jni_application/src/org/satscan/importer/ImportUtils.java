@@ -195,16 +195,9 @@ public class ImportUtils {
 
         //add remaining buffer to list
         s = buffer.toString();
-
-        if (bStripGroupMarkers) {
-            s = trimGroupMarkers(s, sOpenGroupMarker, sCloseGroupMarker);
-        }
-
-        if (bTrimWhitespace) {
-            s = s.trim();
-        }
-
-        vList.add(s);
+        if (bStripGroupMarkers) s = trimGroupMarkers(s, sOpenGroupMarker, sCloseGroupMarker);
+        if (bTrimWhitespace) s = s.trim();
+        if (!s.isEmpty()) vList.add(s);
 
         return vList;
     }

@@ -19,6 +19,7 @@ class DataSource {
     protected:
         bool _blank_record_flag;
         FieldMapContainer_t _fields_map;
+        LineListFieldMapContainer_t _linelist_fields_map;
 
         virtual long tranlateFieldIndex(long idx) const {
             if (idx < static_cast<long>(_fields_map.size())) {
@@ -38,11 +39,18 @@ class DataSource {
         static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, const CParameters::InputSource * source, BasePrint& Print);
         virtual long                       GetNumValues() = 0;
         virtual const char               * GetValueAt(long iFieldIndex) = 0;
+        virtual const char               * GetValueAtUnmapped(long iFieldIndex) = 0;
         virtual void                       GotoFirstRecord() = 0;
+        bool                               hasEventIdLinelistMapping() const;
+        bool                               hasEventCoordinatesLinelistMapping() const;
+        bool                               isLinelistOnlyColumn(long iFieldIndex) const;
         virtual bool                       ReadRecord() = 0;
         void                               tripBlankRecordFlag() {_blank_record_flag=true;}
         //void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
-        void                               setFieldsMap(const std::vector<boost::any> map);
+        const FieldMapContainer_t        & getFieldsMap() const { return _fields_map;  }
+        void                               setFieldsMap(const FieldMapContainer_t& map);
+        const LineListFieldMapContainer_t& getLinelistFieldsMap() { return _linelist_fields_map; }
+        void                               setLinelistFieldsMap(const LineListFieldMapContainer_t& map) { _linelist_fields_map = map; }
 };
 
 /** ASCII file data source. */
@@ -90,6 +98,7 @@ class AsciiFileDataSource : public DataSource {
                                            return _fields_map.size() > 0 ? std::min(static_cast<long>(_fields_map.size()), words) : words;
                                         }
      virtual const char               * GetValueAt(long iFieldIndex);
+     virtual const char               * GetValueAtUnmapped(long iFieldIndex) { return GetValueAt(iFieldIndex); }
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
@@ -99,17 +108,17 @@ class dBaseFileDataSource : public DataSource {
    private:
      std::auto_ptr<dBaseFile>           gSourceFile;
      std::string                        gsValue;
-     long                               gwCurrentFieldIndex;
      unsigned long                      glNumRecords;
      unsigned long                      glCurrentRecord;
 
    public:
      dBaseFileDataSource(const std::string& sSourceFilename);
-     virtual ~dBaseFileDataSource();
+     virtual ~dBaseFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const;
      virtual long                       GetNumValues();
      virtual const char               * GetValueAt(long iFieldIndex);
+     virtual const char               * GetValueAtUnmapped(long iFieldIndex);
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
@@ -126,12 +135,11 @@ class CsvFileDataSource : public DataSource {
         unsigned long _skip;
         bool _firstRowHeaders;
         bool _ignore_empty_fields;
-        std::vector<std::string> _values;
+        std::vector<std::string> _read_values;
         BasePrint & _print;
         std::string _read_buffer;
 
         bool  parse(std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
-        const char * getMappedValueAt(long iFieldIndex);
         void  ThrowUnicodeException();
 
    public:
@@ -142,6 +150,7 @@ class CsvFileDataSource : public DataSource {
      virtual long                       getNonBlankRecordsRead() const {return _readCount - _blankReadCount;}
      virtual long                       GetNumValues();
      virtual const char               * GetValueAt(long iFieldIndex);
+     virtual const char               * GetValueAtUnmapped(long iFieldIndex);
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
@@ -152,7 +161,6 @@ class ShapeFileDataSource : public DataSource {
         std::auto_ptr<dBaseFile>           _dbase_file;
         std::auto_ptr<ShapeFile>           _shape_file;
         std::string                        _read_buffer;
-        long                               _current_field_idx;
         unsigned long                      _num_records;
         unsigned long                      _current_record;
 
@@ -172,6 +180,7 @@ class ShapeFileDataSource : public DataSource {
         virtual long                       GetCurrentRecordIndex() const;
         virtual long                       GetNumValues();
         virtual const char               * GetValueAt(long iFieldIndex);
+        virtual const char               * GetValueAtUnmapped(long iFieldIndex);
         virtual void                       GotoFirstRecord();
         virtual bool                       ReadRecord();
         void                               setUTMConversionInformation(char hemisphere, unsigned int zone, double northing, double easting) {
@@ -190,6 +199,7 @@ class OneCovariateDataSource : public DataSource {
         virtual long                    GetCurrentRecordIndex() const {return 1;}
         virtual long                    GetNumValues() {return 1;}
         virtual const char            * GetValueAt(long iFieldIndex) {return iFieldIndex == _covariateIndex ? printString(_buffer, "%u", _covariate).c_str() : (const char*)0;}
+        virtual const char            * GetValueAtUnmapped(long iFieldIndex) { return GetValueAt(iFieldIndex); }
         virtual void                    GotoFirstRecord() {}
         virtual bool                    ReadRecord() {return true;}
 };

@@ -195,6 +195,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(SATDATA)/HomogeneousPoissonDataSetHandler.cpp \
                $(SATDATA)/ObservableRegion.cpp \
                $(SATDATA)/ClosedLoopData.cpp \
+               $(SATDATA)/DataDemographics.cpp \
                $(UTILITY)/dBaseFile.cpp \
                $(UTILITY)/JulianDates.cpp \
                $(UTILITY)/RandomDistribution.cpp \

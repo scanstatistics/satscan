@@ -17,6 +17,7 @@
 #include "ClusterKML.h"
 #include "ClusterScatterChart.h"
 #include "ClusterMap.h"
+#include "DataDemographics.h"
 
 class ClusterRankHelper {
     private:
@@ -64,104 +65,105 @@ class ClusterRankHelper {
 };
 
 class AnalysisExecution {
-	friend class stsMCSimJobSource;
-	friend class OliveiraJobSource;
+    friend class stsMCSimJobSource;
+    friend class OliveiraJobSource;
 
-	protected:
-		typedef std::pair<const MostLikelyClustersContainer*, unsigned int> OptimalGiniByLimit_t;
+    protected:
+        typedef std::pair<const MostLikelyClustersContainer*, unsigned int> OptimalGiniByLimit_t;
 
-		const CParameters                 & _parameters;
-		BasePrint                         & _print_direction;
-		CSaTScanData                      & _data_hub;
-		time_t								_start_time;
-		bool								_clustersReported;
-		ExecutionType						_executing_type;
-		unsigned int						_analysis_count;
-		unsigned short						_significant_at005;
+        const CParameters                 & _parameters;
+        BasePrint                         & _print_direction;
+        CSaTScanData                      & _data_hub;
+        time_t								_start_time;
+        bool								_clustersReported;
+        ExecutionType						_executing_type;
+        unsigned int						_analysis_count;
+        unsigned short						_significant_at005;
         unsigned int                        _significant_clusters;
         MLC_Collections_t					_top_clusters_containers;
-		MostLikelyClustersContainer			_reportClusters;
-		ClusterRankHelper					_clusterRanker;
-		SimulationVariables					_sim_vars;
-		std::auto_ptr<LocationRelevance>    _relevance_tracker;
-		std::auto_ptr<ClusterKML>           _cluster_kml;
-		std::auto_ptr<CartesianGraph>       _cluster_graph;
-		std::auto_ptr<ClusterMap>           _cluster_map;
-		double                              _min_ratio_to_report;
-		std::auto_ptr<SignificantRatios>    _significant_ratios;
-		std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
+        MostLikelyClustersContainer			_reportClusters;
+        ClusterRankHelper					_clusterRanker;
+        SimulationVariables					_sim_vars;
+        std::auto_ptr<LocationRelevance>    _relevance_tracker;
+        std::auto_ptr<ClusterKML>           _cluster_kml;
+        std::auto_ptr<CartesianGraph>       _cluster_graph;
+        std::auto_ptr<ClusterMap>           _cluster_map;
+        double                              _min_ratio_to_report;
+        std::auto_ptr<SignificantRatios>    _significant_ratios;
+        std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
+        boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
 
-		void								addGiniClusters(MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff);
-		void								calculateMostLikelyClusters();
-		void								calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
-		void								calculateOliveirasF();
-		void								createReport();
-		void								executeCentricEvaluation();
-		void								executePowerEvaluations();
-		void								executeSuccessively();
-		void								executeSuccessiveSimulations();
-		void								finalizeReport();
-		CAnalysis                         * getNewAnalysisObject(BasePrint& print) const;
-		AbstractCentricAnalysis           * getNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway, const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;
-		const MostLikelyClustersContainer * getOptimalGiniContainerByPValue(const MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
-		OptimalGiniByLimit_t                getOptimalGiniContainerByLimit(const MLC_Collections_t& mlc_collections, const std::vector<unsigned int>& atmost) const;
-		void								logRunHistory();
-		void								openReportFile(FILE*& fp, bool bOpenAppend);
-		void								printFindClusterHeading();
-		void								printCriticalValuesStatus(FILE* fp);
-		void								printEarlyTerminationStatus(FILE* fp);
-		void								printGiniCoefficients(FILE* fp);
-		void								printRetainedClustersStatus(FILE* fp, bool bClusterReported);
+        void								addGiniClusters(MLC_Collections_t& mlc_collections, MostLikelyClustersContainer& mlc, double p_value_cutoff);
+        void								calculateMostLikelyClusters();
+        void								calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
+        void								calculateOliveirasF();
+        void								createReport();
+        void								executeCentricEvaluation();
+        void								executePowerEvaluations();
+        void								executeSuccessively();
+        void								executeSuccessiveSimulations();
+        void								finalizeReport();
+        CAnalysis                         * getNewAnalysisObject(BasePrint& print) const;
+        AbstractCentricAnalysis           * getNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway, const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;
+        const MostLikelyClustersContainer * getOptimalGiniContainerByPValue(const MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
+        OptimalGiniByLimit_t                getOptimalGiniContainerByLimit(const MLC_Collections_t& mlc_collections, const std::vector<unsigned int>& atmost) const;
+        void								logRunHistory();
+        void								openReportFile(FILE*& fp, bool bOpenAppend);
+        void								printFindClusterHeading();
+        void								printCriticalValuesStatus(FILE* fp);
+        void								printEarlyTerminationStatus(FILE* fp);
+        void								printGiniCoefficients(FILE* fp);
+        void								printRetainedClustersStatus(FILE* fp, bool bClusterReported);
         void                                printIgnoredDataSets(FILE* fp);
-		void								printTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
-		void								printTopClusters(const MostLikelyClustersContainer& mlc);
-		void								printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
-		virtual bool						repeatAnalysis();
-		void								reportClusters();
-		void								runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
-		void								updateSignificantRatiosList(double dRatio);
+        void								printTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
+        void								printTopClusters(const MostLikelyClustersContainer& mlc);
+        void								printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
+        virtual bool						repeatAnalysis();
+        void								reportClusters();
+        void								runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
+        void								updateSignificantRatiosList(double dRatio);
 
-	public:
-		AnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print);
-		virtual ~AnalysisExecution() {}
+    public:
+        AnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print);
+        virtual ~AnalysisExecution() {}
 
-		void                                execute();
-		void                                finalize();
-		const ClusterSupplementInfo       & getClusterSupplement() const { return *_clusterSupplement; }
-		const CSaTScanData                & getDataHub() const { return _data_hub; }
-		bool                                getIsCalculatingSignificantRatios() const { return _significant_ratios.get() != 0; }
-		const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
-		unsigned short                      getNumSignificantAt005() const { return _significant_at005; }
+        void                                execute();
+        void                                finalize();
+        const ClusterSupplementInfo       & getClusterSupplement() const { return *_clusterSupplement; }
+        const CSaTScanData                & getDataHub() const { return _data_hub; }
+        bool                                getIsCalculatingSignificantRatios() const { return _significant_ratios.get() != 0; }
+        const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
+        unsigned short                      getNumSignificantAt005() const { return _significant_at005; }
         unsigned int                        getNumSignificantClusters() const { return _significant_clusters; }
-		unsigned int                        getNumSimulationsExecuted() const { return _sim_vars.get_sim_count(); }
-		const CParameters                 & getParameters() const { return _parameters; }
-		double                              getSimRatio01() const { return _significant_ratios.get() ? _significant_ratios->getAlpha01().second : 0.0; }
-		double                              getSimRatio05() const { return _significant_ratios.get() ? _significant_ratios->getAlpha05().second : 0; }
-		const SimulationVariables         & getSimVariables() const { return _sim_vars; }
-		const time_t                      * getStartTime() const { return &_start_time; }
-		void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) const;
+        unsigned int                        getNumSimulationsExecuted() const { return _sim_vars.get_sim_count(); }
+        const CParameters                 & getParameters() const { return _parameters; }
+        double                              getSimRatio01() const { return _significant_ratios.get() ? _significant_ratios->getAlpha01().second : 0.0; }
+        double                              getSimRatio05() const { return _significant_ratios.get() ? _significant_ratios->getAlpha05().second : 0; }
+        const SimulationVariables         & getSimVariables() const { return _sim_vars; }
+        const time_t                      * getStartTime() const { return &_start_time; }
+        void                                rankClusterCollections(MLC_Collections_t& mlc_collection, MostLikelyClustersContainer& mlc, ClusterRankHelper * ranker, BasePrint& print) const;
 };
 
 class AbstractAnalysisDrilldown {
-	protected:
-		CParameters                         _parameters;
-		BasePrint                         & _print_direction;
-		time_t                              _start_time;
-		ExecutionType                       _executing_type;
-		std::auto_ptr<CSaTScanData>         _data_hub;
-		unsigned int                        _downlevel;
-		std::vector<std::string>            _temp_files;
-		const std::string                 & _base_output;
-		std::string                         _cluster_path;
+    protected:
+        CParameters                         _parameters;
+        BasePrint                         & _print_direction;
+        time_t                              _start_time;
+        ExecutionType                       _executing_type;
+        std::auto_ptr<CSaTScanData>         _data_hub;
+        unsigned int                        _downlevel;
+        std::vector<std::string>            _temp_files;
+        const std::string                 & _base_output;
+        std::string                         _cluster_path;
         unsigned int                        _significant_clusters;
         std::string                         _parent_filename;
 
-	public:
-		AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
-			_parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), _significant_clusters(0){
-			// Record start time of drilldown start -- of course this excludes time reading data.
-			time(&_start_time);
-			_cluster_path = (cluster_path ? cluster_path.get() : "");
+    public:
+        AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
+            _parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), _significant_clusters(0){
+            // Record start time of drilldown start -- of course this excludes time reading data.
+            time(&_start_time);
+            _cluster_path = (cluster_path ? cluster_path.get() : "");
             // Derive the parent analysis result filename from base output variable and cluster path.
             if (_cluster_path.empty()) // No cluster path, so parent analysis is the primary analysis.
                 _parent_filename = _base_output;
@@ -171,53 +173,53 @@ class AbstractAnalysisDrilldown {
                 parentFile.setFileName(printString(_parent_filename, "%s-drilldown-%s-std", parentFile.getFileName().c_str(), _cluster_path.c_str()).c_str());
                 parentFile.getFullPath(_parent_filename);
             }
-		}
-		virtual ~AbstractAnalysisDrilldown();
+        }
+        virtual ~AbstractAnalysisDrilldown();
 
-		std::string                       & createTempFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const char * extension, std::string& filename);
-		virtual void                        createReducedCoodinatesFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, unsigned int downlevel);
-		virtual void                        createReducedGridFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, unsigned int downlevel);
-		virtual void                        execute();
-		virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) = 0;
+        std::string                       & createTempFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const char * extension, std::string& filename);
+        virtual void                        createReducedCoodinatesFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, unsigned int downlevel);
+        virtual void                        createReducedGridFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, unsigned int downlevel);
+        virtual void                        execute();
+        virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) = 0;
         unsigned int                        getNumSignificantClusters() const { return _significant_clusters; }
         virtual const char                * getTypeIdentifier() = 0;
-		const CParameters                 & getParameters() const { return _parameters; }
-		virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
-		static bool                         shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
+        const CParameters                 & getParameters() const { return _parameters; }
+        virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
+        static bool                         shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
 };
 
 class AnalysisDrilldown : public AbstractAnalysisDrilldown {
 
-	public:
-		AnalysisDrilldown(
-			const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
-			const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel,
-			boost::optional<std::string&> cluster_path = boost::none
-		);
-		virtual ~AnalysisDrilldown() {}
+    public:
+        AnalysisDrilldown(
+            const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
+            const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel,
+            boost::optional<std::string&> cluster_path = boost::none
+        );
+        virtual ~AnalysisDrilldown() {}
 
-		virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) {
-			return new AnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
-		};
+        virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) {
+            return new AnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
+        };
 
-		virtual const char                * getTypeIdentifier() { return "std"; };
+        virtual const char                * getTypeIdentifier() { return "std"; };
 };
 
 class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {
 
 public:
-	BernoulliAnalysisDrilldown(
-		const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
-		const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel=1,
-		boost::optional<std::string&> cluster_path = boost::none
-	);
-	virtual ~BernoulliAnalysisDrilldown() {}
+    BernoulliAnalysisDrilldown(
+        const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
+        const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel=1,
+        boost::optional<std::string&> cluster_path = boost::none
+    );
+    virtual ~BernoulliAnalysisDrilldown() {}
 
-	virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) {
-		return new BernoulliAnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
-	};
+    virtual AbstractAnalysisDrilldown * getNewAnalysisDrilldown(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo) {
+        return new BernoulliAnalysisDrilldown(detectedCluster, supplementInfo, *_data_hub, _parameters, _base_output, _executing_type, _print_direction, _downlevel + 1);
+    };
 
-	virtual const char                * getTypeIdentifier() { return "bin"; };
+    virtual const char                * getTypeIdentifier() { return "bin"; };
 };
 
 /** Coordinates the execution of analysis defined by parameters. */
@@ -229,7 +231,7 @@ class AnalysisRunner {
     time_t                              _start_time;
     ExecutionType                       _executing_type;
 
-	virtual AnalysisExecution         * getAnalysisExecution() const { return new AnalysisExecution(*_data_hub, _parameters, _executing_type, _start_time, _print_direction);}
+    virtual AnalysisExecution         * getAnalysisExecution() const { return new AnalysisExecution(*_data_hub, _parameters, _executing_type, _start_time, _print_direction);}
     static double                       getAvailablePhysicalMemory();
     static std::pair<double, double>    getMemoryApproxiation(const CParameters& parameters, const CSaTScanData& data_hub);
 
@@ -237,7 +239,7 @@ class AnalysisRunner {
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);
     virtual ~AnalysisRunner() {}
 
-	static CSaTScanData               * getNewCSaTScanData(const CParameters& parameters, BasePrint& print);
+    static CSaTScanData               * getNewCSaTScanData(const CParameters& parameters, BasePrint& print);
     void                                run();
 };
 

@@ -149,6 +149,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintDataCheckingParameters(fp);
         PrintSpatialNeighborsParameters(fp);
         PrintLocationNetworkParameters(fp);
+        PrintLinelistParameters(fp);
         PrintSpatialWindowParameters(fp);
         PrintTemporalWindowParameters(fp);
         PrintClusterRestrictionsParameters(fp);
@@ -588,40 +589,40 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
 }
 
 void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
-	SettingContainer_t settings;
-	std::string buffer;
+    SettingContainer_t settings;
+    std::string buffer;
 
-	try {
-		bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND;
-		permitsStandard &= !gParameters.UseMetaLocationsFile();
-		bool permitsBernoulli = gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
-		permitsBernoulli &= !gParameters.UseMetaLocationsFile();
-		if (permitsStandard || permitsBernoulli) {
-			if (permitsStandard)
-				settings.push_back(std::make_pair("Standard Drilldown on Detected Clusters", (gParameters.getPerformStandardDrilldown() ? "Yes" : "No")));
-			if (permitsBernoulli)
-				settings.push_back(std::make_pair("Bernoulli Drilldown on Detected Clusters", (gParameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
-			if (gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()) {
-				settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumLocationsCluster())));
-				settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumCasesCluster())));
-				settings.push_back(std::make_pair("P-Value Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownPvalueCutoff())));
-				if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
-					settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
-				}
-				if (gParameters.getDrilldownResultFilename().size()) {
-					for (std::vector<std::string>::const_iterator itr = gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
-						settings.push_back(std::make_pair("Drilldown Results File", *itr));
-				} else {
-					settings.push_back(std::make_pair("Drilldown Results File", "None"));
-				}
-			}
-		}
-		WriteSettingsContainer(settings, "Cluster Drilldown", fp);
-	}
-	catch (prg_exception& x) {
-		x.addTrace("PrintDrilldownParameters()", "ParametersPrint");
-		throw;
-	}
+    try {
+        bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND;
+        permitsStandard &= !gParameters.UseMetaLocationsFile();
+        bool permitsBernoulli = gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+        permitsBernoulli &= !gParameters.UseMetaLocationsFile();
+        if (permitsStandard || permitsBernoulli) {
+            if (permitsStandard)
+                settings.push_back(std::make_pair("Standard Drilldown on Detected Clusters", (gParameters.getPerformStandardDrilldown() ? "Yes" : "No")));
+            if (permitsBernoulli)
+                settings.push_back(std::make_pair("Bernoulli Drilldown on Detected Clusters", (gParameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
+            if (gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()) {
+                settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumLocationsCluster())));
+                settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumCasesCluster())));
+                settings.push_back(std::make_pair("P-Value Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownPvalueCutoff())));
+                if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
+                    settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
+                }
+                if (gParameters.getDrilldownResultFilename().size()) {
+                    for (std::vector<std::string>::const_iterator itr = gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
+                        settings.push_back(std::make_pair("Drilldown Results File", *itr));
+                } else {
+                    settings.push_back(std::make_pair("Drilldown Results File", "None"));
+                }
+            }
+        }
+        WriteSettingsContainer(settings, "Cluster Drilldown", fp);
+    }
+    catch (prg_exception& x) {
+        x.addTrace("PrintDrilldownParameters()", "ParametersPrint");
+        throw;
+    }
 }
 
 
@@ -828,6 +829,34 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     }
 }
 
+/** Prints 'Line List' tab parameters to file stream. */
+void ParametersPrint::PrintLinelistParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer;
+
+    try {
+        const CParameters::InputSource * source = gParameters.getInputSource(CASEFILE);
+        if (source) {
+            settings.push_back(std::make_pair("Line list data, file wizard.", "Yes"));
+        } else {
+            settings.push_back(std::make_pair("Case file includes line list data", (gParameters.getCasefileIncludesLineData() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Case file includes header row", (gParameters.getCasefileIncludesHeader() ? "Yes" : "No")));
+        }
+        settings.push_back(std::make_pair("Events Cache File", gParameters.getEventCacheFileName()));
+        if (gParameters.getReadingLineDataFromCasefile()) {
+            settings.push_back(std::make_pair("Include event grouping (KML output)", (gParameters.getGroupLinelistEventsKML() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Event grouped characteristic", gParameters.getKmlEventGroupAttribute()));
+            FileName linelist(gParameters.GetOutputFileName().c_str());
+            linelist.setExtension(printString(buffer, ".linelist.csv").c_str());
+            settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
+        }
+        WriteSettingsContainer(settings, "Line List", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintLinelistParameters()", "ParametersPrint");
+        throw;
+    }
+}
+
 /** Prints 'Multiple Data Set' tab parameters to file stream. */
 void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
     SettingContainer_t settings;
@@ -878,7 +907,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     bool canReportClusterFiles = (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
 
     try {
-        settings.push_back(std::make_pair("Main Results File",gParameters.GetOutputFileName()));
+        settings.push_back(std::make_pair("Main Results File", gParameters.GetOutputFileName()));
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelAscii()) {
             AdditionalOutputFile.setExtension(".col.txt");
             settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
@@ -1173,25 +1202,25 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
 
 /** Prints 'Locations Network' tab parameters to file stream. */
 void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
-	SettingContainer_t settings;
-	std::string buffer;
+    SettingContainer_t settings;
+    std::string buffer;
 
-	try {
-		if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
-			settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
-			settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
-			switch (gParameters.getNetworkFilePurpose()) {
-				case COORDINATES_OVERRIDE: buffer = "Coordinates File Override"; break;
-				case NETWORK_DEFINITION: buffer = "Network Definition"; break;
-				default: throw prg_error("Unknown locations network file purpose type %d.\n", "PrintLocationNetworkParameters()", gParameters.getNetworkFilePurpose());
-			}
-			settings.push_back(std::make_pair("Locations Network Purpose", buffer));
-			WriteSettingsContainer(settings, "Locations Network", fp);
-		}
-	} catch (prg_exception& x) {
-		x.addTrace("PrintLocationNetworkParameters()", "ParametersPrint");
-		throw;
-	}
+    try {
+        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+            settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
+            switch (gParameters.getNetworkFilePurpose()) {
+                case COORDINATES_OVERRIDE: buffer = "Coordinates File Override"; break;
+                case NETWORK_DEFINITION: buffer = "Network Definition"; break;
+                default: throw prg_error("Unknown locations network file purpose type %d.\n", "PrintLocationNetworkParameters()", gParameters.getNetworkFilePurpose());
+            }
+            settings.push_back(std::make_pair("Locations Network Purpose", buffer));
+            WriteSettingsContainer(settings, "Locations Network", fp);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("PrintLocationNetworkParameters()", "ParametersPrint");
+        throw;
+    }
 }
 
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */

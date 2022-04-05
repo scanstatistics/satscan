@@ -567,6 +567,9 @@
     <ClInclude Include="..\calculation\satscan_data\Tracts.h">
       <Filter>Header Files\source\calculation\satscan_data</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\DataDemographics.h">
+      <Filter>Header Files\source\calculation\satscan_data</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
@@ -1035,6 +1038,9 @@
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\Tracts.cpp">
+      <Filter>Source Files\source\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\DataDemographics.cpp">
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp">

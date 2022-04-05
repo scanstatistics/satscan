@@ -213,7 +213,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * Returns reference to associated advanced parameters frame.
      */
-    private AdvancedParameterSettingsFrame getAdvancedParameterInternalFrame() {
+    public AdvancedParameterSettingsFrame getAdvancedParameterInternalFrame() {
         return _advancedParametersSetting;
     }
 
@@ -3307,7 +3307,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _cartesianRadioButton;
     private javax.swing.JButton _caseFileBrowseButton;
     private javax.swing.JLabel _caseFileLabel;
-    private javax.swing.JTextField _caseFileTextField;
+    public javax.swing.JTextField _caseFileTextField;
     private javax.swing.JPanel _caseInputPanel;
     private javax.swing.JRadioButton _categoricallModelRadioButton;
     private javax.swing.JCheckBox _censusAreasReportedClustersAsciiCheckBox;

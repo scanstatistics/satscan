@@ -160,7 +160,12 @@ enum ParameterType
     NETWORK_FILE,                   /* locations network filename */
     NETWORK_PURPOSE,                /* purpose of network file */
     PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
-    PROSPECTIVE_FREQ                /* frequency of prospective analysis type */
+    PROSPECTIVE_FREQ,               /* frequency of prospective analysis type */
+    LINELIST_CASEFILE,              /* whether case file contains line list data */
+    LL_HEADER_CASEFILE,             /* whether case file contains line list header row */
+    KML_EVENT_GROUP,                /* indication whether to include linelist events in kml output, grouped */
+    KML_EVENT_GROUP_BY,             /* label of line-list colummn that should be used to group events in KML file */
+    LL_EVENT_CACHE_FILE             /* file to store events ids */
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {

@@ -447,62 +447,56 @@ void PopulationData::setAdditionalCovariates(CovariatesNames_t& covariates) {
     category in returned will be negative one. Upon successful creation of
     population category, index is returned. */
 int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffset, BasePrint& PrintDirection) {
-  unsigned int                                  iCategoryIndex;
-  short                                         iNumCovariatesScanned=0;
-  std::vector<int>                              vPopulationCategory;
-  const char                                  * pCovariate;
-  CovariatesNames_t::iterator                   itr;
-  std::vector<std::vector<int> >::iterator      itr_int;
+    if (gbAggregateCovariateCategories) return 0;
 
-  if (gbAggregateCovariateCategories) return 0;
+    unsigned int iCategoryIndex;
+    short iNumCovariatesScanned=0;
+    std::vector<int> vPopulationCategory;
+    const char * pCovariate;
 
-  //create a temporary vector of covariate name indexes
-  while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iScanOffset)) != 0) {
-       iNumCovariatesScanned++;
-       itr = std::find(gvCovariateNames.begin(), gvCovariateNames.end(), pCovariate);
-       if (itr == gvCovariateNames.end()) {
-         gvCovariateNames.push_back(pCovariate);
-         vPopulationCategory.push_back(gvCovariateNames.size() - 1);
-       }
-       else
-         vPopulationCategory.push_back(std::distance(gvCovariateNames.begin(), itr));
-  }
-  // Add any implied covariates to the list now.
-  for (AdditionalCovariates_t::iterator itr=_additionalCovariates.begin(); itr != _additionalCovariates.end(); ++itr) {
-      vPopulationCategory.push_back(*itr);
-  }
-  //first list of covariates sets precedence - remaining categories read must
-  //have the same number of covariates
-  if (gvCovariateCategories.empty()) {
-    //if this is the primary record/first record - set number of covariates
-    //we expect to find to remaining records.
-    giNumberCovariatesPerCategory = iNumCovariatesScanned;
-    gvCovariateCategories.push_back(vPopulationCategory);
-    iCategoryIndex = 0;
-    gvCovariateCategoryCaseCount.resize(1, 0);
-    gvCovariateCategoryControlCount.resize(1, 0);
-  }
-  else if (iNumCovariatesScanned != giNumberCovariatesPerCategory){
-    PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.\n",
-                          BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), PrintDirection.GetImpliedFileTypeString().c_str(),
-                          iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
-                          giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
-    iCategoryIndex = -1;
-  }
-  else {
-    //if list of covariates is unique then add to list of categories, else get lists index
-    itr_int = std::find(gvCovariateCategories.begin(), gvCovariateCategories.end(), vPopulationCategory);
-    if (itr_int == gvCovariateCategories.end()) {
-      gvCovariateCategories.push_back(vPopulationCategory);
-      iCategoryIndex = gvCovariateCategories.size() - 1;
-      gvCovariateCategoryCaseCount.resize(gvCovariateCategoryCaseCount.size() + 1, 0);
-      gvCovariateCategoryControlCount.resize(gvCovariateCategoryControlCount.size() + 1, 0);
+    // create a temporary vector of covariate name indexes
+    while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iScanOffset)) != 0) {
+        if (Source.isLinelistOnlyColumn(iNumCovariatesScanned + iScanOffset)) {
+            ++iScanOffset;
+            continue;
+        }
+        ++iNumCovariatesScanned;
+        auto itr = std::find(gvCovariateNames.begin(), gvCovariateNames.end(), pCovariate);
+        if (itr == gvCovariateNames.end()) {
+            gvCovariateNames.push_back(pCovariate);
+            vPopulationCategory.push_back(gvCovariateNames.size() - 1);
+        } else
+            vPopulationCategory.push_back(std::distance(gvCovariateNames.begin(), itr));
     }
-    else
-      iCategoryIndex = std::distance(gvCovariateCategories.begin(), itr_int);
-  }
-
-  return iCategoryIndex;
+    // Add any implied covariates to the list now.
+    for (AdditionalCovariates_t::iterator itr=_additionalCovariates.begin(); itr != _additionalCovariates.end(); ++itr)
+        vPopulationCategory.push_back(*itr);
+    // First list of covariates sets precedence - remaining categories read must have the same number of covariates.
+    if (gvCovariateCategories.empty()) {
+        //if this is the primary record/first record - set number of covariates we expect to find to remaining records.
+        giNumberCovariatesPerCategory = iNumCovariatesScanned;
+        gvCovariateCategories.push_back(vPopulationCategory);
+        iCategoryIndex = 0;
+        gvCovariateCategoryCaseCount.resize(1, 0);
+        gvCovariateCategoryControlCount.resize(1, 0);
+    } else if (iNumCovariatesScanned != giNumberCovariatesPerCategory) {
+        PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.\n",
+                              BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), PrintDirection.GetImpliedFileTypeString().c_str(),
+                              iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
+                              giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
+        iCategoryIndex = -1;
+    } else {
+        //if list of covariates is unique then add to list of categories, else get lists index
+        auto itr_int = std::find(gvCovariateCategories.begin(), gvCovariateCategories.end(), vPopulationCategory);
+        if (itr_int == gvCovariateCategories.end()) {
+            gvCovariateCategories.push_back(vPopulationCategory);
+            iCategoryIndex = gvCovariateCategories.size() - 1;
+            gvCovariateCategoryCaseCount.resize(gvCovariateCategoryCaseCount.size() + 1, 0);
+            gvCovariateCategoryControlCount.resize(gvCovariateCategoryControlCount.size() + 1, 0);
+        } else
+            iCategoryIndex = std::distance(gvCovariateCategories.begin(), itr_int);
+    }
+    return iCategoryIndex;
 }
 
 /** Prints formatted text depicting state of population categories. */

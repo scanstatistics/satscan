@@ -182,8 +182,8 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
   return sDate;
 }
 
-std::string gregorianToString(boost::gregorian::date dateObj) {
-    const std::locale fmt(std::locale::classic(), new boost::gregorian::date_facet("%Y/%m/%d"));
+std::string gregorianToString(boost::gregorian::date dateObj, const char * format) {
+    const std::locale fmt(std::locale::classic(), new boost::gregorian::date_facet(format));
     std::ostringstream os;
     os.imbue(fmt);
     os << dateObj;

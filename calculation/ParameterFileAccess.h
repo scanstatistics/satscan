@@ -64,14 +64,15 @@ class AbtractParameterFileAccess {
      virtual bool               Read(const char* szFilename) = 0;
      virtual bool               Read(std::stringstream& stream);
      void                       SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
-     CParameters::InputSource & setInputSource(CParameters::InputSource & source,
+     CParameters::InputSource & setInputSource(CParameters::InputSource & source, BasePrint& PrintDirection,
                                                const std::string& typeStr,
                                                const std::string& mapStr,
                                                const std::string& delimiterStr,
                                                const std::string& groupStr,
                                                const std::string& skipStr,
                                                const std::string& headerStr,
-                                               BasePrint& PrintDirection);
+                                               const std::string& llmapStr);
+     static void                parseLinelistStr(const std::string& llmapStr, LineListFieldMapContainer_t& llmap);
      virtual void               Write(const char * szFilename) = 0;
      virtual void               Write(std::stringstream& stream);
 };

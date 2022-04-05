@@ -21,9 +21,6 @@
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="Import File Wizard" noResource="true"/>
     <Property name="modal" type="boolean" value="true"/>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[550, 450]"/>
-    </Property>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -44,7 +41,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_dialog_base_panel" pref="570" max="32767" attributes="0"/>
+          <Component id="_dialog_base_panel" pref="576" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -88,7 +85,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_browse_source" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_expectedFormatScrollPane" alignment="0" pref="546" max="32767" attributes="0"/>
+                              <Component id="_expectedFormatScrollPane" alignment="0" pref="556" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -105,7 +102,7 @@
                               <Component id="_browse_source" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_expectedFormatScrollPane" pref="333" max="32767" attributes="0"/>
+                          <Component id="_expectedFormatScrollPane" pref="347" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -211,7 +208,7 @@
                           <Component id="fieldSeparatorGroup" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_groupIndiocatorGroup" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="69" max="32767" attributes="0"/>
+                          <EmptySpace pref="99" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -296,7 +293,7 @@
                               <Component id="_otherRadioButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_otherFieldSeparatorTextField" min="-2" pref="20" max="-2" attributes="0"/>
-                              <EmptySpace pref="151" max="32767" attributes="0"/>
+                              <EmptySpace pref="212" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -458,7 +455,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jSplitPane1" pref="546" max="32767" attributes="0"/>
+                              <Component id="jSplitPane1" max="32767" attributes="0"/>
                               <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -503,9 +500,9 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_displayVariablesLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_displayVariablesComboBox" pref="289" max="32767" attributes="0"/>
+                                          <Component id="_displayVariablesComboBox" pref="340" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="jScrollPane2" alignment="1" pref="474" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane2" alignment="1" pref="491" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_clearSelectionButton" min="-2" max="-2" attributes="0"/>
@@ -590,12 +587,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_importTableScrollPane" pref="544" max="32767" attributes="0"/>
+                              <Component id="_importTableScrollPane" pref="554" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_importTableScrollPane" alignment="0" pref="198" max="32767" attributes="0"/>
+                              <Component id="_importTableScrollPane" alignment="0" pref="209" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>
@@ -635,6 +632,323 @@
                 </Component>
               </SubComponents>
             </Container>
+            <Container class="javax.swing.JPanel" name="_linelistPanel">
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                  <CardConstraints cardName="linelist-settings"/>
+                </Constraint>
+              </Constraints>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jSplitPane2" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jSplitPane2" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Container class="javax.swing.JSplitPane" name="jSplitPane2">
+                  <Properties>
+                    <Property name="dividerLocation" type="int" value="250"/>
+                    <Property name="orientation" type="int" value="0"/>
+                  </Properties>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="jPanel1">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                          <JSplitPaneConstraints position="top"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_combobox_eventid" max="32767" attributes="0"/>
+                                              <Component id="jLabel3" min="-2" pref="125" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="jLabel8" min="-2" pref="123" max="-2" attributes="0"/>
+                                              <Component id="_combobox_event_y" alignment="0" min="-2" pref="125" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_combobox_event_x" max="32767" attributes="0"/>
+                                              <Component id="jLabel9" min="-2" pref="132" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="0" pref="132" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Component id="jScrollPane4" pref="0" max="32767" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_remove_linelist" pref="73" max="32767" attributes="0"/>
+                                              <Component id="_add_linelist" max="32767" attributes="0"/>
+                                              <Component id="_up_linelist" max="32767" attributes="0"/>
+                                              <Component id="_down_linelist" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Component id="_casefile_linelist" max="32767" attributes="0"/>
+                                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                                          <Component id="_linelist_help" min="-2" pref="31" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_casefile_linelist" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_linelist_help" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_combobox_eventid" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_combobox_event_y" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_combobox_event_x" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jScrollPane4" pref="0" max="32767" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <Component id="_add_linelist" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_remove_linelist" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_up_linelist" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_down_linelist" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="40" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JCheckBox" name="_casefile_linelist">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Case file contains line list data"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_casefile_linelist.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="jLabel3">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Event ID (optional)"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JComboBox" name="_combobox_eventid">
+                          <Properties>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                              <StringArray count="1">
+                                <StringItem index="0" value="not set"/>
+                              </StringArray>
+                            </Property>
+                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[125, 20]"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_combobox_eventid.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableLinelistPanels();&#xd;&#xa;   }&#xd;&#xa; });"/>
+                            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JComboBox" name="_combobox_event_y">
+                          <Properties>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                              <StringArray count="1">
+                                <StringItem index="0" value="latitude/X not set"/>
+                              </StringArray>
+                            </Property>
+                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[125, 20]"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JComboBox" name="_combobox_event_x">
+                          <Properties>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                              <StringArray count="1">
+                                <StringItem index="0" value="longitude/X not set"/>
+                              </StringArray>
+                            </Property>
+                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[125, 20]"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                          </AuxValues>
+                        </Component>
+                        <Container class="javax.swing.JScrollPane" name="jScrollPane4">
+                          <AuxValues>
+                            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                          <SubComponents>
+                            <Component class="javax.swing.JTable" name="_mapping_table_linelist">
+                              <Properties>
+                                <Property name="selectionMode" type="int" value="0"/>
+                              </Properties>
+                              <AuxValues>
+                                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="ListSelectionModel selectionModel = _mapping_table_linelist.getSelectionModel();&#xd;&#xa;selectionModel.addListSelectionListener(new ListSelectionListener() {&#xd;&#xa;    public void valueChanged(ListSelectionEvent e) {&#xd;&#xa;        if (e.getValueIsAdjusting())&#xd;&#xa;            return;&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});"/>
+                              </AuxValues>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                        <Component class="javax.swing.JButton" name="_add_linelist">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Add"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_add_linelist.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(FileSourceWizard.this);&#xd;&#xa;        try {&#xd;&#xa;            // Add record to table.&#xd;&#xa;            LinelistMappingTableModel model = (LinelistMappingTableModel) _mapping_table_linelist.getModel();&#xd;&#xa;            model.addRow(new Object[]{ _unassigned_variable, _default_linelist_label });&#xd;&#xa;            _sticky_ll_labels.add(false);&#xd;&#xa;            _mapping_table_linelist.setRowSelectionInterval(model.getRowCount() - 1, model.getRowCount() - 1);&#xd;&#xa;            enableLinelistPanels();&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_remove_linelist">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Remove"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_remove_linelist.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _mapping_table_linelist.getModel();&#xd;&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xd;&#xa;        _sticky_ll_labels.remove(selected);&#xd;&#xa;        model.removeRow(selected);&#xd;&#xa;        if (_mapping_table_linelist.getRowCount() &gt; 0)&#xd;&#xa;            _mapping_table_linelist.setRowSelectionInterval(Integer.max(0, selected - 1), Integer.max(0, selected - 1));&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_up_linelist">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/arrow-up.png"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_up_linelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent evt) {&#xa;        // move rows from the index to index into the position index -1&#xa;        DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xa;        if (selected &gt; 0) {&#xa;            model.moveRow(selected, selected, selected - 1);&#xa;            _mapping_table_linelist.setRowSelectionInterval(selected - 1, selected - 1);  &#xa;            enableLinelistPanels();&#xa;            if (_up_linelist.isEnabled()) _up_linelist.requestFocusInWindow();&#xa;        }&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_down_linelist">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/arrow-down.png"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_down_linelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent evt) {&#xa;        // move rows from the index to index into the position index -1&#xa;        DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xa;        if (selected &lt; _mapping_table_linelist.getModel().getRowCount() - 1){&#xa;            model.moveRow(selected, selected, selected + 1);&#xa;            // set selection to the new position&#xa;            _mapping_table_linelist.setRowSelectionInterval(selected + 1, selected + 1);&#xa;            enableLinelistPanels();&#xa;            if (_down_linelist.isEnabled()) _down_linelist.requestFocusInWindow();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="jLabel8">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Event Latitude / Y"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="jLabel9">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Event Longitude / X"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_linelist_help">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/help.png"/>
+                            </Property>
+                            <Property name="toolTipText" type="java.lang.String" value="What is this?"/>
+                          </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Help On This."/>
+                          </AccessibilityProperties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_linelist_help.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        StringBuilder message = new StringBuilder();&#xd;&#xa;        message.append(&quot;The case file can contain line list data which is not used when performing analysis.\n&quot;);&#xd;&#xa;        message.append(&quot;The line list data can include two types of information:\n&quot;);&#xd;&#xa;        message.append(&quot;1) Event Identification - uniquely identifies event and true cordinates.\n&quot;);&#xd;&#xa;        message.append(&quot;2) Event Characteristics - attributes of that event.\n&quot;);&#xd;&#xa;        JOptionPane.showMessageDialog(FileSourceWizard.this, message.toString(), &quot;Note&quot;, JOptionPane.INFORMATION_MESSAGE);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="_source_table_panel">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                          <JSplitPaneConstraints position="right"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="1" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="jScrollPane3" pref="534" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jScrollPane3" pref="138" max="32767" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                          <SubComponents>
+                            <Component class="javax.swing.JTable" name="_source_data_table_linelist">
+                              <Properties>
+                                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                                  <Table columnCount="4" rowCount="4">
+                                    <Column editable="true" title="Title 1" type="java.lang.Object"/>
+                                    <Column editable="true" title="Title 2" type="java.lang.Object"/>
+                                    <Column editable="true" title="Title 3" type="java.lang.Object"/>
+                                    <Column editable="true" title="Title 4" type="java.lang.Object"/>
+                                  </Table>
+                                </Property>
+                                <Property name="toolTipText" type="java.lang.String" value="Displaying at most 50 rows from data file."/>
+                                <Property name="autoResizeMode" type="int" value="0"/>
+                                <Property name="rowSelectionAllowed" type="boolean" value="false"/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
             <Container class="javax.swing.JPanel" name="_outputSettingsPanel">
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -656,7 +970,7 @@
                                   <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="_execute_import_now" max="32767" attributes="0"/>
-                              <Component id="_save_import_settings" alignment="0" pref="546" max="32767" attributes="0"/>
+                              <Component id="_save_import_settings" alignment="0" pref="556" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -742,7 +1056,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="acceptButton" min="-2" pref="100" max="-2" attributes="0"/>
-                          <EmptySpace pref="227" max="32767" attributes="0"/>
+                          <EmptySpace pref="238" max="32767" attributes="0"/>
                           <Component id="clearInputSettigs" min="-2" pref="112" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonSource" min="-2" pref="100" max="-2" attributes="0"/>
@@ -807,7 +1121,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace pref="351" max="32767" attributes="0"/>
+                          <EmptySpace pref="360" max="32767" attributes="0"/>
                           <Component id="previousButtonCSV" min="-2" pref="100" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonCSV" min="-2" pref="100" max="-2" attributes="0"/>
@@ -858,7 +1172,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace pref="351" max="32767" attributes="0"/>
+                          <EmptySpace pref="360" max="32767" attributes="0"/>
                           <Component id="previousButtonMapping" min="-2" pref="100" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="nextButtonMapping" min="-2" pref="100" max="-2" attributes="0"/>
@@ -898,6 +1212,57 @@
                 </Component>
               </SubComponents>
             </Container>
+            <Container class="javax.swing.JPanel" name="_linelist_settings_buttons_panel">
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                  <CardConstraints cardName="linelist-settings-buttons"/>
+                </Constraint>
+              </Constraints>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace pref="360" max="32767" attributes="0"/>
+                          <Component id="previousButtonLinelist" min="-2" pref="100" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="nextButtonLinelist" min="-2" pref="100" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="nextButtonLinelist" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="previousButtonLinelist" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JButton" name="previousButtonLinelist">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&lt; Previous" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="previousButtonLinelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        previousPanel();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="nextButtonLinelist">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Next &gt;" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="nextButtonLinelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        nextPanel();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
             <Container class="javax.swing.JPanel" name="_output_settings_buttons_panel">
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -911,7 +1276,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelButton" min="-2" pref="85" max="-2" attributes="0"/>
-                          <EmptySpace pref="261" max="32767" attributes="0"/>
+                          <EmptySpace pref="272" max="32767" attributes="0"/>
                           <Component id="previousButtonOutSettings" min="-2" pref="93" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="executeButton" min="-2" pref="100" max="-2" attributes="0"/>
@@ -947,7 +1312,7 @@
                     <Property name="text" type="java.lang.String" value="Import" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="executeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_execute_import_now.isSelected()) {&#xa;                try {&#xa;                    createDestinationInformation();&#xa;                } catch (IOException i) {&#xa;                    JOptionPane.showMessageDialog(FileSourceWizard.this,&#xa;                            &quot;The import wizard encountered an error attempting to create the import file.\n&quot; +&#xa;                            &quot;This is most likely occuring because write permissions are not granted for\n&quot; +&#xa;                            &quot;specified directory. Please check path or review user permissions for specified directory.\n&quot;, &quot;Note&quot;, JOptionPane.WARNING_MESSAGE);&#xa;                    return;&#xa;                }&#xa;                ImportTask task = new ImportTask();&#xa;                task.addPropertyChangeListener(FileSourceWizard.this);&#xa;                task.execute();&#xa;            } else {&#xa;                _needs_import_save = true;&#xa;                _refresh_related_settings = true;&#xa;                setVisible(false);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="executeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_execute_import_now.isSelected()) {&#xa;                try {&#xa;                    createDestinationInformation();&#xa;                } catch (IOException i) {&#xa;                    JOptionPane.showMessageDialog(FileSourceWizard.this,&#xa;                            &quot;The import wizard encountered an error attempting to create the import file.\n&quot; +&#xa;                            &quot;This is most likely occuring because write permissions are not granted for\n&quot; +&#xa;                            &quot;specified directory. Please check path or review user permissions for specified directory.\n&quot;, &quot;Note&quot;, JOptionPane.WARNING_MESSAGE);&#xa;                    return;&#xa;                }&#xa;                ImportTask task = new ImportTask();&#xa;                task.addPropertyChangeListener(FileSourceWizard.this);&#xa;                task.execute();&#xa;                _needs_import_save = true;&#xa;                _refresh_related_settings = true;&#xa;            } else {&#xa;                _needs_import_save = true;&#xa;                _refresh_related_settings = true;&#xa;                setVisible(false);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="cancelButton">

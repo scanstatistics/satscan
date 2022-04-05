@@ -114,24 +114,32 @@ public class CSVImportDataSource implements ImportDataSource {
      */
     public Object[] readRow() {
         String line = null;
-
+        // Skip rows as necessary.
         try {
             while (_currentRowNumber < _skip) {
                 line = readLine();
-                if (line == null) break;
+                if (line == null) return null;
                 _currentRowNumber++;
             }
-            line = readLine();
         } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        if (line == null) {
             return null;
         }
-        ArrayList row = ImportUtils.parseLine(line, Character.toString(_colDelimiter), Character.toString(_groupDelimiter));
+        // Read next row -- skipping blank records.
+        ArrayList row = new ArrayList();
+        do {
+            try {
+                line = readLine();
+                if (line == null) return null;
+                row = ImportUtils.parseLine(line, Character.toString(_colDelimiter), Character.toString(_groupDelimiter));
+                _currentRowNumber++;
+            } catch (IOException ex) {
+                return null;
+            }
+        } while (row.isEmpty());
+        if (line == null) return null;
+        // Tack on the generated columns.
         row.add(0, "1");
         row.add(0, "location" + (_currentRowNumber + 1 - _skip));
-        _currentRowNumber++;
         return row.toArray();
     }
 

@@ -34,6 +34,7 @@ std::string                   & getRoundAsString(double value, std::string& s, u
 std::string                   & GetUserDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
+std::string                   & GetUserTemporaryFilename(std::string& s);
 std::string                     getFilenameFormatTime(const std::string& filename, boost::posix_time::ptime timeLocal, bool testUnknown=false);
 bool                            getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
@@ -56,5 +57,36 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
 std::pair<double,double>        calculateGumbelPValue(const SimulationVariables& simVars, double critical_value);
 std::pair<double,double>        calculateGumbelCriticalValue(const SimulationVariables& simVars, double p_value);
 const char                    * ordinal_suffix(unsigned int n);
+template <typename T>           bool csv_string_to_typelist(const char * s, std::vector<T>& list) {
+                                    try {
+                                        list.clear();
+                                        std::string value(s);
+                                        boost::escaped_list_separator<char> separator('\\', ',', '\"');
+                                        boost::tokenizer<boost::escaped_list_separator<char> > identifiers(value, separator);
+                                        for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+                                            std::string token(*itr);
+                                            T t = boost::lexical_cast<T>(trimString(token).c_str());
+                                            list.push_back(t);
+                                        }
+                                    } catch (boost::bad_lexical_cast&) {
+                                        return false;
+                                    } 
+                                    return true;
+                                }
+template <typename T>           std::string& typelist_to_csv_string(const std::vector<T>& list, std::string& s) {
+                                    std::stringstream buffer;
+                                    if (list.empty()) {
+                                        s = "";
+                                    } else {
+                                        std::string grouper = (list.begin()->find(",") == std::string::npos ? "" : "\"");
+                                        buffer << grouper << *(list.begin()) << grouper;
+                                        for (typename std::vector<T>::const_iterator itr = list.begin() + 1; itr != list.end(); ++itr) {
+                                            grouper = (itr->find(",") == std::string::npos ? "" : "\"");
+                                            buffer << "," << grouper << *itr << grouper;
+                                        }
+                                        s = buffer.str();
+                                    }
+                                    return s;
+                                }
 //******************************************************************************
 #endif

@@ -23,6 +23,7 @@ class ParametersPrint {
     void                PrintClusterRestrictionsParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
+    void                PrintLinelistParameters(FILE* fp) const;
     void                PrintMultipleDataSetParameters(FILE* fp) const;
     void                PrintOtherOutputParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;

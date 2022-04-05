@@ -271,6 +271,8 @@ void AnalysisExecution::execute() {
 
 void  AnalysisExecution::finalize() {
     try {
+        // Finalize the data demographica process now -- updating unique events file for this analysis.
+        if (_data_demographic_processor.get() && !getDataHub().isDrilldown()) _data_demographic_processor->finalize();
         finalizeReport();
     } catch (prg_exception& x) {
         x.addTrace("finalize()", "AnalysisExecution");
@@ -1405,11 +1407,16 @@ void AnalysisExecution::reportClusters() {
         if (_parameters.getReportGiniOptimizedClusters())
             addGiniClusters(_top_clusters_containers, _reportClusters, _parameters.getGiniIndexPValueCutoff());
 
+        // Process line list data if selected.
+        if (_parameters.getReadingLineDataFromCasefile()) {
+            _data_demographic_processor.reset(new DataDemographicsProcessor(_data_hub.GetDataSetHandler(), _reportClusters, _sim_vars));
+            _data_demographic_processor->process();
+        }
+
         // report clusters accordingly
         if (_parameters.GetIsIterativeScanning()) {
             printTopIterativeScanCluster(_reportClusters);
-        }
-        else {
+        } else {
             printTopClusters(_reportClusters);
             // create temporal graph
             if ((_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) 
@@ -1439,6 +1446,7 @@ void AnalysisExecution::reportClusters() {
         if (_parameters.getOutputKMLFile()) {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             if (_analysis_count == 1) _cluster_kml.reset(new ClusterKML(_data_hub));
+            if (_data_demographic_processor.get() && _parameters.getGroupLinelistEventsKML()) _cluster_kml->add(*_data_demographic_processor);
             _cluster_kml->add(_reportClusters, _sim_vars);
         }
     } catch (prg_exception& x) {

@@ -261,7 +261,7 @@ bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, c
     long lSectionIndex, lKeyIndex=-1;
     std::string key, buffer;
     bool anykeys=false;
-    std::string type, map, delimiter, group, skip, header;
+    std::string type, map, delimiter, group, skip, header, llmap;
 
     if ((lSectionIndex = SourceFile.GetSectionIndex(sectionName)) > -1) {
         const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
@@ -302,8 +302,15 @@ bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, c
             anykeys=true;
             header = pSection->GetLine(lKeyIndex)->GetValue();
         }
+        // line list fields map
+        source.clearLinelistFieldsMap();
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceLinelistFieldMap);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys = true;
+            llmap = pSection->GetLine(lKeyIndex)->GetValue();
+        }
         if (anykeys) {
-            setInputSource(source, trimString(type), trimString(map), trimString(delimiter), trimString(group), trimString(skip), trimString(header), gPrintDirection);
+            setInputSource(source, gPrintDirection, trimString(type), trimString(map), trimString(delimiter), trimString(group), trimString(skip), trimString(header), trimString(llmap));
         }
     }
     return anykeys;
@@ -324,6 +331,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteMultipleDataSetsSettings(ini);
         WriteDataCheckingSettings(ini);
         WriteLocationNetworkSettings(ini);
+        WriteLineListSettings(ini);
         WriteSpatialNeighborsSettings(ini);
         WriteSpatialWindowSettings(ini);
         WriteTemporalWindowSettings(ini);
@@ -402,6 +410,21 @@ void IniParameterFileAccess::WriteMiscellaneousAnalysisSettings(IniFile& WriteFi
         WriteIniParameter(WriteFile, PROSPECTIVE_FREQ, GetParameterString(PROSPECTIVE_FREQ, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ));
     } catch (prg_exception& x) {
         x.addTrace("WriteMiscellaneousAnalysisSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Line List'. */
+void IniParameterFileAccess::WriteLineListSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, LINELIST_CASEFILE, GetParameterString(LINELIST_CASEFILE, s).c_str(), GetParameterComment(LINELIST_CASEFILE));
+        WriteIniParameter(WriteFile, LL_HEADER_CASEFILE, GetParameterString(LL_HEADER_CASEFILE, s).c_str(), GetParameterComment(LL_HEADER_CASEFILE));
+        WriteIniParameter(WriteFile, LL_EVENT_CACHE_FILE, GetParameterString(LL_EVENT_CACHE_FILE, s).c_str(), GetParameterComment(LL_EVENT_CACHE_FILE));
+        WriteIniParameter(WriteFile, KML_EVENT_GROUP, GetParameterString(KML_EVENT_GROUP, s).c_str(), GetParameterComment(KML_EVENT_GROUP));
+        WriteIniParameter(WriteFile, KML_EVENT_GROUP_BY, GetParameterString(KML_EVENT_GROUP_BY, s).c_str(), GetParameterComment(KML_EVENT_GROUP_BY));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAnalysisSettings()", "IniParameterFileAccess");
         throw;
     }
 }
@@ -602,6 +625,19 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
                 section.AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
             }
         }
+
+        if (source->getLinelistFieldsMap().size()) {
+            printString(buffer, "source line list field map (comma separated list of <column idx>:<variable type>:<variable name>)");
+            section.AddComment(buffer.c_str());
+            std::stringstream s;
+            for (auto itr=source->getLinelistFieldsMap().begin(); itr != source->getLinelistFieldsMap().end(); ++itr) {
+                if (itr != source->getLinelistFieldsMap().begin()) { s << ","; }
+                s << itr->first << ":" << itr->second.get<0>() << ":\"" << itr->second.get<1>() << "\"";
+            }
+            printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
+            section.AddLine(key.c_str(), s.str().c_str());
+        }
+
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSource()","IniParameterFileAccess");
         throw;
@@ -610,18 +646,18 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
 
 /** Writes parameter settings grouped under 'Locations Network'. */
 void IniParameterFileAccess::WriteLocationNetworkSettings(IniFile& WriteFile) {
-	std::string  s;
-	try {
+    std::string  s;
+    try {
         GetParameterString(NETWORK_FILE, s);
         WriteIniParameter(WriteFile, NETWORK_FILE, s.c_str(), GetParameterComment(NETWORK_FILE));
         if (s.size()) WriteInputSource(WriteFile, NETWORK_FILE, gParameters.getInputSource(NETWORK_FILE));
-		WriteIniParameter(WriteFile, USE_NETWORK_FILE, GetParameterString(USE_NETWORK_FILE, s).c_str(), GetParameterComment(USE_NETWORK_FILE));
-		WriteIniParameter(WriteFile, NETWORK_PURPOSE, GetParameterString(NETWORK_PURPOSE, s).c_str(), GetParameterComment(NETWORK_PURPOSE));
-	}
-	catch (prg_exception& x) {
-		x.addTrace("WriteLocationNetworkSettings()", "IniParameterFileAccess");
-		throw;
-	}
+        WriteIniParameter(WriteFile, USE_NETWORK_FILE, GetParameterString(USE_NETWORK_FILE, s).c_str(), GetParameterComment(USE_NETWORK_FILE));
+        WriteIniParameter(WriteFile, NETWORK_PURPOSE, GetParameterString(NETWORK_PURPOSE, s).c_str(), GetParameterComment(NETWORK_PURPOSE));
+    }
+    catch (prg_exception& x) {
+        x.addTrace("WriteLocationNetworkSettings()", "IniParameterFileAccess");
+        throw;
+    }
 }
 
 /** Writes specified comment and value to file for parameter type. */

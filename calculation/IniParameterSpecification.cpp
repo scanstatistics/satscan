@@ -14,6 +14,7 @@ const char * IniParameterSpecification::Drilldown                 = "Cluster Dri
 const char * IniParameterSpecification::NeighborsFile             = "Non-Eucledian Neighbors";
 const char * IniParameterSpecification::SpatialNeighbors          = "Spatial Neighbors";
 const char * IniParameterSpecification::LocationsNetwork          = "Locations Network";
+const char * IniParameterSpecification::LineList                  = "Line List";
 const char * IniParameterSpecification::Analysis                  = "Analysis";
 const char * IniParameterSpecification::SpatialWindow             = "Spatial Window";
 const char * IniParameterSpecification::TemporalWindow            = "Temporal Window";
@@ -50,6 +51,7 @@ const char * IniParameterSpecification::SourceDelimiter           = "SourceDelim
 const char * IniParameterSpecification::SourceGrouper             = "SourceGrouper";
 const char * IniParameterSpecification::SourceSkip                = "SourceSkip";
 const char * IniParameterSpecification::SourceFieldMap            = "SourceFieldMap";
+const char * IniParameterSpecification::SourceLinelistFieldMap    = "SourceLinelistFieldMap";
 const char * IniParameterSpecification::SourceFirstRowHeader      = "SourceFirstRowHeader";
 const char * IniParameterSpecification::SourceFieldMapShapeX      = "shapeX";
 const char * IniParameterSpecification::SourceFieldMapShapeY      = "shapeY";
@@ -143,7 +145,8 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _data_checking_section = SectionInfo(DataChecking, 522);
     _non_eucledian_section = SectionInfo(NeighborsFile, 524);
     _spatial_neighbors_section = SectionInfo(SpatialNeighbors, 526);
-    _locations_network_section = SectionInfo(LocationsNetwork, 527);
+    _linelist_section = SectionInfo(LineList, 527);
+    _locations_network_section = SectionInfo(LocationsNetwork, 528);
     _spatial_window_section = SectionInfo(SpatialWindow, 530);
     _temporal_window_section = SectionInfo(TemporalWindow, 540);
     _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
@@ -167,40 +170,42 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _advanced_section = SectionInfo(AdvancedFeatures, 800);
     _system_section = SectionInfo(System, 2000);
 
-	if (version.iMajor <= 3)
-		Build_3_0_5_ParameterList();
-	else if (version.iMajor <= 4)
-		Build_4_0_x_ParameterList();
-	else if (version.iMajor == 5 && version.iMinor == 0)
-		Build_5_0_x_ParameterList();
-	else if (version.iMajor == 5 && version.iMinor == 1)
-		Build_5_1_x_ParameterList();
-	else if (version.iMajor == 6 && version.iMinor == 0)
-		Build_6_0_x_ParameterList();
-	else if (version.iMajor == 6 && version.iMinor == 1)
-		Build_6_1_x_ParameterList();
-	else if (version.iMajor == 7 && version.iMinor == 0)
-		Build_7_0_x_ParameterList();
-	else if (version.iMajor == 8 && (version.iMinor == 0 || version.iMinor == 1))
-		Build_8_0_x_ParameterList();
-	else if (version.iMajor == 8 && version.iMinor == 2)
-		Build_8_2_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 0)
-		Build_9_0_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 2 && version.iRelease < 1)
-		Build_9_2_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 3)
-		Build_9_3_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 4)
-		Build_9_4_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 5)
-		Build_9_5_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 6)
-		Build_9_6_x_ParameterList();
-	else if (version.iMajor == 9 && version.iMinor == 7)
-		Build_9_7_x_ParameterList();
-    else
+    if (version.iMajor <= 3)
+        Build_3_0_5_ParameterList();
+    else if (version.iMajor <= 4)
+        Build_4_0_x_ParameterList();
+    else if (version.iMajor == 5 && version.iMinor == 0)
+        Build_5_0_x_ParameterList();
+    else if (version.iMajor == 5 && version.iMinor == 1)
+        Build_5_1_x_ParameterList();
+    else if (version.iMajor == 6 && version.iMinor == 0)
+        Build_6_0_x_ParameterList();
+    else if (version.iMajor == 6 && version.iMinor == 1)
+        Build_6_1_x_ParameterList();
+    else if (version.iMajor == 7 && version.iMinor == 0)
+        Build_7_0_x_ParameterList();
+    else if (version.iMajor == 8 && (version.iMinor == 0 || version.iMinor == 1))
+        Build_8_0_x_ParameterList();
+    else if (version.iMajor == 8 && version.iMinor == 2)
+        Build_8_2_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 0)
+        Build_9_0_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 2 && version.iRelease < 1)
+        Build_9_2_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 3)
+        Build_9_3_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 4)
+        Build_9_4_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 5)
+        Build_9_5_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 6)
+        Build_9_6_x_ParameterList();
+    else if (version.iMajor == 9 && version.iMinor == 7)
+        Build_9_7_x_ParameterList();
+    else if (version.iMajor == 10 && version.iMinor == 0)
         Build_10_0_x_ParameterList();
+    else
+        Build_10_1_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -653,7 +658,7 @@ void IniParameterSpecification::Build_9_7_x_ParameterList() {
 	Build_9_6_x_ParameterList();
 }
 
-/** Version 9.7.x */
+/** Version 10.0.x */
 void IniParameterSpecification::Build_10_0_x_ParameterList() {
     Build_9_7_x_ParameterList();
 
@@ -679,6 +684,19 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
     _parameter_info[PROSPECTIVE_FREQ] = ParamInfo(PROSPECTIVE_FREQ, "ProspectiveFrequency", 5, _miscellaneous_analysis_section);
 
     assert(_parameter_info.size() == 155);
+}
+
+/** Version 10.1.x */
+void IniParameterSpecification::Build_10_1_x_ParameterList() {
+    Build_10_0_x_ParameterList();
+
+    _parameter_info[LINELIST_CASEFILE] = ParamInfo(LINELIST_CASEFILE, "LineListCaseFile", 1, _linelist_section);
+    _parameter_info[LL_HEADER_CASEFILE] = ParamInfo(LL_HEADER_CASEFILE, "LineListHeaderCaseFile", 2, _linelist_section);
+    _parameter_info[LL_EVENT_CACHE_FILE] = ParamInfo(LL_EVENT_CACHE_FILE, "LineListEventCache", 3, _linelist_section);
+    _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, "EventGroupKML", 4, _linelist_section);
+    _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, "EventGroupByKML", 5, _linelist_section);
+
+    assert(_parameter_info.size() == 160);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

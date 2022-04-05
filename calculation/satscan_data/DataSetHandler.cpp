@@ -8,6 +8,7 @@
 #include "SSException.h"
 #include "DataSource.h" 
 #include "ClosedLoopData.h"
+#include "DataDemographics.h"
 
 const short DataSetHandler::guLocationIndex             = 0;
 const short DataSetHandler::guCountIndex                = 1;
@@ -124,17 +125,110 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
 
 /** Attempts to read case file data into RealDataSet object. Returns boolean indication of read success. */
 DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
-  try {
-    gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
-        getFilenameFormatTime(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
-        gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint)
-    );
-    return ReadCounts(DataSet, *Source);
-  } catch (prg_exception& x) {
-    x.addTrace("ReadCaseFile()","DataSetHandler");
-    throw;
-  }
+    try {
+        gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
+            gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint)
+        );
+        /* Are we expecting the case file to contain extra columns for linelist data?
+           If so, we're expecting the first row to contain information detailing the column types.
+           If mapped fields exist, that indicates the user chose the option to use file wizard to define these line list fields. so skip. */
+        if (gParameters.getCasefileIncludesLineData() && Source->getFieldsMap().size() == 0 && Source->getLinelistFieldsMap().size() == 0) {
+            if (!Source->ReadRecord()) throw resolvable_error("Error: Case file is empty.");
+            // Define the types of colummns in the line-list meta row.
+            std::string event_id_type("<eventid>"), xcoord_type("<x-coordinate>"), ycoord_type("<y-coordinate>"), linelist_type("<linelist>"),
+                        covariate_type("<covariate>"), locationid_type("<locationid>"), count_type("<count>"), date_type("<date>"),
+                        attribute_type("<attribute>"), censored_type("<censored>"), weight_type("<weight>");
+            std::map<std::string, long> mapped_columns = {
+                { locationid_type, -1 },{ count_type, -1 } ,{ date_type, -1 },{ attribute_type, -1 },{ censored_type, -1 },{ weight_type, -1 }
+            };
+            std::vector<std::string> meta_record;
+            while (Source->GetValueAt(static_cast<long>(meta_record.size())))
+                meta_record.push_back(Source->GetValueAt(static_cast<long>(meta_record.size())));
+            // Now read the header row if user indicated that there is one.
+            std::vector<std::string> header_record;
+            if (gParameters.getCasefileIncludesHeader()) {
+                if (!Source->ReadRecord()) throw resolvable_error("Error: Case file contains no data.");
+                while (Source->GetValueAt(static_cast<long>(header_record.size())))
+                    header_record.push_back(Source->GetValueAt(static_cast<long>(header_record.size())));
+                if (meta_record.size() != header_record.size())
+                    throw resolvable_error(
+                        "Error: Case file contains conflicting line-list information. The number of columns in meta line (%u) do not match the header line (%u).",
+                        meta_record.size(), header_record.size()
+                    );
+            }
+            // Iterate over the line-list meta row to discover what the file defines as input data and line list data.
+            unsigned int numLineList = 0;
+            std::string label;
+            std::vector<long> covariates;
+            LineListFieldMapContainer_t fields_map;
+            for (size_t t=0; t < meta_record.size(); ++t) {
+                if (meta_record[t] == event_id_type) {
+                    label = (header_record.size() ? header_record[t] : std::string("event id"));
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_ID, label)));
+                } else if (meta_record[t] == xcoord_type) {
+                    label = (header_record.size() ? header_record[t] : std::string("x-coordinate"));
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_X, label)));
+                } else if (meta_record[t] == ycoord_type) {
+                    label = (header_record.size() ? header_record[t] : std::string("y-coordinate"));
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_Y, label)));
+                } else if (meta_record[t] == linelist_type) {
+                    ++numLineList;
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(
+                        GENERAL_DATA, (header_record.size() ? header_record[t] : printString(label, "linelist-%u", numLineList))
+                    )));
+                } else {
+                    if (meta_record[t] == covariate_type)
+                        covariates.push_back(t + 1);
+                    else {
+                        auto itr = mapped_columns.find(meta_record[t]);
+                        if (itr == mapped_columns.end())
+                            throw resolvable_error("Error: Case file contains unknown line-list meta type '%s'.", meta_record[t].c_str());
+                        mapped_columns[meta_record[t]] = t + 1;
+                    }
+                }
+            }
+            // Now define the field maps based on types read from line list and user settings.
+            std::vector<boost::any> map;
+            if (mapped_columns[locationid_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", locationid_type.c_str());
+            map.push_back(mapped_columns[locationid_type]);
+            if (mapped_columns[count_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", count_type.c_str());
+            map.push_back(mapped_columns[count_type]);
+            if (gParameters.GetPrecisionOfTimesType() != NONE) {
+                if (mapped_columns[date_type] == -1) 
+                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", date_type.c_str());
+                map.push_back(mapped_columns[date_type]);
+            }
+            ProbabilityModelType model = gParameters.GetProbabilityModelType();
+            if (model == ORDINAL || model == EXPONENTIAL || model == NORMAL || model == CATEGORICAL) {
+                if (mapped_columns[attribute_type] != -1) 
+                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", attribute_type.c_str());
+                map.push_back(mapped_columns[attribute_type]);
+            }
+            if (model == EXPONENTIAL) {
+                if (mapped_columns[censored_type] != -1)
+                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", censored_type.c_str());
+                map.push_back(mapped_columns[censored_type]);
+            }
+            if (model == NORMAL && mapped_columns[weight_type] != -1)
+                map.push_back(mapped_columns[weight_type]);
+            // Lastly append covariates.
+            for (auto c: covariates) map.push_back(c);
+            // Update the source's field map and line lsit field map so we can read the case file correctly.
+            Source->setFieldsMap(map);
+            Source->setLinelistFieldsMap(fields_map);
+            // Also define a new InputSource object which stores what we've discovered for follow-up line list read - during cluster reporting.
+            CParameters::InputSource inputSource(CSV, " ", "\"", 1, true);
+            inputSource.setFieldsMap(map);
+            inputSource.setLinelistFieldsMap(fields_map);
+            const_cast<CParameters&>(gParameters).defineInputSource(CASEFILE, inputSource, DataSet.getSetIndex());
+        }
+        return ReadCounts(DataSet, *Source); // Now we're ready to read the case file.
+    } catch (prg_exception& x) {
+        x.addTrace("ReadCaseFile()","DataSetHandler");
+        throw;
+    }
 }
 
 /** Reads the count data source, storing data in RealDataSet object. As a
@@ -252,12 +346,43 @@ size_t DataSetHandler::getDataSetRelativeIndex(size_t iSet) const {
     return 0;
 }
 
+/* Attempts to retrieve number of cases from current record. */
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseCounts(DataSource& Source, count_t& nCount) const {
+    if (Source.GetValueAt(guCountIndex) != 0) {
+        if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
+            gPrint.Printf(
+                "Error: The value '%s' of record %ld in %s could not be read as case count.\n"
+                "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
+                Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(),
+                gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max()
+            );
+            return DataSetHandler::Rejected;
+        }
+        if (gParameters.getReadingLineDataFromCasefile() && Source.hasEventIdLinelistMapping() && nCount > 1) {
+            gPrint.Printf(
+                "Error: The case count in record %ld of %s is not valid for current parameter settings and file data.\n"
+                "       Case count must be 1 or 0 when case file includes event id as part of line-list data.\n", BasePrint::P_READERROR,
+                Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
+            return DataSetHandler::Rejected;
+        }
+        if (nCount == 0) return DataSetHandler::Ignored;
+    } else {
+        gPrint.Printf(
+            "Error: Record %ld in %s does not contain case count.\n",
+            BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+        );
+        return DataSetHandler::Rejected;
+    }
+    return DataSetHandler::Accepted;
+}
+
 /** Retrieves count date from current record of data source as a julian date. If an error
     in data format is detected, appropriate error message is sent to BasePrint object
     and DataSetHandler::Rejected is returned. If user requested that dates outside study
     period be ignored, prints warning message to BasePrint object when situation encountered
     and returns DataSetHandler::Ignored. */
-DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& Source, Julian & JulianDate) {
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& Source, Julian & JulianDate) const {
   DateStringParser                      DateParser(gParameters.GetPrecisionOfTimesType());
   DateStringParser::ParserStatus        eStatus;
   DatePrecisionType                     ePrecision;
@@ -339,47 +464,27 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
     in data format is detected, appropriate error message is sent to BasePrint object
     and DataSetHandler::Rejected is returned. */
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
-  short         iCategoryOffSet;
-
-  try {
-    //read and validate that tract identifier exists in coordinates file
-    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
-    if (eStatus != DataSetHandler::Accepted) return eStatus;
-    //read and validate count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-        if  (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
-           gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
-                          "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
-                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
-                          gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
-           return DataSetHandler::Rejected;
-        } 
-        if (nCount == 0) return DataSetHandler::Ignored;
+    try {
+        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid); //read and validate that tract identifier
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCountDate(Source, nDate); // read and validate date
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        if (gParameters.getAdjustForWeeklyTrends() && gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+            // If performing weekly adjustment for STP, set define additional covariate.
+            PopulationData::CovariatesNames_t vCategoryCovariates;
+            vCategoryCovariates.push_back(std::string(""));
+            printString(vCategoryCovariates.back(), "%u", nDate % 7);
+            thePopulation.setAdditionalCovariates(vCategoryCovariates);
+        }
+        short iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
+        if (!RetrieveCovariatesIndex(thePopulation, iCategoryIndex, iCategoryOffSet, Source)) return DataSetHandler::Rejected;
+    } catch (prg_exception& x) {
+        x.addTrace("RetrieveCaseRecordData()","DataSetHandler");
+        throw;
     }
-    else {
-      gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-
-    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
-    if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
-
-    if (gParameters.getAdjustForWeeklyTrends() && gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-        // If performing weekly adjustment for STP, set define additional covariate.
-        PopulationData::CovariatesNames_t vCategoryCovariates;
-        vCategoryCovariates.push_back(std::string(""));
-        printString(vCategoryCovariates.back(), "%u", nDate % 7);
-        thePopulation.setAdditionalCovariates(vCategoryCovariates);
-    }
-    iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
-    if (!RetrieveCovariatesIndex(thePopulation, iCategoryIndex, iCategoryOffSet, Source)) return DataSetHandler::Rejected;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RetrieveCaseRecordData()","DataSetHandler");
-    throw;
-  }
-  return DataSetHandler::Accepted;
+    return DataSetHandler::Accepted;
 }
 
 /** Attempts to read covariate categories from data source at specified field offset. For the Poisson
@@ -387,61 +492,60 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(Populati
     covariates are not used and are ignored - returning index of zero. For the space-time model,
     creates covariates as defined in each record. */
 bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source) {
-  int                          iNumCovariatesScanned=0;
-  std::vector<std::string>     vCategoryCovariates;
-  const char                 * pCovariate;
+    int iNumCovariatesScanned=0;
+    std::vector<std::string> vCategoryCovariates;
+    const char * pCovariate;
 
-  try {
-
-    if (gParameters.GetProbabilityModelType() == POISSON) {
-      while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
-           vCategoryCovariates.push_back(pCovariate);
-           iNumCovariatesScanned++;
-      }
-      if (!gParameters.UsePopulationFile() && iNumCovariatesScanned) {
-        //If the population data was not gotten from a population file, then there can not
-        //be covariates in other files, namely the case file.
-        gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
-                      "       in the %s when a population file is not specified.\n", BasePrint::P_READERROR,
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
-                      iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
-                      gPrint.GetImpliedFileTypeString().c_str());
-        return false;
-      }
-      if (iNumCovariatesScanned != thePopulation.GetNumCovariatesPerCategory()) {
-        gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but the population file\n"
-                      "       defined the number of covariates as %d.\n", BasePrint::P_READERROR,
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
-                      iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
-                      thePopulation.GetNumCovariatesPerCategory());
-        return false;
-      }
-      //category should already exist
-      if ((iCategoryIndex = thePopulation.GetCovariateCategoryIndex(vCategoryCovariates)) == -1) {
-        gPrint.Printf("Error: Record %ld of %s refers to a population category that\n"
-                      "       does not match an existing category as read from the population file.",
-                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-        return false;
-      }
+    try {
+        if (gParameters.GetProbabilityModelType() == POISSON) {
+            while ((pCovariate = Source.GetValueAt(iCovariatesOffset + iNumCovariatesScanned)) != 0) {
+                if (Source.isLinelistOnlyColumn(iCovariatesOffset + iNumCovariatesScanned)) {
+                    ++iCovariatesOffset;
+                    continue;
+                }
+                vCategoryCovariates.push_back(pCovariate);
+                ++iNumCovariatesScanned;
+            }
+            if (!gParameters.UsePopulationFile() && iNumCovariatesScanned) {
+                //If the population data was not gotten from a population file, then there can not
+                //be covariates in other files, namely the case file.
+                gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
+                              "       in the %s when a population file is not specified.\n", BasePrint::P_READERROR,
+                              Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
+                              iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
+                            gPrint.GetImpliedFileTypeString().c_str());
+                return false;
+            }
+            if (iNumCovariatesScanned != thePopulation.GetNumCovariatesPerCategory()) {
+                gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but the population file\n"
+                              "       defined the number of covariates as %d.\n", BasePrint::P_READERROR,
+                              Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
+                              iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
+                            thePopulation.GetNumCovariatesPerCategory());
+                return false;
+            }
+            //category should already exist
+            if ((iCategoryIndex = thePopulation.GetCovariateCategoryIndex(vCategoryCovariates)) == -1) {
+                gPrint.Printf("Error: Record %ld of %s refers to a population category that\n"
+                              "       does not match an existing category as read from the population file.",
+                              BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                return false;
+            }
+        } else if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) {
+            //For the Bernoulli and uniform time models, ignore covariates in the case and control files
+            //All population categories are aggregated in one category.
+            iCategoryIndex = 0;
+        } else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+            //First category created sets precedence as to how many covariates remaining records must have.
+            if ((iCategoryIndex = thePopulation.CreateCovariateCategory(Source, iCovariatesOffset, gPrint)) == -1)
+                return false;
+        } else
+            throw prg_error("Unknown probability model type '%d'.","RetrieveCovariatesIndex()", gParameters.GetProbabilityModelType());
+    } catch (prg_exception& x) {
+        x.addTrace("RetrieveCovariatesIndex()","DataSetHandler");
+        throw;
     }
-    else if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == UNIFORMTIME) {
-      //For the Bernoulli and uniform time models, ignore covariates in the case and control files
-      //All population categories are aggregated in one category.
-      iCategoryIndex = 0;
-    }
-    else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-        //First category created sets precedence as to how many covariates remaining records must have.
-        if ((iCategoryIndex = thePopulation.CreateCovariateCategory(Source, iCovariatesOffset, gPrint)) == -1)
-          return false;
-    }
-    else
-      throw prg_error("Unknown probability model type '%d'.","RetrieveCovariatesIndex()", gParameters.GetProbabilityModelType());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RetrieveCovariatesIndex()","DataSetHandler");
-    throw;
-  }
-  return true;
+    return true;
 }
 
 /** Retrieves location id index from data source. If location id not found:
@@ -450,7 +554,7 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
     - if coordinates data checking is relaxed, reports warning to BasePrint object
       and returns SaTScanDataReader::Ignored; reports only first occurance
     - else returns SaTScanDataReader::Accepted */
-DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const {
     //Validate that tract identifer is one of those defined in the coordinates file.
     const char * identifier = Source.GetValueAt(guLocationIndex);
     if (!identifier) {

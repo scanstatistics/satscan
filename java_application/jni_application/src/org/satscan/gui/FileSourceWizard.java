@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,14 +25,19 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.undo.UndoManager;
+import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.app.AppConstants;
 import org.satscan.importer.CSVImportDataSource;
 import org.satscan.importer.DBaseImportDataSource;
@@ -52,27 +58,31 @@ import org.satscan.gui.utils.help.HelpShow;
 import org.satscan.importer.DataSourceException;
 import org.satscan.importer.InputSourceSettings;
 import static org.satscan.importer.InputSourceSettings.InputFileType.Case;
+import org.satscan.importer.InputSourceSettings.LinelistType;
 import org.satscan.importer.InputSourceSettings.SourceDataFileType;
 import org.satscan.importer.ShapefileDataSource;
 import org.satscan.utils.FileAccess;
 
 public class FileSourceWizard extends javax.swing.JDialog implements PropertyChangeListener {
 
-    private Preferences _prefs = Preferences.userNodeForPackage(getClass());
-    private static final String _prefLastBackup = new String("import.destination");
+    private final Preferences _prefs = Preferences.userNodeForPackage(getClass());
+    private static final String _prefLastBackup = "import.destination";
     private final String _source_settings_cardname = "source-settings";
     private final String _file_format_cardname = "file-format";
     private final String _data_mapping_cardname = "data-mapping";
+    private final String _linelist_settings_cardname = "linelist-settings";
     private final String _output_settings_cardname = "output-settings";
     private final String _source_settings_buttons_cardname = "source-settings-buttons";
     private final String _file_format_buttons_cardname = "file-format-buttons";
     private final String _data_mapping_buttons_cardname = "data-mapping-buttons";
+    private final String _linelist_settings_buttons_cardname = "linelist-settings-buttons";
     private final String _output_settings_buttons_cardname = "output-settings-buttons";
     public static final String _unassigned_variable = "unassigned";
+    private final String _default_linelist_label = "Column Label";
     private final int _dateVariableColumn = 2;
     private final int _sourceFileLineSample = 200;
     private final UndoManager undo = new UndoManager();
-    private Vector<ImportVariable> _import_variables = new Vector<ImportVariable>();
+    private Vector<ImportVariable> _import_variables = new Vector();
     private final Parameters.ProbabilityModelType _startingModelType;
     private Parameters.CoordinatesType _coordinatesType;
     private String _showing_maincontent_cardname;
@@ -84,7 +94,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private boolean _executed_import=false;
     private boolean _needs_import_save=false;
     private boolean _refresh_related_settings=false;
-    private boolean _excel_has_header=true;
+    private boolean _excel_has_header=false;
+    private ArrayList<Boolean> _sticky_ll_labels = new ArrayList();
 
     /** Creates new form FileSourceWizard */
     public FileSourceWizard(java.awt.Frame parent,
@@ -128,6 +139,61 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         } else if (nextButtonSource.isEnabled()) {
             nextButtonSource.requestFocus();
         }
+    }
+    
+    private boolean checkForLinelistColumns() {
+        StringBuilder message = new StringBuilder();
+        // Test whether user enabled this option.
+        if (!_casefile_linelist.isSelected()) {
+            _input_source_settings.getLinelistFieldMaps().clear();
+            return false;
+        }
+        LinelistMappingTableModel model = (LinelistMappingTableModel) _mapping_table_linelist.getModel();
+        // Test whether the user have defined any line list mappings.
+        if (_combobox_eventid.getSelectedIndex() <= 0 && model.getRowCount() == 0) {
+               message.append("No line list data mappings have been defined.\n"); 
+               message.append("Do you want to skip this feature?");
+               if (JOptionPane.showConfirmDialog(this, message.toString(), "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
+                   return true;
+               _casefile_linelist.setSelected(false);
+               return false;
+        }
+        // Test whether user selected any event level inputs and verify.
+        if (_combobox_event_y.isEnabled()) {
+            if (_combobox_event_y.getSelectedIndex() > 0 && _combobox_event_x.getSelectedIndex() == 0)
+                message.append("An event longitude/Y coordinate was selected but no latitude/X coordinate.\n");
+            else if (_combobox_event_y.getSelectedIndex() == 0 && _combobox_event_x.getSelectedIndex() > 0)
+                message.append("An event latitude/X coordinate was selected but no longitude/Y coordinate.\n");
+            if (message.length() > 0) {
+                message.append("Note: Event coordinates are only required to place events on Google Earth KML output.");
+                JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+                return true;
+            }
+        }
+        // Test for unassigned rows in grid.
+        for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
+            if (((String)model.getValueAt(rowIdx, 0)).equals(_unassigned_variable)) {
+               message.append("At least one row references a line list mapping which does not name a source column.\n"); 
+               message.append("A source colummn must be selected or use the remove option to delete row.");
+               JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+               return true;
+            }
+        }
+        // All appears to be correct -- clear then populate temporary line list map.
+        _input_source_settings.getLinelistFieldMaps().clear();
+        if (_combobox_eventid.getSelectedIndex() > 0)
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_eventid.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_ID, "EventID"));
+        if (_combobox_event_y.isEnabled() && _combobox_event_y.getSelectedIndex() > 0)
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_Y, "EventLongitudeY"));
+        if (_combobox_event_x.isEnabled() && _combobox_event_x.getSelectedIndex() > 0)
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_X, "EventLatitudeX"));
+        for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
+            _input_source_settings.getLinelistFieldMaps().put(
+                model.getSourceColumnIndex((String)model.getValueAt(rowIdx, 0)) - 1, 
+                Pair.of(LinelistType.GENERAL_DATA, (String)model.getValueAt(rowIdx, 1))
+            );
+        }
+        return false; 
     }
     
     /** Checks that required input variables are mapped to a field of the source file. */
@@ -276,6 +342,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     nextButtonMapping.setEnabled(model._visible_variables.get(i).isMappedToSourceField());
                 }
             }
+        //} else if (_showing_maincontent_cardname.equals(_linelist_settings_cardname)) {
+        //    System.out.println("TODO -- enable buttons for this panel.");
         } else if (_showing_maincontent_cardname.equals(_output_settings_cardname)) {
             if (_execute_import_now.isSelected()) {
                 executeButton.setEnabled(_outputDirectoryTextField.getText().length() > 0);
@@ -340,6 +408,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     public boolean needsSettingsRefresh() {
         return _refresh_related_settings;
     }      
+    
+    /* Returns whether case file line list option was selected. */
+    public boolean caseContainsLinelistMappings() {
+        return _casefile_linelist.isEnabled() && _casefile_linelist.isSelected();
+    }
     
     /** Builds html which details the fields expected in the input file. */
     private String getFileExpectedFormatHtml() {
@@ -475,6 +548,19 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
     
+    /** Returns whether input source has real header row. */
+    private boolean getImportSourceHasHeaders() {
+        if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Shapefile)
+            return true;
+        else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.dBase)
+            return true;
+        else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
+                   _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel)
+            return _excel_has_header;
+        else
+            return _firstRowColumnHeadersCheckBox.isSelected();
+    }    
+    
     /** Returns InputSourceSettings.InputFileType as string. */
     private String getInputFileTypeString() {
         switch (_input_source_settings.getInputFileType()) {
@@ -496,7 +582,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Returns the base collection of supported file filters. */
     public static ArrayList<InputFileFilter> getInputFilters() {
         // define file filters supported by import wizard
-        ArrayList<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+        ArrayList<InputFileFilter> filters = new ArrayList();
         filters.add(new InputFileFilter("csv","Delimited Files (*.csv)"));
         filters.add(new InputFileFilter("xlsx","Excel Files (*.xlsx)"));
         filters.add(new InputFileFilter("xls","Excel 97-2003 Files (*.xls)"));
@@ -705,6 +791,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         } else if (targetCardName.equals(_data_mapping_cardname)) {
             prepMappingPanel();
             bringPanelToFront(targetCardName, _data_mapping_buttons_cardname);
+        } else if (targetCardName.equals(_linelist_settings_cardname)) {
+            preplinelistPanel();
+            bringPanelToFront(targetCardName, _linelist_settings_buttons_cardname);
         } else if (targetCardName.equals(_output_settings_cardname)) {
             prepOutputSettingsPanel();
             bringPanelToFront(targetCardName, _output_settings_buttons_cardname);
@@ -731,6 +820,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 makeActivePanel(_data_mapping_cardname);
             } else if (_showing_maincontent_cardname == _data_mapping_cardname) {
                 if (checkForRequiredVariables()) return;
+                if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Case)
+                    makeActivePanel(_linelist_settings_cardname);
+                else
+                    makeActivePanel(_output_settings_cardname);
+            } else if (_showing_maincontent_cardname == _linelist_settings_cardname) {
+                if (checkForLinelistColumns()) return;
                 makeActivePanel(_output_settings_cardname);
             }
         } catch (org.satscan.importer.ImportDataSource.UnsupportedException e) {
@@ -806,7 +901,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private void prepMappingPanel() throws Exception {
         WaitCursor waitCursor = new WaitCursor(this);
         try {
-            previewSource();
+            previewSource(_source_data_table, true);
             // clear any variables that have source field mappings which are greater than the number of choices
             for (ImportVariable variable: _import_variables) {
                 if (variable.getSourceFieldIndex() >  _preview_table_model.getDataSourceColumnNameCount())
@@ -818,6 +913,59 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         } finally {
             waitCursor.restore();
         }
+    }
+    
+    private void preplinelistPanel() throws Exception {
+        WaitCursor waitCursor = new WaitCursor(this);
+        try {
+            previewSource(_source_data_table_linelist, false);
+            // Create list of source columns to be used by event level inputs and line list grid.
+            ArrayList<String> sourceColumns = new ArrayList() {{add(_unassigned_variable);}};
+            for (int columnIdx=0; columnIdx < _source_data_table_linelist.getColumnModel().getColumnCount(); ++columnIdx) {
+                TableColumn column = _source_data_table_linelist.getColumnModel().getColumn(columnIdx);
+                if (column.getWidth() > 0) sourceColumns.add((String)column.getHeaderValue());
+            }
+            // Assign source columns to event level combo box models.
+            _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(sourceColumns.toArray(new String[0])));
+            _combobox_event_y.setModel(new javax.swing.DefaultComboBoxModel<>(sourceColumns.toArray(new String[0])));
+            _combobox_event_x.setModel(new javax.swing.DefaultComboBoxModel<>(sourceColumns.toArray(new String[0])));
+            // Create TableModel then assign source columns to combo box used to render selection in table.
+            LinelistMappingTableModel model = new LinelistMappingTableModel(sourceColumns);
+            _mapping_table_linelist.setModel(model);
+            _mapping_table_linelist.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(model._combo_box));
+            model.fireTableDataChanged();
+            // Copy the values from current linelist field map.
+            _sticky_ll_labels.clear();
+            for (Map.Entry<Integer, Pair<LinelistType, String>> entry : _input_source_settings.getLinelistFieldMaps().entrySet()) {
+                switch (entry.getValue().getLeft()) {
+                    case EVENT_ID: _combobox_eventid.setSelectedIndex(entry.getKey() + 1); break;
+                    case EVENT_COORD_Y: _combobox_event_y.setSelectedIndex(entry.getKey() + 1); break;
+                    case EVENT_COORD_X: _combobox_event_x.setSelectedIndex(entry.getKey() + 1); break;
+                    default: 
+                        model.addRow(new Object[]{(String)model._combo_box.getItemAt(entry.getKey() + 1), entry.getValue().getRight()});
+                        _sticky_ll_labels.add(true);
+                }
+            }
+            // Select checkbox of any line list mappings already exist. 
+            _casefile_linelist.setSelected(!_input_source_settings.getLinelistFieldMaps().isEmpty());
+            enableLinelistPanels();
+            enableNavigationButtons();
+        } finally {
+            waitCursor.restore();
+        }
+    }
+    
+    /* Enables the inputs of the case line list panel. */
+    private void enableLinelistPanels() {
+        _combobox_eventid.setEnabled(_casefile_linelist.isSelected());
+        _combobox_event_y.setEnabled(_casefile_linelist.isSelected() && _combobox_eventid.getSelectedIndex() > 0);
+        _combobox_event_x.setEnabled(_casefile_linelist.isSelected() && _combobox_eventid.getSelectedIndex() > 0);
+        _mapping_table_linelist.setEnabled(_casefile_linelist.isSelected());
+        _add_linelist.setEnabled(_casefile_linelist.isSelected()); 
+        int selectedIdx = _mapping_table_linelist.getSelectedRow();
+        _remove_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx >= 0); 
+        _up_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx > 0); 
+        _down_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx >= 0 && selectedIdx < _mapping_table_linelist.getModel().getRowCount() - 1); 
     }
     
     /** Preparation for viewing the output settings panel. */
@@ -833,26 +981,28 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     }
     
     /** Opening source as specified by file type. */
-    private void previewSource() throws Exception {
+    private void previewSource(javax.swing.JTable data_table, boolean optionGenerated) throws Exception {
         //set the import tables mapping_model to default until we have an instance of the native mapping_model avaiable
-        _source_data_table.setModel(new DefaultTableModel());
+        data_table.setModel(new DefaultTableModel());
 
         boolean show_generatedId=false;
         boolean show_oneCount=false;
-        switch (_input_source_settings.getInputFileType()) {
-            case Case: show_generatedId=true; show_oneCount=true; break;
-            case Control: show_generatedId=true; show_oneCount=true; break;
-            case Population: show_generatedId=true; show_oneCount=false; break;
-            case Coordinates: show_generatedId=true; show_oneCount=false; break;
-            case SpecialGrid: show_generatedId=false; show_oneCount=false; break;
-            case MaxCirclePopulation: show_generatedId=true; show_oneCount=false; break;
-            case AdjustmentsByRR: show_generatedId=true; show_oneCount=false; break;
-            case Neighbors: show_generatedId=true; show_oneCount=false; break;
-            case MetaLocations: show_generatedId=false; show_oneCount=false; break;
-            case AlternativeHypothesis: show_generatedId=true; show_oneCount=false; break;
-            case NETWORK: show_generatedId=false; show_oneCount=false; break;
-            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
-        }        
+        if (optionGenerated) {
+            switch (_input_source_settings.getInputFileType()) {
+                case Case: show_generatedId=true; show_oneCount=true; break;
+                case Control: show_generatedId=true; show_oneCount=true; break;
+                case Population: show_generatedId=true; show_oneCount=false; break;
+                case Coordinates: show_generatedId=true; show_oneCount=false; break;
+                case SpecialGrid: show_generatedId=false; show_oneCount=false; break;
+                case MaxCirclePopulation: show_generatedId=true; show_oneCount=false; break;
+                case AdjustmentsByRR: show_generatedId=true; show_oneCount=false; break;
+                case Neighbors: show_generatedId=true; show_oneCount=false; break;
+                case MetaLocations: show_generatedId=false; show_oneCount=false; break;
+                case AlternativeHypothesis: show_generatedId=true; show_oneCount=false; break;
+                case NETWORK: show_generatedId=false; show_oneCount=false; break;
+                default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
+            }
+        }
         //create the table mapping_model
         File file = new File(getSourceFilename());
         if (file.exists()) {
@@ -877,19 +1027,19 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
         //now assign mapping_model to table object
         if (_preview_table_model != null) {
-            _source_data_table.setModel(_preview_table_model);
+            data_table.setModel(_preview_table_model);
         }
 
         int widthTotal = 0;
         //calculate the column widths to fit header/data
         Vector<Integer> colWidths = new Vector<Integer>();
-        for (int c=0; c < _source_data_table.getColumnCount(); ++c) {
-            colWidths.add(AutofitTableColumns.getMaxColumnWidth(_source_data_table, c, true, 20));
+        for (int c=0; c < data_table.getColumnCount(); ++c) {
+            colWidths.add(AutofitTableColumns.getMaxColumnWidth(data_table, c, true, 20));
             widthTotal += colWidths.lastElement();
         }
         int additional = Math.max(0, _importTableScrollPane.getViewport().getSize().width - widthTotal - 20/*scrollbar width?*/)/colWidths.size();
         for (int c=0; c < colWidths.size(); ++c) {
-            _source_data_table.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);
+            data_table.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);
         }
     }
     
@@ -903,8 +1053,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case CSV: makeActivePanel(_file_format_cardname); break;
                     default : makeActivePanel(_source_settings_cardname);
                 }
-            } else if (_showing_maincontent_cardname == _output_settings_cardname) {
+            } else if (_showing_maincontent_cardname == _linelist_settings_cardname) {
                 makeActivePanel(_data_mapping_cardname);
+            } else if (_showing_maincontent_cardname == _output_settings_cardname) {
+                if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Case)
+                    makeActivePanel(_linelist_settings_cardname);
+                else
+                    makeActivePanel(_data_mapping_cardname);
             }
         } catch (Throwable t) {
             new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
@@ -969,66 +1124,66 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for case file. */
     private void setCaseFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null));
-        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
-        _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null));
-        _import_variables.addElement(new ImportVariable("Category Type", 3, true, null, null));
-        _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null));
-        _import_variables.addElement(new ImportVariable("Weight", 4, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate1", 5, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate2", 6, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate3", 7, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate4", 8, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate5", 9, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate6", 10, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate7", 11, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate8", 12, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate9", 13, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate10", 14, false, null, null));
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null, "<locationid>"));
+        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null, "<count>"));
+        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null, "<date>"));
+        _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null, "<attribute>"));
+        _import_variables.addElement(new ImportVariable("Category Type", 3, true, null, null, "<attribute>"));
+        _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null, "<censored>"));
+        _import_variables.addElement(new ImportVariable("Weight", 4, false, null, null, "<weight>"));
+        _import_variables.addElement(new ImportVariable("Covariate1", 5, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate2", 6, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate3", 7, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate4", 8, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate5", 9, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate6", 10, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate7", 11, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate8", 12, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate9", 13, false, null, null, "<covariate>"));
+        _import_variables.addElement(new ImportVariable("Covariate10", 14, false, null, null, "<covariate>"));
     }
     
     /** Setup field descriptors for control file. */
     private void setControlFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Number of Controls", 1, true, null, null));
-        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null));
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Number of Controls", 1, true));
+        _import_variables.addElement(new ImportVariable("Date/Time", 2, false));
     }
     
     /** Setup field descriptors for coordinates file. */
     private void setGeoFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null));
-        _import_variables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null));
-        _import_variables.addElement(new ImportVariable("X", 1, true, null, null));
-        _import_variables.addElement(new ImportVariable("Y", 2, true, null, null));
-        _import_variables.addElement(new ImportVariable("Z1", 3, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z2", 4, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z3", 5, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z4", 6, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z5", 7, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z6", 8, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z7", 9, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z8", 10, false, null, null));
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null, null));
+        _import_variables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null, null));
+        _import_variables.addElement(new ImportVariable("X", 1, true));
+        _import_variables.addElement(new ImportVariable("Y", 2, true));
+        _import_variables.addElement(new ImportVariable("Z1", 3, false));
+        _import_variables.addElement(new ImportVariable("Z2", 4, false));
+        _import_variables.addElement(new ImportVariable("Z3", 5, false));
+        _import_variables.addElement(new ImportVariable("Z4", 6, false));
+        _import_variables.addElement(new ImportVariable("Z5", 7, false));
+        _import_variables.addElement(new ImportVariable("Z6", 8, false));
+        _import_variables.addElement(new ImportVariable("Z7", 9, false));
+        _import_variables.addElement(new ImportVariable("Z8", 10, false));
     }
     
     /** Setup field descriptors for special grid file. */
     private void setGridFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null));
-        _import_variables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null));
-        _import_variables.addElement(new ImportVariable("X", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Y", 1, true, null, null));
-        _import_variables.addElement(new ImportVariable("Z1", 2, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z2", 3, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z3", 4, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z4", 5, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z5", 6, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z6", 7, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z7", 8, false, null, null));
-        _import_variables.addElement(new ImportVariable("Z8", 9, false, null, null));
+        _import_variables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null, null));
+        _import_variables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null, null));
+        _import_variables.addElement(new ImportVariable("X", 0, true));
+        _import_variables.addElement(new ImportVariable("Y", 1, true));
+        _import_variables.addElement(new ImportVariable("Z1", 2, false));
+        _import_variables.addElement(new ImportVariable("Z2", 3, false));
+        _import_variables.addElement(new ImportVariable("Z3", 4, false));
+        _import_variables.addElement(new ImportVariable("Z4", 5, false));
+        _import_variables.addElement(new ImportVariable("Z5", 6, false));
+        _import_variables.addElement(new ImportVariable("Z6", 7, false));
+        _import_variables.addElement(new ImportVariable("Z7", 8, false));
+        _import_variables.addElement(new ImportVariable("Z8", 9, false));
     }
     
     /** Sets InputSourceSettings object from user selections in wizard. */
@@ -1075,48 +1230,48 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for maximum circle population file. */
     private void setMaxCirclePopFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Population", 1, true, null, null));
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Population", 1, true));
     }
     
     /** Setup field descriptors for population file. */
     private void setPopulationFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified");
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified", null);
         /* Set the variable index to below the one-based variables -- variables less than one
          * are considered special and are not actually a data source column option.
          * In this case, the population date will be set to 'unspecified'. */
         variable.setSourceFieldIndex(0);
         _import_variables.addElement(variable);
-        _import_variables.addElement(new ImportVariable("Population", 2, true, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate1", 3, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate2", 4, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate3", 5, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate4", 6, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate5", 7, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate6", 8, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate7", 9, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate8", 10, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate9", 11, false, null, null));
-        _import_variables.addElement(new ImportVariable("Covariate10", 12, false, null, null));
+        _import_variables.addElement(new ImportVariable("Population", 2, true));
+        _import_variables.addElement(new ImportVariable("Covariate1", 3, false));
+        _import_variables.addElement(new ImportVariable("Covariate2", 4, false));
+        _import_variables.addElement(new ImportVariable("Covariate3", 5, false));
+        _import_variables.addElement(new ImportVariable("Covariate4", 6, false));
+        _import_variables.addElement(new ImportVariable("Covariate5", 7, false));
+        _import_variables.addElement(new ImportVariable("Covariate6", 8, false));
+        _import_variables.addElement(new ImportVariable("Covariate7", 9, false));
+        _import_variables.addElement(new ImportVariable("Covariate8", 10, false));
+        _import_variables.addElement(new ImportVariable("Covariate9", 11, false));
+        _import_variables.addElement(new ImportVariable("Covariate10", 12, false));
     }
     
     /** Setup field descriptors for relative risks file. */
     private void setRelativeRisksFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Relative Risk", 1, true, null, null));
-        _import_variables.addElement(new ImportVariable("Start Date", 2, false, null, null));
-        _import_variables.addElement(new ImportVariable("End Date", 3, false, null, null));
+        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Relative Risk", 1, true));
+        _import_variables.addElement(new ImportVariable("Start Date", 2, false));
+        _import_variables.addElement(new ImportVariable("End Date", 3, false));
     }
     
     /** Setup field descriptors for network file. */
     private void setNetworkFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("First Location ID", 0, true, null, null));
-        _import_variables.addElement(new ImportVariable("Second Location ID", 1, false, null, null));
-        _import_variables.addElement(new ImportVariable("Distance", 2, false, null, null));
+        _import_variables.addElement(new ImportVariable("First Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Second Location ID", 1, false));
+        _import_variables.addElement(new ImportVariable("Distance", 2, false));
     }    
     
     /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
@@ -1249,6 +1404,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 } else {
                     _main_content_panel.add(_fileFormatPanel, _file_format_cardname);
                     _main_content_panel.add(_dataMappingPanel, _data_mapping_cardname);
+                    _main_content_panel.add(_linelistPanel, _linelist_settings_cardname);
                     _main_content_panel.add(_outputSettingsPanel, _output_settings_cardname);
                 }
                 makeActivePanel(_source_settings_cardname);
@@ -1318,6 +1474,101 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _importTableScrollPane = new javax.swing.JScrollPane();
         _source_data_table = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
+        _linelistPanel = new javax.swing.JPanel();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
+        _casefile_linelist = new javax.swing.JCheckBox();
+        _casefile_linelist.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableLinelistPanels();
+            }
+        });
+        jLabel3 = new javax.swing.JLabel();
+        _combobox_eventid = new javax.swing.JComboBox<>();
+        _combobox_eventid.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableLinelistPanels();
+            }
+        });
+        _combobox_event_y = new javax.swing.JComboBox<>();
+        _combobox_event_x = new javax.swing.JComboBox<>();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        _mapping_table_linelist = new javax.swing.JTable();
+        _add_linelist = new javax.swing.JButton();
+        _add_linelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                WaitCursor waitCursor = new WaitCursor(FileSourceWizard.this);
+                try {
+                    // Add record to table.
+                    LinelistMappingTableModel model = (LinelistMappingTableModel) _mapping_table_linelist.getModel();
+                    model.addRow(new Object[]{ _unassigned_variable, _default_linelist_label });
+                    _sticky_ll_labels.add(false);
+                    _mapping_table_linelist.setRowSelectionInterval(model.getRowCount() - 1, model.getRowCount() - 1);
+                    enableLinelistPanels();
+                } catch (Throwable t) {
+                    new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
+                } finally {
+                    waitCursor.restore();
+                }
+            }
+        });
+        _remove_linelist = new javax.swing.JButton();
+        _remove_linelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                DefaultTableModel model = (DefaultTableModel) _mapping_table_linelist.getModel();
+                int selected = _mapping_table_linelist.getSelectedRow();
+                _sticky_ll_labels.remove(selected);
+                model.removeRow(selected);
+                if (_mapping_table_linelist.getRowCount() > 0)
+                _mapping_table_linelist.setRowSelectionInterval(Integer.max(0, selected - 1), Integer.max(0, selected - 1));
+                enableLinelistPanels();
+            }
+        });
+        _up_linelist = new javax.swing.JButton();
+        _up_linelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                // move rows from the index to index into the position index -1
+                DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();
+                int selected = _mapping_table_linelist.getSelectedRow();
+                if (selected > 0) {
+                    model.moveRow(selected, selected, selected - 1);
+                    _mapping_table_linelist.setRowSelectionInterval(selected - 1, selected - 1);
+                    enableLinelistPanels();
+                    if (_up_linelist.isEnabled()) _up_linelist.requestFocusInWindow();
+                }
+            }
+        });
+        _down_linelist = new javax.swing.JButton();
+        _down_linelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                // move rows from the index to index into the position index -1
+                DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();
+                int selected = _mapping_table_linelist.getSelectedRow();
+                if (selected < _mapping_table_linelist.getModel().getRowCount() - 1){
+                    model.moveRow(selected, selected, selected + 1);
+                    // set selection to the new position
+                    _mapping_table_linelist.setRowSelectionInterval(selected + 1, selected + 1);
+                    enableLinelistPanels();
+                    if (_down_linelist.isEnabled()) _down_linelist.requestFocusInWindow();
+                }
+            }
+        });
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        _linelist_help = new javax.swing.JButton();
+        _linelist_help.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                StringBuilder message = new StringBuilder();
+                message.append("The case file can contain line list data which is not used when performing analysis.\n");
+                message.append("The line list data can include two types of information:\n");
+                message.append("1) Event Identification - uniquely identifies event and true cordinates.\n");
+                message.append("2) Event Characteristics - attributes of that event.\n");
+                JOptionPane.showMessageDialog(FileSourceWizard.this, message.toString(), "Note", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        _source_table_panel = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        _source_data_table_linelist = new javax.swing.JTable();
         _outputSettingsPanel = new javax.swing.JPanel();
         _execute_import_now = new javax.swing.JRadioButton();
         _outputDirectoryTextField = new javax.swing.JTextField();
@@ -1335,6 +1586,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _data_mapping_buttons_panel = new javax.swing.JPanel();
         previousButtonMapping = new javax.swing.JButton();
         nextButtonMapping = new javax.swing.JButton();
+        _linelist_settings_buttons_panel = new javax.swing.JPanel();
+        previousButtonLinelist = new javax.swing.JButton();
+        nextButtonLinelist = new javax.swing.JButton();
         _output_settings_buttons_panel = new javax.swing.JPanel();
         previousButtonOutSettings = new javax.swing.JButton();
         executeButton = new javax.swing.JButton();
@@ -1351,7 +1605,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Import File Wizard"); // NOI18N
         setModal(true);
-        setPreferredSize(new java.awt.Dimension(550, 450));
 
         _dialog_base_panel.setLayout(new javax.swing.BoxLayout(_dialog_base_panel, javax.swing.BoxLayout.Y_AXIS));
 
@@ -1396,7 +1649,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addComponent(_source_filename)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
+                    .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _fileSourceSettingsPanelLayout.setVerticalGroup(
@@ -1409,7 +1662,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(_source_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_browse_source, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                .addComponent(_expectedFormatScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1495,7 +1748,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(_otherRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(151, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
         fieldSeparatorGroupLayout.setVerticalGroup(
             fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1580,7 +1833,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(69, Short.MAX_VALUE))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
 
         _main_content_panel.add(_fileFormatPanel, "file-format");
@@ -1632,8 +1885,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
                         .addComponent(_displayVariablesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_displayVariablesComboBox, 0, 289, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE))
+                        .addComponent(_displayVariablesComboBox, 0, 340, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_clearSelectionButton))
         );
@@ -1674,11 +1927,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
         _dataMappingBottomPanelLayout.setHorizontalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
@@ -1692,7 +1945,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+                    .addComponent(jSplitPane1)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1706,6 +1959,170 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         );
 
         _main_content_panel.add(_dataMappingPanel, "data-mapping");
+
+        jSplitPane2.setDividerLocation(250);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        _casefile_linelist.setText("Case file contains line list data");
+
+        jLabel3.setText("Event ID (optional)");
+
+        _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "not set" }));
+        _combobox_eventid.setPreferredSize(new java.awt.Dimension(125, 20));
+
+        _combobox_event_y.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "latitude/X not set" }));
+        _combobox_event_y.setPreferredSize(new java.awt.Dimension(125, 20));
+
+        _combobox_event_x.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "longitude/X not set" }));
+        _combobox_event_x.setPreferredSize(new java.awt.Dimension(125, 20));
+
+        _mapping_table_linelist.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        ListSelectionModel selectionModel = _mapping_table_linelist.getSelectionModel();
+        selectionModel.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting())
+                return;
+                enableLinelistPanels();
+            }
+        });
+        jScrollPane4.setViewportView(_mapping_table_linelist);
+
+        _add_linelist.setText("Add");
+
+        _remove_linelist.setText("Remove");
+
+        _up_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-up.png"))); // NOI18N
+
+        _down_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
+
+        jLabel8.setText("Event Latitude / Y");
+
+        jLabel9.setText("Event Longitude / X");
+
+        _linelist_help.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
+        _linelist_help.setToolTipText("What is this?");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_combobox_eventid, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_combobox_event_y, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 132, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_remove_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                            .addComponent(_add_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_up_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_down_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(_casefile_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(_linelist_help, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_casefile_linelist)
+                    .addComponent(_linelist_help))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_combobox_eventid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_combobox_event_y, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_combobox_event_x, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(13, 13, 13)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(_add_linelist)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_remove_linelist)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_up_linelist)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_down_linelist)
+                        .addGap(0, 40, Short.MAX_VALUE))))
+        );
+
+        _linelist_help.getAccessibleContext().setAccessibleDescription("Help On This.");
+
+        jSplitPane2.setTopComponent(jPanel1);
+
+        _source_data_table_linelist.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        _source_data_table_linelist.setToolTipText("Displaying at most 50 rows from data file.");
+        _source_data_table_linelist.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        _source_data_table_linelist.setRowSelectionAllowed(false);
+        jScrollPane3.setViewportView(_source_data_table_linelist);
+
+        javax.swing.GroupLayout _source_table_panelLayout = new javax.swing.GroupLayout(_source_table_panel);
+        _source_table_panel.setLayout(_source_table_panelLayout);
+        _source_table_panelLayout.setHorizontalGroup(
+            _source_table_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _source_table_panelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _source_table_panelLayout.setVerticalGroup(
+            _source_table_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_source_table_panelLayout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+
+        jSplitPane2.setRightComponent(_source_table_panel);
+
+        javax.swing.GroupLayout _linelistPanelLayout = new javax.swing.GroupLayout(_linelistPanel);
+        _linelistPanel.setLayout(_linelistPanelLayout);
+        _linelistPanelLayout.setHorizontalGroup(
+            _linelistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _linelistPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jSplitPane2)
+                .addContainerGap())
+        );
+        _linelistPanelLayout.setVerticalGroup(
+            _linelistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_linelistPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jSplitPane2)
+                .addContainerGap())
+        );
+
+        _main_content_panel.add(_linelistPanel, "linelist-settings");
 
         _import_operation_buttonGroup.add(_execute_import_now);
         _execute_import_now.setSelected(true);
@@ -1756,7 +2173,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_changeSaveDirectoryButton))
                     .addComponent(_execute_import_now, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
+                    .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputSettingsPanelLayout.setVerticalGroup(
@@ -1818,7 +2235,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(_file_source_buttons_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(acceptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 227, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 238, Short.MAX_VALUE)
                 .addComponent(clearInputSettigs, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonSource, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1858,7 +2275,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _file_format_buttons_panelLayout.setHorizontalGroup(
             _file_format_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_file_format_buttons_panelLayout.createSequentialGroup()
-                .addContainerGap(351, Short.MAX_VALUE)
+                .addContainerGap(360, Short.MAX_VALUE)
                 .addComponent(previousButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1895,7 +2312,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _data_mapping_buttons_panelLayout.setHorizontalGroup(
             _data_mapping_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _data_mapping_buttons_panelLayout.createSequentialGroup()
-                .addContainerGap(351, Short.MAX_VALUE)
+                .addContainerGap(360, Short.MAX_VALUE)
                 .addComponent(previousButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nextButtonMapping, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1912,6 +2329,43 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         );
 
         _button_cards_panel.add(_data_mapping_buttons_panel, "data-mapping-buttons");
+
+        previousButtonLinelist.setText("< Previous"); // NOI18N
+        previousButtonLinelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                previousPanel();
+            }
+        });
+
+        nextButtonLinelist.setText("Next >"); // NOI18N
+        nextButtonLinelist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                nextPanel();
+            }
+        });
+
+        javax.swing.GroupLayout _linelist_settings_buttons_panelLayout = new javax.swing.GroupLayout(_linelist_settings_buttons_panel);
+        _linelist_settings_buttons_panel.setLayout(_linelist_settings_buttons_panelLayout);
+        _linelist_settings_buttons_panelLayout.setHorizontalGroup(
+            _linelist_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _linelist_settings_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(360, Short.MAX_VALUE)
+                .addComponent(previousButtonLinelist, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nextButtonLinelist, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        _linelist_settings_buttons_panelLayout.setVerticalGroup(
+            _linelist_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_linelist_settings_buttons_panelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_linelist_settings_buttons_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nextButtonLinelist)
+                    .addComponent(previousButtonLinelist))
+                .addContainerGap())
+        );
+
+        _button_cards_panel.add(_linelist_settings_buttons_panel, "linelist-settings-buttons");
 
         previousButtonOutSettings.setText("< Previous"); // NOI18N
         previousButtonOutSettings.addActionListener(new java.awt.event.ActionListener() {
@@ -1937,6 +2391,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         ImportTask task = new ImportTask();
                         task.addPropertyChangeListener(FileSourceWizard.this);
                         task.execute();
+                        _needs_import_save = true;
+                        _refresh_related_settings = true;
                     } else {
                         _needs_import_save = true;
                         _refresh_related_settings = true;
@@ -1958,7 +2414,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _output_settings_buttons_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 261, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 272, Short.MAX_VALUE)
                 .addComponent(previousButtonOutSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1983,7 +2439,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
+            .addComponent(_dialog_base_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1993,10 +2449,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton _add_linelist;
     private javax.swing.JButton _browse_source;
     private javax.swing.JPanel _button_cards_panel;
+    private javax.swing.JCheckBox _casefile_linelist;
     private javax.swing.JButton _changeSaveDirectoryButton;
     private javax.swing.JButton _clearSelectionButton;
+    private javax.swing.JComboBox<String> _combobox_event_x;
+    private javax.swing.JComboBox<String> _combobox_event_y;
+    private javax.swing.JComboBox<String> _combobox_eventid;
     private javax.swing.JRadioButton _commaRadioButton;
     private javax.swing.JPanel _dataMappingBottomPanel;
     private javax.swing.JPanel _dataMappingPanel;
@@ -2006,6 +2467,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JComboBox _displayVariablesComboBox;
     private javax.swing.JLabel _displayVariablesLabel;
     private javax.swing.JRadioButton _doubleQuotesRadioButton;
+    private javax.swing.JButton _down_linelist;
     private javax.swing.JRadioButton _execute_import_now;
     private javax.swing.JScrollPane _expectedFormatScrollPane;
     private javax.swing.JTextPane _expectedFormatTextPane;
@@ -2022,8 +2484,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JTextField _ignoreRowsTextField;
     private javax.swing.JScrollPane _importTableScrollPane;
     private javax.swing.ButtonGroup _import_operation_buttonGroup;
+    private javax.swing.JPanel _linelistPanel;
+    private javax.swing.JButton _linelist_help;
+    private javax.swing.JPanel _linelist_settings_buttons_panel;
     private javax.swing.JPanel _main_content_panel;
     private javax.swing.JTable _mapping_table;
+    private javax.swing.JTable _mapping_table_linelist;
     private javax.swing.JTextField _otherFieldSeparatorTextField;
     private javax.swing.JRadioButton _otherRadioButton;
     private javax.swing.JTextField _outputDirectoryTextField;
@@ -2031,11 +2497,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JPanel _output_settings_buttons_panel;
     private javax.swing.JProgressBar _progressBar;
     private javax.swing.ButtonGroup _projectionButtonGroup;
+    private javax.swing.JButton _remove_linelist;
     private javax.swing.JRadioButton _save_import_settings;
     private javax.swing.JRadioButton _semiColonRadioButton;
     private javax.swing.JRadioButton _singleQuotesRadioButton;
     private javax.swing.JTable _source_data_table;
+    private javax.swing.JTable _source_data_table_linelist;
     private javax.swing.JTextField _source_filename;
+    private javax.swing.JPanel _source_table_panel;
+    private javax.swing.JButton _up_linelist;
     private javax.swing.JRadioButton _whitespaceRadioButton;
     private javax.swing.JButton acceptButton;
     private javax.swing.JButton cancelButton;
@@ -2044,15 +2514,24 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JPanel fieldSeparatorGroup;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JButton nextButtonCSV;
+    private javax.swing.JButton nextButtonLinelist;
     private javax.swing.JButton nextButtonMapping;
     private javax.swing.JButton nextButtonSource;
     private javax.swing.JButton previousButtonCSV;
+    private javax.swing.JButton previousButtonLinelist;
     private javax.swing.JButton previousButtonMapping;
     private javax.swing.JButton previousButtonOutSettings;
     // End of variables declaration//GEN-END:variables
@@ -2167,6 +2646,38 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
 
+    /** Table mapping model used to define columns of source file as line list data columns. */
+    class LinelistMappingTableModel extends DefaultTableModel {
+        private static final long serialVersionUID = 1L;
+        public JComboBox _combo_box = new JComboBox();
+
+        public LinelistMappingTableModel(ArrayList<String> sourceColumns) {
+            super(new Object [][] {}, new String [] { "Source Column", "Label" });
+            // Assign source columns to combo box used to render selection in table.
+            _combo_box.setModel(new javax.swing.DefaultComboBoxModel<>(sourceColumns.toArray(new String[0])));
+        } 
+        
+        @Override
+        public void setValueAt(Object newValue, int row, int column) {
+            super.setValueAt(newValue, row, column);
+            if (column == 0 ) {
+                // If the user is selecting a source column and label columm isn't sticky and we have actual headers. 
+                if (!((String)newValue).equals(_unassigned_variable) && !_sticky_ll_labels.get(row) && getImportSourceHasHeaders())
+                    super.setValueAt(newValue, row, 1);
+            } else if (column == 1) 
+                _sticky_ll_labels.set(row, true);
+        };        
+        
+        /* Returns the index of passed item in combo box used in first column. */
+        public int getSourceColumnIndex(String item) {
+            for (int i=0; i < _combo_box.getItemCount(); ++i) {
+                if (((String)_combo_box.getItemAt(i)).equals(item))
+                    return i;
+            }
+            return -1;
+        }
+    }
+    
     /** Import worker; executed in background thread. */
     class ImportTask extends SwingWorker<Void, Void> implements ActionListener {
 
@@ -2187,8 +2698,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
                 _source = getImportSource();
                 _importer = new FileImporter(_source,
-                        model._static_variables,
                         _input_source_settings.getInputFileType(),
+                        model._static_variables,
+                        _input_source_settings.getLinelistFieldMaps(),
                         _input_source_settings.getSourceDataFileType(),
                         _destinationFile,
                         _progressBar);

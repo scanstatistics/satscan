@@ -242,6 +242,7 @@
     <ClInclude Include="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\SVTTData.h" />
     <ClInclude Include="..\calculation\satscan_data\Tracts.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataDemographics.h" />
     <ClInclude Include="..\calculation\ScanLineParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Toolkit.h" />
     <ClInclude Include="..\calculation\MultipleAnalyses.h" />
@@ -457,6 +458,7 @@
     <ClCompile Include="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\SVTTData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\Tracts.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataDemographics.cpp" />
     <ClCompile Include="..\calculation\ScanLineParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Toolkit.cpp" />
     <ClCompile Include="..\calculation\MultipleAnalyses.cpp" />

@@ -588,6 +588,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
           Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(s.str().c_str()));
           jni_error::_detectError(Env);
       }
+      // If file type is Case file, read any line list mappings.
+      if (key.first == CASEFILE) {
+        mid = _getMethodId_Checked(Env, issclazz, "addLinelistFieldMapping", "(IILjava/lang/String;)V");
+        for (auto llmap: iss.getLinelistFieldsMap()) {
+            Env.CallVoidMethod(issobject, mid, llmap.first, llmap.second.get<0>(), Env.NewStringUTF(llmap.second.get<1>().c_str()));
+            jni_error::_detectError(Env);
+        }
+      }
   }
 
   mid = _getMethodId_Checked(Env, clazz, "SetTimeTrendType", "(I)V");
@@ -768,6 +776,26 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
 
   mid = _getMethodId_Checked(Env, clazz, "setProspectiveFrequencyType", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getProspectiveFrequencyType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setCasefileIncludesLineData", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCasefileIncludesLineData());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setCasefileIncludesHeader", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCasefileIncludesHeader());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setEventCacheFileName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEventCacheFileName().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setGroupLinelistEventsKML", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getGroupLinelistEventsKML());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setKmlEventGroupAttribute", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getKmlEventGroupAttribute().c_str()));
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -1302,6 +1330,18 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
         case 7/*NETWORK_FILE*/         : type = NETWORK_FILE; break;
         default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
+      // If file type is Case file, read any line list mappings.
+      if (type == CASEFILE) {
+          LineListFieldMapContainer_t fields_map;
+          mid = _getMethodId_Checked(Env, issclazz, "getLinelistFieldMapsStr", "()Ljava/lang/String;");
+          jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+          jni_error::_detectError(Env);
+          sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+          AbtractParameterFileAccess::parseLinelistStr(std::string(sFilename), fields_map);
+          inputsource.setLinelistFieldsMap(fields_map);
+          if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+      }
+
       Parameters.defineInputSource(type, inputsource, datasetIdx);
   }
 
@@ -1480,6 +1520,32 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   Parameters.setProspectiveFrequencyType((ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/satscan/app/Parameters$ProspectiveFrequency;"));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getCasefileIncludesLineData", "()Z");
+  Parameters.setCasefileIncludesLineData(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getCasefileIncludesHeader", "()Z");
+  Parameters.setCasefileIncludesHeader(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getEventCacheFileName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setEventCacheFileName(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getGroupLinelistEventsKML", "()Z");
+  Parameters.setGroupLinelistEventsKML(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getKmlEventGroupAttribute", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setKmlEventGroupAttribute(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return Parameters;
 }

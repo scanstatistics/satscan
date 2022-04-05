@@ -247,6 +247,12 @@ public class Parameters implements Cloneable {
     private NetworkPurposeType              _network_file_purpose=NetworkPurposeType.NETWORK_DEFINITION;
     private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
     
+    private boolean                         _casefile_includes_linedata=false;
+    private boolean                         _casefile_includes_header=false;
+    private boolean                         _group_kml_linelist_attribute=false;
+    private String                          _kml_event_group_attribute="";
+    private String                          _event_cache_filename="";
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -304,119 +310,16 @@ public class Parameters implements Cloneable {
             newObject.gsTitleName = new String(gsTitleName);
             newObject._google_maps_api_key = new String(_google_maps_api_key);
             newObject._input_sources = new Vector<InputSourceSettings>();
-            newObject._locations_network_filename = new String(_locations_network_filename);
             for (InputSourceSettings iss : _input_sources) {
                 newObject._input_sources.addElement(iss.clone());
             }
+            newObject._locations_network_filename = new String(_locations_network_filename);
+            newObject._kml_event_group_attribute = new String(_kml_event_group_attribute);
+            newObject._event_cache_filename = new String(_event_cache_filename);
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
         }
-    }
-
-    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
-    public void setProspectiveFrequencyType(int iOrdinal) {
-        try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _prospective_frequency.values()); }
-    }    
-    
-    public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
-    public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
-    public String getLocationsNetworkFilename() { return _locations_network_filename; }
-    public void setLocationsNetworkFilename(final String s) { _locations_network_filename = s; }
-    public NetworkPurposeType getNetworkFilePurpose() { return _network_file_purpose; }
-    public void setNetworkFilePurpose(int iOrdinal) {
-        try { _network_file_purpose = NetworkPurposeType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _network_file_purpose.values()); }
-    }
-    
-    public boolean getPerformStandardDrilldown() { return _perform_standard_drilldown; }
-    public void setPerformStandardDrilldown(boolean b) { _perform_standard_drilldown = b; }
-    public boolean getPerformBernoulliDrilldown() { return _perform_bernoulli_drilldown; }
-    public void setPerformBernoulliDrilldown(boolean b) { _perform_bernoulli_drilldown = b; }
-    public int getDrilldownMinimumLocationsCluster() { return _drilldown_minimum_locations; }
-    public void setDrilldownMinimumLocationsCluster(int u) { _drilldown_minimum_locations = u; }
-    public int getDrilldownMinimumCasesCluster() { return _drilldown_minimum_cases; }
-    public void setDrilldownMinimumCasesCluster(int u) { _drilldown_minimum_cases = u; }
-    public double getDrilldownPvalueCutoff() { return _drilldown_pvalue_cutoff; }
-    public void setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
-    public boolean getDrilldownAdjustWeeklyTrends() { return _drilldown_adjust_weekly_trends; }
-    public void setDrilldownAdjustWeeklyTrends(boolean b) { _drilldown_adjust_weekly_trends = b; }    
-    
-    public boolean getOutputGoogleMapsFile() { return _output_google_map; }
-    public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
-    public String getGoogleMapsApiKey() { return _google_maps_api_key; }
-    public void setGoogleMapsApiKey(final String api_key) { _google_maps_api_key = api_key; }
-    
-    public int getMinimumCasesHighRateClusters() { return _minimum_high_rate_cases; }
-    public void setMinimumCasesHighRateClusters(int u) { _minimum_high_rate_cases = u; }
-
-    public boolean getRiskLimitHighClusters() {return _risk_limit_high_clusters;}
-    public void setRiskLimitHighClusters(boolean b) {_risk_limit_high_clusters = b;}
-    public double getRiskThresholdHighClusters() {return _risk_threshold_high_clusters;}
-    public void setRiskThresholdHighClusters(double d) {_risk_threshold_high_clusters = d;}
-    
-    public boolean getRiskLimitLowClusters() {return _risk_limit_low_clusters;}
-    public void setRiskLimitLowClusters(boolean b) {_risk_limit_low_clusters = b;}
-    public double getRiskThresholdLowClusters() {return _risk_threshold_low_clusters;}
-    public void setRiskThresholdLowClusters(double d) {_risk_threshold_low_clusters = d;}
-    
-    public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
-    public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
-
-    public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
-    public void clearInputSourceSettings() {_input_sources.clear();}
-    public Vector<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
-    
-    public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
-    public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
-    public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
-    public void setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
-    public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
-    public void setTemporalGraphReportType(int iOrdinal) {
-        try { _temporal_graph_report_type = TemporalGraphReportType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
-    }        
-    public int getMinimumTemporalClusterSize() {return _minimum_temporal_cluster_size;}
-    public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
-    public boolean getOutputShapeFiles() {return _output_shapefiles;}
-    public void setOutputShapeFiles(boolean b) {_output_shapefiles = b;}    
-    public boolean getLaunchMapViewer() {return _launch_map_viewer;}
-    public void setLaunchMapViewer(boolean b) {_launch_map_viewer = b;}
-    public boolean getIncludeLocationsKML() {return _include_locations_kml;}
-    public void setIncludeLocationsKML(boolean b) {_include_locations_kml = b;}
-    public boolean getCompressClusterKML() {return _compress_kml_output;}
-    public void setCompressClusterKML(boolean b) {_compress_kml_output = b;}
-    public boolean getOutputKMLFile() {return _output_kml;}
-    public void setOutputKMLFile(boolean b) {_output_kml = b;}
-    public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
-    public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}
-    public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
-    public PValueReportingType GetPValueReportingType() {return gePValueReportingType;}
-    public int GetEarlyTermThreshold() {return giEarlyTermThreshold;}
-    public void SetEarlyTermThreshold(int i) {giEarlyTermThreshold = i;}
-    public boolean GetReportGumbelPValue() {return gbReportGumbelPValue;}
-    public void SetReportGumbelPValue(boolean b) {gbReportGumbelPValue = b;}
-    /** Add ellipsoid shape to collection of spatial shapes evaluated. */
-    public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvEllipseShapes.setSize(0);
-        gvEllipseShapes.add(Double.valueOf(dShape));
-    }
-    /** Add ellipsoid rotations to collection of spatial shapes evaluated. */
-    public void AddEllipsoidRotations(int iRotations, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvEllipseRotations.setSize(0);
-        gvEllipseRotations.add(Integer.valueOf(iRotations));
-    }
-    /** Add observable region to definition to collection. */
-    public void ClearObservableRegions() {
-        gvObservableRegions.setSize(0);
-    }
-    /** Add observable region to definition to collection. */
-    public void AddObservableRegion(final String sRegions, int iIndex, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvObservableRegions.setSize(0);
-        if (iIndex + 1 > gvObservableRegions.size())
-            gvObservableRegions.setSize(iIndex + 1);
-        gvObservableRegions.setElementAt(sRegions, iIndex);
     }
 
     @Override
@@ -561,8 +464,119 @@ public class Parameters implements Cloneable {
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
         if (_network_file_purpose != rhs._network_file_purpose) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
+        if (_casefile_includes_linedata != rhs._casefile_includes_linedata) return false;
+        if (_casefile_includes_header != rhs._casefile_includes_header) return false;
+        if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
+        if (!_kml_event_group_attribute.equals(rhs._kml_event_group_attribute)) return false;
+        if (!_event_cache_filename.equals(rhs._event_cache_filename)) return false;
         
         return true;
+    }
+    
+    public boolean getCasefileIncludesLineData() { return _casefile_includes_linedata; }
+    public void setCasefileIncludesLineData(boolean b) { _casefile_includes_linedata = b; }
+    public boolean getCasefileIncludesHeader() { return _casefile_includes_header; }
+    public void setCasefileIncludesHeader(boolean b) { _casefile_includes_header = b; }
+    public boolean getGroupLinelistEventsKML() { return _group_kml_linelist_attribute; }
+    public void setGroupLinelistEventsKML(boolean b) { _group_kml_linelist_attribute = b; }
+    public String getKmlEventGroupAttribute() { return _kml_event_group_attribute; }
+    public void setKmlEventGroupAttribute(String s) { _kml_event_group_attribute = s; }
+    public String getEventCacheFileName() { return _event_cache_filename;}
+    public void setEventCacheFileName(String s) { _event_cache_filename = s;}    
+    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
+    public void setProspectiveFrequencyType(int iOrdinal) {
+        try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _prospective_frequency.values()); }
+    }
+    public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
+    public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
+    public String getLocationsNetworkFilename() { return _locations_network_filename; }
+    public void setLocationsNetworkFilename(final String s) { _locations_network_filename = s; }
+    public NetworkPurposeType getNetworkFilePurpose() { return _network_file_purpose; }
+    public void setNetworkFilePurpose(int iOrdinal) {
+        try { _network_file_purpose = NetworkPurposeType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _network_file_purpose.values()); }
+    }
+    public boolean getPerformStandardDrilldown() { return _perform_standard_drilldown; }
+    public void setPerformStandardDrilldown(boolean b) { _perform_standard_drilldown = b; }
+    public boolean getPerformBernoulliDrilldown() { return _perform_bernoulli_drilldown; }
+    public void setPerformBernoulliDrilldown(boolean b) { _perform_bernoulli_drilldown = b; }
+    public int getDrilldownMinimumLocationsCluster() { return _drilldown_minimum_locations; }
+    public void setDrilldownMinimumLocationsCluster(int u) { _drilldown_minimum_locations = u; }
+    public int getDrilldownMinimumCasesCluster() { return _drilldown_minimum_cases; }
+    public void setDrilldownMinimumCasesCluster(int u) { _drilldown_minimum_cases = u; }
+    public double getDrilldownPvalueCutoff() { return _drilldown_pvalue_cutoff; }
+    public void setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+    public boolean getDrilldownAdjustWeeklyTrends() { return _drilldown_adjust_weekly_trends; }
+    public void setDrilldownAdjustWeeklyTrends(boolean b) { _drilldown_adjust_weekly_trends = b; }    
+    public boolean getOutputGoogleMapsFile() { return _output_google_map; }
+    public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
+    public String getGoogleMapsApiKey() { return _google_maps_api_key; }
+    public void setGoogleMapsApiKey(final String api_key) { _google_maps_api_key = api_key; }
+    public int getMinimumCasesHighRateClusters() { return _minimum_high_rate_cases; }
+    public void setMinimumCasesHighRateClusters(int u) { _minimum_high_rate_cases = u; }
+    public boolean getRiskLimitHighClusters() {return _risk_limit_high_clusters;}
+    public void setRiskLimitHighClusters(boolean b) {_risk_limit_high_clusters = b;}
+    public double getRiskThresholdHighClusters() {return _risk_threshold_high_clusters;}
+    public void setRiskThresholdHighClusters(double d) {_risk_threshold_high_clusters = d;}
+    public boolean getRiskLimitLowClusters() {return _risk_limit_low_clusters;}
+    public void setRiskLimitLowClusters(boolean b) {_risk_limit_low_clusters = b;}
+    public double getRiskThresholdLowClusters() {return _risk_threshold_low_clusters;}
+    public void setRiskThresholdLowClusters(double d) {_risk_threshold_low_clusters = d;}
+    public boolean getOutputCartesianGraph() {return _output_cartesian_graph;}
+    public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
+    public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
+    public void clearInputSourceSettings() {_input_sources.clear();}
+    public Vector<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
+    public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
+    public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
+    public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
+    public void setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
+    public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
+    public void setTemporalGraphReportType(int iOrdinal) {
+        try { _temporal_graph_report_type = TemporalGraphReportType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
+    }        
+    public int getMinimumTemporalClusterSize() {return _minimum_temporal_cluster_size;}
+    public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
+    public boolean getOutputShapeFiles() {return _output_shapefiles;}
+    public void setOutputShapeFiles(boolean b) {_output_shapefiles = b;}    
+    public boolean getLaunchMapViewer() {return _launch_map_viewer;}
+    public void setLaunchMapViewer(boolean b) {_launch_map_viewer = b;}
+    public boolean getIncludeLocationsKML() {return _include_locations_kml;}
+    public void setIncludeLocationsKML(boolean b) {_include_locations_kml = b;}
+    public boolean getCompressClusterKML() {return _compress_kml_output;}
+    public void setCompressClusterKML(boolean b) {_compress_kml_output = b;}
+    public boolean getOutputKMLFile() {return _output_kml;}
+    public void setOutputKMLFile(boolean b) {_output_kml = b;}
+    public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
+    public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}
+    public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
+    public PValueReportingType GetPValueReportingType() {return gePValueReportingType;}
+    public int GetEarlyTermThreshold() {return giEarlyTermThreshold;}
+    public void SetEarlyTermThreshold(int i) {giEarlyTermThreshold = i;}
+    public boolean GetReportGumbelPValue() {return gbReportGumbelPValue;}
+    public void SetReportGumbelPValue(boolean b) {gbReportGumbelPValue = b;}
+    /** Add ellipsoid shape to collection of spatial shapes evaluated. */
+    public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
+        if (bEmptyFirst) gvEllipseShapes.setSize(0);
+        gvEllipseShapes.add(Double.valueOf(dShape));
+    }
+    /** Add ellipsoid rotations to collection of spatial shapes evaluated. */
+    public void AddEllipsoidRotations(int iRotations, boolean bEmptyFirst) {
+        if (bEmptyFirst) gvEllipseRotations.setSize(0);
+        gvEllipseRotations.add(Integer.valueOf(iRotations));
+    }
+    /** Add observable region to definition to collection. */
+    public void ClearObservableRegions() {
+        gvObservableRegions.setSize(0);
+    }
+    /** Add observable region to definition to collection. */
+    public void AddObservableRegion(final String sRegions, int iIndex, boolean bEmptyFirst) {
+        if (bEmptyFirst) gvObservableRegions.setSize(0);
+        if (iIndex + 1 > gvObservableRegions.size())
+            gvObservableRegions.setSize(iIndex + 1);
+        gvObservableRegions.setElementAt(sRegions, iIndex);
     }
     public boolean getCalculateOliveirasF() {return _calculate_oliveira_f;}
     public void setCalculateOliveirasF(boolean b) {_calculate_oliveira_f = b;}
@@ -961,10 +975,6 @@ public class Parameters implements Cloneable {
     public void SetTimeTrendConvergence(double dTimeTrendConvergence) {gdTimeTrendConverge = dTimeTrendConvergence;}
     public void SetUseAdjustmentForRelativeRisksFile(boolean b) {gbUseAdjustmentsForRRFile = b;}
     public void SetVersion(final CreationVersion vVersion) {gCreationVersion = vVersion;}
-    /**
-     * @param iInvalidOrdinal -- index of ordinal position that is out of range
-     * @param e               -- array of Enum that ordinal failed with
-     */
     public void ThrowOrdinalIndexException(int iInvalidOrdinal, Enum[] e) {
         throw new RuntimeException("Ordinal index " + iInvalidOrdinal + " out of range [" +  e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");
     }

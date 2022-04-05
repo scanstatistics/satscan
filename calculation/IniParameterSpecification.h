@@ -60,6 +60,7 @@ class IniParameterSpecification {
     SectionInfo                 _non_eucledian_section;
     SectionInfo                 _spatial_neighbors_section;
     SectionInfo                 _locations_network_section;
+    SectionInfo                 _linelist_section;
     SectionInfo                 _spatial_window_section;
     SectionInfo                 _temporal_window_section;
     SectionInfo                 _cluster_restrictions_section;
@@ -93,6 +94,7 @@ class IniParameterSpecification {
     static const char         * NeighborsFile;
     static const char         * SpatialNeighbors;
     static const char         * LocationsNetwork;
+    static const char         * LineList;
     static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
@@ -130,6 +132,7 @@ class IniParameterSpecification {
     static const char         * SourceSkip;
     static const char         * SourceFirstRowHeader;
     static const char         * SourceFieldMap;
+    static const char         * SourceLinelistFieldMap;
     static const char         * SourceFieldMapShapeX;
     static const char         * SourceFieldMapShapeY;
     static const char         * SourceFieldMapOneCount;
@@ -159,6 +162,7 @@ class IniParameterSpecification {
     void                        Build_9_6_x_ParameterList();
     void                        Build_9_7_x_ParameterList();
     void                        Build_10_0_x_ParameterList();
+    void                        Build_10_1_x_ParameterList();
 
    public:
      IniParameterSpecification();

@@ -239,6 +239,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case NETWORK_PURPOSE              : return "purpose of locations network file (0=Coordinates File Override, 1=Network Definition)";
       case PROSPECTIVE_FREQ_TYPE        : return "frequency of prospective analyses type (0=Same Time Aggregation, 1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)";
       case PROSPECTIVE_FREQ             : return "frequency of prospective analyses  (positive integer)";
+      case LINELIST_CASEFILE            : return "whether case file contains line list data (positive integer (y/n)";
+      case LL_HEADER_CASEFILE           : return "whether case file contains line list header row (positive integer (y/n)";
+      case KML_EVENT_GROUP              : return "indication whether to include linelist events in kml output, grouped (y/n)";
+      case KML_EVENT_GROUP_BY           : return "label of line-list colummn that should be used to group events in KML file";
+      case LL_EVENT_CACHE_FILE          : return "file to store events ids";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -423,6 +428,11 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case NETWORK_PURPOSE              : return AsString(s, gParameters.getNetworkFilePurpose());
       case PROSPECTIVE_FREQ_TYPE        : return AsString(s, gParameters.getProspectiveFrequencyType());
       case PROSPECTIVE_FREQ             : return AsString(s, gParameters.getProspectiveFrequency());
+      case LINELIST_CASEFILE            : return AsString(s, gParameters.getCasefileIncludesLineData());
+      case LL_HEADER_CASEFILE           : return AsString(s, gParameters.getCasefileIncludesHeader());
+      case KML_EVENT_GROUP              : return AsString(s, gParameters.getGroupLinelistEventsKML());
+      case KML_EVENT_GROUP_BY           : s = gParameters.getKmlEventGroupAttribute().c_str(); return s;
+      case LL_EVENT_CACHE_FILE          : s = gParameters.getEventCacheFileName().c_str(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -842,6 +852,11 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PROSPECTIVE_FREQ_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, SAME_TIMEAGGREGATION, YEARLY);
                                           gParameters.setProspectiveFrequencyType((ProspectiveFrequency)iValue); break;
       case PROSPECTIVE_FREQ             : gParameters.setProspectiveFrequency(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case LINELIST_CASEFILE            : gParameters.setCasefileIncludesLineData(ReadBoolean(sParameter, eParameterType)); break;
+      case LL_HEADER_CASEFILE           : gParameters.setCasefileIncludesHeader(ReadBoolean(sParameter, eParameterType)); break;
+      case KML_EVENT_GROUP              : gParameters.setGroupLinelistEventsKML(ReadBoolean(sParameter, eParameterType)); break;
+      case KML_EVENT_GROUP_BY           : gParameters.setKmlEventGroupAttribute(sParameter.c_str()); break;
+      case LL_EVENT_CACHE_FILE          : gParameters.setEventCacheFileName(sParameter.c_str(), true); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {
@@ -854,14 +869,14 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
 }
 
 /** Attempts to write values to InputSource. */
-CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameters::InputSource & source,
-                                                                      const std::string& typeStr, 
-                                                                      const std::string& mapStr, 
-                                                                      const std::string& delimiterStr, 
-                                                                      const std::string& groupStr, 
+CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameters::InputSource & source, BasePrint& PrintDirection,
+                                                                      const std::string& typeStr,
+                                                                      const std::string& mapStr,
+                                                                      const std::string& delimiterStr,
+                                                                      const std::string& groupStr,
                                                                       const std::string& skipStr,
                                                                       const std::string& headerStr,
-                                                                      BasePrint& PrintDirection) {
+                                                                      const std::string& llmapStr) {
     try {
         // set defaults
         source.setSourceType(CSV);
@@ -870,6 +885,7 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
         source.setGroup("\"");
         source.setSkip(0);
         source.setFirstRowHeader(false);
+        source.clearLinelistFieldsMap();
 
         // source file type
         if (typeStr.size()) {
@@ -935,6 +951,12 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
             }
             source.setFirstRowHeader(rowheader);
         }
+        // line list fields map
+        if (llmapStr.size()) {
+            LineListFieldMapContainer_t fields_map;
+            parseLinelistStr(llmapStr, fields_map);
+            source.setLinelistFieldsMap(fields_map);
+        }
     } catch (resolvable_error &x) {
         gbReadStatusError = true;
         PrintDirection.Printf(x.what(), BasePrint::P_PARAMERROR);
@@ -943,6 +965,30 @@ CParameters::InputSource & AbtractParameterFileAccess::setInputSource(CParameter
         throw;
     }
     return source;
+}
+
+/* Pardses the line list parameters string to obtain LineListFieldMapContainer_t. */
+void AbtractParameterFileAccess::parseLinelistStr(const std::string& llmapStr, LineListFieldMapContainer_t& fields_map) {
+    int column, lltype;
+    boost::escaped_list_separator<char> separator('\\', ',', '\"');
+    boost::tokenizer<boost::escaped_list_separator<char> > mappings(llmapStr, separator);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr = mappings.begin(); itr != mappings.end(); ++itr) {
+        std::string token(*itr);
+        std::vector<std::string> values;
+        boost::escaped_list_separator<char> itemsep('\\', ':', '\"');
+        boost::tokenizer<boost::escaped_list_separator<char> > llmap(trimString(token), itemsep);
+        for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr = llmap.begin(); itr != llmap.end(); ++itr) {
+            values.push_back(*itr);
+            trimString(values.back());
+            if (values.back().size() == 0)
+                throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
+        }
+        if (values.size() != 3)
+            throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
+        if (!string_to_type<int>(values.front().c_str(), column) || !string_to_type<int>((values.begin() + 1)->c_str(), lltype))
+            throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
+        fields_map.insert(std::make_pair(static_cast<unsigned int>(column), boost::tuple<LinelistType, std::string>(static_cast<LinelistType>(lltype), values.back())));
+    }
 }
 
 bool AbtractParameterFileAccess::Read(std::stringstream& stream) {

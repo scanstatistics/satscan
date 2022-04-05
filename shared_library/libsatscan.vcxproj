@@ -287,6 +287,7 @@
     <ClCompile Include="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\SVTTData.cpp" />
     <ClCompile Include="..\calculation\satscan_data\Tracts.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataDemographics.cpp" />
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\ExponentialRandomizer.cpp" />
@@ -459,6 +460,7 @@
     <ClInclude Include="..\calculation\satscan_data\DataSetReader.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSetWriter.h" />
     <ClInclude Include="..\calculation\satscan_data\DataSource.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataDemographics.h" />
     <ClInclude Include="..\calculation\utility\DateStringParser.h" />
     <ClInclude Include="..\calculation\satscan_data\ExponentialDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\GridTractCoordinates.h" />

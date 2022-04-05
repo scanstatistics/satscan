@@ -20,10 +20,15 @@ public class ImportVariable implements Cloneable {
     private String _help_text=null;
     private boolean _showing=true;
     private String _default=null;
+    private String _linelist_meta=null;
 
     public ImportVariable() {}
 
-    public ImportVariable(String display_name, int variable_idx, boolean required, String help_text, String default_value) {
+    public ImportVariable(String display_name, int variable_idx, boolean required) {
+        this(display_name, variable_idx, required, null, null, null);
+    }    
+    
+    public ImportVariable(String display_name, int variable_idx, boolean required, String help_text, String default_value, String linelist_meta) {
         _variable_required = required;
         _variable_name = display_name;
         _variable_index = variable_idx;
@@ -33,6 +38,7 @@ public class ImportVariable implements Cloneable {
             _help_text = help_text;
         }
         _default = default_value;
+        _linelist_meta = linelist_meta;
     }
 
     @Override
@@ -100,5 +106,9 @@ public class ImportVariable implements Cloneable {
 
     public final String getVariableName() {
         return _variable_name;
+    }
+    
+    public final String getLinelistMeta() {
+        return _linelist_meta;
     }
 }

@@ -141,50 +141,36 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
 }
 
 DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
-  short   uContinuousVariableIndex=3;
-  
-  try {
-    //read and validate that tract identifier exists in coordinates file
-    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
-    if (eStatus != DataSetHandler::Accepted) return eStatus;
-    //read and validate count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
-         gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
-                       "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
-                       Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
-                       gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
-         return DataSetHandler::Rejected;
-      } 
-      if (nCount == 0) return DataSetHandler::Ignored;
+    try {
+        //read and validate that tract identifier exists in coordinates file
+        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCountDate(Source, nDate); // read and validate date
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        // read continuous variable
+        short uContinuousVariableIndex = 3;
+        uContinuousVariableIndex = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex);
+        if (!Source.GetValueAt(uContinuousVariableIndex)) {
+            gPrint.Printf(
+                "Error: Record %d of the %s is missing the continuous variable.\n",
+                BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
+            return DataSetHandler::Rejected;
+        }
+        if (!string_to_type<measure_t>(Source.GetValueAt(uContinuousVariableIndex), tContinuousVariable)) {
+            gPrint.Printf(
+                "Error: The continuous variable value '%s' in record %ld, of %s, is not a decimal number.\n",
+                BasePrint::P_READERROR, Source.GetValueAt(uContinuousVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
+            return DataSetHandler::Rejected;
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("RetrieveCaseRecordData()","RankDataSetHandler");
+        throw;
     }
-    else {
-      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
-    if (eDateStatus != DataSetHandler::Accepted)
-      return eDateStatus;
-
-    // read continuous variable
-    uContinuousVariableIndex = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex);
-    if (!Source.GetValueAt(uContinuousVariableIndex)) {
-      gPrint.Printf("Error: Record %d of the %s is missing the continuous variable.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    if (!string_to_type<measure_t>(Source.GetValueAt(uContinuousVariableIndex), tContinuousVariable)) {
-       gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a decimal number.\n",
-                     BasePrint::P_READERROR, Source.GetValueAt(uContinuousVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RetrieveCaseRecordData()","RankDataSetHandler");
-    throw;
-  }
-  return DataSetHandler::Accepted;
+    return DataSetHandler::Accepted;
 }
 
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/

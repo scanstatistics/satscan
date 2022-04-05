@@ -6,8 +6,11 @@
 #include "SimulationVariables.h"
 #include "MostLikelyClustersContainer.h"
 #include "GisUtils.h"
+#include "RandomNumberGenerator.h"
+#include "RandomDistribution.h"
 
 class CSaTScanData;
+class DataDemographicsProcessor;
 
 class BaseClusterKML {
   protected:      
@@ -20,6 +23,7 @@ class BaseClusterKML {
       bool _visibleLocations;
       bool _separateLocationsKML;
       mutable boost::dynamic_bitset<> _cluster_locations;
+      mutable RandomNumberGenerator _rng;
 
       unsigned int addClusters(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset=0);
       void createKMZ(const file_collection_t& fileCollection, bool removefiles=true);
@@ -28,7 +32,9 @@ class BaseClusterKML {
       std::string & getClusterExtendedData(const CCluster& cluster, int iCluster, std::string& buffer) const;
       std::string & getClusterStyleTags(const CCluster& cluster, int iCluster, std::string& styleString, bool isHighRate) const;
       std::string & getStyleColor(bool isHighRate, bool fullOpacity, std::string& buffer) const;
-      void writeCloseBlockKML(std::ofstream& outKML) const;
+      std::string getRandomKmlColor() const;
+      std::string convertKmlColorToHTMLColor(const std::string& kmlColor) const;
+      std::string toHex(const std::string& data) const;
       void writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster, const SimulationVariables& simVars) const;
       void writeOpenBlockKML(std::ofstream& outKML) const;
 
@@ -49,6 +55,7 @@ public:
     virtual ~ClusterKML() {}
 
     void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars);
+    void add(const DataDemographicsProcessor& demographics);
     void finalize();
 };
 //******************************************************************************

@@ -35,7 +35,7 @@ bool                            IsLeapYear(UInt year);
 char                          * JulianToChar(char* szDateString, Julian JNum);
 void                            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
 std::string                   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep="/", bool isEndDate=false, bool asSeasonal = false);
-std::string                     gregorianToString(boost::gregorian::date dateObj);
+std::string                     gregorianToString(boost::gregorian::date dateObj, const char * format= "%Y/%m/%d");
 boost::gregorian::date          gregorianFromString(const std::string& s);
 void                            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 Julian                          MDYToJulian(UInt m, UInt d, UInt y);

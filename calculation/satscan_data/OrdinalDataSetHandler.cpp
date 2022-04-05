@@ -148,53 +148,40 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
 DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, std::string& categoryTypeLabel) {
-  short   iCategoryIndex;
-
-  try {
-    //read and validate that tract identifier exists in coordinates file
-    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
-    if (eStatus != DataSetHandler::Accepted) return eStatus;
-    //read case count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
-         gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
-                       "       Case count must be an integer in range 0 - %u.\n", BasePrint::P_READERROR,
-                       Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
-                       gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
-         return DataSetHandler::Rejected;
-      } 
-      if (nCount == 0) return DataSetHandler::Ignored;    
-    } else {
-      gPrint.Printf("Error: Record %ld in the %s does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-
-    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
-    if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
-    // read ordinal category
-    iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
-    if (!Source.GetValueAt(iCategoryIndex)) {
-      gPrint.Printf("Error: Record %d of the %s is missing category type field.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    categoryTypeLabel = Source.GetValueAt(iCategoryIndex);
-    if (gParameters.GetProbabilityModelType() == ORDINAL) {
-        /* The ordinal model requires the category type to be a decimal number. */
-        double ordinal;
-        if (!string_to_type<double>(categoryTypeLabel.c_str(), ordinal)) {
-            gPrint.Printf("Error: The category type '%s' in record %ld of the %s is not a decimal number.\n",
-                          BasePrint::P_READERROR, categoryTypeLabel.c_str(), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+    try {
+        //read and validate that tract identifier exists in coordinates file
+        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        eStatus = RetrieveCountDate(Source, nDate); // read and validate date
+        if (eStatus != DataSetHandler::Accepted) return eStatus;
+        // read ordinal category
+        short iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
+        if (!Source.GetValueAt(iCategoryIndex)) {
+            gPrint.Printf(
+                "Error: Record %d of the %s is missing category type field.\n",
+                BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+            );
             return DataSetHandler::Rejected;
         }
+        categoryTypeLabel = Source.GetValueAt(iCategoryIndex);
+        if (gParameters.GetProbabilityModelType() == ORDINAL) {
+            /* The ordinal model requires the category type to be a decimal number. */
+            double ordinal;
+            if (!string_to_type<double>(categoryTypeLabel.c_str(), ordinal)) {
+                gPrint.Printf(
+                    "Error: The category type '%s' in record %ld of the %s is not a decimal number.\n",
+                    BasePrint::P_READERROR, categoryTypeLabel.c_str(), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+                );
+                return DataSetHandler::Rejected;
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("RetrieveCaseRecordData()","OrdinalDataSetHandler");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("RetrieveCaseRecordData()","OrdinalDataSetHandler");
-    throw;
-  }
-  return DataSetHandler::Accepted;
+    return DataSetHandler::Accepted;
 }
 
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/

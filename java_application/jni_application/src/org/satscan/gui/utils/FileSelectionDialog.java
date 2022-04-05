@@ -186,6 +186,10 @@ public class FileSelectionDialog {
                     case Case:
                         settingsFrame.setPrecisionOfTimesControl(wizard.getDateFieldImported() ? (settingsFrame.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.NONE ? Parameters.DatePrecisionType.YEAR : settingsFrame.getPrecisionOfTimesControlType()) : Parameters.DatePrecisionType.NONE);
                         settingsFrame.setModelControl(wizard.getModelControlType());
+                        // Update the checkboxes on the linelist tab if we executed import with line list options and first data set file.
+                        if (wizard.getExecutedImport() && wizard.caseContainsLinelistMappings() && inputSourceSettings.getDataSetIndex() == 1)
+                            settingsFrame.getAdvancedParameterInternalFrame().setLinelistImported();
+                        settingsFrame.getAdvancedParameterInternalFrame().enableCaseFileLinelistGroup();
                         break;
                     case Control:
                         settingsFrame.setPrecisionOfTimesControl(wizard.getDateFieldImported() ? (settingsFrame.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.NONE ? Parameters.DatePrecisionType.YEAR : settingsFrame.getPrecisionOfTimesControlType()) : Parameters.DatePrecisionType.NONE);

@@ -175,6 +175,11 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case NETWORK_PURPOSE                    : return "purpose of locations network file (line 139)";
     case PROSPECTIVE_FREQ_TYPE              : return "frequency of prospective analyses type (line 140)";
     case PROSPECTIVE_FREQ                   : return "frequency of prospective analyses (line 141)";
+    case LINELIST_CASEFILE                  : return "whether case file contains line list data (positive integer (line 142)";
+    case LL_HEADER_CASEFILE                 : return "whether case file contains line list header row (positive integer (line 143)";
+    case KML_EVENT_GROUP                    : return "indication whether to include linelist events in kml output, grouped (line 144)";
+    case KML_EVENT_GROUP_BY                 : return "label of line-list colummn that should be used to group events in KML (line 145)";
+    case LL_EVENT_CACHE_FILE                : return "file to store events ids (line 146)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

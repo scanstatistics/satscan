@@ -4,7 +4,11 @@
  */
 package org.satscan.importer;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
+import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.app.UnknownEnumException;
 
 /**
@@ -14,6 +18,7 @@ import org.satscan.app.UnknownEnumException;
 public class InputSourceSettings implements Cloneable  {
     public enum SourceDataFileType {CSV, dBase, Shapefile, Excel97_2003, Excel};
     public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR, NETWORK, Neighbors, MetaLocations, AlternativeHypothesis};
+    public enum LinelistType       {EVENT_ID, EVENT_COORD_X, EVENT_COORD_Y, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA};
     
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;
@@ -24,6 +29,7 @@ public class InputSourceSettings implements Cloneable  {
     private String _grouper="\"";
     private int _skip_lines=0;
     private boolean _first_row_headers=false;
+    private Map<Integer, Pair<LinelistType, String>> _linelist_field_map = new LinkedHashMap<>();
         
     public InputSourceSettings() {}
     public InputSourceSettings(InputFileType filetype) {
@@ -39,6 +45,8 @@ public class InputSourceSettings implements Cloneable  {
         _grouper = inputsource._grouper;
         _skip_lines = inputsource._skip_lines;
         _first_row_headers = inputsource._first_row_headers;
+        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : inputsource.getLinelistFieldMaps().entrySet())
+          _linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());        
     }
     
     public InputSourceSettings clone() throws CloneNotSupportedException {
@@ -46,6 +54,9 @@ public class InputSourceSettings implements Cloneable  {
         iss._mappings = (Vector<String>)_mappings.clone();
         iss._delimiter = new String(_delimiter);
         iss._grouper = new String(_grouper);
+        iss._linelist_field_map = new LinkedHashMap<>();
+        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : getLinelistFieldMaps().entrySet())
+          iss._linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());        
         return iss;
     }
     
@@ -57,7 +68,10 @@ public class InputSourceSettings implements Cloneable  {
         _delimiter = other._delimiter;
         _grouper = other._grouper;
         _skip_lines = other._skip_lines;
-        _first_row_headers = other._first_row_headers;        
+        _first_row_headers = other._first_row_headers;
+        _linelist_field_map.clear();
+        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : other.getLinelistFieldMaps().entrySet())
+          _linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());
     }
     
     @Override
@@ -79,7 +93,8 @@ public class InputSourceSettings implements Cloneable  {
             case Excel :
             case Excel97_2003 : break;
            default: throw new UnknownEnumException(_file_type);
-        }                
+        }
+        if (!_linelist_field_map.equals(((InputSourceSettings)_rhs)._linelist_field_map)) return false;
         return true;
     }
     
@@ -111,6 +126,25 @@ public class InputSourceSettings implements Cloneable  {
     public void addFieldMapping(String s) {_mappings.addElement(s);}    
     public void setFieldMaps(Vector<String> v) {_mappings = new Vector<String>(v);}
         
+    public Map<Integer, Pair<LinelistType, String>> getLinelistFieldMaps() {return _linelist_field_map;}
+    public void addLinelistFieldMapping(int column, int iOrdinal, String label) {
+        try { 
+            _linelist_field_map.put(column, Pair.of(LinelistType.values()[iOrdinal], label));
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, LinelistType.values()); }     
+    }
+    public void setLinelsitFieldMaps(Map<Integer, Pair<LinelistType, String>> v) {_linelist_field_map = new HashMap(v);}    
+    public String getLinelistFieldMapsStr() {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : _linelist_field_map.entrySet()) {
+            builder.append(mapEntry.getKey()).append(":").append("\"").append(mapEntry.getValue().getLeft().ordinal()).append("\"");
+            builder.append(":").append(mapEntry.getValue().getRight()).append(",");
+        }
+        String llmapStr = builder.toString();
+        if (llmapStr.endsWith(","))
+            llmapStr = llmapStr.substring(0, llmapStr.length() - 1);
+        return llmapStr;
+    }
+    
     public String getDelimiter() {return _delimiter;}
     public void setDelimiter(String s) {_delimiter = s;}
     
@@ -130,6 +164,7 @@ public class InputSourceSettings implements Cloneable  {
         _delimiter=",";
         _grouper="\"";
         _skip_lines=0;
-        _first_row_headers=false;        
+        _first_row_headers=false;
+        _linelist_field_map.clear();
     }
 }
