@@ -13,7 +13,7 @@ class CSaTScanData;
 class DataDemographicsProcessor;
 
 class BaseClusterKML {
-  protected:      
+  protected:
       typedef std::vector<FileName> file_collection_t;
       static const char * KMZ_FILE_EXT;
       static const char * KML_FILE_EXT;
@@ -44,19 +44,23 @@ class BaseClusterKML {
 };
 
 class ClusterKML : public BaseClusterKML {
-protected:
-    file_collection_t _fileCollection;
-    std::ofstream _kml_out;
-    unsigned int _clusters_written;
-    unsigned int _locations_written;
+    protected:
+        file_collection_t _fileCollection;
+        std::ofstream _kml_out;
+        unsigned int _clusters_written;
+        unsigned int _locations_written;
+        std::vector<std::string> _event_color_defaults;
+        size_t _event_color_offset;
 
-public:
-    ClusterKML(const CSaTScanData& dataHub);
-    virtual ~ClusterKML() {}
+        void add(const DataDemographicsProcessor& demographics, const std::string& group_by);
 
-    void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars);
-    void add(const DataDemographicsProcessor& demographics);
-    void finalize();
+    public:
+        ClusterKML(const CSaTScanData& dataHub);
+        virtual ~ClusterKML() {}
+
+        void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars);
+        void add(const DataDemographicsProcessor& demographics);
+        void finalize();
 };
 //******************************************************************************
 #endif

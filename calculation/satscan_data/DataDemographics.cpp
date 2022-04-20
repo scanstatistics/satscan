@@ -50,9 +50,9 @@ void ContinuousDemographicAttribute::print() const {
 DemographicAttributeSet::DemographicAttributeSet(const LineListFieldMapContainer_t& llmap) {
     for (auto itr = llmap.begin(); itr != llmap.end(); ++itr) {
         switch (itr->second.get<0>()) {
-            case EVENT_ID:
-            case EVENT_COORD_X:
-            case EVENT_COORD_Y:
+            case EVENT_ID: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_ID)); break;
+            case EVENT_COORD_X: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_COORD_X)); break;
+            case EVENT_COORD_Y: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_COORD_Y)); break;
             case GENERAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>())); break;
             case CATEGORICAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->second.get<1>())); break;
             case CONTINUOUS_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->second.get<1>())); break;
@@ -138,17 +138,22 @@ DataDemographicsProcessor::~DataDemographicsProcessor() {
 }
 
 /* Appends data record to temporary cluster file. */
-void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data) {
+void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first) {
     std::ofstream temp_file(_cluster_location_files[clusterIdx].c_str(), std::ios_base::app | std::ios_base::binary);
     std::string buffer;
-    temp_file << (clusterIdx + 1) << "," << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
+    temp_file << (clusterIdx + 1) << ",";
+    if (first) temp_file << (first.get() == clusterIdx ? "Primary" : "Secondary") << ",";
+    temp_file << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
 }
 
 /* Add the header row to the final output file. */
 void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, const LineListFieldMapContainer_t& llmap) {
     std::vector<std::string> v = {"Cluster"};
     for (auto itr : llmap) {
-        if (itr.second.get<0>() == EVENT_ID) v.push_back("New Event");
+        if (itr.second.get<0>() == EVENT_ID) {
+            v.push_back("Cluster Event");
+            v.push_back("New Event");
+        }
         v.push_back(itr.second.get<1>());
     }
     std::string buffer;
@@ -160,8 +165,7 @@ void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, con
 bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataSet) {
     try {
         std::string buffer, buffer2;
-        /* Open case file data source - input source should now have ncessary line-list mappings
-           since they were assigned during initial case file read. */
+        /* Open case file data source - input source should now have ncessary line-list mappings since they were assigned during initial case file read. */
         _handler.gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_handler.gParameters.GetCaseFileName(DataSet.getSetIndex()), _handler.gParameters.getTimestamp(), true),
@@ -199,19 +203,20 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                     applicable.set(cluster_locs.first);
             }
             const char * value = 0;
-            std::vector<std::string> values; bool event_seen = false, is_new_event;
+            std::vector<std::string> values; bool /*event_seen = false,*/ is_new_event;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                 // Retrieve the value to report for this demographic attribute.
                 value = Source->GetValueAtUnmapped(itr->first);
-                values.push_back(value ? value : "");
+                value = value == 0 ? "" : value;
+                values.push_back(value);
                 // Add attribute to data set demographics.
                 _demographics_by_dataset.back().get(itr->second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
-                if (itr->second.get<0>() == EVENT_ID && !event_seen) {
+                if (itr->second.get<0>() == EVENT_ID/* && !event_seen*/) {
                     is_new_event = _existing_event_ids.find(value) == _existing_event_ids.end();
                     values.insert(values.end() - 1, (is_new_event ? "*" : ""));
                     if (is_new_event) _new_event_ids.emplace(value);
-                    event_seen = true; // Mark are seen, in case this event is included in more than one cluster.
+                    /*event_seen = true; // Mark are seen, in case this event is included in more than one cluster.*/
                 }
                 // Add attribute to cluster data set demographics.
                 for (size_t t=0; t < applicable.size(); ++t) {
@@ -225,8 +230,9 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 }
             }
             // Write values to temporary cluster file - depending on geographical overlap, I suppose this could be more than one cluster.
-            for (boost::dynamic_bitset<>::size_type b=applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b))
-                appendLinelistData(static_cast<int>(b), values);
+            boost::optional<int> first(_events_by_dataset.back().get<0>() ? boost::make_optional(applicable.find_first()) : boost::none);
+            for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b))
+                appendLinelistData(static_cast<int>(b), values, first);
         }
         // Create the output file and concatenate cluster data files to it.
         FileName linelist(_parameters.GetOutputFileName().c_str()); // TODO -- should this be made into a AbstractDataFileWriter class?
@@ -261,11 +267,14 @@ void DataDemographicsProcessor::finalize() {
                 BasePrint::P_WARNING, filepath.c_str()
             );
         }
+        _handler.gDataHub.GetPrintDirection().Printf("Writing event ids to file cache.\n", BasePrint::P_STDOUT);
         std::ofstream event_stream;
         event_stream.open(_parameters.getEventCacheFileName().c_str(), std::ios::trunc);
         if (!event_stream) throw resolvable_error("Error: Could not open event cache file '%s'.\n", _parameters.getEventCacheFileName().c_str());
-        for (auto event_id : _existing_event_ids) event_stream << event_id << std::endl;
-        for (auto event_id : _new_event_ids) event_stream << event_id << std::endl;
+        for (auto const&event_id : _existing_event_ids)
+            event_stream << event_id << std::endl;
+        for (auto const&event_id : _new_event_ids)
+            event_stream << event_id << std::endl;
         event_stream.close();
     }
 }

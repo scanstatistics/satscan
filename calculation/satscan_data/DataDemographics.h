@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "SaTScan.h"
 #include <boost/dynamic_bitset.hpp>
+#include <boost/optional.hpp>
+#include <boost/container/flat_set.hpp>
 
 class DemographicAttribute {
     protected:
@@ -20,12 +22,16 @@ class DemographicAttribute {
 };
 
 class GeneralDemographicAttribute : public DemographicAttribute {
+    private:
+        LinelistType _true_type;
+
     public:
-        GeneralDemographicAttribute(const std::string& s) : DemographicAttribute(s) {}
+        GeneralDemographicAttribute(const std::string& s) : DemographicAttribute(s), _true_type(GENERAL_DATA) {}
+        GeneralDemographicAttribute(const std::string& s, LinelistType subtype) : DemographicAttribute(s), _true_type(subtype) {}
         virtual ~GeneralDemographicAttribute() {}
 
         virtual void add(const std::string& value, unsigned int times) {}
-        virtual LinelistType gettype() const { return GENERAL_DATA; }
+        virtual LinelistType gettype() const { return _true_type; }
         virtual void print() const {}
 };
 
@@ -92,13 +98,13 @@ class DataDemographicsProcessor{
         // cluster demographics <mlc cluster index, demograpghics set>
         std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset;
         // event ids from previous analyses
-        std::set<std::string> _existing_event_ids;
+        boost::container::flat_set<std::string> _existing_event_ids;
         // new event ids
-        std::set<std::string> _new_event_ids;
+        boost::container::flat_set<std::string> _new_event_ids;
         // cluster temporary filenames <mlc cluster index, temporary filename>
         std::map<int, std::string> _cluster_location_files;
 
-        void appendLinelistData(int clusterIdx, std::vector<std::string>& data);
+        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first = boost::none);
         void createHeadersFile(std::ofstream& linestream, const LineListFieldMapContainer_t& llmap);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
 
@@ -110,7 +116,7 @@ class DataDemographicsProcessor{
         void finalize();
         const DemographicAttributeSet& getDataSetDemographics(unsigned int idx=0) const { return _demographics_by_dataset.at(idx); }
         boost::tuple<bool, bool> getEventStatus(unsigned int idx = 0) const { return _events_by_dataset.at(idx); }
-        const std::set<std::string>& getNewEventIds() const { return _new_event_ids; }
+        const boost::container::flat_set<std::string>& getNewEventIds() const { return _new_event_ids; }
         bool isNewEvent(const std::string& s) const { return _new_event_ids.find(s) != _new_event_ids.end(); }
         void print();
         void process();

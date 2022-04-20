@@ -317,7 +317,11 @@ unsigned int BaseClusterKML::addClusters(const MostLikelyClustersContainer& clus
 
 /////////////////////// ClusterKML //////////////////////////////
 
-ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _clusters_written(0), _locations_written(0){
+ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _clusters_written(0), _locations_written(0), _event_color_offset(0) {
+    _event_color_defaults = { // seperate colors for each group.
+        "ff0c8ff7", "ffb2834d", "ff00ccf9", "ff86bc73", "ff4016ca", "ffc1c34d", "ff9ed0d1", "ff4f493c", "ff53dbc5",
+        "ff25306c", "ff5a6666", "ff476c10", "ff5979f2", "ff4d7cb2", "ff310a58", "ff0c9fa1", "ffa3d0e1"
+    };
     _fileCollection.resize(_fileCollection.size() + 1);
     _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
     _fileCollection.back().setExtension(KML_FILE_EXT);
@@ -346,8 +350,29 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
     _clusters_written += addClusters(clusters, simVars, _kml_out, _fileCollection, _clusters_written);
 }
 
-/* Adds event level data to the KML output - if case data defines line-list data and event-id information. */
+/* Adds event level data to the KML output for all event attributes. */
 void ClusterKML::add(const DataDemographicsProcessor& demographics) {
+    std::vector<std::string> g_values; // Get the values specified by user.
+    csv_string_to_typelist<std::string>(_dataHub.GetParameters().getKmlEventGroupAttribute().c_str(), g_values);
+    std::set<std::string> grouping_by; // All the columns which we'll be generating an events kml file.
+    for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
+        if (demographic.second->gettype() <= EVENT_COORD_Y) continue;
+        if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
+        grouping_by.emplace(demographic.first);
+    }
+    if (grouping_by.size() == 0) {
+        _dataHub.GetPrintDirection().Printf(
+            "No characteristics to group by. Event placements will not be added to KML output.\n",
+            BasePrint::P_WARNING
+        );
+        return;
+    }
+    for (auto const&group_by : grouping_by)
+        add(demographics, group_by);
+}
+
+/* Adds event level data to the KML output - if case data defines line-list data and event-id information. */
+void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::string& group_by) {
     const CParameters& parameters = _dataHub.GetParameters();
     // First test whether any of the data sets report event-id level and it's coordinates.
     bool anySet = false;
@@ -360,7 +385,6 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         return; // nothing to report in terms of event level data
     }
     // Find the grouping charateristic in mapping.
-    std::string group_by = parameters.getKmlEventGroupAttribute();
     bool found = false;
     for (auto demographic: demographics.getDataSetDemographics().getAttributes()) {
         if (demographic.second->gettype() <= EVENT_COORD_Y) continue;
@@ -372,11 +396,24 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         _dataHub.GetPrintDirection().Printf("Unable to find grouping charateristic '%s' in line list.\nEvent placements will not be added to KML output.\n", BasePrint::P_WARNING, group_by.c_str());
         return;
     }
+    /* Define the date range of case records to report. For prospective, we don't want the baseline events. 
+       Uncertain what to do for retrospective or flexable window - postponing decision and showing all for now. */
+    Julian lowestDate = _dataHub.GetTimeIntervalStartTimes().front();
+    if (parameters.GetIsProspectiveAnalysis()) {
+        lowestDate = _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex());
+        std::string buffer;
+        DatePrecisionType eDatePrint = (parameters.GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
+        //printf("Cluster window range: %s to %s\n", JulianToString(buffer, lowestDate, eDatePrint, "/").c_str(), JulianToString(buffer, _dataHub.GetTimeIntervalStartTimes().back() - 1, eDatePrint, "/").c_str());
+    }
     std::string buffer, buffer2;
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
+    std::string file_name = group_by;
+    std::transform(std::begin(group_by), std::end(group_by), std::begin(file_name), [](auto ch) {
+        return (ch == '<' || ch == '>' || ch == ':' || ch == '"' || ch == '/' || ch == '\\' || ch == '|' || ch == '?' || ch == '*' || ch == ' ') ? '_' : ch;
+    });
     _fileCollection.resize(_fileCollection.size() + 1);
     _fileCollection.back().setFullPath(parameters.GetOutputFileName().c_str());
-    _fileCollection.back().setFileName(printString(buffer, "%s_events", _fileCollection.back().getFileName().c_str()).c_str());
+    _fileCollection.back().setFileName(printString(buffer, "%s_events%u_by_%s", _fileCollection.back().getFileName().c_str(), _fileCollection.size(), file_name.c_str()).c_str());
     _fileCollection.back().setExtension(KML_FILE_EXT);
     std::ofstream eventKML;
     eventKML.open(_fileCollection.back().getFullPath(buffer).c_str());
@@ -384,7 +421,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
     eventKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     eventKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
     // Iterate over data sets
-    std::map<std::string, boost::shared_ptr<std::stringstream> > _group_placemarks;
+    std::map<std::string, boost::shared_ptr<std::stringstream> > group_placemarks;
     std::stringstream ballonstyle;
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
         // First test whether this data set reported event id and coordinates.
@@ -401,7 +438,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         // We'd expect all sets to be same in line-list columns but we aren't checking ... just assume for now.
         if (idx == 0) {
             ballonstyle << "<BalloonStyle><text><![CDATA[<b style=\"white-space:nowrap;\">$[snippet]</b><br/><table border=\"0\">";
-            if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis())
+            if (parameters.GetIsSpaceTimeAnalysis())
                 ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Event Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
             for (auto llfm : Source->getLinelistFieldsMap()) {
                 if (!(llfm.second.get<0>() == EVENT_ID || llfm.second.get<0>() == EVENT_COORD_Y || llfm.second.get<0>() == EVENT_COORD_X)) {
@@ -415,17 +452,23 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         const char * value = 0;
         std::stringstream placemark, extended, coordinates;
         std::string group_value, event_date, end_date, event_id, latitude, longitude;
-        if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis())
+        if (parameters.GetIsSpaceTimeAnalysis())
             end_date = gregorianToString(gregorianFromString(parameters.GetStudyPeriodEndDate()), "%Y-%m-%d");
         while (Source->ReadRecord()) {
             Julian case_date;
             if (_dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date) != DataSetHandler::Accepted)
                 return throw prg_error("Failed to read case file date in data set %d.", "ClusterKML::add(const DataDemographicsProcessor&)", idx + 1);
+            if (case_date < lowestDate) {
+                DatePrecisionType eDatePrint = (parameters.GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
+                //printf("Skipping case date %s\n", JulianToString(buffer, case_date, eDatePrint, "/").c_str());
+                continue;
+            }
             group_value = ""; event_id = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                 value = Source->GetValueAtUnmapped(itr->first);
+                value = value == 0 ? "" : value;
                 if (itr->second.get<0>() == EVENT_ID) {
                     placemark << "<name>Event: " << value << "</name>" << std::endl;
                     placemark << "<snippet>Event: " << value << "</snippet>" << std::endl;
@@ -445,48 +488,45 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
                 continue;
             }
             if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis()) { // Set time span of event if this is a space-time analysis.
-                placemark << "<TimeSpan>" << "<begin>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-") << "</begin>"
-                    << "<end>" << end_date << "</end>" << "</TimeSpan>";
+                placemark << "<TimeSpan>" << "<begin>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-") << "</begin><end>" << end_date << "</end>" << "</TimeSpan>" << std::endl;
                 extended << "<Data name=\"eventcasedate\"><value>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "/") << "</value></Data>";
             }
-            placemark << "<styleUrl>#events-"<< toHex(group_value) << (demographics.isNewEvent(event_id) ? "-new" : "") << "-stylemap</styleUrl>" << std::endl;
             placemark << "<Point><coordinates>" << longitude << " , " << latitude << ", 500</coordinates></Point>" << std::endl;
-            placemark << "<ExtendedData>" << extended.str() << "</ExtendedData>" << std::endl << "</Placemark>" << std::endl;
+            placemark << "<ExtendedData>" << extended.str() << "</ExtendedData>" << std::endl;
+            placemark << "<styleUrl>#events-" << toHex(group_value) << (demographics.isNewEvent(event_id) ? "-new" : "") << "-stylemap</styleUrl>" << std::endl;
+            placemark << "</Placemark>" << std::endl;
             // Add placemark to correct placemark group.
-            auto pgroup = _group_placemarks.find(group_value);
-            if (pgroup == _group_placemarks.end())
-                _group_placemarks[group_value] = boost::shared_ptr<std::stringstream>(new std::stringstream());
-            *(_group_placemarks[group_value]) << placemark.str();
+            auto pgroup = group_placemarks.find(group_value);
+            if (pgroup == group_placemarks.end())
+                group_placemarks[group_value] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+            *(group_placemarks[group_value]) << placemark.str();
         }
     }
     // Now that we've read all the data, write groups to KML file.
-    std::vector<std::string> event_color_defaults = { // seperate colors for each group.
-        "ff0c8ff7", "ffb2834d", "ff00ccf9", "ff86bc73", "ff4016ca", "ffc1c34d", "ff9ed0d1", "ff4f493c", "ff53dbc5",
-        "ff25306c", "ff5a6666", "ff476c10", "ff5979f2", "ff4d7cb2", "ff310a58", "ff0c9fa1", "ffa3d0e1"
-    };
     std::string event_icon = "https://maps.google.com/mapfiles/kml/shapes/placemark_square.png";
     std::string new_event_icon = "http://maps.google.com/mapfiles/kml/shapes/square.png";
     // First create the ScreenOverlay, which is the legend.
-    eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style=\"text-decoration:underline;\">Legend: " << parameters.getKmlEventGroupAttribute();
+    eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style=\"text-decoration:underline;\">Legend: " << group_by;
     eventKML << "</div></name><Snippet></Snippet><description>";
     eventKML << "<div><img style=\"vertical-align:middle;padding-right:6px\" width=\"22\" height=\"22\" src=\"" << new_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;\">New</span>";
     eventKML << "<img width=\"32\" height=\"32\" style=\"vertical-align:middle;padding-right:0px;\" src=\"" << event_icon << "\"/> <span style=\"font-weight:bold;\">Ongoing</span></div>";
     eventKML << "<ul style=\"padding-left:0\">" << std::endl;
     std::vector<std::pair<std::string, std::string> > group_colors;
-    auto itrColor = event_color_defaults.begin();
-    for (auto pgroup : _group_placemarks) {
-        auto colorKML = (itrColor == event_color_defaults.end() ? getRandomKmlColor() : *itrColor);
+    auto itrColor = _event_color_defaults.begin()/* + _event_color_offset*/;
+    for (auto const&pgroup : group_placemarks) {
+        auto colorKML = (itrColor == _event_color_defaults.end() ? getRandomKmlColor() : *itrColor);
         group_colors.push_back(std::make_pair(colorKML, convertKmlColorToHTMLColor(colorKML)));
         eventKML << "<li style=\"list-style-type:none;white-space:nowrap;\"><div style=\"width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#";
         eventKML << group_colors.back().second << ";display:inline-block;\"></div><span style=\"font-weight:bold;margin-left:5px;\">" << pgroup.first << "</span></li>" << std::endl;
-        if (itrColor != event_color_defaults.end()) ++itrColor;
+        if (itrColor != _event_color_defaults.end()) ++itrColor;
     }
+    //_event_color_offset = std::distance(_event_color_defaults.begin(), itrColor);
     eventKML << "</ul></description>" << std::endl;
     eventKML << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
     eventKML << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
     auto itrColors = group_colors.begin();
-    eventKML << "<name>Events By " << parameters.getKmlEventGroupAttribute() << "</name>" << std::endl;
-    for (auto pgroup: _group_placemarks) {
+    eventKML << "<name>Events By " << group_by << "</name>" << std::endl;
+    for (auto const&pgroup: group_placemarks) {
         auto color = itrColors->first;
         auto groupHex = toHex(pgroup.first);
         eventKML << "<Style id=\"events-" << groupHex << "-style\"><IconStyle><color>" << color << "</color><Icon><href>" << event_icon
