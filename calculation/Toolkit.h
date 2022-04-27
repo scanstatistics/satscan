@@ -30,8 +30,11 @@ class AppToolkit {
 
     // ini file
     static const char         * _ini_filename;
-    static const char         * _run_history;
-    static const char         * _history_filename_property;
+    static const char         * _mail_server;
+    static const char         * _mail_servername_property;
+    static const char         * _mail_additional_property;
+    static const char         * _mail_from_property;
+    static const char         * _mail_reply_property;
     static const char         * _debug_filename;
     static const char         * _multiple_analysis_filename;
 
@@ -50,18 +53,21 @@ class AppToolkit {
     IniSession                  _session;
     FILE                      * _debug_log;
 
-    bool                        ensureRunHistory();
-    void                        InsureSessionStructure();
     void                        Setup(const char * sApplicationFullPath);
 
   public:
     AppToolkit(const char * sApplicationFullPath);
     virtual ~AppToolkit();
 
+    boost::filesystem::path     run_history_filename;
+    std::string                 mail_servername;
+    std::string                 mail_additional;
+    std::string                 mail_from;
+    std::string                 mail_reply;
+
    void                         closeDebugFile();
    const char                 * GetAcknowledgment(std::string & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
-   const char                 * GetRunHistoryFileName() /*const*/;
    RunTimeComponentManager    & GetRunTimeComponentManager() { return _runtime_component_manager;}
    const char                 * GetSubstantiveSupportEmail() const;
    const char                 * GetSystemIniFileName() const {return _ini_filename;}
@@ -71,6 +77,7 @@ class AppToolkit {
    bool                         is64Bit() const;
    FILE                       * openDebugFile(); 
    std::string                  getMultipleAnalysisFullpath() const { return _multi_analysis_filepath.string(); }
+   void                         refreshSession();
 
    static AppToolkit     &      getToolkit() {return *_tool_kit;}
    static void                  ToolKitCreate(const char * sApplicationFullPath);

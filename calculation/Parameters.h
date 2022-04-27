@@ -284,6 +284,18 @@ class CParameters {
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
 
+    bool                                _email_analysis_results;
+    std::string                         _email_always_recipients;
+    std::string                         _email_significant_recipients;
+    std::string                         _email_subject_no_significant;
+    std::string                         _email_message_body_no_significant;
+    std::string                         _email_subject_significant;
+    std::string                         _email_message_body_significant;
+    unsigned int                        _email_significant_ri_value;
+    DatePrecisionType                   _email_significant_ri_type;
+    double                              _email_significant_pval_value;
+    bool                                _email_attach_results;
+
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
@@ -302,6 +314,41 @@ class CParameters {
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
+
+    bool                                getEmailAttachResults() const { return _email_attach_results; }
+    void                                setEmailAttachResults(bool b) { _email_attach_results = b; }
+    unsigned int                        getEmailSignificantRecurrenceCutoff() const { return _email_significant_ri_value; }
+    void                                setEmailSignificantRecurrenceCutoff(unsigned int i) { _email_significant_ri_value = i; }
+    DatePrecisionType                   getEmailSignificantRecurrenceType() const { return _email_significant_ri_type; }
+    void                                setEmailSignificantRecurrenceType(DatePrecisionType etype);
+    double                              getEmailSignificantPvalueCutoff() const { return _email_significant_pval_value; }
+    void                                setEmailSignificantPvalueCutoff(double d) { _email_significant_pval_value = d; }
+
+    bool                                getEmailAnalysisResults() const { return _email_analysis_results; }
+    void                                setEmailAnalysisResults(bool b) { _email_analysis_results = b; }
+    std::vector<std::string>            getEmailAlwaysRecipientsList() const {
+                                            std::vector<std::string> recipients;
+                                            csv_string_to_typelist<std::string>(_email_always_recipients.c_str(), recipients);
+                                            return recipients;
+                                        }
+    const std::string                 & getEmailAlwaysRecipients() const { return _email_always_recipients; }
+    void                                setEmailAlwaysRecipients(const char * s) { _email_always_recipients = s; }
+    std::vector<std::string>            getEmailSignificantRecipientsList() const {
+                                            std::vector<std::string> recipients;
+                                            csv_string_to_typelist<std::string>(_email_significant_recipients.c_str(), recipients);
+                                            return recipients;
+                                        }
+    std::string                         getEmailFormattedText(const std::string &messagebody, const std::string& newline) const;
+    const std::string                 & getEmailSignificantRecipients() const { return _email_significant_recipients; }
+    void                                setEmailSignificantRecipients(const char * s) { _email_significant_recipients = s; }
+    const std::string                 & getEmailSubjectNoSignificant() const { return _email_subject_no_significant; }
+    void                                setEmailSubjectNoSignificant(const char * s) { _email_subject_no_significant = s; }
+    const std::string                 & getEmailMessageBodyNoSignificant() const { return _email_message_body_no_significant; }
+    void                                setEmailMessageBodyNoSignificant(const char * s) { _email_message_body_no_significant = s; }
+    const std::string                 & getEmailSubjectSignificant() const { return _email_subject_significant; }
+    void                                setEmailSubjectSignificant(const char * s) { _email_subject_significant = s; }
+    const std::string                 & getEmailMessageBodySignificant() const { return _email_message_body_significant; }
+    void                                setEmailMessageBodySignificant(const char * s) { _email_message_body_significant = s; }
 
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);

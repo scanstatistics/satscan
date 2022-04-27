@@ -65,7 +65,8 @@ void usage_message(std::string program, po::options_description& desc, const Par
 }
 
 int main(int argc, char *argv[]) {
-  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false, execMultipleAnalyses=false, execAllMultipleAnalyses=false;
+    bool verifyParameters = false, printParameters = false, forceCentric = false, allOut = false,
+        standardPvalue = false, execMultipleAnalyses = false, execAllMultipleAnalyses = false, testSendMail = false;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -87,7 +88,12 @@ int main(int argc, char *argv[]) {
         ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
         ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
         ("multiple-analyses,m", po::bool_switch(&execMultipleAnalyses), "execute selected multiple analyses")
-        ("multiple-analyses-all,m", po::bool_switch(&execAllMultipleAnalyses), "execute all multiple analyses")
+        ("multiple-analyses-all,y", po::bool_switch(&execAllMultipleAnalyses), "execute all multiple analyses")
+        ("mail-server,e", po::value<std::string>(), "mail server name (ex. smtp.somecompany.com or smtp.somecompany.com:25)")
+        ("test-send-mail,g", po::bool_switch(&testSendMail), "test send mail only")
+        ("curl-additional,u", po::value<std::string>(), "additional arguements to curl program (ex. --user <user:password> --ssl-reqd)")
+        ("mail-from,h", po::value<std::string>(), "'from' address (ex. someone@mycompany.com)")
+        ("mail-reply,i", po::value<std::string>(), "'reply' address (ex. nobody@mycompany.com)")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -151,7 +157,37 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
-
+    // Override toolkit mail server settings, if specified.
+    if (vm.count("mail-server")) AppToolkit::getToolkit().mail_servername = vm["mail-server"].as<std::string>();
+    if (vm.count("curl-additional")) AppToolkit::getToolkit().mail_additional = vm["curl-additional"].as<std::string>();
+    if (vm.count("mail-from")) AppToolkit::getToolkit().mail_from = vm["mail-from"].as<std::string>();
+    if (vm.count("mail-reply")) AppToolkit::getToolkit().mail_reply = vm["mail-reply"].as<std::string>();
+    // Attempt to send test email, if requested.
+    if (testSendMail) {
+        Console.Printf("Mail Server Test Email:\n", BasePrint::P_NOTICE);
+        if (AppToolkit::getToolkit().mail_servername.empty()) {
+            std::cout << "Type the 'Mail Sername' address (ex. smtp.somecompany.com or smtp.somecompany.com:25): ";
+            std::cin >> AppToolkit::getToolkit().mail_servername;
+        }
+        if (AppToolkit::getToolkit().mail_from.empty()) {
+            std::cout << "Type the 'From' address (ex. sender@domain.com): ";
+            std::cin >> AppToolkit::getToolkit().mail_from;
+        }
+        std::string to;
+        std::cout << "Type the 'To' address (ex. recipient@domain.com): ";
+        std::cin >> to;
+        if (AppToolkit::getToolkit().mail_reply.empty()) {
+            std::cout << "Type the 'Reply' address (ex. nobody@domain.com): ";
+            std::cin >> AppToolkit::getToolkit().mail_reply;
+        }
+        std::stringstream messagePlain, messageHTML;
+        messagePlain << "SaTScan test email using curl." << std::endl;
+        messageHTML << "<html><body><div><p>" << messagePlain.str() << "</p></div></body></html>";
+        return sendMail(
+            AppToolkit::getToolkit().mail_from, { to }, {}, AppToolkit::getToolkit().mail_reply, "SaTScan Test Email", messagePlain, messageHTML, "",
+            AppToolkit::getToolkit().mail_servername, Console, true, AppToolkit::getToolkit().mail_additional
+        ) ? 0 : 1;
+    }
     //potentially perform execution of multiple analyses, if user requested
     if (execMultipleAnalyses || execAllMultipleAnalyses) {
         Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);

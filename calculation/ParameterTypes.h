@@ -165,7 +165,18 @@ enum ParameterType
     LL_HEADER_CASEFILE,             /* whether case file contains line list header row */
     KML_EVENT_GROUP,                /* indication whether to include linelist events in kml output, grouped */
     KML_EVENT_GROUP_BY,             /* label of line-list colummn that should be used to group events in KML file */
-    LL_EVENT_CACHE_FILE             /* file to store events ids */
+    LL_EVENT_CACHE_FILE,            /* file to store events ids */
+    EMAIL_RESULTS_SUMMARY,          /* whether to email user an analysis results summary */
+    EMAIL_ALWAYS_RCPTS,             /* list of users which are always emailed */
+    EMAIL_SIGNIFICANT_RCPTS,        /* list of users which are emailed for significant events */
+    EMAIL_SUBJECT_NO_SIGNIFICANT,   /* subject line of email - no significant clusters */
+    EMAIL_BODY_NO_SIGNIFICANT,      /* email message body - no significant clusters */
+    EMAIL_SUBJECT_SIGNIFICANT,      /* subject line of email - significant clusters */
+    EMAIL_BODY_SIGNIFICANT,         /* email message body - significant clusters */
+    EMAIL_SIGNIFICANT_RI,           /* email significant clusters - meeting recurrence interval */
+    EMAIL_SIGNIFICANT_RI_TYPE,      /* email significant clusters - meeting recurrence interval type */
+    EMAIL_SIGNIFICANT_PVAL,         /* email significant clusters - meeting p-value */
+    EMAIL_ATTACH_RESULTS            /* email message - attach results */
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {

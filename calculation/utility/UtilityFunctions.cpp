@@ -13,7 +13,11 @@
 #include <sstream>
 #include <iomanip>
 #include "SimulationVariables.h"
-
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/insert_linebreaks.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/archive/iterators/ostream_iterator.hpp>
+#include <boost/regex.hpp>
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -638,4 +642,140 @@ const char * ordinal_suffix(unsigned int n) {
     ord = ord % 10;
     if (ord > 3) ord = 0;
     return suffixes[ord];
+}
+
+/* base64 encodes string to destination stream. Derived from conversations in:
+https://stackoverflow.com/questions/7053538/how-do-i-encode-a-string-to-base64-using-only-boost
+
+Instead of using this boost routine, we have the option to use some utilities already installed
+on target platform. But unless our current implementation proves to be problematic, we'll stay with it.
+https://www.igorkromin.net/index.php/2017/04/26/base64-encode-or-decode-on-the-command-line-without-installing-extra-tools-on-linux-windows-or-macos/
+- windows: certutil -encode data.txt tmp.b64 && findstr /v /c:- tmp.b64 > data.b64
+- linux: base64 data.txt > data.b64
+- mac: base64 -b 76 -i text.txt -o data.b64
+*/
+std::stringstream & base64Encode(const std::stringstream & source, std::stringstream & destination) {
+    using namespace boost::archive::iterators;
+    typedef
+        insert_linebreaks<   // insert line breaks every 76 characters
+        base64_from_binary<  // convert binary values to base64 characters
+        transform_width<     // retrieve 6 bit integers from a sequence of 8 bit bytes
+        const char *, 6, 8 > >, 76 > base64_text;
+    std::string text = source.str();
+    // Pad with 0 until a multiple of 3
+    unsigned int paddedCharacters = 0;
+    while (text.size() % 3 != 0) {
+        ++paddedCharacters;
+        text.push_back(0x00);
+    }
+    destination.str("");
+    std::copy(
+        base64_text(text.c_str()),
+        base64_text(text.c_str() + (text.size() - paddedCharacters)),
+        std::ostream_iterator<char>(destination)
+    );
+    // Add '=' for each padded character used
+    for (unsigned int i = 0; i < paddedCharacters; ++i)
+        destination << '=';
+    return destination;
+}
+
+/* send mail routine which build mail file then invokes cURL program.
+parameter 'additionalpass' is a cheap way to allow for curl options such as '--user' or */
+bool sendMail(const std::string& from, const std::vector<std::string>& to, const std::vector<std::string>& cc, const std::string& reply,
+    const std::string& subject, const std::stringstream& messagePlain, const std::stringstream& messageHTML,
+    const std::string& results_fullpath, const std::string& mailserver, BasePrint& printDirection, bool printalways, const std::string& additionalpass, std::stringstream * output) {
+
+    std::stringstream destination;
+    std::string mail_file, buffer;
+    GetUserTemporaryFilename(mail_file); // Create temporary file for curl upload.
+    std::ofstream upload;
+    upload.open(mail_file.c_str());
+    if (!upload) throw prg_error("Error: Unable to open temporary file '%s'.\n", mail_file.c_str());
+
+    // Start building upload file.
+    upload << "From: <" << from << ">" << std::endl;
+    upload << "To: " << typelist_to_csv_string<std::string>(to, buffer) << std::endl;
+    upload << "Subject: " << subject << std::endl;
+    if (!reply.empty()) upload << "Reply-To: " << reply << std::endl;
+    if (!cc.empty()) upload << "Cc: " << typelist_to_csv_string<std::string>(cc, buffer) << std::endl;
+    upload << "Accept-Language: en-US" << std::endl;
+    upload << "Content-Language: en-US" << std::endl;
+    upload << "MIME-Version: 1.0" << std::endl;
+    upload << "Content-Type: multipart/mixed; boundary=\"MULTIPART-MIXED-BOUNDARY\"" << std::endl << std::endl;
+    upload << "--MULTIPART-MIXED-BOUNDARY" << std::endl;
+    upload << "Content-Type: multipart/alternative; boundary=\"MULTIPART-ALTERNATIVE-BOUNDARY\"" << std::endl << std::endl;
+    upload << "--MULTIPART-ALTERNATIVE-BOUNDARY" << std::endl;
+    upload << "Content-Type: text/plain; charset=\"utf-8\"" << std::endl;
+    upload << "Content-Transfer-Encoding: base64" << std::endl << std::endl;
+    upload << base64Encode(messagePlain, destination).str() << std::endl << std::endl;
+    //upload << std::endl << messagePlain.str() << std::endl << std::endl;
+    upload << "--MULTIPART-ALTERNATIVE-BOUNDARY" << std::endl;
+    upload << "Content-Type: text/html; charset=\"utf-8\"" << std::endl;
+    upload << "Content-Transfer-Encoding: base64" << std::endl << std::endl;
+    upload << base64Encode(messageHTML, destination).str() << std::endl;
+    //upload << std::endl << messageHTML.str() << std::endl << std::endl;
+    upload << "--MULTIPART-ALTERNATIVE-BOUNDARY--" << std::endl << std::endl;
+    // lambda functions which add files to upload file.
+    auto add_file = [&upload](const std::string& contenttype, const std::string& filepath) {
+        boost::filesystem::path p(filepath);
+        upload << "--MULTIPART-MIXED-BOUNDARY" << std::endl;
+        upload << "Content-Type: " << contenttype << "; name=\"" << p.filename().string() << "\"" << std::endl;
+        upload << "Content-Description: " << p.filename().string() << std::endl;
+        upload << "Content-Disposition: attachment; filename=\"" << p.filename().string() << "\";" << " size=" << boost::filesystem::file_size(p) << std::endl;
+        upload << "Content-Transfer-Encoding: base64" << std::endl << std::endl;
+        std::stringstream source, base64;
+        std::ifstream file(filepath, std::ios::binary);
+        source << file.rdbuf();
+        upload << base64Encode(source, base64).str() << std::endl << std::endl;
+    };
+    auto add_content = [&upload](const std::string& contenttype, const std::string& filepath) {
+        boost::filesystem::path p(filepath);
+        upload << "--MULTIPART-MIXED-BOUNDARY" << std::endl;
+        upload << "Content-Type: " << contenttype << "; name=\"" << p.filename().string() << "\"" << std::endl;
+        upload << "Content-Disposition: inline" << std::endl << "Content-Id: <" << p.filename().string() << ">" << std::endl;
+        upload << "Content-Transfer-Encoding: base64" << std::endl << std::endl;
+        std::stringstream source, base64;
+        std::ifstream file(filepath, std::ios::binary);
+        source << file.rdbuf();
+        upload << base64Encode(source, base64).str() << std::endl << std::endl;
+    };
+    // Add results file, if specified.
+    if (!results_fullpath.empty()) add_file(std::string("text/plain"), results_fullpath);
+    upload << "--MULTIPART-MIXED-BOUNDARY--" << std::endl;
+    upload.close();
+    // Get temnporary file to capture output.
+    GetUserTemporaryFilename(buffer);
+    // Build curl command with parameters.
+    destination.str("");
+    destination << "curl -v " << (boost::starts_with(mailserver, "smtp://") || boost::starts_with(mailserver, "smtps://") ? "" : "smtp://") << mailserver;
+    for (auto rcpt : to) destination << " --mail-rcpt " << rcpt;
+    destination << " --mail-from " << from << " -T " << mail_file << " " << additionalpass;
+#if defined(_WINDOWS_)
+    destination << " 1> " << buffer << " 2>&1";
+#else
+    destination << " 2>&1";
+#endif
+    int result = std::system(destination.str().c_str());
+    if (result != 0 || printalways) {
+        printDirection.Printf("curl command: %s\n", (result == 0 ? BasePrint::P_NOTICE : BasePrint::P_WARNING), destination.str().c_str());
+        printDirection.Printf("curl response code: %d.\n", (result == 0 ? BasePrint::P_NOTICE : BasePrint::P_WARNING), result);
+        printDirection.Printf("curl output:\n", (result == 0 ? BasePrint::P_NOTICE : BasePrint::P_WARNING));
+        std::string line;
+        std::ifstream file(buffer);
+        while (std::getline(file, line)) {
+            if (!line.empty()) {
+                printDirection.Printf("%s\n", (result == 0 ? BasePrint::P_NOTICE : BasePrint::P_WARNING), line.c_str());
+                if (output) *output << line << std::endl;
+            }
+        }
+    }
+    remove(buffer.c_str());
+    remove(mail_file.c_str());
+    return result == 0;
+}
+
+bool validEmailAdrress(const std::string& emailaddress) {
+    boost::regex expr{ "^([a-zA-Z0-9_\\+\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$" };
+    return boost::regex_match(emailaddress, expr);
 }

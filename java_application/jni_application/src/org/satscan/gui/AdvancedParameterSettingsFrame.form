@@ -4444,29 +4444,26 @@
                                   <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                                   <Component id="_grouping_input_label" min="-2" pref="173" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_linelist_grouping" min="-2" pref="200" max="-2" attributes="0"/>
+                                  <Component id="_linelist_grouping" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_view_linelist_choices" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="131" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_clear_grouped" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
+                              <Component id="_checkbox_casefile_metarow" max="32767" attributes="0"/>
+                              <Component id="_checkbox_casefile_header" max="32767" attributes="0"/>
+                              <Component id="_label_linelist_filewizard" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_checkbox_casefile_metarow" max="32767" attributes="0"/>
-                                      <Component id="_checkbox_casefile_header" max="32767" attributes="0"/>
-                                      <Component id="_label_linelist_filewizard" alignment="0" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_event_cache_label" max="32767" attributes="0"/>
-                                              <Component id="_event_cache_field" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_event_cache_browse" min="-2" pref="25" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="_checkbox_grouping_kml" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="_event_cache_label" max="32767" attributes="0"/>
+                                      <Component id="_event_cache_field" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_event_cache_browse" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
+                              <Component id="_checkbox_grouping_kml" alignment="0" max="32767" attributes="0"/>
                           </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -4491,6 +4488,7 @@
                               <Component id="_grouping_input_label" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_linelist_grouping" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_view_linelist_choices" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_clear_grouped" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="_label_linelist_filewizard" min="-2" max="-2" attributes="0"/>
@@ -4528,6 +4526,9 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_linelist_grouping">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                  </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_linelist_groupingActionPerformed"/>
                   </Events>
@@ -4547,10 +4548,10 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="_view_linelist_choices">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="View Choices"/>
+                    <Property name="text" type="java.lang.String" value="Add"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_view_linelist_choices.addMouseListener(new MouseAdapter() {&#xa;    public void mouseReleased(MouseEvent e){&#xa;        WaitCursor waitCursor = new WaitCursor(AdvancedParameterSettingsFrame.this);&#xa;        try {&#xa;            boolean tryCSV = true;&#xa;            popupMenu1.removeAll();&#xa;            String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;                tryCSV = inputSourceSettings.getFieldMaps().size() == 0;&#xa;                for (Map.Entry&lt;Integer, Pair&lt;LinelistType, String&gt;&gt; entry : inputSourceSettings.getLinelistFieldMaps().entrySet()) {&#xa;                    switch (entry.getValue().getLeft()) {&#xa;                        case EVENT_ID: &#xa;                        case EVENT_COORD_Y: &#xa;                        case EVENT_COORD_X: break;&#xa;                        default:&#xa;                            MenuItem mi = new MenuItem(entry.getValue().getRight());&#xa;                            mi.addActionListener(new ActionListener() {&#xa;                                public void actionPerformed(ActionEvent e) {&#xa;                                    MenuItem source = (MenuItem)e.getSource();&#xa;                                    _linelist_grouping.setText(source.getLabel());&#xa;                                }&#xa;                            });&#xa;                            popupMenu1.add(mi);&#xa;                    }&#xa;                }&#xa;            } &#xa;            if (tryCSV) {&#xa;                CSVImportDataSource sourceCase = new CSVImportDataSource(&#xa;                    new File(_settings_window._caseFileTextField.getText()), false, &apos;\n&apos;, &apos; &apos;, &apos;&quot;&apos;, 0&#xa;                );&#xa;                ArrayList&lt;Pair&lt;String, String&gt;&gt; header_rows = new ArrayList();&#xa;                Object[] meta = sourceCase.readRow();&#xa;                Object[] header = null;&#xa;                if (_checkbox_casefile_header.isSelected()) {&#xa;                    header = sourceCase.readRow();&#xa;                    if (meta.length != header.length)&#xa;                        throw new Exception(&quot;Unable to read case file.&quot;);&#xa;                }&#xa;                for (int i=0; i &lt; meta.length; ++i) {&#xa;                    if (((String)meta[i]).equals(&quot;&lt;linelist&gt;&quot;)) {&#xa;                        MenuItem mi = new MenuItem((header == null ? (&quot;linelist-&quot; + (popupMenu1.getItemCount() + 1)) : (String)header[i]));&#xa;                        mi.addActionListener(new ActionListener() {&#xa;                            public void actionPerformed(ActionEvent e) {&#xa;                                MenuItem source = (MenuItem)e.getSource();&#xa;                                _linelist_grouping.setText(source.getLabel());&#xa;                            }&#xa;                        });&#xa;                        popupMenu1.add(mi);&#xa;                    }&#xa;                }                &#xa;            }&#xa;            popupMenu1.show(_view_linelist_choices, e.getX(), e.getY());&#xa;        } catch (Exception ex) {&#xa;            popupMenu1.removeAll();&#xa;            popupMenu1.add(new MenuItem(&quot;** Unable to read options from case file. **&quot;));&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_view_linelist_choices.addMouseListener(new MouseAdapter() {&#xa;    public void mouseReleased(MouseEvent e){&#xa;        WaitCursor waitCursor = new WaitCursor(AdvancedParameterSettingsFrame.this);&#xa;        try {&#xa;            ArrayList&lt;String&gt; values = ImportUtils.parseLine(_linelist_grouping.getText(), &quot;,&quot;, &quot;\&quot;&quot;, true, true);&#xa;            boolean tryCSV = true;&#xa;            popupMenu1.removeAll();&#xa;            String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;                tryCSV = inputSourceSettings.getFieldMaps().size() == 0;&#xa;                for (Map.Entry&lt;Integer, Pair&lt;LinelistType, String&gt;&gt; entry : inputSourceSettings.getLinelistFieldMaps().entrySet()) {&#xa;                    switch (entry.getValue().getLeft()) {&#xa;                        case EVENT_ID: &#xa;                        case EVENT_COORD_Y: &#xa;                        case EVENT_COORD_X: break;&#xa;                        default:&#xa;                            if (!values.contains(entry.getValue().getRight())) {&#xa;                                MenuItem mi = new MenuItem(entry.getValue().getRight());&#xa;                                mi.addActionListener(new ActionListener() {&#xa;                                    public void actionPerformed(ActionEvent e) {&#xa;                                        MenuItem source = (MenuItem)e.getSource();&#xa;                                        values.add(source.getLabel());&#xa;                                        _linelist_grouping.setText(String.join(&quot;,&quot;, values));&#xa;                                    }&#xa;                                });&#xa;                                popupMenu1.add(mi);&#xa;                            }&#xa;                    }&#xa;                }&#xa;            } &#xa;            if (tryCSV) {&#xa;                CSVImportDataSource sourceCase = new CSVImportDataSource(&#xa;                    new File(_settings_window._caseFileTextField.getText()), false, &apos;\n&apos;, &apos; &apos;, &apos;&quot;&apos;, 0&#xa;                );&#xa;                ArrayList&lt;Pair&lt;String, String&gt;&gt; header_rows = new ArrayList();&#xa;                Object[] meta = sourceCase.readRow();&#xa;                Object[] header = null;&#xa;                if (_checkbox_casefile_header.isSelected()) {&#xa;                    header = sourceCase.readRow();&#xa;                    if (meta.length != header.length)&#xa;                        throw new Exception(&quot;Unable to read case file.&quot;);&#xa;                }&#xa;                for (int i=0; i &lt; meta.length; ++i) {&#xa;                    if (((String)meta[i]).equals(&quot;&lt;linelist&gt;&quot;)) {&#xa;                        String itemName = (header == null ? (&quot;linelist-&quot; + (popupMenu1.getItemCount() + 1)) : (String)header[i]);&#xa;                        if (!values.contains(itemName)) {&#xa;                            MenuItem mi = new MenuItem(itemName);&#xa;                            mi.addActionListener(new ActionListener() {&#xa;                                public void actionPerformed(ActionEvent e) {&#xa;                                    MenuItem source = (MenuItem)e.getSource();&#xa;                                    values.add(source.getLabel());&#xa;                                    _linelist_grouping.setText(String.join(&quot;,&quot;, values));&#xa;                                }&#xa;                            });&#xa;                            popupMenu1.add(mi);&#xa;                        }&#xa;                    }&#xa;                }                &#xa;            }&#xa;            popupMenu1.show(_view_linelist_choices, e.getX(), e.getY());&#xa;        } catch (Exception ex) {&#xa;            popupMenu1.removeAll();&#xa;            popupMenu1.add(new MenuItem(&quot;** Unable to read options from case file. **&quot;));&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_event_cache_label">
@@ -4568,6 +4569,390 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_event_cache_browse.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;       filters.add(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Cache File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            String filename = file.getAbsolutePath();&#xa;            if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                filename = filename + &quot;.txt&quot;;&#xa;            } &#xa;            _event_cache_field.setText(filename);  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_clear_grouped">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Clear"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_clear_grouped.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _linelist_grouping.setText(&quot;&quot;);&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_alerts_tab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Alerts">
+                <Property name="tabTitle" type="java.lang.String" value="Alerts"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_panel_email_notifications" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_panel_email_notifications" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_panel_email_notifications">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Email Notifications"/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="_tabbed_email_messages" max="32767" attributes="0"/>
+                              <Component id="_checkbox_sendmail" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_email_significant_attach_results" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_label_email_significant_when" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_significant_email" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_label_significant_email" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_always_email" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="_label_always_email" max="32767" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Group type="102" attributes="0">
+                                                  <Component id="_email_significant_pval_label" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                                  <Component id="_email_significant_pval_value" min="-2" pref="83" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Group type="102" attributes="0">
+                                                  <Component id="_email_significant_ri_label" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                                  <Component id="_email_significant_ri_value" min="-2" pref="81" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="_email_significant_ri_type" min="-2" pref="76" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                          <Component id="_checkbox_sendmail" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_label_always_email" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_always_email" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_label_significant_email" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_significant_email" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_label_email_significant_when" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                  <Component id="_email_significant_ri_value" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_email_significant_ri_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_email_significant_ri_type" min="-2" pref="23" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_email_significant_pval_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_email_significant_pval_value" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                          <Component id="_email_significant_attach_results" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_tabbed_email_messages" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_checkbox_sendmail">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Send summary of analysis results by email:"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_checkbox_sendmail.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableEmailAlerts();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_label_always_email">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Always Notify Recipients (csv list):"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_always_email">
+                </Component>
+                <Component class="javax.swing.JLabel" name="_label_significant_email">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Significant Results Recipients (csv list):"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_significant_email">
+                </Component>
+                <Component class="javax.swing.JLabel" name="_label_email_significant_when">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Email Regarding Significant Results When:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_email_significant_ri_value">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="100"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_email_significant_ri_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_email_significant_ri_value.getText().length() == 0 ||&#xa;               Double.parseDouble(_email_significant_ri_value.getText()) &lt; 1&#xa;               )&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText(&quot;100&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_email_significant_ri_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_email_significant_ri_value, e, 10);&#xa;    }&#xa;});&#xa;_email_significant_ri_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="java.awt.Choice" name="_email_significant_ri_type">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_email_significant_ri_type.add(&quot;Days&quot;);&#xd;&#xa;_email_significant_ri_type.add(&quot;Years&quot;);&#xd;&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_email_significant_pval_value">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0.05"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_email_significant_pval_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_email_significant_pval_value, e, 20);&#xa;    }&#xa;});&#xa;_email_significant_pval_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_email_significant_pval_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_email_significant_pval_value.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_email_significant_pval_value.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _email_significant_pval_value.setText(&quot;0.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_email_significant_pval_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_email_significant_attach_results">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Attach primary results file to email."/>
+                  </Properties>
+                </Component>
+                <Container class="javax.swing.JTabbedPane" name="_tabbed_email_messages">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="_panel_insignificant">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                          <JTabbedPaneConstraints tabName="Email - No Significant Clusters">
+                            <Property name="tabTitle" type="java.lang.String" value="Email - No Significant Clusters"/>
+                          </JTabbedPaneConstraints>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_label_email_subject_insignificant" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_label_email_message_insignificant" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jScrollPane2" pref="530" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_email_subject_insignificant" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_alert_tags_display_insignificant" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_label_email_subject_insignificant" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_email_subject_insignificant" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_alert_tags_display_insignificant" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="_label_email_message_insignificant" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="36" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="jScrollPane2" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_label_email_subject_insignificant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Subject"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_email_subject_insignificant">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_label_email_message_insignificant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Message"/>
+                          </Properties>
+                        </Component>
+                        <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+                          <AuxValues>
+                            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                          <SubComponents>
+                            <Component class="javax.swing.JTextArea" name="_email_message_insignificant">
+                              <Properties>
+                                <Property name="columns" type="int" value="20"/>
+                                <Property name="rows" type="int" value="5"/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                        <Component class="javax.swing.JButton" name="_alert_tags_display_insignificant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Tags"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_alert_tags_display_insignificant.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JOptionPane.showMessageDialog(null, &#xa;            &quot;Available Tags\n&quot; +&#xa;            &quot;&lt;date&gt; - todays date\n&quot; +&#xa;            &quot;&lt;output-directory&gt; - results directory\n&quot; +&#xa;            &quot;&lt;output-filename&gt; - primary results filename\n&quot;&#xa;        );&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="_panel_significant">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                          <JTabbedPaneConstraints tabName="Email - Significant Clusters">
+                            <Property name="tabTitle" type="java.lang.String" value="Email - Significant Clusters"/>
+                          </JTabbedPaneConstraints>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_label_email_subject_significant" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_label_email_message_significant" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jScrollPane3" alignment="0" pref="530" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_email_subject_significant" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_alert_tags_display_significant" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_label_email_subject_significant" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_email_subject_significant" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_alert_tags_display_significant" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_label_email_message_significant" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="0" pref="36" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="jScrollPane3" alignment="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_label_email_subject_significant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Subject"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_email_subject_significant">
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_alert_tags_display_significant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Tags"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_alert_tags_display_significant.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JOptionPane.showMessageDialog(null, &#xa;            &quot;Available Tags\n&quot; +&#xa;            &quot;&lt;date&gt; - todays date\n&quot; +&#xa;            &quot;&lt;signal-text&gt; - details new and ongoing clusters when using event ids\n&quot; +&#xa;            &quot;&lt;output-directory&gt; - results directory\n&quot; +&#xa;            &quot;&lt;output-filename&gt; - primary results filename\n&quot;&#xa;        );&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_label_email_message_significant">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Message"/>
+                          </Properties>
+                        </Component>
+                        <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+                          <AuxValues>
+                            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                          <SubComponents>
+                            <Component class="javax.swing.JTextArea" name="_email_message_significant">
+                              <Properties>
+                                <Property name="columns" type="int" value="20"/>
+                                <Property name="rows" type="int" value="5"/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="_email_significant_ri_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cluster detected with recurrance interval of at least:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_email_significant_pval_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cluster detected with p-value less than or equal to:"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

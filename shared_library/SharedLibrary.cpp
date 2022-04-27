@@ -33,6 +33,7 @@
 #include "ParameterFileAccess.h"
 #include "ShapeFile.h"
 #include "DataSource.h"
+#include "org_satscan_gui_ApplicationPreferences.h"
 
 //#pragma argsused
 
@@ -98,6 +99,7 @@ void _runAnalysis(const CParameters& Parameters, BasePrint& Console) {
   time_t                RunTime;
   std::string           sMessage;
 
+  AppToolkit::getToolkit().refreshSession();
   Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
   time(&RunTime); //get start time
   Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
@@ -434,6 +436,52 @@ JNIEXPORT jint JNICALL Java_org_satscan_app_CalculationThread_RunAnalysis(JNIEnv
   } 
 
   return 0;
+}
+
+/*
+* Class:     org_satscan_gui_ApplicationPreferences
+* Method:    SendTestMail
+* Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+*/
+JNIEXPORT jstring JNICALL Java_org_satscan_gui_ApplicationPreferences_SendTestMail(JNIEnv * pEnv, jobject apppref, jstring jservername, jstring jadditional, jstring jfrom, jstring jreply) {
+    PrintNull print;
+    try {
+        std::string servername, additional, from, reply;
+        jboolean iscopy;
+        const char *temp = pEnv->GetStringUTFChars(jservername, &iscopy);
+        servername = temp;
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jservername, temp);
+
+        temp = pEnv->GetStringUTFChars(jadditional, &iscopy);
+        additional = temp;
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jadditional, temp);
+
+        temp = pEnv->GetStringUTFChars(jfrom, &iscopy);
+        from = temp;
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jfrom, temp);
+
+        temp = pEnv->GetStringUTFChars(jreply, &iscopy);
+        reply = temp;
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(jreply, temp);
+
+        std::stringstream messagePlain, messageHTML, outputText, responseText;
+        messagePlain << "SaTScan test email using curl." << std::endl;
+        messageHTML << "<html><body><div><p>" << messagePlain.str() << "</p></div></body></html>";
+        bool success = sendMail(from, { from }, {}, reply, "SaTScan Test Email", messagePlain, messageHTML, "", servername, print, true, additional, &outputText);
+        responseText << "Send mail " << (success ? "succeeded!" : "errored!") << std::endl << std::endl << outputText.str();
+        return pEnv->NewStringUTF(responseText.str().c_str());
+    } catch (std::exception& x) {
+        print.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+        return pEnv->NewStringUTF("Failed");
+    } catch (jni_error & x) {
+        // Let the Java exception to be handled in the caller of JNI function.
+        // It is preferable to report the error through the JNIPrintWindow
+        // object but once a java error exists, our options are limited.
+        return pEnv->NewStringUTF("Failed");
+    } catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return pEnv->NewStringUTF("Failed");
+    }
 }
 
 ///////////////////////////////// C Shared Library Methods ///////////////////////////////////////////

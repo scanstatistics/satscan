@@ -270,11 +270,134 @@ void AnalysisExecution::execute() {
 }
 
 void  AnalysisExecution::finalize() {
+    FILE * fp = 0;
     try {
         // Finalize the data demographica process now -- updating unique events file for this analysis.
         if (_data_demographic_processor.get() && !getDataHub().isDrilldown()) _data_demographic_processor->finalize();
-        finalizeReport();
+
+        /** Finalizes the reporting to result output file.
+        - indicates whether clusters were found
+        - indicates whether no clusters were reported because their loglikelihood
+        ratios are less than defined minimum value
+        - if the number of simulations are less 98, reported that the reported
+        clusters intentially do not contain p-values */
+        
+        time_t CompletionTime;
+        double nTotalTime, nSeconds, nMinutes, nHours;
+        const char * szHours = "hours", * szMinutes = "minutes", * szSeconds = "seconds";
+        AsciiPrintFormat PrintFormat;
+        std::string buffer;
+
+        _print_direction.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
+        openReportFile(fp, true);
+        PrintFormat.SetMarginsAsOverviewSection();
+        if (_clustersReported && _parameters.GetNumReplicationsRequested() == 0) {
+            fprintf(fp, "\n");
+            buffer = "Note: As the number of Monte Carlo replications was set to zero, no hypothesis testing was done and no p-values are reported.";
+            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+        }
+        if (_clustersReported && _parameters.GetNumReplicationsRequested() > 0 && _parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE) {
+            fprintf(fp, "\n");
+            buffer = "Note: The number of Monte Carlo replications was set too low, "
+            "and a meaningful hypothesis test cannot be done. Consequently, no p-values are reported.";
+            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+        }
+        if (_parameters.GetProbabilityModelType() == POISSON && !_data_hub.isDrilldown())
+            _data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, fp, &_print_direction);
+        if (!_data_hub.isDrilldown())
+            _data_hub.GetTInfo()->reportCombinedLocations(fp);
+        ParametersPrint(_parameters).Print(fp);
+        macroRunTimeManagerPrint(fp);
+        time(&CompletionTime);
+        nTotalTime = difftime(CompletionTime, _start_time);
+        nHours = floor(nTotalTime / (60 * 60));
+        nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
+        nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
+        fprintf(fp, "\nProgram completed  : %s", ctime(&CompletionTime));
+        if (0 < nHours && nHours < 1.5)
+            szHours = "hour";
+        if (0 < nMinutes && nMinutes < 1.5)
+            szMinutes = "minute";
+        if (0.5 <= nSeconds && nSeconds < 1.5)
+            szSeconds = "second";
+        if (nHours > 0)
+            fprintf(fp, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
+        else if (nMinutes > 0)
+            fprintf(fp, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
+        else
+           fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
+        if (_parameters.GetNumParallelProcessesToExecute() > 1)
+            fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
+        fclose(fp); fp = 0;
+
+        // Send email, if requested.
+        if (_parameters.getEmailAnalysisResults() && !_data_hub.isDrilldown() && _sim_vars.get_sim_count() != 0) {
+            std::string messageSubject;
+            std::stringstream messagePlain, messageHTML;
+            std::vector<std::string> recipients(_parameters.getEmailAlwaysRecipientsList());
+            // Determine if there are any significant clusters - significant per user settings.
+            MostLikelyClustersContainer::ClusterList_t significantClusters;
+            boost::optional<std::pair<DatePrecisionType, double> > recurrence_interval_cutoff = boost::none;
+            if (_parameters.GetIsProspectiveAnalysis())
+                recurrence_interval_cutoff = boost::optional<std::pair<DatePrecisionType, double> >(std::make_pair(_parameters.getEmailSignificantRecurrenceType(), _parameters.getEmailSignificantRecurrenceCutoff()));
+            _reportClusters.getSignificantClusters(_data_hub, _sim_vars, significantClusters, _parameters.getEmailSignificantPvalueCutoff(), recurrence_interval_cutoff);
+            /* If the user specified line-list data in the case file, we might also have event_ids to help distinguish if a
+               significant cluster should be considered when emailing -- otherwise repeated noise i.e. same cluster as yesterdays run. */
+            if (!significantClusters.empty()) {
+                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->getDataSetDemographics().hasEventAttribute()) {
+                    std::stringstream signaltext;
+                    const auto& clusterNewCounts = _data_demographic_processor->getClusterNewEventsCounts();
+                    for (auto const&cluster: significantClusters) {
+                        unsigned int clusterReportNumber = _clusterSupplement->getClusterReportIndex(*cluster);
+                        unsigned int clusterNewCount = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).first;
+                        if (clusterNewCount) {
+                            count_t clusterTotalCases = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).second;
+                            if (clusterNewCount == clusterTotalCases)
+                                signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << clusterReportNumber << ".<linebreak>";
+                            else
+                                signaltext << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " added to ongoing signal in cluster #" << clusterReportNumber << ".<linebreak>";
+                        }
+                    }
+                    // There might be signicant clusters but nothing new to report.
+                    if (signaltext.str().size()) {
+                        messageSubject = _parameters.getEmailSubjectSignificant();
+                        std::string messageBody(_parameters.getEmailMessageBodySignificant());
+                        using boost::algorithm::ireplace_all;
+                        ireplace_all(messageBody, "<signal-text>", (signaltext.str().size() ? signaltext.str() : std::string("")));
+                        messagePlain << _parameters.getEmailFormattedText(messageBody, "\n");
+                        messageHTML << _parameters.getEmailFormattedText(messageBody, "<br>");
+                        const std::vector<std::string>& r = _parameters.getEmailSignificantRecipientsList();
+                        recipients.insert(std::end(recipients), std::begin(r), std::end(r));
+                    } else {
+                        messageSubject = _parameters.getEmailSubjectNoSignificant();
+                        messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "\n");
+                        messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "<br>");
+                    }
+                } else {
+                    // No way to know if this email is noise -- might have reported these clusters in prior email but no way to resolve this for now.
+                    messageSubject = _parameters.getEmailSubjectSignificant();
+                    messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodySignificant(), "\n");
+                    messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodySignificant(), "<br>");
+                    const std::vector<std::string>& r = _parameters.getEmailSignificantRecipientsList();
+                    recipients.insert(std::end(recipients), std::begin(r), std::end(r));
+                }
+            } else {
+                messageSubject = _parameters.getEmailSubjectNoSignificant();
+                messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "\n");
+                messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "<br>");
+            }
+            // Remove any duplicates.
+            std::sort(recipients.begin(), recipients.end());
+            recipients.erase(std::unique(recipients.begin(), recipients.end()), recipients.end());
+            sendMail(
+                AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
+                _parameters.getEmailFormattedText(messageSubject, ""), messagePlain, messageHTML,
+                (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
+                AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
+            );
+        }
     } catch (prg_exception& x) {
+        if (fp) fclose(fp);
         x.addTrace("finalize()", "AnalysisExecution");
         throw;
     }
@@ -307,76 +430,6 @@ void AnalysisExecution::createReport() {
         throw;
     }
     macroRunTimeStopSerial();
-}
-
-/** Finalizes the reporting to result output file.
-- indicates whether clusters were found
-- indicates whether no clusters were reported because their loglikelihood
-ratios are less than defined minimum value
-- if the number of simulations are less 98, reported that the reported
-clusters intentially do not contain p-values */
-void AnalysisExecution::finalizeReport() {
-    FILE              * fp = 0;
-    time_t              CompletionTime;
-    double              nTotalTime, nSeconds, nMinutes, nHours;
-    const char        * szHours = "hours";
-    const char        * szMinutes = "minutes";
-    const char        * szSeconds = "seconds";
-    AsciiPrintFormat    PrintFormat;
-    std::string         buffer;
-
-    try {
-        _print_direction.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
-        openReportFile(fp, true);
-        PrintFormat.SetMarginsAsOverviewSection();
-        if (_clustersReported && _parameters.GetNumReplicationsRequested() == 0) {
-            fprintf(fp, "\n");
-            buffer = "Note: As the number of Monte Carlo replications was set to "
-                "zero, no hypothesis testing was done and no p-values are reported.";
-            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-        }
-        if (_clustersReported && _parameters.GetNumReplicationsRequested() > 0 && _parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE) {
-            fprintf(fp, "\n");
-            buffer = "Note: The number of Monte Carlo replications was set too low, "
-                "and a meaningful hypothesis test cannot be done. Consequently, "
-                "no p-values are reported.";
-            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-        }
-        if (_parameters.GetProbabilityModelType() == POISSON && !_data_hub.isDrilldown())
-            _data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, fp, &_print_direction);
-        if (!_data_hub.isDrilldown())
-            _data_hub.GetTInfo()->reportCombinedLocations(fp);
-        ParametersPrint(_parameters).Print(fp);
-        macroRunTimeManagerPrint(fp);
-        time(&CompletionTime);
-        nTotalTime = difftime(CompletionTime, _start_time);
-        nHours = floor(nTotalTime / (60 * 60));
-        nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
-        nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
-        fprintf(fp, "\nProgram completed  : %s", ctime(&CompletionTime));
-        if (0 < nHours && nHours < 1.5)
-            szHours = "hour";
-        if (0 < nMinutes && nMinutes < 1.5)
-            szMinutes = "minute";
-        if (0.5 <= nSeconds && nSeconds < 1.5)
-            szSeconds = "second";
-        if (nHours > 0)
-            fprintf(fp, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours,
-                nMinutes, szMinutes, nSeconds, szSeconds);
-        else if (nMinutes > 0)
-            fprintf(fp, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
-        else
-            fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
-
-        if (_parameters.GetNumParallelProcessesToExecute() > 1)
-            fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
-
-        fclose(fp); fp = 0;
-    } catch (prg_exception& x) {
-        if (fp) fclose(fp);
-        x.addTrace("finalizeReport()", "openReportFile");
-        throw;
-    }
 }
 
 /** starts analysis execution */

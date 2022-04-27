@@ -88,5 +88,13 @@ template <typename T>           std::string& typelist_to_csv_string(const std::v
                                     }
                                     return s;
                                 }
+std::stringstream             & base64Encode(const std::stringstream & source, std::stringstream & destination);
+bool                            sendMail(
+                                    const std::string& from, const std::vector<std::string>& to, const std::vector<std::string>& cc, const std::string& reply,
+                                    const std::string& subject, const std::stringstream& messagePlain, const std::stringstream& messageHTML,
+                                    const std::string& results_fullpath, const std::string& mailserver, BasePrint& printDirection, bool printalways,
+                                    const std::string& additionalpass, std::stringstream * output=0
+);
+bool                            validEmailAdrress(const std::string& emailaddress);
 //******************************************************************************
 #endif

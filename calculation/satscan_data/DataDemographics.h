@@ -84,6 +84,9 @@ class CCluster;
 class CParameters;
 
 class DataDemographicsProcessor{
+    public:
+        typedef std::map<int, std::pair<unsigned int, unsigned int> > ClusterEventCounts_t;
+
     protected:
         const DataSetHandler& _handler;
         const CParameters& _parameters;
@@ -103,6 +106,8 @@ class DataDemographicsProcessor{
         boost::container::flat_set<std::string> _new_event_ids;
         // cluster temporary filenames <mlc cluster index, temporary filename>
         std::map<int, std::string> _cluster_location_files;
+        // cluster new event counts <mlc cluster index, <# new events, total events>>
+        ClusterEventCounts_t _cluster_new_events;
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first = boost::none);
         void createHeadersFile(std::ofstream& linestream, const LineListFieldMapContainer_t& llmap);
@@ -114,6 +119,7 @@ class DataDemographicsProcessor{
         ~DataDemographicsProcessor();
 
         void finalize();
+        const ClusterEventCounts_t & getClusterNewEventsCounts() const { return _cluster_new_events; }
         const DemographicAttributeSet& getDataSetDemographics(unsigned int idx=0) const { return _demographics_by_dataset.at(idx); }
         boost::tuple<bool, bool> getEventStatus(unsigned int idx = 0) const { return _events_by_dataset.at(idx); }
         const boost::container::flat_set<std::string>& getNewEventIds() const { return _new_event_ids; }

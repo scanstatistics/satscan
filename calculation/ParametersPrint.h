@@ -20,6 +20,7 @@ class ParametersPrint {
     void                PrintDataCheckingParameters(FILE* fp) const;
     void                PrintDrilldownParameters(FILE* fp) const;
     void                PrintEllipticScanParameters(FILE* fp) const;
+    void                PrintEmailAlertsParameters(FILE* fp) const;
     void                PrintClusterRestrictionsParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;

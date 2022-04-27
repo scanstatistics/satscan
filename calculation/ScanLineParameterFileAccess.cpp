@@ -180,6 +180,17 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case KML_EVENT_GROUP                    : return "indication whether to include linelist events in kml output, grouped (line 144)";
     case KML_EVENT_GROUP_BY                 : return "label of line-list colummn that should be used to group events in KML (line 145)";
     case LL_EVENT_CACHE_FILE                : return "file to store events ids (line 146)";
+    case EMAIL_RESULTS_SUMMARY              : return "whether to email user an analysis results summary (line 147)";
+    case EMAIL_ALWAYS_RCPTS                 : return "list of users which are always emailed (line 148)";
+    case EMAIL_SIGNIFICANT_RCPTS            : return "list of users which are emailed for significant events (line 149)";
+    case EMAIL_SUBJECT_NO_SIGNIFICANT       : return "subject line of email - no significant clusters (line 150)";
+    case EMAIL_BODY_NO_SIGNIFICANT          : return "email message body - no significant clusters (line 151)";
+    case EMAIL_SUBJECT_SIGNIFICANT          : return "subject line of email - significant clusters (line 152)";
+    case EMAIL_BODY_SIGNIFICANT             : return "email message body - significant clusters (line 153)";
+    case EMAIL_SIGNIFICANT_RI               : return "email significant clusters - meeting recurrence interval (positive integer) (line 154)";
+    case EMAIL_SIGNIFICANT_RI_TYPE          : return "email significant clusters - meeting recurrence interval type (YEAR=1, DAY=3) (line 155)";
+    case EMAIL_SIGNIFICANT_PVAL             : return "email significant clusters - meeting p-value (0.000-1.000) (line 156)";
+    case EMAIL_ATTACH_RESULTS               : return "email message - attach results (line 157)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

@@ -189,6 +189,36 @@ MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSig
     return clusters;
 }
 
+/* Returns significant clusters by p-value and/or recurrance interval cutoff. */
+MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, double p_value_cutoff,
+    boost::optional<std::pair<DatePrecisionType, double> > recurrence_interval_cutoff) const {
+    const CParameters & params(DataHub.GetParameters());
+    double min_ratio_to_report(0.001);
+    clusters.clear();
+    for (ClusterList_t::const_iterator itr = gvTopClusterList.begin(); itr != gvTopClusterList.end(); ++itr) {
+        if (!((*itr)->m_nRatio >= min_ratio_to_report && (*itr)->GetRank() <= simVars.get_sim_count()))
+            continue;
+        if (macro_less_than(p_value_cutoff, (*itr)->getReportingPValue(params, simVars, itr == gvTopClusterList.begin()), DBL_CMP_TOLERANCE))
+            continue;
+        if (recurrence_interval_cutoff) { // conditionally compare against recurrence interval_t cutoff
+            CCluster::RecurrenceInterval_t ri = (*itr)->GetRecurrenceInterval(DataHub, std::distance(gvTopClusterList.begin(), itr) + 1, simVars);
+            switch (recurrence_interval_cutoff->first) {
+                case DAY:
+                    if (ri.second < recurrence_interval_cutoff->second)
+                        continue;
+                    break;
+                case YEAR:
+                    if (ri.first < recurrence_interval_cutoff->second)
+                        continue;
+                    break;
+                default: throw prg_error("Unexpected DatePrecisionType type '%d' purpose.", "getSignificantClusters()", recurrence_interval_cutoff->first);
+            }
+        }
+        clusters.push_back((*itr));
+    }
+    return clusters;
+}
+
 /* Calculates the GINI coefficient for the current collection of clusters. */
 double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff, boost::optional<unsigned int> atmost) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();

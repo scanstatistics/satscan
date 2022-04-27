@@ -18,7 +18,7 @@ import org.satscan.gui.utils.Utils;
 public class ExecutionOptionsDialog extends javax.swing.JDialog {
 
     private final UndoManager undo = new UndoManager();
-    private Parameters _parameters;
+    private final Parameters _parameters;
 
     /** Creates new form ExecutionOptionsDialog */
     public ExecutionOptionsDialog(java.awt.Frame parent, Parameters parameters) {

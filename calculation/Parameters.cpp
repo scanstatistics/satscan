@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 160;
+const int CParameters::giNumParameters                = 171;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -190,7 +190,17 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_kml_event_group_attribute != rhs._kml_event_group_attribute) return false;
   if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
   if (_event_cache_filename != rhs._event_cache_filename) return false;
-
+  if (_email_analysis_results != rhs._email_analysis_results) return false;
+  if (_email_always_recipients != rhs._email_always_recipients) return false;
+  if (_email_significant_recipients != rhs._email_significant_recipients) return false;
+  if (_email_subject_no_significant != rhs._email_subject_no_significant) return false;
+  if (_email_message_body_no_significant != rhs._email_message_body_no_significant) return false;
+  if (_email_subject_significant != rhs._email_subject_significant) return false;
+  if (_email_message_body_significant != rhs._email_message_body_significant) return false;
+  if (_email_significant_ri_value != rhs._email_significant_ri_value) return false;
+  if (_email_significant_ri_type != rhs._email_significant_ri_type) return false;
+  if (_email_significant_pval_value != rhs._email_significant_pval_value) return false;
+  if (_email_attach_results != rhs._email_attach_results) return false;
   return true;
 }
 
@@ -432,6 +442,17 @@ void CParameters::Copy(const CParameters &rhs) {
   _casefile_includes_header = rhs._casefile_includes_header;
   _kml_event_group_attribute = rhs._kml_event_group_attribute;
   _group_kml_linelist_attribute = rhs._group_kml_linelist_attribute;
+  _email_analysis_results = rhs._email_analysis_results;
+  _email_always_recipients = rhs._email_always_recipients;
+  _email_significant_recipients = rhs._email_significant_recipients;
+  _email_subject_no_significant = rhs._email_subject_no_significant;
+  _email_message_body_no_significant = rhs._email_message_body_no_significant;
+  _email_subject_significant = rhs._email_subject_significant;
+  _email_message_body_significant = rhs._email_message_body_significant;
+  _email_significant_ri_value = rhs._email_significant_ri_value;
+  _email_significant_ri_value = rhs._email_significant_ri_value;
+  _email_significant_pval_value = rhs._email_significant_pval_value;
+  _email_attach_results = rhs._email_attach_results;
 }
 
 /* Returns whether line list data is read from case file - which is indicated in two exclusive ways:
@@ -455,6 +476,32 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
     throw prg_error("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
                     (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
   return gvControlFilenames[iSetIndex - 1];
+}
+
+/* Returns email text with tags substituted. */
+std::string CParameters::getEmailFormattedText(const std::string &messagebody, const std::string& newline) const {
+    using boost::algorithm::replace_all;
+    using boost::algorithm::ireplace_all;
+    boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
+    boost::posix_time::time_facet * facet = new boost::posix_time::time_facet();
+    std::stringstream bufferStream, workStream;
+    std::string buffer, message(messagebody);
+    FileName fileName(_results_filename.c_str());
+
+    // Replace <date> tag
+    facet->format("%B"); // Full month name
+    workStream.imbue(std::locale(std::locale::classic(), facet));
+    workStream.str(""); workStream << localTime;
+    bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
+    ireplace_all(message, "<date>", bufferStream.str());
+    // Replace <output-directory> tag
+    ireplace_all(message, "<output-directory>", fileName.getLocation(buffer).c_str());
+    // Replace <output-filename> tag
+    ireplace_all(message, "<output-filename>", fileName.getFullPath(buffer).c_str());
+    // Replace newlines tag -- since we're using .ini file for parameters, newlines are a problem.
+    workStream.str(""); workStream << std::endl;
+    ireplace_all(message, "<linebreak>", newline.c_str());
+    return message;
 }
 
 /** Returns threshold for early termination. If reporting default p-value, then
@@ -987,6 +1034,17 @@ void CParameters::SetAsDefaulted() {
   _casefile_includes_header = false;
   _kml_event_group_attribute = "";
   _group_kml_linelist_attribute = false;
+  _email_analysis_results = false;
+  _email_always_recipients = "";
+  _email_significant_recipients = "";
+  _email_subject_no_significant = "";
+  _email_message_body_no_significant = "";
+  _email_subject_significant = "";
+  _email_message_body_significant = "";
+  _email_significant_ri_value = 100;
+  _email_significant_ri_type = DAY;
+  _email_significant_pval_value = 0.05;
+  _email_attach_results = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1125,6 +1183,13 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
   if (eDatePrecisionType < NONE || eDatePrecisionType > GENERIC)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, GENERIC);
   gePrecisionOfTimesType = eDatePrecisionType;
+}
+
+/** Sets recurrence interval type. Throws exception if out of range. */
+void CParameters::setEmailSignificantRecurrenceType(DatePrecisionType etype) {
+    if (!(etype == DAY || etype == YEAR))
+        throw prg_error("Invalid enumeration %d for settings.", "SetPrecisionOfTimesType()", etype);
+    _email_significant_ri_type = etype;
 }
 
 /** Sets probability model type. Throws exception if out of range. */

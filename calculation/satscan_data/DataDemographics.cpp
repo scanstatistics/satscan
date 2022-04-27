@@ -97,6 +97,7 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
     std::string buffer;
     tract_t tNumClustersToDisplay(_sim_vars->get_sim_count() == 0 ? std::min(10, _clusters->GetNumClustersRetained()) : _clusters->GetNumClustersRetained());
     for (int i = 0; i < _clusters->GetNumClustersRetained(); ++i) {
+        _cluster_new_events[i] = std::make_pair(0, 0);
         const CCluster& cluster = _clusters->GetCluster(i);
         if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
             continue;
@@ -203,7 +204,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                     applicable.set(cluster_locs.first);
             }
             const char * value = 0;
-            std::vector<std::string> values; bool /*event_seen = false,*/ is_new_event;
+            std::vector<std::string> values; bool /*event_seen = false,*/ is_new_event = false;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                 // Retrieve the value to report for this demographic attribute.
                 value = Source->GetValueAtUnmapped(itr->first);
@@ -231,8 +232,11 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             }
             // Write values to temporary cluster file - depending on geographical overlap, I suppose this could be more than one cluster.
             boost::optional<int> first(_events_by_dataset.back().get<0>() ? boost::make_optional(applicable.find_first()) : boost::none);
-            for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b))
+            for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b)) {
                 appendLinelistData(static_cast<int>(b), values, first);
+                if (is_new_event) _cluster_new_events[static_cast<int>(b)].first += 1;
+                _cluster_new_events[static_cast<int>(b)].second += 1;
+            }
         }
         // Create the output file and concatenate cluster data files to it.
         FileName linelist(_parameters.GetOutputFileName().c_str()); // TODO -- should this be made into a AbstractDataFileWriter class?

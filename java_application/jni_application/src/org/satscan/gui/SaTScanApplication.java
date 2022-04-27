@@ -131,8 +131,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "SaTScan.jar";
             _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";            
         }        
-    }
-
+    } 
+    
     public static SaTScanApplication getInstance() {
         return _instance;
     }
@@ -452,7 +452,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         private static final long serialVersionUID = 1L;
 
         public ApplicationPreferencesAction() {
-            super("Preferences");
+            super("Preferences and Settings");
         }
 
         public void actionPerformed(ActionEvent e) {

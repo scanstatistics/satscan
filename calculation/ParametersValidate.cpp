@@ -12,6 +12,7 @@
 #include "ObservableRegion.h"
 #include "TimeStamp.h"
 #include "DateStringParser.h"
+#include "Toolkit.h"
 
 const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting";
 
@@ -68,6 +69,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateRandomizationSeed(PrintDirection);
         bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
         bValid &= ValidateClosedLoopAnalysisParameters(PrintDirection);
+        bValid &= ValidateEmailAlertParameters(PrintDirection);
     } catch (prg_exception& x) {
         x.addTrace("ValidateParameters()","ParametersValidate");
         throw;
@@ -364,6 +366,107 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
     throw;
   }
   return bValid;
+}
+
+/* Validates email alert parameters */
+bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection) const {
+    bool bValid = true;
+
+    try {
+        if (gParameters.getEmailAnalysisResults()) {
+            /* Check that the mail server and sender address are defined. It's possible that the user specified bad information or
+               needs to define more settings, such as reply address, but we'll find that out when attempting to the send email. */
+            if (AppToolkit::getToolkit().mail_servername.empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires defining a mail server name (ex. smtp.somecompany.com:25).\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (AppToolkit::getToolkit().mail_from.empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires defining an email address as the mail sender (ex. someone@company.com).\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (!bValid) {
+                PrintDirection.Printf(
+                    "You can define mail settings through in the 'Mail Server Settings' in the 'Preferences and Settings' dialog of the application,\n"
+                    "or specifiy them as an option to the command-line application.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            // Check the always receive emails addresses.
+            std::vector<std::string> receiveAlways = gParameters.getEmailAlwaysRecipientsList();
+            if (receiveAlways.empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires defining at least one email address to receive emails, regardless of significant results (ex. someone@company.com).\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            } else {
+                for (auto const&email : receiveAlways) {
+                    if (!validEmailAdrress(email)) {
+                        PrintDirection.Printf(
+                            "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM
+                        );
+                    }
+                }
+            }
+            std::vector<std::string> recevieSignificant = gParameters.getEmailSignificantRecipientsList();
+            for (auto const&email : recevieSignificant) {
+                if (!validEmailAdrress(email)) {
+                    PrintDirection.Printf(
+                        "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM
+                    );
+                }
+            }
+            if (!(gParameters.getEmailSignificantRecurrenceType() == DAY || gParameters.getEmailSignificantRecurrenceType() == YEAR)) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature for significance requires recurrence interval cutoff in days or years.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            double cutoff = gParameters.getEmailSignificantPvalueCutoff();
+            if (cutoff <= 0.0 || cutoff > 1.0) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe p-value cutoff for email notifications must be greater than zero and less than or equal to one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+            if (gParameters.getEmailSubjectNoSignificant().empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires subject text for insignificant email messages.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (gParameters.getEmailMessageBodyNoSignificant().empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires message text for insignificant email messages.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (gParameters.getEmailSubjectSignificant().empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires subject text for significant email messages.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (gParameters.getEmailMessageBodySignificant().empty()) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe email notifications feature requires message text for significant email messages.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateEmailAlertParameters()", "ParametersValidate");
+        throw;
+    }
+    return bValid;
 }
 
 /** Validates execution type parameters. */

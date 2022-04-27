@@ -161,6 +161,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
+        PrintEmailAlertsParameters(fp);
         PrintEllipticScanParameters(fp);
         PrintPowerSimulationsParameters(fp);
         PrintRunOptionsParameters(fp);
@@ -649,6 +650,36 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
         }
     } catch (prg_exception& x) {
         x.addTrace("PrintEllipticScanParameters()","ParametersPrint");
+        throw;
+    }
+}
+
+/** Prints 'Alerts' tab parameters to file stream. */
+void ParametersPrint::PrintEmailAlertsParameters(FILE* fp) const {
+    SettingContainer_t settings;
+    std::string buffer;
+
+    try {
+        settings.push_back(std::make_pair("Send Summary of Analysis Results by Email", (gParameters.getEmailAnalysisResults() ? "Yes" : "No")));
+        if (gParameters.getEmailAnalysisResults()) {
+            settings.push_back(std::make_pair("Always Notify Recipients", gParameters.getEmailAlwaysRecipients()));
+            settings.push_back(std::make_pair("Significant Results Recipients", gParameters.getEmailSignificantRecipients()));
+            if (gParameters.GetIsProspectiveAnalysis()) {
+                printString(buffer, "%u %s%s", 
+                    gParameters.getEmailSignificantRecurrenceCutoff(),
+                    (gParameters.getEmailSignificantRecurrenceType() == DAY ? "day" : "year"),
+                    (gParameters.getEmailSignificantRecurrenceCutoff() == 1 ? "" : "s")
+                );
+                settings.push_back(std::make_pair("Recurrance Interval Cutoff: ", buffer));
+                settings.push_back(std::make_pair("P-value Cutoff: ", printString(buffer, "%g", gParameters.getEmailSignificantPvalueCutoff())));
+                settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
+                settings.push_back(std::make_pair("Subject - No Significant Clusters", gParameters.getEmailSubjectNoSignificant()));
+                settings.push_back(std::make_pair("Subject - Significant Clusters", gParameters.getEmailSubjectSignificant()));
+            }
+        }
+        WriteSettingsContainer(settings, "Alerts", fp);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintEmailAlertsParameters()", "ParametersPrint");
         throw;
     }
 }

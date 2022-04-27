@@ -45,6 +45,7 @@ const char * IniParameterSpecification::TimeParameters            = "Time Parame
 const char * IniParameterSpecification::OutputFiles               = "Output Files";
 const char * IniParameterSpecification::AdvancedFeatures          = "Advanced Features";
 const char * IniParameterSpecification::OtherOutput               = "Other Output";
+const char * IniParameterSpecification::EmailAlerts               = "Email Alerts";
 
 const char * IniParameterSpecification::SourceType                = "SourceType";
 const char * IniParameterSpecification::SourceDelimiter           = "SourceDelimiter";
@@ -152,6 +153,7 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _cluster_restrictions_section = SectionInfo(ClusterRestrictions, 541);
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
+    _email_alerts_section = SectionInfo(EmailAlerts, 546);
     _inference_section = SectionInfo(Inference, 550);
     _drilldown_section = SectionInfo(Drilldown, 560);
     _border_analysis_section = SectionInfo(BorderAnalysis, 561);
@@ -696,7 +698,20 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
     _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, "EventGroupKML", 4, _linelist_section);
     _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, "EventGroupByKML", 5, _linelist_section);
 
-    assert(_parameter_info.size() == 160);
+    _parameter_info[EMAIL_RESULTS_SUMMARY] = ParamInfo(EMAIL_RESULTS_SUMMARY, "EmailResultsSummary", 1, _email_alerts_section);
+    _parameter_info[EMAIL_ALWAYS_RCPTS] = ParamInfo(EMAIL_ALWAYS_RCPTS, "EmailAlwaysRecipients", 2, _email_alerts_section);
+    _parameter_info[EMAIL_SIGNIFICANT_RCPTS] = ParamInfo(EMAIL_SIGNIFICANT_RCPTS, "EmailSignificantRecipients", 3, _email_alerts_section);
+    _parameter_info[EMAIL_SUBJECT_NO_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_NO_SIGNIFICANT, "EmailSubjectLineNoSignificant", 4, _email_alerts_section);
+    _parameter_info[EMAIL_BODY_NO_SIGNIFICANT] = ParamInfo(EMAIL_BODY_NO_SIGNIFICANT, "EmailMessageBodyNoSignificant", 5, _email_alerts_section);
+    _parameter_info[EMAIL_SUBJECT_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_SIGNIFICANT, "EmailSubjectLineSignificant", 6, _email_alerts_section);
+    _parameter_info[EMAIL_BODY_SIGNIFICANT] = ParamInfo(EMAIL_BODY_SIGNIFICANT, "EmailMessageBodySignificant", 7, _email_alerts_section);
+
+    _parameter_info[EMAIL_SIGNIFICANT_RI] = ParamInfo(EMAIL_SIGNIFICANT_RI, "EmailSignificantRecurrenceCutoff", 8, _email_alerts_section);
+    _parameter_info[EMAIL_SIGNIFICANT_RI_TYPE] = ParamInfo(EMAIL_SIGNIFICANT_RI_TYPE, "EmailSignificantRecurrenceCutoffType", 9, _email_alerts_section);
+    _parameter_info[EMAIL_SIGNIFICANT_PVAL] = ParamInfo(EMAIL_SIGNIFICANT_PVAL, "EmailSignificantPvalueCutoff", 10, _email_alerts_section);
+    _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 11, _email_alerts_section);
+
+    assert(_parameter_info.size() == 171);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

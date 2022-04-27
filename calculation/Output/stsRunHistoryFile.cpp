@@ -47,7 +47,7 @@ const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 // constructor
 stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection)
                   :gpPrintDirection(&PrintDirection) {
-  SetFileName(AppToolkit::getToolkit().GetRunHistoryFileName());
+  SetFileName(AppToolkit::getToolkit().run_history_filename.string());
   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
   AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
   AbstractDataFileWriter::CreateField(gvFields, RUN_TIME_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);

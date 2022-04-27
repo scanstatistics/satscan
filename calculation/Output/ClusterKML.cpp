@@ -408,7 +408,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     std::string buffer, buffer2;
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
     std::string file_name = group_by;
-    std::transform(std::begin(group_by), std::end(group_by), std::begin(file_name), [](auto ch) {
+    std::transform(std::begin(group_by), std::end(group_by), std::begin(file_name), [](char ch) {
         return (ch == '<' || ch == '>' || ch == ':' || ch == '"' || ch == '/' || ch == '\\' || ch == '|' || ch == '?' || ch == '*' || ch == ' ') ? '_' : ch;
     });
     _fileCollection.resize(_fileCollection.size() + 1);

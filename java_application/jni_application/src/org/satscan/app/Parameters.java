@@ -253,6 +253,18 @@ public class Parameters implements Cloneable {
     private String                          _kml_event_group_attribute="";
     private String                          _event_cache_filename="";
     
+    private boolean                         _email_analysis_results;
+    private String                          _email_always_recipients="";
+    private String                          _email_significant_recipients="";
+    private String                          _email_subject_line_no_significant="";
+    private String                          _email_message_body_no_significant="";
+    private String                          _email_subject_line_significant="";
+    private String                          _email_message_body_significant="";
+    private int                             _email_significant_ri_value=100;
+    private DatePrecisionType               _email_significant_ri_type=DatePrecisionType.DAY;
+    private double                          _email_significant_pval_value=0.05;
+    private boolean                         _email_attach_results=false;    
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -316,6 +328,12 @@ public class Parameters implements Cloneable {
             newObject._locations_network_filename = new String(_locations_network_filename);
             newObject._kml_event_group_attribute = new String(_kml_event_group_attribute);
             newObject._event_cache_filename = new String(_event_cache_filename);
+            newObject._email_always_recipients = new String(_email_always_recipients);
+            newObject._email_significant_recipients = new String(_email_significant_recipients);
+            newObject._email_subject_line_no_significant = new String(_email_subject_line_no_significant);
+            newObject._email_message_body_no_significant = new String(_email_message_body_no_significant);
+            newObject._email_subject_line_significant = new String(_email_subject_line_significant);
+            newObject._email_message_body_significant = new String(_email_message_body_significant);
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
@@ -469,9 +487,46 @@ public class Parameters implements Cloneable {
         if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
         if (!_kml_event_group_attribute.equals(rhs._kml_event_group_attribute)) return false;
         if (!_event_cache_filename.equals(rhs._event_cache_filename)) return false;
+        if (_email_analysis_results != rhs._email_analysis_results) return false;
+        if (!_email_always_recipients.equals(rhs._email_always_recipients)) return false;
+        if (!_email_significant_recipients.equals(rhs._email_significant_recipients)) return false;
+        if (!_email_subject_line_no_significant.equals(rhs._email_subject_line_no_significant)) return false;
+        if (!_email_message_body_no_significant.equals(rhs._email_message_body_no_significant)) return false;
+        if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
+        if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
+        if (_email_significant_ri_value != rhs._email_significant_ri_value) return false;
+        if (_email_significant_ri_type != rhs._email_significant_ri_type) return false;
+        if (_email_significant_pval_value != rhs._email_significant_pval_value) return false;
+        if (_email_attach_results != rhs._email_attach_results) return false;
         
         return true;
     }
+    
+    public boolean getEmailAttachResults() { return _email_attach_results; }
+    public void setEmailAttachResults(boolean b) { _email_attach_results = b; }    
+    public int getEmailSignificantRecurrenceCutoff() {return _email_significant_ri_value;}
+    public void setEmailSignificantRecurrenceCutoff(int i) {_email_significant_ri_value = i;}
+    public DatePrecisionType getEmailSignificantRecurrenceType() {return _email_significant_ri_type;}
+    public void setEmailSignificantRecurrenceType(int iOrdinal) {
+        try { _email_significant_ri_type = DatePrecisionType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
+    }    
+    public double getEmailSignificantPvalueCutoff() { return _email_significant_pval_value; }
+    public void setEmailSignificantPvalueCutoff(double d) { _email_significant_pval_value = d; }
+    public boolean getEmailAnalysisResults() { return _email_analysis_results; }
+    public void setEmailAnalysisResults(boolean b) { _email_analysis_results = b; }
+    public String getEmailAlwaysRecipients() { return _email_always_recipients; }
+    public void setEmailAlwaysRecipients(final String s) { _email_always_recipients = s; }
+    public String getEmailSignificantRecipients() { return _email_significant_recipients; }
+    public void setEmailSignificantRecipients(final String s) { _email_significant_recipients = s; }
+    public String getEmailSubjectNoSignificant() { return _email_subject_line_no_significant; }
+    public void setEmailSubjectNoSignificant(final String s) { _email_subject_line_no_significant = s; }
+    public String getEmailMessageBodyNoSignificant() { return _email_message_body_no_significant; }
+    public void setEmailMessageBodyNoSignificant(final String s) { _email_message_body_no_significant = s; }
+    public String getEmailSubjectSignificant() { return _email_subject_line_significant; }
+    public void setEmailSubjectSignificant(final String s) { _email_subject_line_significant = s; }
+    public String getEmailMessageBodySignificant() { return _email_message_body_significant; }
+    public void setEmailMessageBodySignificant(final String s) { _email_message_body_significant = s; }    
     
     public boolean getCasefileIncludesLineData() { return _casefile_includes_linedata; }
     public void setCasefileIncludesLineData(boolean b) { _casefile_includes_linedata = b; }

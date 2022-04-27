@@ -58,15 +58,19 @@ void IniSession::write(const std::string& file) const {
 /** system filename */
 const char * AppToolkit::_ini_filename = "satscan.ini";
 /** ini section property name for run history filename */
-const char * AppToolkit::_run_history = "[RunHistory]";
-const char * AppToolkit::_history_filename_property = "FileName";
+const char * AppToolkit::_mail_server = "[MailServer]";
+const char * AppToolkit::_mail_servername_property = "mail-servername";
+const char * AppToolkit::_mail_additional_property = "mail-additional";
+const char * AppToolkit::_mail_from_property = "mail-from";
+const char * AppToolkit::_mail_reply_property = "mail-reply";
+
 /** debug file name */
 const char * AppToolkit::_debug_filename = "_debug_";
 /** multiple analysis file name */
 const char * AppToolkit::_multiple_analysis_filename = "batch-settings.xml";
 
 /** analysis history filename */
-const char * AppToolkit::_default_run_history_filename = "AnalysisHistory";
+const char * AppToolkit::_default_run_history_filename = "AnalysisHistory.dbf";
 /** Default website. */
 const char * AppToolkit::_webSite = "https://www.satscan.org/";
 /** Default Substantive Support Email. */
@@ -120,11 +124,6 @@ const char * AppToolkit::GetApplicationFullPath() const {
     return _application_fullpath.c_str();
 }
 
-/** Returns run history filename. */
-const char * AppToolkit::GetRunHistoryFileName() /*const*/ {
-    return _session.get(_run_history, _history_filename_property);
-}
-
 /** Returns substantive support email address. */
 const char * AppToolkit::GetSubstantiveSupportEmail() const {
     return _substantive_support_email;
@@ -139,73 +138,6 @@ const char * AppToolkit::GetWebSite() const {
     return _webSite;
 }
 
-/** Insures run history filename section in IniSession. */
-bool AppToolkit::ensureRunHistory() {
-    FileName app(_satscan_appdata_folder.string().c_str());
-    std::string buffer;
-    std::stringstream defaultfilename;
-    bool bUpdatedSection=false;
-
-    try {
-        defaultfilename << app.getLocation(buffer) << _default_run_history_filename << dBaseFile::GetFileTypeExtension();
-
-        //run history filename property
-        if (!_session.exists(_run_history, _history_filename_property)) {
-            _session.set(_run_history, _history_filename_property, defaultfilename.str().c_str());
-            bUpdatedSection = true;
-        } else {
-            //property exists but does it have a value?
-            std::string value = _session.get(_run_history, _history_filename_property);
-            if (value.size() == 0) {
-                _session.set(_run_history, _history_filename_property, defaultfilename.str().c_str());
-                bUpdatedSection = true;
-            }  else {
-                app.setFullPath(value.c_str());
-                //validate extension
-                if (strcmp(app.getExtension().c_str(), dBaseFile::GetFileTypeExtension())) {
-                    app.setExtension(dBaseFile::GetFileTypeExtension());
-                    _session.set(_run_history, _history_filename_property, app.getFullPath(buffer).c_str());
-                    bUpdatedSection = true;
-                }
-                //validate filename
-                if (!strlen(app.getFileName().c_str())) {
-                    app.setFileName(_default_run_history_filename);
-                    _session.set(_run_history, _history_filename_property, app.getFullPath(buffer).c_str());
-                    bUpdatedSection = true;
-                }
-                //validate path
-                if (access(app.getLocation(buffer).c_str(), 00) < 0) {
-                    _session.set(_run_history, _history_filename_property, defaultfilename.str().c_str());
-                    bUpdatedSection = true;
-                }
-            }
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("ensureRunHistory()", "AppToolkit");
-        throw;
-    }
-    return bUpdatedSection;
-}
-
-/** Insures that all section keys are present and writes to disk if
-    necessary and permissions permit. */
-void AppToolkit::InsureSessionStructure() {
-    bool bNeedsWrite=false;
-
-    try {
-        if (ensureRunHistory()) {
-            try {
-                _session.write(_ini_filepath.string());
-            } catch (prg_exception& x){
-                /* If we are unable to write to file, that's fine; we'll just use defaults next time IniFile is used. */
-            }
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("InsureSessionStructure()", "AppToolkit");
-        throw;
-    }
-}
-
 /** Returns whether binary is 64-bit. */
 bool AppToolkit::is64Bit() const {
     return sizeof(int *) == 8;
@@ -214,19 +146,37 @@ bool AppToolkit::is64Bit() const {
 /** Returns file handle to global debug file. */
 FILE * AppToolkit::openDebugFile() {
     try {
-	    if (!_debug_log) {
+        if (!_debug_log) {
             std::string filename;
             filename = FileName(_satscan_appdata_folder.string().c_str()).getLocation(filename);
             filename += _debug_filename;
             filename += ".log";
             if ((_debug_log = fopen(filename.c_str(), /*"a"*/"w")) == NULL)
                 throw resolvable_error("Error: Debug file '%s' could not be created.\n", filename.c_str());
-	    }
+        }
     } catch (prg_exception& x) {
         x.addTrace("openDebugFile()", "AppToolkit");
         throw;
     }
     return _debug_log;
+}
+
+/* Refreshes session from file. */
+void AppToolkit::refreshSession() {
+    try {
+        //Open or create system ini file.
+        _session.read(_ini_filepath.string());
+        if (_session.exists(_mail_server, _mail_servername_property))
+            mail_servername = _session.get(_mail_server, _mail_servername_property);
+        if (_session.exists(_mail_server, _mail_additional_property))
+            mail_additional = _session.get(_mail_server, _mail_additional_property);
+        if (_session.exists(_mail_server, _mail_from_property))
+            mail_from = _session.get(_mail_server, _mail_from_property);
+        if (_session.exists(_mail_server, _mail_reply_property))
+            mail_reply = _session.get(_mail_server, _mail_reply_property);
+    } catch (prg_exception& x) {
+        /* If we are unable to read the file, that's fine; we'll just use defaults assigned to in memory IniFile. */
+    }
 }
 
 /** internal setup */
@@ -246,14 +196,14 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
         _ini_filepath.concat(_ini_filename);
         _multi_analysis_filepath = _satscan_appdata_folder;
         _multi_analysis_filepath.concat(_multiple_analysis_filename);
-        try {
-            //Open or create system ini file.
-            _session.read(_ini_filepath.string());
+        run_history_filename = _satscan_appdata_folder;
+        run_history_filename.concat(_default_run_history_filename);
+        refreshSession();
+        /*try {
+            _session.write(_ini_filepath.string());
         } catch (prg_exception& x) {
-        /* If we are unable to read the file, that's fine; we'll just use defaults assigned to in memory IniFile. */
-        }
-
-        InsureSessionStructure();
+            // If we are unable to write to file, that's fine; we'll just use defaults next time IniFile is used.
+        }*/
         printString(_version, "%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
                              (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
                              (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),

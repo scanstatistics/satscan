@@ -344,6 +344,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteSpatialOutputSettings(ini);
         WriteTemporalGraphSettings(ini);
         WriteOtherOutputSettings(ini);
+        WriteEmailAlertSettings(ini);
 
         //write settings as provided only through user mofication of parameter file and batch executable
         WriteEllipticScanSettings(ini);
@@ -425,6 +426,27 @@ void IniParameterFileAccess::WriteLineListSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, KML_EVENT_GROUP_BY, GetParameterString(KML_EVENT_GROUP_BY, s).c_str(), GetParameterComment(KML_EVENT_GROUP_BY));
     } catch (prg_exception& x) {
         x.addTrace("WriteAnalysisSettings()", "IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Line List'. */
+void IniParameterFileAccess::WriteEmailAlertSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, EMAIL_RESULTS_SUMMARY, GetParameterString(EMAIL_RESULTS_SUMMARY, s).c_str(), GetParameterComment(EMAIL_RESULTS_SUMMARY));
+        WriteIniParameter(WriteFile, EMAIL_ALWAYS_RCPTS, GetParameterString(EMAIL_ALWAYS_RCPTS, s).c_str(), GetParameterComment(EMAIL_ALWAYS_RCPTS));
+        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RCPTS, GetParameterString(EMAIL_SIGNIFICANT_RCPTS, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RCPTS));
+        WriteIniParameter(WriteFile, EMAIL_SUBJECT_NO_SIGNIFICANT, GetParameterString(EMAIL_SUBJECT_NO_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_SUBJECT_NO_SIGNIFICANT));
+        WriteIniParameter(WriteFile, EMAIL_BODY_NO_SIGNIFICANT, GetParameterString(EMAIL_BODY_NO_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_NO_SIGNIFICANT));
+        WriteIniParameter(WriteFile, EMAIL_SUBJECT_SIGNIFICANT, GetParameterString(EMAIL_SUBJECT_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_SUBJECT_SIGNIFICANT));
+        WriteIniParameter(WriteFile, EMAIL_BODY_SIGNIFICANT, GetParameterString(EMAIL_BODY_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_SIGNIFICANT));
+        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RI, GetParameterString(EMAIL_SIGNIFICANT_RI, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RI));
+        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RI_TYPE, GetParameterString(EMAIL_SIGNIFICANT_RI_TYPE, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RI_TYPE));
+        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_PVAL, GetParameterString(EMAIL_SIGNIFICANT_PVAL, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_PVAL));
+        WriteIniParameter(WriteFile, EMAIL_ATTACH_RESULTS, GetParameterString(EMAIL_ATTACH_RESULTS, s).c_str(), GetParameterComment(EMAIL_ATTACH_RESULTS));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteEmailAlertSettings()", "IniParameterFileAccess");
         throw;
     }
 }
