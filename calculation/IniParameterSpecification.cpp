@@ -698,6 +698,12 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
     _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, "EventGroupKML", 4, _linelist_section);
     _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, "EventGroupByKML", 5, _linelist_section);
 
+    _parameter_info[CLUSTER_SIGNIFICANCE_BY_RI] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_RI, "ClusterSignificanceByRecurrence", 5, _other_output_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_RI_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_RI_VALUE, "ClusterSignificanceRecurrenceCutoff", 6, _other_output_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_RI_TYPE] = ParamInfo(CLUSTER_SIGNIFICANCE_RI_TYPE, "ClusterSignificanceRecurrenceCutoffType", 7, _other_output_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_BY_PVAL] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_PVAL, "ClusterSignificanceByPvalue", 8, _other_output_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_PVAL_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_PVAL_VALUE, "ClusterSignificancePvalueCutoff", 9, _other_output_section);
+
     _parameter_info[EMAIL_RESULTS_SUMMARY] = ParamInfo(EMAIL_RESULTS_SUMMARY, "EmailResultsSummary", 1, _email_alerts_section);
     _parameter_info[EMAIL_ALWAYS_RCPTS] = ParamInfo(EMAIL_ALWAYS_RCPTS, "EmailAlwaysRecipients", 2, _email_alerts_section);
     _parameter_info[EMAIL_SIGNIFICANT_RCPTS] = ParamInfo(EMAIL_SIGNIFICANT_RCPTS, "EmailSignificantRecipients", 3, _email_alerts_section);
@@ -705,13 +711,9 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
     _parameter_info[EMAIL_BODY_NO_SIGNIFICANT] = ParamInfo(EMAIL_BODY_NO_SIGNIFICANT, "EmailMessageBodyNoSignificant", 5, _email_alerts_section);
     _parameter_info[EMAIL_SUBJECT_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_SIGNIFICANT, "EmailSubjectLineSignificant", 6, _email_alerts_section);
     _parameter_info[EMAIL_BODY_SIGNIFICANT] = ParamInfo(EMAIL_BODY_SIGNIFICANT, "EmailMessageBodySignificant", 7, _email_alerts_section);
+    _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 13, _email_alerts_section);
 
-    _parameter_info[EMAIL_SIGNIFICANT_RI] = ParamInfo(EMAIL_SIGNIFICANT_RI, "EmailSignificantRecurrenceCutoff", 8, _email_alerts_section);
-    _parameter_info[EMAIL_SIGNIFICANT_RI_TYPE] = ParamInfo(EMAIL_SIGNIFICANT_RI_TYPE, "EmailSignificantRecurrenceCutoffType", 9, _email_alerts_section);
-    _parameter_info[EMAIL_SIGNIFICANT_PVAL] = ParamInfo(EMAIL_SIGNIFICANT_PVAL, "EmailSignificantPvalueCutoff", 10, _email_alerts_section);
-    _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 11, _email_alerts_section);
-
-    assert(_parameter_info.size() == 171);
+    assert(_parameter_info.size() == 173);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

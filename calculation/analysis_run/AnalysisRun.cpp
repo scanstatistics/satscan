@@ -288,7 +288,7 @@ void  AnalysisExecution::finalize() {
         AsciiPrintFormat PrintFormat;
         std::string buffer;
 
-        _print_direction.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
+        _print_direction.Printf("Printing analysis settings to the results file ...\n", BasePrint::P_STDOUT);
         openReportFile(fp, true);
         PrintFormat.SetMarginsAsOverviewSection();
         if (_clustersReported && _parameters.GetNumReplicationsRequested() == 0) {
@@ -336,11 +336,8 @@ void  AnalysisExecution::finalize() {
             std::stringstream messagePlain, messageHTML;
             std::vector<std::string> recipients(_parameters.getEmailAlwaysRecipientsList());
             // Determine if there are any significant clusters - significant per user settings.
-            MostLikelyClustersContainer::ClusterList_t significantClusters;
-            boost::optional<std::pair<DatePrecisionType, double> > recurrence_interval_cutoff = boost::none;
-            if (_parameters.GetIsProspectiveAnalysis())
-                recurrence_interval_cutoff = boost::optional<std::pair<DatePrecisionType, double> >(std::make_pair(_parameters.getEmailSignificantRecurrenceType(), _parameters.getEmailSignificantRecurrenceCutoff()));
-            _reportClusters.getSignificantClusters(_data_hub, _sim_vars, significantClusters, _parameters.getEmailSignificantPvalueCutoff(), recurrence_interval_cutoff);
+            MostLikelyClustersContainer::ClusterList_t significantClusters; ClusterSupplementInfo supplement;
+            _reportClusters.getSignificantClusters(_data_hub, _sim_vars, significantClusters, supplement);
             /* If the user specified line-list data in the case file, we might also have event_ids to help distinguish if a
                significant cluster should be considered when emailing -- otherwise repeated noise i.e. same cluster as yesterdays run. */
             if (!significantClusters.empty()) {
@@ -348,7 +345,7 @@ void  AnalysisExecution::finalize() {
                     std::stringstream signaltext;
                     const auto& clusterNewCounts = _data_demographic_processor->getClusterNewEventsCounts();
                     for (auto const&cluster: significantClusters) {
-                        unsigned int clusterReportNumber = _clusterSupplement->getClusterReportIndex(*cluster);
+                        unsigned int clusterReportNumber = supplement.getClusterReportIndex(*cluster);
                         unsigned int clusterNewCount = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).first;
                         if (clusterNewCount) {
                             count_t clusterTotalCases = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).second;
@@ -585,7 +582,7 @@ void AnalysisExecution::executeCentricEvaluation() {
                 // report relative risk estimates for each location
                 if (_parameters.GetOutputRelativeRisksFiles()) {
                     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-                    _print_direction.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+                    _print_direction.Printf("Reporting relative risk estimates ...\n", BasePrint::P_STDOUT);
                     _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker);
                     macroRunTimeStopSerial();
                 }
@@ -790,7 +787,7 @@ void AnalysisExecution::executeSuccessively() {
                 // report relative risk estimates for each location
                 if (_parameters.GetOutputRelativeRisksFiles()) {
                     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-                    _print_direction.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+                    _print_direction.Printf("Reporting relative risk estimates ...\n", BasePrint::P_STDOUT);
                     _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker);
                     macroRunTimeStopSerial();
                 }
@@ -987,7 +984,7 @@ AnalysisExecution::OptimalGiniByLimit_t AnalysisExecution::getOptimalGiniContain
 void  AnalysisExecution::logRunHistory() {
     try {
         if (_parameters.GetIsLoggingHistory()) {
-            _print_direction.Printf("Logging run history...\n", BasePrint::P_STDOUT);
+            _print_direction.Printf("Logging run history ...\n", BasePrint::P_STDOUT);
             macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
 
             /*
@@ -1455,7 +1452,7 @@ void AnalysisExecution::reportClusters() {
         if (_parameters.getCalculateOliveirasF())
             calculateOliveirasF();
 
-        _print_direction.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
+        _print_direction.Printf("Printing analysis results to file ...\n", BasePrint::P_STDOUT);
         // since the simulations have been completed, we can calculate the gini index and add to collections
         if (_parameters.getReportGiniOptimizedClusters())
             addGiniClusters(_top_clusters_containers, _reportClusters, _parameters.getGiniIndexPValueCutoff());
@@ -1482,8 +1479,8 @@ void AnalysisExecution::reportClusters() {
         // Create Cartesian graph, if requested.
         if (_parameters.getOutputCartesianGraph() && !_parameters.GetIsPurelyTemporalAnalysis() &&
             (_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.GetTInfo()->getCoordinateDimensions() == 2 || _parameters.GetCoordinatesType() == LATLON)) {
-
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
+            _print_direction.Printf("Adding analysis results to Cartesian map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_graph.reset(new CartesianGraph(_data_hub));
             _cluster_graph->add(_reportClusters, _sim_vars);
         }
@@ -1491,6 +1488,7 @@ void AnalysisExecution::reportClusters() {
         // Create Google Maps file if requested.
         if (_parameters.getOutputGoogleMapsFile()) {
             // If first iteration of analyses, create the ClusterMap object -- this is both with and without iterative scan.
+            _print_direction.Printf("Adding analysis results to Google map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_map.reset(new ClusterMap(_data_hub));
             _cluster_map->add(_reportClusters, _sim_vars);
         }
@@ -1498,6 +1496,7 @@ void AnalysisExecution::reportClusters() {
         // Create KML file if requested.
         if (_parameters.getOutputKMLFile()) {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
+            _print_direction.Printf("Adding analysis results to Google Earth file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_kml.reset(new ClusterKML(_data_hub));
             if (_data_demographic_processor.get() && _parameters.getGroupLinelistEventsKML()) _cluster_kml->add(*_data_demographic_processor);
             _cluster_kml->add(_reportClusters, _sim_vars);

@@ -166,6 +166,11 @@ enum ParameterType
     KML_EVENT_GROUP,                /* indication whether to include linelist events in kml output, grouped */
     KML_EVENT_GROUP_BY,             /* label of line-list colummn that should be used to group events in KML file */
     LL_EVENT_CACHE_FILE,            /* file to store events ids */
+    CLUSTER_SIGNIFICANCE_BY_RI,     /* cluster significant by recurrence interval */
+    CLUSTER_SIGNIFICANCE_RI_VALUE,  /* cluster significant recurrence interval cutoff */
+    CLUSTER_SIGNIFICANCE_RI_TYPE,   /* cluster significant recurrence interval type */
+    CLUSTER_SIGNIFICANCE_BY_PVAL,   /* cluster significant by p-value */
+    CLUSTER_SIGNIFICANCE_PVAL_VALUE,/* cluster significant p-value cutoff */
     EMAIL_RESULTS_SUMMARY,          /* whether to email user an analysis results summary */
     EMAIL_ALWAYS_RCPTS,             /* list of users which are always emailed */
     EMAIL_SIGNIFICANT_RCPTS,        /* list of users which are emailed for significant events */
@@ -173,9 +178,6 @@ enum ParameterType
     EMAIL_BODY_NO_SIGNIFICANT,      /* email message body - no significant clusters */
     EMAIL_SUBJECT_SIGNIFICANT,      /* subject line of email - significant clusters */
     EMAIL_BODY_SIGNIFICANT,         /* email message body - significant clusters */
-    EMAIL_SIGNIFICANT_RI,           /* email significant clusters - meeting recurrence interval */
-    EMAIL_SIGNIFICANT_RI_TYPE,      /* email significant clusters - meeting recurrence interval type */
-    EMAIL_SIGNIFICANT_PVAL,         /* email significant clusters - meeting p-value */
     EMAIL_ATTACH_RESULTS            /* email message - attach results */
 };
 /** frequency of prospective analyses */

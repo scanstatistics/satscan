@@ -1193,13 +1193,44 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
 /** Returns whether cluster is significant. */
 boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
     const double SIGNIFICANCE_MULTIPLIER = 100.0; // I'm not sure how Martin picked this number.
-    boost::logic::tribool significance(boost::logic::indeterminate);
+    boost::logic::tribool significant(boost::logic::indeterminate);
     const CParameters& params = Data.GetParameters();
+
+    // If no simulations executed, then we can't say this cluster is significant.
+    if (simVars.get_sim_count() == 0)
+        return significant;
+    // Test edge situations with LLR and cluster rank.
+    if (m_nRatio < 0.001/* minimum LLR for reporting and consideration for significance */ || m_nRank > simVars.get_sim_count()) {
+        significant = false;
+        return significant;
+    }
+    // Test cluster significance by user specified cutoffs - if requested.
+    if (params.getClusterSignificanceByRecurrence() || params.getClusterSignificanceByPvalue()) {
+        if (params.getClusterSignificanceByRecurrence() && reportableRecurrenceInterval(params, simVars)) {
+            RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
+            switch (params.getClusterSignificanceRecurrenceType()) {
+                case DAY: significant = ri.second >= params.getClusterSignificanceRecurrenceCutoff(); break;
+                case GENERIC:
+                case YEAR: significant = ri.first >= params.getClusterSignificanceRecurrenceCutoff(); break;
+                default: throw prg_error("Unexpected DatePrecisionType type '%d' purpose.", "isIncluded()", params.getClusterSignificanceRecurrenceType());
+            }
+        }
+        if (params.getClusterSignificanceByPvalue() && significant && reportablePValue(params, simVars)) {
+            significant = macro_less_than(
+                params.getClusterSignificancePvalueCutoff(),
+                getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1),
+                DBL_CMP_TOLERANCE
+            );
+        }
+        return significant;
+    }
+
+    // Test using default significance checks.
     if (reportableRecurrenceInterval(params, simVars)) {
         RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
         // 365 days or 100*(# time aggregation units), whichever is larger (e.g., if time aggregation is 3 months, only report clusters with RI>300 months)
         if (params.GetTimeAggregationUnitsType() == GENERIC)
-            significance = (ri.first > SIGNIFICANCE_MULTIPLIER);
+            significant = (ri.first > SIGNIFICANCE_MULTIPLIER);
         else {
             double frequency_length = static_cast<double>(params.getProspectiveFrequency()); // defaulted to one.
             ProspectiveFrequency frequency = params.getProspectiveFrequencyType();
@@ -1218,19 +1249,19 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
             /* Now calculate significance per frequency unit and frequency length (typically one or that of time agregation length).
                For instance with prospective frequency as weekly, a significant cluster would be greater than 100 weeks. */
             switch (frequency) {
-                case YEARLY   : significance = (ri.first > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
-                case QUARTERLY: significance = (ri.first * 4.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
-                case MONTHLY  : significance = (ri.first * 12.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
-                case WEEKLY   : significance = (ri.first * 52.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
-                case DAILY    : significance = (ri.second > std::max(365.0, SIGNIFICANCE_MULTIPLIER * frequency_length)); break;
+                case YEARLY   : significant = (ri.first > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case QUARTERLY: significant = (ri.first * 4.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case MONTHLY  : significant = (ri.first * 12.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case WEEKLY   : significant = (ri.first * 52.0 > SIGNIFICANCE_MULTIPLIER * frequency_length); break;
+                case DAILY    : significant = (ri.second > std::max(365.0, SIGNIFICANCE_MULTIPLIER * frequency_length)); break;
                 default       : throw prg_error("Unknown prospective frequency type '%d'.", "isSignificant()", frequency);
             }
         }
     } else if (reportablePValue(params, simVars)) {
         // p-value  less than 0.05 is significant
-        significance = getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
+        significant = getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
     } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
-    return significance;
+    return significant;
 }
 
 /** Prints name and coordinates of locations contained in cluster to ASCII file.

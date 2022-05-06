@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -178,6 +179,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
                return true;
             }
+        }
+        // Check that user hasn't defined duplicate line list column names.
+        ArrayList<String> llnames = new ArrayList();
+        for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx)
+            llnames.add((String)model.getValueAt(rowIdx, 1));
+        if (llnames.stream().map(String::toString).distinct().count() != llnames.size()) {
+            JOptionPane.showMessageDialog(this, "Line list mapping labels must be unique.", "Note", JOptionPane.WARNING_MESSAGE);
+            return true;            
         }
         // All appears to be correct -- clear then populate temporary line list map.
         _input_source_settings.getLinelistFieldMaps().clear();

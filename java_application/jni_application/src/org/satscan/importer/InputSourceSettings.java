@@ -144,6 +144,17 @@ public class InputSourceSettings implements Cloneable  {
             llmapStr = llmapStr.substring(0, llmapStr.length() - 1);
         return llmapStr;
     }
+    public Pair<Boolean, Boolean> hasLinelistEventIdAndPlotInfo() {
+        boolean event=false, eventx=false, eventy=false;
+        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : _linelist_field_map.entrySet()) {
+            switch (mapEntry.getValue().getLeft()) {
+                case EVENT_ID: event = true; break;
+                case EVENT_COORD_X: eventx = true; break;
+                case EVENT_COORD_Y: eventy = true; break;
+            }
+        }
+        return Pair.of(event, eventx && eventy);
+    }
     
     public String getDelimiter() {return _delimiter;}
     public void setDelimiter(String s) {_delimiter = s;}

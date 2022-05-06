@@ -137,7 +137,7 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
         if (gParameters.getCasefileIncludesLineData() && Source->getFieldsMap().size() == 0 && Source->getLinelistFieldsMap().size() == 0) {
             if (!Source->ReadRecord()) throw resolvable_error("Error: Case file is empty.");
             // Define the types of colummns in the line-list meta row.
-            std::string event_id_type("<eventid>"), xcoord_type("<x-coordinate>"), ycoord_type("<y-coordinate>"), linelist_type("<linelist>"),
+            std::string event_id_type("<eventid>"), xcoord_type("<event-longitude-x>"), ycoord_type("<event-latitude-y>"), linelist_type("<linelist>"),
                         covariate_type("<covariate>"), locationid_type("<locationid>"), count_type("<count>"), date_type("<date>"),
                         attribute_type("<attribute>"), censored_type("<censored>"), weight_type("<weight>");
             std::map<std::string, long> mapped_columns = {
@@ -165,13 +165,13 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             LineListFieldMapContainer_t fields_map;
             for (size_t t=0; t < meta_record.size(); ++t) {
                 if (meta_record[t] == event_id_type) {
-                    label = (header_record.size() ? header_record[t] : std::string("event id"));
+                    label = (header_record.size() ? header_record[t] : event_id_type);
                     fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_ID, label)));
                 } else if (meta_record[t] == xcoord_type) {
-                    label = (header_record.size() ? header_record[t] : std::string("x-coordinate"));
+                    label = (header_record.size() ? header_record[t] : xcoord_type);
                     fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_X, label)));
                 } else if (meta_record[t] == ycoord_type) {
-                    label = (header_record.size() ? header_record[t] : std::string("y-coordinate"));
+                    label = (header_record.size() ? header_record[t] : ycoord_type);
                     fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_Y, label)));
                 } else if (meta_record[t] == linelist_type) {
                     ++numLineList;

@@ -69,12 +69,29 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateRandomizationSeed(PrintDirection);
         bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
         bValid &= ValidateClosedLoopAnalysisParameters(PrintDirection);
+        bValid &= ValidateOtherOutputOptionParameters(PrintDirection);
         bValid &= ValidateEmailAlertParameters(PrintDirection);
     } catch (prg_exception& x) {
         x.addTrace("ValidateParameters()","ParametersValidate");
         throw;
     }
     return bValid;
+}
+
+bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const {
+    try {
+        if (gParameters.getClusterSignificanceByPvalue()) {
+            double cutoff = gParameters.getClusterSignificancePvalueCutoff();
+            if (cutoff <= 0.0 || cutoff > 1.0) {
+                PrintDirection.Printf("%s:\nThe p-value cutoff which restricts identified significant clusters\nmust be greater than zero and less than or equal to one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                return false;
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateOtherOutputOptionParameters()", "ParametersValidate");
+        throw;
+    }
+    return true;
 }
 
 bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirection) const {
@@ -408,7 +425,7 @@ bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection
                 for (auto const&email : receiveAlways) {
                     if (!validEmailAdrress(email)) {
                         PrintDirection.Printf(
-                            "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM
+                            "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
                         );
                     }
                 }
@@ -417,21 +434,9 @@ bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection
             for (auto const&email : recevieSignificant) {
                 if (!validEmailAdrress(email)) {
                     PrintDirection.Printf(
-                        "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM
+                        "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
                     );
                 }
-            }
-            if (!(gParameters.getEmailSignificantRecurrenceType() == DAY || gParameters.getEmailSignificantRecurrenceType() == YEAR)) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature for significance requires recurrence interval cutoff in days or years.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-            }
-            double cutoff = gParameters.getEmailSignificantPvalueCutoff();
-            if (cutoff <= 0.0 || cutoff > 1.0) {
-                bValid = false;
-                PrintDirection.Printf("%s:\nThe p-value cutoff for email notifications must be greater than zero and less than or equal to one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
             if (gParameters.getEmailSubjectNoSignificant().empty()) {
                 bValid = false;
@@ -856,7 +861,25 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
 
 /* Validate line list parameters. */
 bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) const {
+    // Skip if we're not reading line list data from the case file.
+    if (!gParameters.getReadingLineDataFromCasefile()) return true;
+
     try {
+        auto inputsource = gParameters.getInputSource(CASEFILE);
+        if (inputsource && inputsource->getLinelistFieldsMap().size()) {
+            std::vector<std::string> labels;
+            std::set<std::string> s;
+            for (auto ll: inputsource->getLinelistFieldsMap()) {
+                labels.push_back(ll.second.get<1>());
+                s.emplace(ll.second.get<1>());
+            }
+            if (labels.size() != s.size()) {
+                PrintDirection.Printf(
+                    "%s:\nLine list mappings are defined for the case file and the labels for these mapping are not unique, but must be.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+                return false;
+            }
+        }
         if (gParameters.getOutputKMLFile() && gParameters.getGroupLinelistEventsKML()) {
             if (gParameters.getKmlEventGroupAttribute().size() == 0) {
                 PrintDirection.Printf(

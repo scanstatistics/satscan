@@ -5,7 +5,6 @@
 #include "SaTScan.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
-#include <boost/container/flat_set.hpp>
 
 class DemographicAttribute {
     protected:
@@ -101,9 +100,10 @@ class DataDemographicsProcessor{
         // cluster demographics <mlc cluster index, demograpghics set>
         std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset;
         // event ids from previous analyses
-        boost::container::flat_set<std::string> _existing_event_ids;
+        std::set<std::string> _existing_event_ids;
         // new event ids
-        boost::container::flat_set<std::string> _new_event_ids;
+        std::set<std::string> _new_event_ids;
+        std::string _temp_events_cache_filename;
         // cluster temporary filenames <mlc cluster index, temporary filename>
         std::map<int, std::string> _cluster_location_files;
         // cluster new event counts <mlc cluster index, <# new events, total events>>
@@ -122,7 +122,7 @@ class DataDemographicsProcessor{
         const ClusterEventCounts_t & getClusterNewEventsCounts() const { return _cluster_new_events; }
         const DemographicAttributeSet& getDataSetDemographics(unsigned int idx=0) const { return _demographics_by_dataset.at(idx); }
         boost::tuple<bool, bool> getEventStatus(unsigned int idx = 0) const { return _events_by_dataset.at(idx); }
-        const boost::container::flat_set<std::string>& getNewEventIds() const { return _new_event_ids; }
+        const std::set<std::string>& getNewEventIds() const { return _new_event_ids; }
         bool isNewEvent(const std::string& s) const { return _new_event_ids.find(s) != _new_event_ids.end(); }
         void print();
         void process();

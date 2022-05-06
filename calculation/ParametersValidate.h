@@ -32,6 +32,7 @@ class ParametersValidate {
     bool                ValidateLinelistParameters(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateLocationNetworkParameters(BasePrint & PrintDirection) const;
+    bool                ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;

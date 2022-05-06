@@ -798,6 +798,26 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getKmlEventGroupAttribute().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceByRecurrence", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getClusterSignificanceByRecurrence());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceRecurrenceCutoff", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterSignificanceRecurrenceCutoff());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceRecurrenceType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterSignificanceRecurrenceType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceByPvalue", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getClusterSignificanceByPvalue());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificancePvalueCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getClusterSignificancePvalueCutoff());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setEmailAnalysisResults", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailAnalysisResults());
   jni_error::_detectError(Env);
@@ -824,18 +844,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
 
   mid = _getMethodId_Checked(Env, clazz, "setEmailMessageBodySignificant", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailMessageBodySignificant().c_str()));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSignificantRecurrenceCutoff", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getEmailSignificantRecurrenceCutoff());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSignificantRecurrenceType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getEmailSignificantRecurrenceType());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSignificantPvalueCutoff", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getEmailSignificantPvalueCutoff());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setEmailAttachResults", "(Z)V");
@@ -1591,6 +1599,24 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setKmlEventGroupAttribute(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
+  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceByRecurrence", "()Z");
+  Parameters.setClusterSignificanceByRecurrence(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceRecurrenceCutoff", "()I");
+  Parameters.setClusterSignificanceRecurrenceCutoff(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  Parameters.setClusterSignificanceRecurrenceType((DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "getClusterSignificanceRecurrenceType", "Lorg/satscan/app/Parameters$DatePrecisionType;"));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceByPvalue", "()Z");
+  Parameters.setClusterSignificanceByPvalue(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificancePvalueCutoff", "()D");
+  Parameters.setClusterSignificancePvalueCutoff(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getEmailAnalysisResults", "()Z");
   Parameters.setEmailAnalysisResults(Env.CallBooleanMethod(jParameters, mid));
@@ -1637,17 +1663,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setEmailMessageBodySignificant(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailSignificantRecurrenceCutoff", "()I");
-  Parameters.setEmailSignificantRecurrenceCutoff(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
-  jni_error::_detectError(Env);
-
-  Parameters.setEmailSignificantRecurrenceType((DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "getEmailSignificantRecurrenceType", "Lorg/satscan/app/Parameters$DatePrecisionType;"));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailSignificantPvalueCutoff", "()D");
-  Parameters.setEmailSignificantPvalueCutoff(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getEmailAttachResults", "()Z");
   Parameters.setEmailAttachResults(Env.CallBooleanMethod(jParameters, mid));

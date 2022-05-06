@@ -252,6 +252,11 @@ public class Parameters implements Cloneable {
     private boolean                         _group_kml_linelist_attribute=false;
     private String                          _kml_event_group_attribute="";
     private String                          _event_cache_filename="";
+    private boolean                         _cluster_significance_by_ri=false;
+    private int                             _cluster_significance_ri_value=100;
+    private DatePrecisionType               _cluster_significance_ri_type=DatePrecisionType.DAY;
+    private boolean                         _cluster_significance_by_pval=false;
+    private double                          _cluster_significance_pval_value=0.05;
     
     private boolean                         _email_analysis_results;
     private String                          _email_always_recipients="";
@@ -260,9 +265,6 @@ public class Parameters implements Cloneable {
     private String                          _email_message_body_no_significant="";
     private String                          _email_subject_line_significant="";
     private String                          _email_message_body_significant="";
-    private int                             _email_significant_ri_value=100;
-    private DatePrecisionType               _email_significant_ri_type=DatePrecisionType.DAY;
-    private double                          _email_significant_pval_value=0.05;
     private boolean                         _email_attach_results=false;    
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
@@ -462,16 +464,13 @@ public class Parameters implements Cloneable {
         if (_calculate_oliveira_f != rhs._calculate_oliveira_f) return false;
         if (_num_oliveira_sets != rhs._num_oliveira_sets) return false;
         if (_output_cartesian_graph != rhs._output_cartesian_graph) return false;
-
         if (_minimum_high_rate_cases != rhs._minimum_high_rate_cases) return false;
         if (_risk_limit_high_clusters != rhs._risk_limit_high_clusters) return false;
         if (_risk_threshold_high_clusters != rhs._risk_threshold_high_clusters) return false;
         if (_risk_limit_low_clusters != rhs._risk_limit_low_clusters) return false;
         if (_risk_threshold_low_clusters != rhs._risk_threshold_low_clusters) return false;
-        
         if (_output_google_map != rhs._output_google_map) return false;
-        if (!_google_maps_api_key.equals(rhs._google_maps_api_key)) return false;
-        
+        if (!_google_maps_api_key.equals(rhs._google_maps_api_key)) return false;        
         if (_perform_standard_drilldown != rhs._perform_standard_drilldown) return false;
         if (_perform_bernoulli_drilldown != rhs._perform_bernoulli_drilldown) return false;
         if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
@@ -487,6 +486,11 @@ public class Parameters implements Cloneable {
         if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
         if (!_kml_event_group_attribute.equals(rhs._kml_event_group_attribute)) return false;
         if (!_event_cache_filename.equals(rhs._event_cache_filename)) return false;
+        if (_cluster_significance_by_ri != rhs._cluster_significance_by_ri) return false;
+        if (_cluster_significance_ri_value != rhs._cluster_significance_ri_value) return false;
+        if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
+        if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
+        if (_cluster_significance_pval_value != rhs._cluster_significance_pval_value) return false;
         if (_email_analysis_results != rhs._email_analysis_results) return false;
         if (!_email_always_recipients.equals(rhs._email_always_recipients)) return false;
         if (!_email_significant_recipients.equals(rhs._email_significant_recipients)) return false;
@@ -494,9 +498,6 @@ public class Parameters implements Cloneable {
         if (!_email_message_body_no_significant.equals(rhs._email_message_body_no_significant)) return false;
         if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
         if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
-        if (_email_significant_ri_value != rhs._email_significant_ri_value) return false;
-        if (_email_significant_ri_type != rhs._email_significant_ri_type) return false;
-        if (_email_significant_pval_value != rhs._email_significant_pval_value) return false;
         if (_email_attach_results != rhs._email_attach_results) return false;
         
         return true;
@@ -504,15 +505,6 @@ public class Parameters implements Cloneable {
     
     public boolean getEmailAttachResults() { return _email_attach_results; }
     public void setEmailAttachResults(boolean b) { _email_attach_results = b; }    
-    public int getEmailSignificantRecurrenceCutoff() {return _email_significant_ri_value;}
-    public void setEmailSignificantRecurrenceCutoff(int i) {_email_significant_ri_value = i;}
-    public DatePrecisionType getEmailSignificantRecurrenceType() {return _email_significant_ri_type;}
-    public void setEmailSignificantRecurrenceType(int iOrdinal) {
-        try { _email_significant_ri_type = DatePrecisionType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
-    }    
-    public double getEmailSignificantPvalueCutoff() { return _email_significant_pval_value; }
-    public void setEmailSignificantPvalueCutoff(double d) { _email_significant_pval_value = d; }
     public boolean getEmailAnalysisResults() { return _email_analysis_results; }
     public void setEmailAnalysisResults(boolean b) { _email_analysis_results = b; }
     public String getEmailAlwaysRecipients() { return _email_always_recipients; }
@@ -537,7 +529,20 @@ public class Parameters implements Cloneable {
     public String getKmlEventGroupAttribute() { return _kml_event_group_attribute; }
     public void setKmlEventGroupAttribute(String s) { _kml_event_group_attribute = s; }
     public String getEventCacheFileName() { return _event_cache_filename;}
-    public void setEventCacheFileName(String s) { _event_cache_filename = s;}    
+    public void setEventCacheFileName(String s) { _event_cache_filename = s;}
+    public boolean getClusterSignificanceByRecurrence() { return _cluster_significance_by_ri; }
+    public void setClusterSignificanceByRecurrence(boolean b) { _cluster_significance_by_ri = b; }    
+    public int getClusterSignificanceRecurrenceCutoff() {return _cluster_significance_ri_value;}
+    public void setClusterSignificanceRecurrenceCutoff(int i) { _cluster_significance_ri_value = i;}
+    public DatePrecisionType getClusterSignificanceRecurrenceType() {return _cluster_significance_ri_type;}
+    public void setClusterSignificanceRecurrenceType(int iOrdinal) {
+        try { _cluster_significance_ri_type = DatePrecisionType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
+    }    
+    public boolean getClusterSignificanceByPvalue() { return _cluster_significance_by_pval; }
+    public void setClusterSignificanceByPvalue(boolean b) { _cluster_significance_by_pval = b; }    
+    public double getClusterSignificancePvalueCutoff() { return _cluster_significance_pval_value; }
+    public void setClusterSignificancePvalueCutoff(double d) { _cluster_significance_pval_value = d; }
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
     public void setProspectiveFrequencyType(int iOrdinal) {
         try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];

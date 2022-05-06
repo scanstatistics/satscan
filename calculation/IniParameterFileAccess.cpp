@@ -390,6 +390,11 @@ void IniParameterFileAccess::Write(std::stringstream& stream) {
 void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
+        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_BY_RI, GetParameterString(CLUSTER_SIGNIFICANCE_BY_RI, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_BY_RI));
+        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_RI_VALUE, GetParameterString(CLUSTER_SIGNIFICANCE_RI_VALUE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_RI_VALUE));
+        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_RI_TYPE, GetParameterString(CLUSTER_SIGNIFICANCE_RI_TYPE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_RI_TYPE));
+        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_BY_PVAL, GetParameterString(CLUSTER_SIGNIFICANCE_BY_PVAL, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_BY_PVAL));
+        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_PVAL_VALUE, GetParameterString(CLUSTER_SIGNIFICANCE_PVAL_VALUE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_PVAL_VALUE));
         WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
         WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
         WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
@@ -441,9 +446,6 @@ void IniParameterFileAccess::WriteEmailAlertSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, EMAIL_BODY_NO_SIGNIFICANT, GetParameterString(EMAIL_BODY_NO_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_NO_SIGNIFICANT));
         WriteIniParameter(WriteFile, EMAIL_SUBJECT_SIGNIFICANT, GetParameterString(EMAIL_SUBJECT_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_SUBJECT_SIGNIFICANT));
         WriteIniParameter(WriteFile, EMAIL_BODY_SIGNIFICANT, GetParameterString(EMAIL_BODY_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_SIGNIFICANT));
-        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RI, GetParameterString(EMAIL_SIGNIFICANT_RI, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RI));
-        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RI_TYPE, GetParameterString(EMAIL_SIGNIFICANT_RI_TYPE, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RI_TYPE));
-        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_PVAL, GetParameterString(EMAIL_SIGNIFICANT_PVAL, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_PVAL));
         WriteIniParameter(WriteFile, EMAIL_ATTACH_RESULTS, GetParameterString(EMAIL_ATTACH_RESULTS, s).c_str(), GetParameterComment(EMAIL_ATTACH_RESULTS));
     } catch (prg_exception& x) {
         x.addTrace("WriteEmailAlertSettings()", "IniParameterFileAccess");

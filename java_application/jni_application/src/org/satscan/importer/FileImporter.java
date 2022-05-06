@@ -86,8 +86,8 @@ public class FileImporter {
             for (Map.Entry<Integer, Pair<InputSourceSettings.LinelistType, String>> entry : _linelist_field_map.entrySet()) {
                 switch (entry.getValue().getLeft()) {
                     case EVENT_ID: meta_row.append("<eventid> "); header_row.append("\"Event ID\" "); break;
-                    case EVENT_COORD_Y: meta_row.append("<y-coordinate> "); header_row.append("latitude "); break;
-                    case EVENT_COORD_X: meta_row.append("<x-coordinate> "); header_row.append("longitude "); break;
+                    case EVENT_COORD_Y: meta_row.append("<event-latitude-y> "); header_row.append("latitude "); break;
+                    case EVENT_COORD_X: meta_row.append("<event-longitude-x> "); header_row.append("longitude "); break;
                     default: meta_row.append("<linelist> "); header_row.append("\"" + entry.getValue().getRight() + "\" ");
                 }
             }           

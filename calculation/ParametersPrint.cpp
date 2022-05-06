@@ -176,8 +176,23 @@ void ParametersPrint::Print(FILE* fp) const {
 /** Print parameters of 'Other Output' tab/section. */
 void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
+    std::string buffer;
 
     try {
+        if (gParameters.GetIsProspectiveAnalysis()) {
+            settings.push_back(std::make_pair("Cluster Significant by Recurrance Interval Cutoff", (gParameters.getClusterSignificanceByRecurrence() ? "Yes" : "No")));
+            if (gParameters.getClusterSignificanceByRecurrence()) {
+                printString(buffer, "%u %s%s",
+                    gParameters.getClusterSignificanceRecurrenceCutoff(),
+                    (gParameters.getClusterSignificanceRecurrenceType() == DAY ? "day" : "year"),
+                    (gParameters.getClusterSignificanceRecurrenceCutoff() == 1 ? "" : "s")
+                );
+                settings.push_back(std::make_pair("Recurrance Interval Cutoff Value: ", buffer));
+            }
+        }
+        settings.push_back(std::make_pair("Cluster Significant by P-value Cutoff", (gParameters.getClusterSignificanceByPvalue() ? "Yes" : "No")));
+        if (gParameters.getClusterSignificanceByPvalue())
+            settings.push_back(std::make_pair("P-value Cutoff Value: ", printString(buffer, "%g", gParameters.getClusterSignificancePvalueCutoff())));
         if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
             settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
@@ -664,18 +679,9 @@ void ParametersPrint::PrintEmailAlertsParameters(FILE* fp) const {
         if (gParameters.getEmailAnalysisResults()) {
             settings.push_back(std::make_pair("Always Notify Recipients", gParameters.getEmailAlwaysRecipients()));
             settings.push_back(std::make_pair("Significant Results Recipients", gParameters.getEmailSignificantRecipients()));
-            if (gParameters.GetIsProspectiveAnalysis()) {
-                printString(buffer, "%u %s%s", 
-                    gParameters.getEmailSignificantRecurrenceCutoff(),
-                    (gParameters.getEmailSignificantRecurrenceType() == DAY ? "day" : "year"),
-                    (gParameters.getEmailSignificantRecurrenceCutoff() == 1 ? "" : "s")
-                );
-                settings.push_back(std::make_pair("Recurrance Interval Cutoff: ", buffer));
-                settings.push_back(std::make_pair("P-value Cutoff: ", printString(buffer, "%g", gParameters.getEmailSignificantPvalueCutoff())));
-                settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
-                settings.push_back(std::make_pair("Subject - No Significant Clusters", gParameters.getEmailSubjectNoSignificant()));
-                settings.push_back(std::make_pair("Subject - Significant Clusters", gParameters.getEmailSubjectSignificant()));
-            }
+            settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Subject - No Significant Clusters", gParameters.getEmailSubjectNoSignificant()));
+            settings.push_back(std::make_pair("Subject - Significant Clusters", gParameters.getEmailSubjectSignificant()));
         }
         WriteSettingsContainer(settings, "Alerts", fp);
     } catch (prg_exception& x) {
@@ -876,7 +882,8 @@ void ParametersPrint::PrintLinelistParameters(FILE* fp) const {
         settings.push_back(std::make_pair("Events Cache File", gParameters.getEventCacheFileName()));
         if (gParameters.getReadingLineDataFromCasefile()) {
             settings.push_back(std::make_pair("Include event grouping (KML output)", (gParameters.getGroupLinelistEventsKML() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Event grouped characteristic", gParameters.getKmlEventGroupAttribute()));
+            if (gParameters.getGroupLinelistEventsKML())
+                settings.push_back(std::make_pair("Event grouped characteristic", gParameters.getKmlEventGroupAttribute()));
             FileName linelist(gParameters.GetOutputFileName().c_str());
             linelist.setExtension(printString(buffer, ".linelist.csv").c_str());
             settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));

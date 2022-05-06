@@ -159,9 +159,7 @@ class MostLikelyClustersContainer {
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
     double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff = boost::optional<double>(), boost::optional<unsigned int> atmost = boost::optional<unsigned int>()) const;
     ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, ClusterList_t & clusters) const;
-    ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, double p_value_cutoff,
-                                    boost::optional<std::pair<DatePrecisionType, double> > recurrence_interval_cutoff = boost::optional<std::pair<DatePrecisionType, double> >()
-                                ) const;
+    ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, ClusterSupplementInfo& supplement) const;
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);

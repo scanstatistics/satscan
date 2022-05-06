@@ -95,26 +95,24 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
 
     // Iterate over the most likely clusters, creating structures that will facilitate compiling data.
     std::string buffer;
-    tract_t tNumClustersToDisplay(_sim_vars->get_sim_count() == 0 ? std::min(10, _clusters->GetNumClustersRetained()) : _clusters->GetNumClustersRetained());
     for (int i = 0; i < _clusters->GetNumClustersRetained(); ++i) {
         _cluster_new_events[i] = std::make_pair(0, 0);
         const CCluster& cluster = _clusters->GetCluster(i);
-        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-            continue;
-        if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= 0.001/*_minRatioToReport*/ && (_sim_vars->get_sim_count() == 0 || cluster.GetRank() <= _sim_vars->get_sim_count()))))
-            break;
-        // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
-        boost::dynamic_bitset<> locations(handler.gDataHub.GetNumTracts());
-        std::vector<tract_t> tractIndexes;
-        for (auto tractIdx : cluster.getLocationIndexes(handler.gDataHub, tractIndexes, true))
-            locations.set(tractIdx);
-        _cluster_locations[i] = locations;
-        // Create collection of demographic attributes for this cluster.
-        _cluster_demographics_by_dataset[i] = std::deque<DemographicAttributeSet>();
-        // Create unique temporary filename to store linelist data for this cluster - we want the records grouped by cluster.
-        _cluster_location_files[i] = GetUserTemporaryFilename(buffer);
+        if (cluster.isSignificant(handler.gDataHub, i + 1, sim_vars)) {
+            // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
+            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumTracts());
+            std::vector<tract_t> tractIndexes;
+            if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+                for (auto tractIdx : cluster.getLocationIndexes(handler.gDataHub, tractIndexes, true))
+                    locations.set(tractIdx);
+            }
+            _cluster_locations[i] = locations;
+            // Create collection of demographic attributes for this cluster.
+            _cluster_demographics_by_dataset[i] = std::deque<DemographicAttributeSet>();
+            // Create unique temporary filename to store linelist data for this cluster - we want the records grouped by cluster.
+            _cluster_location_files[i] = GetUserTemporaryFilename(buffer);
+        }
     }
-
     // Read event ids from file cache - these are events that signalled in prior analyses.
     if (boost::filesystem::exists(_parameters.getEventCacheFileName().c_str())) {
         std::ifstream event_stream;
@@ -176,6 +174,13 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         _demographics_by_dataset.push_back(DemographicAttributeSet(Source->getLinelistFieldsMap()));
         // Record whether data source has event attributes.
         _events_by_dataset.push_back(boost::tuple<bool, bool>(Source->hasEventIdLinelistMapping(), Source->hasEventCoordinatesLinelistMapping()));
+        /* Create temporary events cache to record all event discovered in this analysis. If the baseline period moves over time for this analysis
+           then the event cache could become bloated with event ids no longer in baseline period. */
+        std::ofstream events_stream;
+        if (_events_by_dataset.back().get<0>() && _temp_events_cache_filename.empty()) {
+            _temp_events_cache_filename = GetUserTemporaryFilename(buffer);
+            events_stream.open(_temp_events_cache_filename, std::ios_base::app);
+        }
         // Create  new demographics attrbite set for each cluster being reported.
         for (auto cluster : _cluster_demographics_by_dataset)
             _cluster_demographics_by_dataset[cluster.first].push_back(DemographicAttributeSet(Source->getLinelistFieldsMap()));
@@ -200,11 +205,13 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             applicable.reset();
             for (auto cluster_locs : _cluster_locations) {
                 const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
-                if (cluster_locs.second.test(tid) && startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
+                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.test(tid))
+                    continue;
+                if (startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
                     applicable.set(cluster_locs.first);
             }
-            const char * value = 0;
-            std::vector<std::string> values; bool /*event_seen = false,*/ is_new_event = false;
+            boost::logic::tribool is_new_event(boost::logic::indeterminate);
+            const char * value = 0; std::vector<std::string> values; std::string eventid;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                 // Retrieve the value to report for this demographic attribute.
                 value = Source->GetValueAtUnmapped(itr->first);
@@ -213,11 +220,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 // Add attribute to data set demographics.
                 _demographics_by_dataset.back().get(itr->second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
-                if (itr->second.get<0>() == EVENT_ID/* && !event_seen*/) {
+                if (itr->second.get<0>() == EVENT_ID) {
                     is_new_event = _existing_event_ids.find(value) == _existing_event_ids.end();
-                    values.insert(values.end() - 1, (is_new_event ? "*" : ""));
-                    if (is_new_event) _new_event_ids.emplace(value);
-                    /*event_seen = true; // Mark are seen, in case this event is included in more than one cluster.*/
+                    values.insert(values.end() - 1, (is_new_event ? "New" : ""));
+                    eventid = value;
                 }
                 // Add attribute to cluster data set demographics.
                 for (size_t t=0; t < applicable.size(); ++t) {
@@ -230,14 +236,23 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                         _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(itr->second)->add(values.back(), 0);
                 }
             }
-            // Write values to temporary cluster file - depending on geographical overlap, I suppose this could be more than one cluster.
+            // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
             boost::optional<int> first(_events_by_dataset.back().get<0>() ? boost::make_optional(applicable.find_first()) : boost::none);
             for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b)) {
                 appendLinelistData(static_cast<int>(b), values, first);
-                if (is_new_event) _cluster_new_events[static_cast<int>(b)].first += 1;
+                if (is_new_event) {
+                    _new_event_ids.emplace(eventid);
+                    _cluster_new_events[static_cast<int>(b)].first += 1;
+                }
                 _cluster_new_events[static_cast<int>(b)].second += 1;
             }
+            // Maintain the event id cache. Add if:
+            // 1) new event id signalled in significant cluster of this analysis.
+            // 1) event id signalled in prior analysis iteration (event id in current case file and current event cache).
+            if ((is_new_event && applicable.count()) || is_new_event == boost::logic::tribool(false))
+                events_stream << eventid << std::endl;
         }
+        if (events_stream.is_open()) events_stream.close();
         // Create the output file and concatenate cluster data files to it.
         FileName linelist(_parameters.GetOutputFileName().c_str()); // TODO -- should this be made into a AbstractDataFileWriter class?
         linelist.setExtension(printString(buffer, ".linelist%s.csv", (_handler.GetNumDataSets() > 1 ? printString(buffer2, ".dataset%u", DataSet.getSetIndex()).c_str() : "")).c_str());
@@ -266,20 +281,15 @@ void DataDemographicsProcessor::finalize() {
             signalled.setExtension(".event-cache.txt");
             const_cast<CParameters&>(_parameters).setEventCacheFileName(signalled.getFullPath(filepath).c_str());
             _handler.gDataHub.GetPrintDirection().Printf(
-                "An event cache file is being created for this analysis, since none was specified in the parameter settings.\n"
+                "An event cache file is being created for this analysis, since one was not specified in the parameter settings.\n"
                 "If you wish to maintain this file in future analyses, you should update the event cache parameter setting to:\n%s\n",
                 BasePrint::P_WARNING, filepath.c_str()
             );
         }
-        _handler.gDataHub.GetPrintDirection().Printf("Writing event ids to file cache.\n", BasePrint::P_STDOUT);
-        std::ofstream event_stream;
-        event_stream.open(_parameters.getEventCacheFileName().c_str(), std::ios::trunc);
-        if (!event_stream) throw resolvable_error("Error: Could not open event cache file '%s'.\n", _parameters.getEventCacheFileName().c_str());
-        for (auto const&event_id : _existing_event_ids)
-            event_stream << event_id << std::endl;
-        for (auto const&event_id : _new_event_ids)
-            event_stream << event_id << std::endl;
-        event_stream.close();
+        //_handler.gDataHub.GetPrintDirection().Printf("Writing event ids to file cache.\n", BasePrint::P_STDOUT);
+        boost::filesystem::path from = _temp_events_cache_filename, to = filepath;
+        boost::filesystem::detail::copy_file(from, to, boost::filesystem::detail::overwrite_if_exists);
+        remove(_temp_events_cache_filename.c_str());
     }
 }
 
@@ -293,8 +303,6 @@ void DataDemographicsProcessor::print() {
     for (auto attrpair : _demographics_by_dataset.back().getAttributes())
         attrpair.second->print();
     for (auto cluster_dem : _cluster_demographics_by_dataset) {
-        const CCluster& cluster = _clusters->GetCluster(cluster_dem.first);
-        printf("cluster by ratio %g\n", cluster.GetRatio());
         for (auto attrpair : _cluster_demographics_by_dataset[cluster_dem.first].back().getAttributes())
             attrpair.second->print();
     }

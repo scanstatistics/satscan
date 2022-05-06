@@ -189,9 +189,14 @@ class CParameters {
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
     bool                                _casefile_includes_linedata;            /* indication whether case file contains line list data, and therefore a first row meta-line */
     bool                                _casefile_includes_header;              /* indication whether case file contains header row, used for line list labels */
+    std::string                         _event_cache_filename;
     bool                                _group_kml_linelist_attribute;          /* indication whether to include linelist events in kml output, grouped */
     std::string                         _kml_event_group_attribute;             /* label of line-list colummn that should be used to group events in KML file */
-    std::string                         _event_cache_filename;
+    bool                                _cluster_significance_by_ri;
+    unsigned int                        _cluster_significance_ri_value;
+    DatePrecisionType                   _cluster_significance_ri_type;
+    bool                                _cluster_significance_by_pval;
+    double                              _cluster_significance_pval_value;
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
     std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
     bool                                gbUsePopulationFile;                    /** indicates whether population data will be read given other parameter settings */
@@ -291,9 +296,6 @@ class CParameters {
     std::string                         _email_message_body_no_significant;
     std::string                         _email_subject_significant;
     std::string                         _email_message_body_significant;
-    unsigned int                        _email_significant_ri_value;
-    DatePrecisionType                   _email_significant_ri_type;
-    double                              _email_significant_pval_value;
     bool                                _email_attach_results;
 
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
@@ -315,15 +317,19 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    bool                                getClusterSignificanceByRecurrence() const { return _cluster_significance_by_ri; }
+    void                                setClusterSignificanceByRecurrence(bool b) { _cluster_significance_by_ri = b; }
+    unsigned int                        getClusterSignificanceRecurrenceCutoff() const { return _cluster_significance_ri_value; }
+    void                                setClusterSignificanceRecurrenceCutoff(unsigned int i) { _cluster_significance_ri_value = i; }
+    DatePrecisionType                   getClusterSignificanceRecurrenceType() const { return _cluster_significance_ri_type; }
+    void                                setClusterSignificanceRecurrenceType(DatePrecisionType etype);
+    bool                                getClusterSignificanceByPvalue() const { return _cluster_significance_by_pval; }
+    void                                setClusterSignificanceByPvalue(bool b) { _cluster_significance_by_pval = b; }
+    double                              getClusterSignificancePvalueCutoff() const { return _cluster_significance_pval_value; }
+    void                                setClusterSignificancePvalueCutoff(double d) { _cluster_significance_pval_value = d; }
+
     bool                                getEmailAttachResults() const { return _email_attach_results; }
     void                                setEmailAttachResults(bool b) { _email_attach_results = b; }
-    unsigned int                        getEmailSignificantRecurrenceCutoff() const { return _email_significant_ri_value; }
-    void                                setEmailSignificantRecurrenceCutoff(unsigned int i) { _email_significant_ri_value = i; }
-    DatePrecisionType                   getEmailSignificantRecurrenceType() const { return _email_significant_ri_type; }
-    void                                setEmailSignificantRecurrenceType(DatePrecisionType etype);
-    double                              getEmailSignificantPvalueCutoff() const { return _email_significant_pval_value; }
-    void                                setEmailSignificantPvalueCutoff(double d) { _email_significant_pval_value = d; }
-
     bool                                getEmailAnalysisResults() const { return _email_analysis_results; }
     void                                setEmailAnalysisResults(bool b) { _email_analysis_results = b; }
     std::vector<std::string>            getEmailAlwaysRecipientsList() const {
@@ -349,12 +355,10 @@ class CParameters {
     void                                setEmailSubjectSignificant(const char * s) { _email_subject_significant = s; }
     const std::string                 & getEmailMessageBodySignificant() const { return _email_message_body_significant; }
     void                                setEmailMessageBodySignificant(const char * s) { _email_message_body_significant = s; }
-
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
     void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
-
     bool                                getCasefileIncludesLineData() const { return _casefile_includes_linedata; }
     void                                setCasefileIncludesLineData(bool b) { _casefile_includes_linedata = b; }
     bool                                getCasefileIncludesHeader() const { return _casefile_includes_header; }

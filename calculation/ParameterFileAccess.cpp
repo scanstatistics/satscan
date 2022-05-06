@@ -244,6 +244,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case KML_EVENT_GROUP              : return "indication whether to include linelist events in kml output, grouped (y/n)";
       case KML_EVENT_GROUP_BY           : return "label of line-list colummn that should be used to group events in KML file";
       case LL_EVENT_CACHE_FILE          : return "file to store events ids";
+      case CLUSTER_SIGNIFICANCE_BY_RI   : return "cluster significance by recurrence interval  (y/n)";
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: return "cluster significance recurrence interval cutoff (positive integer)";
+      case CLUSTER_SIGNIFICANCE_RI_TYPE : return "cluster significance recurrence interval type (YEAR=1, DAY=3)";
+      case CLUSTER_SIGNIFICANCE_BY_PVAL : return "cluster significance by  p-value (y/n)";
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE : return "cluster significance p-value cutoff (0.000-1.000)";
       case EMAIL_RESULTS_SUMMARY        : return "whether to email user an analysis results summary";
       case EMAIL_ALWAYS_RCPTS           : return "list of users which are always emailed";
       case EMAIL_SIGNIFICANT_RCPTS      : return "list of users which are emailed for significant events";
@@ -251,9 +256,6 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case EMAIL_BODY_NO_SIGNIFICANT    : return "email message body - no significant clusters";
       case EMAIL_SUBJECT_SIGNIFICANT    : return "subject line of email - significant clusters";
       case EMAIL_BODY_SIGNIFICANT       : return "email message body - significant clusters";
-      case EMAIL_SIGNIFICANT_RI         : return "email significant clusters - meeting recurrence interval (positive integer)";
-      case EMAIL_SIGNIFICANT_RI_TYPE    : return "email significant clusters - meeting recurrence interval type (YEAR=1, DAY=3)";
-      case EMAIL_SIGNIFICANT_PVAL       : return "email significant clusters - meeting p-value (0.000-1.000)";
       case EMAIL_ATTACH_RESULTS         : return "email message - attach results";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -444,6 +446,11 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case KML_EVENT_GROUP              : return AsString(s, gParameters.getGroupLinelistEventsKML());
       case KML_EVENT_GROUP_BY           : s = gParameters.getKmlEventGroupAttribute().c_str(); return s;
       case LL_EVENT_CACHE_FILE          : s = gParameters.getEventCacheFileName().c_str(); return s;
+      case CLUSTER_SIGNIFICANCE_BY_RI   : return AsString(s, gParameters.getClusterSignificanceByRecurrence());
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: return AsString(s, gParameters.getClusterSignificanceRecurrenceCutoff());
+      case CLUSTER_SIGNIFICANCE_RI_TYPE : return AsString(s, gParameters.getClusterSignificanceRecurrenceType());
+      case CLUSTER_SIGNIFICANCE_BY_PVAL : return AsString(s, gParameters.getClusterSignificanceByPvalue());
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: return AsString(s, gParameters.getClusterSignificancePvalueCutoff());
       case EMAIL_RESULTS_SUMMARY        : return AsString(s, gParameters.getEmailAnalysisResults());
       case EMAIL_ALWAYS_RCPTS           : s = gParameters.getEmailAlwaysRecipients().c_str(); return s;
       case EMAIL_SIGNIFICANT_RCPTS      : s = gParameters.getEmailSignificantRecipients().c_str(); return s;
@@ -451,9 +458,6 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case EMAIL_BODY_NO_SIGNIFICANT    : s = gParameters.getEmailMessageBodyNoSignificant().c_str(); return s;
       case EMAIL_SUBJECT_SIGNIFICANT    : s = gParameters.getEmailSubjectSignificant().c_str(); return s;
       case EMAIL_BODY_SIGNIFICANT       : s = gParameters.getEmailMessageBodySignificant().c_str(); return s;
-      case EMAIL_SIGNIFICANT_RI         : return AsString(s, gParameters.getEmailSignificantRecurrenceCutoff());
-      case EMAIL_SIGNIFICANT_RI_TYPE    : return AsString(s, gParameters.getEmailSignificantRecurrenceType());
-      case EMAIL_SIGNIFICANT_PVAL       : return AsString(s, gParameters.getEmailSignificantPvalueCutoff());
       case EMAIL_ATTACH_RESULTS         : return AsString(s, gParameters.getEmailAttachResults());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -879,6 +883,12 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case KML_EVENT_GROUP              : gParameters.setGroupLinelistEventsKML(ReadBoolean(sParameter, eParameterType)); break;
       case KML_EVENT_GROUP_BY           : gParameters.setKmlEventGroupAttribute(sParameter.c_str()); break;
       case LL_EVENT_CACHE_FILE          : gParameters.setEventCacheFileName(sParameter.c_str(), true); break;
+      case CLUSTER_SIGNIFICANCE_BY_RI   : gParameters.setClusterSignificanceByRecurrence(ReadBoolean(sParameter, eParameterType)); break;
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: gParameters.setClusterSignificanceRecurrenceCutoff(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case CLUSTER_SIGNIFICANCE_RI_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
+                                          gParameters.setClusterSignificanceRecurrenceType((DatePrecisionType)iValue); break;
+      case CLUSTER_SIGNIFICANCE_BY_PVAL : gParameters.setClusterSignificanceByPvalue(ReadBoolean(sParameter, eParameterType)); break;
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: gParameters.setClusterSignificancePvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
       case EMAIL_RESULTS_SUMMARY        : gParameters.setEmailAnalysisResults(ReadBoolean(sParameter, eParameterType)); break;
       case EMAIL_ALWAYS_RCPTS           : gParameters.setEmailAlwaysRecipients(sParameter.c_str()); break;
       case EMAIL_SIGNIFICANT_RCPTS      : gParameters.setEmailSignificantRecipients(sParameter.c_str()); break;
@@ -886,10 +896,6 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case EMAIL_BODY_NO_SIGNIFICANT    : gParameters.setEmailMessageBodyNoSignificant(sParameter.c_str()); break;
       case EMAIL_SUBJECT_SIGNIFICANT    : gParameters.setEmailSubjectSignificant(sParameter.c_str()); break;
       case EMAIL_BODY_SIGNIFICANT       : gParameters.setEmailMessageBodySignificant(sParameter.c_str()); break;
-      case EMAIL_SIGNIFICANT_RI         : gParameters.setEmailSignificantRecurrenceCutoff(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case EMAIL_SIGNIFICANT_RI_TYPE    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
-                                          gParameters.setEmailSignificantRecurrenceType((DatePrecisionType)iValue); break;
-      case EMAIL_SIGNIFICANT_PVAL       : gParameters.setEmailSignificantPvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
       case EMAIL_ATTACH_RESULTS         : gParameters.setEmailAttachResults(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };

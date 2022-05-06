@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 171;
+const int CParameters::giNumParameters                = 173;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -197,10 +197,12 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_email_message_body_no_significant != rhs._email_message_body_no_significant) return false;
   if (_email_subject_significant != rhs._email_subject_significant) return false;
   if (_email_message_body_significant != rhs._email_message_body_significant) return false;
-  if (_email_significant_ri_value != rhs._email_significant_ri_value) return false;
-  if (_email_significant_ri_type != rhs._email_significant_ri_type) return false;
-  if (_email_significant_pval_value != rhs._email_significant_pval_value) return false;
   if (_email_attach_results != rhs._email_attach_results) return false;
+  if (_cluster_significance_by_ri != rhs._cluster_significance_by_ri) return false;
+  if (_cluster_significance_ri_value != _cluster_significance_ri_value) return false;
+  if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
+  if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
+  if (_cluster_significance_pval_value != _cluster_significance_pval_value) return false;
   return true;
 }
 
@@ -449,10 +451,12 @@ void CParameters::Copy(const CParameters &rhs) {
   _email_message_body_no_significant = rhs._email_message_body_no_significant;
   _email_subject_significant = rhs._email_subject_significant;
   _email_message_body_significant = rhs._email_message_body_significant;
-  _email_significant_ri_value = rhs._email_significant_ri_value;
-  _email_significant_ri_value = rhs._email_significant_ri_value;
-  _email_significant_pval_value = rhs._email_significant_pval_value;
   _email_attach_results = rhs._email_attach_results;
+  _cluster_significance_by_ri = rhs._cluster_significance_by_ri;
+  _cluster_significance_ri_value = _cluster_significance_ri_value;
+  _cluster_significance_ri_type = rhs._cluster_significance_ri_type;
+  _cluster_significance_by_pval = rhs._cluster_significance_by_pval;
+  _cluster_significance_pval_value = rhs._cluster_significance_pval_value;
 }
 
 /* Returns whether line list data is read from case file - which is indicated in two exclusive ways:
@@ -1041,10 +1045,12 @@ void CParameters::SetAsDefaulted() {
   _email_message_body_no_significant = "";
   _email_subject_significant = "";
   _email_message_body_significant = "";
-  _email_significant_ri_value = 100;
-  _email_significant_ri_type = DAY;
-  _email_significant_pval_value = 0.05;
   _email_attach_results = false;
+  _cluster_significance_by_ri = false;
+  _cluster_significance_ri_value = 100;
+  _cluster_significance_ri_type = DAY;
+  _cluster_significance_by_pval = false;
+  _cluster_significance_pval_value = 0.05;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1185,11 +1191,11 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
   gePrecisionOfTimesType = eDatePrecisionType;
 }
 
-/** Sets recurrence interval type. Throws exception if out of range. */
-void CParameters::setEmailSignificantRecurrenceType(DatePrecisionType etype) {
-    if (!(etype == DAY || etype == YEAR))
-        throw prg_error("Invalid enumeration %d for settings.", "SetPrecisionOfTimesType()", etype);
-    _email_significant_ri_type = etype;
+/** Sets recurrence interval type for cluster line list. Throws exception if out of range. */
+void CParameters::setClusterSignificanceRecurrenceType(DatePrecisionType etype) {
+    if (!(etype == DAY || etype == YEAR || etype == GENERIC))
+        throw prg_error("Invalid enumeration %d for settings. Must be %d, %d or %d.", "setClusterSignificanceRecurrenceType()", etype, DAY, YEAR, GENERIC);
+    _cluster_significance_ri_type = etype;
 }
 
 /** Sets probability model type. Throws exception if out of range. */

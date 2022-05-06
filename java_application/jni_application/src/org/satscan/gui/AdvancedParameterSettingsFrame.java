@@ -371,21 +371,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     private void enableEmailAlerts() {
-       boolean prospectiveAnalysis = (
-            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-        );
-        
         _label_always_email.setEnabled(Utils.selected(_checkbox_sendmail));
         _always_email.setEnabled(Utils.selected(_checkbox_sendmail));
         _label_significant_email.setEnabled(Utils.selected(_checkbox_sendmail));
         _significant_email.setEnabled(Utils.selected(_checkbox_sendmail));
-        _label_email_significant_when.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_significant_ri_label.setEnabled(Utils.selected(_checkbox_sendmail) && prospectiveAnalysis);
-        _email_significant_ri_value.setEnabled(Utils.selected(_checkbox_sendmail) && prospectiveAnalysis);
-        _email_significant_ri_type.setEnabled(Utils.selected(_checkbox_sendmail) && prospectiveAnalysis);
-        _email_significant_pval_label.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_significant_pval_value.setEnabled(Utils.selected(_checkbox_sendmail));
         _email_significant_attach_results.setEnabled(Utils.selected(_checkbox_sendmail));
         _label_email_subject_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
         _email_subject_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
@@ -409,27 +398,65 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _panel_linelist.setEnabled(bEnable);
         
         boolean hasCaseFileLinelistMappings = false;
+        Pair<Boolean, Boolean> eventInfo = Pair.of(false, false);
         String key = InputSourceSettings.InputFileType.Case.toString() + "1";
         if (_settings_window._input_source_map.containsKey(key)) {
           InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
           hasCaseFileLinelistMappings = !inputSourceSettings.getLinelistFieldMaps().isEmpty();
+          eventInfo = inputSourceSettings.hasLinelistEventIdAndPlotInfo();
         }
-        
         _checkbox_casefile_metarow.setEnabled(bEnable && !hasCaseFileLinelistMappings);
         _checkbox_casefile_header.setEnabled(Utils.selected(_checkbox_casefile_metarow));
-         _event_cache_field.setEnabled(hasCaseFileLinelistMappings || Utils.selected(_checkbox_casefile_metarow));
-         _event_cache_field.setEnabled(hasCaseFileLinelistMappings || Utils.selected(_checkbox_casefile_metarow));
-         _event_cache_browse.setEnabled(hasCaseFileLinelistMappings || Utils.selected(_checkbox_casefile_metarow));
-        _checkbox_grouping_kml.setEnabled(
-            hasCaseFileLinelistMappings || Utils.selected(_checkbox_casefile_metarow)
-        );
+        // Hide or show the text indicating line list settings defined through file wizard.
+        _label_linelist_filewizard.setForeground(hasCaseFileLinelistMappings ? new java.awt.Color(0, 0, 0) : new java.awt.Color(240, 240, 240));
+        
+        // If user choose case file meta row, try to determine event info from case file directly.s
+        if (Utils.selected(_checkbox_casefile_metarow)) {
+            try {
+                CSVImportDataSource sourceCase = new CSVImportDataSource(
+                    new File(_settings_window._caseFileTextField.getText()), false, '\n', ' ', '"', 0
+                );
+                Object[] meta = sourceCase.readRow();
+                boolean event=false, eventx=false, eventy=false;
+                for (int i=0; i < meta.length; ++i) {
+                   if (((String)meta[i]).equals("<eventid>")) {
+                       event = true;
+                   } else if (((String)meta[i]).equals("<event-longitude-x>")) {
+                       eventx = true;
+                   } else if (((String)meta[i]).equals("<event-latitude-y>")) {
+                       eventy = true;
+                   }
+                }
+                eventInfo = Pair.of(event, eventx && eventy);
+            } catch (Exception ex) {
+                eventInfo = Pair.of(false, false);
+            }
+        }
+         _event_cache_field.setEnabled(eventInfo.getLeft());
+         _event_cache_field.setEnabled(eventInfo.getLeft());
+         _event_cache_browse.setEnabled(eventInfo.getLeft());
+        _checkbox_grouping_kml.setEnabled(eventInfo.getLeft() && eventInfo.getRight());
         _grouping_input_label.setEnabled(Utils.selected(_checkbox_grouping_kml));
         _linelist_grouping.setEnabled(Utils.selected(_checkbox_grouping_kml));
         _view_linelist_choices.setEnabled(Utils.selected(_checkbox_grouping_kml));
         _clear_grouped.setEnabled(Utils.selected(_checkbox_grouping_kml));
-                
-        // Hide or show the text indicating line list settings defined through file wizard.
-        _label_linelist_filewizard.setForeground(hasCaseFileLinelistMappings ? new java.awt.Color(0, 0, 0) : new java.awt.Color(240, 240, 240));
+    }    
+
+    /* Enables controls of the other output group. */
+    public void enableOtherOutputGroup() {
+        boolean bEnable = true;
+        _cluster_significance_panel.setEnabled(bEnable);
+        boolean prospectiveAnalysis = (
+            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+        );
+        _cluster_significant_ri_chx.setEnabled(prospectiveAnalysis);
+        _cluster_significant_ri_value.setEnabled(Utils.selected(_cluster_significant_ri_chx));
+        _cluster_significant_ri_type.setEnabled(
+            Utils.selected(_cluster_significant_ri_chx) && _settings_window.getPrecisionOfTimesControlType() != Parameters.DatePrecisionType.GENERIC
+        );
+        _cluster_significant_pval_chx.setEnabled(true);
+        _cluster_significant_pval_value.setEnabled(Utils.selected(_cluster_significant_pval_chx));
     }    
     
     /**
@@ -700,6 +727,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableDrilldownGroup();
         setSpatialDistanceCaption();
         enableCaseFileLinelistGroup();
+        enableOtherOutputGroup();
         enableEmailAlerts();
     }
 
@@ -985,12 +1013,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_includeClusterLocationsInKML, true);
         bReturn &= Utils.selected(_createCompressedKMZ, false);
         bReturn &= Utils.selected(_launch_map_viewer, true);
+        bReturn &= Utils.selected(_cluster_significant_ri_chx, false);
+        bReturn &= Utils.integerIs(_cluster_significant_ri_value, 100);
+        bReturn &= Utils.selectionIs(_cluster_significant_ri_type, 0);
+        bReturn &= Utils.selected(_cluster_significant_pval_chx, false);
+        bReturn &= Utils.doubleIs(_cluster_significant_pval_value, 0.05); 
         bReturn &= Utils.selected(_checkbox_sendmail, false);
         bReturn &= Utils.textIs(_always_email, "");
         bReturn &= Utils.textIs(_significant_email, "");
-        bReturn &= Utils.integerIs(_email_significant_ri_value, 100);
-        bReturn &= Utils.selectionIs(_email_significant_ri_type, 0);
-        bReturn &= Utils.doubleIs(_email_significant_pval_value, 0.05);                
         bReturn &= Utils.textIs(_email_subject_insignificant, "");
         bReturn &= Utils.textIs(_email_message_insignificant, "");
         bReturn &= Utils.textIs(_email_subject_significant, "");
@@ -1075,34 +1105,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }    
 
-    private Parameters.DatePrecisionType getEmailSignificantRecurrenceControlType() {
-        Parameters.DatePrecisionType eReturn = null;
-
-        // TODO: What about generic?
-        
-        if (_email_significant_ri_type.getSelectedIndex() == 0) {
+    private Parameters.DatePrecisionType getClusterSignificantRecurrenceControlType() {
+        if (!_cluster_significant_ri_type.isEnabled())
+            return Parameters.DatePrecisionType.GENERIC;
+        Parameters.DatePrecisionType eReturn;
+        if (_cluster_significant_ri_type.getSelectedIndex() == 0) {
             eReturn = Parameters.DatePrecisionType.DAY;
-        } else if (_prospective_frequency.getSelectedIndex() == 1) {
+        } else if (_cluster_significant_ri_type.getSelectedIndex() == 1) {
             eReturn = Parameters.DatePrecisionType.YEAR;
-            throw new IllegalArgumentException("No recurrence interval control typeoption selected.");
+        } else {
+            throw new IllegalArgumentException("No cluster siognificance option selected.");            
         }
         return eReturn;
     }     
-    
-    private void setEmailSignificantRecurrenceControlType(Parameters.DatePrecisionType etype) {
-        
-        // TODO: What about generic?s
-        
+
+    private void setClusterSignificantRecurrenceControlType(Parameters.DatePrecisionType etype) {
         switch (etype) {
-            case YEAR:
-                _email_significant_ri_type.select(0);
-                break;
+            case YEAR: _cluster_significant_ri_type.select(1); break;
             case DAY:
-            default: 
-                _email_significant_ri_type.select(0);
+            default: _cluster_significant_ri_type.select(0);
         }
     }    
-    
+
     private Parameters.PowerEvaluationMethodType getPowerEvaluationMethodType() {
         Parameters.PowerEvaluationMethodType eReturn = null;
 
@@ -1338,14 +1362,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setEmailAnalysisResults(Utils.selected(_checkbox_sendmail));
         parameters.setEmailAlwaysRecipients(_always_email.getText());
         parameters.setEmailSignificantRecipients(_significant_email.getText());
-        parameters.setEmailSignificantRecurrenceCutoff(Integer.parseInt(_email_significant_ri_value.getText()));
-        parameters.setEmailSignificantRecurrenceType(getEmailSignificantRecurrenceControlType().ordinal());   
-        parameters.setEmailSignificantPvalueCutoff(Double.parseDouble(_email_significant_pval_value.getText()));
         parameters.setEmailSubjectNoSignificant(_email_subject_insignificant.getText());
         parameters.setEmailMessageBodyNoSignificant(replaceNewlines(_email_message_insignificant.getText()));
         parameters.setEmailSubjectSignificant(_email_subject_significant.getText());
         parameters.setEmailMessageBodySignificant(replaceNewlines(_email_message_significant.getText()));
         parameters.setEmailAttachResults(Utils.selected(_email_significant_attach_results));
+
+        // Other Outputs
+        parameters.setClusterSignificanceByRecurrence(Utils.selected(_cluster_significant_ri_chx));
+        parameters.setClusterSignificanceRecurrenceCutoff(Integer.parseInt(_cluster_significant_ri_value.getText()));
+        parameters.setClusterSignificanceRecurrenceType(getClusterSignificantRecurrenceControlType().ordinal());   
+        parameters.setClusterSignificanceByPvalue(Utils.selected(_cluster_significant_pval_chx));
+        parameters.setClusterSignificancePvalueCutoff(Double.parseDouble(_cluster_significant_pval_value.getText()));
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1892,7 +1920,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void validateLinelistSettings() throws AdvFeaturesExpection {
         // validate linelist parameters.
-        if (_event_cache_field.getText().length() > 0) {
+        if (_event_cache_field.isEnabled() && _event_cache_field.getText().length() > 0) {
             if (!FileAccess.ValidateFileAccess(_event_cache_field.getText(), true, true)) {
                 throw new AdvFeaturesExpection(
                         "Event cache file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
@@ -1905,6 +1933,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.INPUT, (Component) _event_cache_field
                 );
             }
+        }
+        if (Utils.selected(_checkbox_grouping_kml) && _linelist_grouping.getText().isEmpty()) {
+            throw new AdvFeaturesExpection(
+                "The option to include event characteristics in KML output has been selected\n" +
+                "yet no group by characteristics have been selected.",
+                FocusedTabSet.INPUT, (Component) _checkbox_grouping_kml
+            );              
         }
     }
 
@@ -1924,6 +1959,26 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.OUTPUT, (Component) _always_email
                     );
                 }
+                boolean prospectiveAnalysis = (
+                    _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                    _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+                );
+                
+                /*
+                if (prospectiveAnalysis && !Utils.selected(_email_significant_ri_chx) && !Utils.selected(_email_significant_pval_chx)) {
+                    throw new AdvFeaturesExpection(
+                        "A recurrance interval or p-value cutoff for email notifications is required for prospective analyses.",
+                        FocusedTabSet.OUTPUT, (Component) _email_significant_ri_chx
+                    );                    
+                }
+                if (!prospectiveAnalysis && !Utils.selected(_email_significant_pval_chx)) {
+                    throw new AdvFeaturesExpection(
+                        "A p-value cutoff for email notifications is required for retrospective analyses.",
+                        FocusedTabSet.OUTPUT, (Component) _email_significant_pval_chx
+                    );                    
+                }  
+                */
+                
                 if (_email_subject_insignificant.getText().isEmpty()) {
                     throw new AdvFeaturesExpection(
                         "The email notifications feature requires subject text for insignificant email messages.",
@@ -2164,9 +2219,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _number_oliveira_data_sets.setText("1000");        
         _checkbox_sendmail.setSelected(false);
         _numMostLikelyClustersGraph.setText("");
-        _email_significant_ri_value.setText("100");
-        _email_significant_ri_type.select(0);
-        _email_significant_pval_value.setText("0.05");
+        _cluster_significant_ri_chx.setSelected(false);
+        _cluster_significant_ri_value.setText("100");
+        _cluster_significant_ri_type.select(0);
+        _cluster_significant_pval_chx.setSelected(false);
+        _cluster_significant_pval_value.setText("0.05");
         _email_subject_insignificant.setText("");
         _email_message_insignificant.setText("");
         _email_subject_significant.setText("");
@@ -2703,18 +2760,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _event_cache_field.setText(parameters.getEventCacheFileName());
         _checkbox_grouping_kml.setSelected(parameters.getGroupLinelistEventsKML());
         _linelist_grouping.setText(parameters.getKmlEventGroupAttribute());
-        
+
         // Email Alerts
         _checkbox_sendmail.setSelected(parameters.getEmailAnalysisResults());
         _always_email.setText(parameters.getEmailAlwaysRecipients());
-        _significant_email.setText(parameters.getEmailSignificantRecipients());
-        _email_significant_ri_value.setText(Integer.toString(parameters.getEmailSignificantRecurrenceCutoff()));
-        setEmailSignificantRecurrenceControlType(parameters.getEmailSignificantRecurrenceType());
-        _email_significant_pval_value.setText(Double.toString(parameters.getEmailSignificantPvalueCutoff()));
+        _significant_email.setText(parameters.getEmailSignificantRecipients());        
         _email_subject_insignificant.setText(parameters.getEmailSubjectNoSignificant());
         _email_message_insignificant.setText(substituteNewlines(parameters.getEmailMessageBodyNoSignificant()));
         _email_subject_significant.setText(parameters.getEmailSubjectSignificant());
         _email_message_significant.setText(substituteNewlines(parameters.getEmailMessageBodySignificant()));
+        
+        // Other Output Tab
+        _cluster_significant_ri_chx.setSelected(parameters.getClusterSignificanceByRecurrence());
+        _cluster_significant_ri_value.setText(Integer.toString(parameters.getClusterSignificanceRecurrenceCutoff()));
+        setClusterSignificantRecurrenceControlType(parameters.getClusterSignificanceRecurrenceType());
+        _cluster_significant_pval_chx.setSelected(parameters.getClusterSignificanceByPvalue());
+        _cluster_significant_pval_value.setText(Double.toString(parameters.getClusterSignificancePvalueCutoff()));
     }
 
     /**
@@ -3000,6 +3061,55 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _printAsciiColumnHeaders = new javax.swing.JCheckBox();
         _userDefinedRunTitle = new javax.swing.JPanel();
         _printTitle = new javax.swing.JTextField();
+        _cluster_significance_panel = new javax.swing.JPanel();
+        _cluster_significant_ri_chx = new javax.swing.JCheckBox();
+        _cluster_significant_ri_value = new javax.swing.JTextField();
+        _cluster_significant_ri_value.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_cluster_significant_ri_value.getText().length() == 0 ||
+                    Double.parseDouble(_cluster_significant_ri_value.getText()) < 1
+                )
+                if (undo.canUndo()) undo.undo(); else _cluster_significant_ri_value.setText("100");
+                enableSetDefaultsButton();
+            }
+        });
+        _cluster_significant_ri_value.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_cluster_significant_ri_value, e, 10);
+            }
+        });
+        _cluster_significant_ri_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _cluster_significant_ri_type = new java.awt.Choice();
+        _cluster_significant_pval_chx = new javax.swing.JCheckBox();
+        _cluster_significant_pval_chx.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableOtherOutputGroup();
+            }
+        });
+        _cluster_significant_pval_value = new javax.swing.JTextField();
+        _cluster_significant_pval_value.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_cluster_significant_pval_value, e, 20);
+            }
+        });
+        _cluster_significant_pval_value.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_cluster_significant_pval_value.getText().length() == 0 ||
+                    Double.parseDouble(_cluster_significant_pval_value.getText()) <= 0 ||
+                    Double.parseDouble(_cluster_significant_pval_value.getText()) > 1)
+                if (undo.canUndo()) undo.undo(); else _cluster_significant_pval_value.setText("0.05");
+                enableSetDefaultsButton();
+            }
+        });
+        _cluster_significant_pval_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
         _powerEvaluationTab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
@@ -3079,15 +3189,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableCaseFileLinelistGroup();
             }
         });
+        _label_linelist_filewizard = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        _event_cache_label = new javax.swing.JLabel();
+        _event_cache_field = new javax.swing.JTextField();
+        _event_cache_browse = new javax.swing.JButton();
         _checkbox_grouping_kml = new javax.swing.JCheckBox();
         _checkbox_grouping_kml.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableCaseFileLinelistGroup();
             }
         });
-        _linelist_grouping = new javax.swing.JTextField();
-        _label_linelist_filewizard = new javax.swing.JLabel();
         _grouping_input_label = new javax.swing.JLabel();
+        _linelist_grouping = new javax.swing.JTextField();
         _view_linelist_choices = new javax.swing.JButton();
         _view_linelist_choices.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e){
@@ -3158,9 +3272,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             }
         });
-        _event_cache_label = new javax.swing.JLabel();
-        _event_cache_field = new javax.swing.JTextField();
-        _event_cache_browse = new javax.swing.JButton();
         _clear_grouped = new javax.swing.JButton();
         _clear_grouped.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -3179,48 +3290,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _always_email = new javax.swing.JTextField();
         _label_significant_email = new javax.swing.JLabel();
         _significant_email = new javax.swing.JTextField();
-        _label_email_significant_when = new javax.swing.JLabel();
-        _email_significant_ri_value = new javax.swing.JTextField();
-        _email_significant_ri_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_email_significant_ri_value.getText().length() == 0 ||
-                    Double.parseDouble(_email_significant_ri_value.getText()) < 1
-                )
-                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText("100");
-                enableSetDefaultsButton();
-            }
-        });
-        _email_significant_ri_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_email_significant_ri_value, e, 10);
-            }
-        });
-        _email_significant_ri_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _email_significant_ri_type = new java.awt.Choice();
-        _email_significant_pval_value = new javax.swing.JTextField();
-        _email_significant_pval_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_email_significant_pval_value, e, 20);
-            }
-        });
-        _email_significant_pval_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_email_significant_pval_value.getText().length() == 0 ||
-                    Double.parseDouble(_email_significant_pval_value.getText()) <= 0 ||
-                    Double.parseDouble(_email_significant_pval_value.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _email_significant_pval_value.setText("0.05");
-                enableSetDefaultsButton();
-            }
-        });
-        _email_significant_pval_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
         _email_significant_attach_results = new javax.swing.JCheckBox();
         _tabbed_email_messages = new javax.swing.JTabbedPane();
         _panel_insignificant = new javax.swing.JPanel();
@@ -3258,8 +3327,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _label_email_message_significant = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         _email_message_significant = new javax.swing.JTextArea();
-        _email_significant_ri_label = new javax.swing.JLabel();
-        _email_significant_pval_label = new javax.swing.JLabel();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -5635,23 +5702,79 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
+        _cluster_significance_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Considered Significant When:"));
+
+        _cluster_significant_ri_chx.setText("Cluster recurrance interval is at least:");
+        _cluster_significant_ri_chx.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableOtherOutputGroup();
+            }
+        });
+
+        _cluster_significant_ri_value.setText("100");
+
+        _cluster_significant_ri_type.add("Days");
+        _cluster_significant_ri_type.add("Years");
+
+        _cluster_significant_pval_chx.setText("Cluster p-value is less than or equal to:");
+
+        _cluster_significant_pval_value.setText("0.05");
+
+        javax.swing.GroupLayout _cluster_significance_panelLayout = new javax.swing.GroupLayout(_cluster_significance_panel);
+        _cluster_significance_panel.setLayout(_cluster_significance_panelLayout);
+        _cluster_significance_panelLayout.setHorizontalGroup(
+            _cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
+                        .addComponent(_cluster_significant_pval_chx)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_cluster_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
+                        .addComponent(_cluster_significant_ri_chx)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_cluster_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_cluster_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(258, Short.MAX_VALUE))
+        );
+        _cluster_significance_panelLayout.setVerticalGroup(
+            _cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_cluster_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_cluster_significant_ri_chx))
+                    .addComponent(_cluster_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_cluster_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_cluster_significant_pval_chx))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _otherOutputTabLayout = new javax.swing.GroupLayout(_otherOutputTab);
         _otherOutputTab.setLayout(_otherOutputTabLayout);
         _otherOutputTabLayout.setHorizontalGroup(
             _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_otherOutputTabLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(_otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_cluster_significance_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _otherOutputTabLayout.setVerticalGroup(
             _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_otherOutputTabLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(_cluster_significance_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5659,7 +5782,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(142, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -6583,7 +6706,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Network", _network_tab);
 
-        _panel_linelist.setBorder(javax.swing.BorderFactory.createTitledBorder("Case File Line List"));
+        _panel_linelist.setBorder(javax.swing.BorderFactory.createTitledBorder("Case File Line List Columns"));
 
         _checkbox_casefile_metarow.setText("Case file includes event characteristics meta row.");
         _checkbox_casefile_metarow.addActionListener(new java.awt.event.ActionListener() {
@@ -6594,23 +6717,36 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _checkbox_casefile_header.setText("Case file includes header row which names event characteristics.");
 
-        _checkbox_grouping_kml.setText("Include event characteristics grouping in KML output, if applicable.");
-
-        _linelist_grouping.setEditable(false);
-        _linelist_grouping.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _linelist_groupingActionPerformed(evt);
-            }
-        });
-
         _label_linelist_filewizard.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         _label_linelist_filewizard.setText("* Line list data for the case file has already been defined through the file wizard. *");
 
-        _grouping_input_label.setText("Grouped by characteristic named:");
+        javax.swing.GroupLayout _panel_linelistLayout = new javax.swing.GroupLayout(_panel_linelist);
+        _panel_linelist.setLayout(_panel_linelistLayout);
+        _panel_linelistLayout.setHorizontalGroup(
+            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_panel_linelistLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_checkbox_casefile_metarow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_checkbox_casefile_header, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_label_linelist_filewizard, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _panel_linelistLayout.setVerticalGroup(
+            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_panel_linelistLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_checkbox_casefile_metarow)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_checkbox_casefile_header)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_label_linelist_filewizard)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
-        _view_linelist_choices.setText("Add");
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Event Level Data"));
 
-        _event_cache_label.setText("Events Cache (stores previously seem event ids):"); // NOI18N
+        _event_cache_label.setText("Events Cache (stores previously seen event ids of significant clusters):"); // NOI18N
 
         _event_cache_browse.setText("..."); // NOI18N
         _event_cache_browse.setToolTipText("Browse Results File");
@@ -6631,16 +6767,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _checkbox_grouping_kml.setText("Include event characteristics in KML output, if applicable.");
+
+        _grouping_input_label.setText("Grouped by characteristics named:");
+
+        _linelist_grouping.setEditable(false);
+        _linelist_grouping.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _linelist_groupingActionPerformed(evt);
+            }
+        });
+
+        _view_linelist_choices.setText("Add");
+
         _clear_grouped.setText("Clear");
 
-        javax.swing.GroupLayout _panel_linelistLayout = new javax.swing.GroupLayout(_panel_linelist);
-        _panel_linelist.setLayout(_panel_linelistLayout);
-        _panel_linelistLayout.setHorizontalGroup(
-            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_linelistLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_panel_linelistLayout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(_grouping_input_label, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -6649,41 +6798,32 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_view_linelist_choices)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_clear_grouped))
-                    .addComponent(_checkbox_casefile_metarow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_checkbox_casefile_header, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_label_linelist_filewizard, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_linelistLayout.createSequentialGroup()
-                        .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_checkbox_grouping_kml, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_event_cache_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_event_cache_field))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_event_cache_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_checkbox_grouping_kml, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_event_cache_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
-        _panel_linelistLayout.setVerticalGroup(
-            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_linelistLayout.createSequentialGroup()
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_checkbox_casefile_metarow)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkbox_casefile_header)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_event_cache_label)
                 .addGap(0, 0, 0)
-                .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_event_cache_browse)
                     .addComponent(_event_cache_field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_checkbox_grouping_kml)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_grouping_input_label)
                     .addComponent(_linelist_grouping, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_view_linelist_choices)
                     .addComponent(_clear_grouped))
-                .addGap(18, 18, 18)
-                .addComponent(_label_linelist_filewizard)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -6693,7 +6833,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _linelist_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_linelist_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_panel_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_linelist_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_panel_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _linelist_tabLayout.setVerticalGroup(
@@ -6701,7 +6843,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_linelist_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_panel_linelist, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(200, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Line List", _linelist_tab);
@@ -6714,16 +6858,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _label_significant_email.setText("Significant Results Recipients (csv list):");
 
-        _label_email_significant_when.setText("Email Regarding Significant Results When:");
-
-        _email_significant_ri_value.setText("100");
-
-        _email_significant_ri_type.add("Days");
-        _email_significant_ri_type.add("Years");
-
-        _email_significant_pval_value.setText("0.05");
-
-        _email_significant_attach_results.setText("Attach primary results file to email.");
+        _email_significant_attach_results.setText("Attach primary results file to email with significant results");
 
         _label_email_subject_insignificant.setText("Subject");
 
@@ -6765,7 +6900,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_panel_insignificantLayout.createSequentialGroup()
                         .addComponent(_label_email_message_insignificant)
-                        .addGap(0, 36, Short.MAX_VALUE))
+                        .addGap(0, 130, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -6812,16 +6947,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_panel_significantLayout.createSequentialGroup()
                         .addComponent(_label_email_message_significant)
-                        .addGap(0, 36, Short.MAX_VALUE))
+                        .addGap(0, 130, Short.MAX_VALUE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         _tabbed_email_messages.addTab("Email - Significant Clusters", _panel_significant);
-
-        _email_significant_ri_label.setText("Cluster detected with recurrance interval of at least:");
-
-        _email_significant_pval_label.setText("Cluster detected with p-value less than or equal to:");
 
         javax.swing.GroupLayout _panel_email_notificationsLayout = new javax.swing.GroupLayout(_panel_email_notifications);
         _panel_email_notifications.setLayout(_panel_email_notificationsLayout);
@@ -6835,25 +6966,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _panel_email_notificationsLayout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_email_significant_attach_results, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_label_email_significant_when, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_significant_email, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_label_significant_email, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_always_email, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_label_always_email, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
-                                .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
-                                        .addComponent(_email_significant_pval_label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(_email_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
-                                        .addComponent(_email_significant_ri_label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(_email_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_email_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 0, Short.MAX_VALUE)))))
+                            .addComponent(_email_significant_attach_results, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         _panel_email_notificationsLayout.setVerticalGroup(
@@ -6869,23 +6986,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_label_significant_email)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_significant_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_label_email_significant_when)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(_email_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_email_significant_ri_label)))
-                    .addComponent(_email_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_email_significant_pval_label)
-                    .addComponent(_email_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_email_significant_attach_results)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_tabbed_email_messages)
                 .addContainerGap())
         );
@@ -7001,6 +7104,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _clear_grouped;
     private javax.swing.JButton _closeButton;
     private javax.swing.JPanel _cluster_restrictions_tab;
+    private javax.swing.JPanel _cluster_significance_panel;
+    private javax.swing.JCheckBox _cluster_significant_pval_chx;
+    private javax.swing.JTextField _cluster_significant_pval_value;
+    private javax.swing.JCheckBox _cluster_significant_ri_chx;
+    private java.awt.Choice _cluster_significant_ri_type;
+    private javax.swing.JTextField _cluster_significant_ri_value;
     private javax.swing.JPanel _clustersReportedGroup;
     private javax.swing.JButton _controlFileBrowseButton;
     private javax.swing.JLabel _controlFileLabel;
@@ -7029,11 +7138,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextArea _email_message_insignificant;
     private javax.swing.JTextArea _email_message_significant;
     private javax.swing.JCheckBox _email_significant_attach_results;
-    private javax.swing.JLabel _email_significant_pval_label;
-    private javax.swing.JTextField _email_significant_pval_value;
-    private javax.swing.JLabel _email_significant_ri_label;
-    private java.awt.Choice _email_significant_ri_type;
-    private javax.swing.JTextField _email_significant_ri_value;
     private javax.swing.JTextField _email_subject_insignificant;
     private javax.swing.JTextField _email_subject_significant;
     private javax.swing.JLabel _endGenericRangeToLabel;
@@ -7074,7 +7178,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _label_always_email;
     private javax.swing.JLabel _label_email_message_insignificant;
     private javax.swing.JLabel _label_email_message_significant;
-    private javax.swing.JLabel _label_email_significant_when;
     private javax.swing.JLabel _label_email_subject_insignificant;
     private javax.swing.JLabel _label_email_subject_significant;
     private javax.swing.JLabel _label_kml_options;
@@ -7256,6 +7359,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _view_linelist_choices;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

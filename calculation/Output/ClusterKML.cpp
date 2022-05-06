@@ -11,6 +11,7 @@
 #include "GisUtils.h"
 #include "DataDemographics.h"
 #include "DataSource.h"
+#include "DateStringParser.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -452,8 +453,14 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         const char * value = 0;
         std::stringstream placemark, extended, coordinates;
         std::string group_value, event_date, end_date, event_id, latitude, longitude;
-        if (parameters.GetIsSpaceTimeAnalysis())
-            end_date = gregorianToString(gregorianFromString(parameters.GetStudyPeriodEndDate()), "%Y-%m-%d");
+        if (parameters.GetIsSpaceTimeAnalysis()) {
+            if (parameters.GetPrecisionOfTimesType() == GENERIC)
+                JulianToString(end_date,
+                    DateStringParser::getDateAsJulian(parameters.GetStudyPeriodEndDate().c_str(), parameters.GetPrecisionOfTimesType()), GENERIC, "-"
+                );
+            else 
+                end_date = gregorianToString(gregorianFromString(parameters.GetStudyPeriodEndDate()), "%Y-%m-%d");
+        }
         while (Source->ReadRecord()) {
             Julian case_date;
             if (_dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date) != DataSetHandler::Accepted)
