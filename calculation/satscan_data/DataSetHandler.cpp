@@ -17,7 +17,7 @@ const short DataSetHandler::guCountCategoryIndexNone    = 2;
 const short DataSetHandler::guCountCategoryIndex        = 3;
 
 /** constructor */
-DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print) {
+DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print), _approximate_case_records(0) {
     try {
         Setup();
     } catch(prg_exception& x) {
@@ -224,7 +224,9 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             inputSource.setLinelistFieldsMap(fields_map);
             const_cast<CParameters&>(gParameters).defineInputSource(CASEFILE, inputSource, DataSet.getSetIndex());
         }
-        return ReadCounts(DataSet, *Source); // Now we're ready to read the case file.
+        DataSetHandler::CountFileReadStatus readStatus = ReadCounts(DataSet, *Source); // Now we're ready to read the case file.
+        _approximate_case_records += static_cast<unsigned long>(Source->GetCurrentRecordIndex());
+        return readStatus;
     } catch (prg_exception& x) {
         x.addTrace("ReadCaseFile()","DataSetHandler");
         throw;

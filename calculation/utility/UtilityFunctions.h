@@ -3,6 +3,8 @@
 #define __UTILITYFUNCTIONS_H
 //******************************************************************************
 #include "SaTScan.h"
+#include "bloom_filter.hpp"
+#include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
@@ -36,6 +38,7 @@ std::string                   & GetUserDocumentsDirectory(std::string& s, const 
 std::string                   & GetUserTemporaryDirectory(std::string& s);
 std::string                   & GetUserTemporaryFilename(std::string& s);
 std::string                     getFilenameFormatTime(const std::string& filename, boost::posix_time::ptime timeLocal, bool testUnknown=false);
+size_t                          getLineCount(const std::string& filename);
 bool                            getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
 template <typename T>           bool string_to_type(const char * s, T& t) {
@@ -96,5 +99,6 @@ bool                            sendMail(
                                     const std::string& additionalpass, std::stringstream * output=0
 );
 bool                            validEmailAdrress(const std::string& emailaddress);
+boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
 //******************************************************************************
 #endif

@@ -2769,6 +2769,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _email_message_insignificant.setText(substituteNewlines(parameters.getEmailMessageBodyNoSignificant()));
         _email_subject_significant.setText(parameters.getEmailSubjectSignificant());
         _email_message_significant.setText(substituteNewlines(parameters.getEmailMessageBodySignificant()));
+        _email_significant_attach_results.setSelected(parameters.getEmailAttachResults());
         
         // Other Output Tab
         _cluster_significant_ri_chx.setSelected(parameters.getClusterSignificanceByRecurrence());

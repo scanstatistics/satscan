@@ -29,10 +29,15 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
 
 /* Returns whether event id is in defined in list list attributes. */
 bool DataSource::hasEventIdLinelistMapping() const {
-    for (auto fieldMap : _linelist_fields_map)
-        if (fieldMap.second.get<0>() == EVENT_ID)
-            return true;
-    return false;
+    if (boost::logic::indeterminate(_has_event_id)) {
+        for (auto fieldMap : _linelist_fields_map)
+            if (fieldMap.second.get<0>() == EVENT_ID) {
+                _has_event_id = true;
+                return _has_event_id;
+            }
+        _has_event_id = false;
+    }
+    return _has_event_id;
 }
 
 /* Returns whether event x/y are defined in list list attributes. */

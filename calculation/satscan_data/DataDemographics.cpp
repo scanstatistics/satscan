@@ -180,6 +180,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         if (_events_by_dataset.back().get<0>() && _temp_events_cache_filename.empty()) {
             _temp_events_cache_filename = GetUserTemporaryFilename(buffer);
             events_stream.open(_temp_events_cache_filename, std::ios_base::app);
+            _events_filter = getNewBloomFilter(_handler._approximate_case_records);
         }
         // Create  new demographics attrbite set for each cluster being reported.
         for (auto cluster : _cluster_demographics_by_dataset)
@@ -217,10 +218,18 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 value = Source->GetValueAtUnmapped(itr->first);
                 value = value == 0 ? "" : value;
                 values.push_back(value);
+                trimString(values.back());
                 // Add attribute to data set demographics.
                 _demographics_by_dataset.back().get(itr->second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
                 if (itr->second.get<0>() == EVENT_ID) {
+                    if (_events_filter->contains(values.back()))
+                        _handler.gDataHub.GetPrintDirection().Printf(
+                            "Warning: The event id '%s' appears to be defined more than once in case file data yet event id is expected to be unique.\n",
+                            BasePrint::P_WARNING, values.back().c_str()
+                        );
+                    else
+                        _events_filter->insert(values.back());
                     is_new_event = _existing_event_ids.find(value) == _existing_event_ids.end();
                     values.insert(values.end() - 1, (is_new_event ? "New" : ""));
                     eventid = value;
@@ -239,12 +248,15 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
             boost::optional<int> first(_events_by_dataset.back().get<0>() ? boost::make_optional(applicable.find_first()) : boost::none);
             for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b)) {
-                appendLinelistData(static_cast<int>(b), values, first);
-                if (is_new_event) {
-                    _new_event_ids.emplace(eventid);
-                    _cluster_new_events[static_cast<int>(b)].first += 1;
+                // typcically nCount == 1 but if not event data, could be aggregated count - hmm, what if nCount is large? (count columm might be better?)
+                for (int c=0;  c < nCount; c++) {
+                    appendLinelistData(static_cast<int>(b), values, first);
+                    if (is_new_event) {
+                        _new_event_ids.emplace(eventid);
+                        _cluster_new_events[static_cast<int>(b)].first += 1;
+                    }
+                    _cluster_new_events[static_cast<int>(b)].second += 1;
                 }
-                _cluster_new_events[static_cast<int>(b)].second += 1;
             }
             // Maintain the event id cache. Add if:
             // 1) new event id signalled in significant cluster of this analysis.

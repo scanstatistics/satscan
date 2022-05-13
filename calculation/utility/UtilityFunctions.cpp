@@ -569,6 +569,11 @@ std::string getFilenameFormatTime(const std::string& filename, boost::posix_time
     return mod_filename;
 }
 
+size_t getLineCount(const std::string& filename) {
+    std::ifstream file(filename);
+    return std::count_if(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), [](char c) {return c == '\n'; });
+}
+
 /** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
     Returns whether data was read or end of file encountered. */
 bool getlinePortable(std::istream &readstream, /*std::ifstream& readstream,*/ std::string& line) {
@@ -778,4 +783,15 @@ bool sendMail(const std::string& from, const std::vector<std::string>& to, const
 bool validEmailAdrress(const std::string& emailaddress) {
     boost::regex expr{ "^([a-zA-Z0-9_\\+\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$" };
     return boost::regex_match(emailaddress, expr);
+}
+
+/* Returns new Bloom Filter object. */
+boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count) {
+    bloom_parameters parameters;
+    parameters.projected_element_count = element_count + 1000; // How many elements roughly do we expect to insert?
+    parameters.false_positive_probability = 0.000001; // Maximum tolerable false positive probability? (0,1) -- 1 in 1000000
+    parameters.random_seed = 0xA5A5A5A5;
+    if (!parameters) throw prg_error("Error - Invalid set of bloom filter parameters!", "DemographicAttributeSet()");
+    parameters.compute_optimal_parameters();
+    return boost::shared_ptr<bloom_filter>(new bloom_filter(parameters));
 }

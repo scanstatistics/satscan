@@ -9,6 +9,7 @@
 #include "dBaseFile.h"
 #include "ShapeFile.h"
 #include "Parameters.h"
+#include "boost/logic/tribool.hpp"
 
 /** Input data source abstraction. */
 class DataSource {
@@ -18,6 +19,7 @@ class DataSource {
 
     protected:
         bool _blank_record_flag;
+        mutable boost::logic::tribool _has_event_id;
         FieldMapContainer_t _fields_map;
         LineListFieldMapContainer_t _linelist_fields_map;
 
@@ -29,7 +31,7 @@ class DataSource {
         }
 
     public:
-        DataSource() : _blank_record_flag(false) {}
+        DataSource() : _blank_record_flag(false), _has_event_id(boost::logic::indeterminate) {}
         virtual ~DataSource() {}
 
         void                               clearBlankRecordFlag() {_blank_record_flag=false;}

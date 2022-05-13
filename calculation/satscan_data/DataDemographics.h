@@ -3,6 +3,7 @@
 #define __DataDemographics_H
 //******************************************************************************
 #include "SaTScan.h"
+#include "UtilityFunctions.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
 
@@ -101,6 +102,7 @@ class DataDemographicsProcessor{
         std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset;
         // event ids from previous analyses
         std::set<std::string> _existing_event_ids;
+        boost::shared_ptr<bloom_filter> _events_filter;
         // new event ids
         std::set<std::string> _new_event_ids;
         std::string _temp_events_cache_filename;
