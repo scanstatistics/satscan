@@ -1134,8 +1134,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private void setCaseFileVariables() {
         _import_variables.clear();
         _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null, "<locationid>"));
-        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null, "<count>"));
-        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null, "<date>"));
+        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null, "<#cases>"));
+        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null, "<time>"));
         _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null, "<attribute>"));
         _import_variables.addElement(new ImportVariable("Category Type", 3, true, null, null, "<attribute>"));
         _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null, "<censored>"));
@@ -2004,9 +2004,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _down_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
 
-        jLabel8.setText("Event Latitude / Y");
+        jLabel8.setText("Event Latitude / Y (optional)");
 
-        jLabel9.setText("Event Longitude / X");
+        jLabel9.setText("Event Longitude / X (optional)");
 
         _linelist_help.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         _linelist_help.setToolTipText("What is this?");
@@ -2023,14 +2023,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                             .addComponent(_combobox_eventid, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_combobox_event_y, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_combobox_event_y, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 132, Short.MAX_VALUE))
+                            .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 111, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)

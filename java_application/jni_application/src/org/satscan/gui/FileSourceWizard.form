@@ -687,16 +687,16 @@
                                               <Component id="jLabel3" min="-2" pref="125" max="-2" attributes="0"/>
                                           </Group>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="jLabel8" min="-2" pref="123" max="-2" attributes="0"/>
-                                              <Component id="_combobox_event_y" alignment="0" min="-2" pref="125" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="jLabel8" max="32767" attributes="0"/>
+                                              <Component id="_combobox_event_y" max="32767" attributes="0"/>
                                           </Group>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="jLabel9" max="32767" attributes="0"/>
                                               <Component id="_combobox_event_x" max="32767" attributes="0"/>
-                                              <Component id="jLabel9" min="-2" pref="132" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="132" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="111" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
                                           <Component id="jScrollPane4" pref="0" max="32767" attributes="0"/>
@@ -871,12 +871,12 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel8">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Event Latitude / Y"/>
+                            <Property name="text" type="java.lang.String" value="Event Latitude / Y (optional)"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel9">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Event Longitude / X"/>
+                            <Property name="text" type="java.lang.String" value="Event Longitude / X (optional)"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="_linelist_help">
