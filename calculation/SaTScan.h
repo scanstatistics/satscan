@@ -80,6 +80,8 @@
 #define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
 /** determines whether number x is less than number y given some tolerance */
 #define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
+/** determines whether number x is less than number y given some tolerance */
+#define macro_less_than_or_equal(x,y,tolerance) (macro_less_than(x,y,tolerance) || macro_equal(x,y,tolerance))
 #ifdef _MSC_VER
   /** default string buffer size for vsnprintf call */
   #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000

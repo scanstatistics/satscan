@@ -1216,9 +1216,9 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
             }
         }
         if (params.getClusterSignificanceByPvalue() && significant && reportablePValue(params, simVars)) {
-            significant = macro_less_than(
-                params.getClusterSignificancePvalueCutoff(),
+            significant = macro_less_than_or_equal(
                 getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1),
+                params.getClusterSignificancePvalueCutoff(),
                 DBL_CMP_TOLERANCE
             );
         }

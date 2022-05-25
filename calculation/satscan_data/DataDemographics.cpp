@@ -188,9 +188,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
 
         // Iterate over case file records of this data set.
         boost::dynamic_bitset<> applicable(_cluster_locations.size());
+        _handler.gPrint.SetSuppressWarnings(true);
         while (!_handler.gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
             tract_t tid;
-            DataSetHandler::RecordStatusType eStatus = _handler.RetrieveLocationIndex(*Source, tid);
+            if (_handler.RetrieveLocationIndex(*Source, tid) != DataSetHandler::Accepted) continue;
             count_t nCount;
             if (Source->GetValueAt(_handler.guCountIndex) == 0)
                 return false;
@@ -198,8 +199,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 return false;
             if (nCount == 0) continue;
             Julian nDate;
-            if (_handler.RetrieveCountDate(*Source, nDate) != DataSetHandler::Accepted)
-                return false;
+            if (_handler.RetrieveCountDate(*Source, nDate) != DataSetHandler::Accepted) continue;
             int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate);
             int endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
             // Determine which clusters this record applys to.

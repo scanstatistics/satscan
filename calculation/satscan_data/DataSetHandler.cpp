@@ -506,6 +506,12 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
                     continue;
                 }
                 vCategoryCovariates.push_back(pCovariate);
+                if (trimString(vCategoryCovariates.back()).size() == 0) {
+                    gPrint.Printf("Error: Record %ld of %s contains covariate with no value (empty string).\n", BasePrint::P_READERROR,
+                        Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str()
+                    );
+                    return false;
+                }
                 ++iNumCovariatesScanned;
             }
             if (!gParameters.UsePopulationFile() && iNumCovariatesScanned) {
@@ -559,7 +565,7 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const {
     //Validate that tract identifer is one of those defined in the coordinates file.
     const char * identifier = Source.GetValueAt(guLocationIndex);
-    if (!identifier) {
+    if (!identifier || strlen(identifier) == 0) {
         gPrint.Printf("Error: Missing location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
