@@ -27,6 +27,17 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
     return dataSource;
 }
 
+DataSource::OrderedLineListField_t& DataSource::getOrderedLinelistFieldsMap(OrderedLineListField_t& sorted) const {
+    for (auto const&f: _linelist_fields_map)
+        sorted.push_back(std::make_pair(f.first, f.second));
+    // Order by LinelistType
+    std::sort(std::begin(sorted), std::end(sorted), [](LineListField_t a, LineListField_t b) {
+        if (a.second.get<0>() != b.second.get<0>()) return a.second.get<0>() < b.second.get<0>();
+        else return boost::algorithm::lexicographical_compare(a.second.get<1>(), b.second.get<1>(), boost::is_iless());
+    });
+    return sorted;
+}
+
 /* Returns whether event id is in defined in list list attributes. */
 bool DataSource::hasEventIdLinelistMapping() const {
     if (boost::logic::indeterminate(_has_event_id)) {

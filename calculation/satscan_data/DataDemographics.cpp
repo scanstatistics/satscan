@@ -6,7 +6,6 @@
 #include "SimulationVariables.h"
 #include "MostLikelyClustersContainer.h"
 #include "DataSetHandler.h"
-#include "DataSource.h"
 #include "FileName.h"
 #include <numeric>
 #include <algorithm>
@@ -146,9 +145,9 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 }
 
 /* Add the header row to the final output file. */
-void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, const LineListFieldMapContainer_t& llmap) {
+void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap) {
     std::vector<std::string> v = {"Cluster"};
-    for (auto itr : llmap) {
+    for (auto const& itr : llmap) {
         if (itr.second.get<0>() == EVENT_ID) {
             v.push_back("Cluster Event");
             v.push_back("New Event");
@@ -188,7 +187,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
 
         // Iterate over case file records of this data set.
         boost::dynamic_bitset<> applicable(_cluster_locations.size());
+        bool storeSetting = _handler.gPrint.isSuppressingWarnings();
         _handler.gPrint.SetSuppressWarnings(true);
+        DataSource::OrderedLineListField_t linelistFieldsMap;
+        Source->getOrderedLinelistFieldsMap(linelistFieldsMap);
         while (!_handler.gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
             tract_t tid;
             if (_handler.RetrieveLocationIndex(*Source, tid) != DataSetHandler::Accepted) continue;
@@ -213,16 +215,16 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             }
             boost::logic::tribool is_new_event(boost::logic::indeterminate);
             const char * value = 0; std::vector<std::string> values; std::string eventid;
-            for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
+            for (auto const& fieldMap: linelistFieldsMap) {
                 // Retrieve the value to report for this demographic attribute.
-                value = Source->GetValueAtUnmapped(itr->first);
+                value = Source->GetValueAtUnmapped(fieldMap.first);
                 value = value == 0 ? "" : value;
                 values.push_back(value);
                 trimString(values.back());
                 // Add attribute to data set demographics.
-                _demographics_by_dataset.back().get(itr->second)->add(values.back(), static_cast<unsigned int>(nCount));
+                _demographics_by_dataset.back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
-                if (itr->second.get<0>() == EVENT_ID) {
+                if (fieldMap.second.get<0>() == EVENT_ID) {
                     if (_events_filter->contains(values.back()))
                         _handler.gDataHub.GetPrintDirection().Printf(
                             "Warning: The event id '%s' appears to be defined more than once in case file data yet event id is expected to be unique.\n",
@@ -239,10 +241,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                     const CCluster& cluster = _clusters->GetCluster(static_cast<tract_t>(t));
                     // Add to cluster demographics only if location and time overlap.
                     if (applicable.test(t))
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(itr->second)->add(values.back(), static_cast<unsigned int>(nCount));
-                    else if (itr->second.get<0>() == LinelistType::CATEGORICAL_DATA)
+                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
+                    else if (fieldMap.second.get<0>() == LinelistType::CATEGORICAL_DATA)
                         // Always add the categorical attribute label though, just so we have a complete set with each cluster.
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(itr->second)->add(values.back(), 0);
+                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap.second)->add(values.back(), 0);
                 }
             }
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
@@ -264,13 +266,14 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             if ((is_new_event && applicable.count()) || is_new_event == boost::logic::tribool(false))
                 events_stream << eventid << std::endl;
         }
+        _handler.gPrint.SetSuppressWarnings(storeSetting);
         if (events_stream.is_open()) events_stream.close();
         // Create the output file and concatenate cluster data files to it.
         FileName linelist(_parameters.GetOutputFileName().c_str()); // TODO -- should this be made into a AbstractDataFileWriter class?
         linelist.setExtension(printString(buffer, ".linelist%s.csv", (_handler.GetNumDataSets() > 1 ? printString(buffer2, ".dataset%u", DataSet.getSetIndex()).c_str() : "")).c_str());
         std::ofstream lineliststream;
         lineliststream.open(linelist.getFullPath(buffer).c_str());
-        createHeadersFile(lineliststream, Source->getLinelistFieldsMap());
+        createHeadersFile(lineliststream, linelistFieldsMap);
         for (auto cfiles : _cluster_location_files) {
             std::ifstream filestream(cfiles.second.c_str(), std::ios_base::binary);
             lineliststream << filestream.rdbuf();

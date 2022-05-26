@@ -368,8 +368,14 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         );
         return;
     }
-    for (auto const&group_by : grouping_by)
+    _dataHub.GetPrintDirection().SetImpliedInputFileType(BasePrint::CASEFILE, true);
+    int storeMax = _dataHub.GetPrintDirection().getMaximumReadErrors();
+    for (auto const&group_by : grouping_by) {
+        _dataHub.GetPrintDirection().Printf("Adding event data by '%s' to Google Earth file ...\n", BasePrint::P_STDOUT, group_by.c_str());
         add(demographics, group_by);
+        _dataHub.GetPrintDirection().SetMaximumReadErrors(0); // Don't repeat same read errors.
+    }
+    _dataHub.GetPrintDirection().SetMaximumReadErrors(storeMax);
 }
 
 /* Adds event level data to the KML output - if case data defines line-list data and event-id information. */
@@ -429,7 +435,6 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         if (!(demographics.getEventStatus(idx).get<0>() && demographics.getEventStatus(idx).get<1>()))
             continue;
         // Open the data source and read all the records of the case file again.
-        _dataHub.GetPrintDirection().SetImpliedInputFileType(BasePrint::CASEFILE);
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
             parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
@@ -491,7 +496,12 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             }
             // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.
             if (event_id.length() == 0 || latitude.length() == 0 || longitude.length() == 0 || group_value.length() == 0) {
-                _dataHub.GetPrintDirection().Printf("Unable to placemark event in record %ld if case file.\n", BasePrint::P_WARNING, Source->GetCurrentRecordIndex());
+                _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to KML.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
+                continue;
+            }
+            double dlat, dlong;
+            if (!string_to_type<double>(latitude.c_str(), dlat) || !string_to_type<double>(longitude.c_str(), dlong) || fabs(dlat) > 90.0 && fabs(dlong) > 180.0) {
+                _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to KML.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
                 continue;
             }
             if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis()) { // Set time span of event if this is a space-time analysis.

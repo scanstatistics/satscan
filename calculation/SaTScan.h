@@ -119,7 +119,7 @@ enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
 /* line-list types */
-enum LinelistType { EVENT_ID=0, EVENT_COORD_X, EVENT_COORD_Y, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
+enum LinelistType { EVENT_ID=0, EVENT_COORD_Y, EVENT_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
 /* data source fields map container typedef for linelist */
 typedef boost::tuple<LinelistType, std::string> LinelistTuple_t;
 typedef std::map<unsigned int, LinelistTuple_t> LineListFieldMapContainer_t;

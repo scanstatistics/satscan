@@ -42,8 +42,10 @@ class BasePrint {
     virtual void                        Print(const char * sMessage, PrintType ePrintType);
     virtual void                        Printf(const char * sMessage, PrintType ePrintType, ...);
     virtual void                        ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters) {}
-    void                                SetImpliedInputFileType(eInputFileType eType);
+    void                                SetImpliedInputFileType(eInputFileType eType, bool clearWarningCount=false);
+    int                                 getMaximumReadErrors() const { return giMaximumReadErrors; }
     void                                SetMaximumReadErrors(int iMaximumReadErrors) {giMaximumReadErrors=iMaximumReadErrors;}
+    bool                                isSuppressingWarnings() const { return gbSuppressWarnings; }
     void                                SetSuppressWarnings(bool b) {gbSuppressWarnings=b;}
 };
 

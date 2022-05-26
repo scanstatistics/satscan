@@ -16,6 +16,8 @@ class DataSource {
     public:
         enum FieldType {ONECOUNT, GENERATEDID, DEFAULT_DATE, BLANK};
         enum ShapeFieldType {POINTX=0, POINTY};
+        typedef std::pair<unsigned int, LinelistTuple_t> LineListField_t;
+        typedef std::vector<LineListField_t> OrderedLineListField_t;
 
     protected:
         bool _blank_record_flag;
@@ -51,7 +53,8 @@ class DataSource {
         //void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
         const FieldMapContainer_t        & getFieldsMap() const { return _fields_map;  }
         void                               setFieldsMap(const FieldMapContainer_t& map);
-        const LineListFieldMapContainer_t& getLinelistFieldsMap() { return _linelist_fields_map; }
+        const LineListFieldMapContainer_t& getLinelistFieldsMap() const { return _linelist_fields_map; }
+        OrderedLineListField_t           & getOrderedLinelistFieldsMap(OrderedLineListField_t& sorted) const;
         void                               setLinelistFieldsMap(const LineListFieldMapContainer_t& map) { _linelist_fields_map = map; }
 };
 

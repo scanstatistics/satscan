@@ -57,14 +57,14 @@ void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
     va_list varArgs_static;
     va_start(varArgs_static, ePrintType);
 
-	std::va_list arglist_test; 
-	macro_va_copy(arglist_test, varArgs_static);
+    std::va_list arglist_test; 
+    macro_va_copy(arglist_test, varArgs_static);
     size_t iStringLength = vsnprintf(&gsMessage[0], gsMessage.size(), sMessage, arglist_test);
     gsMessage.resize(iStringLength + 1);
 
-	std::va_list arglist;
-	macro_va_copy(arglist, varArgs_static);
-	vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, arglist);
+    std::va_list arglist;
+    macro_va_copy(arglist, varArgs_static);
+    vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, arglist);
 
     va_end(varArgs_static);
 #endif
@@ -92,7 +92,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
      if (iter->second == giMaximumReadErrors) {
        bPrintAsNormal = false;
        std::string message;
-       message = "Error: Excessive number of errors reading ";
+       message = "Warning: Suppressing additional errors reading ";
        message += GetImpliedFileTypeString().c_str();
        message += " data.\n";
        PrintError(message.c_str());
@@ -105,20 +105,24 @@ void BasePrint::PrintReadError(const char * sMessage) {
      PrintError(sMessage);
 }
 
-void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
-  geInputFileType = eType;
-  switch (eType) {
-    case CASEFILE                : gsInputFileString = "case file"; break;
-    case CONTROLFILE             : gsInputFileString = "control file"; break;
-    case POPFILE                 : gsInputFileString = "population file"; break;
-    case COORDFILE               : gsInputFileString = "coordinates file"; break;
-    case GRIDFILE                : gsInputFileString = "grid file"; break;
-    case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;
-    case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
-    case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
-    case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
-	case NETWORK_FILE            : gsInputFileString = "locations network file"; break;
-    default : throw prg_error("Invalid input file type warning message!", "SetImpliedInputFileType()");
-  }
+void BasePrint::SetImpliedInputFileType(eInputFileType eType, bool clearWarningCount) {
+    geInputFileType = eType;
+    switch (eType) {
+        case CASEFILE                : gsInputFileString = "case file"; break;
+        case CONTROLFILE             : gsInputFileString = "control file"; break;
+        case POPFILE                 : gsInputFileString = "population file"; break;
+        case COORDFILE               : gsInputFileString = "coordinates file"; break;
+        case GRIDFILE                : gsInputFileString = "grid file"; break;
+        case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;
+        case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
+        case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
+        case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
+        case NETWORK_FILE            : gsInputFileString = "locations network file"; break;
+        default : throw prg_error("Invalid input file type warning message!", "SetImpliedInputFileType()");
+    }
+    if (clearWarningCount) {
+        auto iter = gInputFileWarningsMap.find(geInputFileType);
+        if (iter != gInputFileWarningsMap.end()) iter->second = 0;
+    }
 }
 

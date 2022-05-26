@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScan.h"
 #include "UtilityFunctions.h"
+#include "DataSource.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
 
@@ -112,7 +113,7 @@ class DataDemographicsProcessor{
         ClusterEventCounts_t _cluster_new_events;
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first = boost::none);
-        void createHeadersFile(std::ofstream& linestream, const LineListFieldMapContainer_t& llmap);
+        void createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
 
     public:
