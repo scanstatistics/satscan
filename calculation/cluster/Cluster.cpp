@@ -1209,13 +1209,14 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
         if (params.getClusterSignificanceByRecurrence() && reportableRecurrenceInterval(params, simVars)) {
             RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
             switch (params.getClusterSignificanceRecurrenceType()) {
-                case DAY: significant = ri.second >= params.getClusterSignificanceRecurrenceCutoff(); break;
+            case DAY: significant = std::round(ri.second) >= params.getClusterSignificanceRecurrenceCutoff(); break;
                 case GENERIC:
-                case YEAR: significant = ri.first >= params.getClusterSignificanceRecurrenceCutoff(); break;
+                case YEAR: significant = std::round(ri.first) >= params.getClusterSignificanceRecurrenceCutoff(); break;
                 default: throw prg_error("Unexpected DatePrecisionType type '%d' purpose.", "isIncluded()", params.getClusterSignificanceRecurrenceType());
             }
+            if (!significant) return significant;
         }
-        if (params.getClusterSignificanceByPvalue() && significant && reportablePValue(params, simVars)) {
+        if (params.getClusterSignificanceByPvalue() && reportablePValue(params, simVars)) {
             significant = macro_less_than_or_equal(
                 getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1),
                 params.getClusterSignificancePvalueCutoff(),
@@ -1258,7 +1259,7 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
             }
         }
     } else if (reportablePValue(params, simVars)) {
-        // p-value  less than 0.05 is significant
+        // p-value less than 0.05 is significant
         significant = getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1) < 0.05;
     } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
     return significant;

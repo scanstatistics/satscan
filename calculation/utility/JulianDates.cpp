@@ -146,7 +146,7 @@ char* JulianToChar(char* szDateString, Julian JNum) {
 }
 
 /** Converts Julian into date string. */
-std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep, bool isEndDate, bool asSeasonal) {
+std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint, const char * sep, bool isEndDate, bool asSeasonal, bool zeroPad) {
   UInt month, day, year;
 
   JulianToMDY(&month, &day, &year, JNum);
@@ -157,20 +157,20 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
           printString(sDate, "%u", year);
           break;
       case MONTH   :
-          if (asSeasonal) printString(sDate, "%u", month);
-          else printString(sDate, "%u%s%u", year, sep, month);
+          if (asSeasonal) printString(sDate, "%s%u", (zeroPad && month < 10 ? "0" : ""), month);
+          else printString(sDate, "%u%s%s%u", year, sep, (zeroPad && month < 10 ? "0": ""), month);
           break;
       case DAY     :
-		  if (asSeasonal) {
-			  if (isEndDate && month == 2 && day == 28) {
-				  /* If February 28 is the end date, it should be manually revised to February 29. Note that even if a 2 day maximum
-				     cluster size was specified, a “three day” cluster from Feb 27 to Feb 29 could be detected, as February 29 does 
-					 not count when calculating the maximum. */
-				  day = 29;
-			  }
-			  printString(sDate, "%u%s%u", month, sep, day);
-		  }
-          else printString(sDate, "%u%s%u%s%u", year, sep, month, sep, day);
+          if (asSeasonal) {
+              if (isEndDate && month == 2 && day == 28) {
+                  /* If February 28 is the end date, it should be manually revised to February 29. Note that even if a 2 day maximum
+                     cluster size was specified, a “three day” cluster from Feb 27 to Feb 29 could be detected, as February 29 does 
+                     not count when calculating the maximum. */
+                  day = 29;
+              }
+              printString(sDate, "%s%u%s%s%u", (zeroPad && month < 10 ? "0" : ""), month, sep, (zeroPad && day < 10 ? "0" : ""), day);
+          }
+          else printString(sDate, "%u%s%s%u%s%s%u", year, sep, (zeroPad && month < 10 ? "0" : ""), month, sep, (zeroPad && day < 10 ? "0" : ""), day);
           break;
       case GENERIC : {
                      boost::gregorian::date baseDate(GENERIC_DATE_BASE_YEAR, GENERIC_DATE_BASE_MONTH, GENERIC_DATE_BASE_DAY);

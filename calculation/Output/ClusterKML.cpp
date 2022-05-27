@@ -459,12 +459,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         std::stringstream placemark, extended, coordinates;
         std::string group_value, event_date, end_date, event_id, latitude, longitude;
         if (parameters.GetIsSpaceTimeAnalysis()) {
-            if (parameters.GetPrecisionOfTimesType() == GENERIC)
-                JulianToString(end_date,
-                    DateStringParser::getDateAsJulian(parameters.GetStudyPeriodEndDate().c_str(), parameters.GetPrecisionOfTimesType()), GENERIC, "-"
-                );
-            else 
-                end_date = gregorianToString(gregorianFromString(parameters.GetStudyPeriodEndDate()), "%Y-%m-%d");
+            JulianToString(end_date, _dataHub.GetStudyPeriodEndDate(), parameters.GetPrecisionOfTimesType(), "-", true, false, true);
         }
         while (Source->ReadRecord()) {
             Julian case_date;
@@ -505,7 +500,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
                 continue;
             }
             if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis()) { // Set time span of event if this is a space-time analysis.
-                placemark << "<TimeSpan>" << "<begin>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-") << "</begin><end>" << end_date << "</end>" << "</TimeSpan>" << std::endl;
+                placemark << "<TimeSpan>" << "<begin>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-", false, false, true) << "</begin><end>" << end_date << "</end>" << "</TimeSpan>" << std::endl;
                 extended << "<Data name=\"eventcasedate\"><value>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "/") << "</value></Data>";
             }
             placemark << "<Point><coordinates>" << longitude << " , " << latitude << ", 500</coordinates></Point>" << std::endl;
