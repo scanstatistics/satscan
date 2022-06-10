@@ -505,8 +505,14 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             }
             placemark << "<Point><coordinates>" << longitude << " , " << latitude << ", 500</coordinates></Point>" << std::endl;
             placemark << "<ExtendedData>" << extended.str() << "</ExtendedData>" << std::endl;
-            placemark << "<styleUrl>#events-" << toHex(group_value) << (demographics.isNewEvent(event_id) ? "-new" : "") << "-stylemap</styleUrl>" << std::endl;
-            placemark << "</Placemark>" << std::endl;
+            placemark << "<styleUrl>#events-" << toHex(group_value);
+            if (demographics.isNewEvent(event_id))
+                placemark << "-new";
+            else if (demographics.isExistingEvent(event_id))
+                placemark << "-ongoing";
+            else
+                placemark << "-outside";
+            placemark << "-stylemap</styleUrl>" << std::endl << "</Placemark>" << std::endl;
             // Add placemark to correct placemark group.
             auto pgroup = group_placemarks.find(group_value);
             if (pgroup == group_placemarks.end())
@@ -515,13 +521,15 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         }
     }
     // Now that we've read all the data, write groups to KML file.
-    std::string event_icon = "https://maps.google.com/mapfiles/kml/shapes/placemark_square.png";
-    std::string new_event_icon = "http://maps.google.com/mapfiles/kml/shapes/square.png";
+    std::string new_event_icon = "http://maps.google.com/mapfiles/kml/shapes/donut.png";
+    std::string ongoing_event_icon = "http://maps.google.com/mapfiles/kml/shapes/triangle.png";
+    std::string outside_event_icon = "http://maps.google.com/mapfiles/kml/shapes/placemark_square.png";
     // First create the ScreenOverlay, which is the legend.
     eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style=\"text-decoration:underline;\">Legend: " << group_by;
     eventKML << "</div></name><Snippet></Snippet><description>";
-    eventKML << "<div><img style=\"vertical-align:middle;padding-right:6px\" width=\"22\" height=\"22\" src=\"" << new_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;\">New</span>";
-    eventKML << "<img width=\"32\" height=\"32\" style=\"vertical-align:middle;padding-right:0px;\" src=\"" << event_icon << "\"/> <span style=\"font-weight:bold;\">Ongoing</span></div>";
+    eventKML << "<div style=\"border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;\"><div><img style=\"vertical-align:middle;padding-left:3px;padding-right:6px;\" width=\"22\" height=\"22\" src=\"" << new_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;vertical-align: middle;\">New</span></div>";
+    eventKML << "<div><img width=\"22\" height=\"22\" style=\"vertical-align:middle;padding-left:3px;padding-top:6px;padding-right:6px;\" src=\"" << ongoing_event_icon << "\"/> <span style=\"font-weight:bold;vertical-align: middle;\">Ongoing</span></div>";
+    eventKML << "<div><img style=\"vertical-align:middle;padding-left:0px;padding-top:3px;padding-right:0px;\" width=\"32\" height=\"32\" src=\"" << outside_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;vertical-align: middle;\">Outside</span></div></div>";
     eventKML << "<ul style=\"padding-left:0\">" << std::endl;
     std::vector<std::pair<std::string, std::string> > group_colors;
     auto itrColor = _event_color_defaults.begin()/* + _event_color_offset*/;
@@ -541,16 +549,18 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     for (auto const&pgroup: group_placemarks) {
         auto color = itrColors->first;
         auto groupHex = toHex(pgroup.first);
-        eventKML << "<Style id=\"events-" << groupHex << "-style\"><IconStyle><color>" << color << "</color><Icon><href>" << event_icon
-            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>";
-        eventKML << ballonstyle.str() << "</Style>" << std::endl;
-        eventKML << "<StyleMap id=\"events-" << groupHex << "-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
-            << "-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-style</styleUrl></Pair></StyleMap>" << std::endl;
+        eventKML << "<Style id=\"events-" << groupHex << "-ongoing-style\"><IconStyle><color>" << color << "</color><Icon><href>" << ongoing_event_icon
+            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
+        eventKML << "<StyleMap id=\"events-" << groupHex << "-ongoing-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
+            << "-ongoing-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-ongoing-style</styleUrl></Pair></StyleMap>" << std::endl;
         eventKML << "<Style id=\"events-" << groupHex << "-new-style\"><IconStyle><color>" << color << "</color><Icon><href>" << new_event_icon
-            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>";
-        eventKML << ballonstyle.str() << "</Style>" << std::endl;
+            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
         eventKML << "<StyleMap id=\"events-" << groupHex << "-new-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
             << "-new-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-new-style</styleUrl></Pair></StyleMap>" << std::endl;
+        eventKML << "<Style id=\"events-" << groupHex << "-outside-style\"><IconStyle><color>" << color << "</color><Icon><href>" << outside_event_icon
+            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
+        eventKML << "<StyleMap id=\"events-" << groupHex << "-outside-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
+            << "-outside-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-outside-style</styleUrl></Pair></StyleMap>" << std::endl;
         eventKML << "<Folder><name>" << pgroup.first << "</name>" << std::endl << pgroup.second->str() << "</Folder>";
         ++itrColors;
     }

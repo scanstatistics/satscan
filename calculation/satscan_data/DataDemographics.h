@@ -126,6 +126,7 @@ class DataDemographicsProcessor{
         const DemographicAttributeSet& getDataSetDemographics(unsigned int idx=0) const { return _demographics_by_dataset.at(idx); }
         boost::tuple<bool, bool> getEventStatus(unsigned int idx = 0) const { return _events_by_dataset.at(idx); }
         const std::set<std::string>& getNewEventIds() const { return _new_event_ids; }
+        bool isExistingEvent(const std::string& s) const { return _existing_event_ids.find(s) != _existing_event_ids.end(); }
         bool isNewEvent(const std::string& s) const { return _new_event_ids.find(s) != _new_event_ids.end(); }
         void print();
         void process();

@@ -149,7 +149,7 @@ void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, con
     std::vector<std::string> v = {"Cluster"};
     for (auto const& itr : llmap) {
         if (itr.second.get<0>() == EVENT_ID) {
-            v.push_back("Cluster Event");
+            v.push_back("Hierarchy");
             v.push_back("New Event");
         }
         v.push_back(itr.second.get<1>());
@@ -294,14 +294,13 @@ void DataDemographicsProcessor::finalize() {
         if (filepath.empty()) {
             FileName signalled(_parameters.GetOutputFileName().c_str());
             signalled.setExtension(".event-cache.txt");
-            const_cast<CParameters&>(_parameters).setEventCacheFileName(signalled.getFullPath(filepath).c_str());
+            signalled.getFullPath(filepath);
             _handler.gDataHub.GetPrintDirection().Printf(
                 "An event cache file is being created for this analysis, since one was not specified in the parameter settings.\n"
                 "If you wish to maintain this file in future analyses, you should update the event cache parameter setting to:\n%s\n",
                 BasePrint::P_WARNING, filepath.c_str()
             );
         }
-        //_handler.gDataHub.GetPrintDirection().Printf("Writing event ids to file cache.\n", BasePrint::P_STDOUT);
         boost::filesystem::path from = _temp_events_cache_filename, to = filepath;
         boost::filesystem::detail::copy_file(from, to, boost::filesystem::detail::overwrite_if_exists);
         remove(_temp_events_cache_filename.c_str());
