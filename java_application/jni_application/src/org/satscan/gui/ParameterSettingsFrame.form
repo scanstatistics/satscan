@@ -388,38 +388,38 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_startDateLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="_startDateYearLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="_studyPeriodStartDateYearTextField" alignment="0" min="-2" pref="50" max="-2" attributes="1"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_startDateYearLabel" min="-2" pref="50" max="-2" attributes="1"/>
+                                      <Component id="_studyPeriodStartDateYearTextField" min="-2" pref="60" max="-2" attributes="1"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_startDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_studyPeriodStartDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                      <Component id="_studyPeriodStartDateMonthTextField" alignment="0" min="-2" pref="40" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="_startDateDayLabel" alignment="1" max="32767" attributes="1"/>
-                                      <Component id="_studyPeriodStartDateDayTextField" alignment="1" min="-2" pref="30" max="-2" attributes="1"/>
+                                      <Component id="_studyPeriodStartDateDayTextField" alignment="1" min="-2" pref="40" max="-2" attributes="1"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="_endDateLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="_endDateYearLabel" max="32767" attributes="1"/>
-                                      <Component id="_studyPeriodEndDateYearTextField" alignment="1" min="-2" pref="50" max="-2" attributes="1"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_endDateYearLabel" min="-2" pref="50" max="-2" attributes="1"/>
+                                      <Component id="_studyPeriodEndDateYearTextField" alignment="0" min="-2" pref="60" max="-2" attributes="1"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_endDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_studyPeriodEndDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                      <Component id="_studyPeriodEndDateMonthTextField" alignment="0" min="-2" pref="40" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="_endDateDayLabel" max="32767" attributes="1"/>
-                                      <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="30" max="-2" attributes="1"/>
+                                      <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="40" max="-2" attributes="1"/>
                                   </Group>
-                                  <EmptySpace pref="190" max="32767" attributes="0"/>
+                                  <EmptySpace pref="130" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -998,7 +998,7 @@
                           <Component id="_analysisTypeGroup" alignment="1" max="32767" attributes="1"/>
                           <Component id="_probabilityModelGroup" alignment="1" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="163" max="32767" attributes="0"/>
+                      <EmptySpace pref="167" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1774,7 +1774,7 @@
                       <Component id="_geographicalOutputGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="72" max="32767" attributes="0"/>
+                      <EmptySpace pref="76" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
