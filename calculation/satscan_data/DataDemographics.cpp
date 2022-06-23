@@ -136,12 +136,15 @@ DataDemographicsProcessor::~DataDemographicsProcessor() {
 }
 
 /* Appends data record to temporary cluster file. */
-void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first) {
+void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times) {
     std::ofstream temp_file(_cluster_location_files[clusterIdx].c_str(), std::ios_base::app | std::ios_base::binary);
     std::string buffer;
-    temp_file << (clusterIdx + 1) << ",";
-    if (first) temp_file << (first.get() == clusterIdx ? "Primary" : "Secondary") << ",";
-    temp_file << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
+    std::stringstream line;
+    line << (clusterIdx + 1) << ",";
+    if (first) line << (first.get() == clusterIdx ? "Primary" : "Secondary") << ",";
+    line << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
+    for (int i=0; i < times; ++i) 
+        temp_file << line.str();
 }
 
 /* Add the header row to the final output file. */
@@ -225,12 +228,13 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 _demographics_by_dataset.back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
                 if (fieldMap.second.get<0>() == EVENT_ID) {
-                    if (_events_filter->contains(values.back()))
-                        _handler.gDataHub.GetPrintDirection().Printf(
+                    if (_events_filter->contains(values.back())) {
+                        _handler.gDataHub.GetPrintDirection().PrintWarning(
+                            printString(buffer,
                             "Warning: The event id '%s' appears to be defined more than once in case file data yet event id is expected to be unique.\n",
-                            BasePrint::P_WARNING, values.back().c_str()
+                            values.back().c_str()).c_str()
                         );
-                    else
+                    } else
                         _events_filter->insert(values.back());
                     is_new_event = _existing_event_ids.find(value) == _existing_event_ids.end();
                     values.insert(values.end() - 1, (is_new_event ? "New" : ""));
@@ -251,14 +255,12 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             boost::optional<int> first(_events_by_dataset.back().get<0>() ? boost::make_optional(applicable.find_first()) : boost::none);
             for (boost::dynamic_bitset<>::size_type b= applicable.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable.find_next(b)) {
                 // typcically nCount == 1 but if not event data, could be aggregated count - hmm, what if nCount is large? (count columm might be better?)
-                for (int c=0;  c < nCount; c++) {
-                    appendLinelistData(static_cast<int>(b), values, first);
-                    if (is_new_event) {
-                        _new_event_ids.emplace(eventid);
-                        _cluster_new_events[static_cast<int>(b)].first += 1;
-                    }
-                    _cluster_new_events[static_cast<int>(b)].second += 1;
+                appendLinelistData(static_cast<int>(b), values, first, nCount);
+                if (is_new_event) {
+                    _new_event_ids.emplace(eventid);
+                    _cluster_new_events[static_cast<int>(b)].first += nCount;
                 }
+                _cluster_new_events[static_cast<int>(b)].second += nCount;
             }
             // Maintain the event id cache. Add if:
             // 1) new event id signalled in significant cluster of this analysis.

@@ -112,7 +112,7 @@ class DataDemographicsProcessor{
         // cluster new event counts <mlc cluster index, <# new events, total events>>
         ClusterEventCounts_t _cluster_new_events;
 
-        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first = boost::none);
+        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
         void createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
 

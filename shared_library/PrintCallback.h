@@ -16,14 +16,14 @@ class CallbackPrint : public BasePrint {
   protected:
     bool           _cancelled; 
 
-    void PrintError(const char * sMessage) {print(sMessage);}
-    inline void PrintNotice(const char * sMessage) {print(sMessage);}
-    inline void PrintStandard(const char * sMessage) {print(sMessage);}
-    inline void PrintWarning(const char * sMessage) {print(sMessage);}
-  
   public:
     CallbackPrint(bool bSuppressWarnings):BasePrint(bSuppressWarnings) {_cancelled=false;}
     virtual ~CallbackPrint() {}
+
+    inline void PrintError(const char * sMessage) { print(sMessage); }
+    inline void PrintNotice(const char * sMessage) { print(sMessage); }
+    inline void PrintStandard(const char * sMessage) { print(sMessage); }
+    inline void PrintWarning(const char * sMessage) { print(sMessage); }
 
     inline bool GetIsCanceled() const {
         return _cancelled;

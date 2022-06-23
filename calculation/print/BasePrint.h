@@ -12,9 +12,9 @@ class BasePrint {
 
   public:
     enum eInputFileType {
-		CASEFILE, CONTROLFILE, POPFILE, COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE, ADJ_BY_RR_FILE,
+        CASEFILE, CONTROLFILE, POPFILE, COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE, ADJ_BY_RR_FILE,
         LOCATION_NEIGHBORS_FILE, META_LOCATIONS_FILE, NETWORK_FILE
-	};
+    };
     enum PrintType {P_STDOUT=0, P_WARNING, P_ERROR, P_READERROR, P_NOTICE, P_PARAMERROR};
 
   protected:
@@ -25,15 +25,15 @@ class BasePrint {
     std::map<eInputFileType, int>       gInputFileWarningsMap;
     bool                                gbSuppressWarnings;
 
+  public:
+    BasePrint(bool bSuppressWarnings);
+    virtual ~BasePrint();
+
     virtual void                        PrintError(const char * sMessage) = 0;
     virtual void                        PrintNotice(const char * sMessage) = 0;
     virtual void                        PrintReadError(const char * sMessage);
     virtual void                        PrintStandard(const char * sMessage) = 0;
     virtual void                        PrintWarning(const char * sMessage) = 0;
-
-  public:
-    BasePrint(bool bSuppressWarnings);
-    virtual ~BasePrint();
 
     eInputFileType                      GetImpliedInputFileType() const {return geInputFileType;}
     const std::string                 & GetImpliedFileTypeString() const {return gsInputFileString;}

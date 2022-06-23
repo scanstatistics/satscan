@@ -40,13 +40,13 @@ private:
    void PrintWarningQualifiedLineToTarget(BasePrint::PrintType, const char * s);
    void UpdateThreshold();
 
-protected:
-   virtual void PrintError(const char * sMessage);
-   virtual void PrintNotice(const char * sMessage);
-   virtual void PrintStandard(const char * sMessage);
-   virtual void PrintWarning(const char * sMessage);
-
 public:
+    virtual void PrintError(const char * sMessage);
+    virtual void PrintNotice(const char * sMessage);
+    virtual void PrintStandard(const char * sMessage);
+    virtual void PrintWarning(const char * sMessage);
+
+
    PrintQueue(BasePrint & Target, bool bSuppressWarnings);
    PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy, bool bSuppressWarnings);
    ~PrintQueue();

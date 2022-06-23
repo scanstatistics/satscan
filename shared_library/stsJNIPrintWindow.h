@@ -22,14 +22,14 @@ class JNIPrintWindow : public BasePrint {
     jmethodID           gSetCallpathMethodId;
     jmethodID           gReportDrilldownResultsMethodId;
 
-    virtual void        PrintError(const char * sMessage);
-    virtual void        PrintNotice(const char * sMessage);
-    virtual void        PrintStandard(const char * sMessage);
-    virtual void        PrintWarning(const char * sMessage);
-
    public:
      JNIPrintWindow(JNIEnv& JNI_Env, jobject& ProgressWindowObj, bool bSuppressWarnings);
      virtual ~JNIPrintWindow();
+
+     virtual void       PrintError(const char * sMessage);
+     virtual void       PrintNotice(const char * sMessage);
+     virtual void       PrintStandard(const char * sMessage);
+     virtual void       PrintWarning(const char * sMessage);
 
      bool               GetIsCanceled() const;
      virtual void       Printf(const char * sMessage, PrintType ePrintType, ...);

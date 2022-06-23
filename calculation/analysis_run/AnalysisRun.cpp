@@ -1459,6 +1459,7 @@ void AnalysisExecution::reportClusters() {
 
         // Process line list data if selected.
         if (_parameters.getReadingLineDataFromCasefile()) {
+            _print_direction.Printf("Processing line list data and adding results to cluster line list file ...\n", BasePrint::P_STDOUT);
             _data_demographic_processor.reset(new DataDemographicsProcessor(_data_hub.GetDataSetHandler(), _reportClusters, _sim_vars));
             _data_demographic_processor->process();
         }
