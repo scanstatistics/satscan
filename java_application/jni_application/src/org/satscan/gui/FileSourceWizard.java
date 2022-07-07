@@ -1570,8 +1570,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 StringBuilder message = new StringBuilder();
                 message.append("The case file can contain line list data which is not used when performing analysis.\n");
                 message.append("The line list data can include two types of information:\n");
-                message.append("1) Event Identification - uniquely identifies event and true cordinates.\n");
-                message.append("2) Event Characteristics - attributes of that event.\n");
+                message.append("1) Event Identification:\n");
+                message.append(" - Uniquely identifies an event and it's latitude/longitude coordinates.\n");
+                message.append(" - Coordinates are optional and only used to place the event in the KML output.\n");
+                message.append("2) Record Characteristics:\n");
+                message.append(" - Attributes of the event or record (age, gender, status, etc).\n\n");
+                message.append("When an Event ID column is defined, the number of cases for each record must be one;\n");
+                message.append("since you are indicating each record is a unique event.\n");
+                message.append("This restriction will be enforced when the analysis is executed.\n");
                 JOptionPane.showMessageDialog(FileSourceWizard.this, message.toString(), "Note", JOptionPane.INFORMATION_MESSAGE);
             }
         });
@@ -2230,6 +2236,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 clearSaTScanVariableFieldIndexes();
                 _execute_import_now.setSelected(true);
                 _needs_import_save = true;
+                _refresh_related_settings = true;
                 _expectedFormatTextPane.setText(getFileExpectedFormatHtml());
                 _expectedFormatTextPane.setCaretPosition(0);
                 nextButtonSource.setText("Next >");

@@ -432,10 +432,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 eventInfo = Pair.of(false, false);
             }
         }
-         _event_cache_field.setEnabled(eventInfo.getLeft());
-         _event_cache_field.setEnabled(eventInfo.getLeft());
-         _event_cache_browse.setEnabled(eventInfo.getLeft());
-        _checkbox_grouping_kml.setEnabled(eventInfo.getLeft() && eventInfo.getRight());
+         _event_cache_field.setEnabled(eventInfo.getLeft() || Utils.selected(_checkbox_casefile_metarow));
+         _event_cache_browse.setEnabled(eventInfo.getLeft() || Utils.selected(_checkbox_casefile_metarow));
+        _checkbox_grouping_kml.setEnabled((eventInfo.getLeft() && eventInfo.getRight()) || Utils.selected(_checkbox_casefile_metarow));
         _grouping_input_label.setEnabled(Utils.selected(_checkbox_grouping_kml));
         _linelist_grouping.setEnabled(Utils.selected(_checkbox_grouping_kml));
         _view_linelist_choices.setEnabled(Utils.selected(_checkbox_grouping_kml));
