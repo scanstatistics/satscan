@@ -162,9 +162,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // Test whether user selected any event level inputs and verify.
         if (_combobox_event_y.isEnabled()) {
             if (_combobox_event_y.getSelectedIndex() > 0 && _combobox_event_x.getSelectedIndex() == 0)
-                message.append("An event longitude/Y coordinate was selected but no latitude/X coordinate.\n");
+                message.append("An event longitude coordinate was selected but no latitude coordinate.\n");
             else if (_combobox_event_y.getSelectedIndex() == 0 && _combobox_event_x.getSelectedIndex() > 0)
-                message.append("An event latitude/X coordinate was selected but no longitude/Y coordinate.\n");
+                message.append("An event latitude coordinate was selected but no longitude coordinate.\n");
             if (message.length() > 0) {
                 message.append("Note: Event coordinates are only required to place events on Google Earth KML output.");
                 JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
@@ -193,9 +193,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         if (_combobox_eventid.getSelectedIndex() > 0)
             _input_source_settings.getLinelistFieldMaps().put(_combobox_eventid.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_ID, "EventID"));
         if (_combobox_event_y.isEnabled() && _combobox_event_y.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_Y, "EventLongitudeY"));
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_Y, "EventLongitude"));
         if (_combobox_event_x.isEnabled() && _combobox_event_x.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_X, "EventLatitudeX"));
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_X, "EventLatitude"));
         for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
             _input_source_settings.getLinelistFieldMaps().put(
                 model.getSourceColumnIndex((String)model.getValueAt(rowIdx, 0)) - 1, 
@@ -1985,10 +1985,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "not set" }));
         _combobox_eventid.setPreferredSize(new java.awt.Dimension(125, 20));
 
-        _combobox_event_y.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "latitude/X not set" }));
+        _combobox_event_y.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "latitude not set" }));
         _combobox_event_y.setPreferredSize(new java.awt.Dimension(125, 20));
 
-        _combobox_event_x.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "longitude/X not set" }));
+        _combobox_event_x.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "longitude not set" }));
         _combobox_event_x.setPreferredSize(new java.awt.Dimension(125, 20));
 
         _mapping_table_linelist.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -2010,9 +2010,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _down_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
 
-        jLabel8.setText("Event Latitude / Y (optional)");
+        jLabel8.setText("Event Latitude (optional)");
 
-        jLabel9.setText("Event Longitude / X (optional)");
+        jLabel9.setText("Event Longitude (optional)");
 
         _linelist_help.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         _linelist_help.setToolTipText("What is this?");
@@ -2036,7 +2036,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 111, Short.MAX_VALUE))
+                        .addGap(0, 137, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)

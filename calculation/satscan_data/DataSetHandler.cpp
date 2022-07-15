@@ -137,7 +137,7 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
         if (gParameters.getCasefileIncludesLineData() && Source->getFieldsMap().size() == 0 && Source->getLinelistFieldsMap().size() == 0) {
             if (!Source->ReadRecord()) throw resolvable_error("Error: Case file is empty.");
             // Define the types of colummns in the line-list meta row.
-            std::string event_id_type("<eventid>"), xcoord_type("<event-longitude-x>"), ycoord_type("<event-latitude-y>"), linelist_type("<linelist>"),
+            std::string event_id_type("<eventid>"), xcoord_type("<event-longitude>"), ycoord_type("<event-latitude>"), linelist_type("<linelist>"),
                         covariate_type("<covariate>"), locationid_type("<locationid>"), count_type("<#cases>"), date_type("<time>"),
                         attribute_type("<attribute>"), censored_type("<censored>"), weight_type("<weight>");
             std::map<std::string, long> mapped_columns = {
