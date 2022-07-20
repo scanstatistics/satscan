@@ -677,8 +677,12 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     System.out.println(userGuide);
                     BareBonesBrowserLaunch.openURL(userGuide);
                 }
-            } catch (Throwable t) {
-                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+            } catch (Throwable t) { // Default to website.
+                try {
+                    BareBonesBrowserLaunch.openURL(AppConstants.getWebSite() + "techdoc.html");
+                } catch (Throwable ignored) {
+                    new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+                }
             }
         }
     }

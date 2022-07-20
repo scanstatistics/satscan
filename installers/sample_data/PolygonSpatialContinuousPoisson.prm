@@ -88,6 +88,18 @@ UseLocationsNetworkFile=n
 ;purpose of locations network file (0=Coordinates File Override, 1=Network Definition)
 PurposeLocationsNetworkFile=1
 
+[Line List]
+;whether case file contains line list data (positive integer (y/n)
+LineListCaseFile=n
+;whether case file contains line list header row (positive integer (y/n)
+LineListHeaderCaseFile=n
+;file to store events ids
+LineListEventCache=
+;indication whether to include linelist events in kml output, grouped (y/n)
+EventGroupKML=n
+;label of line-list colummn that should be used to group events in KML file
+EventGroupByKML=
+
 [Spatial Neighbors]
 ;use neighbors file (y/n)
 UseNeighborsFile=n
@@ -202,13 +214,17 @@ DrilldownClusterPvalueCutoff=0.05
 ;adjust for weekly trends, purely spatial Bernoulli drilldown
 DrilldownAdjustForWeeklyTrends=n
 
-[Border Analysis]
+[Miscellaneous Analysis]
 ;calculate Oliveira's F
 CalculateOliveira=n
 ;number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)
 NumBootstrapReplications=1000
 ;p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)
 OliveiraPvalueCutoff=0.05
+;frequency of prospective analyses type (0=Same Time Aggregation, 1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)
+ProspectiveFrequencyType=0
+;frequency of prospective analyses  (positive integer)
+ProspectiveFrequency=1
 
 [Power Evaluation]
 ;perform power evaluation - Poisson only (y/n)
@@ -287,6 +303,16 @@ TemporalGraphMostMLC=1
 TemporalGraphSignificanceCutoff=0.05
 
 [Other Output]
+;cluster significance by recurrence interval  (y/n)
+ClusterSignificanceByRecurrence=n
+;cluster significance recurrence interval cutoff (positive integer)
+ClusterSignificanceRecurrenceCutoff=100
+;cluster significance recurrence interval type (YEAR=1, DAY=3)
+ClusterSignificanceRecurrenceCutoffType=4
+;cluster significance by  p-value (y/n)
+ClusterSignificanceByPvalue=n
+;cluster significance p-value cutoff (0.000-1.000)
+ClusterSignificancePvalueCutoff=0.05
 ;report critical values for .01 and .05? (y/n)
 CriticalValue=n
 ;report cluster rank (y/n)
@@ -295,6 +321,24 @@ ReportClusterRank=n
 PrintAsciiColumnHeaders=n
 ;user-defined title for results file
 ResultsTitle=
+
+[Email Alerts]
+;whether to email user an analysis results summary
+EmailResultsSummary=n
+;list of users which are always emailed
+EmailAlwaysRecipients=
+;list of users which are emailed for significant events
+EmailSignificantRecipients=
+;subject line of email - no significant clusters
+EmailSubjectLineNoSignificant=
+;email message body - no significant clusters
+EmailMessageBodyNoSignificant=
+;subject line of email - significant clusters
+EmailSubjectLineSignificant=
+;email message body - significant clusters
+EmailMessageBodySignificant=
+;email message - attach results
+EmailAttachResults=n
 
 [Elliptic Scan]
 ;elliptic shapes - one value for each ellipse (comma separated decimal values)
@@ -324,5 +368,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=10.0.0
+Version=10.1.0
 
