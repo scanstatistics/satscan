@@ -349,7 +349,8 @@ public class ApplicationPreferences extends javax.swing.JDialog {
 
         _alert_label_add_curl.setText("Additional curl Parameters:");
 
-        _send_test_mail.setText("Send Test Mail");
+        _send_test_mail.setText("Send Test Email");
+        _send_test_mail.setToolTipText("Send test email to 'from' address");
 
         _send_test_mail_response.setEditable(false);
         _send_test_mail_response.setColumns(20);
@@ -371,10 +372,10 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                     .addComponent(_alert_label_smtp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_alerts_smtp)
                     .addComponent(_alerts_from)
+                    .addComponent(jScrollPane1)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(_send_test_mail, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1))
+                        .addComponent(_send_test_mail, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(

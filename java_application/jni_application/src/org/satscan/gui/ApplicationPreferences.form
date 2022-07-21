@@ -149,11 +149,11 @@
                       <Component id="_alert_label_smtp" alignment="0" max="32767" attributes="0"/>
                       <Component id="_alerts_smtp" alignment="0" max="32767" attributes="0"/>
                       <Component id="_alerts_from" alignment="0" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="_send_test_mail" min="-2" pref="114" max="-2" attributes="0"/>
+                          <Component id="_send_test_mail" min="-2" pref="193" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -231,7 +231,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="_send_test_mail">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Send Test Mail"/>
+            <Property name="text" type="java.lang.String" value="Send Test Email"/>
+            <Property name="toolTipText" type="java.lang.String" value="Send test email to &apos;from&apos; address"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_send_test_mail.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);&#xa;        try {&#xa;            _send_test_mail_response.setText(&quot;&quot;);&#xa;            String response = SendTestMail(&#xa;                _alerts_smtp.getText(), _alerts_curl_additional.getText(),&#xa;                _alerts_from.getText(), _alerts_reply.getText()&#xa;            );&#xa;            _send_test_mail_response.append(response);&#xa;            _send_test_mail_response.setCaretPosition(0);&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ApplicationPreferences.this, t).setVisible(true);&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }  &#xa;    }&#xa;});"/>
