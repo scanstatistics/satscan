@@ -648,20 +648,19 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
                 printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceFirstRowHeader);
                 section.AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
             }
-        }
 
-        if (source->getLinelistFieldsMap().size()) {
-            printString(buffer, "source line list field map (comma separated list of <column idx>:<variable type>:<variable name>)");
-            section.AddComment(buffer.c_str());
-            std::stringstream s;
-            for (auto itr=source->getLinelistFieldsMap().begin(); itr != source->getLinelistFieldsMap().end(); ++itr) {
-                if (itr != source->getLinelistFieldsMap().begin()) { s << ","; }
-                s << itr->first << ":" << itr->second.get<0>() << ":\"" << itr->second.get<1>() << "\"";
-            }
-            printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
-            section.AddLine(key.c_str(), s.str().c_str());
+			if (source->getLinelistFieldsMap().size()) {
+				printString(buffer, "source line list field map (comma separated list of <column idx>:<variable type>:<variable name>)");
+				section.AddComment(buffer.c_str());
+				std::stringstream s;
+				for (auto itr = source->getLinelistFieldsMap().begin(); itr != source->getLinelistFieldsMap().end(); ++itr) {
+					if (itr != source->getLinelistFieldsMap().begin()) { s << ","; }
+					s << itr->first << ":" << itr->second.get<0>() << ":\"" << itr->second.get<1>() << "\"";
+				}
+				printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
+				section.AddLine(key.c_str(), s.str().c_str());
+			}
         }
-
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSource()","IniParameterFileAccess");
         throw;
