@@ -194,17 +194,14 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         _handler.gPrint.SetSuppressWarnings(true);
         DataSource::OrderedLineListField_t linelistFieldsMap;
         Source->getOrderedLinelistFieldsMap(linelistFieldsMap);
+		tract_t tid; count_t nCount; Julian nDate;
         while (!_handler.gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
-            tract_t tid;
-            if (_handler.RetrieveLocationIndex(*Source, tid) != DataSetHandler::Accepted) continue;
-            count_t nCount;
-            if (Source->GetValueAt(_handler.guCountIndex) == 0)
-                return false;
-            if (!string_to_type<count_t>(Source->GetValueAt(_handler.guCountIndex), nCount) || nCount < 0)
-                return false;
-            if (nCount == 0) continue;
-            Julian nDate;
-            if (_handler.RetrieveCountDate(*Source, nDate) != DataSetHandler::Accepted) continue;
+			DataSetHandler::RecordStatusType readStatus = _handler.RetrieveLocationIndex(*Source, tid);
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+			readStatus = _handler.RetrieveCaseCounts(*Source, nCount);
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+			readStatus = _handler.RetrieveCountDate(*Source, nDate);
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
             int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate);
             int endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
             // Determine which clusters this record applys to.
