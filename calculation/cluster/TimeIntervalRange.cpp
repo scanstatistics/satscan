@@ -674,8 +674,6 @@ void MultiSetUniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Runni
                 pMeasure = Datum.getMeasureArray();
                 Datum.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
                 Datum.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
-                Datum.gtCasesInPeriod = pCases[0];
-                Datum.gtMeasureInPeriod = pMeasure[0];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.getCases(), Datum.getMeasure(), Datum.gtCasesInPeriod, Datum.gtMeasureInPeriod, t);
             }
             Running.m_nFirstInterval = iWindowStart;
@@ -719,8 +717,6 @@ double MultiSetUniformTimeTemporalDataEvaluator::ComputeMaximizingValue(Abstract
                 pMeasure = Datum.getMeasureArray();
                 Datum.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
                 Datum.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
-                Datum.gtCasesInPeriod = pCases[0];
-                Datum.gtMeasureInPeriod = pMeasure[0];
                 Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.getCases(), Datum.getMeasure(), Datum.gtCasesInPeriod, Datum.gtMeasureInPeriod, t);
             }
             dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
@@ -931,8 +927,6 @@ void UniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClu
         for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
             Data.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
             Data.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
-            Data.gtCasesInPeriod = pCases[0];
-            Data.gtMeasureInPeriod = pMeasure[0];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0)) {
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
@@ -944,7 +938,6 @@ void UniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClu
     clusterSet.maximizeClusterSet();
 }
 
-/** Not implemented - throws prg_error */
 void UniformTimeTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
     UniformTimeClusterDataInterface& Data = GetClusterDataAsType<UniformTimeClusterDataInterface>(ClusterData);
 
@@ -961,10 +954,10 @@ void UniformTimeTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterDa
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             cases = pCases[iWindowStart] - pCases[iWindowEnd];
             measure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-            if (cases < pCases[0])
-                MeasureList.AddMeasure(cases, measure * static_cast<double>(pCases[0] - cases) / (pMeasure[0] - measure));
-            else if (cases == pCases[0])
-                MeasureList.AddMeasure(cases, measure / (M * (pMeasure[0] - measure)));
+            if (cases < Data.gtCasesInPeriod)
+                MeasureList.AddMeasure(cases, measure * static_cast<double>(Data.gtCasesInPeriod - cases) / (Data.gtMeasureInPeriod - measure));
+            else if (cases == Data.gtCasesInPeriod)
+                MeasureList.AddMeasure(cases, measure / (M * (Data.gtMeasureInPeriod - measure)));
         }
     }
 }
@@ -990,8 +983,6 @@ double UniformTimeTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporal
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             Data.setCases(pCases[iWindowStart] - pCases[iWindowEnd]);
             Data.setMeasure(pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
-            Data.gtCasesInPeriod = pCases[0];
-            Data.gtMeasureInPeriod = pMeasure[0];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0))
                 dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.getCases(), Data.getMeasure(), Data.gtCasesInPeriod, Data.gtMeasureInPeriod, 0));
         }

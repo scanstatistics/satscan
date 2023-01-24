@@ -56,7 +56,7 @@ class UniformTimeTemporalData : public TemporalData, public UniformTimeClusterDa
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual UniformTimeTemporalData * Clone() const;
-    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtCasesInPeriod=0;gtMeasureInPeriod=0;}
+    virtual void             InitializeData() {gtCases=0;gtMeasure=0;/*gtCasesInPeriod=0;gtMeasureInPeriod=0;*/}
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
 };
@@ -76,6 +76,10 @@ class UniformTimeSpaceTimeData : public SpaceTimeData, public UniformTimeCluster
     virtual void             setCases(count_t c) { gtCases = c; }
     virtual measure_t        getMeasure() const { return gtMeasure; }
     virtual void             setMeasure(measure_t m) { gtMeasure = m; }
+
+	virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex = 0);
+	virtual void                AddNeighborDataSupplement(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex = 0);
+	virtual void                AddNeighborDataSupplement(tract_t tNeighborIndex, const DataSetInterface & Interface);
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);

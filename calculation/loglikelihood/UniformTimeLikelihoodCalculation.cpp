@@ -51,7 +51,9 @@ double UniformTimeLikelihoodCalculator::CalcLogLikelihoodUniformTime(count_t cas
     */
     double M = 2.0;
     double u = 0.0;
-    if (cases < casesInPeriod)
+	if (cases == 0)
+		return 0.0;
+    else if (cases < casesInPeriod)
         u = measure * static_cast<double>(casesInPeriod - cases) / (measureInPeriod - measure);
     else if (cases == casesInPeriod)
         u = measure / (M * (measureInPeriod - measure));
@@ -69,7 +71,9 @@ double UniformTimeLikelihoodCalculator::CalcLogLikelihoodRatioUniformTime(count_
     */
     double M = 2.0;
     double u = 0.0;
-    if (cases < casesInPeriod)
+	if (cases == 0)
+		return 0.0;
+    else if (cases < casesInPeriod)
         u = measure * static_cast<double>(casesInPeriod - cases) / (measureInPeriod - measure);
     else if (cases == casesInPeriod)
         u = measure / (M * (measureInPeriod - measure));
