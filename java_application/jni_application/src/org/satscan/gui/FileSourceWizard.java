@@ -947,12 +947,23 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _sticky_ll_labels.clear();
             for (Map.Entry<Integer, Pair<LinelistType, String>> entry : _input_source_settings.getLinelistFieldMaps().entrySet()) {
                 switch (entry.getValue().getLeft()) {
-                    case EVENT_ID: _combobox_eventid.setSelectedIndex(entry.getKey() + 1); break;
-                    case EVENT_COORD_Y: _combobox_event_y.setSelectedIndex(entry.getKey() + 1); break;
-                    case EVENT_COORD_X: _combobox_event_x.setSelectedIndex(entry.getKey() + 1); break;
-                    default: 
-                        model.addRow(new Object[]{(String)model._combo_box.getItemAt(entry.getKey() + 1), entry.getValue().getRight()});
-                        _sticky_ll_labels.add(true);
+                    case EVENT_ID: 
+                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_eventid.setSelectedIndex(entry.getKey() + 1);
+                        break;
+                    case EVENT_COORD_Y: 
+                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_event_y.setSelectedIndex(entry.getKey() + 1);
+                        break;
+                    case EVENT_COORD_X: 
+                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_event_x.setSelectedIndex(entry.getKey() + 1);
+                        break;
+                    default:
+                        if (entry.getKey() >=0 && entry.getKey() + 1 < model._combo_box.getItemCount()) {
+                            model.addRow(new Object[]{(String)model._combo_box.getItemAt(entry.getKey() + 1), entry.getValue().getRight()});
+                            _sticky_ll_labels.add(true);
+                        }
                 }
             }
             // Select checkbox of any line list mappings already exist. 

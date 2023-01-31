@@ -218,7 +218,11 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             for (auto const& fieldMap: linelistFieldsMap) {
                 // Retrieve the value to report for this demographic attribute.
                 value = Source->GetValueAtUnmapped(fieldMap.first);
-                value = value == 0 ? "" : value;
+				if (value == 0)
+					throw resolvable_error(
+						"Error: Unable to read line list data '%s', at column %d, from line %ld of case file.\n",
+						fieldMap.second.get<1>().c_str(), fieldMap.first + 1, Source->GetCurrentRecordIndex()
+					);
                 values.push_back(value);
                 trimString(values.back());
                 // Add attribute to data set demographics.
