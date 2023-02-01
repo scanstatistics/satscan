@@ -5,10 +5,10 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.satscan.SaTScan.satscan</string>
+	<string>org.satscan.SaTScan.libsatscan</string>
 	<key>CFBundleName</key>
 	<string>SaTScan-commandline</string>
 	<key>CFBundleVersion</key>
-	<string>9.7.0</string>
+	<string>10.1.1</string>
 </dict>
 </plist>

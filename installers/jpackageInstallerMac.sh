@@ -11,13 +11,37 @@ APPVERSION="10.1"
 SRCDIR="/Users/satscsvc/prj/satscan.development/satscan"
 INSTALLER_DIR="/prj/satscan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
+TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/satscsvc/prj/satscan.development/jpackaged"
 BINARIES="/Users/satscsvc/prj/satscan.development/binaries/mac"
-JAVAJDK="/Users/satscsvc/prj/java/jdk-17.0.2+8/Contents/Home" # AdoptJDK
+JAVAJDK="/Users/satscsvc/prj/java/jdk-17.0.6+10_x86_64/Contents/Home"
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
-ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
-STAPLER="/Applications/Xcode.app/Contents/Developer/usr/bin/stapler"
+NOTARYTOOL="notarytool"
+STAPLER="stapler"
+
+notarizeOrFail() {
+    # Notorize binary.
+    echo "Requesting package notarization... this may take some time."
+    n_time=$(date +%s)
+    response=$($XCRUN $NOTARYTOOL submit ${1} --wait --apple-id "meagherk@imsweb.com" --password ${2} --team-id ${3})
+    # Get the notarization job ID from the response
+    e_time=$(date +%s)
+    job_id_line=$(grep -m 1 '  id:' < <(echo -e "${response}"))
+    job_id=$(echo "${job_id_line}" | cut -d ":" -s -f 2 | cut -d " " -f 2)
+    n_time=$((e_time - n_time))
+    echo "Notarization completed after ${n_time} seconds. Job ID: ${job_id}"
+    # Get the notarization status from the response
+    status_line=$(grep -m 1 '  status:' < <(echo -e "${response}"))
+    status_result=$(echo "${status_line}" | cut -d ":" -s -f 2 | cut -d " " -f 2)
+    # Check response status and exit
+    if [[ ${status_result} != "Accepted" ]]; then
+        echo "Notarization failed with status ${status_result}. Hit enter to see log results ..."
+        $XCRUN $NOTARYTOOL log ${job_id} --apple-id "meagherk@imsweb.com" --password ${2} --team-id ${3}
+        exit 1
+    fi
+    echo "Notarization -${status_line}"
+}
 
 # Clean up output directory
 rm -rf $BUNDLEDIR
@@ -62,88 +86,51 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 
 # Create SaTScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar \
-                      --icon $SRCDIR/installers/izpack/mac/satscan2app/Mac-App-Template/Contents/Resources/SaTScan.icns --app-version ${APPVERSION} \
-                      --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
+                      --icon CDIR/installers/resources/SaTScan.icns \
+                      --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
+                      --mac-sign --mac-package-signing-prefix org.satscan.SaTScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "SaTScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
 
-## # Sign APP's runtime and itself.
-codesign --sign "${SIGN_KEY}" --options runtime  --timestamp --entitlements ${ENTITLEMENTS} -vvv --force $BUNDLEDIR/SaTScan.app/Contents/runtime/Contents/MacOS/libjli.dylib
-codesign -vvv --strict $BUNDLEDIR/SaTScan.app/Contents/runtime/Contents/MacOS/libjli.dylib
-codesign --sign "${SIGN_KEY}" --options runtime  --timestamp --entitlements ${ENTITLEMENTS} -vvv --force $BUNDLEDIR/SaTScan.app/Contents/MacOS/SaTScan
-codesign -vvv --strict $BUNDLEDIR/SaTScan.app/Contents/MacOS/SaTScan
-codesign --sign "${SIGN_KEY}" --options runtime --timestamp --entitlements ${ENTITLEMENTS} -vvvv --force $BUNDLEDIR/SaTScan.app
-codesign -dvvv  $BUNDLEDIR/SaTScan.app
-spctl -vvv --assess --type exec $BUNDLEDIR/SaTScan.app
-Echo Any problems codesigning app?
+# Create zip file from SaTScan.app notarize application alone.
+ditto -c -k --sequesterRsrc --keepParent $BUNDLEDIR/SaTScan.app $BUNDLEDIR/SaTScan.zip
+
+echo Any problems creating app and codesigning?
+read APPLES_TEST
+
+# Notorize app file.
+notarizeOrFail ${BUNDLEDIR}/SaTScan.zip ${PASSWORD} ${TEAM_ID}
+
+# Staple application.
+$XCRUN $STAPLER staple $BUNDLEDIR/SaTScan.app
+# Test notarization.
+codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/SaTScan.app
+
+echo Any problems notarizing app?
 read APPLES_TEST
 
 # Create dmg with notarized application - but codesign separately.
-$JAVAJDK/bin/jpackage --type pkg --verbose --app-image $BUNDLEDIR/SaTScan.app --app-version $APPVERSION --verbose --type dmg --name SaTScan --dest $BUNDLEDIR/bin \
-                      --description "Software for the spatial, temporal, and space-time scan statistics" --vendor "Information Management Services, Inc." \
-                      --copyright "Copyright 2005, All rights reserved" --resource-dir $BUNDLEDIR/dmgresources                     
-Echo Any problems creating dmg file?
-read APPLES_TEST
+$JAVAJDK/bin/jpackage --type pkg  --verbose --app-image $BUNDLEDIR/SaTScan.app --app-version $APPVERSION \
+                      --name SaTScan --dest $BUNDLEDIR/bin --description "Software for the spatial, temporal, and space-time scan statistics" \
+					  --vendor "Information Management Services, Inc." --copyright "Copyright 2005, All rights reserved" \
+					  --resource-dir $BUNDLEDIR/dmgresources --type dmg
 
 # codesign and check SaTScan.dmg
-# xattr -cr $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
+codesign --entitlements  ${ENTITLEMENTS} --options runtime -vvvv --deep --timestamp -s "${SIGN_KEY}" $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
-# codesign -dvvv $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
-codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -vvvv --deep -s "${SIGN_KEY}" $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
-codesign -dvvv $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
-Echo Any problems codesigning dmg file?
+echo Any problems creating dmg and codesigning?
 read APPLES_TEST
-
-# Create pkg
-# $JAVAJDK/bin/jpackage  --type pkg --verbose --mac-package-identifier SaTScan --app-image $BUNDLEDIR/SaTScan.app --app-version $APPVERSION --name SaTScan --verbose --type pkg --dest $BUNDLEDIR/bin --description "Software for the spatial, temporal, and space-time scan statistics" --vendor "Information Management Services, Inc." --copyright "Copyright 2005, All rights reserved" --resource-dir $BUNDLEDIR/dmgresources
-# Echo Any problems creating pkg file?
-# read APPLES_TEST
-## productsign --sign "${INSTALLER_SIGN_KEY}" $BUNDLEDIR/bin/SaTScan-${APPVERSION}.pkg $BUNDLEDIR/bin/SaTScan-${APPVERSION}-signed.pkg
-# Echo Any problems codesigning pkg file?
-# read APPLES_TEST
 
 # Notorize SaTScan.dmg
-REQUEST_UUID_DMG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.satscan.dmg" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg | grep RequestUUID | awk '{print $3}')
+notarizeOrFail $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg ${PASSWORD} ${TEAM_ID}
 
-# Poll for verification completion.
-while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_DMG" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
-    echo "Verification in progress..."
-    sleep 30
-done
-
-echo Results of notarization
-$XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_DMG" -u "meagherk@imsweb.com" -p "${PASSWORD}"
-
-Echo Any problems notarizing dmg file?
-read APPLES_TEST
-
-# staple application -- assumes notarization succeeds.
+# Staple dmg.
 $XCRUN $STAPLER staple $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
-# test notarized
+# Test dmg notarized.
 codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg
 
-## TODD: First need to create installer signing identity.
-## # Notorize SaTScan.pkg
-## REQUEST_UUID_PKG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.satscan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/SaTScan-${APPVERSION}.pkg | grep RequestUUID | awk '{print $3}')
-## 
-## # Poll for verification completion.
-## while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_PKG" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
-##     echo "Verification in progress..."
-##     sleep 30
-## done
-## 
-## Echo Any problems notarizing pkg file?
-## read APPLES_TEST
-## 
-## echo Results of notarization
-## $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_PKG" -u "meagherk@imsweb.com" -p "${PASSWORD}"
-## 
-## # staple application -- assumes notarization succeeds.
-## $XCRUN $STAPLER staple $BUNDLEDIR/bin/SaTScan-${APPVERSION}.pkg
-## 
-## # test notarized
-## codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dpkg
-## 
+echo Any problems notarizing dmg file?
+read APPLES_TEST
 
 # Build batch binaries archive for Mac OS X.
 rm -f $BUNDLEDIR/satscan.${APPVERSION}_mac.tar.bz2

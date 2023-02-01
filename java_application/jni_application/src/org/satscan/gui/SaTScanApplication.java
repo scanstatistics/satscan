@@ -57,6 +57,8 @@ import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.help.HelpShow;
 import org.satscan.utils.Elevator;
+import java.nio.file.Files;
+import java.nio.file.Paths;
         
 /* SaTScan main class and window. */
 public class SaTScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener, ClipboardOwner {
@@ -129,7 +131,12 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             _user_guide = java_lib_path.getParentFile().getParent() + File.separator  + "Contents" + File.separator + "app" + File.separator + "SaTScan_Users_Guide.pdf";            
         } else {
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "SaTScan.jar";
-            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";            
+            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";   
+            if (Files.notExists(Paths.get(_user_guide))) {
+                // Default to java library path
+                File java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH);
+                _user_guide = java_lib_path.getAbsolutePath() + File.separator + "SaTScan_Users_Guide.pdf";
+            }                 
         }        
     } 
     

@@ -39,8 +39,8 @@ echo
 
 echo building SaTScan binary ...
 cd $2
-make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/commandline-info.plist" CC="$6 $8 $9"
-make SaTScan_mac SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/commandline-info.plist" CC="$6 $8 $9" ${10}
+make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/commandline-info.plist" CC="$6 $8 $9"
+make SaTScan_mac SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/commandline-info.plist" CC="$6 $8 $9" ${10}
 strip SaTScan_mac
 mv SaTScan_mac $1
 
