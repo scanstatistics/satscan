@@ -86,7 +86,7 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 
 # Create SaTScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar \
-                      --icon CDIR/installers/resources/SaTScan.icns \
+                      --icon $SRCDIR/installers/resources/SaTScan.icns \
                       --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
                       --mac-sign --mac-package-signing-prefix org.satscan.SaTScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "SaTScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
