@@ -21,6 +21,41 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
         <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
         </tr></tbody></table> \n \
 		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
+	    <div style=\"position: relative;\"> \n \
+	        <div class=\"search-and-account\" title=\"Choose which graphs to display.\"> \n \
+                <a href=\"#\" data-toggle=\"modal\" data-target=\"#graphs-modal-modal\" class=\"offscreen\"> \n \
+                    <span class=\"screen-reader-text\">Search</span> \n \
+                        <svg width=\"40\" height=\"40\" fill=\"red\"> \n \
+                            <image xlink:href=\"--resource-path--images/graph-choose.svg\" src=\"--resource-path--images/graph-choose.png\" width=\"40\" height=\"40\"/> \n \
+                        </svg> \n \
+                </a> \n \
+            </div> \n \
+        </div> \n \
+        <div class=\"modal fade\" id=\"graphs-modal-modal\" data-backdrop=\"static\" data-keyboard=\"false\"> \n \
+            <div class=\"modal-dialog modal-sm\"> \n \
+                <div class=\"modal-content\"> \n \
+                    <div class=\"modal-body\"> \n \
+                        <div style=\"display: table;\"> \n \
+                            <div class=\"btn-group\" style=\"display: table-cell;\"> \n \
+                                <label style=\"font-size: 16px;\">Choose which graphs to display:</label> \n \
+                                <select id=\"graph-checkbox-list\" multiple=\"multiple\"> \n \
+                                --graph-list-options-- \n \
+                                </select> \n \
+                            </div> \n \
+                           <div class=\"btn-group-vertical\" style=\"display: table-cell; padding-left: 10px;\"> \n \
+                               <button id=\"id_apply_graphs\" class=\"btn btn-primary export-submit btn-sm\">Apply</button> \n \
+                               <button id=\"id_cancel_modal\" type=\"button\" class=\"btn btn-warning btn-sm\" data-dismiss=\"modal\">Cancel</button> \n \
+                           </div> \n \
+                       </div> \n \
+                       <div class=\"progress\"> \n \
+                           <div class=\"progress-bar\" role=\"progressbar\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width:0%\"> \n \
+                               <span class=\"sr-only\">0 % Complete</span> \n \
+                           </div> \n \
+                       </div> \n \
+                    </div> \n \
+                </div> \n \
+            </div> \n \
+        </div> \n \
         --main-content-- \n";
 
 /** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
@@ -44,7 +79,9 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
     <head> \n \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
-        <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-6.0.3/code/css/highcharts.css\" type=\"text/css\">\n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-9.1.2/code/css/highcharts.css\" type=\"text/css\">\n \
+        <link rel='stylesheet' href='--resource-path--javascript/bootstrap/3.3.7/bootstrap.min.css'> \n \
+        <link rel='stylesheet' href='--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css'> \n \
         <style type=\"text/css\"> \n \
         body{font:100% Arial,Helvetica;background:#9ea090} \n \
         .chart-options{display:none} \n \
@@ -55,24 +92,57 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .show-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/down_grip_selected.png')} \n \
         .hide-chart-options a{border-top:1px solid #d7e9ed;background-image:url('--resource-path--images/up_grip.png')} \n \
         .hide-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/up_grip_selected.png')} \n \
-        .chart-options{padding:10px 0 10px 0;background-color:#e6eef2;border:1px solid silver} \n \
+        .chart-options{padding:10px 20px 10px 20px;background-color:#e6eef2;border:1px solid silver} \n \
         .options-row{margin:0 10px 10px 10px} \n \
         .options-row>label:first-child, .options-row detail{color:#13369f;font-weight:bold} \n \
         .options-row input[type='radio']{margin:5px} \n \
+        .options-table {font-size:small !important;} \n \
         .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
         .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
+        .container {/*display: block;*/ position: relative; padding-left: 25px; margin-bottom: 12px; margin-right: 12px; cursor: pointer;-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;} \n \
+        .container input{ position: absolute; opacity : 0; cursor: pointer; height : 0; width : 0; } \n \
+        .checkmark{position:absolute;top:0;left:0;height:13px;width:13px;background-color:#eee;border-radius:2px;border:1px solid black;} \n \
+        /*.container:hover input ~ .checkmark {background-color:#ccc;}*/ \n \
+        /*.container input:checked ~ .checkmark {background-color:red;}*/ \n \
+        .checkmark:after{ content: \"\";position:absolute;display:none;} \n \
+        .container input : checked ~.checkmark : after{display: block;} \n \
+        .container.checkmark : after{left:4px;top:0px;width:4px;height:8px;border:solid white;border-width:0 2px 2px 0;-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);} \n \
+        .modal-dialog { margin-top: 100px; margin-left: 100px; width: 450px; } \n \
+	    .btn-sm{font-size: 13px;} \n \
+        .progress{margin-top: 20px; margin-bottom: 0; height: 10px; display: none;} \n \
+        .search-and-account{position: fixed; z-index: 15; top: 11.5rem; /*right: var(--gap);*/ left: 5px;} \n \
+        .search-and-account a{ margin-left: 0.5rem;} \n \
+        .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
         </style> \n \
-        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/highcharts.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-6.0.3/code/js/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-3.1.1.min.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/bootstrap/3.3.7/bootstrap.min.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js'></script> \n \
         <script type='text/javascript'> \n \
+            function get_extended_export_buttons(menu_text, menu_function){ \n \
+	            var defaultButtons = Highcharts.getOptions().exporting.buttons; // get default Highchart Export buttons \n \
+                var extendedButtons = $.extend(true, {}, defaultButtons); \n \
+                extendedButtons.contextButton.menuItems.unshift({ text: menu_text, onclick : menu_function }); \n \
+                return extendedButtons; \n \
+			} \n \
+			function showChartOptions() { \n \
+			    var section = $(this.renderTo).parents('div.chart-section'); \n \
+			    $(section).find('div.show-chart-options a').trigger('click'); \n \
+			    $(section).find('div.options-table')[0].scrollIntoView(); \n \
+			} \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
-			    try { \n \
+                try { \n \
                 --charts--   \n\n \
                 $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
-                $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
+                $('.title-setter').keyup(function(){\n \
+                    var chart_id = $(this).parents('.chart-section').find('.highchart-container').first().attr('id'); \n \
+                    charts[chart_id].setTitle({text: $( this ).val()}); \n \
+                    $('option[value=\"' + chart_id +  '\"]').text($( this ).val()); \n \
+                    $('#graph-checkbox-list').multiselect('rebuild'); \n \
+                }); \n \
                 $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
                 $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
                 $('.options-row input[type=\"radio\"]').click(function(event) { \n \
@@ -82,19 +152,76 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                 }); \n \
                 $('.options-row input[type=\"checkbox\"]').click(function(event) { \n \
                     var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
-                    if ($(this).is(':checked')) { \n \
-                        chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
-                        chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
-                        chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
-                    } else { \n \
-                        chart.xAxis[0].removePlotBand('band' ); \n \
-                        chart.xAxis[0].removePlotLine('start'); \n \
-                        chart.xAxis[0].removePlotLine('end'); \n \
+                    if (chart.credits !== undefined) { \n \
+                        if ($(this).is(':checked')) { \n \
+                            chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
+                            chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
+                            chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
+                        } else { \n \
+                            chart.xAxis[0].removePlotBand('band' ); \n \
+                            chart.xAxis[0].removePlotLine('start'); \n \
+                            chart.xAxis[0].removePlotLine('end'); \n \
+                        } \n \
                     } \n \
                 }); \n \
-				} catch (error) { \n \
-				   $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
-             	   throw( error ); \n \
+                $.each($('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
+                $('.options-row input.series-toggle[type=\"checkbox\"]').click(function(event) { seriesToggle($(this)); }); \n \
+                $('.options-row input.show-cluster-band[type=\"checkbox\"]').trigger('click'); \n \
+                $('#graph-checkbox-list').multiselect({ numberDisplayed: 1, enableFiltering : true, includeSelectAllOption : true, maxHeight : 300, buttonWidth : '100%', dropRight : true }); \n \
+                    if (Object.keys(charts).length) setTimeout(() => charts[Object.keys(charts)[0]].reflow(), 1000); \n \
+                     var renderCharts = []; \n \
+                     var reflowCharts = []; \n \
+                     var timerID; \n \
+                     function renderNextChart() { \n \
+                         if (renderCharts.length) { \n \
+                             var chart_id = renderCharts.shift(); \n \
+                             var chart_section = $('div.highchart-container#' + chart_id).parent('div.chart-section'); \n \
+                             if (charts[chart_id].credits === undefined) { \n \
+                                 charts[chart_id] = new Highcharts.Chart(charts[chart_id]); \n \
+                                 $.each($(chart_section).find('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
+                                 $(chart_section).find('.options-row input.show-cluster-band[type=\"checkbox\"]').prop('checked', false).trigger('click'); \n \
+                                 $(chart_section).find('.title-setter').val(charts[chart_id].title.textStr); \n \
+                             } \n \
+                             chart_section.parent().show(); \n \
+                             reflowCharts.push(chart_id); \n \
+                             var increase = parseInt($('.progress-bar').attr('aria-valuenow')) + 1; \n \
+                             var percentage = Math.round((increase / parseInt($('.progress-bar').attr('aria-valuemax'))) * 100); \n \
+                             $('.progress-bar').css('width', percentage + '%').attr('aria-valuenow', increase); \n \
+                             clearInterval(timerID); \n \
+                             if (renderCharts.length) { \n \
+                                 timerID = setTimeout(function() { renderNextChart() }, 10); \n \
+		                     } else { \n \
+                                 setTimeout(() => { \n \
+                                     $.each(reflowCharts, function(index, chart_id) { charts[chart_id].reflow(); }); \n \
+                                     reflowCharts = []; \n \
+                                 }, 1000); \n \
+                                 $('#graphs-modal-modal').modal('hide'); \n \
+                                 $('.modal-footer button').removeClass('disabled').prop('disabled', false); \n \
+                                 $('.progress-bar').attr('aria-valuenow', 0).css(\"width\", \"0%\"); \n \
+                                 $('.progress').hide(); \n \
+                            } \n \
+                         } \n \
+                     } \n \
+                     $('button#id_apply_graphs').on('click', function(e) { \n \
+                         $('.modal-footer button').addClass('disabled').prop('disabled', true); \n \
+                         $('.progress').show(); \n \
+                         $('.progress-bar').attr('aria-valuenow', 0).css(\"width\", \"0%\").attr('aria-valuemax', $('select#graph-checkbox-list option:selected').length); \n \
+                         renderCharts = []; \n \
+                         $.each($('select#graph-checkbox-list option'), function(index, checkbox) { \n \
+                             var chart_id = $(checkbox).val(); \n \
+                             if ($(checkbox).is(':checked')) { \n \
+                                 renderCharts.push(chart_id); \n \
+                             } else { \n \
+                                 $('div.highchart-container#' + chart_id).parent('div.chart-section').parent().hide(); \n \
+                             } \n \
+                        }); \n \
+                        timerID = setTimeout(function() { renderNextChart() }, 10); \n \
+                     }); \n \
+                     renderCharts = ['chart_1_1']; \n \
+                     timerID = setTimeout(function() { renderNextChart() }, 10); \n \
+                } catch (error) { \n \
+                   $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
+                   throw( error ); \n \
                 } \n \
             }); \n \
         </script> \n \
@@ -105,27 +232,28 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i> \n \
         </div></div></div> \n \
         <![endif]--> \
-        --body-- \
+        --body--<div style=\"font-style:italic;margin-left:20px;font-size:14px;\">Generated with --satscan-version--</div> \n \
     </body> \n \
 </html> \n";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
-                var --container-id-- = new Highcharts.Chart({ \n \
-                    chart: { renderTo: '--container-id--', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
+                var --container-id-- = { \n \
+                    chart: { height: 400, renderTo: '--container-id--', zoomType:'xy', panning: true, panKey: 'shift', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
                     title: { text: '--chart-title--', align: 'center' }, \n \
-                    exporting: {filename: 'cluster_graph'}, \n \
-                    plotOptions: { column: { grouping: false }}, \n \
+                    exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: true } } }, buttons: get_extended_export_buttons('Chart Options', showChartOptions)}, \n \
+                    plotOptions: { column: { grouping: true, stacking: 'normal' }}, \n \
+                    responsive: { rules: [{ condition: {  maxWidth: null }, chartOptions: { chart: { height: 400 }, subtitle: { text: null }, navigator: { enabled: false } } }] }, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
-                    legend: { backgroundColor: '#F5F5F5', verticalAlign: 'top', y: 40 }, \n \
-					xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
+                    legend: { enabled: true, backgroundColor: '#F5F5F5', verticalAlign: 'top', y: 40 }, \n \
+                    xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
                     yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [--series--]\n \
-                }); \n \
+                }; \n \
                 charts['--container-id--'] = --container-id--;";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
-         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
+	        <div class=\"item\" style=\"display:none;\"><div style=\"margin:20px;\" class=\"chart-section\"> \n \
             <div id=\"--container-id--\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
             <div class=\"options\"> \n \
                 <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
@@ -154,17 +282,17 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                           <label>Cluster Band</label> \n \
                           <div> \n \
                             <label> \n \
-                              <input type=\"checkbox\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\"/>Show Cluster Band \n \
+                              <input type=\"checkbox\" class=\"show-cluster-band\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\" />Show Cluster Band \n \
                             </label> \n \
                             <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
                           </div> \n \
                       </div> \n \
-                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart.</div> \n \
+                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart. Hold down shift key to pan zoomed chart.</div> \n \
                     </div> \n \
                     <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
                 </div> \n \
             </div> \n \
-         </div> \n";
+         </div></div> \n";
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars) 
@@ -196,7 +324,7 @@ TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, cons
 
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
-    std::string buffer, buffer2;
+    std::string clusterName, buffer, buffer2;
     FileName fileName;
 
     try {
@@ -212,7 +340,7 @@ void TemporalChartGenerator::generateChart() const {
             return;
         }
 
-        std::stringstream html, charts_javascript, cluster_sections;
+        std::stringstream html, charts_javascript, cluster_sections, chart_select_options;
 
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
@@ -278,48 +406,48 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "4572A7", "square", 0));
-                std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0));
-                std::auto_ptr<ChartSeries> clusterSeries(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "4572A7", "square", 0, "observed"));
                 // the remaining series are conditionally present in the chart
-                std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
-                std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries;
+                std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
+
+				// expectedSeries.reset(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0, ""));
+				// clusterSeries.reset(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0, ""));
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "003264", "square", 0));
-                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0));
+                if (!is_pt) {
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "003264", "square", 0, "observed"));
+                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0, ""));
                 }
 
                 // the Poisson and Exponential models also graphs observed / expected
                 if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
-                    odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster)"), "00FF00", "triangle", 1));
-                    if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
-                        // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Inside Cluster)", "FF8000", "triangle", 1));
+					if (is_pt)
+						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster)"), "00FF00", "triangle", 1, ""));
+					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
+                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Inside Cluster)", "FF8000", "triangle", 1, ""));
                 } else if (_dataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
-                    odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1));
-                    if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
-                        // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1));
+					if (is_pt)
+						odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1, ""));
+					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
+                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1, ""));
                 } else {
                     templateReplace(chart_js, "--additional-yaxis--", "");
                 }
                 
                 // set default chart title 
                 if (_dataHub.GetParameters().GetAnalysisType() == PURELYTEMPORAL)
-                    buffer = "Detected Cluster";
+					clusterName = "Detected Cluster";
                 else 
-                    printString(buffer, "Cluster #%u", clusterIdx + 1);
+                    printString(clusterName, "Cluster #%u", clusterIdx + 1);
                 // potentially include data set index
                 if (handler.GetNumDataSets() > 1)
-                    buffer += printString(buffer2, " Data Set #%u", setIdx + 1);
-                templateReplace(chart_js, "--chart-title--", buffer);
+					clusterName += printString(buffer2, " Data Set #%u", setIdx + 1);
+                templateReplace(chart_js, "--chart-title--", clusterName);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
                 templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
 
@@ -328,22 +456,26 @@ void TemporalChartGenerator::generateChart() const {
                 templateReplace(chart_js, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
 
                 // get series datastreams plus cluster indexes start and end ticks
-                std::pair<int,int> cluster_grp_idx = getSeriesStreams(cluster, groups, setIdx, categories, *clusterSeries, 
-                                                                      *observedSeries, *expectedSeries, 
+                std::pair<int,int> cluster_grp_idx = getSeriesStreams(cluster, groups, setIdx, categories, clusterSeries.get(), 
+                                                                      *observedSeries, expectedSeries.get(), 
                                                                       observedClusterSeries.get(), expectedClusterSeries.get(),
                                                                       odeSeries.get(), cluster_odeSeries.get());
 
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
+				// add select option for this chart
+				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << (clusterIdx == 0 ? "selected=selected" : "") << ">" << clusterName.c_str() << "</option>" << std::endl;
                 templateReplace(chart_js, "--container-id--", buffer);
 				printString(buffer, "%u", static_cast<unsigned int>(std::ceil( static_cast<double>(groups.getGroups().size()) / static_cast<double>(MAX_X_AXIS_TICKS) )));
 				templateReplace(chart_js, "--tickinterval--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());
 
                 // replace the series
-                chart_series << clusterSeries->toString(buffer).c_str();
-                chart_series << "," << observedSeries->toString(buffer).c_str();
-                chart_series << "," << expectedSeries->toString(buffer).c_str();
+                chart_series << observedSeries->toString(buffer).c_str();
+				if (expectedSeries.get())
+					chart_series << "," << expectedSeries->toString(buffer).c_str();
+				if (clusterSeries.get())
+					chart_series << "," << clusterSeries->toString(buffer).c_str();
                 if (observedClusterSeries.get())
                     chart_series << "," << observedClusterSeries->toString(buffer).c_str();
                 if (expectedClusterSeries.get())
@@ -372,12 +504,23 @@ void TemporalChartGenerator::generateChart() const {
         }
 
         templateReplace(html, "--charts--", charts_javascript.str());
+		templateReplace(html, "--graph-list-options--", chart_select_options.str());
         if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
             printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
+		printString(buffer,
+			"SaTScan v%s.%s%s%s%s%s",
+			VERSION_MAJOR,
+			VERSION_MINOR,
+			(!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+			(!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+			(strlen(VERSION_PHASE) ? " " : ""),
+			VERSION_PHASE
+		);
+		templateReplace(html, "--satscan-version--", buffer.c_str());
         HTMLout << html.str() << std::endl;
         HTMLout.close();
     } catch (prg_exception& x) {
@@ -419,8 +562,8 @@ TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups
 
 /* Calculates the series values in a purely temporal context. */
 std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& cluster,const intervalGroups& groups, size_t dataSetIdx,
-                                                             std::stringstream& categories, ChartSeries& clusterSeries,
-                                                             ChartSeries& observedSeries, ChartSeries& expectedSeries,
+                                                             std::stringstream& categories, ChartSeries * clusterSeries,
+                                                             ChartSeries& observedSeries, ChartSeries * expectedSeries,
                                                              ChartSeries * cluster_observedSeries, ChartSeries * cluster_expectedSeries,
                                                              ChartSeries * odeSeries, ChartSeries * cluster_odeSeries) const {
 
@@ -491,18 +634,26 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
         expected *= adjustment;
         cluster_expected *= adjustment;
         // put totals to other streams
-        expectedSeries.datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(expected, buffer, 2).c_str();
+		if (expectedSeries)
+			expectedSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(expected, buffer, 2).c_str();
         observedSeries.datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << observed;
         if (cluster_expectedSeries)
             cluster_expectedSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << getValueAsString(cluster_expected, buffer, 2).c_str();
-        if (cluster_observedSeries)
-            cluster_observedSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << cluster_observed;
+		if (cluster_observedSeries) {
+			cluster_observedSeries->datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",");
+			if (cluster.m_nFirstInterval <= itrGrp->first && itrGrp->second <= cluster.m_nLastInterval) {
+				cluster_observedSeries->datastream() << "{y:" << cluster_observed << "," << "color: '#BF0B23'}";
+			} else
+				cluster_observedSeries->datastream() << cluster_observed;
+		}
         if (cluster.m_nFirstInterval <= itrGrp->first && itrGrp->second <= cluster.m_nLastInterval) {
             groupClusterIdx.first = std::min(groupClusterIdx.first, itrGrp->first);
             groupClusterIdx.second = std::max(groupClusterIdx.second, itrGrp->second) - 1;
-            clusterSeries.datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << (cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? observed : cluster_observed);
+			if (clusterSeries)
+				clusterSeries->datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << (cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? observed : cluster_observed);
         } else {
-            clusterSeries.datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << "null";
+			if (clusterSeries)
+				clusterSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") << "null";
         }
     }
 

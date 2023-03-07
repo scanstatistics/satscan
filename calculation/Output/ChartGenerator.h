@@ -27,21 +27,26 @@ class ChartSeries {
         std::string _name;
         std::string _color;
         std::string _symbol;
-        unsigned int _y_axis;
+		std::string _stack;
+		unsigned int _y_axis;
         std::stringstream _data_stream;
 
     public:
         ChartSeries(const std::string& id, unsigned int zindex, const std::string& type, 
-                    const std::string& name, const std::string& color, const std::string& symbol, unsigned int y_axis) 
-                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis) {}
+                    const std::string& name, const std::string& color, const std::string& symbol,
+			        unsigned int y_axis, const std::string& stack)
+                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis), _stack(stack){}
 
         std::stringstream & datastream() {return _data_stream;}
         std::string & toString(std::string& r) const {
             std::stringstream s;
 
-            s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
-              << "', color: '#" << _color.c_str() << "', yAxis: " << _y_axis << ", marker: { enabled: true, symbol: '" << _symbol.c_str()
-              << "', radius: 0 }, data: [" << _data_stream.str().c_str() << "] }";
+			s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
+				<< "', color: '#" << _color.c_str() << "', yAxis: " << _y_axis << ", marker: { enabled: true, symbol: '" << _symbol.c_str()
+				<< "', radius: 0 }, data: [" << _data_stream.str().c_str() << "]";
+			if (!_stack.empty())
+				s << ", stack: '" << _stack << "'";
+			s << " }";
             r = s.str();
             return r;
         }
@@ -80,9 +85,9 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                                               const intervalGroups& groups,
                                               size_t dataSetIdx,
                                               std::stringstream& categories,
-                                              ChartSeries& clusterSeries,
+                                              ChartSeries * clusterSeries,
                                               ChartSeries& observedSeries,
-                                              ChartSeries& expectedSeries,
+                                              ChartSeries* expectedSeries,
                                               ChartSeries * cluster_observedSeries,
                                               ChartSeries * cluster_expectedSeries,
                                               ChartSeries * odeSeries,
