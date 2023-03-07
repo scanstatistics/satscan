@@ -251,7 +251,9 @@ class SpaceTimeData : public TemporalData {
                                                           const DataSetInterface& Interface,
                                                           CTimeIntervals& TimeIntervals,
                                                           CMeasureList& MeasureList);
-    virtual void                Assign(const AbstractTemporalClusterData& rhs);
+	virtual void                AddNeighborDataSupplement(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex = 0) {}
+	virtual void                AddNeighborDataSupplement(tract_t tNeighborIndex, const DataSetInterface & Interface) {}
+	virtual void                Assign(const AbstractTemporalClusterData& rhs);
     virtual SpaceTimeData     * Clone() const;
     virtual void                DeallocateEvaluationAssistClassMembers();
     inline virtual void         InitializeData();

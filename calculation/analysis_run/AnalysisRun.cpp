@@ -1701,12 +1701,11 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         std::ofstream neighbors_file;
         neighbors_file.open(createTempFilename(detectedCluster, supplementInfo, ".nei", buffer).c_str());
         if (!neighbors_file) throw resolvable_error("Error: Could not create neighbors file '%s'.\n", buffer.c_str());
-
+		_print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetLocationNeighborsFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(LOCATION_NEIGHBORS_FILE), _print_direction)
         );
-        _print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
         while (Source->ReadRecord()) {
             unsigned int written = 0;
             for (long idx = 0; idx < Source->GetNumValues(); ++idx) {
@@ -1727,11 +1726,11 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         std::ofstream coordinates_file;
         coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
         if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+		_print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetCoordinatesFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(COORDFILE), _print_direction)
         );
-        _print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
         while (Source->ReadRecord()) {
             std::string identifier(Source->GetValueAt(0));
             if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) != clusterLocations.end()) {
@@ -1751,12 +1750,11 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         std::ofstream network_file;
         network_file.open(createTempFilename(detectedCluster, supplementInfo, ".ntk", buffer).c_str());
         if (!network_file) throw resolvable_error("Error: Could not create locations network file '%s'.\n", buffer.c_str());
-
+		_print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.getLocationsNetworkFilename(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(NETWORK_FILE), _print_direction)
         );
-        _print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
         while (Source->ReadRecord()) {
             std::string identifier(Source->GetValueAt(0));
             if (std::find(clusterLocations.begin(), clusterLocations.end(), identifier) == clusterLocations.end())
@@ -1785,12 +1783,11 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
         std::ofstream grid_file;
         grid_file.open(createTempFilename(detectedCluster, supplementInfo, ".grd", buffer).c_str());
         if (!grid_file) throw resolvable_error("Error: Could not create grid file '%s'.\n", buffer.c_str());
-
+		_print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(GRIDFILE), _print_direction)
         );
-        _print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
         std::vector<double> gridCoordinates(source_data_hub.GetTInfo()->getCoordinateDimensions(), 0.0), clusterCoordinates;
         short iScanCount;
         source_data_hub.GetGInfo()->retrieveCoordinates(detectedCluster.GetCentroidIndex(), clusterCoordinates);

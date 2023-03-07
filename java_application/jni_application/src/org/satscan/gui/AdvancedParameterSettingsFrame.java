@@ -2217,7 +2217,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");        
         _checkbox_sendmail.setSelected(false);
-        _numMostLikelyClustersGraph.setText("");
         _cluster_significant_ri_chx.setSelected(false);
         _cluster_significant_ri_value.setText("100");
         _cluster_significant_ri_type.select(0);

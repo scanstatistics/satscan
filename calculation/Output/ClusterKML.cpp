@@ -461,15 +461,15 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         if (parameters.GetIsSpaceTimeAnalysis()) {
             JulianToString(end_date, _dataHub.GetStudyPeriodEndDate(), parameters.GetPrecisionOfTimesType(), "-", true, false, true);
         }
+		tract_t tid; count_t count; Julian case_date;
         while (Source->ReadRecord()) {
-            Julian case_date;
-            if (_dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date) != DataSetHandler::Accepted)
-                return throw prg_error("Failed to read case file date in data set %d.", "ClusterKML::add(const DataDemographicsProcessor&)", idx + 1);
-            if (case_date < lowestDate) {
-                DatePrecisionType eDatePrint = (parameters.GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
-                //printf("Skipping case date %s\n", JulianToString(buffer, case_date, eDatePrint, "/").c_str());
-                continue;
-            }
+			DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveLocationIndex(*Source, tid); //read and validate that tract identifier
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+			readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+			readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
+			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+            if (case_date < lowestDate) continue;
             group_value = ""; event_id = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;

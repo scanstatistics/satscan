@@ -40,11 +40,17 @@ void UniformTimeClusterDataInterface::setMeasure(measure_t m) {
 UniformTimeTemporalData::UniformTimeTemporalData() : TemporalData() {}
 
 /** class constructor */
-UniformTimeTemporalData::UniformTimeTemporalData(const DataSetInterface& Interface) :TemporalData(Interface) {}
+UniformTimeTemporalData::UniformTimeTemporalData(const DataSetInterface& Interface) :TemporalData(Interface) {
+	gtCasesInPeriod = Interface.GetTotalCasesCount();
+	gtMeasureInPeriod = Interface.GetTotalMeasureCount();
+}
 
 /** class constructor */
 UniformTimeTemporalData::UniformTimeTemporalData(const AbstractDataSetGateway& DataGateway)
-                   :TemporalData(DataGateway.GetDataSetInterface()) {}
+                   :TemporalData(DataGateway.GetDataSetInterface()) {
+	gtCasesInPeriod = DataGateway.GetDataSetInterface().GetTotalCasesCount();
+	gtMeasureInPeriod = DataGateway.GetDataSetInterface().GetTotalMeasureCount();
+}
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
@@ -131,4 +137,18 @@ void UniformTimeSpaceTimeData::CopyEssentialClassMembers(const AbstractClusterDa
     SpaceTimeData::CopyEssentialClassMembers (rhs);
     gtCasesInPeriod = ((const UniformTimeSpaceTimeData&)rhs).gtCasesInPeriod;
     gtMeasureInPeriod = ((const UniformTimeSpaceTimeData&)rhs).gtMeasureInPeriod;
+}
+
+void UniformTimeSpaceTimeData::AddNeighborDataSupplement(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex) {
+	AddNeighborDataSupplement(tNeighborIndex, DataGateway.GetDataSetInterface(tSetIndex));
+}
+
+void UniformTimeSpaceTimeData::AddNeighborDataSupplement(tract_t tNeighborIndex, const DataSetInterface & Interface) {
+	gtCasesInPeriod += Interface.GetCaseArray()[0][tNeighborIndex];
+	gtMeasureInPeriod += Interface.GetMeasureArray()[0][tNeighborIndex];
+}
+
+void UniformTimeSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex) {
+	SpaceTimeData::AddNeighborData(tNeighborIndex, DataGateway, tSetIndex);
+	AddNeighborDataSupplement(tNeighborIndex, DataGateway, tSetIndex);
 }

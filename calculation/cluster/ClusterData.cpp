@@ -667,7 +667,6 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
                                               const DataSetInterface& Interface,
                                               CTimeIntervals& TimeIntervals,
                                               CMeasureList& MeasureList) {
-  assert(geEvaluationAssistDataStatus == Allocated);
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 
   unsigned int          i, iIntervals = giAllocationSize - 1;
@@ -678,14 +677,14 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
   unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   //reset accumulated case/measure data
-  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
-  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  InitializeData();
   for (t=0; t < tNumNeighbors; ++t) {
      tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
      for (i= _start_index; i < iIntervals; ++i) {
        gpCases[i] += ppCases[i][tNeighborIndex];
        gpMeasure[i] += ppMeasure[i][tNeighborIndex];
      }
+	 AddNeighborDataSupplement(tNeighborIndex, Interface);
      TimeIntervals.CompareMeasures(*this, MeasureList);
   }
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);

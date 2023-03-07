@@ -50,8 +50,6 @@ class DataSetHandler {
     virtual void                        removeDataSet(size_t iSetIndex) { throw prg_error("removeDataSet().", "DataSetHandler()"); }
     RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
-    RecordStatusType                    RetrieveCaseCounts(DataSource& Source, count_t& nCount) const;
-    RecordStatusType                    RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const;
 
     //pure virtual protected functions
     virtual void                        SetRandomizers() = 0;
@@ -82,8 +80,10 @@ class DataSetHandler {
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     void                                ReportZeroPops(CSaTScanData& Data, FILE* pDisplay, BasePrint* pPrintDirection);
-    RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate) const;
-    void                                removeDataSetsWithNoData();
+	RecordStatusType                    RetrieveCaseCounts(DataSource& Source, count_t& nCount) const;
+	RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate) const;
+	RecordStatusType                    RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const;
+	void                                removeDataSetsWithNoData();
     size_t                              getDataSetRelativeIndex(size_t iSet) const;
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet& thisRealSet);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

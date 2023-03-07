@@ -37,13 +37,10 @@ make libz.dylib CC="$7 $8 $9" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -fPIC -DHAVE_H
 echo zlib done
 echo
 
-jni="/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include"
-JNI_PLAT="/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include"
-
 echo building SaTScan binary ...
 cd $2
-make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
-make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $8 $9" ${10} M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include/darwin
+make clean SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
+make libsatscan.jnilib SATSCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/sharedlibrary-info.plist" CC="$6 $8 $9" ${10} M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include/darwin
 strip libsatscan.jnilib
 mv libsatscan.jnilib $1
 

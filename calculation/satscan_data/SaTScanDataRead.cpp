@@ -152,7 +152,6 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
-
     gPrint.Printf("Reading the adjustments file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(filename, gParameters.getTimestamp(), true), gParameters.getInputSource(ADJ_BY_RR_FILE), gPrint)
@@ -346,11 +345,11 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
     } else {
         gDataHub.gTractHandler->getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
         gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+		gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
+		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
             gParameters.getInputSource(COORDFILE), gPrint)
         );
-        gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
         switch (gParameters.GetCoordinatesType()) {
             case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source); break;
             case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(*Source); break;
@@ -833,7 +832,6 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
     Network     & locationNetwork(gDataHub.getLocationNetwork());
 
     try {
-
         gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
         gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
         std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
@@ -868,11 +866,11 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
             // Now read the coordinates file - so we can have the location coordinates on hand when we need to calculate euclidean distances or write to geographical output files.
             gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
             gPrint.Printf("Reading the coordinates file to obtain location distances\n", BasePrint::P_STDOUT);
-            std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
+			gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
+			std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
                 getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
                 gParameters.getInputSource(COORDFILE), gPrint)
             );
-            gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
             switch (gParameters.GetCoordinatesType()) {
                 case CARTESIAN:	bValid = ReadCoordinatesFileAsCartesian(*coordinatesSource); break;
                 case LATLON: bValid = ReadCoordinatesFileAsLatitudeLongitude(*coordinatesSource); break;
@@ -1051,7 +1049,6 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
-
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName(), gParameters.getTimestamp(), true),
