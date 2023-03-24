@@ -10,10 +10,50 @@
 #include "Toolkit.h"
 #include "SSException.h"
 #include "GisUtils.h"
+#include "DataDemographics.h"
+
+unsigned int EventType::_counter = 0;
+
+std::string EventType::getCategoryColor(unsigned int offset) const {
+    if (offset > _visual_utilities.getEventColorDefaults().size() - 1) {
+        return _visual_utilities.getRandomHtmlColor();
+    } else {
+        return _visual_utilities.getEventColorDefaults()[offset];
+    }
+}
+
+std::string EventType::toJson(const std::string& resource_path) {
+    std::stringstream json;
+
+    // Sort catgegories alphabetically.
+    std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
+        return left.get<1>() < right.get<1>();
+    });
+
+    json << "{ event_class: '" << _class << "', " << "event_type: '" << _type << "', " << "event_name: '" << _name << "', ";
+    json << "categories: [";
+    for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
+        json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << itr->get<0>() << "', label: '" << itr->get<1>() << "', color: '" << itr->get<2>() << "'}";
+    }
+    json << "], ";
+    json << "legend: \"<div style='text-decoration:underline;font-size:12px;font-weight:bold;'>Legend: " << _name << "</div>";
+    json << "<div style='border:1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;margin-top:5px;margin-bottom:5px;'>";
+    json << "<div><img style='vertical-align:middle;margin-left:5px;margin-right:6px;' width='20' height='20' src='" << resource_path << "images/donut-new.svg'/> <span style='font-weight:bold;padding-right:8px;vertical-align: middle;'>New</span></div>";
+    json << "<div><img width='30' height='30' style='vertical-align:middle;' src='" << resource_path << "images/triangle-ongoing.svg'/> <span style='font-weight:bold;vertical-align: middle;'>Ongoing</span></div>";
+    json << "<div><img style='vertical-align:middle;margin-left:5px;margin-right:4px;' width='20' height='20' src='" << resource_path << "images/square-outside.svg'/> <span style='font-weight:bold;padding-right:8px;vertical-align: middle;'>Outside</span></div>";
+    json << "</div>";
+    json << "<ul style='padding-left:0;margin-bottom: 0px;'>";
+    for (auto itr=_categories.begin(); itr != _categories.end(); ++itr) {
+        json << "<li style='list-style-type:none;white-space:nowrap;'>";
+        json << "<div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:" << itr->get<2>() << ";display:inline-block;'></div>";
+        json << "<span style='font-weight:bold;margin-left:5px;'>" << itr->get<1>() << "</span></li>";
+    }
+    json << "</ul>\" }";
+    return json.str();
+}
 
 const char * ClusterMap::HTML_FILE_EXT = ".html";
 const char * ClusterMap::FILE_SUFFIX_EXT = ".clustermap";
-const char * ClusterMap::API_KEY = "AIzaSyDFPvXhvQIG9SoJfHpsogahmlFZbrePWgc"; // API Key under spatovich@gmail.com - satscan
 
 const char * ClusterMap::TEMPLATE = " \
 <!DOCTYPE html> \n \
@@ -29,7 +69,7 @@ const char * ClusterMap::TEMPLATE = " \
          .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver; } \n \
          .options-row{ margin:0 10px 10px 10px } \n \
          .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold; } \n \
-         .options-row input[type='radio']{ margin:5px } \n \
+         input.standard[type='radio']{ margin:5px } \n \
          p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; } \n \
          .main-content{ margin: 5px; } \n \
          .options-row label{ font-weight: normal; } \n \
@@ -43,101 +83,124 @@ const char * ClusterMap::TEMPLATE = " \
          fieldset { margin-top: 10px; } \n \
          @media print{ title{ display: none; } #id_banner { display: none; } .chart-options-section{ display: none; } #chartContainer{ margin: 20px; } .chart-column{ border-left: 0; } } \n \
          @media print{ img { max-width: none !important; } a[href]:after { content: \"\"; } } \n \
-         #map-outer { height: 440px; padding: 20px; } \n \
-         #map { height: 400px; box-shadow: 1px 1px 8px #999;} \n \
+         #map-outer { height: 75.0rem !important; padding: 20px; } \n \
+         #map { height:75.0rem !important; box-shadow: 1px 1px 8px #999;} \n \
          @media all and (max-width: 991px) { #map-outer  { height: 650px } } \n \
-         table.info-window td { padding: 3px; } \n \
+         table.info-window td { padding: 3px; }\n \
+         #legend { display:none; font-family: Arial, sans-serif; background: #fff; padding: 10px; margin: 10px; border: 1px solid #000; } \n \
         </style> \n \
-        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/jQuery.resizeEnd.js'></script> \n \
-        <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js\"></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/clustercharts/jQuery.resizeEnd.js\"></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.js\"></script> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
+        <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
     </head> \n \
     <body> \n \
-        <table id=\"id_banner\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
-        <tbody><tr> \n \
-        <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"&Ouml;tersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
-        <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
-        <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
-        </tr></tbody></table> \n \
-		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
-    <div class=\"container-fluid main-content\"> \n \
-        <div class=\"row\"> \n \
-            <div id=\"map-outer\" class=\"col-md-12\"> \n \
-            <div class=\"col-md-3 chart-options-section\"> \n \
+		<div id='load_error' style='color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;'></div> \n \
+    <div class='container-fluid main-content'> \n \
+        <div class='row'> \n \
+            <div id='map-outer' class='col-md-12'> \n \
+            <div class='col-md-3 chart-options-section'> \n \
                 <fieldset> \n \
-                <!-- \n \
-                <div class=\"options-row\"> \n \
-                    <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
-                    <div>\n \
-                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cartesian Coordinates Map\"> \n \
-                        <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
-                    </div> \n \
-                </div> \n \
-                --> \n \
-                <div class=\"options-row\"> \n \
-                    <label class=\"option-section\" for=\"title_obs\">Print</label> \n \
-                    <div class=\"print-section\"> \n \
-                        <a href=\"#\" onclick=\"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
-                        <!-- <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> --> \n \
-                    </div> \n \
-                </div> \n \
-                <div class=\"options-row\"> \n \
-                    <div id=\"id_significance_option\">\n \
-                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_significant\" value=\"entire\" checked=checked />Significant clusters</label>\n \
-                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_all\" value=\"cluster\" />All clusters</label>\n \
-                        <p class=\"help-block\">Toggle display between significant and all clusters.</p>\n \
+                <div class='options-row'> \n \
+                    <div style='font-style:italic;'>Generated with SaTScan v--satscan-version--</div>\n \
+                </div>\n \
+                <div class='options-row'> \n \
+                    <div id='id_clusters'>\n \
+                        <label for='id_select_clusters'>Display Clusters:</label> \n \
+                        <select name='select_clusters' id='id_select_clusters' multiple='multiple' class='clusters-select'> \n \
+                            --significant-cluster-options--\n \
+                            --non-significant-cluster-options--\n \
+                            </select> \n \
+                            <p class='help-block'>Toggle display of clusters.</p> \n \
                     </div>\n \
-                    <div id=\"id_rates_option\"> \n \
-                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_highlow\" value=\"entire\" checked=checked />High and low clusters</label>\n \
-                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_high\" value=\"cluster\"/>High only</label>\n \
-                        <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_low\" value=\"cluster\"/>Low only</label>\n \
-                        <p class=\"help-block\">Toggle display of clusters for scan rate.</p>\n \
+                    <div id='id_rates_option'> \n \
+                        <label><input type='radio' class='standard' name='view_rate' id='id_view_highlow' value='entire' checked=checked />High and low clusters</label>\n \
+                        <label><input type='radio' class='standard' name='view_rate' id='id_view_high' value='cluster'/>High only</label>\n \
+                        <label><input type='radio' class='standard' name='view_rate' id='id_view_low' value='cluster'/>Low only</label>\n \
+                        <p class='help-block'>Toggle display of clusters for scan rate.</p>\n \
                     </div> \n \
-                    <div id=\"id_secondary_clusters_option\"> \n \
+                    <div id='id_secondary_clusters_option'> \n \
                         <div>Secondary Clusters:</div>\n \
-                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_hierarchical\" value=\"secondary\" />Hierarchical</label>\n \
-                        <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_gini\" value=\"secondary\" />Gini</label>\n \
-                        <p class=\"help-block\">Display options for secondary clusters.</p>\n \
+                        <label style='margin-left:15px;'><input type='checkbox' id='id_hierarchical' value='secondary' />Hierarchical</label>\n \
+                        <label style='margin-left:15px;'><input type='checkbox' id='id_gini' value='secondary' />Gini</label>\n \
+                        <p class='help-block'>Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \
-                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_circles\" value=\"cluster\" checked=checked />--cluster-display--</label>\n \
-                    <label style=\"margin-left:15px;\"><input type=\"checkbox\" id=\"id_cluster_locations\" value=\"cluster\" checked=checked />Locations</label>\n \
-                    <p class=\"help-block\">Display options for clusters.</p>\n \
-                    <!-- <label><input type=\"checkbox\" id=\"id_show_grid_lines\" checked=checked />Show grid lines</label> \n \
-                    <p class=\"help-block\">Toggle display of graph grid lines.</p> --> \n \
-                    <label><input type=\"checkbox\" id=\"id_show_location_points\" />Show all location points</label>\n \
-                    <p class=\"help-block\">Toggle display of location points.</p>\n \
-                    <label><input type=\"checkbox\" id=\"id_fit_graph_viewport\" checked=checked />Fit map to viewport</label>\n \
-                    <p class=\"help-block\">Attempts to keep entire map in view.</p>\n \
+                    <label style='margin-left:15px;'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />--cluster-display--</label>\n \
+                    <label style='margin-left:15px;'><input type='checkbox' id='id_cluster_locations' value='cluster' />Locations</label>\n \
+                    <p class='help-block'>Display options for clusters.</p>\n \
+                    <!-- <label><input type='checkbox' id='id_show_grid_lines' checked=checked />Show grid lines</label> \n \
+                    <p class='help-block'>Toggle display of graph grid lines.</p> --> \n \
+                    <label><input type='checkbox' id='id_show_location_points' />Show all location points</label>\n \
+                    <p class='help-block'>Toggle display of location points.</p>\n \
+                    <!--<label><input type='checkbox' id='id_fit_graph_viewport' checked=checked />Fit map to viewport</label>\n \
+                    <p class='help-block'>Attempts to keep entire map in view.</p> --> \n \
                 </div> \n \
-                <div id=\"id_display_count\">\n \
+                <div class='options-row event-controls'> \n \
+                    <div id='id_display_events'> \n \
+                        <label for='id_select_event_type'>Display Events By:</label> \n \
+                        <select name='select_event_type' id='id_select_event_type' multiple='multiple' class='events-select'> \n \
+                        --select-groups-event-type-display-- \n \
+                        </select> \n \
+                    </div> \n \
+                    <p class='help-block'>Displays markers for selected events.</p> \n \
+                    <div id='id_filter_events'> \n \
+                        <label for='id_filter_event_type'>Exclude Events:</label> \n \
+                        <select name='filter_event_type' id='id_filter_event_type' multiple='multiple' class='events-filter'> \n \
+                        --select-groups-event-type-exclude-- \n \
+                        </select> \n \
+                    </div> \n \
+                    <p class='help-block'>Filter to exclude markers of displayed events.</p> \n \
+                    <label for='fader'>Events Timeline</label> \n \
+                    <input type='range' min='0' max='0' value='0' id='fader' step='1' oninput='rangeInputted();'> \n \
+                    <div style='font-size: small;padding-bottom: 5px;'>Timeframe: --time-frame-start-- to <span id='id_range_enddate'>--time-frame-end--</span></div> \n \
+                    <div class='pull-right'> \n \
+                    <button type='button' class='btn btn-primary btn-sm' id='id_run_timeline'>Run Timeline</button> \n \
+                    <button type='button' class='btn btn-secondary btn-sm btn-warning' id='id_run_timeline_reset'>Reset</button> \n \
+                    </div> \n \
+                    <div class='clearfix'></div> \n \
+                    <p class='help-block'>Show events by timeline.</p> \n \
+                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Legend For Event Type</label> \n \
+                    <p class='help-block'>Show event type legend on map.</p> \n \
+                </div> \n \
+                <div id='id_display_count'>\n \
                     <fieldset>\n \
-                            <legend style=\"font-size:14px; margin-bottom:0;\">Display Data:</legend>\n \
-                            <div><span id=\"id_cluster_count\"></span> Clusters</div>\n \
-                            <div><span id=\"id_cluster_point_count\"></span> Cluster Locations</div>\n \
-                            <div><span id=\"id_point_count\"></span> Total Locations</div> \n \
+                            <legend style='font-size:14px; margin-bottom:0;'>Display Data:</legend>\n \
+                            <div><span id='id_cluster_count'></span> Clusters</div>\n \
+                            <div><span id='id_cluster_point_count'></span> Cluster Locations</div>\n \
+                            <div><span id='id_point_count'></span> Total Locations</div> \n \
                     </fieldset>\n \
                 </div>\n \
+                <div class='options-row'> \n \
+                    <label class='option-section' style='display:none;' for='title_obs'>Print</label> \n \
+                    <div class='print-section'> \n \
+                        <a href='#' onclick='javascript:window.print();return false;'><span class='glyphicon glyphicon-print' aria-hidden='true'></span> Print</a> \n \
+                        <!-- <a href='#' id='print_png'><span class='glyphicon glyphicon-picture' aria-hidden = 'true'></span> Save Image</a> --> \n \
+                    </div> \n \
+                </div> \n \
                 </fieldset> \n \
-                <div style=\"font-style:italic; font-size:smaller;\">Generated with SaTScan v--satscan-version--</div>\n \
             </div> \n \
-            <div class=\"xx-col-md-9 chart-column\" id=\"map\"></div> \n \
+            <div class='xx-col-md-9 chart-column' id='map'></div> \n \
+            <div id='legend'><h3>Legend</h3></div> \n \
             </div> \n \
         </div> \n \
      </div> \n \
         <script type='text/javascript'> \n \
+            const event_range_start = new Date(--event-range-start--); \n \
+            const event_range_end = new Date(--event-range-end--); \n \
+            var event_types = [--event-types-definitions--]; \n \
+            var events = [--event-definitions--]; \n \
             var parameters = {--parameters--};\n \
             if (parameters.scanrate != 3) { $('#id_rates_option').hide(); }\n \
             if (!parameters.giniscan) { $('#id_secondary_clusters_option').hide(); }\n \
             var entire_region_points = [--entire-region-points--]; \n \
             var display_stats = {};\n \
-            var clusters = [ \n \
-            --cluster-definitions-- \n \
-            ]; \n \
+            var clusters = [--cluster-definitions--]; \n \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src='--resource-path--javascript/clustercharts/mapgoogle-1.1.js'></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.2.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -154,22 +217,13 @@ FileName& ClusterMap::getFilename(FileName& filename) {
     return filename;
 }
 
-/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
-std::stringstream & ClusterMap::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
-    boost::regex to_be_replaced(replaceStub);
-    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
-    templateText.str(std::string());
-    templateText << changed;
-    return templateText;
-}
-
 /** Return legend of cluster information to be used as popup in html page. */
 std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
     std::stringstream  lines;
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
 
-    lines << "<div style=\"text-decoration:underline; \">Cluster " << iCluster + 1 << "</div>";
+    lines << "<div style=\"text-decoration:underline;\">Cluster " << iCluster + 1 << "</div>";
     for (; itr != itr_end; ++itr) {
         if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
             lines << "Data Set " << itr->second.second << "<br>";
@@ -182,12 +236,13 @@ std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster
     return legend;
 }
 
-void ClusterMap::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
+void ClusterMap::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration) {
     double gdMinRatioToReport = 0.001;
     std::vector<double> vCoordinates;
     std::string buffer, buffer2, legend, points, edges;
     std::stringstream  worker;
     unsigned int clusterOffset = _clusters_written;
+    const CParameters& parameters = _dataHub.GetParameters();
 
     //if no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
@@ -220,7 +275,7 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             double radius = GisUtils::getRadiusInMeters(clusterSegment.first, clusterSegment.second);
 
 			// When using a network file, we'll drawn connections/edges between locations in cluster.
-			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+			if (parameters.getUseLocationsNetworkFile()) {
 				Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
 				worker.str("");
 				Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
@@ -239,15 +294,128 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
             printString(buffer, "lat : %f, lng : %f, radius : %f", prLatitudeLongitude.first, prLatitudeLongitude.second, radius);
-            _cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
+            _cluster_definitions << "{ id: " << (i + iteration) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
                 << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
                 << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
+
+            if (cluster.isSignificant(_dataHub, i, simVars)) {
+                _cluster_options_significant << "<option value=" << (i + iteration) << " class='significant_clusters' selected>Cluster " << (i + iteration) << "</option>";
+            } else {
+                _cluster_options_non_significant << "<option value=" << (i + iteration) << " class='non_significant_clusters'>Cluster " << (i + iteration) << "</option>";
+            }
         }
         ++_clusters_written;
     }
+}
 
+/* Adds events/case demographic markers to Google Map. */
+void ClusterMap::add(const DataDemographicsProcessor& demographics) {
+    const CParameters& parameters = _dataHub.GetParameters();
+    // Create collection of event types that we'll be grouping the events into.
+    std::vector<std::string> g_values;
+    csv_string_to_typelist<std::string>(parameters.getKmlEventGroupAttribute().c_str(), g_values);
+    for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
+        if (demographic.second->gettype() <= EVENT_COORD_Y) continue; // Only want attributes, no event id or coordinates.
+        if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
+        if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first; }) == _event_types.end())
+            _event_types.push_back(EventType(demographic.first));
+    }
+    if (_event_types.size() == 0) {
+        _dataHub.GetPrintDirection().Printf("No characteristics to group by. Event placements will not be added to Google Maps output.\n",  BasePrint::P_WARNING);
+    } else {
+        // Sort so event types are reported alphabetically.
+        std::sort(_event_types.begin(), _event_types.end(), [](const EventType &left, const EventType &right) { return left.name() < right.name(); });
+        // Create a map for quick event-type to EventType object.
+        std::map<std::string, EventType*> eventtype_map;
+        for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) eventtype_map[eventtype->name()] = &(*eventtype);
+        // Determine lowest date for displayed events - for prospective space-time, we're excluding those below cluster window.
+        UInt jyear, jmonth, jday;
+        Julian lowestDate = (
+            parameters.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front()
+        );
+        //std::map<std::string, boost::shared_ptr<std::stringstream>> group_events;
+        for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
+            // First test whether this data set reported event id and coordinates.
+            if (!(demographics.getEventStatus(idx).get<0>() && demographics.getEventStatus(idx).get<1>())) continue;
+            // Open the data source and read all the records of the case file again.
+            std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+                getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
+                parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
+            ));
+            if (Source->getLinelistFieldsMap().size() == 0) continue; // no mappings defined for this data set.
+            // Iterate over the records of the case file - creating event types and event entries;
+            const char * value = 0;
+            tract_t tid; count_t count; Julian case_date;
+            std::string event_date, event_id, latitude, longitude, status;
+            std::stringstream eventtypes;
+            std::vector<std::pair<std::string, std::string>> eventAttrs;
+            while (Source->ReadRecord()) {
+                DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveLocationIndex(*Source, tid); //read and validate that tract identifier
+                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+                readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
+                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+                readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
+                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+                if (case_date < lowestDate) continue;
+                // Compile event attributes from this record.
+                eventtypes.str("");
+                eventAttrs.clear();
+                for (auto itr=Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
+                    value = Source->GetValueAtUnmapped(itr->first);
+                    value = value == 0 ? "" : value;
+                    if (itr->second.get<0>() == EVENT_ID)
+                        event_id = value;
+                    else if (itr->second.get<0>() == EVENT_COORD_Y)
+                        latitude = value;
+                    else if (itr->second.get<0>() == EVENT_COORD_X)
+                        longitude = value;
+                    else {
+                        // If this event column is one of those being grouped, add the value to the event-types categories.
+                        auto eventtype = eventtype_map.find(itr->second.get<1>());
+                        if (eventtype != eventtype_map.end()) {
+                            auto category = eventtype->second->addCategory(value);
+                            if (eventtypes.tellp()) eventtypes << ",";
+                            eventtypes << "'" << eventtype->second->className() << "': '" << category.get<0>() << "'";
+                        }
+                        eventAttrs.push_back(std::make_pair(itr->second.get<1>(), value));
+                    }
+                }
+                // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.
+                if (event_id.length() == 0 || latitude.length() == 0 || longitude.length() == 0) {
+                    _dataHub.GetPrintDirection().Printf("Unable to place event of record %ld in case file to Google Map.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
+                    continue;
+                }
+                double dlat, dlong;
+                if (!string_to_type<double>(latitude.c_str(), dlat) || !string_to_type<double>(longitude.c_str(), dlong) || fabs(dlat) > 90.0 && fabs(dlong) > 180.0) {
+                    _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to Google Map.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
+                    continue;
+                }
+                // Determine status of this event.
+                if (demographics.isNewEvent(event_id))
+                    status = "new";
+                else if (demographics.isExistingEvent(event_id))
+                    status = "ongoing";
+                else
+                    status = "outside";
+                // Write event definition to collection of events.
+                if (_event_definitions.tellp()) _event_definitions << ",";
+                _event_definitions << std::endl << "{ eventid: '" << event_id << "', status: '" << status << "', marker: null, coordinates: [" << longitude << "," << latitude << "], ";
+                JulianToMDY(&jmonth, &jday, &jyear, case_date);
+                _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
+                if (eventtypes.tellp()) { _event_definitions << eventtypes.str(); }
+                _event_definitions << ", info: '<div style=\"padding:5px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << event_id << "</div>Event Date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType()) << "<br>";
+                std::sort(eventAttrs.begin(), eventAttrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
+                    return left.first < right.first;
+                });
+                for (auto attr = eventAttrs.begin(); attr != eventAttrs.end(); ++attr) {
+                    _event_definitions << attr->first << ": " << attr->second << "<br>";
+                }
+                _event_definitions << "</div>'}";
+            }
+        }
+    }
 }
 
 /** Render scatter chart to html page. */
@@ -255,9 +423,10 @@ void ClusterMap::finalize() {
     std::string buffer;
     std::stringstream html, worker;
     FileName fileName;
+    const CParameters& params = _dataHub.GetParameters();
 
     try {
-        fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+        fileName.setFullPath(params.GetOutputFileName().c_str());
         getFilename(fileName);
         std::ofstream HTMLout;
         //open output file
@@ -286,12 +455,47 @@ void ClusterMap::finalize() {
         buffer = _cluster_definitions.str();
         templateReplace(html, "--cluster-definitions--", trimString(buffer, ",\n").c_str());
         templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
+        std::stringstream options_group;
+        if (_cluster_options_significant.tellp()) {
+            options_group << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
+        }
+        templateReplace(html, "--significant-cluster-options--", options_group.str());
+        options_group.str("");
+        if (_cluster_options_non_significant.tellp()) {
+            options_group << "<optgroup label='Non-Significant' class='non_significant_clusters'>" << _cluster_options_non_significant.str() << "</optgroup>";
+        }
+        templateReplace(html, "--non-significant-cluster-options--", options_group.str());
+        // Write any event types and definitions.
+        std::stringstream selecteventgroups;
+        for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
+            selecteventgroups << "<optgroup label='" << eventtype->name() << "' class='" << eventtype->className() << "'>";
+            for (auto category = eventtype->getCategories().begin(); category != eventtype->getCategories().end(); ++category)
+                selecteventgroups << "<option value='" << category->get<0>() << "' class='" << eventtype->className() << "'>" << category->get<1>() << "</option>";
+            selecteventgroups << "</optgroup>";
+        }
+        templateReplace(html, "--select-groups-event-type-display--", selecteventgroups.str());
+        templateReplace(html, "--select-groups-event-type-exclude--", selecteventgroups.str());
+        std::stringstream event_type_definitions;
+        std::string website = AppToolkit::getToolkit().GetWebSite();
+        for (auto eventtype=_event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
+            event_type_definitions << std::endl << eventtype->toJson(website) << ((eventtype + 1) == _event_types.end() ? "" : ",");
+        } event_type_definitions << std::endl;
+        templateReplace(html, "--event-types-definitions--", event_type_definitions.str());
+        templateReplace(html, "--event-definitions--", _event_definitions.str());
+        UInt jyear, jmonth, jday;
+        JulianToMDY(&jmonth, &jday, &jyear, 
+            params.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front()
+        );
+        templateReplace(html, "--event-range-start--", printString(buffer, "%u, %u, %u", jyear, jmonth - 1, jday));
+        templateReplace(html, "--time-frame-start--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
+        JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodEndDate());
+        templateReplace(html, "--event-range-end--", printString(buffer, "%u, %u, %u", jyear, jmonth - 1, jday));
+        templateReplace(html, "--time-frame-end--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
 
         // replace parameters hash
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
         templateReplace(html, "--parameters--", buffer.c_str());
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
-        templateReplace(html, "--api-key--", std::string(API_KEY));
 		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));
 
         HTMLout << html.str() << std::endl;

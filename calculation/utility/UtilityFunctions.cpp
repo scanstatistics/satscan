@@ -795,3 +795,12 @@ boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count) {
     parameters.compute_optimal_parameters();
     return boost::shared_ptr<bloom_filter>(new bloom_filter(parameters));
 }
+
+/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
+std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
+    boost::regex to_be_replaced(replaceStub);
+    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
+    templateText.str(std::string());
+    templateText << changed;
+    return templateText;
+}

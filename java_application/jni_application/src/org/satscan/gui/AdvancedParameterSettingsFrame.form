@@ -4682,7 +4682,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_checkbox_grouping_kml">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include event characteristics in KML output, if applicable."/>
+                    <Property name="text" type="java.lang.String" value="Include event characteristics in KML or Google Maps output, if applicable."/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_checkbox_grouping_kml.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableCaseFileLinelistGroup();&#xa;    }&#xa;});&#xa;"/>

@@ -100,5 +100,6 @@ bool                            sendMail(
 );
 bool                            validEmailAdrress(const std::string& emailaddress);
 boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
+std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 //******************************************************************************
 #endif

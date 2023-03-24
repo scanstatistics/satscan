@@ -155,30 +155,13 @@ const char * CartesianGraph::TEMPLATE = " \
         </script> \n \
     </head> \n \
     <body style=\"margin:0;background-color: #fff;\"> \n \
-        <table id=\"id_banner\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
-        <tbody><tr> \n \
-        <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"&Ouml;stersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
-        <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
-        <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
-        </tr></tbody></table> \n \
 		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
     <div class=\"container-fluid main-content\"> \n \
         <div class=\"row\"> \n \
             <div class=\"col-md-3 chart-options-section\"> \n \
                 <fieldset> \n \
                 <div class=\"options-row\"> \n \
-                    <label class=\"option-section\" for=\"title_obs\">Title</label> \n \
-                    <div>\n \
-                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cartesian Coordinates Map\"> \n \
-                        <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
-                    </div> \n \
-                </div> \n \
-                <div class=\"options-row\"> \n \
-                    <label class=\"option-section\" for=\"title_obs\">Print</label> \n \
-                    <div class=\"print-section\"> \n \
-                        <a href=\"#\" onclick=\"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
-                        <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> \n \
-                    </div> \n \
+                    <div style='font-style:italic;'>Generated with SaTScan v--satscan-version--</div>\n \
                 </div> \n \
                 <div class=\"options-row\"> \n \
                     <div id=\"id_significance_option\">\n \
@@ -223,8 +206,21 @@ const char * CartesianGraph::TEMPLATE = " \
                             <div><span id=\"id_point_count\"></span> Total Locations</div> \n \
                     </fieldset>\n \
                 </div>\n \
+                <div class=\"options-row\"> \n \
+                    <label class='option-section' for='title_obs' style='display:none;'>Title</label> \n \
+                    <div>\n \
+                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cartesian Coordinates Map\"> \n \
+                        <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
+                    </div> \n \
+                </div> \n \
+                <div class=\"options-row\"> \n \
+                    <label class='option-section' for='title_obs' style='display:none;'>Print</label> \n \
+                    <div class=\"print-section\"> \n \
+                        <a href=\"#\" onclick=\"javascript:window.print();return false;\"><span class=\"glyphicon glyphicon-print\" aria-hidden=\"true\"></span> Print</a> \n \
+                        <a href=\"#\" id=\"print_png\"><span class=\"glyphicon glyphicon-picture\" aria-hidden = \"true\"></span> Save Image</a> \n \
+                    </div> \n \
+                </div> \n \
                 </fieldset> \n \
-                <div style=\"font-style:italic; font-size:smaller;\">Generated with SaTScan v--satscan-version--</div>\n \
             </div> \n \
             <div class=\"col-md-9 chart-column\"> \n \
                 <div id='chartContainer' name='chartContainer'></div> \n \
@@ -260,15 +256,6 @@ FileName& CartesianGraph::getFilename(FileName& filename) {
     filename.setFileName(buffer.c_str());
     filename.setExtension(HTML_FILE_EXT);
     return filename;
-}
-
-/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
-std::stringstream & CartesianGraph::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
-    boost::regex to_be_replaced(replaceStub);
-    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
-    templateText.str(std::string());
-    templateText << changed;
-    return templateText;
 }
 
 /** Return legend of cluster information to be used as popup in html page. */

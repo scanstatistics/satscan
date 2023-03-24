@@ -6769,7 +6769,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _checkbox_grouping_kml.setText("Include event characteristics in KML output, if applicable.");
+        _checkbox_grouping_kml.setText("Include event characteristics in KML or Google Maps output, if applicable.");
 
         _grouping_input_label.setText("Grouped by characteristics named:");
 

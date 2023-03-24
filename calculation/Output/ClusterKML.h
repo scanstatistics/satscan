@@ -23,7 +23,7 @@ class BaseClusterKML {
       bool _visibleLocations;
       bool _separateLocationsKML;
       mutable boost::dynamic_bitset<> _cluster_locations;
-      mutable RandomNumberGenerator _rng;
+      mutable VisualizationUtils visual_utilities;
 
       unsigned int addClusters(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset=0);
       void createKMZ(const file_collection_t& fileCollection, bool removefiles=true);
@@ -32,9 +32,8 @@ class BaseClusterKML {
       std::string & getClusterExtendedData(const CCluster& cluster, int iCluster, std::string& buffer) const;
       std::string & getClusterStyleTags(const CCluster& cluster, int iCluster, std::string& styleString, bool isHighRate) const;
       std::string & getStyleColor(bool isHighRate, bool fullOpacity, std::string& buffer) const;
-      std::string getRandomKmlColor() const;
-      std::string convertKmlColorToHTMLColor(const std::string& kmlColor) const;
       std::string toHex(const std::string& data) const;
+      std::string toKmlColor(const std::string& htmlColor, const std::string& alpha = "ff") const;
       void writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster, const SimulationVariables& simVars) const;
       void writeOpenBlockKML(std::ofstream& outKML) const;
 
@@ -49,8 +48,6 @@ class ClusterKML : public BaseClusterKML {
         std::ofstream _kml_out;
         unsigned int _clusters_written;
         unsigned int _locations_written;
-        std::vector<std::string> _event_color_defaults;
-        size_t _event_color_offset;
 
         void add(const DataDemographicsProcessor& demographics, const std::string& group_by);
 

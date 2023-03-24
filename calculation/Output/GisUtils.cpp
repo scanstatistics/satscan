@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "GisUtils.h"
+#include "RandomDistribution.h"
 #include "cluster.h"
 #include "SaTScanData.h"
 
@@ -77,3 +78,25 @@ double GisUtils::getRadiusInMeters(point_t centerPoint, point_t pointOnCircumfer
     // get distance between points (in meters)
     return EARTH_RADIUS_METERS * c;
 }
+
+///////////////////////// VisualizationUtils ///////////////////////////////////////////////////
+
+std::string VisualizationUtils::getRandomHtmlColor() const {
+    // The order of expression is aabbggrr, where aa = alpha(00 to ff); bb = blue(00 to ff); gg = green(00 to ff); rr = red(00 to ff).
+    long bb = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng),
+        gg = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng),
+        rr = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng);
+    std::stringstream ss;
+    ss << "#" << std::hex << std::setw(2) << std::setfill('0') << rr << std::setw(2) << std::setfill('0') << gg << std::setw(2) << std::setfill('0') << bb;
+    return ss.str();
+}
+
+/* Returns KML color as html color code. */
+std::string VisualizationUtils::toHtmlColor(const std::string& colorKML) const {
+    if (colorKML.size() != 8) throw prg_error("Can not convert kml color %s to html color.", colorKML.c_str());
+    std::stringstream s;
+    s << "#" << colorKML.substr(6, 2) << colorKML.substr(4, 2) << colorKML.substr(2, 2);
+    return s.str();
+}
+
+

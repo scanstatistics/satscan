@@ -14,12 +14,6 @@ const char * AbstractChartGenerator::HTML_FILE_EXT = ".html";
 
 const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
         <body style=\"margin:0;background-color: #fff;\"> \n \
-        <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-bottom: 3px double navy;\"> \n \
-        <tbody><tr> \n \
-        <td width=\"120\" align=\"center\" bgcolor=\"#DBD7DB\"><img src=\"--resource-path--images/swe2.jpg\" alt=\"&Ouml;stersund map\" title=\"&Ouml;stersund map\" width=\"120\" height=\"115\" hspace=\"1\" border=\"0\"></td> \n \
-        <td align=\"right\" bgcolor=\"#D4DCE5\"><img src=\"--resource-path--images/satscan_title2.jpg\" alt=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"SaTScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" width=\"470\" height=\"115\"></td> \n \
-        <td width=\"25%\" bgcolor=\"#F8FAFA\" align=\"right\"><img src=\"--resource-path--images/nyc2.jpg\" alt=\"New York City map\" title=\"New York City map\" width=\"112\" height=\"115\" hspace=\"1\" border=\"0\" align=\"middle\"></td> \n \
-        </tr></tbody></table> \n \
 		<div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
 	    <div style=\"position: relative;\"> \n \
 	        <div class=\"search-and-account\" title=\"Choose which graphs to display.\"> \n \
@@ -57,15 +51,6 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
             </div> \n \
         </div> \n \
         --main-content-- \n";
-
-/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
-std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
-    boost::regex to_be_replaced(replaceStub);
-    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
-    templateText.str(std::string());
-    templateText << changed;
-    return templateText;
-}
 
 /** ------------------- TemporalChartGenerator --------------------------------*/
 
@@ -111,7 +96,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .modal-dialog { margin-top: 100px; margin-left: 100px; width: 450px; } \n \
 	    .btn-sm{font-size: 13px;} \n \
         .progress{margin-top: 20px; margin-bottom: 0; height: 10px; display: none;} \n \
-        .search-and-account{position: fixed; z-index: 15; top: 11.5rem; /*right: var(--gap);*/ left: 5px;} \n \
+        .search-and-account{position: fixed; z-index: 15; top: 1.5rem; /*right: var(--gap);*/ left: 5px;} \n \
         .search-and-account a{ margin-left: 0.5rem;} \n \
         .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
         </style> \n \

@@ -46,6 +46,15 @@ void BaseClusterKML::createKMZ(const file_collection_t& fileCollection, bool rem
     }
 }
 
+/* Returns html color as KML color. */
+std::string BaseClusterKML::toKmlColor(const std::string& htmlColor, const std::string& alpha) const {
+    if (htmlColor.size() < 6) throw prg_error("Can not convert html color %s to kml color.", htmlColor.c_str());
+    unsigned int offset(htmlColor[0] == '#' ? 1 : 0);
+    std::stringstream s;
+    s << alpha << htmlColor.substr(4 + offset, 2) << htmlColor.substr(2 + offset, 2) << htmlColor.substr(0 + offset, 2);
+    return s.str();
+}
+
 void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster, const SimulationVariables& simVars) const {
     std::string                                legend, locations, buffer, buffer2;
     std::vector<double>                        vCoordinates;
@@ -175,23 +184,6 @@ std::string& BaseClusterKML::getStyleColor(bool isHighRate, bool fullOpacity, st
     return buffer;
 }
 
-std::string BaseClusterKML::getRandomKmlColor() const {
-    // The order of expression is aabbggrr, where aa = alpha(00 to ff); bb = blue(00 to ff); gg = green(00 to ff); rr = red(00 to ff).
-    long bb = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng),
-         gg = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng),
-         rr = Equilikely(static_cast<long>(0), static_cast<long>(255), _rng);
-    std::stringstream ss;
-    ss << "ff" << std::hex << std::setw(2) << std::setfill('0') << bb << std::setw(2) << std::setfill('0') << gg << std::setw(2) << std::setfill('0') << rr;
-    return ss.str();
-}
-
-std::string BaseClusterKML::convertKmlColorToHTMLColor(const std::string& colorKML) const {
-    if (colorKML.size() != 8) throw prg_error("Can not convert kml color %s to html color.", colorKML.c_str());
-    std::stringstream s;
-    s << colorKML.substr(6, 2) << colorKML.substr(4, 2) << colorKML.substr(2, 2);
-    return s.str();
-}
-
 std::string BaseClusterKML::toHex(const std::string& data) const {
     std::stringstream ss;
     for (const auto &item : data) {
@@ -318,11 +310,7 @@ unsigned int BaseClusterKML::addClusters(const MostLikelyClustersContainer& clus
 
 /////////////////////// ClusterKML //////////////////////////////
 
-ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _clusters_written(0), _locations_written(0), _event_color_offset(0) {
-    _event_color_defaults = { // seperate colors for each group.
-        "ff0c8ff7", "ffb2834d", "ff00ccf9", "ff86bc73", "ff4016ca", "ffc1c34d", "ff9ed0d1", "ff4f493c", "ff53dbc5",
-        "ff25306c", "ff5a6666", "ff476c10", "ff5979f2", "ff4d7cb2", "ff310a58", "ff0c9fa1", "ffa3d0e1"
-    };
+ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _clusters_written(0), _locations_written(0) {
     _fileCollection.resize(_fileCollection.size() + 1);
     _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
     _fileCollection.back().setExtension(KML_FILE_EXT);
@@ -532,15 +520,15 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     eventKML << "<div><img style=\"vertical-align:middle;padding-left:0px;padding-top:3px;padding-right:0px;\" width=\"32\" height=\"32\" src=\"" << outside_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;vertical-align: middle;\">Outside</span></div></div>";
     eventKML << "<ul style=\"padding-left:0\">" << std::endl;
     std::vector<std::pair<std::string, std::string> > group_colors;
-    auto itrColor = _event_color_defaults.begin()/* + _event_color_offset*/;
+    auto itrColor = visual_utilities.getEventColorDefaults().begin();
     for (auto const&pgroup : group_placemarks) {
-        auto colorKML = (itrColor == _event_color_defaults.end() ? getRandomKmlColor() : *itrColor);
-        group_colors.push_back(std::make_pair(colorKML, convertKmlColorToHTMLColor(colorKML)));
-        eventKML << "<li style=\"list-style-type:none;white-space:nowrap;\"><div style=\"width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#";
+        std::string htmlColor(itrColor == visual_utilities.getEventColorDefaults().end() ? visual_utilities.getRandomHtmlColor() : *itrColor);
+        auto colorKML = toKmlColor(htmlColor);
+        group_colors.push_back(std::make_pair(colorKML, htmlColor));
+        eventKML << "<li style=\"list-style-type:none;white-space:nowrap;\"><div style=\"width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:";
         eventKML << group_colors.back().second << ";display:inline-block;\"></div><span style=\"font-weight:bold;margin-left:5px;\">" << pgroup.first << "</span></li>" << std::endl;
-        if (itrColor != _event_color_defaults.end()) ++itrColor;
+        if (itrColor != visual_utilities.getEventColorDefaults().end()) ++itrColor;
     }
-    //_event_color_offset = std::distance(_event_color_defaults.begin(), itrColor);
     eventKML << "</ul></description>" << std::endl;
     eventKML << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
     eventKML << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;

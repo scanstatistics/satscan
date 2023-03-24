@@ -1491,7 +1491,8 @@ void AnalysisExecution::reportClusters() {
             // If first iteration of analyses, create the ClusterMap object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Google map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_map.reset(new ClusterMap(_data_hub));
-            _cluster_map->add(_reportClusters, _sim_vars);
+            _cluster_map->add(_reportClusters, _sim_vars, _analysis_count);
+            if (_data_demographic_processor.get() && _analysis_count == 1) _cluster_map->add(*_data_demographic_processor.get());
         }
 
         // Create KML file if requested.
