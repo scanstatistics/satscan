@@ -170,6 +170,7 @@ const char * ClusterMap::TEMPLATE = " \
                             <div><span id='id_cluster_count'></span> Clusters</div>\n \
                             <div><span id='id_cluster_point_count'></span> Cluster Locations</div>\n \
                             <div><span id='id_point_count'></span> Total Locations</div> \n \
+                            <div><span id='id_event_count'>0</span> Total Events</div> \n \
                     </fieldset>\n \
                 </div>\n \
                 <div class='options-row'> \n \
