@@ -9,6 +9,7 @@
 #include <fstream>
 
 class CSaTScanData;
+class DataDemographicsProcessor;
 
 class EventType {
 public:
@@ -44,7 +45,9 @@ public:
                 return *itr;
         }
         std::string color(getCategoryColor(_categories.size()));
-        std::string ctypename(templateReplace(std::stringstream(label), " ", "_").str());
+        std::stringstream replacer;
+        replacer << label;
+        std::string ctypename(templateReplace(replacer, " ", "_").str());
         _categories.push_back(CategoryTuple_t(lowerString(ctypename), label, color));
         return _categories.back();
     }
