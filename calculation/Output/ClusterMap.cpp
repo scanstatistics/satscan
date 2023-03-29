@@ -188,8 +188,9 @@ const char * ClusterMap::TEMPLATE = " \
         </div> \n \
      </div> \n \
         <script type='text/javascript'> \n \
-            const event_range_start = new Date(--event-range-start--); \n \
-            const event_range_end = new Date(--event-range-end--); \n \
+            const event_range_start = --event-range-start--; \n \
+            const event_range_end = --event-range-end--; \n \
+            const true_dates = --true-dates--; \n \
             var event_types = [--event-types-definitions--]; \n \
             var events = [--event-definitions--]; \n \
             var parameters = {--parameters--};\n \
@@ -403,8 +404,12 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 // Write event definition to collection of events.
                 if (_event_definitions.tellp()) _event_definitions << ",";
                 _event_definitions << std::endl << "{ eventid: '" << event_id << "', status: '" << status << "', marker: null, coordinates: [" << longitude << "," << latitude << "], ";
-                JulianToMDY(&jmonth, &jday, &jyear, case_date);
-                _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
+                if (parameters.GetPrecisionOfTimesType() == GENERIC) {
+                    _event_definitions << "date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-", false, false, true) << ",";
+                } else {
+                    JulianToMDY(&jmonth, &jday, &jyear, case_date);
+                    _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
+                }
                 if (eventtypes.tellp()) { _event_definitions << eventtypes.str(); }
                 _event_definitions << ", info: '<div style=\"padding:5px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << event_id << "</div>Event Date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType()) << "<br>";
                 std::sort(eventAttrs.begin(), eventAttrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
@@ -483,15 +488,25 @@ void ClusterMap::finalize() {
         } event_type_definitions << std::endl;
         templateReplace(html, "--event-types-definitions--", event_type_definitions.str());
         templateReplace(html, "--event-definitions--", _event_definitions.str());
+
         UInt jyear, jmonth, jday;
-        JulianToMDY(&jmonth, &jday, &jyear, 
-            params.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front()
-        );
-        templateReplace(html, "--event-range-start--", printString(buffer, "%u, %u, %u", jyear, jmonth - 1, jday));
-        templateReplace(html, "--time-frame-start--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
-        JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodEndDate());
-        templateReplace(html, "--event-range-end--", printString(buffer, "%u, %u, %u", jyear, jmonth - 1, jday));
-        templateReplace(html, "--time-frame-end--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
+        Julian startDate = params.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front();
+        if (params.GetPrecisionOfTimesType() == GENERIC) {
+            JulianToString(buffer, startDate, params.GetPrecisionOfTimesType(), "-", false, false, true);
+            templateReplace(html, "--time-frame-start--", JulianToString(buffer, startDate, params.GetPrecisionOfTimesType(), "-", false, false, true));
+            templateReplace(html, "--event-range-start--", JulianToString(buffer, startDate, params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--time-frame-end--", JulianToString(buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType(), "-", false, false, true));
+            templateReplace(html, "--event-range-end--", JulianToString(buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--true-dates--", "false");
+        } else {
+            JulianToMDY(&jmonth, &jday, &jyear, startDate);
+            templateReplace(html, "--time-frame-start--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
+            templateReplace(html, "--event-range-start--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodEndDate());
+            templateReplace(html, "--time-frame-end--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
+            templateReplace(html, "--event-range-end--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            templateReplace(html, "--true-dates--", "true");
+        }
 
         // replace parameters hash
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
