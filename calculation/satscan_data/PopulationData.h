@@ -104,7 +104,7 @@ class PopulationData {
                                                                               date was introduced into gvPopulationDates */
     mutable AdditionalCovariates_t      _additionalCovariates;
 
-    void                                AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
+    bool                                AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
     void                                Init();
 
   public:

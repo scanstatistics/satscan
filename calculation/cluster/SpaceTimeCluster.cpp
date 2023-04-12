@@ -75,16 +75,25 @@ void CSpaceTimeCluster::CopyEssentialClassMembers(const CCluster& rhs) {
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
-  measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex, bool adjusted) const {
+  measure_t      tMeasure, ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+  const CParameters& params = Data.GetParameters();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex];
   else
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
-  return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
+  // The adjusted parameter is intended for Bernoulli prospective space-time nonparametric with in the context of calculating relative risk.
+  if (adjusted) {
+      if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+          double totalCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nFirstInterval] - Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nLastInterval];
+          double totalMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nFirstInterval] - Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nLastInterval];
+          return (totalCases / totalMeasure) * tMeasure;
+      }
+      return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
+  } else
+      return tMeasure;
 }
 
 /** returns the number of cases for tract as defined by cluster */

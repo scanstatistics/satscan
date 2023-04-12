@@ -11,74 +11,81 @@
 #include "HomogeneousPoissonDataSetHandler.h"
 #include "LocationRelevance.h"
 
-/** Debug utility function - prints case counts for all datasets. Caller is
-    responsible for ensuring that passed file pointer points to valid, open file
-    handle. */
-void CSaTScanData::DisplayCases(FILE* pFile) const {
-  fprintf(pFile, "Case counts (Cases Array)\n\n");
+/** Debug utility function - prints case counts for all datasets. Assume case arrays are currently cumulative.
+    Caller is responsible for ensuring that passed file pointer points to valid open file handle. */
+void CSaTScanData::DisplayCases(FILE* pFile, bool nonCumulative) const {
+  fprintf(pFile, "%s Case counts (Cases Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
         for (int t=0; t < m_nTracts; ++t)
-           fprintf(pFile, "Case [%i][%i] = %li\n", i, j, ppCases[i][t]);
+           fprintf(pFile, "%i,%i,%li\n", i, t, ppCases[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppCases[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");
   fflush(pFile);
 }
 
-/** Debug utility function - prints control counts for all datasets. Caller is
-    responsible for ensuring that passed file pointer points to valid, open file
-    handle. */
-void CSaTScanData::DisplayControls(FILE* pFile) const {
-  fprintf(pFile, "Control counts (Controls Array)\n\n");
+/** Debug utility function - prints control counts for all datasets. Assume case arrays are currently cumulative.
+    Caller is responsible for ensuring that passed file pointer points to valid open file handle. */
+void CSaTScanData::DisplayControls(FILE* pFile, bool nonCumulative) const {
+  fprintf(pFile, "%s Control counts (Controls Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < m_nTracts; ++t)
-         fprintf(pFile, "Controls [%i][%i] = %li\n", i, t, ppControls[i][t]);
+         fprintf(pFile, "%i,%i,%li\n", i, t, ppControls[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppControls[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");
   fflush(pFile);
 }
 
-/** Debug utility function - prints simulation case counts for all datasets. Caller is
-    responsible for ensuring that passed file pointer points to valid, open file
-    handle. */
-void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const {
-  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
+/** Debug utility function - prints simulation case counts for all datasets. Assume case arrays are currently cumulative.
+    Caller is responsible for ensuring that passed file pointer points to valid open file handle. */
+void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile, bool nonCumulative) const {
+  fprintf(pFile, "%s Simulated Case counts (Simulated Cases Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < Container.size(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < m_nTracts; ++t)
-         fprintf(pFile, "Cases [%i][%i] = %li\n", i, t, ppSimCases[i][t]);
+         fprintf(pFile, "%i,%i,%li\n", i, t, ppSimCases[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppSimCases[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
   fprintf(pFile, "\n");
   fflush(pFile);
 }
 
-/** Debug utility function - prints expected case counts for all datasets.
-    Caller is responsible for ensuring that passed file pointer points to valid,
-    open file handle. */
-void CSaTScanData::DisplayMeasure(FILE* pFile) const {
-  int           i, j;
-
-  fprintf(pFile, "Measures (Measure Array)\n\n");
-  for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
-     fprintf(pFile, "Data Set %u:\n", j);
-     measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
-     for (int i=0; i < GetNumTimeIntervals(); ++i)
-        for (int t=0; t < m_nTracts; ++t)
-          fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i, t, ppMeasure[i][t]);
-     fprintf(pFile, "\n");
-  }
-  fprintf(pFile, "\n");
-  fflush(pFile);
+/** Debug utility function - prints expected case counts for all datasets.  Assume case arrays are currently cumulative.
+    Caller is responsible for ensuring that passed file pointer points to valid open file handle. */
+void CSaTScanData::DisplayMeasure(FILE* pFile, bool nonCumulative) const {
+    std::string dateString;
+    fprintf(pFile, "%s Measures (Measure Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
+    for (size_t j = 0; j < gDataSets->GetNumDataSets(); ++j) {
+        fprintf(pFile, "Data Set %u:\n", j);
+        fprintf(pFile, "Location,IntervalIdx,Measure,population\n", j);
+        measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
+        PopulationData & population = gDataSets->GetDataSet(j).getPopulationData();
+        for (int t = 0; t < m_nTracts; ++t) {
+            const char * locationId = this->GetTInfo()->getIdentifier(t);
+            for (int i = 0; i < GetNumTimeIntervals(); ++i) {
+                Julian date = GetTimeIntervalStartTimes()[i];
+                int dateIdx = population.GetPopulationDateIndex(date, true);
+                double pop = 0.0; // population.GetPopulation(t, 0, dateIdx);
+                JulianToString(dateString, date, gParameters.GetPrecisionOfTimesType());
+                fprintf(
+                    pFile, "%s (t=%d),%s (i=%d),%g,%g\n", locationId, t,
+                    dateString.c_str(), i, ppMeasure[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppMeasure[i + 1][t] : 0), pop
+                );
+            }
+        }
+        fprintf(pFile, "\n");
+    }
+    fprintf(pFile, "\n");
+    fflush(pFile);
 }
 
 /** Debug utility function - prints neighbor information.

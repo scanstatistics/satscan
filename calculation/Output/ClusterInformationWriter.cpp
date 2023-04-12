@@ -712,7 +712,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
        tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);
        Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = tObservedDivExpected;
        //record relative risk - categories which were combined will have the same value
-       tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
+       tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases, tTotalCategoryCases);
        if (tRelativeRisk != -1 /*indicator of infinity*/)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
        double dTotalCasesInClusterDataSet = gDataHub.GetProbabilityModel().GetPopulation(*itr, theCluster, gDataHub);

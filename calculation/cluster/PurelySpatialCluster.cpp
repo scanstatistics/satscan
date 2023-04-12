@@ -107,7 +107,7 @@ std::string& CPurelySpatialCluster::GetEndDate(std::string& sDateString, const C
 }
 
 /** Returns the measure for location as defined by cluster. */
-measure_t CPurelySpatialCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+measure_t CPurelySpatialCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex, bool adjusted) const {
   return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
 }
 

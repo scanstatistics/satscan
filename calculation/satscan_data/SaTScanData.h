@@ -182,10 +182,10 @@ class CSaTScanData {
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
-    virtual void                                DisplayCases(FILE* pFile) const;
-    virtual void                                DisplayControls(FILE* pFile) const;
-    virtual void                                DisplayMeasure(FILE* pFile) const;
-    virtual void                                DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const;
+    virtual void                                DisplayCases(FILE* pFile, bool nonCumulative=false) const;
+    virtual void                                DisplayControls(FILE* pFile, bool nonCumulative=false) const;
+    virtual void                                DisplayMeasure(FILE* pFile, bool nonCumulative=false) const;
+    virtual void                                DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile, bool nonCumulative=false) const;
 
     inline tract_t                           ** GetSortedArrayAsTract_T(int iEllipse) const;
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;

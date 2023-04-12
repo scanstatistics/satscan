@@ -213,11 +213,11 @@ void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigne
                       tTractIndex, gCovariateCategoriesPerLocation.size());
 
     CovariateCategory & thisDescriptor = GetCovariateCategory(tTractIndex, iCategoryIndex, (int)gvPopulationDates.size());
-    AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
+    bool populationAssigned = AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
     //If precision of read population date is day, assign the day afters population to be the same.
     //This is needed for the interpolation process. In method SetPopulationDates(...), it is
     //ensured that this date is listed as one of the possible population dates.
-    if (prPopulationDate.second == DAY)
+    if (prPopulationDate.second == DAY && populationAssigned)
       AssignPopulation(thisDescriptor, prPopulationDate.first + 1, fPopulation, false);
   }
   catch (prg_exception& x) {
@@ -246,7 +246,7 @@ size_t PopulationData::addCategoryTypeCaseCount(const std::string& categoryTypeL
     indicates that the population date was read from the population file; having
     bTrueDate == false indicates that the population date is one of the introduced
     population dates through method: SetPopulationDates(...). */
-void PopulationData::AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate) {
+bool PopulationData::AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate) {
   int iPopulationDateIndex, iNumPopulationDates;
 
   try {
@@ -266,12 +266,13 @@ void PopulationData::AssignPopulation(CovariateCategory& thisCovariateCategory, 
       //to determine the population.
       if (iPopulationDateIndex == iNumPopulationDates - 2 && gbEndAsPopDt)
         thisCovariateCategory.AddPopulationAtDateIndex(fPopulation, iNumPopulationDates - 1, *this);
+      return true; // The population data was assigned.
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("AssignPopulation()","PopulationData");
     throw;
   }
+  return false; // The population data was not assigned.
 }
 
 /** Returns vector that indicates population dates percentage of the whole study

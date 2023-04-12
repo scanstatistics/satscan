@@ -22,6 +22,7 @@ class DataStreamAccumulator {
         count_t _sum_observed;
         count_t _sum_case_totals;
         measure_t _sum_expected;
+        measure_t _sum_total_expected;
 
     public:
         DataStreamAccumulator() { reset(); }
@@ -29,7 +30,8 @@ class DataStreamAccumulator {
         count_t   getObserved() const { return _sum_observed; }
         count_t   getCaseTotal() const { return _sum_case_totals; }
         measure_t getExpected() const { return _sum_expected; }
-        void      reset() { _sum_observed = 0; _sum_expected = 0.0; _sum_case_totals = 0; }
+        measure_t getTotalExpected() const { return _sum_total_expected; }
+        void      reset() { _sum_observed = 0; _sum_expected = 0.0; _sum_case_totals = 0; _sum_total_expected = 0; }
 };
 
 
@@ -48,7 +50,7 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) = 0;
-        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) = 0;
+        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
@@ -76,6 +78,8 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual count_t getObserved() const { throw prg_error("Not implemented", "getObserved()"); return 0;  }
         virtual count_t getCaseTotal() const { throw prg_error("Not implemented", "getCaseTotal()"); return 0; }
         virtual measure_t getExpected() const { throw prg_error("Not implemented", "getExpected()"); return 0.0; }
+        virtual measure_t getTotalExpected() const { throw prg_error("Not implemented", "getExpected()"); return 0.0; }
+
 };
 
 /* Multivariate unification class for high rating scanning - log likelihoods are simply added together. */
@@ -94,7 +98,7 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
+        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
@@ -105,9 +109,10 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
         // Methods used for risk threshold evaluation.
-        virtual count_t     getObserved() const { return _data_stream_accumulator.getObserved(); }
-        virtual count_t     getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
-        virtual measure_t   getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual count_t getObserved() const { return _data_stream_accumulator.getObserved(); }
+        virtual count_t getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
+        virtual measure_t getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual measure_t getTotalExpected() const { return _data_stream_accumulator.getTotalExpected(); }
 };
 
 /* Multivariate unification class for low rating scanning - log likelihoods are simply added together. */
@@ -126,8 +131,8 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
-            throw prg_error("Not implemented", "AdjoinRatio(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
+        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+            throw prg_error("Not implemented", "AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
         }
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
@@ -139,9 +144,10 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
         // Methods used for risk threshold evaluation.
-        virtual count_t     getObserved() const { return _data_stream_accumulator.getObserved(); }
-        virtual count_t     getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
-        virtual measure_t   getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual count_t getObserved() const { return _data_stream_accumulator.getObserved(); }
+        virtual count_t getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
+        virtual measure_t getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual measure_t getTotalExpected() const { return _data_stream_accumulator.getTotalExpected(); }
 };
 
 /* Multivariate unification class for simultaneous high and low rating scanning. 
@@ -159,8 +165,8 @@ class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighLowRate(*this); };
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr) {
-            throw prg_error("Not implemented", "AdjoinRatio(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
+        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+            throw prg_error("Not implemented", "AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
         }
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
@@ -200,7 +206,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
+        virtual void        AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
@@ -209,11 +215,12 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
         virtual void        Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
 
         // Method used for minimum number of cases evaulation.
-        virtual count_t     getObservedCount() const { return _data_stream_accumulator._sum_observed; };
+        virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
         // Methods used for risk threshold evaluation.
-        virtual count_t     getObserved() const { return _data_stream_accumulator.getObserved(); }
-        virtual count_t     getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
-        virtual measure_t   getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual count_t getObserved() const { return _data_stream_accumulator.getObserved(); }
+        virtual count_t getCaseTotal() const { return _data_stream_accumulator.getCaseTotal(); }
+        virtual measure_t getExpected() const { return _data_stream_accumulator.getExpected(); }
+        virtual measure_t getTotalExpected() const { return _data_stream_accumulator.getTotalExpected(); }
 };
 
 /* Adjustment unification class specialized for risk threshold evaluation. */
@@ -223,7 +230,7 @@ class AdjustmentUnifierRiskThreshold : public AdjustmentUnifier {
         virtual ~AdjustmentUnifierRiskThreshold() {}
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex, double llr);
+        virtual void        AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
 };
 //******************************************************************************
 #endif

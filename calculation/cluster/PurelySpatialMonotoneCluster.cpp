@@ -301,7 +301,7 @@ measure_t CPSMonotoneCluster::GetExpectedCount(const CSaTScanData& DataHub, size
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPSMonotoneCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+measure_t CPSMonotoneCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex, bool adjusted) const {
   return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
 }
 
