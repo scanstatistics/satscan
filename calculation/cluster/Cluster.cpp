@@ -987,7 +987,7 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
             measure_t clusterMeaureInterval = 0;
             for (auto neighbor=tracts.begin(); neighbor != tracts.end(); ++neighbor)
                 clusterMeaureInterval += ppmeasure[interval][*neighbor] - (interval < (m_nLastInterval - 1) ? ppmeasure[interval + 1][*neighbor] : 0.0);
-            expected += (pcasesnc[interval] / pmeasurenc[interval]) * clusterMeaureInterval;
+            if (pmeasurenc[interval]) expected += (pcasesnc[interval] / pmeasurenc[interval]) * clusterMeaureInterval;
         }
         return expected;
     } else
