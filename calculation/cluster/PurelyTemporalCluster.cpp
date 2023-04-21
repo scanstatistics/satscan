@@ -79,16 +79,15 @@ void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData&, 
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
-  measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex, bool adjusted) const {
+  measure_t tMeasure, ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex];
   else
     tMeasure  = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
-  return tMeasure;
+  return tMeasure * Data.GetMeasureAdjustment(tSetIndex);
 }
 
 /** returns end date of defined cluster as formated string */

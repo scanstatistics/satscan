@@ -301,9 +301,9 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
   TractHandler::Location::StringContainer_t     vTractIdentifiers;
 
   try {
-    for (tract_t i=nFirstTract; i <= nLastTract; ++i) {
+    for (tract_t t=nFirstTract; t <= nLastTract; ++t) {
        //get i'th neighbor tracts index
-       tract_t tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
+       tract_t tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius);
        // Print location identifiers if location data has not been removed in iterative scan.
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
@@ -541,7 +541,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
           tExpected += GetExpectedCountOrdinal(DataHub, *itr, itrC->GetCategoryIndex(m));
           tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr).getPopulationData().GetNumCategoryTypeCases(itrC->GetCategoryIndex(m));
        }
-       if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
+       if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases, tTotalCategoryCases)) == -1)
          printString(work, "%sinfinity", (itrC == vCategoryContainer.begin() ? "" : ", "));
        else {
          work2 = getValueAsString(tRelativeRisk, work2); 
@@ -887,23 +887,16 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const As
 /** Writes clusters log likelihood ratio/test statistic in format required by result output file. */
 void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string  buffer;
+  const CParameters& params = DataHub.GetParameters();
 
-  if (DataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION || 
-      DataHub.GetParameters().GetProbabilityModelType() == RANK ||
-      DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME) {
-     //PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-     //fprintf(fp, "%lf\n", m_nRatio);
-     printString(buffer, "%lf", m_nRatio);
-     printClusterData(fp, PrintFormat, "Test statistic", buffer, false);
-  }
-  else {
-    //PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
-    printString(buffer, "%lf", m_nRatio/m_NonCompactnessPenalty);
-    //fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
-    printClusterData(fp, PrintFormat, "Log likelihood ratio", buffer, false);
-    if (DataHub.GetParameters().GetSpatialWindowType() == ELLIPTIC) {
-      //PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-      //fprintf(fp, "%lf\n", m_nRatio);
+  if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
+      params.GetProbabilityModelType() == RANK ||
+      params.GetProbabilityModelType() == UNIFORMTIME ||
+      (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
+     printClusterData(fp, PrintFormat, "Test statistic", printString(buffer, "%lf", m_nRatio), false);
+  } else {
+    printClusterData(fp, PrintFormat, "Log likelihood ratio", printString(buffer, "%lf", m_nRatio / m_NonCompactnessPenalty), false);
+    if (params.GetSpatialWindowType() == ELLIPTIC) {
       printString(buffer, "%lf", m_nRatio);
       printClusterData(fp, PrintFormat, "Test statistic", buffer, false);
     }
@@ -969,7 +962,8 @@ std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& 
 
 /** Returns number of expected cases in accumulated data. */
 measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex) const {
-    if (DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME) {
+    const CParameters& params = DataHub.GetParameters();
+    if (params.GetProbabilityModelType() == UNIFORMTIME) {
         const AbstractUniformTimeClusterData * pClusterData = 0;
         if ((pClusterData = dynamic_cast<const AbstractUniformTimeClusterData*>(GetClusterData())) == 0)
             throw prg_error("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n", "GetExpectedCount()");
@@ -981,8 +975,23 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
         else if (cases == casesInPeriod)
             return measure / (M * (measureInPeriod - measure));
         return 0.0; // should not happen
+    } else if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        // Retrieve the location indexes for this cluster.
+        std::vector<tract_t> tracts;
+        getLocationIndexes(DataHub, tracts, true);
+        // Calculate the expected by summing the expected within each interval of the cluster window.
+        count_t * pcasesnc = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT_NC();
+        measure_t ** ppmeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
+        measure_t expected = 0.0, * pmeasurenc = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT_NC();
+        for (int interval=m_nFirstInterval; interval < m_nLastInterval; ++interval) {
+            measure_t clusterMeaureInterval = 0;
+            for (auto neighbor=tracts.begin(); neighbor != tracts.end(); ++neighbor)
+                clusterMeaureInterval += ppmeasure[interval][*neighbor] - (interval < (m_nLastInterval - 1) ? ppmeasure[interval + 1][*neighbor] : 0.0);
+            if (pmeasurenc[interval]) expected += (pcasesnc[interval] / pmeasurenc[interval]) * clusterMeaureInterval;
+        }
+        return expected;
     } else
-        return DataHub.GetMeasureAdjustment(tSetIndex) * GetClusterData()->GetMeasure(tSetIndex);
+        return GetClusterData()->GetMeasure(tSetIndex) * DataHub.GetMeasureAdjustment(tSetIndex);
 }
 
 /** Returns number of expected cases in accumulated data that is stratified by
@@ -1150,38 +1159,53 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
 
 /** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
 double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  const CParameters params = DataHub.GetParameters();
   double expected = GetExpectedCount(DataHub, tSetIndex);
 
-  if (DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME) {
-      // when expected == 0, relative risk goes to infinity
-      return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCount(tSetIndex)) / expected);
-  }
-
-  return GetRelativeRisk(GetObservedCount(tSetIndex), expected, DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases());
+  if (params.GetProbabilityModelType() == UNIFORMTIME) {
+      return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCount(tSetIndex)) / expected); // when expected == 0, relative risk goes to infinity
+  } else if (params.GetProbabilityModelType() == BERNOULLI && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+      return GetRelativeRisk(
+          GetObservedCount(tSetIndex), GetClusterData()->GetMeasure(tSetIndex), // We want the unadjusted measure here.
+          DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nFirstInterval] - DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nLastInterval],
+          DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nFirstInterval] - DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nLastInterval]
+      );
+  } else 
+    return GetRelativeRisk(
+        GetObservedCount(tSetIndex), expected,
+        DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases(), DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases()
+    );
 }
 
 /** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data.
-    Returns negative one if relative risk goes to infinity */
-double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const {
+Returns negative one if relative risk goes to infinity */
+double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTotalCases, double dTotalMeasure) const {
   //when all cases are inside cluster, relative risk goes to infinity
   if (dTotalCases == dObserved) return -1;
-
-  if (dExpected && dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalCases - dExpected)))
-    return (dObserved/dExpected)/((dTotalCases - dObserved)/(dTotalCases - dExpected));
-  return 0;  
+  if (dExpected && dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalMeasure - dExpected)))
+    return (dObserved/dExpected)/((dTotalCases - dObserved)/(dTotalMeasure - dExpected));
+  return 0.0;  
 }
 
 /** Returns relative risk for location contained in cluster. */
 double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex) const {
+    const CParameters params = DataHub.GetParameters();
     double expected = GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex);
 
-    if (DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME && expected == 0.0)
-        // when expected == 0, relative risk goes to infinity
-        return -1;
-
-    return GetRelativeRisk(GetObservedCountForTract(tTractIndex, DataHub, tSetIndex),
-                           expected,
-                           DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases());
+    if (DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME)
+        return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCountForTract(tTractIndex, DataHub, tSetIndex)) / expected); // when expected == 0, relative risk goes to infinity
+    else if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        return GetRelativeRisk(
+            GetObservedCountForTract(tTractIndex, DataHub, tSetIndex),
+            GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex, false), // We want the unadjusted measure here.
+            DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nFirstInterval] - DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nLastInterval],
+            DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nFirstInterval] - DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nLastInterval]
+        );
+    } else
+        return GetRelativeRisk(
+            GetObservedCountForTract(tTractIndex, DataHub, tSetIndex), expected,
+            DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases(), DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases()
+        );
 }
 
 /** returns start date of defined cluster as formated string */

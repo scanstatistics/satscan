@@ -2029,16 +2029,21 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     }
     //validate including purely temporal clusters
     if (gParameters.GetIncludePurelyTemporalClusters()) {
-      if (!gParameters.GetPermitsPurelyTemporalCluster(gParameters.GetProbabilityModelType())) {
-          bValid = false;
-          PrintDirection.Printf("%s\nScanning for purely temporal clusters can not be included when the %s model is used.\n",
-                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-      }
-      else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nA purely temporal cluster can not be included with %s analyses.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
-      }
+        if (!gParameters.GetPermitsPurelyTemporalCluster(gParameters.GetProbabilityModelType())) {
+            bValid = false;
+            PrintDirection.Printf("%s\nScanning for purely temporal clusters can not be included when the %s model is used.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+        } else if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+            bValid = false;
+            PrintDirection.Printf(
+                "%s:\nA purely temporal cluster can not be included with the time with stratified randomization temporal adjustment.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString()
+            );
+        } else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nA purely temporal cluster can not be included with %s analyses.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+        }
     }
 
     //the locations neighbor file is irrelevant when analysis type is purely temporal

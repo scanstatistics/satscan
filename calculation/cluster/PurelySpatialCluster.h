@@ -36,7 +36,7 @@ class CPurelySpatialCluster : public CCluster {
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual ClusterType                 GetClusterType() const {return PURELYSPATIALCLUSTER;}
     virtual std::string               & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
-    virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0, bool adjusted=true) const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual std::string               & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual void                        Initialize(tract_t nCenter=0);

@@ -108,7 +108,7 @@ std::string& PurelySpatialHomogeneousPoissonCluster::GetEndDate(std::string& sDa
 }
 
 /** Returns the measure for location as defined by cluster. */
-measure_t PurelySpatialHomogeneousPoissonCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex) const {
+measure_t PurelySpatialHomogeneousPoissonCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex, bool adjusted) const {
   //return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
   std::vector<double>   ClusterCenter,TractCoords;
   DataHub.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);

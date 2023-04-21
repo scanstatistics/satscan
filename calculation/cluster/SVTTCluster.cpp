@@ -435,7 +435,7 @@ measure_t CSVTTCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSe
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex, bool adjusted) const {
   return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
 }
 

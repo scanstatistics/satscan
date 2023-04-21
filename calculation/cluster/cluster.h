@@ -110,7 +110,7 @@ class CCluster {
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }
+    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0, bool adjusted=true) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
@@ -132,7 +132,7 @@ class CCluster {
     unsigned int                  GetRank() const {return m_nRank;}
     double                        GetRatio() const {return m_nRatio;}
     double                        GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const;
+    double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases, double dTotalMeasure) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     ReportCache_t               & getReportLinesCache() const;
     RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;

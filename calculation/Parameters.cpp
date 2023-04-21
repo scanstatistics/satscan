@@ -562,12 +562,15 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
   return (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME);
 }
 
-/** Returns description for LLR. */
+/** Returns whether the LLR of analysis is actually a test statistic. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabilityModelType == SPACETIMEPERMUTATION || 
-          geProbabilityModelType == RANK || 
-          geProbabilityModelType == UNIFORMTIME || 
-          (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
+    return (
+        geProbabilityModelType == SPACETIMEPERMUTATION || 
+        geProbabilityModelType == RANK || 
+        geProbabilityModelType == UNIFORMTIME ||
+        (geProbabilityModelType == BERNOULLI && GetIsProspectiveAnalysis() && GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) ||
+        (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY)
+    );
 }
 
 /** Returns maximum spatial cluster size given type and whether value is for real or simulations. */
@@ -649,9 +652,12 @@ bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
-/** returns whether analysis type permits inclusion of purely temporal cluster */
+/** returns whether settings permit inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster() const {
-  return geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();
+    if (geTimeTrendAdjustType == TEMPORAL_STRATIFIED_RANDOMIZATION) return false;
+    return (
+        geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis()
+    );
 }
 
 /** returns whether probability model type permits inclusion of purely temporal cluster */

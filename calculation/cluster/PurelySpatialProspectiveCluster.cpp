@@ -87,7 +87,7 @@ std::string& CPurelySpatialProspectiveCluster::GetEndDate(std::string& sDateStri
 }
 
 /** Returns the measure for tract as defined by cluster - not implemented - throws exception. */
-measure_t CPurelySpatialProspectiveCluster::GetExpectedCountForTract(tract_t, const CSaTScanData&, size_t) const {
+measure_t CPurelySpatialProspectiveCluster::GetExpectedCountForTract(tract_t, const CSaTScanData&, size_t, bool) const {
   throw prg_error("GetExpectedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
