@@ -279,7 +279,7 @@ bool AbstractLikelihoodCalculator::HighRiskMultisetBernoulliNonparametric(const 
     if (unifier.getObservedCount() < _min_high_rate_cases) return false;
 
     return (this->*_risk_multiset_function)(
-        unifier.getObserved(), unifier.getExpected() * (static_cast<measure_t>(unifier.getCaseTotal())/ unifier.getTotalExpected()), unifier.getCaseTotal(), unifier.getTotalExpected()
+        unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getTotalExpected()
     ) >= _high_risk_threshold;
 }
 
