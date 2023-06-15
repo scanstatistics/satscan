@@ -109,7 +109,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWER_EVALUATION             : return "perform power evaluation - Poisson only (y/n)";
       case POWER_05                     : return "power evaluation critical value .05 (> 0)";
       case POWER_01                     : return "power evaluation critical value .001 (> 0)";
-      case TIMETREND                    : return "time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic, 1=TemporalNonparametric)";
+      case TIMETREND                    : return "time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic)";
       case TIMETRENDPERC                : return "time trend adjustment percentage (>-100)";
       case PURETEMPORAL                 : return "include purely temporal clusters? (y/n)";
       case CONTROLFILE                  : return "control data filename";
