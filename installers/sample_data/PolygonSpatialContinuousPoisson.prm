@@ -165,7 +165,7 @@ MinimumCasesInLowRateClusters=0
 MinimumCasesInHighRateClusters=2
 
 [Space and Time Adjustments]
-;time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic, 1=TemporalNonparametric)
+;time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic)
 TimeTrendAdjustmentType=0
 ;time trend adjustment percentage (>-100)
 TimeTrendPercentage=0
@@ -368,5 +368,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=10.1.0
+Version=10.1.2
 
