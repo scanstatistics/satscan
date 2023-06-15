@@ -13,15 +13,15 @@ class DataDemographicsProcessor;
 
 class EventType {
 public:
-    typedef boost::tuple<std::string, std::string, std::string> CategoryTuple_t; // type, label, color
+    typedef boost::tuple<std::string, std::string, std::string, unsigned int> CategoryTuple_t; // type, label, color, count
 
 private:
-    static unsigned int  _counter;
+    static unsigned int _counter;
     std::string _class;
     std::string _type;
     std::string _name;
     std::vector<CategoryTuple_t> _categories;
-    mutable VisualizationUtils _visual_utilities;
+    mutable VisualizationUtils _visual_utils;
 
 public:
     EventType(const std::string& name) {
@@ -37,18 +37,27 @@ public:
     const std::string& className() const { return _class; }
     const std::string& typeName() const { return _type; }
 
+    void sortCategories() {
+        std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
+            if (left.get<3>() == right.get<3>())
+                return left.get<1>() < right.get<1>();
+            return left.get<3>() > right.get<3>();
+        });
+    }
     std::string toJson(const std::string& resource_path);
     std::string getCategoryColor(unsigned int offset) const;
     const CategoryTuple_t& addCategory(const std::string& label) {
         for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
-            if (itr->get<1>() == label)
+            if (itr->get<1>() == label) {
+                itr->get<3>() += 1;
                 return *itr;
+            }
         }
         std::string color(getCategoryColor(_categories.size()));
         std::stringstream replacer;
         replacer << label;
         std::string ctypename(templateReplace(replacer, " ", "_").str());
-        _categories.push_back(CategoryTuple_t(lowerString(ctypename), label, color));
+        _categories.push_back(CategoryTuple_t(lowerString(ctypename), label, color, 1));
         return _categories.back();
     }
     const std::vector<CategoryTuple_t>& getCategories() const { return _categories; }
@@ -70,6 +79,7 @@ protected:
     std::stringstream                   _cluster_options_significant;
     std::stringstream                   _cluster_options_non_significant;
     std::vector<EventType>              _event_types;
+    Julian                              _recent_startdate;
 
     std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
 

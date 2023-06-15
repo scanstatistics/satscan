@@ -12,6 +12,7 @@
 #include "DataDemographics.h"
 #include "DataSource.h"
 #include "DateStringParser.h"
+#include "Toolkit.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -391,15 +392,6 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         _dataHub.GetPrintDirection().Printf("Unable to find grouping charateristic '%s' in line list.\nEvent placements will not be added to KML output.\n", BasePrint::P_WARNING, group_by.c_str());
         return;
     }
-    /* Define the date range of case records to report. For prospective, we don't want the baseline events. 
-       Uncertain what to do for retrospective or flexable window - postponing decision and showing all for now. */
-    Julian lowestDate = _dataHub.GetTimeIntervalStartTimes().front();
-    if (parameters.GetIsProspectiveAnalysis()) {
-        lowestDate = _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex());
-        std::string buffer;
-        DatePrecisionType eDatePrint = (parameters.GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
-        //printf("Cluster window range: %s to %s\n", JulianToString(buffer, lowestDate, eDatePrint, "/").c_str(), JulianToString(buffer, _dataHub.GetTimeIntervalStartTimes().back() - 1, eDatePrint, "/").c_str());
-    }
     std::string buffer, buffer2;
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
     std::string file_name = group_by;
@@ -417,6 +409,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     eventKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
     // Iterate over data sets
     std::map<std::string, boost::shared_ptr<std::stringstream> > group_placemarks;
+    std::map<std::string, unsigned int> group_frequency;
     std::stringstream ballonstyle;
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
         // First test whether this data set reported event id and coordinates.
@@ -457,7 +450,6 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-            if (case_date < lowestDate) continue;
             group_value = ""; event_id = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;
@@ -503,54 +495,69 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "-stylemap</styleUrl>" << std::endl << "</Placemark>" << std::endl;
             // Add placemark to correct placemark group.
             auto pgroup = group_placemarks.find(group_value);
-            if (pgroup == group_placemarks.end())
+            if (pgroup == group_placemarks.end()) {
                 group_placemarks[group_value] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+                group_frequency[group_value] = 0;
+            }
             *(group_placemarks[group_value]) << placemark.str();
+            group_frequency[group_value] += 1;
         }
     }
     // Now that we've read all the data, write groups to KML file.
-    std::string new_event_icon = "http://maps.google.com/mapfiles/kml/shapes/donut.png";
-    std::string ongoing_event_icon = "http://maps.google.com/mapfiles/kml/shapes/triangle.png";
-    std::string outside_event_icon = "http://maps.google.com/mapfiles/kml/shapes/placemark_square.png";
     // First create the ScreenOverlay, which is the legend.
-    eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style=\"text-decoration:underline;\">Legend: " << group_by;
-    eventKML << "</div></name><Snippet></Snippet><description>";
-    eventKML << "<div style=\"border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;\"><div><img style=\"vertical-align:middle;padding-left:3px;padding-right:6px;\" width=\"22\" height=\"22\" src=\"" << new_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;vertical-align: middle;\">New</span></div>";
-    eventKML << "<div><img width=\"22\" height=\"22\" style=\"vertical-align:middle;padding-left:3px;padding-top:6px;padding-right:6px;\" src=\"" << ongoing_event_icon << "\"/> <span style=\"font-weight:bold;vertical-align: middle;\">Ongoing</span></div>";
-    eventKML << "<div><img style=\"vertical-align:middle;padding-left:0px;padding-top:3px;padding-right:0px;\" width=\"32\" height=\"32\" src=\"" << outside_event_icon << "\"/> <span style=\"font-weight:bold;padding-right:8px;vertical-align: middle;\">Outside</span></div></div>";
-    eventKML << "<ul style=\"padding-left:0\">" << std::endl;
-    std::vector<std::pair<std::string, std::string> > group_colors;
-    auto itrColor = visual_utilities.getEventColorDefaults().begin();
-    for (auto const&pgroup : group_placemarks) {
-        std::string htmlColor(itrColor == visual_utilities.getEventColorDefaults().end() ? visual_utilities.getRandomHtmlColor() : *itrColor);
-        auto colorKML = toKmlColor(htmlColor);
-        group_colors.push_back(std::make_pair(colorKML, htmlColor));
-        eventKML << "<li style=\"list-style-type:none;white-space:nowrap;\"><div style=\"width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:";
-        eventKML << group_colors.back().second << ";display:inline-block;\"></div><span style=\"font-weight:bold;margin-left:5px;\">" << pgroup.first << "</span></li>" << std::endl;
-        if (itrColor != visual_utilities.getEventColorDefaults().end()) ++itrColor;
+    std::vector<std::pair<std::string, unsigned int> > ordered_frequency;
+    for (auto gr : group_frequency) {
+        ordered_frequency.push_back(gr);
     }
-    eventKML << "</ul></description>" << std::endl;
+    std::sort(ordered_frequency.begin(), ordered_frequency.end(), [](const std::pair<std::string, unsigned int> &left, const std::pair<std::string, unsigned int> &right) { return left.second > right.second; });
+    eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << group_by;
+    eventKML << "</div></name><Snippet></Snippet><description><div style='border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;'><div>" << std::endl;
+    eventKML << "<ul style='padding-left:3px;margin-left:5px;margin-top:5px;padding-right: 5px;margin-bottom: 3px;'>" << std::endl;
+    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
+    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#971D03;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, not new entry</span></li>" << std::endl;
+    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FFFFFF;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Outside Clusters</span></li>" << std::endl;
+    eventKML << "</ul></div><hr style='border-top: 1px solid black;margin-top:10px;margin-bottom:5px;margin-left:10px;margin-right:10px;'/>" << std::endl;
+    eventKML << "<ul style='padding-left:0'>" << std::endl;
+    std::string website = AppToolkit::getToolkit().GetWebSite();
+    std::stringstream squasheditems;
+    auto itrShape = _visual_utils.getShapes().begin();
+    for (auto const&pgroup : ordered_frequency) {
+        if (itrShape != _visual_utils.getShapes().end()) {
+            eventKML << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
+                << " width='16' height='16' src='" << website << "images/events/" << *itrShape << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>"
+                << pgroup.first << "</span></li>" << std::endl;
+            ++itrShape;
+        } else {
+            squasheditems << (squasheditems.rdbuf()->in_avail() ? ", " : "") << pgroup.first;
+        }
+    }
+    if (squasheditems.rdbuf()->in_avail()) {
+        eventKML << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;' title='" << squasheditems.str() << "'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
+            << " width='16' height='16' src='" << website << "images/events/" << _visual_utils.getAggregationShape() << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>Other(s)</span></li>" << std::endl;
+    }
+    eventKML << "</ul></div></description>" << std::endl;
     eventKML << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
     eventKML << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
-    auto itrColors = group_colors.begin();
     eventKML << "<name>Events By " << group_by << "</name>" << std::endl;
-    for (auto const&pgroup: group_placemarks) {
-        auto color = itrColors->first;
+    itrShape = itrShape = _visual_utils.getShapes().begin();
+    for (auto const&pgroup: ordered_frequency) {
+        auto shape = itrShape != _visual_utils.getShapes().end() ? *itrShape : std::string(_visual_utils.getAggregationShape());
         auto groupHex = toHex(pgroup.first);
-        eventKML << "<Style id=\"events-" << groupHex << "-ongoing-style\"><IconStyle><color>" << color << "</color><Icon><href>" << ongoing_event_icon
-            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
-        eventKML << "<StyleMap id=\"events-" << groupHex << "-ongoing-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
-            << "-ongoing-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-ongoing-style</styleUrl></Pair></StyleMap>" << std::endl;
-        eventKML << "<Style id=\"events-" << groupHex << "-new-style\"><IconStyle><color>" << color << "</color><Icon><href>" << new_event_icon
-            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
+        eventKML << "<Style id=\"events-" << groupHex << "-new-style\"><IconStyle><color>" << toKmlColor("FF0000") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
         eventKML << "<StyleMap id=\"events-" << groupHex << "-new-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
             << "-new-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-new-style</styleUrl></Pair></StyleMap>" << std::endl;
-        eventKML << "<Style id=\"events-" << groupHex << "-outside-style\"><IconStyle><color>" << color << "</color><Icon><href>" << outside_event_icon
-            << "</href><scale>0.25</scale></Icon></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
+        eventKML << "<Style id=\"events-" << groupHex << "-ongoing-style\"><IconStyle><color>" << toKmlColor("971D03") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
+        eventKML << "<StyleMap id=\"events-" << groupHex << "-ongoing-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
+            << "-ongoing-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-ongoing-style</styleUrl></Pair></StyleMap>" << std::endl;
+        eventKML << "<Style id=\"events-" << groupHex << "-outside-style\"><IconStyle><color>" << toKmlColor("FFFFFF") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
         eventKML << "<StyleMap id=\"events-" << groupHex << "-outside-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
             << "-outside-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-outside-style</styleUrl></Pair></StyleMap>" << std::endl;
-        eventKML << "<Folder><name>" << pgroup.first << "</name>" << std::endl << pgroup.second->str() << "</Folder>";
-        ++itrColors;
+
+        eventKML << "<Folder><name>" << pgroup.first << " (" << pgroup.second << ")</name>" << std::endl << group_placemarks[pgroup.first]->str() << "</Folder>";
+        if (itrShape != _visual_utils.getShapes().end()) ++itrShape;
     }
     eventKML << "</Document>" << std::endl << "</kml>" << std::endl;
     eventKML.close();

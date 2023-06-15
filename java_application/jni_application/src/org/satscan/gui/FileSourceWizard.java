@@ -1582,7 +1582,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 message.append("The case file can contain line list data which is not used when performing analysis.\n");
                 message.append("The line list data can include two types of information:\n");
                 message.append("1) Event Identification:\n");
-                message.append(" - Uniquely identifies an event and it's latitude/longitude coordinates.\n");
+                message.append(" - Uniquely identifies an event and its latitude/longitude coordinates.\n");
                 message.append(" - Coordinates are optional and only used to place the event in the KML output.\n");
                 message.append("2) Record Characteristics:\n");
                 message.append(" - Attributes of the event or record (age, gender, status, etc).\n\n");

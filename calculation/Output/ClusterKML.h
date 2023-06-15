@@ -23,7 +23,7 @@ class BaseClusterKML {
       bool _visibleLocations;
       bool _separateLocationsKML;
       mutable boost::dynamic_bitset<> _cluster_locations;
-      mutable VisualizationUtils visual_utilities;
+      mutable VisualizationUtils _visual_utils;
 
       unsigned int addClusters(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset=0);
       void createKMZ(const file_collection_t& fileCollection, bool removefiles=true);

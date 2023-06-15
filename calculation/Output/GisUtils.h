@@ -24,18 +24,22 @@ class GisUtils {
 class VisualizationUtils {
     protected:
         mutable RandomNumberGenerator _rng;
-        std::vector<std::string> _event_color_defaults;
+        std::vector<std::string> _colors;
+        std::vector<std::string> _shapes;
 
     public:
         VisualizationUtils() {
-            _event_color_defaults = { // seperate colors for each group.
+            _colors = { // seperate colors for each group.
                 "#f78f0c", "#4d83b2", "#f9cc00", "#73bc86", "#ca1640", "#4dc3c1", "#d1d09e", "#3c494f", "#c5db53",
                 "#6c3025", "#66665a", "#106c47", "#f27959", "#b27c4d", "#580a31", "#a19f0c", "#e1d0a3"
             };
+            _shapes = { "star", "triangleup", "square", "rhombus", "hexagon", "triangledown", "heart", "shield" };
         }
 
-        const std::vector<std::string>& getEventColorDefaults() const { return _event_color_defaults; }
+        const std::vector<std::string>& getColors() const { return _colors; }
         std::string getRandomHtmlColor() const;
+        const std::vector<std::string>& getShapes() const { return _shapes; }
+        const char * getAggregationShape() const { return "circle";  }
         std::string toHtmlColor(const std::string& kmlColor) const;
 };
 

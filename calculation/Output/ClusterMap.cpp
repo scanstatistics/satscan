@@ -15,40 +15,21 @@
 unsigned int EventType::_counter = 0;
 
 std::string EventType::getCategoryColor(unsigned int offset) const {
-    if (offset > _visual_utilities.getEventColorDefaults().size() - 1) {
-        return _visual_utilities.getRandomHtmlColor();
+    if (offset > _visual_utils.getColors().size() - 1) {
+        return _visual_utils.getRandomHtmlColor();
     } else {
-        return _visual_utilities.getEventColorDefaults()[offset];
+        return _visual_utils.getColors()[offset];
     }
 }
 
 std::string EventType::toJson(const std::string& resource_path) {
     std::stringstream json;
-
-    // Sort catgegories alphabetically.
-    std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
-        return left.get<1>() < right.get<1>();
-    });
-
     json << "{ event_class: '" << _class << "', " << "event_type: '" << _type << "', " << "event_name: '" << _name << "', ";
     json << "categories: [";
     for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
         json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << itr->get<0>() << "', label: '" << itr->get<1>() << "', color: '" << itr->get<2>() << "'}";
     }
-    json << "], ";
-    json << "legend: \"<div style='text-decoration:underline;font-size:12px;font-weight:bold;'>Legend: " << _name << "</div>";
-    json << "<div style='border:1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;margin-top:5px;margin-bottom:5px;'>";
-    json << "<div><img style='vertical-align:middle;margin-left:5px;margin-right:6px;' width='20' height='20' src='" << resource_path << "images/donut-new.svg'/> <span style='font-weight:bold;padding-right:8px;vertical-align: middle;'>New</span></div>";
-    json << "<div><img width='30' height='30' style='vertical-align:middle;' src='" << resource_path << "images/triangle-ongoing.svg'/> <span style='font-weight:bold;vertical-align: middle;'>Ongoing</span></div>";
-    json << "<div><img style='vertical-align:middle;margin-left:5px;margin-right:4px;' width='20' height='20' src='" << resource_path << "images/square-outside.svg'/> <span style='font-weight:bold;padding-right:8px;vertical-align: middle;'>Outside</span></div>";
-    json << "</div>";
-    json << "<ul style='padding-left:0;margin-bottom: 0px;'>";
-    for (auto itr=_categories.begin(); itr != _categories.end(); ++itr) {
-        json << "<li style='list-style-type:none;white-space:nowrap;'>";
-        json << "<div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:" << itr->get<2>() << ";display:inline-block;'></div>";
-        json << "<span style='font-weight:bold;margin-left:5px;'>" << itr->get<1>() << "</span></li>";
-    }
-    json << "</ul>\" }";
+    json << "] }";
     return json.str();
 }
 
@@ -62,17 +43,18 @@ const char * ClusterMap::TEMPLATE = " \
         <title>Cluster Map</title> \n \
         <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" charset=\"utf-8\"> \n \
         <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/nouislider.css\"> \n \
         <style type=\"text/css\"> \n \
          body {background-color: #f0f8ff;} \n \
          #chartContainer{ overflow: hidden; } \n \
          .chart-options{ display:none; } \n \
          .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver; } \n \
-         .options-row{ margin:0 10px 10px 10px } \n \
+         .options-row{ margin:0 5px 5px 5px } \n \
          .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold; } \n \
          input.standard[type='radio']{ margin:5px } \n \
-         p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; } \n \
+         p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; margin-bottom:1px;} \n \
          .main-content{ margin: 5px; } \n \
-         .options-row label{ font-weight: normal; } \n \
+         .options-row label{ font-weight: normal; margin-bottom: 1px;} \n \
          input[type=checkbox]{ margin-right:5px; } \n \
          label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100 % ; } \n \
          .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; } \n \
@@ -80,7 +62,6 @@ const char * ClusterMap::TEMPLATE = " \
          .cluster-selection{ border-bottom: dashed 1px #e6e9eb; } \n \
          .cluster-selection label{ white-space: nowrap; color: #313030; } \n \
          #id_display_count { margin:10px; } \n \
-         fieldset { margin-top: 10px; } \n \
          @media print{ title{ display: none; } #id_banner { display: none; } .chart-options-section{ display: none; } #chartContainer{ margin: 20px; } .chart-column{ border-left: 0; } } \n \
          @media print{ img { max-width: none !important; } a[href]:after { content: \"\"; } } \n \
          #map-outer { height: 75.0rem !important; padding: 20px; } \n \
@@ -88,19 +69,26 @@ const char * ClusterMap::TEMPLATE = " \
          @media all and (max-width: 991px) { #map-outer  { height: 650px } } \n \
          table.info-window td { padding: 3px; }\n \
          #legend { display:none; font-family: Arial, sans-serif; background: #fff; padding: 10px; margin: 10px; border: 1px solid #000; } \n \
+         .slider-round { height: 10px; margin: 3px 5px 5px 5px; } \n \
+         .slider-round .noUi-connect { background: #387bbe; } \n \
+         .slider-round .noUi-handle { height: 18px; width: 18px; top: -5px; right: -9px; /* half the width */ border-radius: 9px; background: #0052A3; border: 1px solid #0052A3; } \n \
+         .slider-round-small { height: 8px; margin: 6px 5px 2px 0px; } \n \
+         .slider-round-small .noUi-connect { background: #387bbe; } \n \
+         .slider-round-small .noUi-handle { height: 12px; width: 12px; top: -3px; right: -7px; /* half the width */ border-radius: 9px; background: #0052A3; border: 1px solid #0052A3; } \n \
         </style> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/clustercharts/jQuery.resizeEnd.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.js\"></script> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
         <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
+        <script src=\"--resource-path--javascript/clustercharts/nouislider.js\"></script> \n \
     </head> \n \
     <body> \n \
 		<div id='load_error' style='color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;'></div> \n \
     <div class='container-fluid main-content'> \n \
         <div class='row'> \n \
             <div id='map-outer' class='col-md-12'> \n \
-            <div class='col-md-3 chart-options-section'> \n \
+            <div class='col-md-2 chart-options-section' style='padding-left:0;'> \n \
                 <fieldset> \n \
                 <div class='options-row'> \n \
                     <div style='font-style:italic;'>Generated with SaTScan v--satscan-version--</div>\n \
@@ -145,6 +133,11 @@ const char * ClusterMap::TEMPLATE = " \
                         </select> \n \
                     </div> \n \
                     <p class='help-block'>Displays markers for selected events.</p> \n \
+                    <div id='id_group_events'>  \n \
+                    <label for='id_group_event_type'>Separate Icons:</label> \n \
+                    <select name='group_event_type' id='id_group_event_type' multiple='multiple' class='events-group'></select> \n \
+                    </div> \n \
+                    <p class='help-block'>Maximum of 8 can be distinguished by icon.</p> \n \
                     <div id='id_filter_events'> \n \
                         <label for='id_filter_event_type'>Exclude Events:</label> \n \
                         <select name='filter_event_type' id='id_filter_event_type' multiple='multiple' class='events-filter'> \n \
@@ -152,17 +145,26 @@ const char * ClusterMap::TEMPLATE = " \
                         </select> \n \
                     </div> \n \
                     <p class='help-block'>Filter to exclude markers of displayed events.</p> \n \
-                    <label for='fader'>Events Timeline</label> \n \
-                    <input type='range' min='0' max='0' value='0' id='fader' step='1' oninput='rangeInputted();'> \n \
-                    <div style='font-size: small;padding-bottom: 5px;'>Timeframe: --time-frame-start-- to <span id='id_range_enddate'>--time-frame-end--</span></div> \n \
-                    <div class='pull-right'> \n \
-                    <button type='button' class='btn btn-primary btn-sm' id='id_run_timeline'>Run Timeline</button> \n \
+                    <label for='slider_display'>Events In Study Period</label> \n \
+                    <div class='slider-styled slider-round' id='slider_display'></div> \n \
+                    <div style='font-size: small;padding-bottom: 5px;'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
+                    <div class='pull-left'> \n \
+                    <button type='button' class='btn btn-success btn-sm' id='id_run_timeline'>Run</button> \n \
+                    <button type='button' class='btn btn-primary btn-sm' id='id_pause_timeline'>Pause</button> \n \
                     <button type='button' class='btn btn-secondary btn-sm btn-warning' id='id_run_timeline_reset'>Reset</button> \n \
                     </div> \n \
                     <div class='clearfix'></div> \n \
-                    <p class='help-block'>Show events by timeline.</p> \n \
-                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Legend For Event Type</label> \n \
-                    <p class='help-block'>Show event type legend on map.</p> \n \
+                    <label for='slider_speed' style='font-size:12px;margin-bottom:0;margin-left:2px;'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
+                    <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
+                    <label for='slider_display' style='margin-top:5px;'>Recent Events</label> \n \
+                    <div class='slider-styled slider-round' id='slider_recent'></div> \n \
+                    <div style='font-size: small;padding-bottom: 5px;'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
+                    <!-- <p class='help-block'>Show events by study period.</p> --> \n \
+                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Event Legend</label> \n \
+                    <div style='margin-top: 1px;'><label>Events Size</label></div> \n \
+                     <div class='slider-styled slider-round' id='slider_size' ></div> \n \
+                     <div style='font-size:small;text-align:center;'><span style='margin-right:15px;'>&#129048; smaller</span><span style='margin-left:15px;'>larger &#x1F81A;</span></div> \n \
+                    <div class='clearfix'></div> \n \
                 </div> \n \
                 <div id='id_display_count'>\n \
                     <fieldset>\n \
@@ -182,12 +184,13 @@ const char * ClusterMap::TEMPLATE = " \
                 </div> \n \
                 </fieldset> \n \
             </div> \n \
-            <div class='xx-col-md-9 chart-column' id='map'></div> \n \
+            <div class='xx-col-md-10 chart-column' id='map'></div> \n \
             <div id='legend'><h3>Legend</h3></div> \n \
             </div> \n \
         </div> \n \
      </div> \n \
         <script type='text/javascript'> \n \
+            const event_range_begin = --event-range-begin--; \n \
             const event_range_start = --event-range-start--; \n \
             const event_range_end = --event-range-end--; \n \
             const true_dates = --true-dates--; \n \
@@ -202,11 +205,12 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.2.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.js\"></script> \n \
   </body> \n \
 </html> \n";
 
-ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0) { 
+ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0), 
+     _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()) {
     _cluster_locations.resize(_dataHub.GetNumTracts() + _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 }
 
@@ -238,6 +242,7 @@ std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster
     return legend;
 }
 
+/* Conditionally adds clusters of most likely cluster collection to Google Map. */
 void ClusterMap::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration) {
     double gdMinRatioToReport = 0.001;
     std::vector<double> vCoordinates;
@@ -292,7 +297,8 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
 				edges = worker.str();
 				trimString(edges, ",");
 			}
-
+            // Record window start of MLC with prospective analyses - we'll potentially use this with events display.
+            if (i == 0 && parameters.GetIsProspectiveAnalysis()) _recent_startdate = _dataHub.GetTimeIntervalStartTimes()[cluster.m_nFirstInterval];
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
             printString(buffer, "lat : %f, lng : %f, radius : %f", prLatitudeLongitude.first, prLatitudeLongitude.second, radius);
@@ -334,9 +340,6 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
         for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) eventtype_map[eventtype->name()] = &(*eventtype);
         // Determine lowest date for displayed events - for prospective space-time, we're excluding those below cluster window.
         UInt jyear, jmonth, jday;
-        Julian lowestDate = (
-            parameters.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front()
-        );
         //std::map<std::string, boost::shared_ptr<std::stringstream>> group_events;
         for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
             // First test whether this data set reported event id and coordinates.
@@ -360,7 +363,6 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
                 readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
                 if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-                if (case_date < lowestDate) continue;
                 // Compile event attributes from this record.
                 eventtypes.str("");
                 eventAttrs.clear();
@@ -475,8 +477,9 @@ void ClusterMap::finalize() {
         std::stringstream selecteventgroups;
         for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
             selecteventgroups << "<optgroup label='" << eventtype->name() << "' class='" << eventtype->className() << "'>";
+            eventtype->sortCategories();
             for (auto category = eventtype->getCategories().begin(); category != eventtype->getCategories().end(); ++category)
-                selecteventgroups << "<option value='" << category->get<0>() << "' class='" << eventtype->className() << "'>" << category->get<1>() << "</option>";
+                selecteventgroups << "<option value='" << category->get<0>() << "' class='" << eventtype->className() << "'>" << category->get<1>() << " (" << category->get<3>() << ")" << "</option>";
             selecteventgroups << "</optgroup>";
         }
         templateReplace(html, "--select-groups-event-type-display--", selecteventgroups.str());
@@ -490,20 +493,17 @@ void ClusterMap::finalize() {
         templateReplace(html, "--event-definitions--", _event_definitions.str());
 
         UInt jyear, jmonth, jday;
-        Julian startDate = params.GetIsProspectiveAnalysis() ? _dataHub.GetTimeIntervalStartTimes().at(_dataHub.getDataInterfaceIntervalStartIndex()) : _dataHub.GetTimeIntervalStartTimes().front();
         if (params.GetPrecisionOfTimesType() == GENERIC) {
-            JulianToString(buffer, startDate, params.GetPrecisionOfTimesType(), "-", false, false, true);
-            templateReplace(html, "--time-frame-start--", JulianToString(buffer, startDate, params.GetPrecisionOfTimesType(), "-", false, false, true));
-            templateReplace(html, "--event-range-start--", JulianToString(buffer, startDate, params.GetPrecisionOfTimesType()));
-            templateReplace(html, "--time-frame-end--", JulianToString(buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType(), "-", false, false, true));
+            templateReplace(html, "--event-range-begin--", JulianToString(buffer, _dataHub.GetStudyPeriodStartDate(), params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--event-range-start--", JulianToString(buffer, _recent_startdate, params.GetPrecisionOfTimesType()));
             templateReplace(html, "--event-range-end--", JulianToString(buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType()));
             templateReplace(html, "--true-dates--", "false");
         } else {
-            JulianToMDY(&jmonth, &jday, &jyear, startDate);
-            templateReplace(html, "--time-frame-start--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
+            JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodStartDate());
+            templateReplace(html, "--event-range-begin--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            JulianToMDY(&jmonth, &jday, &jyear, _recent_startdate);
             templateReplace(html, "--event-range-start--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
             JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodEndDate());
-            templateReplace(html, "--time-frame-end--", printString(buffer, "%u/%u/%u", jmonth, jday, jyear));
             templateReplace(html, "--event-range-end--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
             templateReplace(html, "--true-dates--", "true");
         }
