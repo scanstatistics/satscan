@@ -391,17 +391,17 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "4572A7", "square", 0, "observed"));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster Area)"), "4572A7", "square", 0, "observed"));
                 // the remaining series are conditionally present in the chart
                 std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
 
-				// expectedSeries.reset(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0, ""));
+				// expectedSeries.reset(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster Area)"), "89A54E", "triangle", 0, ""));
 				// clusterSeries.reset(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0, ""));
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
-                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "003264", "square", 0, "observed"));
-                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0, ""));
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Cluster Area)", "003264", "square", 0, "observed"));
+                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Cluster Area)", "394521", "triangle", 0, ""));
                 }
 
                 // the Poisson and Exponential models also graphs observed / expected
@@ -409,17 +409,17 @@ void TemporalChartGenerator::generateChart() const {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
-						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster)"), "00FF00", "triangle", 1, ""));
+						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster Area)"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Inside Cluster)", "FF8000", "triangle", 1, ""));
+                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Cluster Area)", "FF8000", "triangle", 1, ""));
                 } else if (_dataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
-						odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1, ""));
+						odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster Area)"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1, ""));
+                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Cluster Area)", "FF8000", "triangle", 1, ""));
                 } else {
                     templateReplace(chart_js, "--additional-yaxis--", "");
                 }
