@@ -82,6 +82,7 @@ const char * ClusterMap::TEMPLATE = " \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
         <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
         <script src=\"--resource-path--javascript/clustercharts/nouislider.js\"></script> \n \
+        <script src=\"--resource-path--javascript/clustercharts/OverlappingMarkerSpiderfier_1.0.3_oms.min.js\"></script> \n \
     </head> \n \
     <body> \n \
 		<div id='load_error' style='color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;'></div> \n \
