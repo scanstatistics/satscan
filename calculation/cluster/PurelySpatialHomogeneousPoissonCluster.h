@@ -26,7 +26,7 @@ class PurelySpatialHomogeneousPoissonCluster : public CCluster {
 
     void                                CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                    const CentroidNeighbors& CentroidDef,
-                                                                                   const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                                                                   const CentroidNeighborCalculator::DistanceContainer_t& locDist,
                                                                                    CClusterSet& clusterSet,
                                                                                    AbstractLikelihoodCalculator& Calculator);
     virtual void                        CopyEssentialClassMembers(const CCluster& rhs);

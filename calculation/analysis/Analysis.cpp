@@ -45,7 +45,7 @@ void CAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_C
             for (size_t t=0; t < topClusters.size(); ++t) {
                 const CCluster& TopCluster = *topClusters[t];
                 const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub);
-                const_cast<CCluster&>(TopCluster).SetMostCentralLocationIndex(gDataHub);
+                const_cast<CCluster&>(TopCluster).setMostCentralObservationGroup(gDataHub);
                 TopClustersContainers.at(t).Add(TopCluster);
             }
             if (i == 9 || (frequent_estimations && ((i + 1) % modulas == 0)))

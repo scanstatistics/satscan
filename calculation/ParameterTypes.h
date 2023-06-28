@@ -178,7 +178,8 @@ enum ParameterType
     EMAIL_BODY_NO_SIGNIFICANT,      /* email message body - no significant clusters */
     EMAIL_SUBJECT_SIGNIFICANT,      /* subject line of email - significant clusters */
     EMAIL_BODY_SIGNIFICANT,         /* email message body - significant clusters */
-    EMAIL_ATTACH_RESULTS            /* email message - attach results */
+    EMAIL_ATTACH_RESULTS,           /* email message - attach results */
+    MULTIPLE_LOCATIONS_FILE         /* file which defines the locations of each group */
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {

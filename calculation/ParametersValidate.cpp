@@ -1102,10 +1102,6 @@ bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirec
                 "A coordinates file is required to place locations geograghically. Geographical output files will not be created in this analysis.\n", BasePrint::P_WARNING
             );
         }
-        if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
-            bReturn = false;
-            PrintDirection.Printf("%s:\nThe locations network file cannot be used in conjunction with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        }
         if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE) {
             // There is a problem that has not been resolved yet -- see CentroidNeighborCalculator::CenterLocationDistancesAbout.
             bReturn = false;

@@ -14,12 +14,10 @@
 #include "boost/logic/tribool.hpp"
 #include "ClusterLocationsWriter.h"
 
-class LocationInformationWriter; /** forward class declaration */
-class ClusterSupplementInfo;
+class LocationInformationWriter; // forward class declaration
+class ClusterSupplementInfo; // forward class declaration
 
-/** Defines properties of each potential cluster evaluated by analysis. Provides
-    functionality for printing cluster properties to file stream in predefined
-    format. */
+/** Defines properties of each potential cluster evaluated by analysis. */
 class CCluster {
   public:
     typedef std::pair<double,double> RecurrenceInterval_t;
@@ -28,8 +26,8 @@ class CCluster {
 
   protected:
     tract_t                       m_Center;                // Center of cluster (index to grid)
-    tract_t                       m_MostCentralLocation;   // Index of most central location
-    tract_t                       m_nTracts;               // Number of neighboring tracts in cluster
+    tract_t                       _central_observation_group; // Index of most central observation group in cluster
+    tract_t                       _num_observation_groups;               // Number of neighboring observations groups in cluster
     double                        m_CartesianRadius;       // radius based upon locations in cluster in Cartesian system
     unsigned int                  m_nRank;                 // Rank based on results of simulations
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
@@ -63,33 +61,21 @@ class CCluster {
     DataSetIndexes_t              getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const;
 	int                           getClusterLength() const { return m_nLastInterval - m_nFirstInterval + 1;	}
     virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
-    virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
+    virtual bool                  ClusterDefined() const {return _num_observation_groups > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();
     virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const;
-    virtual void                  DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex,
-                                                               const CSaTScanData& DataHub,
-                                                               const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {/*stub - no action*/}
     virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
-    void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
-                                                            tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub,
-                                                                const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub,
-                                                           const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub,
-                                                            const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub,
-                                                         const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
-                                                             const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub,
-                                                                   const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                                     const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                                       const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
                                                                unsigned int iReportedCluster, 
                                                                const AsciiPrintFormat& PrintFormat,
@@ -114,10 +100,10 @@ class CCluster {
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
-    virtual std::vector<tract_t>& getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
-    tract_t                       GetMostCentralLocationIndex() const;
-    virtual tract_t               GetNumTractsInCluster() const {return m_nTracts;}
-    virtual tract_t               GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const;
+    virtual std::vector<tract_t>& getGroupIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
+    tract_t                       mostCentralObservationGroupIdx() const;
+    virtual tract_t               getNumObservationGroups() const {return _num_observation_groups;}
+    virtual tract_t               numNonNullifiedObservationGroupsInCluster(const CSaTScanData& DataHub) const;
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
     virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetObservedCountForTract().", "GetObservedCountForTract()"); return 0; }
 	virtual count_t               GetCountForTractOutside(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex = 0) const { throw prg_error("GetCountForTractOutside().", "GetCountForTractOutside()"); return 0; }
@@ -152,7 +138,7 @@ class CCluster {
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
     void                          setAsGiniCluster(bool b) { _gini_cluster = b;}
     void                          setAsHierarchicalCluster(bool b) { _hierarchical_cluster = b; }
-    virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
+    virtual void                  setMostCentralObservationGroup(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     virtual void                  Write(LocationInformationWriter& LocationWriter, 

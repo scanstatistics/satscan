@@ -486,10 +486,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void enableMultipleLocationsGroup(boolean bEnable) {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
+        
         _multipleSetsSpatialCoordinatesGroup.setEnabled(bEnable);
         _onePerLocationIdRadioButton.setEnabled(bEnable);
         _atLeastOneRadioButton.setEnabled(bEnable);
         _allLocationsRadioButton.setEnabled(bEnable);
+        
+        _multiple_locations_file_label.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
+        _multiple_locations_file.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
+        _multiple_locations_file_browse.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
     }
 
     /* enables adjustment options controls */
@@ -888,6 +893,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_specifiyMetaLocationsFileCheckBox, false);
         bReturn &= Utils.textIs(_metaLocationsFileTextField, "");
         bReturn &= Utils.selected(_onePerLocationIdRadioButton, true);
+        bReturn &= Utils.textIs(_multiple_locations_file, "");
         bReturn &= Utils.selected(_locations_network, false);
         bReturn &= Utils.textIs(_network_filename, "");
         bReturn &= Utils.selected(_checkbox_casefile_metarow, false);
@@ -1293,6 +1299,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetIncludePurelyTemporalClusters(_inclPureTempClustCheckBox.isEnabled() && _inclPureTempClustCheckBox.isSelected());
         parameters.SetIncludePurelySpatialClusters(_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected());
         parameters.SetMultipleCoordinatesType(getMultipleCoordinatesType().ordinal());
+        parameters.setMultipleLocationsFile(_multiple_locations_file.getText());
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
         parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
         parameters.SetTitleName(_printTitle.getText());
@@ -2083,6 +2090,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _neighborsFileTextField.setText("");
         _specifiyMetaLocationsFileCheckBox.setSelected(false);
         _metaLocationsFileTextField.setText("");
+        _multiple_locations_file.setText("");
         
         // network file
         _locations_network.setSelected(false);
@@ -2625,6 +2633,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Multiple Coordinates Tab
         setMultipleCoordinatesType(parameters.GetMultipleCoordinatesType());
+        _multiple_locations_file.setText(parameters.getMultipleLocationsFile());
 
         // Temporal tab
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumTemporalClusterSize()));
@@ -2932,6 +2941,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _onePerLocationIdRadioButton = new javax.swing.JRadioButton();
         _atLeastOneRadioButton = new javax.swing.JRadioButton();
         _allLocationsRadioButton = new javax.swing.JRadioButton();
+        _multiple_locations_file = new javax.swing.JTextField();
+        _multiple_locations_file_browse = new javax.swing.JButton();
+        _multiple_locations_file_label = new javax.swing.JLabel();
         _spatialWindowTab = new javax.swing.JPanel();
         _spatialOptionsGroup = new javax.swing.JPanel();
         _maxSpatialClusterSizeTextField = new javax.swing.JTextField();
@@ -3921,36 +3933,68 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID"));
+        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Observations with Multiple Locations"));
         _multipleSetsSpatialCoordinatesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_multipleSetsSpatialCoordinatesGroup, AppConstants.MULTIPLECOORDLOC_HELPID));
 
         _onePerLocationIdRadioButton.setSelected(true);
-        _onePerLocationIdRadioButton.setText("Allow only one set of coordinates per location ID."); // NOI18N
+        _onePerLocationIdRadioButton.setText("One location per observation."); // NOI18N
         _onePerLocationIdRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _onePerLocationIdRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _onePerLocationIdRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
             }
         });
 
-        _atLeastOneRadioButton.setText("Include location ID in the scanning window if at least one set of coordinates is included."); // NOI18N
+        _atLeastOneRadioButton.setText("Include observation if at least one of its locations is in the window."); // NOI18N
         _atLeastOneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _atLeastOneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _atLeastOneRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
             }
         });
 
-        _allLocationsRadioButton.setText("Include location ID in the scanning window if and only if all sets of coordinates are in the window."); // NOI18N
+        _allLocationsRadioButton.setText("Include observation only if all its locations are in the window."); // NOI18N
         _allLocationsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _allLocationsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _allLocationsRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
             }
         });
+
+        _neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _multiple_locations_file_browse.setText("..."); // NOI18N
+        _multiple_locations_file_browse.setToolTipText("Open Multiple Locations Per Observation File Import Wizard"); // NOI18N
+        _multiple_locations_file_browse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Multiple_Locations.toString() + "1";
+                if (!_settings_window._input_source_map.containsKey(key)) {
+                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Multiple_Locations));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_multiple_locations_file, inputSourceSettings, _settings_window);
+            }
+        });
+
+        _multiple_locations_file_label.setText("Multiple Locations Per Observation File:");
 
         javax.swing.GroupLayout _multipleSetsSpatialCoordinatesGroupLayout = new javax.swing.GroupLayout(_multipleSetsSpatialCoordinatesGroup);
         _multipleSetsSpatialCoordinatesGroup.setLayout(_multipleSetsSpatialCoordinatesGroupLayout);
@@ -3959,9 +4003,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                     .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
+                        .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_multiple_locations_file, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
+                            .addComponent(_multiple_locations_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_multiple_locations_file_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _multipleSetsSpatialCoordinatesGroupLayout.setVerticalGroup(
@@ -3973,7 +4023,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_atLeastOneRadioButton)
                 .addGap(10, 10, 10)
                 .addComponent(_allLocationsRadioButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_multiple_locations_file_label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_multiple_locations_file_browse)
+                    .addComponent(_multiple_locations_file, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout _spatialNeighborsTabLayout = new javax.swing.GroupLayout(_spatialNeighborsTab);
@@ -3994,7 +4050,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addContainerGap(131, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -7233,6 +7289,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _multipleSetPurposeGroup;
     private javax.swing.ButtonGroup _multipleSetsSpatialCoordinatesButtonGroup;
     private javax.swing.JPanel _multipleSetsSpatialCoordinatesGroup;
+    private javax.swing.JTextField _multiple_locations_file;
+    private javax.swing.JButton _multiple_locations_file_browse;
+    private javax.swing.JLabel _multiple_locations_file_label;
     private javax.swing.JRadioButton _multivariateAdjustmentsRadioButton;
     private javax.swing.JButton _neighborsFileBrowseButton;
     private javax.swing.JTextField _neighborsFileTextField;

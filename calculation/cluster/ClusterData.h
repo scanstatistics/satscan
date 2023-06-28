@@ -65,7 +65,7 @@ class SpatialHomogeneousData : public AbstractSpatialClusterData {
     measure_t             gtMeasure;                 /** accumulated expected cases */
 
     inline void           AddMeasureList(const CentroidNeighbors& CentroidDef, 
-                                         const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                         const CentroidNeighborCalculator::DistanceContainer_t& locDist,
                                          const DataSetInterface& Interface, 
                                          CMeasureList* pMeasureList);
     virtual void          AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -84,7 +84,7 @@ class SpatialHomogeneousData : public AbstractSpatialClusterData {
 
 /** adds neighbor data to accumulation and updates measure list */
 inline void SpatialHomogeneousData::AddMeasureList(const CentroidNeighbors& CentroidDef, 
-                                                   const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                                   const CentroidNeighborCalculator::DistanceContainer_t& locDist,
                                                    const DataSetInterface& Interface, 
                                                    CMeasureList* pMeasureList) {
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);

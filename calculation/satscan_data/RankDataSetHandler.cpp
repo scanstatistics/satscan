@@ -30,10 +30,10 @@ SimulationDataContainer_t & RankDataSetHandler::AllocateSimulationData(Simulatio
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void RankDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void RankDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 
@@ -41,7 +41,7 @@ void RankDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) 
 AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -92,7 +92,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGatew
 AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -178,7 +178,7 @@ void RankDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simulat
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 

@@ -206,8 +206,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_9_7_x_ParameterList();
     else if (version.iMajor == 10 && version.iMinor == 0)
         Build_10_0_x_ParameterList();
-    else
+    else if (version.iMajor == 10 && version.iMinor == 1)
         Build_10_1_x_ParameterList();
+    else
+        Build_10_2_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -714,6 +716,15 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
     _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 13, _email_alerts_section);
 
     assert(_parameter_info.size() == 173);
+}
+
+/** Version 10.2.x */
+void IniParameterSpecification::Build_10_2_x_ParameterList() {
+    Build_10_1_x_ParameterList();
+
+    _parameter_info[MULTIPLE_LOCATIONS_FILE] = ParamInfo(MULTIPLE_LOCATIONS_FILE, "MultipleLocationsFile", 6, _spatial_neighbors_section);
+
+    assert(_parameter_info.size() == 174);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

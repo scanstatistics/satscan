@@ -10,7 +10,7 @@
 #include "boost/tuple/tuple.hpp"
 //*****************************************************************************
 
-typedef std::vector<LocationDistance> LocationContainer_t;
+//typedef std::vector<LocationDistance> LocationContainer_t;
 
 class NetworkNode {
     public:
@@ -23,17 +23,19 @@ class NetworkNode {
 		typedef boost::optional<NetworkNode::NodeDistance_t>          ClosestNode_t;
 
 	protected:
-		tract_t  _tract_index;
+		const Location & _location;
+		unsigned int  _location_index;
 		ConnectionsContainer_t _connections;
 
 	public:
-		NetworkNode(tract_t tract_index) : _tract_index(tract_index) {}
+		NetworkNode(tract_t location_index, const Location& location) : _location_index(location_index), _location(location) {}
 
-		bool                             operator<(const NetworkNode& rhs) const { return getTractIndex() < rhs.getTractIndex(); }
+		bool                             operator<(const NetworkNode& rhs) const { return getLocationIndex() < rhs.getLocationIndex(); }
 
         AddStatusType                    add_connection(NetworkNode* pNetworkNode, double distance, bool recordDef);
 		const ConnectionsContainer_t   & getConnections() const { return _connections; }
-		tract_t                          getTractIndex() const { return _tract_index; }
+		tract_t                          getLocationIndex() const { return _location_index; }
+		const Location                 & getLocation() const { return _location; }
 		ClosestNode_t                    getClosestVisitedConnection(const boost::dynamic_bitset<>& visited) const;
 
         static const char              * getStatusMessage(AddStatusType e) {
@@ -46,10 +48,12 @@ class NetworkNode {
         }
 };
 
+typedef std::vector<std::pair<const NetworkNode*, double> > NetworkLocationContainer_t;
+
 class CompareNodeDistance {
 	public:
 		bool operator() (const NetworkNode::NodeDistance_t& lhs, const NetworkNode::NodeDistance_t& rhs) {
-			return lhs.get<0>()->getTractIndex() < rhs.get<0>()->getTractIndex();
+			return lhs.get<0>()->getLocationIndex() < rhs.get<0>()->getLocationIndex();
 		}
 };
 
@@ -66,40 +70,41 @@ class NetworkPathTree {
 
 		void   add_connection(const NetworkNode& networkNode, double distance, const boost::dynamic_bitset<>& visited);
 
-		const NetworkNode & getRoot() const { return _nodes_in_tree.at(_root.getTractIndex());  }
+		const NetworkNode & getRoot() const { return _nodes_in_tree.at(_root.getLocationIndex());  }
 };
 
 class CCluster;
 
 class Network {
 	public:
-		typedef std::map<tract_t, NetworkNode>         NetworkContainer_t;
+		typedef std::map<unsigned int, NetworkNode>    NetworkContainer_t;
 		typedef boost::optional<unsigned int>          LimitTo_t;
-		typedef boost::tuple<tract_t, tract_t, double> Connection_Detail_t;
+        typedef boost::tuple<const Location*, const Location*> Connection_Detail_t;
 
-		class ConnectionDetailCompare {
-			public:
-				bool operator () (const Network::Connection_Detail_t& lhs, const Network::Connection_Detail_t& rhs) const {
-					return lhs.get<0>() == rhs.get<0>() ? lhs.get<1>() < rhs.get<1>() : lhs.get<0>() < rhs.get<0>();
-				}
-		};
+        class ConnectionDetailCompare {
+        public:
+            bool operator () (const Network::Connection_Detail_t& lhs, const Network::Connection_Detail_t& rhs) const {
+                return lhs.get<0>() == rhs.get<0>() ? lhs.get<1>() < rhs.get<1>() : lhs.get<0>() < rhs.get<0>();
+            }
+        };
 
-		typedef std::set<Connection_Detail_t, ConnectionDetailCompare>  Connection_Details_t;
+        typedef std::set<Connection_Detail_t, ConnectionDetailCompare>  Connection_Details_t;
 
 
 	protected:
 		NetworkContainer_t _nodes;
 
 	public:
-        NetworkNode::AddStatusType   addConnection(tract_t t1, tract_t t2, double distance, bool recordDef);
-		void				         addNode(tract_t t1);
-		LocationContainer_t        & buildNeighborsAboutNode(const NetworkNode& node, LocationContainer_t& locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = boost::none) const;
-		const NetworkContainer_t   & getNodes() const { return _nodes; }
-
-		Connection_Details_t         getClusterConnections(const CCluster& cluster, const CSaTScanData& DataHub) const;
-		static void                  printPath(const LocationContainer_t& nodePath, const TractHandler& tracts);
-		static void                  printTreePath(const NetworkPathTree& treePath, const TractHandler& tracts);
-		static void                  printTreePath(const NetworkNode& node, const TractHandler& tracts);
-		void                         printTreePath(const TractHandler& tracts, const CCluster& cluster) const;
+        NetworkNode::AddStatusType   addConnection(unsigned int t1, const Location& location1, unsigned int t2, const Location& location2, double distance, bool recordDef);
+		void				         addNode(unsigned int t1, const Location& location);
+        NetworkLocationContainer_t & buildNeighborsAboutNode(const NetworkNode& node, NetworkLocationContainer_t& networkLocations, unsigned int num_locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = boost::none) const;
+        Connection_Details_t         getClusterConnections(const CCluster& cluster, const CSaTScanData& DataHub) const;
+        double                       getDistanceBetween(const Location& location1, const Location& location2, const ObservationGroupingManager& groups) const;
+        const NetworkContainer_t   & getNodes() const { return _nodes; }
+        bool                         locationIndexInNetwork(unsigned int locationIdx) { return _nodes.find(locationIdx) != _nodes.end(); }
+        static void                  printPath(const NetworkLocationContainer_t& nodePath, const ObservationGroupingManager& groups);
+		static void                  printTreePath(const NetworkPathTree& treePath, const ObservationGroupingManager& groups);
+		static void                  printTreePath(const NetworkNode& node, const ObservationGroupingManager& groups);
+		void                         printTreePath(const ObservationGroupingManager& groups, const CCluster& cluster) const;
 };
 #endif

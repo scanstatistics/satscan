@@ -99,10 +99,10 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
         const CCluster& cluster = _clusters->GetCluster(i);
         if (cluster.isSignificant(handler.gDataHub, i + 1, sim_vars)) {
             // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
-            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumTracts());
+            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumObsGroups());
             std::vector<tract_t> tractIndexes;
             if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-                for (auto tractIdx : cluster.getLocationIndexes(handler.gDataHub, tractIndexes, true))
+                for (auto tractIdx : cluster.getGroupIndexes(handler.gDataHub, tractIndexes, true))
                     locations.set(tractIdx);
             }
             _cluster_locations[i] = locations;

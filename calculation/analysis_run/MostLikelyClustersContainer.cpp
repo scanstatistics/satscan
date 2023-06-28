@@ -6,11 +6,21 @@
 #include "SaTScanData.h"
 #include "SSException.h" 
 #include "ClusterSupplement.h"
+#include "GisUtils.h"
 #include <functional>
 #include <numeric>
 
-unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS  = 500;
+unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS = 500;
 unsigned long MostLikelyClustersContainer::MAX_BRUTE_FORCE_LOCATIONS = 50000;
+
+// Returns the number of places in this cluster.
+unsigned int MostLikelyClustersContainer::CompareClustersRatios::getNumNodesInCluster(const MostLikelyClustersContainer::Cluster_t& cluster) {
+    if (_datahub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) 
+        return static_cast<unsigned int>(cluster->getNumObservationGroups());
+    boost::dynamic_bitset<> clusterlocations;
+    CentroidNeighborCalculator::getLocationsAboutCluster(_datahub, *cluster, &clusterlocations);
+    return clusterlocations.size();
+}
 
 /** constructor */
 MostLikelyClustersContainer::MostLikelyClustersContainer(double maximum_window_size) : _maximum_window_size(maximum_window_size) {}
@@ -78,16 +88,16 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
                 // clusters are identical in terms of time interval and cluster locations
                 if ((*itrOther)->m_nFirstInterval == (*itrThis)->m_nFirstInterval && 
                     (*itrOther)->m_nLastInterval == (*itrThis)->m_nLastInterval && 
-                    (*itrOther)->GetNumTractsInCluster() == (*itrThis)->GetNumTractsInCluster()) {
+                    (*itrOther)->getNumObservationGroups() == (*itrThis)->getNumObservationGroups()) {
                     if (!otherSet.get()) {
                         // allocate and set 'other' clusters bitset
-                        otherSet.reset(new boost::dynamic_bitset<>(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()));
+                        otherSet.reset(new boost::dynamic_bitset<>(DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups()));
                         getClusterLocationsSet(DataHub, **itrOther, *otherSet.get());
                     }
-                    boost::dynamic_bitset<> thisSet(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
+                    boost::dynamic_bitset<> thisSet(DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups());
                     getClusterLocationsSet(DataHub, **itrThis, thisSet);
                     //thisSet &= *otherSet;
-                    //isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
+                    //isDuplicate = thisSet.count() == (*itrThis)->getNumObservationGroups();
                     //thisSet &= *otherSet;
                     isDuplicate = thisSet == *otherSet;
                     if (isDuplicate && markAsGini) {
@@ -129,29 +139,29 @@ MostLikelyClustersContainer::Cluster_t& MostLikelyClustersContainer::GetClusterR
   return gvTopClusterList.at(tClusterIndex);
 }
 
-/** According to information contained in 'DataHub', what is the radius of 'theCluster'? */
+/** According to information contained in 'DataHub', what is the radius of cluster? */
 double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster) {
-  double dResult;
-  std::vector<double> ClusterCenter, NeighborCoords;
+    double dResult;
+    std::vector<double> ClusterCenter, NeighborCoords;
   
-  try {
-    if (theCluster.GetRadiusDefined())
-      return theCluster.GetCartesianRadius(); //return radius already calculated
-    else {
-      DataHub.GetGInfo()->retrieveCoordinates(theCluster.GetCentroidIndex(), ClusterCenter);
-      CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster,
-                                                      DataHub.GetNeighbor(theCluster.GetEllipseOffset(),
-                                                                          theCluster.GetCentroidIndex(),
-                                                                          theCluster.GetNumTractsInCluster()),
-                                                      NeighborCoords);
-      dResult = std::sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, NeighborCoords));
+    try {
+        if (theCluster.GetRadiusDefined())
+            return theCluster.GetCartesianRadius(); //return radius already calculated
+        else {
+            DataHub.GetGInfo()->retrieveCoordinates(theCluster.GetCentroidIndex(), ClusterCenter);
+            CentroidNeighborCalculator::getTractCoordinates(
+                DataHub, 
+                theCluster, 
+                DataHub.GetNeighbor(theCluster.GetEllipseOffset(), theCluster.GetCentroidIndex(), theCluster.getNumObservationGroups()),
+                NeighborCoords
+            );
+            dResult = Coordinates::distanceBetween(ClusterCenter, NeighborCoords);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("GetClusterRadius()","MostLikelyClustersContainer");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetClusterRadius()","MostLikelyClustersContainer");
-    throw;
-  }
-  return dResult;
+    return dResult;
 }
 
 double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
@@ -312,159 +322,168 @@ const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
   return *gvTopClusterList[0];
 }
 
-/** sets passed bit to */
+/** Sets bitset to those atomic locations included in this cluster. */
 void MostLikelyClustersContainer::getClusterLocationsSet(const CSaTScanData& DataHub, const CCluster& theCluster, boost::dynamic_bitset<>& theSet) {
     theSet.reset();
-    for (tract_t v=1; v <= theCluster.GetNumTractsInCluster(); ++v) {
-        tract_t loc_id = DataHub.GetNeighbor(theCluster.GetEllipseOffset(), theCluster.GetCentroidIndex(), v, theCluster.GetCartesianRadius()/* use Radius? */);
-        if (loc_id < DataHub.GetNumTracts())// is tract atomic?
-            theSet.set(loc_id);
-        else {
-            std::vector<tract_t> indexes;
-            DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(loc_id - DataHub.GetNumTracts(), indexes);
-            for (std::vector<tract_t>::const_iterator itr=indexes.begin(); itr != indexes.end(); ++itr) theSet.set(*itr);
-        }
-    }
+    std::vector<tract_t> indexes;
+    for (auto index: theCluster.getGroupIndexes(DataHub, indexes, true))
+        theSet.set(index);
 }
 
 /** Returns indication of whether geographical overlap exists between passed
     clusters by examining tract locations to comprise the cluster.*/
-bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) {
-  tract_t       tTwoNumTracts = ClusterTwo.GetNumTractsInCluster(),
-                tOneNumTracts = ClusterOne.GetNumTractsInCluster(),
-                tTwoCentroid = ClusterTwo.GetCentroidIndex(), tOneCentroid = ClusterOne.GetCentroidIndex();
-  int           iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
-
-  if (ClusterOne.GetRadiusDefined() && ClusterTwo.GetRadiusDefined()) {
-    //if certain relationships exist between clusters, we don't need to actually
-    //compare each location in clusters -- these two 'shortcuts' are meant to allow
-    //possible determination of overlap knowing only centroids and previously calculated
-    //radii (centric analyses).
-    std::vector<double> vClusterOneCoords, vClusterTwoCoords;
-    DataHub.GetGInfo()->retrieveCoordinates(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
-    double ClusterOneRadius = ClusterOne.GetCartesianRadius();
-    double ClusterTwoRadius = ClusterTwo.GetCartesianRadius();
-    DataHub.GetGInfo()->retrieveCoordinates(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
-    double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
-
-    //Note: Since there might be a fractional difference in the calculation of the radii and/or distance, require that the
-    //compared values differ by more than 0.000000001 -- otherwise we might trigger a false positive.
-    double dNumericalDeviation = 0.000000001;
-    //we can say for certain that they don't have tracts in common if their circles don't overlap
-    double dClusterOneMajorAxis = ClusterOneRadius * DataHub.GetEllipseShape(iOneOffset);
-    double dClusterTwoMajorAxis = ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset);
-    if (std::fabs(dDistanceBetween - (dClusterOneMajorAxis + dClusterTwoMajorAxis)) > dNumericalDeviation && dDistanceBetween > dClusterOneMajorAxis + dClusterTwoMajorAxis)
-      return false;
-
-    //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
-    //or vice versa, centroid of first cluster is within radius of second cluster
-    if (DataHub.GetParameters().UseSpecialGrid()) {
-      if ((std::fabs(ClusterOneRadius - (dDistanceBetween + ClusterTwoRadius)) > dNumericalDeviation && ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius) ||
-          (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
+bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) const {
+    // Clusters have tracts in common if the most central location is the same.
+    if (ClusterOne.mostCentralObservationGroupIdx() == ClusterTwo.mostCentralObservationGroupIdx())
         return true;
-      }
-    } else {
-      if ((std::fabs(dDistanceBetween - ClusterOneRadius) > dNumericalDeviation && dDistanceBetween <= ClusterOneRadius) ||
-          (std::fabs(dDistanceBetween - ClusterTwoRadius) > dNumericalDeviation && dDistanceBetween <= ClusterTwoRadius)) {
-          return true;
-      }
-    }
 
-    // If the distance of any location in one cluster - to the center of the other cluster is less than the radius
-    // of the other cluster, then they have overlapping locations.
-    bool useLocationToRadiusMethod = ((iOneOffset == 0 || iTwoOffset == 0) &&        // one of the clusters is circular
-                                       (DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations() == 0)); // meta locations were not used
-    if (useLocationToRadiusMethod) {
-        // determine which cluster has the fewest number of locations.
-        const CCluster * testCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterOne : &ClusterTwo;
-        const CCluster * otherCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterTwo : &ClusterOne;
-        // Override selection of smaller cluster if the other cluster is elliptical.
-        if (otherCluster->GetEllipseOffset() > 0)
-            std::swap(testCluster, otherCluster);
-        tract_t tracts = testCluster->GetNumTractsInCluster(), centroid = testCluster->GetCentroidIndex();
-        double radius = testCluster->GetCartesianRadius();
-        int offset = testCluster->GetEllipseOffset();
-        // get the coordinates for center of other cluster
-        std::vector<double> centroidCoordinates, locationCoordinates;
-        double compare_radius = otherCluster->GetCartesianRadius();
-        DataHub.GetGInfo()->retrieveCoordinates(otherCluster->GetCentroidIndex(), centroidCoordinates);
+    tract_t tTwoNumTracts = ClusterTwo.getNumObservationGroups(), tOneNumTracts = ClusterOne.getNumObservationGroups();
+    int iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
 
-        const TractHandler& tinfo = *(DataHub.GetTInfo());
-        for (tract_t t=1; t <= tracts; ++t) {
-            tract_t location = DataHub.GetNeighbor(offset, centroid, t, radius);
-            const TractHandler::Location::CoordsContainer_t& coordinates = tinfo.getLocations()[location]->getCoordinates();
-            for (unsigned int c=0; c < coordinates.size(); ++c) {
-                coordinates[c]->retrieve(locationCoordinates);
-                if (!macro_less_than(compare_radius, std::sqrt(tinfo.getDistanceSquared(centroidCoordinates, locationCoordinates)), DBL_CMP_TOLERANCE)) 
-                    return true;
+    if (ClusterOne.GetRadiusDefined() && ClusterTwo.GetRadiusDefined() && DataHub.GetParameters().GetMultipleCoordinatesType() != ATLEASTONELOCATION) {
+        /* If certain relationships exist between clusters, then we don't need to actually compare each observation group within them. 
+           These two 'shortcuts' are meant to allow possible determination of overlap knowing only centroids and previously calculated radii (centric analyses). 
+           When the analysis uses multiple coordinates, this shortcut is not allowed when the setting is to include in the cluster if at least
+           one location is within the cluster -- in certain situations, overlap can occur where one cluster contains one coordinate while the other
+           cluster contains a different coordinate of the same observation group. ** Networks don't define cluster radius. */
+        std::vector<double> vClusterOneCoords, vClusterTwoCoords;
+        DataHub.GetGInfo()->retrieveCoordinates(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
+        double ClusterOneRadius = ClusterOne.GetCartesianRadius();
+        double ClusterTwoRadius = ClusterTwo.GetCartesianRadius();
+        DataHub.GetGInfo()->retrieveCoordinates(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
+        double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
+
+        //Note: Since there might be a fractional difference in the calculation of the radii and/or distance, require that the
+        //compared values differ by more than 0.000000001 -- otherwise we might trigger a false positive.
+        double dNumericalDeviation = 0.000000001;
+        //we can say for certain that they don't have tracts in common if their circles don't overlap
+        double dClusterOneMajorAxis = ClusterOneRadius * DataHub.GetEllipseShape(iOneOffset);
+        double dClusterTwoMajorAxis = ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset);
+        if (std::fabs(dDistanceBetween - (dClusterOneMajorAxis + dClusterTwoMajorAxis)) > dNumericalDeviation && dDistanceBetween > dClusterOneMajorAxis + dClusterTwoMajorAxis)
+            return false;
+
+        //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
+        //or vice versa, centroid of first cluster is within radius of second cluster
+        if (DataHub.GetParameters().UseSpecialGrid()) {
+            if ((std::fabs(ClusterOneRadius - (dDistanceBetween + ClusterTwoRadius)) > dNumericalDeviation && ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius) ||
+                (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
+                return true;
+            }
+        } else {
+            if ((std::fabs(dDistanceBetween - ClusterOneRadius) > dNumericalDeviation && dDistanceBetween <= ClusterOneRadius) ||
+                (std::fabs(dDistanceBetween - ClusterTwoRadius) > dNumericalDeviation && dDistanceBetween <= ClusterTwoRadius)) {
+                return true;
             }
         }
-        return false;
+        // If the distance of any location in one cluster - to the center of the other cluster is less than the radius of the other cluster, then they have overlapping locations.
+	    bool useLocationToRadiusMethod = (
+		    (iOneOffset == 0 || iTwoOffset == 0) && // one of the clusters is circular
+            (DataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta() == 0), // meta locations were not used
+            DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION // not using multiple coordinates
+	    );
+        if (useLocationToRadiusMethod) {
+            // determine which cluster has the fewest number of locations.
+            const CCluster * testCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterOne : &ClusterTwo;
+            const CCluster * otherCluster = tOneNumTracts <= tTwoNumTracts ? &ClusterTwo : &ClusterOne;
+            // Override selection of smaller cluster if the other cluster is elliptical.
+            if (otherCluster->GetEllipseOffset() > 0)
+                std::swap(testCluster, otherCluster);
+            tract_t tracts = testCluster->getNumObservationGroups(), centroid = testCluster->GetCentroidIndex();
+            double radius = testCluster->GetCartesianRadius();
+            int offset = testCluster->GetEllipseOffset();
+            // get the coordinates for center of other cluster
+            std::vector<double> centroidCoordinates, locationCoordinates;
+            double compare_radius = otherCluster->GetCartesianRadius();
+            DataHub.GetGInfo()->retrieveCoordinates(otherCluster->GetCentroidIndex(), centroidCoordinates);
+		    for (tract_t t = 1; t <= tracts; ++t) {
+			    tract_t location = DataHub.GetNeighbor(offset, centroid, t, radius);
+			    const ObservationGrouping::LocationsSet_t& locations = DataHub.GetGroupInfo().getObservationGroups()[location]->getLocations();
+			    for (unsigned int c = 0; c < locations.size(); ++c) {
+				    locations[c]->coordinates()->retrieve(locationCoordinates);
+				    if (!macro_less_than(compare_radius, Coordinates::distanceBetween(centroidCoordinates, locationCoordinates), DBL_CMP_TOLERANCE))
+					    return true;
+			    }
+		    }
+            return false;
+        }
     }
-  }
+    // When multiple coordinates type is not one per obs group, then utilize CentroidNeighborCalculator method to obtain
+    // each clusters locations then check for overlap. ** This new method might be better than the brute force in following code.
+    if (DataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+        boost::dynamic_bitset<> cluster1locations, cluster2locations;
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, ClusterOne, &cluster1locations);
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, ClusterTwo, &cluster2locations);
+        cluster1locations &= cluster2locations; // get intersection of cluster locations sets
+        return cluster1locations.any();
+    }
 
-  // Check for overlap using brute force - comparing farthest locations in each cluster first.
-  // This process iterates through the locations of each cluster, starting on the right top and 
-  // walking backwards via diagonal succession (top down). The following matrix examples the sequence.
-  // 5| 21 16 11  7  4  2  1
-  // 4| 26 22 17 12  8  5  3
-  // 3| 30 27 23 18 13  9  6
-  // 2| 33 31 28 24 19 14 10
-  // 1| 35 34 32 29 25 20 15
-  //   ----------------------
-  //     1  2  3  4  5  6  7
+    // Check for overlap using brute force - comparing farthest locations in each cluster first.
+    // This process iterates through the locations of each cluster, starting on the right top and 
+    // walking backwards via diagonal succession (top down). The following matrix examples the sequence.
+    // 5| 21 16 11  7  4  2  1
+    // 4| 26 22 17 12  8  5  3
+    // 3| 30 27 23 18 13  9  6
+    // 2| 33 31 28 24 19 14 10
+    // 1| 35 34 32 29 25 20 15
+    //   ----------------------
+    //     1  2  3  4  5  6  7
 
-  // First determine the cluster with the greatest number of locations and define as X axis, the other on the y axis.
-  const CCluster& xCluster = tOneNumTracts > tTwoNumTracts ? ClusterOne : ClusterTwo;
-  const CCluster& yCluster = tOneNumTracts > tTwoNumTracts ? ClusterTwo : ClusterOne;
-  tract_t x_tracts = xCluster.GetNumTractsInCluster(), y_tracts = yCluster.GetNumTractsInCluster(),
-          x_centroid = xCluster.GetCentroidIndex(), y_centroid = yCluster.GetCentroidIndex();
-  int x_offset = xCluster.GetEllipseOffset(), y_offset = yCluster.GetEllipseOffset();
-  // Iterate through all the left leaning diagonals of the matrix.
-  unsigned int totalDiagonals = x_tracts + y_tracts - 1;
-  for (unsigned int diagonalIdx=0; diagonalIdx < totalDiagonals; ++diagonalIdx) {
-      // Given the example matrix above, the first diagnonal is comparing just location at index 7 of xCluster to index 5 of yCluster.
-      // Diagonal 2 with be  6 to 5, 7 to 3; diagonal 3 would be 5 to 5, 6 to 4, 7 to 3; and so on.
-      unsigned int xMin = diagonalIdx >= static_cast<unsigned int>(x_tracts) ? 1 : static_cast<unsigned int>(x_tracts) - diagonalIdx;
-      unsigned int xMax = static_cast<unsigned int>(x_tracts) - (diagonalIdx < static_cast<unsigned int>(y_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(y_tracts));
-      unsigned int yMax = static_cast<unsigned int>(y_tracts) - (diagonalIdx < static_cast<unsigned int>(x_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(x_tracts));
-      unsigned int yMin = diagonalIdx >= static_cast<unsigned int>(y_tracts) ? 1 : static_cast<unsigned int>(y_tracts) - diagonalIdx;
-      for (unsigned int x=xMin, y=yMax; ; ) {
-          tract_t x_location = DataHub.GetNeighbor(x_offset, x_centroid, x, xCluster.GetCartesianRadius());
-          tract_t y_location = DataHub.GetNeighbor(y_offset, y_centroid, y, yCluster.GetCartesianRadius());
-          if (x_location < DataHub.GetNumTracts() && y_location < DataHub.GetNumTracts()) {
-              // both x_location and y_location are atomic locations
-              if (x_location == y_location)
-                return true;
-          } else if (x_location >= DataHub.GetNumTracts() && y_location >= DataHub.GetNumTracts()) {
-              // both x_location and y_location are meta locations
-              if (DataHub.GetTInfo()->getMetaManagerProxy().intersects(x_location - DataHub.GetNumTracts(), y_location - DataHub.GetNumTracts()))
-                return true;
-          } else if (x_location < DataHub.GetNumTracts()) {
-              // x_location is an atomic location and y_location is a meta location
-              if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(y_location - DataHub.GetNumTracts(), x_location))
-                return true;
-          } else { // y_location < DataHub.GetNumTracts()
-              // y_location is an atomic location and x_location is a meta location
-              if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(x_location - DataHub.GetNumTracts(), y_location))
-                return true;
-          }
-          // Stop looping once both x and y variables reach respective min or max.
-          if (x == xMax && y == yMin) break;
-          if (x < xMax) ++x;
-          if (y > yMin) --y;
-      }
-  }
-  return false;
+    // First determine the cluster with the greatest number of locations and define as x axis, the other on the y axis.
+    const CCluster& xCluster = tOneNumTracts > tTwoNumTracts ? ClusterOne : ClusterTwo;
+    const CCluster& yCluster = tOneNumTracts > tTwoNumTracts ? ClusterTwo : ClusterOne;
+    tract_t x_tracts = xCluster.getNumObservationGroups(), y_tracts = yCluster.getNumObservationGroups(), x_centroid = xCluster.GetCentroidIndex(), y_centroid = yCluster.GetCentroidIndex();
+    int x_offset = xCluster.GetEllipseOffset(), y_offset = yCluster.GetEllipseOffset();
+    // Iterate through all the left leaning diagonals of the matrix.
+    unsigned int totalDiagonals = x_tracts + y_tracts - 1;
+    for (unsigned int diagonalIdx=0; diagonalIdx < totalDiagonals; ++diagonalIdx) {
+        // Given the example matrix above, the first diagnonal is comparing just location at index 7 of xCluster to index 5 of yCluster.
+        // Diagonal 2 with be  6 to 5, 7 to 3; diagonal 3 would be 5 to 5, 6 to 4, 7 to 3; and so on.
+        unsigned int xMin = diagonalIdx >= static_cast<unsigned int>(x_tracts) ? 1 : static_cast<unsigned int>(x_tracts) - diagonalIdx;
+        unsigned int xMax = static_cast<unsigned int>(x_tracts) - (diagonalIdx < static_cast<unsigned int>(y_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(y_tracts));
+        unsigned int yMax = static_cast<unsigned int>(y_tracts) - (diagonalIdx < static_cast<unsigned int>(x_tracts) ? 0 : (diagonalIdx + 1) - static_cast<unsigned int>(x_tracts));
+        unsigned int yMin = diagonalIdx >= static_cast<unsigned int>(y_tracts) ? 1 : static_cast<unsigned int>(y_tracts) - diagonalIdx;
+        for (unsigned int x=xMin, y=yMax; ; ) {
+            tract_t x_location = DataHub.GetNeighbor(x_offset, x_centroid, x, xCluster.GetCartesianRadius());
+            tract_t y_location = DataHub.GetNeighbor(y_offset, y_centroid, y, yCluster.GetCartesianRadius());
+            if (x_location < DataHub.GetNumObsGroups() && y_location < DataHub.GetNumObsGroups()) {
+                // both x_location and y_location are atomic locations
+                if (x_location == y_location)
+                    return true;
+            } else if (x_location >= DataHub.GetNumObsGroups() && y_location >= DataHub.GetNumObsGroups()) {
+                // both x_location and y_location are meta locations
+                if (DataHub.GetGroupInfo().getMetaManagerProxy().intersects(x_location - DataHub.GetNumObsGroups(), y_location - DataHub.GetNumObsGroups()))
+                    return true;
+            } else if (x_location < DataHub.GetNumObsGroups()) {
+                // x_location is an atomic location and y_location is a meta location
+                if (DataHub.GetGroupInfo().getMetaManagerProxy().intersectsObsGroup(y_location - DataHub.GetNumObsGroups(), x_location))
+                    return true;
+            } else { // y_location < DataHub.GetNumObsGroups()
+                // y_location is an atomic location and x_location is a meta location
+                if (DataHub.GetGroupInfo().getMetaManagerProxy().intersectsObsGroup(x_location - DataHub.GetNumObsGroups(), y_location))
+                    return true;
+            }
+            // Stop looping once both x and y variables reach respective min or max.
+            if (x == xMax && y == yMin) break;
+            if (x < xMax) ++x;
+            if (y > yMin) --y;
+        }
+    }
+    return false;
 }
 
 /* Returns whether a tract is contained within cluster using brute force check for overlap in tracts. 
    This method can be utilized when using a network file since the clusters can't be assumed to be circular or elliptical. */
 bool MostLikelyClustersContainer::clusterContainsTract(const CSaTScanData& DataHub, tract_t clusterCenter, const CCluster& Cluster) {
-	for (tract_t t=Cluster.GetNumTractsInCluster(); t > 0; --t)
-		if (clusterCenter == DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), t, Cluster.GetCartesianRadius()))
-			return true;
-	return false;
+    if (DataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+        boost::dynamic_bitset<> clusterlocations;
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, Cluster, &clusterlocations);
+        return clusterlocations.test(clusterCenter);
+    }
+    for (tract_t t = Cluster.getNumObservationGroups(); t > 0; --t) {
+        if (clusterCenter == DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), t, Cluster.GetCartesianRadius()))
+            return true;
+    }
+    return false;
 }
 
 //Does the point at (dXPoint, dYPoint) lie within the two-dimensional region
@@ -521,7 +540,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
           fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
           //fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetExpectedCount(DataHub));
-          fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInCluster());
+          fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->getNumObservationGroups());
           fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
           fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
@@ -571,11 +590,11 @@ void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, Crit
      else if (parameters.GetIsIterativeScanning())
        uClustersToKeepEachPass = 1;
      else if (eOverlapType == NORESTRICTIONS)
-       uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());
+       uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumObsGroups());
      else
        uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
      //sort by descending m_ratio
-     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
+     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios(DataHub, this));
 
      if (eOverlapType != NORESTRICTIONS)
        print.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
@@ -687,7 +706,10 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                         bResult = CandidateCenter->DistanceTo(*currCenter) > (dCurrRadius + dCandidateRadius); break;
                     case NOCENTROIDSINOTHER: {//no cluster centroids in any other clusters
 			            if (DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())
-				            bResult = !(clusterContainsTract(DataHub, CandidateCluster.GetCentroidIndex(), **itrCurr) || clusterContainsTract(DataHub, itrCurr->get()->GetCentroidIndex(), CandidateCluster));
+				            bResult = !(
+                                clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(CandidateCluster.GetCentroidIndex()), **itrCurr) ||
+                                clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(itrCurr->get()->GetCentroidIndex()), CandidateCluster)
+                            );
                         else if (CandidateCluster.GetEllipseOffset() > 0) {
                             if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
                                 bResult = !(
@@ -713,7 +735,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                     } break;
                     case NOCENTROIDSINMORELIKE: {//no cluster centroids in more likely clusters
 			            if (DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())
-				            bResult = !clusterContainsTract(DataHub, CandidateCluster.GetCentroidIndex(), **itrCurr);
+				            bResult = !clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(CandidateCluster.GetCentroidIndex()), **itrCurr);
                         else if (currCluster.GetEllipseOffset() == 0)
                             bResult = !CentroidLiesWithinSphereRegion(*CandidateCenter, *currCenter, dCurrRadius);
                         else
@@ -721,7 +743,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                     } break;
                     case NOCENTROIDSINLESSLIKE: {//no cluster centroids in less likely clusters
 			            if (DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())
-				            bResult = !clusterContainsTract(DataHub, itrCurr->get()->GetCentroidIndex(), CandidateCluster);
+				            bResult = !clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(itrCurr->get()->GetCentroidIndex()), CandidateCluster);
 			            else if (CandidateCluster.GetEllipseOffset() == 0)
                             bResult = !CentroidLiesWithinSphereRegion(*currCenter, *CandidateCenter, dCandidateRadius);
                         else
@@ -729,7 +751,8 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                     } break;
                     case NOPAIRSINEACHOTHERS: {//no pairs of centroids in each others clusters
 			            if (DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())
-				            bResult = !clusterContainsTract(DataHub, CandidateCluster.GetCentroidIndex(), **itrCurr) || !clusterContainsTract(DataHub, itrCurr->get()->GetCentroidIndex(), CandidateCluster);
+				            bResult = !clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(CandidateCluster.GetCentroidIndex()), **itrCurr) ||
+                            !clusterContainsTract(DataHub, DataHub.GetGInfo()->retrieveLocationIndex(itrCurr->get()->GetCentroidIndex()), CandidateCluster);
 			            else if (CandidateCluster.GetEllipseOffset() > 0) {
                             if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
                                 bResult = (
@@ -782,6 +805,6 @@ void MostLikelyClustersContainer::setClustersHierarchical() {
 
 
 /** sorts collection by cluster LLR, descending order */
-void MostLikelyClustersContainer::sort() {
-     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
+void MostLikelyClustersContainer::sort(const CSaTScanData& DataHub) {
+     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios(DataHub));
 }

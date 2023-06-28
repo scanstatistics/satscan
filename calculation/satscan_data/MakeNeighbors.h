@@ -6,6 +6,7 @@
 #include "Parameters.h"
 #include "GridTractCoordinates.h"
 #include "CentroidNeighbors.h"
+#include "LocationNetwork.h"
 
 class CSaTScanData; /** forward class declaration */
 class CCluster;
@@ -15,7 +16,7 @@ class CCluster;
     passed array. */
 class CentroidNeighborCalculator {
   public:
-    typedef std::vector<LocationDistance> LocationDistContainer_t;
+    typedef std::vector<DistanceToCentroid> DistanceContainer_t;
 
   private:
     typedef tract_t (CentroidNeighborCalculator:: *CALCULATE_NEIGHBORS_METHOD) (measure_t) const;
@@ -27,18 +28,18 @@ class CentroidNeighborCalculator {
     PrimaryCalcPair_t           gPrimaryNeighbors;
     SecondaryCalcPair_t         gSecondaryNeighbors;
     SecondaryCalcPair_t         gTertiaryNeighbors;
-    ReportedCalcPair_t         gPrimaryReportedNeighbors;
-    ReportedCalcPair_t         gSecondaryReportedNeighbors;
-    ReportedCalcPair_t         gTertiaryReportedNeighbors;
+    ReportedCalcPair_t          gPrimaryReportedNeighbors;
+    ReportedCalcPair_t          gSecondaryReportedNeighbors;
+    ReportedCalcPair_t          gTertiaryReportedNeighbors;
     const measure_t           * gpPopulation;
     const measure_t           * gpMaxCircleFilePopulation;
     const CParameters         & gParameters;
     const GInfo               & gCentroidInfo;
-    const TractHandler        & gLocationInfo;
-    BasePrint                 & gPrintDirection;
+	const ObservationGroupingManager& _observation_groups;
+	BasePrint                 & gPrintDirection;
     tract_t                     gtCurrentEllipseCoordinates;
     std::vector<measure_t>      gvCalculatedPopulations;
-    LocationDistContainer_t     gvCentroidToLocationDistances;
+    DistanceContainer_t         gvCentroidDistances;
     std::vector<std::pair<double, double> > gvLocationEllipticCoordinates;
     tract_t                     gNumTracts;
     std::vector<double>         gvEllipseAngles;
@@ -68,19 +69,21 @@ class CentroidNeighborCalculator {
     double                      GetEllipseAngle(int iEllipseIndex) const;
     double                      GetEllipseShape(int iEllipseIndex) const;
     void                        printCentroidToLocationDistances(size_t tMaxToPrint, FILE * stream=stdout);
+    void                        ReduceMultipleCoordinates();
     void                        setMetaLocations(std::vector<measure_t>& popMeasure);
     void                        SetupPopulationArrays(const CSaTScanData& dataHub);
 
   public:
     CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection);
-    CentroidNeighborCalculator(const CSaTScanData& DataHub, const TractHandler& tractHandler, const GInfo& gridInfo, BasePrint& PrintDirection);
+    CentroidNeighborCalculator(const CSaTScanData& DataHub, const ObservationGroupingManager& groupInfo, const GInfo& gridInfo, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculator();
 
     void                        CalculateNeighbors(const CSaTScanData& dataHub);
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid);
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid, double dMaxRadius);
-    const LocationDistContainer_t & getLocationDistances() const {return gvCentroidToLocationDistances;}
-    static void                 getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates);
+    static void                 getLocationsAboutCluster(const CSaTScanData& dataHub, const CCluster& cluster, boost::dynamic_bitset<>* bLocations=0, std::vector<tract_t>* vLocations=0);
+    const DistanceContainer_t & getLocationDistances() const {return gvCentroidDistances;}
+    static std::vector<double>& getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates, NetworkLocationContainer_t * clusterNetwork=0);
     static  void                Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
 };
 //*****************************************************************************

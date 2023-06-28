@@ -29,11 +29,11 @@ class CSaTScanData {
 
   public:
     typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
-    enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
+    enum ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
 
   private:
     void                                        AllocateSortedArray();
-    void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
+    void                                        AllocateSortedArrayNeighbors(const std::vector<DistanceToCentroid>& vOrderLocations,
                                                                              int iEllipseIndex, tract_t iCentroidIndex,
                                                                              const std::vector<tract_t>& vMaxReported, 
                                                                              tract_t iNumMaximumNeighbors);
@@ -49,7 +49,7 @@ class CSaTScanData {
     std::auto_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     std::auto_ptr<GInfo>                        gCentroidsHandler;
-    std::auto_ptr<TractHandler>                 gTractHandler;
+	boost::shared_ptr<ObservationGroupingManager> _observation_groups_manager;	
 	Network                                     _locations_network;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
@@ -66,7 +66,7 @@ class CSaTScanData {
     std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
     int                                         m_nTimeIntervals;
     int                                         _data_interface_start_idex;
-    tract_t                                     m_nTracts;
+    tract_t                                     _num_observation_groups;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
     measure_t                                   gtTotalMeasureAux;              /** total auxillary measure for all data sets */
@@ -81,10 +81,12 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowStartRangeEndIndex;
     int                                         m_nFlexibleWindowEndRangeStartIndex;
     int                                         m_nFlexibleWindowEndRangeEndIndex;
-    std::vector<tract_t>                        gvNullifiedLocations;
+    std::vector<tract_t>                        _nullified_observation_groups;
     mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
 	bool                                        _network_can_report_coordinates;
     unsigned int                                _drilldown_level;
+    mutable std::map<tract_t, std::pair< boost::dynamic_bitset<>, std::vector<tract_t> > > _cluster_locations_cache;
+    mutable std::map<tract_t, NetworkLocationContainer_t> _cluster_network_locations_cache;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -117,11 +119,13 @@ class CSaTScanData {
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
+    void                                        clearClusterLocationsCache();
     virtual void                                DisplayNeighbors(FILE* pFile) const;
     virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
     bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }
+    NetworkLocationContainer_t                & getClusterNetworkLocations(const CCluster& cluster, NetworkLocationContainer_t& networkLocations) const;
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
     const DataSetHandler                      & GetDataSetHandler() const {return *gDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;
@@ -131,7 +135,7 @@ class CSaTScanData {
     int                                         GetFlexibleWindowStartRangeEndIndex() const {return m_nFlexibleWindowStartRangeEndIndex;}
     int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
     inline const GInfo                        * GetGInfo() const { return gCentroidsHandler.get();}
-    bool                                        GetIsNullifiedLocation(tract_t tLocationIndex) const;
+    bool                                        isNullifiedObservationGroup(tract_t tLocationIndex) const;
     const std::vector<measure_t>              & GetMaxCirclePopulationArray() const {return gvMaxCirclePopulation;}
     measure_t                                   GetMaxCirclePopulationSize() const {return m_nTotalMaxCirclePopulation;}
     double                                      GetMeasureAdjustment(size_t iSetIndex) const;
@@ -140,11 +144,11 @@ class CSaTScanData {
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline MinimalGrowthArray<tract_t>       ** GetReportedNeighborMaxsCountArray() const {return gpReportedMaximumsNeighborCountHandler->GetArray();}
     inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
-    inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
-    inline tract_t                              GetNumMetaTractsReferenced() const {return (tract_t)gTractHandler->getMetaLocations().getNumReferencedLocations();}
-    size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
+    inline tract_t                              GetNumMetaObsGroups() const {return (tract_t)_observation_groups_manager->getMetaObsGroupsManager().getMetaObsGroups().size();}
+    inline tract_t                              GetNumMetaObsGroupsReferenced() const {return (tract_t)_observation_groups_manager->getMetaObsGroupsManager().getNumReferenced();}
+    size_t                                      GetNumNullifiedObsGroups() const {return _nullified_observation_groups.size();}
     virtual int                                 GetNumTimeIntervals() const {return m_nTimeIntervals;}
-    inline tract_t                              GetNumTracts() const {return m_nTracts;}
+    inline tract_t                              GetNumObsGroups() const {return _num_observation_groups;}
     const CParameters                         & GetParameters() const {return gParameters;}
     BasePrint                                 & GetPrintDirection() const { return gPrint; }
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
@@ -158,8 +162,9 @@ class CSaTScanData {
     int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
     int                                         getMinTimeIntervalCut() const {return _min_iterval_cut;}
     virtual const std::vector<Julian>         & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
-    inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}
-    double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
+	const ObservationGroupingManager          & GetGroupInfo() const { return *_observation_groups_manager; }
+    const LocationsManager                    & getLocationsManager() const { return GetGroupInfo().getLocationsManager(); }
+	double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual Julian                              intervalIndexToJulian(unsigned int intervalIdx) const;
     unsigned int                                getDrilldownLevel() const { return _drilldown_level; }
     bool                                        isDrilldown() const { return _drilldown_level > 0; }

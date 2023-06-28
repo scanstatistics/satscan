@@ -265,7 +265,9 @@ public class Parameters implements Cloneable {
     private String                          _email_message_body_no_significant="";
     private String                          _email_subject_line_significant="";
     private String                          _email_message_body_significant="";
-    private boolean                         _email_attach_results=false;    
+    private boolean                         _email_attach_results=false;  
+    
+    private String                          _multiple_locations_file="";
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -336,6 +338,7 @@ public class Parameters implements Cloneable {
             newObject._email_message_body_no_significant = new String(_email_message_body_no_significant);
             newObject._email_subject_line_significant = new String(_email_subject_line_significant);
             newObject._email_message_body_significant = new String(_email_message_body_significant);
+            newObject._multiple_locations_file = new String(_multiple_locations_file);
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
@@ -499,9 +502,13 @@ public class Parameters implements Cloneable {
         if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
         if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
         if (_email_attach_results != rhs._email_attach_results) return false;
+        if (!_multiple_locations_file.equals(rhs._multiple_locations_file)) return false;
         
         return true;
     }
+    
+    public String getMultipleLocationsFile() { return _multiple_locations_file; }
+    public void setMultipleLocationsFile(final String s) { _multiple_locations_file = s; }
     
     public boolean getEmailAttachResults() { return _email_attach_results; }
     public void setEmailAttachResults(boolean b) { _email_attach_results = b; }    

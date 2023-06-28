@@ -39,11 +39,11 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void NormalDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_Aux_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataAuxMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 
@@ -52,7 +52,7 @@ void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container
 AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -111,7 +111,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -171,8 +171,8 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-      (*itr)->setMeasureData_Aux_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setMeasureDataAuxMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
     }
   }
 }
@@ -379,7 +379,7 @@ bool NormalDataSetHandler::ReadData() {
                     return false;
                 }
                 //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
-                // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
+                // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major Group Manager updates:
                 //        - changes to CentroidHandlerPassThrough (not special grid file)
                 //        - changes to non-Euclidean neighbors (structures already allocated)
                 AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));

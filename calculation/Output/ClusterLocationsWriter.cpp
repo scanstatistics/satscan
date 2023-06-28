@@ -6,6 +6,7 @@
 #include "cluster.h"
 #include "SVTTCluster.h"
 #include "SSException.h"
+#include "GisUtils.h"
 
 const char * LocationInformationWriter::AREA_SPECIFIC_FILE_EXT                          = ".gis";
 const char * LocationInformationWriter::LOC_OBS_FIELD                                   = "LOC_OBS";
@@ -169,8 +170,8 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
                 gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
 
             //only Cartesian coordinates can have more than two dimensions
-            if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetTInfo()->getCoordinateDimensions() > 2)
-                for (unsigned int i=3; i <= (unsigned int)DataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
+            if (gParameters.GetCoordinatesType() == CARTESIAN && DataHub.GetGroupInfo().getLocationsManager().expectedDimensions() > 2)
+                for (unsigned int i=3; i <= DataHub.GetGroupInfo().getLocationsManager().expectedDimensions(); ++i) {
                     printString(buffer, "%s%i", LOC_COORD_Z_FIELD, i - 2);
                     CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
                 }
@@ -213,7 +214,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
                                       tract_t tTract,
                                       const SimulationVariables& simVars,
                                       const LocationRelevance& location_relevance) {
-    TractHandler::Location::StringContainer_t vIdentifiers;
+	ObservationGrouping::CombinedGroupNames_t vIdentifiers;
     double dRelativeRisk;
     RecordBuffer Record(vFieldDefinitions);
     const DataSetHandler & Handler = DataHub.GetDataSetHandler();
@@ -227,7 +228,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
             throw prg_error("LocationInformationWriter::Write() is not implemented for purely temporal clusters.", "Write()");
 
         //do not report locations for which iterative scan has nullified its data
-        if (DataHub.GetIsNullifiedLocation(tTract)) return;
+        if (DataHub.isNullifiedObservationGroup(tTract)) return;
 
         /* Get coordinates for the cluster. */
         if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
@@ -235,9 +236,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
             loc_second_coord_idx = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? LOC_COORD_LONG_FIELD : LOC_COORD_Y_FIELD);
         }
 
-        DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
+        DataHub.GetGroupInfo().retrieveAllIdentifiers(tTract, vIdentifiers);
         if (gpShapeDataFileWriter) {
-            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, locationCoordinates);
+            CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster, tTract, locationCoordinates, _clusterNetwork.get());
             std::pair<double, double> prLatitudeLongitude;
             prLatitudeLongitude = ConvertToLatLong(locationCoordinates);
             gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first, vIdentifiers.size());
@@ -277,7 +278,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
             /* Report coordinate fields for location. */
             if (!(gParameters.UseLocationNeighborsFile() || (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
                 /* Retrieve coordinates of location -- notice this assumes that the location has only one set of coordinates. */
-                DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(locationCoordinates);
+				DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations()[0]->coordinates()->retrieve(locationCoordinates);
                 /* Write records to record buffer. */
                 switch (gParameters.GetCoordinatesType()) {
                     case CARTESIAN : Record.GetFieldValue(loc_first_coord_idx).AsDouble() =  locationCoordinates[0];
@@ -441,22 +442,23 @@ void LocationInformationWriter::Write(const CCluster& theCluster,
 
 /** Preparation step before writing cluster information (i.e. calling LocationInformationWriter::Write()). */
 void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub) {
-  try {
-      if (gParameters.getNumFileSets() == 1 &&
-          DataHub.GetParameters().GetProbabilityModelType() == NORMAL &&
-          DataHub.GetParameters().getIsWeightedNormal()) {
-        //Cache weighted normal model statistics instead of calculating each time in Write() method.
-        const AbstractWeightedNormalRandomizer * pRandomizer=0;
-        if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(0))) == 0)
-           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "Write()");
-        std::vector<tract_t> tractIndexes;
-        theCluster.getLocationIndexes(DataHub, tractIndexes, true);
-        gStatistics = pRandomizer->getClusterLocationStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
+    try {
+        if (gParameters.getNumFileSets() == 1 && DataHub.GetParameters().GetProbabilityModelType() == NORMAL && DataHub.GetParameters().getIsWeightedNormal()) {
+            //Cache weighted normal model statistics instead of calculating each time in Write() method.
+            const AbstractWeightedNormalRandomizer * pRandomizer=0;
+            if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(0))) == 0)
+                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "Write()");
+            std::vector<tract_t> tractIndexes;
+            theCluster.getGroupIndexes(DataHub, tractIndexes, true);
+            gStatistics = pRandomizer->getClusterLocationStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
+        }
+        // If this analysis uses a locations network file, create network locations container for this cluster to facilitate faster coordinate calculations. 
+        if (gParameters.getUseLocationsNetworkFile()) {
+            _clusterNetwork.reset(new NetworkLocationContainer_t());
+            DataHub.getClusterNetworkLocations(theCluster, *_clusterNetwork);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WritePrep()","LocationInformationWriter");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("WritePrep()","LocationInformationWriter");
-    throw;
-  }
-
 }

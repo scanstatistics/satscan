@@ -36,12 +36,12 @@ OliveiraJobSource::OliveiraJobSource(AnalysisExecution & rExecution, boost::posi
 
     // initialize variables based on which parameter settings are requested
     if (!(grExecution._parameters.getReportHierarchicalClusters() || grExecution._parameters.getReportGiniOptimizedClusters()) || grExecution._parameters.getReportHierarchicalClusters())
-        _presence_hierarchical.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts()); // most likely cluster only or hierarachical clusters
+        _presence_hierarchical.resize(grExecution.getDataHub().GetNumObsGroups() + grExecution.getDataHub().GetNumMetaObsGroups()); // most likely cluster only or hierarachical clusters
 
     /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
     if (grExecution._parameters.getReportGiniOptimizedClusters()) { // gini clusters
-        _presence_gini_optimal.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
-        _presence_gini_maxima.resize(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
+        _presence_gini_optimal.resize(grExecution.getDataHub().GetNumObsGroups() + grExecution.getDataHub().GetNumMetaObsGroups());
+        _presence_gini_maxima.resize(grExecution.getDataHub().GetNumObsGroups() + grExecution.getDataHub().GetNumMetaObsGroups());
         // gini clusters are derived from gTopClustersContainers -- calculate the optimal gini collection
         const MostLikelyClustersContainer * optimal = grExecution.getOptimalGiniContainerByPValue(grExecution._top_clusters_containers, grExecution._parameters.getGiniIndexPValueCutoff());
         if (optimal) {
@@ -340,7 +340,7 @@ void OliveiraJobSource::WriteResultToStructures(successful_result_type const & r
             if (optimalOliveira.first) relevance.update(grExecution.getDataHub(), *(optimalOliveira.first), optimalOliveira.second, _presence_gini_maxima, relevance._gini_maxima);
         }
         if (grExecution._parameters.getReportHierarchicalClusters() && grExecution._parameters.getReportGiniOptimizedClusters()) { // both hierarachical and gini clusters
-            boost::dynamic_bitset<> location_presence(grExecution.getDataHub().GetNumTracts() + grExecution.getDataHub().GetNumMetaTracts());
+            boost::dynamic_bitset<> location_presence(grExecution.getDataHub().GetNumObsGroups() + grExecution.getDataHub().GetNumMetaObsGroups());
             location_presence = _presence_hierarchical | _presence_gini_optimal;
             relevance.updateRelevance(location_presence, relevance._hierarchical_gini_optimal);
             location_presence.reset();

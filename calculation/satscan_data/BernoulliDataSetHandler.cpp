@@ -31,10 +31,10 @@ SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(Simul
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void BernoulliDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void BernoulliDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 
@@ -42,7 +42,7 @@ void BernoulliDataSetHandler::assignMetaLocationData(RealDataContainer_t& Contai
 AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(), 
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -94,7 +94,7 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
 AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(), 
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -148,7 +148,7 @@ void BernoulliDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Si
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) 
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
 }
 
 /** Attempts to read control file data into RealDataSet object. Returns enumeration indication of read success. */

@@ -33,7 +33,7 @@ class PoissonDataSetHandler : public DataSetHandler {
     virtual ~PoissonDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const;
+    virtual void                        assignMetaData(RealDataContainer_t& Container) const;
     virtual const RealDataContainer_t & buildOliveiraDataSets();
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
     virtual AbstractDataSetGateway    & GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;

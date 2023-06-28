@@ -123,10 +123,10 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     to more than one location identifier, string returned contains first
     encountered location with string "et al" concatenated. */
 std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const {
-  sId = DataHub.GetTInfo()->getIdentifier(tTractIndex);
+  DataHub.GetGroupInfo().getGroupname(tTractIndex, sId);
   //if location index is not referencing a meta location and location index is associated with more than one locations_id,
   //then expressive this situation by appending 'et al' (if there is room).
-  if ((size_t)tTractIndex < DataHub.GetTInfo()->getLocations().size() && DataHub.GetTInfo()->getLocations().at(tTractIndex)->getSecondaryIdentifiers().size()) {
+  if ((size_t)tTractIndex < DataHub.GetGroupInfo().getObservationGroups().size() && DataHub.GetGroupInfo().getObservationGroups().at(tTractIndex)->getCombinedWith().size()) {
     if (sId.size() + strlen(" et al") <= GetLocationIdentiferFieldLength(DataHub))
       sId += " et al";
   }
@@ -162,7 +162,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
     for (size_t i=0; i < DataHub.GetNumDataSets(); ++i) {
        const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(i);
        const PopulationData& Population = DataSet.getPopulationData();
-       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+       tract_t tTotalLocations = DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups();
        // first calculate populations for each location irrespective of category
        vDataSetLocationPopulation.assign(tTotalLocations, 0);
        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
@@ -204,7 +204,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
   }
 }
 
-/** Writes obvserved, expected, observed/expected and relative risk to record.*/
+/** Writes observed, expected, observed/expected and relative risk to record.*/
 void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
     std::string sBuffer;
     RecordBuffer Record(vFieldDefinitions);
@@ -217,7 +217,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             measure_t * pMeasureAux(0);
             if (gParameters.GetProbabilityModelType() == NORMAL)
                 pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
-            tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+            tract_t tTotalLocations = DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups();
             for (tract_t t=0; t < tTotalLocations; ++t) {
                 Record.SetAllFieldsBlank(true);
                 Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
@@ -281,7 +281,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsWeightedNormal(const CS
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(i))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
         AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics(DataHub);
-        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+        tract_t tTotalLocations = DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups();
         for (tract_t t=0; t < tTotalLocations; ++t) {
            Record.SetAllFieldsBlank(true);
            Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
@@ -324,7 +324,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData().GetArray()[0];
        ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_NC().GetArray();
        ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_NC().GetArray();
-       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+       tract_t tTotalLocations = DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups();
        pPTCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_PT_NC();
        pPTMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_PT_NC();
 

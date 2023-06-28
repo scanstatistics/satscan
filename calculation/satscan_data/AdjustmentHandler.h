@@ -52,6 +52,6 @@ class RelativeRiskAdjustmentHandler {
     void                            apply(const TwoDimMeasureArray_t& Measure, const PopulationData & Population, measure_t totalMeasure, TwoDimMeasureArray_t& adjustMeasure, const TwoDimCountArray_t * pCases=0) const;
     void                            empty() {gTractAdjustments.clear();}
     const AdjustmentsContainer_t &  get() const {return gTractAdjustments;}
-    void                            print(TractHandler & tHandler);
+    void                            print(ObservationGroupingManager & groups);
 };
 #endif

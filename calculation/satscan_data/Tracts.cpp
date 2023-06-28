@@ -10,229 +10,390 @@
 #include "MetaTractManager.h"
 #include "LocationNetwork.h"
 
-//////////////// TractHandler::Coordinates class ///////////////////////////////
+//////////////// Coordinates class ///////////////////////////////
 
 /** default constructor */
-TractHandler::Coordinates::Coordinates() : giInsertionOrdinal(0), giSize(0), gpCoordinates(0) {}
+Coordinates::Coordinates() : giInsertionOrdinal(0), giSize(0), gpCoordinates(0) {}
 
 /** constructor */
-TractHandler::Coordinates::Coordinates(const std::vector<double>& Coordinates, unsigned int iInsertionOrdinal)
-             :giSize(Coordinates.size()), giInsertionOrdinal(iInsertionOrdinal) {
+Coordinates::Coordinates(const std::vector<double>& coordinates, unsigned int iInsertionOrdinal): giSize(coordinates.size()), giInsertionOrdinal(iInsertionOrdinal) {
    gpCoordinates = new double[giSize];
-   memcpy(gpCoordinates, &Coordinates[0], giSize * sizeof(double));
+   memcpy(gpCoordinates, &coordinates[0], giSize * sizeof(double));
 }
 
 /** Copy constructor. */
-TractHandler::Coordinates::Coordinates(const Coordinates& rhs) {
+Coordinates::Coordinates(const Coordinates& rhs) {
    giSize = rhs.giSize;
    gpCoordinates = new double[giSize];
    memcpy(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
 }
 
 /** constructor */
-TractHandler::Coordinates::Coordinates(double x, double y, unsigned int iInsertionOrdinal)
-             :giSize(2), giInsertionOrdinal(iInsertionOrdinal) {
+Coordinates::Coordinates(double x, double y, unsigned int iInsertionOrdinal): giSize(2), giInsertionOrdinal(iInsertionOrdinal) {
    gpCoordinates = new double[giSize];
    gpCoordinates[0] = x;
    gpCoordinates[1] = y;
 }
 
 /** destructor */
-TractHandler::Coordinates::~Coordinates() {
-  try {delete[] gpCoordinates;
-  } catch(...){}
+Coordinates::~Coordinates() {
+  try {delete[] gpCoordinates;} catch(...){}
 }
 
-bool TractHandler::Coordinates::operator<(const Coordinates& rhs) const {
+/* Returns the distance between two sets of coordinates, unchecked. */
+double Coordinates::distance(const double * lhs, const double * rhs, unsigned int size) {
+    double sum = 0.0;
+    for (unsigned int i = 0; i < size; ++i) sum += (lhs[i] - rhs[i]) * (lhs[i] - rhs[i]);
+    return std::sqrt(sum);
+}
+
+/* Returns the distance between two coordinates. */
+double Coordinates::distanceBetween(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) {
+    if (vFirstPoint.size() != vSecondPoint.size() || !vFirstPoint.size() || !vSecondPoint.size())
+        throw prg_error("Unable to calculate distance between %u coordinates and %u.", "distanceBetween()", vFirstPoint.size(), vSecondPoint.size());
+    return distance(&vFirstPoint[0], &vSecondPoint[0], vFirstPoint.size());
+}
+
+/* Returns the distance between two coordinates. */
+double Coordinates::distanceBetween(const Coordinates& lhs, const Coordinates& rhs) {
+    if (lhs.getSize() != rhs.getSize() || !lhs.getSize() || !rhs.getSize())
+        throw prg_error("Unable to calculate distance between %u coordinates and %u.", "distanceBetween()", lhs.getSize(), rhs.getSize());
+    return distance(lhs.getCoordinates(), rhs.getCoordinates(), lhs.getSize());
+}
+
+/* Returns the distance to another coordinate. */
+double Coordinates::distanceTo(const Coordinates& other) const {
+    return distanceBetween(*this, other);
+}
+
+/* Returns the distance to another coordinate. */
+double Coordinates::distanceTo(const std::vector<double>& other) const {
+    if (getSize() != other.size() || !getSize() || !other.size())
+        throw prg_error("Unable to calculate distance between %u coordinates and %u.", "distanceBetween()", getSize(), other.size());
+    return distance(getCoordinates(), &other[0], getSize());
+}
+
+bool Coordinates::operator<(const Coordinates& rhs) const {
   if (giSize != rhs.giSize) return giSize < rhs.giSize;
   size_t t=0;
   while (t < giSize) {
-    if (gpCoordinates[t] == rhs.gpCoordinates[t]) ++t;
-    else return gpCoordinates[t] < rhs.gpCoordinates[t];
+      if (gpCoordinates[t] != rhs.gpCoordinates[t]) return gpCoordinates[t] < rhs.gpCoordinates[t];
+      ++t;
   }
   return false;
 }
 
 /** retrieves coordinates into passed vector */
-void TractHandler::Coordinates::retrieve(std::vector<double>& Repository) const {
+std::vector<double>& Coordinates::retrieve(std::vector<double>& Repository) const {
   Repository.resize(giSize);
   std::copy(gpCoordinates, gpCoordinates + giSize, Repository.begin());
-
+  return Repository;
 }
 
-//////////////// TractHandler::LocationIdentifier class ////////////////////////
+//////////////// LocationsManager class ///////////////////////////////
 
-/** constructor */
-TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aCoordinates) : gsIndentifier(0) {
-    if (!sIdentifier) throw prg_error("Null location pointer.", "Location()");
-    gsIndentifier = new char[strlen(sIdentifier) + 1];
-    strcpy(gsIndentifier, sIdentifier);
-	if (aCoordinates.getSize() > 0)
-		gvCoordinatesContainer.add(&aCoordinates, true);
+LocationsManager::AddStatus LocationsManager::addLocation(const std::string& locationame) {
+	boost::shared_ptr<Location> location(new Location(locationame));
+	auto itr = std::lower_bound(_locations.begin(), _locations.end(), location, CompareLocationByName());
+	if (itr != _locations.end() && itr->get()->name() == locationame)
+		return LocationsManager::NameExists;
+	_locations.insert(itr, location);
+    _max_identifier_length = std::max(_max_identifier_length, static_cast<short>(locationame.size()));
+    return LocationsManager::Accepted;
 }
 
-TractHandler::Location::~Location() {try {delete[] gsIndentifier;}catch(...){}}
-
-/** Associates passed coordinates with this LocationIdentifier object. Throws ResolvableException
-    if only one coordinates set permitted per location and passed coordinates do not equal
-    already defined coordinates set. */
-void TractHandler::Location::addCoordinates(const Coordinates& aCoordinates, MultipleCoordinatesType eMultipleCoordinatesType) {
-  //add coordinates in sorted order -- this is needed for consistancy reasons, should we need to break ties in neighbors calculation
-  bool bExists = gvCoordinatesContainer.exists(&aCoordinates);
-  if (eMultipleCoordinatesType == ONEPERLOCATION && !bExists && gvCoordinatesContainer.size())
-    throw resolvable_error("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", gsIndentifier);
-  if (!bExists)
-     gvCoordinatesContainer.add(&aCoordinates, true);
-}
-
-/** Adds passed string as secondary location identifier to this object. */
-void TractHandler::Location::addSecondaryIdentifier(const std::string & sIdentifier) {
-  gvSecondaryIdentifiers.add(sIdentifier, false);
-}
-
-
-/** Retrieves all location identifiers associated with this object. */
-
-TractHandler::Location::StringContainer_t& TractHandler::Location::retrieveAllIdentifiers(StringContainer_t& Identifiers) const {
-
-   Identifiers.clear();
-
-   Identifiers.add(gsIndentifier, false);
-   for (unsigned int i=0; i < gvSecondaryIdentifiers.size(); ++i)
-     Identifiers.add(gvSecondaryIdentifiers[i], false);
-   return Identifiers;
-}
-
-
-//////////////////////// TractHandler class ////////////////////////////////////
-
-/** Constructor*/
-TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType)
-             :giCoordinateDimensions(0), giMaxIdentifierLength(0), gAdditionStatus(Accepting), giNumLocationCoordinates(0),
-              gbAggregatingTracts(bAggregatingTracts), geMultipleCoordinatesType(eMultipleCoordinatesType) {
-  if (gbAggregatingTracts) gvLocations.push_back(new Location("All", Coordinates()));
-  gMetaManagerProxy.reset(new MetaManagerProxy(gMetaLocationsManager, gMetaNeighborManager));
-}
-
-/** This method should be called once all insertions are completed. Scans internal
-    collection of location identifiers, looking for duplicates locations. */
-void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
-  std::string buffer;
-
-  gAdditionStatus = Closed;
-  gMetaLocationsManager.getMetaLocationPool().assignAtomicIndexes(*this);
-  gMetaLocationsManager.setStateFixed(bReportingRiskEstimates);
-
-  if (gvLocations.size() < 2 || giCoordinateDimensions == 0) return;
-
-  //sort by first coordinates index
-  std::sort(gvLocations.begin(), gvLocations.end(), CompareFirstCoordinatePointer());
-  //search for duplicate locations -- those that have identical coordinate indexes
-  size_t tSize=gvLocations.size();
-  giNumLocationCoordinates=0;
-  for (size_t tOuter=0; tOuter < tSize; ++tOuter) {
-     giNumLocationCoordinates += gvLocations[tOuter]->getCoordinates().size();
-     for (size_t tInner=tOuter+1; tInner < tSize; ++tInner) {
-        //since we sorted by the first coordinate pointer, we know that duplicates will be adjacent
-        if (gvLocations[tOuter]->getCoordinates() != gvLocations[tInner]->getCoordinates()) break;
-        //add identifier of tInner to tOuter, they reference the same coordinate sets
-		buffer = gvLocations[tInner]->getIndentifier();
-        gvLocations[tOuter]->addSecondaryIdentifier(buffer);
-        gmAggregateTracts[buffer] = gvLocations[tOuter]->getIndentifier();
-        gvLocations.erase(gvLocations.begin() + tInner);
-        tInner = tInner - 1;
-        tSize = gvLocations.size();
-     }
-  }
-  //re-sort locations by identifiers - TractHandler::getLocationIndex() relies upon this container being sorted by identifiers
-  std::sort(gvLocations.begin(), gvLocations.end(), CompareIdentifiers());
-}
-
-/** Insert a tract into internal structure, sorting by tract identifier. Ignores location ids
-    which already exist. Returns tract identifers relative index into internal structure. */
-size_t TractHandler::addLocation(const char *sIdentifier) {
-  assert(gAdditionStatus == Accepting);
-  ptr_vector<Location>::iterator itr;
-
-  try {
-    if (gbAggregatingTracts) return 0;//when aggregating locations, insertion process always succeeds
-
-    if (!sIdentifier) throw prg_error("Null location pointer.", "addLocation()");
-
-    tract_t tLocationIndex = gMetaLocationsManager.getMetaLocationPool().getMetaLocationIndex(sIdentifier);
-    if (tLocationIndex > -1) {
-      gMetaLocationsManager.addReferenced(tLocationIndex); return tLocationIndex;
+/* Adds location with coordinates to collection of known locations. */
+LocationsManager::AddStatus LocationsManager::addLocation(const std::string& name, const std::vector<double>& coordinates) {
+    // Verify that coordinate dimensions match expected.
+    if (coordinates.size() != _expected_dimensions) return LocationsManager::WrongDimensions;
+    boost::shared_ptr<Location> location(new Location(name, coordinates));
+    // Check whether this location already exists by name.
+    auto itrByName = std::lower_bound(_locations.begin(), _locations.end(), location, CompareLocationByName());
+    if (itrByName != _locations.end() && itrByName->get()->name() == name)
+        // It exists but maybe this is just the same location definition. Otherwise we're trying to redefine it's coordinates.
+        return *(itrByName->get()->coordinates()) != coordinates ? LocationsManager::CoordinateRedefinition : LocationsManager::Duplicate;
+    else {
+        // New location - check whether this set of coordinates is already defined for another.
+        auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
+        if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates) 
+            return LocationsManager::CoordinateExists; // The location is defined at the same coordinates as an existing location.
+        // Insert location with coordinates into sorted structures.
+        _locations.insert(itrByName, location);
+        _locations_by_coordinates.insert(std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates()), location);
+        _max_identifier_length = std::max(_max_identifier_length, static_cast<short>(name.size()));
+        return LocationsManager::Accepted;
     }
+}
 
-    giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
-    std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
-    itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-	if (itr == gvLocations.end() || strcmp((*itr)->getIndentifier(), sIdentifier)) {
-		itr = gvLocations.insert(itr, identifier.release());
+/* Returns the location object with specified coordinates. */
+boost::optional<boost::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
+    boost::shared_ptr<Location> location(new Location("", coordinates));
+    auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
+    if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates)
+        return boost::optional<boost::shared_ptr<Location> >(*itrByCoordinates);
+    return boost::optional<boost::shared_ptr<Location> >(boost::none);
+}
+
+/** Returns indication of whether coordinates are currently defined. */
+bool LocationsManager::getCoordinatesExist(const std::vector<double>& coordinates) const {
+    return getLocationForCoordinates(coordinates) != boost::none;
+
+	//boost::shared_ptr<Location> location(new Location("", coordinates));
+	//auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
+	//return (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates);
+}
+
+LocationsManager::LocationIdx_t LocationsManager::getLocation(const std::string& locationame) const {
+	auto itr = std::lower_bound(_locations.begin(), _locations.end(), boost::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
+	boost::optional<unsigned int> idx(boost::none);
+	if (itr != _locations.end() && itr->get()->name() == locationame)
+		return LocationIdx_t(boost::optional<unsigned int>(static_cast<unsigned int>(std::distance(_locations.begin(), itr))), itr->get());
+	return LocationIdx_t(boost::optional<unsigned int>(boost::none), 0);
+}
+
+//////////////// ObservationGrouping //////////////////////////////////
+
+ObservationGrouping::CombinedGroupNames_t& ObservationGrouping::retrieveAllIdentifiers(CombinedGroupNames_t& Identifiers) const {
+	Identifiers.clear();
+	Identifiers.add(_groupname, false);
+	for (unsigned int i=0; i < _combined_with.size(); ++i)
+		Identifiers.add(_combined_with[i], false);
+	return Identifiers;
+}
+
+//////////////// ObservationGroupingManager ///////////////////////////
+
+ObservationGroupingManager::ObservationGroupingManager(bool aggregating, MultipleCoordinatesType multiple_coordinates_type) :
+	_aggregating(aggregating), _multiple_coordinates_type(multiple_coordinates_type), _locations_manager(0), _write_status(Accepting), giNumLocationCoordinates(0) {
+	if (_aggregating) {
+        _locations_manager.addLocation("All");
+        _groupings.push_back(boost::shared_ptr<ObservationGrouping>(new ObservationGrouping("All", *_locations_manager.locations().front())));
 	}
-	return std::distance(gvLocations.begin(), itr);
-  } catch (prg_exception& x) {
-	x.addTrace("addLocation()", "TractHandler");
-    throw;
-  }
+	gMetaManagerProxy.reset(new MetaManagerProxy(gMetaObsGroupsManager, gMetaNeighborManager));
 }
 
-/** Inserts a locations identifier into internal structures.  */
-void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCoordinates, bool onlyIfExists) {
-  assert(gAdditionStatus == Accepting);
-  try {
-    if (gbAggregatingTracts) return; //when aggregating locations, insertion process always succeeds
-
-    if (vCoordinates.size() != giCoordinateDimensions)
-      throw prg_error("Coordinate dimension is %u, expected %d.", "addLocation()", vCoordinates.size(), giCoordinateDimensions);
-
-    if (!sIdentifier) throw prg_error("Null location pointer.", "addLocation()");
-
-    giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
-    //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
-    std::auto_ptr<Coordinates> pCoordinates(new Coordinates(vCoordinates, gvCoordinates.size()));
-    ptr_vector<Coordinates>::iterator itrCoordinates;
-    itrCoordinates = std::lower_bound(gvCoordinates.begin(), gvCoordinates.end(), pCoordinates.get(), CompareCoordinates());
-    if (itrCoordinates == gvCoordinates.end() || *(pCoordinates.get()) != *(*itrCoordinates))
-      itrCoordinates = gvCoordinates.insert(itrCoordinates, pCoordinates.release());
-
-    //insert into location identifier structure - ordered by indentifer name
-    ptr_vector<Location>::iterator itrIdentifiers;
-    std::auto_ptr<Location> identifier(new Location(sIdentifier, *(*itrCoordinates)));
-    itrIdentifiers = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itrIdentifiers != gvLocations.end() && !strcmp((*itrIdentifiers)->getIndentifier(), sIdentifier))
-      //when identifier already exists, then note that it is defined at this coordinate as well
-      (*itrIdentifiers)->addCoordinates(*(*itrCoordinates), geMultipleCoordinatesType);
-    else if (!onlyIfExists)
-      //otherwise this is a new identifier
-      gvLocations.insert(itrIdentifiers, identifier.release());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("addLocation()", "TractHandler");
-    throw;
-  }
+/* Adds location w/o coordinates to the collections of defined locations. If multiple coordinates type is defined as one
+   per location, also defines the location as an observation group. Returns the addition status of the location.*/
+LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::string& locationname) {
+	if (_aggregating) return LocationsManager::Accepted;
+	LocationsManager::AddStatus status = _locations_manager.addLocation(locationname);
+	if (status == LocationsManager::Accepted && _multiple_coordinates_type == ONEPERLOCATION)
+		addObservationGroup(locationname, locationname);
+	return status;
 }
 
-bool TractHandler::addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance) {
+/* Adds location w/ coordinates to the collections of defined locations. If multiple coordinates type is defined as one
+   per location, also defines the location as an observation group. Returns the addition status of the location.*/
+LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::string& locationname, const std::vector<double>& coordinates) {
+	if (_aggregating) return LocationsManager::Accepted;
+	LocationsManager::AddStatus status = _locations_manager.addLocation(locationname, coordinates);
+    if (status == LocationsManager::Accepted && _multiple_coordinates_type == ONEPERLOCATION)
+        addObservationGroup(locationname, locationname);
+    else if (status == LocationsManager::CoordinateExists && _multiple_coordinates_type == ONEPERLOCATION) {
+        // This should get picked up in the step which combines groups at the same coordinates.
+        addObservationGroup(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
+        return LocationsManager::Accepted;
+
+        //_locations_manager.getLocationForCoordinates(coordinates).
+    }    //combinedWith(const std::string& other)
+	return status;
+}
+
+/* Sets the coordinates of a known location which doesn't currently have a coordinates defined. */
+LocationsManager::AddStatus ObservationGroupingManager::setLocationCoordinates(const std::string& locationname, const std::vector<double>& coordinates) {
+    if (_aggregating) return LocationsManager::Accepted;
+    if (coordinates.size() != _locations_manager.expectedDimensions()) return LocationsManager::WrongDimensions;
+    LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationname);
+    // First check to see if this location is currently defined - skip record if it isn't (i.e. it's not in the network).
+    if (location.first == boost::none) return LocationsManager::Accepted;
+    auto locationWithCoordinates = _locations_manager.getLocationForCoordinates(coordinates);
+    /* I'm not really sure what the correct behavior is here. This function is used in the context of settings the coordinates
+       of locations within a user defined network. If locations within the network are unique positions, then how could two or
+       more locations have the same coordinates yet have different network connections possibly? */
+    if (locationWithCoordinates && locationWithCoordinates->get()->name() != locationname)
+        return LocationsManager::CoordinateExists;
+    // Assign coordinates, if not already set - otherwise check that we're not trying to assign location to different coordinates.
+    if (!location.second->hascoordinates()) {
+        const_cast<Location*>(location.second)->setCoordinates(coordinates);
+        return LocationsManager::Accepted;
+    }
+    return *(location.second->coordinates()) != coordinates ? LocationsManager::CoordinateRedefinition : LocationsManager::Accepted;
+}
+
+/* Adds observation group to collection if does not yet exist, otherwise added to collection. Location is then added to group. */
+ObservationGroupingManager::AddStatus ObservationGroupingManager::addObservationGroup(const std::string& groupName, const std::string& locationame) {
+	if (_aggregating) return ObservationGroupingManager::Accepted;
+	/* Adds observation grouping at location. */
+	LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationame);
+	if (location.first == boost::none) return ObservationGroupingManager::UnknownLocation;
+	boost::shared_ptr<ObservationGrouping> grouping(new ObservationGrouping(groupName, *location.second));
+	auto itr = std::lower_bound(_groupings.begin(), _groupings.end(), grouping, CompareObservationGrouping());
+	if (itr != _groupings.end() && groupName == itr->get()->groupname()) {
+		if (_multiple_coordinates_type == ONEPERLOCATION && itr->get()->getLocations().size())
+			return ObservationGroupingManager::MultipleLocations;
+        if (!itr->get()->getLocations().exists(location.second))
+		    itr->get()->addLocation(*location.second);
+	} else
+		_groupings.insert(itr, grouping);
+	return ObservationGroupingManager::Accepted;
+}
+
+/* Returns the internal index of named observation group. */
+boost::optional<size_t> ObservationGroupingManager::getObservationGroupIndex(const std::string& groupname) const {
+	if (_aggregating) return boost::make_optional(static_cast<size_t>(0));
+
+    std::string gname;
+    // first search collection of known aggregated group names
+    std::map<std::string, std::string>::const_iterator itrm = gmAggregateTracts.find(groupname);
+    if (itrm != gmAggregateTracts.end())
+        gname = itrm->second;
+    else
+        gname = groupname;
+
+	auto itr = std::lower_bound(
+		_groupings.begin(), _groupings.end(),
+		boost::shared_ptr<ObservationGrouping>(new ObservationGrouping(gname)), CompareObservationGrouping()
+	);
+	if (itr != _groupings.end() && gname == itr->get()->groupname())
+		return boost::make_optional(static_cast<size_t>(std::distance(_groupings.begin(), itr)));
+	return boost::none;
+}
+
+/** Combines ObservationGrouping objects which have the same locations. This ensures that observation groups that are
+    at the same location(s) will be evaluated together. This method should be called once all insertions are completed. */
+void ObservationGroupingManager::additionsCompleted(bool bReportingRiskEstimates) {
+	_write_status = Closed;
+	gMetaObsGroupsManager.getMetaPool().assignAtomicIndexes(*this);
+	gMetaObsGroupsManager.setStateFixed(bReportingRiskEstimates);
+
+    // Assign index to locations.
+    _locations_manager.assignIndexes();
+
+	if (_groupings.size() < 2 || _locations_manager.expectedDimensions() == 0) return;
+
+	// sort by coordinates
+	std::sort(_groupings.begin(), _groupings.end(), CompareObservationGroupingByLocation());
+	// search for duplicate observation groups -- those that have identical location(s)
+	size_t tSize = _groupings.size();
+	giNumLocationCoordinates = 0;
+	for (size_t tOuter = 0; tOuter < tSize; ++tOuter) {
+		giNumLocationCoordinates += _groupings[tOuter]->getLocations().size();
+		for (size_t tInner = tOuter + 1; tInner < tSize; ++tInner) {
+			if (_groupings[tOuter]->getLocations() != _groupings[tInner]->getLocations()) break;
+			//add identifier of tInner to tOuter, they reference the same coordinate sets
+			_groupings[tOuter]->combinedWith(_groupings[tInner]->groupname());
+			gmAggregateTracts[_groupings[tInner]->groupname()] = _groupings[tOuter]->groupname();
+			_groupings.erase(_groupings.begin() + tInner);
+			tInner = tInner - 1;
+			tSize = _groupings.size();
+		}
+	}
+	//re-sort groupname so that the index of groups is consistent.
+	std::sort(_groupings.begin(), _groupings.end(), CompareObservationGrouping());
+}
+
+void ObservationGroupingManager::print(FILE* pFile) const {
+	fprintf(pFile, "Total Observation Groupings: %u, Total Locations: %u\n\n", getObservationGroups().size(), getLocationsManager().locations().size());
+	for (auto itrg = getObservationGroups().begin(); itrg != getObservationGroups().end(); ++itrg) {
+		fprintf(pFile, "Observation Grouping: %s, ", itrg->get()->groupname().c_str());
+		for (unsigned int i = 0; i < itrg->get()->getLocations().size(); ++i) {
+			fprintf(pFile, "Locations: %s, Coordinates: ", itrg->get()->getLocations()[i]->name().c_str());
+			for (unsigned int c=0; c < itrg->get()->getLocations()[i]->coordinates()->getSize(); ++c)
+				fprintf(pFile, "%g ", itrg->get()->getLocations()[i]->coordinates()->getCoordinates()[c]);
+		}
+		fprintf(pFile, "\n");
+	}
+}
+
+ObservationGrouping::CombinedGroupNames_t & ObservationGroupingManager::retrieveAllIdentifiers(size_t tIndex, ObservationGrouping::CombinedGroupNames_t& Identifiers) const {
+	if ((size_t)tIndex < getObservationGroups().size())
+		getObservationGroups()[tIndex]->retrieveAllIdentifiers(Identifiers);
+	else if (gMetaObsGroupsManager.getMetaObsGroups().size()) {
+		Identifiers.clear();
+		Identifiers.add(std::string(gMetaObsGroupsManager.getMetaObsGroups().at((size_t)tIndex - getObservationGroups().size())->getIndentifier()), false);
+	} else {
+		Identifiers.clear();
+		std::vector<tract_t> indexes;
+		gMetaNeighborManager.getIndexes((size_t)tIndex - getObservationGroups().size(), indexes);
+		for (size_t t = 0; t < indexes.size(); ++t) {
+            ObservationGrouping::CombinedGroupNames_t tract_identifiers;
+			getObservationGroups().at(indexes[t])->retrieveAllIdentifiers(tract_identifiers);
+			for (size_t i = 0; i < tract_identifiers.size(); ++i)
+				Identifiers.add(tract_identifiers[i], false);
+		}
+	}
+	return Identifiers;
+}
+
+/** Prints formatted message to file which details the groups that are at the same locations and where combined
+    into one group for internal usage. 
+    Technically this function is only useful when the multiple coordinates type is one per observation group.
+    We don't report observation groups in the cluster results, just locations in the cluster. When multiple coordinates
+    type is one per observation group, the observation groups and locations will be the same set. */
+void ObservationGroupingManager::reportCombinedObsGroups(FILE * fDisplay) const {
+	AsciiPrintFormat PrintFormat;
+	bool bPrinted = false;
+
+	for (auto itr= getObservationGroups().begin(); itr != getObservationGroups().end(); ++itr) {
+		if (itr->get()->getCombinedWith().size()) {
+			if (!bPrinted) {
+				PrintFormat.SetMarginsAsOverviewSection();
+				std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
+					"coordinates that were combined into one location. In the "
+					"optional output files, combined locations are represented by a "
+					"single location ID as follows:";
+				PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
+				PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
+				bPrinted = true;
+			}
+			//First retrieved location ID is the location that represents all others.
+			std::string buffer;
+			printString(buffer, "%s : %s", itr->get()->groupname().c_str(), itr->get()->getCombinedWith()[0].c_str());
+			for (unsigned int i = 1; i < itr->get()->getCombinedWith().size(); ++i) {
+				buffer += ", "; buffer += itr->get()->getCombinedWith()[i].c_str();
+			}
+			PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
+		}
+	}
+}
+
+/** Returns identifier associated with location at 'tIndex'. If 'tIndex' is greater than
+number of locations, it is assumed to be referencing a meta location. */
+std::string& ObservationGroupingManager::getGroupname(tract_t tIndex, std::string& groupname) const {
+	if ((size_t)tIndex < getObservationGroups().size())
+        groupname = getObservationGroups().at(tIndex)->groupname();
+	else if (gMetaObsGroupsManager.getMetaObsGroups().size())
+        groupname = gMetaObsGroupsManager.getMetaObsGroups().at((size_t)tIndex - getObservationGroups().size())->getIndentifier();
+	else {
+		//### still not certain what should be the behavior in this situation ###
+		tract_t tFirst = gMetaNeighborManager.getFirst((size_t)tIndex - getObservationGroups().size());
+        groupname = getObservationGroups().at(tFirst)->groupname();
+	}
+    return groupname;
+}
+
+bool ObservationGroupingManager::addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance) {
 	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
 	LocationOverrides_t::iterator itrSmaller = _location_distance_overrides.find(smaller);
 	if (itrSmaller == _location_distance_overrides.end()) {
 		std::map<tract_t, double> v;
 		v[larger] = distance;
 		_location_distance_overrides[smaller] = v;
-	} else {
+	}
+	else {
 		std::map<tract_t, double>::iterator itrLarger = itrSmaller->second.find(larger);
 		if (itrLarger == itrSmaller->second.end()) {
 			std::map<tract_t, double> v;
 			v[larger] = distance;
 			itrSmaller->second = v;
-		} else if (itrLarger->second != distance)
+		}
+		else if (itrLarger->second != distance)
 			return false;
 	}
 	return true;
 }
 
-std::pair<bool, double> TractHandler::getLocationsDistanceOverride(tract_t t1, tract_t t2) const {
+std::pair<bool, double> ObservationGroupingManager::getLocationsDistanceOverride(tract_t t1, tract_t t2) const {
 	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
 	LocationOverrides_t::const_iterator itrSmaller = _location_distance_overrides.find(smaller);
 	if (itrSmaller != _location_distance_overrides.end()) {
@@ -242,229 +403,50 @@ std::pair<bool, double> TractHandler::getLocationsDistanceOverride(tract_t t1, t
 	return std::make_pair(false, 0.0);
 }
 
-/** Returns indication of whether coordinates are currently defined. */
-bool TractHandler::getCoordinatesExist(std::vector<double>& vCoordinates) const {
-  try {
-    std::auto_ptr<Coordinates> pCoordinates(new Coordinates(vCoordinates, gvCoordinates.size()));
-    ptr_vector<Coordinates>::const_iterator itrCoordinates;
-    itrCoordinates = std::lower_bound(gvCoordinates.begin(), gvCoordinates.end(), pCoordinates.get(), CompareCoordinates());
-    if (itrCoordinates == gvCoordinates.end() || *(pCoordinates.get()) != *(*itrCoordinates))
-        return false;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("getCoordinatesExist()", "TractHandler");
-    throw;
-  }
-  return true;
-}
-
-/** Compute distance squared between two points. */
-double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) {
-  double        dDistanceSquared=0;
-
-  if (vFirstPoint.size() != vSecondPoint.size())
-    throw prg_error("First point has %u coordinates and second point has %u.", "getDistanceSquared()", vFirstPoint.size(), vSecondPoint.size());
-
-  for (size_t i=0; i < vFirstPoint.size(); ++i)
-     dDistanceSquared += (vFirstPoint[i] - vSecondPoint[i]) * (vFirstPoint[i] - vSecondPoint[i]);
-
-  return dDistanceSquared;
-}
-
-/** Returns identifier associated with location at 'tIndex'. If 'tIndex' is greater than
-    number of locations, it is assumed to be referencing a meta location. */
-const char * TractHandler::getIdentifier(tract_t tIndex) const {
-  if ((size_t)tIndex < gvLocations.size())
-    return gvLocations.at(tIndex)->getIndentifier();
-  else if (gMetaLocationsManager.getLocations().size())
-    return gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
-  else {
-    //### still not certain what should be the behavior in this situation ###
-    tract_t tFirst = gMetaNeighborManager.getFirst((size_t)tIndex - gvLocations.size());
-    return gvLocations.at(tFirst)->getIndentifier();
-  }
-}
-
-/** Searches for tract identifier and returns it's internal index, or -1 if not found.
-    When aggregating locations, always return zero. */
-tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
-  tract_t  tPosReturn;
-
-  try {
-    if (gbAggregatingTracts)
-      //when aggregation locations, all tract identifiers refer to the same index
-      return 0;
-
-    if (!sIdentifier) throw prg_error("Null location pointer.", "getLocationIndex()");
-
-    std::string _identifier;
-
-    //first search collection of known aggregated location identifiers 
-    std::map<std::string,std::string>::const_iterator itrm = gmAggregateTracts.find(std::string(sIdentifier));
-    if (itrm != gmAggregateTracts.end())
-        _identifier = itrm->second;
-    else
-        _identifier = sIdentifier;
-
-    //search for tract identifier in vector
-    std::auto_ptr<Location> _search(new Location(_identifier.c_str(), Coordinates()));
-    ptr_vector<Location>::const_iterator   itr;
-    itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), _search.get(), CompareIdentifiers());
-    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), _identifier.c_str()))
-      tPosReturn = std::distance(gvLocations.begin(), itr);
-    else
-      tPosReturn = -1;
-  }
-  catch (prg_exception& x)  {
-    x.addTrace("getLocationIndex()", "TractHandler");
-    throw;
-  }
-  return tPosReturn;
-}
-
-/** Print locations to ASCII file. */
-void TractHandler::printLocations(FILE * pFile) const {
-   //FILE* pFile;
-
-   try {
-      //if ((pFile = fopen(sFilename, "w")) == NULL)
-      //  throw resolvable_error("Error: Unable to open top clusters file.\n");
-      //else {
-        ptr_vector<Location>::const_iterator itr;
-        for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
-            fprintf(pFile,"Identifier: %s\n",(*itr)->getIndentifier());
-            fprintf(pFile,"Coordinates: ");            
-            for (unsigned int t=0; t < (*itr)->getCoordinates().size(); ++t) {
-                const Coordinates * pCoords = (*itr)->getCoordinates()[t];
-                for (size_t c=0; c < pCoords->getSize(); ++c) {
-                    fprintf(pFile," %lf ", pCoords->getCoordinates()[c]);
-                }
-            }
-            fprintf(pFile,"Secondary Identifiers: ");   
-            for (unsigned int i=0; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
-                fprintf(pFile," %s ", (*itr)->getSecondaryIdentifiers()[i].c_str() );
-            }
-            fprintf(pFile, " \n\n");
-        }
-      //}
-      //fclose(pFile); pFile=0;
-   }
-  catch (prg_exception& x) {
-    //if (pFile) fclose(pFile);
-    x.addTrace("printLocations()","TractHandler");
-    throw;
-  }
-}
-
-/** Prints formatted message to file which details the locations of the coordinates
-    file that had identical coordinates and where combined into one location
-    for internal usage. */
-void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
-  ptr_vector<Location>::const_iterator        itr;
-  AsciiPrintFormat                            PrintFormat;
-  bool                                        bPrinted=false;
-
-  for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
-     if ((*itr)->getSecondaryIdentifiers().size()) {
-       if (!bPrinted) {
-         PrintFormat.SetMarginsAsOverviewSection();
-         std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
-                              "coordinates that were combined into one location. In the "
-                              "optional output files, combined locations are represented by a "
-                              "single location ID as follows:";
-         PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
-         PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
-         bPrinted=true;
-       }
-       //First retrieved location ID is the location that represents all others.
-       std::string buffer;
-       printString(buffer, "%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
-       for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
-          buffer += ", "; buffer += (*itr)->getSecondaryIdentifiers()[i].c_str();
-       }
-       PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
-     }
-  }
-}
-
-/** Retrieves identifiers associated with location at 'tIndex'. If 'tIndex' is greater than
-    number of locations, it is assumed to be referencing a meta location. */
-TractHandler::Location::StringContainer_t & TractHandler::retrieveAllIdentifiers(tract_t tIndex, TractHandler::Location::StringContainer_t& Identifiers) const {
-  if ((size_t)tIndex < gvLocations.size())
-    gvLocations.at(tIndex)->retrieveAllIdentifiers(Identifiers);
-  else if (gMetaLocationsManager.getLocations().size()) {
-    Identifiers.clear();
-    Identifiers.add(std::string(gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier()), false);
-  }
-  else {
-    Identifiers.clear();
-    std::vector<tract_t> indexes;
-    gMetaNeighborManager.getIndexes((size_t)tIndex - gvLocations.size(), indexes);
-    for (size_t t=0; t < indexes.size(); ++t) {
-      TractHandler::Location::StringContainer_t tract_identifiers;
-       gvLocations.at(indexes[t])->retrieveAllIdentifiers(tract_identifiers);
-       for (size_t i=0; i < tract_identifiers.size(); ++i)
-          Identifiers.add(tract_identifiers[i], false);
-    }
-  }
-  return Identifiers;
-}
-
-/** Sets dimensions of location coordinates. If aggregating locations, function just returns; otherwise
-    if any locations are already defined - throws an exception. */
-void TractHandler::setCoordinateDimensions(size_t iDimensions) {
-  if (gbAggregatingTracts) return; //ignore this when aggregating locations
-
-  if (gvCoordinates.size())
-    throw prg_error("Changing the coordinate dimensions is not permited once locations have been defined.","setCoordinateDimensions()");
-
-  giCoordinateDimensions = iDimensions;
-}
-
 /** Assigns locations and coordinates explicitly. Note that this is a special use function, initially
-    designed for use with the homogeneous poisson model. It might have been nicer to abstract this class
-    instead of creating this function but that would have involved a significant re-factor with little benefit. */
-void TractHandler::assignExplicitCoordinates(CoordinatesContainer_t& coordinates) {
-  assert(gAdditionStatus == Accepting);
+designed for use with the homogeneous poisson model. It might have been nicer to abstract this class
+instead of creating this function but that would have involved a significant re-factor with little benefit. */
+void ObservationGroupingManager::assignExplicitCoordinates(CoordinatesContainer_t& coordinates) {
+	assert(_write_status == Accepting);
 
-  try {
-    if (gbAggregatingTracts) return; //ignore operation if aggregating tracts
+	try {
+		if (_aggregating) return; //ignore operation if aggregating tracts
 
-    //If the internal container of coordinates is equal in size to new container, just copy coordinates.
-    if (gvCoordinates.size() == coordinates.size()) {
-        for (size_t t=0; t < coordinates.size(); ++t) {
-            //Verify that coordinates have equal dimensions...
-            if (!gvCoordinates[t])
-                throw prg_error("not allolcated.", "pushCoordinates()");
-            if (!coordinates[t])
-                throw prg_error("not allolcated.", "pushCoordinates()");
-
-            if (gvCoordinates[t]->getSize() != coordinates[t]->getSize())
-               throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates[t]->getSize(), gvCoordinates[t]->getSize());
-             memcpy(gvCoordinates[t]->getCoordinates(), coordinates[t]->getCoordinates(), sizeof(double) * coordinates[t]->getSize() );
-        }
-    }
-    else {
-        //New container and internal container are not equal in size -- clear and rebuild.  
-        gvLocations.killAll();
-        gvCoordinates.killAll();
-        gvCoordinates.resize(coordinates.size(), 0);
-        gvLocations.resize(coordinates.size(), 0);
-        //Note: I'm ignoring meta data, I think it ok to do that. Also, they are not likely used in conjunction with this function.
-        for (size_t t=0; t < coordinates.size(); ++t) {
-            //Verfy that coordinate dimensions match expected.
-            if (coordinates[t]->getSize() != giCoordinateDimensions)
-               throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates.size(), giCoordinateDimensions);
-            //Create new copy of coordinates object.
-            gvCoordinates[t] = new Coordinates(*coordinates[t]);
-            //Create dummy location identifier and associate coordinate object.
-            gvLocations[t] = new Location("_location_", *gvCoordinates[t]);
-        }
-        giNumLocationCoordinates = coordinates.size();
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("assignExplicitCoordinates()", "TractHandler");
-    throw;
-  }
+		// If the internal container of coordinates is equal in size to new container, just copy coordinates.
+		if (_locations_manager.locations().size() == coordinates.size()) {
+			for (size_t t = 0; t < coordinates.size(); ++t) {
+				//Verify that coordinates have equal dimensions...
+				//if (!gvCoordinates[t])
+				//	throw prg_error("not allolcated.", "pushCoordinates()");
+				if (!coordinates[t])
+					throw prg_error("not allolcated.", "pushCoordinates()");
+				if (_locations_manager.locations()[t]->coordinates()->getSize() != coordinates[t]->getSize())
+					throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates[t]->getSize(), _locations_manager.locations()[t]->coordinates()->getSize());
+				memcpy(_locations_manager.locations()[t]->coordinates()->getCoordinates(), coordinates[t]->getCoordinates(), sizeof(double) * coordinates[t]->getSize());
+			}
+		} else {
+			//New container and internal container are not equal in size -- clear and rebuild.  
+			_groupings.clear();
+			_locations_manager._locations.clear();
+			_locations_manager._locations.resize(coordinates.size(), 0);
+			_groupings.resize(coordinates.size(), 0);
+			//Note: I'm ignoring meta data, I think it ok to do that. Also, they are not likely used in conjunction with this function.
+			std::vector<double> repo;
+			for (size_t t = 0; t < coordinates.size(); ++t) {
+				//Verfy that coordinate dimensions match expected.
+				if (coordinates[t]->getSize() != _locations_manager.expectedDimensions())
+					throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates.size(), _locations_manager.expectedDimensions());
+				//Create new copy of coordinates object.
+				boost::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo)));
+				_locations_manager._locations[t] = location;
+				//Create dummy location identifier and associate coordinate object.
+				_groupings[t] = boost::shared_ptr<ObservationGrouping>(new ObservationGrouping("_location_", *location.get()));
+			}
+			giNumLocationCoordinates = coordinates.size();
+		}
+	}
+	catch (prg_exception& x) {
+		x.addTrace("assignExplicitCoordinates()", "ObservationGroupingManager");
+		throw;
+	}
 }

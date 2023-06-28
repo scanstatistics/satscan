@@ -4,6 +4,7 @@
 //******************************************************************************
 
 #include "RandomNumberGenerator.h"
+#include "LocationNetwork.h"
 
 class CCluster;
 class CSaTScanData;
@@ -16,6 +17,7 @@ class GisUtils {
 
         static double EARTH_RADIUS_METERS;
 
+        static Network::Connection_Details_t getClusterConnections(const NetworkLocationContainer_t& networkLocations);
         static pointpair_t getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster);
         static points_t getPointsOnCircleCircumference(point_t centerPoint, point_t pointOnCircumference);
         static double getRadiusInMeters(point_t centerPoint, point_t pointOnCircumference);
@@ -26,7 +28,6 @@ class VisualizationUtils {
         mutable RandomNumberGenerator _rng;
         std::vector<std::string> _colors;
         std::vector<std::string> _shapes;
-
     public:
         VisualizationUtils() {
             _colors = { // seperate colors for each group.

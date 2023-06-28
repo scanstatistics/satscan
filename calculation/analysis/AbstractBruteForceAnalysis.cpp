@@ -30,7 +30,7 @@ void AbstractBruteForceAnalysis::FindTopClusters(const AbstractDataSetGateway& D
                     const_cast<CSaTScanData&>(gDataHub).addStore(pNeighbors);
                 }
                 const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub);
-                const_cast<CCluster&>(TopCluster).SetMostCentralLocationIndex(gDataHub);   
+                const_cast<CCluster&>(TopCluster).setMostCentralObservationGroup(gDataHub);   
                 TopClustersContainers.at(t).Add(TopCluster);
             }
        }

@@ -215,6 +215,7 @@ class CParameters {
     bool                                gbUseLocationNeighborsFile;             /** use sorted array neighbor file? */
     std::string                         gsMetaLocationsFilename;                /** meta locations file -- neighbors file */
     bool                                gbUseMetaLocationsFile;                 /** use meta locations file? */
+    std::string                         _multiple_locations_file;               /** file which defines multiple locations for a group */
     /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -317,6 +318,8 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    const std::string                 & getMultipleLocationsFile() const { return _multiple_locations_file; }
+    void                                setMultipleLocationsFile(const char * filename, bool bCorrectForRelativePath = false);
     bool                                getClusterSignificanceByRecurrence() const { return _cluster_significance_by_ri; }
     void                                setClusterSignificanceByRecurrence(bool b) { _cluster_significance_by_ri = b; }
     unsigned int                        getClusterSignificanceRecurrenceCutoff() const { return _cluster_significance_ri_value; }

@@ -53,8 +53,8 @@ class AbstractDataFileWriter {
     static const char         * VARIANCE_FIELD;
     static const char         * STD_FIELD;
     static const char         * MEAN_VALUE_FIELD;
-    static const size_t         DEFAULT_LOC_FIELD_SIZE;
-    static const size_t         MAX_LOC_FIELD_SIZE;
+    static const short          DEFAULT_LOC_FIELD_SIZE;
+    static const short          MAX_LOC_FIELD_SIZE;
     static const char         * RECURRENCE_INTERVAL_FLD;
     static const char         * PERCENTAGE_CASES_FIELD;
     static const char         * POPULATION_FIELD;
@@ -65,15 +65,16 @@ class AbstractDataFileWriter {
     DBaseDataFileWriter       * gpDBaseFileWriter;       /** dBase file writer              */
     ptr_vector<FieldDef>        vFieldDefinitions;       /** field definitions              */
 
-    size_t                      GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
+    short GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
 
   public:
     AbstractDataFileWriter(const CParameters& Parameters);
     virtual ~AbstractDataFileWriter();
 
-    static void                 CreateField(ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType,
-                                            short wLength, short wPrecision, unsigned short& uwOffset, 
-                                            unsigned short uwAsciiDecimals, bool bCreateIndex=false);
+    static void CreateField(
+        ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType, short wLength, 
+        short wPrecision, unsigned short& uwOffset, unsigned short uwAsciiDecimals, bool bCreateIndex=false
+    );
 };
 //******************************************************************************
 #endif

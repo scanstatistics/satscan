@@ -38,11 +38,11 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void ExponentialDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void ExponentialDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 
@@ -50,7 +50,7 @@ void ExponentialDataSetHandler::assignMetaLocationData(RealDataContainer_t& Cont
 AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -102,7 +102,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
 AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -156,8 +156,8 @@ void ExponentialDataSetHandler::RandomizeData(RandomizerContainer_t& Container, 
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
     }  
   }
 }

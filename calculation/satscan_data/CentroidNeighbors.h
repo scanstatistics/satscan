@@ -4,16 +4,16 @@
 //******************************************************************************
 #include "Tracts.h"
 
-/** Distance from a centroid to a neighboring location. */
-class LocationDistance {
+/** Distance from a centroid to a neighboring group/location. */
+class DistanceToCentroid {
    private:
-     tract_t            m_tTractNumber;     /* tract number */
-     double             m_dDistance;        /* distance from centroid to location at m_tTractNumber */
-     unsigned int       m_RelativeCoordinateIndex; /* relative index into tracts respective coordinates container */
+     tract_t m_tTractNumber;
+     double m_dDistance; /* distance from centroid to location at m_tTractNumber */
+     unsigned int m_RelativeCoordinateIndex; /* relative index into tracts respective coordinates container */
 
    public:
-     LocationDistance(tract_t t=0, double d=0, unsigned int i=0) {Set(t, d, i);}
-     virtual ~LocationDistance() {}
+     DistanceToCentroid(tract_t t=0, double d=0, unsigned int i=0) {Set(t, d, i);}
+     virtual ~DistanceToCentroid() {}
 
      double             GetDistance() const {return m_dDistance;}
      unsigned int       GetRelativeCoordinateIndex() const {return m_RelativeCoordinateIndex;}
@@ -22,14 +22,14 @@ class LocationDistance {
 };
 
 /** Function object used to compare LocationDistance objects by m_dDistance. */
-class CompareLocationDistance {
-  private:
-    const TractHandler 	      & gTractInformation;      /* tract information */
+class CompareGroupDistance {
+private:
+	const ObservationGroupingManager & _groups;
 
-  public:
-    CompareLocationDistance(const TractHandler & TractInformation) : gTractInformation(TractInformation) {}
+public:
+	CompareGroupDistance(const ObservationGroupingManager & groups) : _groups(groups) {}
 
-    bool                operator() (const LocationDistance& lhs, const LocationDistance& rhs);
+	bool                operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs);
 };
 
 class CSaTScanData; /** forward class declaration */
@@ -52,7 +52,7 @@ class CentroidNeighbors {
     tract_t                     * gpSortedNeighborsIntegerType;           /* pointer to integer array of neighbors indexes */
     unsigned short              * gpSortedNeighborsUnsignedShortType;     /* pointer to unsigned short array of neighbors indexes */
 
-    void                          Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, const std::vector<tract_t>& maxReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations);
+    void                          Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, const std::vector<tract_t>& maxReportedNeighbors, const std::vector<DistanceToCentroid>& vOrderedLocations);
 
   public:
     CentroidNeighbors();

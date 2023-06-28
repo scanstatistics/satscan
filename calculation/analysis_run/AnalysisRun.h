@@ -45,10 +45,10 @@ class ClusterRankHelper {
             _rankCollection.clear();
             _addStatus = accepting;
         }
-        void sort() {
+        void sort(const CSaTScanData& data_hub) {
             if (_addStatus != closed) { // already closed? - them it is already sorted
             // sort cluster collection by cluster LLR -- adding clusters after this call is undefined behavior.
-            std::sort(_rankCollection.begin(), _rankCollection.end(), MostLikelyClustersContainer::CompareClustersRatios());
+            std::sort(_rankCollection.begin(), _rankCollection.end(), MostLikelyClustersContainer::CompareClustersRatios(data_hub));
             _addStatus = closed;
             }
         }

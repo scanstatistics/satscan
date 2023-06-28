@@ -7,6 +7,26 @@
 #include "cluster.h"
 #include "SaTScanData.h"
 
+Network::Connection_Details_t GisUtils::getClusterConnections(const NetworkLocationContainer_t& networkLocations) {
+    // First create a set of all locations that are in this location container.
+    std::set<const Location *> locations;
+    for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr)
+        locations.emplace(&(itr->first->getLocation()));
+
+    // Now construct the edges between network locations.
+    Network::Connection_Details_t connections;
+    for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
+        const Location* nodeLocation = &(itr->first->getLocation());
+        // Define edge from this node to another connecting node if other is in locations.
+        for (auto itrC = itr->first->getConnections().begin(); itrC != itr->first->getConnections().end(); ++itrC) {
+                const Location * connectionLocation = &(itrC->get<0>()->getLocation());
+                if (locations.find(connectionLocation) == locations.end()) continue;
+                connections.emplace(Network::Connection_Detail_t(std::min(nodeLocation, connectionLocation), std::max(nodeLocation, connectionLocation)));
+        }
+    }
+    return connections;
+}
+
 /* Returns the beginning and ending points of cluster radius segment. */
 GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster) {
     std::vector<double> vCoordinates, TractCoords;
@@ -22,7 +42,7 @@ GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData
 		pointOnCircumference = prLatitudeLongitude;
 	} else {
 		// get the coordinates of location farthest away from center
-		CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.GetNumTractsInCluster()), TractCoords);
+		CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.getNumObservationGroups()), TractCoords);
 		pointOnCircumference = ConvertToLatLong(TractCoords);
 	}
 
@@ -34,7 +54,8 @@ GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData
            are on it's farside, then the clusters could overlap.
         */
         // Temporary implementation until we figure out the best course here.  Move north 5 degrees to create a point on circumference.
-        pointOnCircumference.first += (0.000278 * 5.0);
+        //pointOnCircumference.first += (1.0/180.0 * 5.0);
+        pointOnCircumference.first += (0.000278 * 5.0); // 1 arcsec = 0.000278, 5 degrees is too large in many situations
     }
     return std::make_pair(prLatitudeLongitude,pointOnCircumference);
 }

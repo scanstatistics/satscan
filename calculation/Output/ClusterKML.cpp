@@ -23,8 +23,8 @@ const char * BaseClusterKML::KML_FILE_EXT = ".kml";
 double BaseClusterKML::_minRatioToReport=0.001;
 
 BaseClusterKML::BaseClusterKML(const CSaTScanData& dataHub) : _dataHub(dataHub), _visibleLocations(false) {
-    _cluster_locations.resize(_dataHub.GetNumTracts() + _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
-    _separateLocationsKML = dataHub.GetTInfo()->getLocations().size() > _dataHub.GetParameters().getLocationsThresholdKML();
+    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
+    _separateLocationsKML = _dataHub.getLocationsManager().locations().size() > _dataHub.GetParameters().getLocationsThresholdKML();
 }
 
 void BaseClusterKML::createKMZ(const file_collection_t& fileCollection, bool removefiles) {
@@ -60,7 +60,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
     std::string                                legend, locations, buffer, buffer2;
     std::vector<double>                        vCoordinates;
     std::pair<double, double>                  prLatitudeLongitude;
-    TractHandler::Location::StringContainer_t  vTractIdentifiers;
+	ObservationGrouping::CombinedGroupNames_t  vTractIdentifiers;
     const double radius_km = cluster.GetLatLongRadius();
     bool isHighRate = cluster.getAreaRateForCluster(_dataHub) == HIGH;
 
@@ -93,16 +93,17 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         outKML << "\t\t</MultiGeometry>" << std::endl << "\t</Placemark>" << std::endl;
 
         // When using a network file, we only draw a small circle around central location then drawn connections/edges between locations in cluster.
+        NetworkLocationContainer_t networkLocations;
         if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+            _dataHub.getClusterNetworkLocations(cluster, networkLocations);
+            Network::Connection_Details_t connections = GisUtils::getClusterConnections(networkLocations);
             outKML << "\t\t<Folder><name>Cluster " << (iCluster + 1) << " Edges</name>";
-            Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
-            Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
-            for (; itr != end; ++itr) {
-                CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
+            for (auto itr = connections.begin(); itr != connections.end(); ++itr) {
+                itr->get<0>()->coordinates()->retrieve(vCoordinates);
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
                 outKML << "\t\t\t<Placemark><styleUrl>#" << (isHighRate ? "high" : "low") << "-line-edge</styleUrl><LineString><coordinates>";
                 outKML << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0  ";
-                CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
+                itr->get<1>()->coordinates()->retrieve(vCoordinates);
                 prLatitudeLongitude = ConvertToLatLong(vCoordinates);
                 outKML << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0</coordinates></LineString></Placemark>" << std::endl;
             }
@@ -113,23 +114,23 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         if (_dataHub.GetParameters().getIncludeLocationsKML()) {
             std::stringstream  clusterPlacemarks;
             // create locations folder and locations within cluster placemarks
-            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                    _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
-                    _cluster_locations.set(tTract);
-                    CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-                    clusterPlacemarks << "\t\t<Placemark><name>" << vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>")
-                        << "<description></description><styleUrl>";
-                    if (_separateLocationsKML) {
-                        // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
-                        clusterPlacemarks << fileCollection.front().getFileName() << fileCollection.front().getExtension();
-                    }
-                    clusterPlacemarks << "#" << (isHighRate ? "high" : "low") << "-rate-placemark</styleUrl>"
-                        << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
-                        << "</coordinates></Point></Placemark>" << std::endl;
+            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            boost::dynamic_bitset<> clusterLocations;
+            CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &clusterLocations);
+            size_t index = clusterLocations.find_first();
+            while (index != clusterLocations.npos) {
+                locations[index].get()->coordinates()->retrieve(vCoordinates);
+                _cluster_locations.set(index);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                clusterPlacemarks << "\t\t<Placemark><name></name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
+                if (_separateLocationsKML) {
+                    // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
+                    clusterPlacemarks << fileCollection.front().getFileName() << fileCollection.front().getExtension();
                 }
+                clusterPlacemarks << "#" << (isHighRate ? "high" : "low") << "-rate-placemark</styleUrl>"
+                    << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
+                    << "</coordinates></Point></Placemark>" << std::endl;
+                index = clusterLocations.find_next(index);
             }
 
             if (clusterPlacemarks.str().size()) {
@@ -334,7 +335,7 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
             if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= _minRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
                 break;
             if (cluster.m_nRatio >= _minRatioToReport)
-                _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).GetNumTractsInCluster());
+                _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).getNumObservationGroups());
         }
     }
     _clusters_written += addClusters(clusters, simVars, _kml_out, _fileCollection, _clusters_written);
@@ -573,19 +574,21 @@ void ClusterKML::finalize() {
             std::string buffer;
             std::vector<double> vCoordinates;
             std::stringstream  locationPlacemarks;
-            const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
             // create locations folder and locations within cluster placemarks
-            for (size_t t=0; t < locations.size(); ++t) {
+			for (auto itrGroup = _dataHub.GetGroupInfo().getObservationGroups().begin(); itrGroup != _dataHub.GetGroupInfo().getObservationGroups().end(); ++itrGroup) {
+				size_t t = std::distance(_dataHub.GetGroupInfo().getObservationGroups().begin(), itrGroup);
                 if (!_cluster_locations.test(t)) {
-                    locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
-                    std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-                    locationPlacemarks << "\t\t<Placemark>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
-                    if (_separateLocationsKML) {
-                        // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
-                        locationPlacemarks << _fileCollection.front().getFileName() << _fileCollection.front().getExtension();
+                    for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
+                        itrGroup->get()->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
+                        std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                        locationPlacemarks << "\t\t<Placemark>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
+                        if (_separateLocationsKML) {
+                            // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
+                            locationPlacemarks << _fileCollection.front().getFileName() << _fileCollection.front().getExtension();
+                        }
+                        locationPlacemarks << "#location-placemark</styleUrl><Point><coordinates>" << prLatitudeLongitude.second << ",";
+                        locationPlacemarks << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
                     }
-                    locationPlacemarks << "#location-placemark</styleUrl><Point><coordinates>" << prLatitudeLongitude.second << ","
-                        << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
                 }
             }
             if (locationPlacemarks.str().size()) {

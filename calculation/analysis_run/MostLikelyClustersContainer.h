@@ -56,6 +56,7 @@ public:
 };
 
 class CSaTScanData;
+class CentroidNeighborCalculator;
 
 /** Container class for maintaining the collection of most likely clusters. */
 class MostLikelyClustersContainer {
@@ -67,7 +68,15 @@ class MostLikelyClustersContainer {
        loglikelihood ratio. When ratios are equal, clusters centroid index is used to break tie. Purely temporal
        clusters will rank higher than other cluster types in tie break situation. */
     class CompareClustersRatios {
+        protected:
+            const CSaTScanData& _datahub;
+            MostLikelyClustersContainer * _mlc_container;
+
+            unsigned int getNumNodesInCluster(const Cluster_t& cluster);
+
         public:
+            CompareClustersRatios(const CSaTScanData& datahub, MostLikelyClustersContainer * mlc_container=0): _datahub(datahub), _mlc_container(mlc_container) {}
+
             bool operator() (const Cluster_t& pCluster1, const Cluster_t& pCluster2) {
                 if (std::fabs(pCluster1->m_nRatio - pCluster2->m_nRatio) < DBL_CMP_TOLERANCE) {
                     //rank a purely temporal cluster higher than other cluster types
@@ -76,13 +85,35 @@ class MostLikelyClustersContainer {
                         return true;
                     if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
                         return false;
-                    if (pCluster1->GetNumTractsInCluster() < pCluster2->GetNumTractsInCluster())
+                    // Prefer the cluster with fewer groups.
+                    if (pCluster1->getNumObservationGroups() < pCluster2->getNumObservationGroups())
                         return true;
-                    if (pCluster2->GetNumTractsInCluster() < pCluster1->GetNumTractsInCluster())
+                    if (pCluster2->getNumObservationGroups() < pCluster1->getNumObservationGroups())
                         return false;
+
+                    // Clusters have the same number of locations - additional tie breakers.
+                    if (_datahub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+                        // This is a multiple coordinates analysis.
+                        if (_datahub.GetParameters().getUseLocationsNetworkFile()) {
+                            // Prefer the cluster with fewer nodes.
+                            unsigned int cluster1Nodes = getNumNodesInCluster(pCluster1);
+                            unsigned int cluster2Nodes = getNumNodesInCluster(pCluster2);
+                            if (cluster1Nodes < cluster2Nodes)
+                                return true;
+                            if (cluster2Nodes < cluster1Nodes)
+                                return false;
+                        } else {
+                            // Prefer the cluster with the smaller radius.
+                            if (pCluster1->GetCartesianRadius() < pCluster2->GetCartesianRadius())
+                                return true;
+                            if (pCluster2->GetCartesianRadius() < pCluster1->GetCartesianRadius())
+                                return false;
+                        }
+                    }
+
                     //if ratios are equal, lesser centroid index ranks greater
-                    if (pCluster1->GetMostCentralLocationIndex() != pCluster2->GetMostCentralLocationIndex())
-                        return (pCluster1->GetMostCentralLocationIndex() < pCluster2->GetMostCentralLocationIndex());
+                    if (pCluster1->mostCentralObservationGroupIdx() != pCluster2->mostCentralObservationGroupIdx())
+                        return (pCluster1->mostCentralObservationGroupIdx() < pCluster2->mostCentralObservationGroupIdx());
                     else
                         return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
                 } 
@@ -162,14 +193,14 @@ class MostLikelyClustersContainer {
     ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, ClusterSupplementInfo& supplement) const;
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
-    static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
-    static bool                 clusterContainsTract(const CSaTScanData& DataHub, tract_t clusterCenter, const CCluster& Cluster);
+    bool                        HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) const;
+    bool                        clusterContainsTract(const CSaTScanData& DataHub, tract_t clusterCenter, const CCluster& Cluster);
     static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride=0);
     void                        setClustersGini();
     void                        setClustersHierarchical();
-    void                        sort();
+    void                        sort(const CSaTScanData& DataHub);
 };
 
 typedef std::vector<MostLikelyClustersContainer> MLC_Collections_t;

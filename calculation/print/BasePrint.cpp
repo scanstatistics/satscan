@@ -118,6 +118,7 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType, bool clearWarningC
         case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
         case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
         case NETWORK_FILE            : gsInputFileString = "locations network file"; break;
+        case MULTIPLE_LOCATIONS      : gsInputFileString = "multiple locations file"; break;
         default : throw prg_error("Invalid input file type warning message!", "SetImpliedInputFileType()");
     }
     if (clearWarningCount) {

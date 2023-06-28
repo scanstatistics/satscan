@@ -320,7 +320,7 @@ AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalR
     RiskEstimateStatistics statistics;
     RiskEstimateStatistics::container_t::iterator itrObs, itrWeight;
 
-    statistics.init(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
+    statistics.init(DataHub.GetNumObsGroups() + DataHub.GetNumMetaObsGroups());
     StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
     PermutedContainerCollection_t::const_iterator itrPC=gvOriginalPermutedAttributeCollections.begin();
     for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
@@ -335,13 +335,13 @@ AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalR
     }
     //Now calculate values for meta locations.
     std::vector<tract_t> atomic;
-    for (tract_t t=0; t < DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(); ++t) {
-        DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(t, atomic);
+    for (tract_t t=0; t < DataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(); ++t) {
+        DataHub.GetGroupInfo().getMetaManagerProxy().getIndexes(t, atomic);
         for (std::vector<tract_t>::const_iterator itr=atomic.begin(); itr != atomic.end(); ++itr) {
-            statistics.gtTotalObserved[DataHub.GetNumTracts() + t] += statistics.gtTotalObserved[*itr];
-            statistics.gtMean[DataHub.GetNumTracts() + t] += statistics.gtMean[*itr];
-            statistics.gtTotalWeight[DataHub.GetNumTracts() + t] += statistics.gtTotalWeight[*itr];
-            statistics.gtWeightedMean[DataHub.GetNumTracts() + t] += statistics.gtWeightedMean[*itr];
+            statistics.gtTotalObserved[DataHub.GetNumObsGroups() + t] += statistics.gtTotalObserved[*itr];
+            statistics.gtMean[DataHub.GetNumObsGroups() + t] += statistics.gtMean[*itr];
+            statistics.gtTotalWeight[DataHub.GetNumObsGroups() + t] += statistics.gtTotalWeight[*itr];
+            statistics.gtWeightedMean[DataHub.GetNumObsGroups() + t] += statistics.gtWeightedMean[*itr];
         }
     }
     itrObs = statistics.gtTotalObserved.begin();
@@ -370,7 +370,7 @@ void AbstractWeightedNormalRandomizer::RemoveCase(int iTimeInterval, tract_t tTr
 
 /** Returns whether every defined location has one and onle only observation. */
 bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(CSaTScanData& DataHub) {
-    boost::dynamic_bitset<> locationsSet(DataHub.GetNumTracts());
+    boost::dynamic_bitset<> locationsSet(DataHub.GetNumObsGroups());
 
     StationaryContainerCollection_t::const_iterator itrSC=gvStationaryAttributeCollections.begin();
     for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC) {

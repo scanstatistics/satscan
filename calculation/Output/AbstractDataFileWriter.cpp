@@ -157,8 +157,8 @@ const char * AbstractDataFileWriter::MEAN_OUTSIDE_FIELD                 = "MEAN_
 const char * AbstractDataFileWriter::VARIANCE_FIELD                     = "VARIANCE";
 const char * AbstractDataFileWriter::STD_FIELD                          = "STD";
 const char * AbstractDataFileWriter::MEAN_VALUE_FIELD                   = "MEAN";
-const size_t AbstractDataFileWriter::DEFAULT_LOC_FIELD_SIZE             = 30;
-const size_t AbstractDataFileWriter::MAX_LOC_FIELD_SIZE                 = 254;
+const short AbstractDataFileWriter::DEFAULT_LOC_FIELD_SIZE              = 30;
+const short AbstractDataFileWriter::MAX_LOC_FIELD_SIZE                  = 254;
 const char * AbstractDataFileWriter::RECURRENCE_INTERVAL_FLD            = "RECURR_INT";
 const char * AbstractDataFileWriter::PERCENTAGE_CASES_FIELD             = "PCT_CASES";
 const char * AbstractDataFileWriter::POPULATION_FIELD                   = "POPULATION";
@@ -192,9 +192,7 @@ void AbstractDataFileWriter::CreateField(ptr_vector<FieldDef>& vFields, const st
 }
 
 /** Returns field length for location identifers fields. */
-size_t AbstractDataFileWriter::GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const {
-  const TractHandler* pHandler = DataHub.GetTInfo();
-
-  return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, pHandler->getMaxIdentifierLength()));
+short AbstractDataFileWriter::GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const {
+  return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, static_cast<short>(DataHub.getLocationsManager().getMaxNameLength())));
 }
 

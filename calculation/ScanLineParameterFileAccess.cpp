@@ -192,7 +192,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case EMAIL_BODY_NO_SIGNIFICANT          : return "email message body - no significant clusters (line 156)";
     case EMAIL_SUBJECT_SIGNIFICANT          : return "subject line of email - significant clusters (line 157)";
     case EMAIL_BODY_SIGNIFICANT             : return "email message body - significant clusters (line 158)";
-    case EMAIL_ATTACH_RESULTS               : return "email message - attach results (line 164)";
+    case EMAIL_ATTACH_RESULTS               : return "email message - attach results (line 159)";
+    case MULTIPLE_LOCATIONS_FILE            : return "filename of multiple locations for groups (160)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

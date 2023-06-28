@@ -40,8 +40,8 @@ class ChartSeries {
         std::string & toString(std::string& r) const {
             std::stringstream s;
 
-			s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
-				<< "', color: '#" << _color.c_str() << "', yAxis: " << _y_axis << ", marker: { enabled: true, symbol: '" << _symbol.c_str()
+            s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
+              << "', color: '#" << _color.c_str() << "', yAxis: " << _y_axis << ", marker: { enabled: true, symbol: '" << _symbol.c_str()
 				<< "', radius: 0 }, data: [" << _data_stream.str().c_str() << "]";
 			if (!_stack.empty())
 				s << ", stack: '" << _stack << "'";

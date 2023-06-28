@@ -8,277 +8,268 @@
 #include "SaTScanData.h"
 #include<boost/tokenizer.hpp>
 
-////////////////// AbstractMetaLocation////////////////////
+////////////////// AbstractMetaObsGroup////////////////////
 
 /** constructor */
-AbstractMetaLocation::AbstractMetaLocation(const char * sIdentifier) {
+AbstractMetaObsGroup::AbstractMetaObsGroup(const char * sIdentifier) {
   gsIndentifier = new char[strlen(sIdentifier) + 1];
   strcpy(gsIndentifier, sIdentifier);
 }
 
 /** destructor */
-AbstractMetaLocation::~AbstractMetaLocation() {
+AbstractMetaObsGroup::~AbstractMetaObsGroup() {
   try {delete[] gsIndentifier;} catch(...){}
 }
 
-////////////////// AtomicMetaLocation////////////////////
+////////////////// AtomicMetaObsGroup////////////////////
 
 /** constructor */
-AtomicMetaLocation::AtomicMetaLocation(const char * sIdentifier)
-                    :AbstractMetaLocation(sIdentifier), giTractIndex(0), gpPromotedMetaLocation(0) {}
+AtomicMetaObsGroup::AtomicMetaObsGroup(const char * sIdentifier)
+                    :AbstractMetaObsGroup(sIdentifier), _obs_group_index(0), gpPromotedMetaObsGroup(0) {}
 
-/** Returns indication of whether this location contains 'tAtomicIndex'. */
-bool AtomicMetaLocation::contains(tract_t tAtomicIndex) const {
-  if (gpPromotedMetaLocation) return gpPromotedMetaLocation->contains(tAtomicIndex);
-  return tAtomicIndex == giTractIndex;
+/** Returns indication of whether this metaobs-group contains 'tAtomicIndex'. */
+bool AtomicMetaObsGroup::contains(tract_t tAtomicIndex) const {
+  if (gpPromotedMetaObsGroup) return gpPromotedMetaObsGroup->contains(tAtomicIndex);
+  return tAtomicIndex == _obs_group_index;
 }
 
-/** Returns indication of whether this location contains 'pMetaLocation'. */
-bool AtomicMetaLocation::contains(const MetaLocation& pMetaLocation) const {
-  if (gpPromotedMetaLocation) return gpPromotedMetaLocation->contains(pMetaLocation);
+/** Returns indication of whether this meta obs-group contains 'pMetaLocation'. */
+bool AtomicMetaObsGroup::contains(const MetaObsGroup& object) const {
+  if (gpPromotedMetaObsGroup) return gpPromotedMetaObsGroup->contains(object);
   return false;
 }
 
-/** Retrieves atomic indexes of contained locations, in sequential order. */
-void AtomicMetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
-  if (gpPromotedMetaLocation) gpPromotedMetaLocation->getAtomicIndexes(AtomicIndexes);
-  else AtomicIndexes.push_back(giTractIndex);
+/** Retrieves atomic indexes contained, in sequential order. */
+void AtomicMetaObsGroup::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
+  if (gpPromotedMetaObsGroup) gpPromotedMetaObsGroup->getAtomicIndexes(AtomicIndexes);
+  else AtomicIndexes.push_back(_obs_group_index);
 }
 
-/** Returns indication of whether passed location object intersect geographically with this object. */
-bool AtomicMetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
-  if (gpPromotedMetaLocation) return gpPromotedMetaLocation->intersects(pLocation);
-  return pLocation.contains(giTractIndex);
+/** Returns indication of whether passed observation group object intersect geographically with this object. */
+bool AtomicMetaObsGroup::intersects(const AbstractMetaObsGroup& object) const {
+  if (gpPromotedMetaObsGroup) return gpPromotedMetaObsGroup->intersects(object);
+  return object.contains(_obs_group_index);
 }
 
-////////////////// MetaLocation ///////////////////////////
+////////////////// MetaObsGroup ///////////////////////////
 
 /** constructor */
-MetaLocation::MetaLocation(const char * sIdentifier) : AbstractMetaLocation(sIdentifier) {}
+MetaObsGroup::MetaObsGroup(const char * sIdentifier) : AbstractMetaObsGroup(sIdentifier) {}
 
-/** Adds atomic location object to this objects collection of AbstractMetaLocation locations. */
-void MetaLocation::addLocation(const AtomicMetaLocation * pLocation) {
-  gLocations.add(pLocation, false);
+/** Adds atomic object to this objects collection of AbstractMetaObsGroups. */
+void MetaObsGroup::addMetaObsGroup(const AtomicMetaObsGroup * object) {
+  _meta_obs_groups.add(object, false);
 }
 
-/** Adds meta location object to this objects collection of AbstractMetaLocation locations.
+/** Adds meta obs-group object to this objects collection of AbstractMetaObsGroup locations.
     Throw resolvable_error if 'this' object is contained is passed object. */
-void MetaLocation::addLocation(const MetaLocation * pLocation) {
-  if (pLocation->contains(*this))
-    throw resolvable_error("Error: Circular definition between meta locations '%s' and '%s'.",
-                           getIndentifier(), pLocation->getIndentifier());
-  gLocations.add(pLocation, false);
+void MetaObsGroup::addMetaObsGroup(const MetaObsGroup * object) {
+  if (object->contains(*this)) throw resolvable_error("Error: Circular definition between meta locations '%s' and '%s'.", getIndentifier(), object->getIndentifier());
+  _meta_obs_groups.add(object, false);
 }
 
-/** Returns indication of whether this location contains 'tAtomicIndex'. */
-bool MetaLocation::contains(tract_t tAtomicIndex) const {
-  for (unsigned int t=0; t < gLocations.size(); ++t)
-     if (gLocations[t]->contains(tAtomicIndex)) return true;
+/** Returns indication of whether this object contains 'tAtomicIndex'. */
+bool MetaObsGroup::contains(tract_t tAtomicIndex) const {
+  for (unsigned int t=0; t < _meta_obs_groups.size(); ++t)
+     if (_meta_obs_groups[t]->contains(tAtomicIndex)) return true;
   return false;
 }
 
-/** Returns indication of whether this location contains 'pMetaLocation'. */
-bool MetaLocation::contains(const MetaLocation& pMetaLocation) const {
-  if (this == &pMetaLocation) return true;
-  for (unsigned int t=0; t < gLocations.size(); ++t)
-     if (gLocations[t]->contains(pMetaLocation)) return true;
+/** Returns indication of whether this meta obs-group contains 'pMetaLocation'. */
+bool MetaObsGroup::contains(const MetaObsGroup& object) const {
+  if (this == &object) return true;
+  for (unsigned int t=0; t < _meta_obs_groups.size(); ++t)
+     if (_meta_obs_groups[t]->contains(object)) return true;
   return false;
 }
 
-/** Retrieves atomic indexes of contained locations, in sequential order. */
-void MetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
-  for (unsigned int t=0; t < gLocations.size(); ++t)
-     gLocations[t]->getAtomicIndexes(AtomicIndexes);
+/** Retrieves atomic indexes of contained groups, in sequential order. */
+void MetaObsGroup::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
+  for (unsigned int t=0; t < _meta_obs_groups.size(); ++t)
+     _meta_obs_groups[t]->getAtomicIndexes(AtomicIndexes);
 }
 
-/** Returns indication of whether passed location object intersect geographically with this object. */
-bool MetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
-  for (unsigned int t=0; t < gLocations.size(); ++t)
-     if (gLocations[t]->intersects(pLocation)) return true;
+/** Returns indication of whether passed object intersect geographically with this object. */
+bool MetaObsGroup::intersects(const AbstractMetaObsGroup& object) const {
+  for (unsigned int t=0; t < _meta_obs_groups.size(); ++t)
+     if (_meta_obs_groups[t]->intersects(object)) return true;
   return false;   
 }
 
-/////////////////////////// MetaLocationPool ///////////////////////////////////
+/////////////////////////// MetaObsGroupPool ///////////////////////////////////
 
-/** Adds meta-location with */
-bool MetaLocationManager::MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers) {
-  assert(gAdditionStatus == Accepting);
+/** Adds meta obs-group and obs-groups that define the the meta obs-group. */
+bool MetaObsGroupManager::MetaObsGroupPool::addMetaObsGroup(const std::string& sMetaIdentifier, const std::string& neighborsCSV) {
+  assert(_addition_status == Accepting);
 
   if (sMetaIdentifier.size() == 0) return false;
-  std::auto_ptr<MetaLocation> pMetaLocation(new MetaLocation(sMetaIdentifier.c_str()));
+  std::auto_ptr<MetaObsGroup> pMetaObsGroup(new MetaObsGroup(sMetaIdentifier.c_str()));
   tract_t tIndex;
-  if ((tIndex = getAtomicLocationIndex(sMetaIdentifier)) != -1) {
-    AtomicMetaLocation *pAtomicMetaLocation = gvAtomicLocations[tIndex];
-    pAtomicMetaLocation->setAsPromotedMetaLocation(pMetaLocation.get());
-    //move(not delete) this AtomicMetaLocation into the promoted container
-    gvAtomicLocations.erase(gvAtomicLocations.begin() + tIndex);
-    gvPromotedAtomicLocations.push_back(pAtomicMetaLocation);
+  if ((tIndex = getAtomicObsGroupIndex(sMetaIdentifier)) != -1) {
+    AtomicMetaObsGroup * object = _atomic_obs_groups[tIndex];
+    object->setAsPromotedMetaObsGroup(pMetaObsGroup.get());
+    //move(not delete) this AtomicMetaObsGroup into the promoted container
+    _atomic_obs_groups.erase(_atomic_obs_groups.begin() + tIndex);
+    _promoted_atomic_obs_groups.push_back(object);
   }
 
-  std::vector<tract_t> vLocationIndexes;
-  boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sLocationIndentifiers);
+  boost::tokenizer<boost::escaped_list_separator<char> > identifiers(neighborsCSV);
   for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
      std::string token = (*itr);
      trimString(token);
      if (token.size() == 0) return false;
      if (token == sMetaIdentifier)
        throw resolvable_error("Error: Meta location ID '%s' defines itself as a member.", sMetaIdentifier.c_str());
-     else if ((tIndex = getMetaLocationIndex(token)) != -1)
-       pMetaLocation->addLocation(gvMetaLocations[tIndex]);
+     else if ((tIndex = getMetaIndex(token)) != -1)
+         pMetaObsGroup->addMetaObsGroup(_meta_obs_groups[tIndex]);
      else {
-       //assume for now that token is referencing an atomic location
-       std::auto_ptr<AtomicMetaLocation> AtomicLocation(new AtomicMetaLocation(token.c_str()));
-       AtomicLocationsContainer_t::iterator itr=std::lower_bound(gvAtomicLocations.begin(), gvAtomicLocations.end(), AtomicLocation.get(), compareIdentifiers());
-       if (itr == gvAtomicLocations.end() || strcmp((*itr)->getIndentifier(), token.c_str()))
-         itr = gvAtomicLocations.insert(itr, AtomicLocation.release());
-       pMetaLocation->addLocation(*itr);
+       //assume for now that token is referencing an atomic observation group
+       std::auto_ptr<AtomicMetaObsGroup> atomic(new AtomicMetaObsGroup(token.c_str()));
+       AtomicObsGroupContainer_t::iterator itr=std::lower_bound(_atomic_obs_groups.begin(), _atomic_obs_groups.end(), atomic.get(), compareIdentifiers());
+       if (itr == _atomic_obs_groups.end() || strcmp((*itr)->getIndentifier(), token.c_str()))
+         itr = _atomic_obs_groups.insert(itr, atomic.release());
+       pMetaObsGroup->addMetaObsGroup(*itr);
      }
   }
 
-  MetaLocationsContainer_t::iterator itr=std::lower_bound(gvMetaLocations.begin(), gvMetaLocations.end(), pMetaLocation.get(), compareIdentifiers());
-  if (itr != gvMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str())) {
-    if (*(*itr) == *pMetaLocation) return true; // duplicate record
+  MetaObsGroupContainer_t::iterator itr=std::lower_bound(_meta_obs_groups.begin(), _meta_obs_groups.end(), pMetaObsGroup.get(), compareIdentifiers());
+  if (itr != _meta_obs_groups.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str())) {
+    if (*(*itr) == *pMetaObsGroup) return true; // duplicate record
     throw resolvable_error("Error: Meta location ID '%s' is defined multiple times.", sMetaIdentifier.c_str());
   }
-  gvMetaLocations.insert(itr, pMetaLocation.release());
+  _meta_obs_groups.insert(itr, pMetaObsGroup.release());
   return true;
 }
 
-/** Closes object to further additions of meta location definitions. Adds all accumulated
-    atomic locations to TractHandler object. */
-void MetaLocationManager::MetaLocationPool::additionsCompleted(TractHandler& TInfo) {
-  assert(gAdditionStatus == Accepting);
-  gAdditionStatus = Closed;
-  AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
-  TInfo.setCoordinateDimensions(0);
-  for (;itr != itr_end; ++itr)
-     TInfo.addLocation((*itr)->getIndentifier());
+/** Closes object to further additions of meta location definitions. Adds all accumulated atomic locations to ObservationGroupingManager object. */
+void MetaObsGroupManager::MetaObsGroupPool::additionsCompleted(ObservationGroupingManager& groupManager) {
+	assert(_addition_status == Accepting);
+	_addition_status = Closed;
+	groupManager.setExpectedCoordinateDimensions(0);
+    for (auto agr : _atomic_obs_groups)
+        groupManager.addLocation(agr->getIndentifier());
 }
 
-/** Assigns atomic indexes to each atomic location, as gotten from TractHandler object. */
-void MetaLocationManager::MetaLocationPool::assignAtomicIndexes(TractHandler& TInfo) {
-  assert(gAdditionStatus == Closed);
-  assert(TInfo.getAddStatus() == TractHandler::Closed);
-  AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
-  for (;itr != itr_end; ++itr)
-     (*itr)->setTractIndex(TInfo.getLocationIndex((*itr)->getIndentifier()));
+/** Assigns atomic indexes to each atomic obs-group, as gotten from ObservationGroupingManager object. */
+void MetaObsGroupManager::MetaObsGroupPool::assignAtomicIndexes(ObservationGroupingManager& groupManager) {
+	assert(_addition_status == Closed);
+	assert(groupManager.getWriteStatus() == ObservationGroupingManager::Closed);
+	for (auto agr: _atomic_obs_groups) {
+		auto groupIdx = groupManager.getObservationGroupIndex(agr->getIndentifier());
+		if (groupIdx) agr->setObGroupIndex(*groupIdx);
+	}
 }
 
 /** Returns index of location in internal collection atomic locations. Returns negative one if not found. */
-tract_t MetaLocationManager::MetaLocationPool::getAtomicLocationIndex(const std::string& sIdentifier) const {
-  std::auto_ptr<AtomicMetaLocation> search(new AtomicMetaLocation(sIdentifier.c_str()));
-  AtomicLocationsContainer_t::const_iterator itr=std::lower_bound(gvAtomicLocations.begin(), gvAtomicLocations.end(), search.get(), compareIdentifiers());
-  if (itr != gvAtomicLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier.c_str()))
-    return std::distance(gvAtomicLocations.begin(), itr);
+tract_t MetaObsGroupManager::MetaObsGroupPool::getAtomicObsGroupIndex(const std::string& sIdentifier) const {
+  std::auto_ptr<AtomicMetaObsGroup> search(new AtomicMetaObsGroup(sIdentifier.c_str()));
+  AtomicObsGroupContainer_t::const_iterator itr=std::lower_bound(_atomic_obs_groups.begin(), _atomic_obs_groups.end(), search.get(), compareIdentifiers());
+  if (itr != _atomic_obs_groups.end() && !strcmp((*itr)->getIndentifier(), sIdentifier.c_str()))
+    return std::distance(_atomic_obs_groups.begin(), itr);
   else
     return -1;
 }
 
-/** Returns index of location in internal collection meta locations. Returns negative one if not found. */
-tract_t MetaLocationManager::MetaLocationPool::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
-  std::auto_ptr<MetaLocation> search(new MetaLocation(sMetaIdentifier.c_str()));
-  MetaLocationsContainer_t::const_iterator itr=std::lower_bound(gvMetaLocations.begin(), gvMetaLocations.end(), search.get(), compareIdentifiers());
-  if (itr != gvMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
-    return std::distance(gvMetaLocations.begin(), itr);
+/** Returns index of obs-group in internal collection meta obs-group. Returns negative one if not found. */
+tract_t MetaObsGroupManager::MetaObsGroupPool::getMetaIndex(const std::string& sMetaIdentifier) const {
+  std::auto_ptr<MetaObsGroup> search(new MetaObsGroup(sMetaIdentifier.c_str()));
+  MetaObsGroupContainer_t::const_iterator itr=std::lower_bound(_meta_obs_groups.begin(), _meta_obs_groups.end(), search.get(), compareIdentifiers());
+  if (itr != _meta_obs_groups.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
+    return std::distance(_meta_obs_groups.begin(), itr);
   else
     return -1;
 }
 
-/** Prints defined meta locations to file stream. */
-void MetaLocationManager::MetaLocationPool::print(TractHandler& TInfo, FILE * stream) const {
-  FILE * fp=0;
-  if (!stream) {
-    if ((fp = fopen("MetaLocationPool.print", "w")) == NULL) return;
-    stream = fp;
-  }
+/** Prints defined meta obs-group to file stream. */
+void MetaObsGroupManager::MetaObsGroupPool::print(const ObservationGroupingManager& groupManager, FILE * stream) const {
+	FILE * fp = 0;
+	if (!stream) {
+		if ((fp = fopen("MetaLocationPool.print", "w")) == NULL) return;
+		stream = fp;
+	}
 
-  //print meta locations, top level only 
-  MetaLocationsContainer_t::const_iterator itr=gvMetaLocations.begin(), itr_end=gvMetaLocations.end();
-  for (;itr != itr_end; ++itr) {
-     fprintf(stream, "%s", (*itr)->getIndentifier());
-     for (unsigned int t=0; t < (*itr)->getLocations().size(); ++t)
-       fprintf(stream, "%s%s", (t == 0 ? "=" : ","), (*itr)->getLocations()[t]->getIndentifier());
-     fprintf(stream, "\n");
-  }
-  //print meta locations, broken down into respective atomic indexes 
-  fprintf(stream, "\n");
-  std::vector<tract_t> AtomicIndexes;
-  for (size_t t=0; t < gvMetaLocations.size(); ++t) {
-     fprintf(stream, "%s", gvMetaLocations[t]->getIndentifier());
-     AtomicIndexes.clear();
-     gvMetaLocations[t]->getAtomicIndexes(AtomicIndexes);
-     for (unsigned int t=0; t < AtomicIndexes.size(); ++t)
-       fprintf(stream, "%s%s(index=%d)", (t == 0 ? "=" : ","), TInfo.getLocations().at(AtomicIndexes.at(t))->getIndentifier(), AtomicIndexes.at(t));
-     fprintf(stream, "\n");
-  }
-  if (fp) fclose(fp);
+	//print meta locations, top level only 
+	for (auto gr: _meta_obs_groups) {
+		fprintf(stream, "%s", gr->getIndentifier());
+		for (unsigned int t = 0; t < gr->getMetaObsGroups().size(); ++t)
+			fprintf(stream, "%s%s", (t == 0 ? "=" : ","), gr->getMetaObsGroups()[t]->getIndentifier());
+		fprintf(stream, "\n");
+	}
+	//print meta locations, broken down into respective atomic indexes 
+	fprintf(stream, "\n");
+	std::vector<tract_t> AtomicIndexes;
+	for (auto gr: _meta_obs_groups) {
+		fprintf(stream, "%s", gr->getIndentifier());
+		AtomicIndexes.clear();
+		gr->getAtomicIndexes(AtomicIndexes);
+		for (unsigned int t = 0; t < AtomicIndexes.size(); ++t)
+			fprintf(stream, "%s%s(index=%d)", (t == 0 ? "=" : ","), groupManager.getObservationGroups().at(AtomicIndexes.at(t))->groupname().c_str(), AtomicIndexes.at(t));
+		fprintf(stream, "\n");
+	}
+	if (fp) fclose(fp);
 }
 
-/////////////////////////// MetaLocationManager ////////////////////////////////
+/////////////////////////// MetaObsGroupManager ////////////////////////////////
 
-/** Adds meta location at index collection of locations that are directly referenced
-    in the neighbors file definition. */
-unsigned int MetaLocationManager::addReferenced(unsigned int tMetaLocation) {
-  assert(geState == accepting);
-  const MetaLocation* pLocation = gMetaLocationPool.getLocations().at(tMetaLocation);
-  MetaLocationsRefContainer_t::iterator itr=std::lower_bound(gMetaLocations.begin(), gMetaLocations.end(), pLocation, compareIdentifiers());
-  if (itr == gMetaLocations.end() || strcmp((*itr)->getIndentifier(), pLocation->getIndentifier()))
-    itr = gMetaLocations.insert(itr, pLocation);
-  giReferencedMetaLocations = gMetaLocations.size();
-  return std::distance(gMetaLocations.begin(), itr);
+/** Adds meta observation group at index collection that are directly referenced in the neighbors file definition. */
+unsigned int MetaObsGroupManager::addReferenced(unsigned int metaIdx) {
+  assert(_state == accepting);
+  const MetaObsGroup* object = _meta_obs_group_pool.getMetaObsGroups().at(metaIdx);
+  MetaObsGroupRefContainer_t::iterator itr=std::lower_bound(_meta_obs_groups.begin(), _meta_obs_groups.end(), object, compareIdentifiers());
+  if (itr == _meta_obs_groups.end() || strcmp((*itr)->getIndentifier(), object->getIndentifier()))
+    itr = _meta_obs_groups.insert(itr, object);
+  _referenced_meta_obs_groups = _meta_obs_groups.size();
+  return std::distance(_meta_obs_groups.begin(), itr);
 }
 
-/** Retrieves atomic indexes as defined by meta location at 'tMetaLocation'. */
-std::vector<tract_t> & MetaLocationManager::getAtomicIndexes(unsigned int tMetaLocation, std::vector<tract_t>& AtomicIndexes) const {
+/** Retrieves atomic indexes as defined by meta obs-group at 'metaIdx'. */
+std::vector<tract_t> & MetaObsGroupManager::getAtomicIndexes(unsigned int metaIdx, std::vector<tract_t>& AtomicIndexes) const {
   AtomicIndexes.clear();
-  gMetaLocations.at(tMetaLocation)->getAtomicIndexes(AtomicIndexes);
+  _meta_obs_groups.at(metaIdx)->getAtomicIndexes(AtomicIndexes);
   return AtomicIndexes;
 }
 
-/** Returns index of location in internal collection meta locations. Returns negative one if not found. */
-tract_t MetaLocationManager::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
-  std::auto_ptr<MetaLocation> search(new MetaLocation(sMetaIdentifier.c_str()));
-  MetaLocationsRefContainer_t::const_iterator itr=std::lower_bound(gMetaLocations.begin(), gMetaLocations.begin() + giReferencedMetaLocations, search.get(), compareIdentifiers());
-  if (itr != gMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
-    return std::distance(gMetaLocations.begin(), itr);
+/** Returns index of obs-group in internal collection meta obs-group. Returns negative one if not found. */
+tract_t MetaObsGroupManager::getMetaIndex(const std::string& sMetaIdentifier) const {
+  std::auto_ptr<MetaObsGroup> search(new MetaObsGroup(sMetaIdentifier.c_str()));
+  MetaObsGroupRefContainer_t::const_iterator itr=std::lower_bound(_meta_obs_groups.begin(), _meta_obs_groups.begin() + _referenced_meta_obs_groups, search.get(), compareIdentifiers());
+  if (itr != _meta_obs_groups.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
+    return std::distance(_meta_obs_groups.begin(), itr);
   else
     return -1;
 }
 
-/** Returns reference to meta locations pool. */
-MetaLocationManager::MetaLocationPool & MetaLocationManager::getMetaLocationPool() {
-  assert(geState == accepting);
-  return gMetaLocationPool;
+/** Returns reference to meta obs-group pool. */
+MetaObsGroupManager::MetaObsGroupPool & MetaObsGroupManager::getMetaPool() {
+  assert(_state == accepting);
+  return _meta_obs_group_pool;
 }
 
-/** Returns indication of whether 'tTractIndex' is contained in meta location at 'tMetaLocation'. */
-bool MetaLocationManager::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
-  return gMetaLocations.at(tMetaLocation)->contains(tTractIndex);
+/** Returns indication of whether 'obsGroupIdx' is contained in meta obs-group at 'metaIdx'. */
+bool MetaObsGroupManager::intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const {
+  return _meta_obs_groups.at(metaIdx)->contains(obsGroupIdx);
 }
 
-/** Returns indication of whether two meta locations intersect geographically. */
-bool MetaLocationManager::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
-  if (tMetaLocationL == tMetaLocationR) return true;
-  return gMetaLocations.at(tMetaLocationL)->intersects(*gMetaLocations.at(tMetaLocationR));
+/** Returns indication of whether two meta obs-groups intersect geographically. */
+bool MetaObsGroupManager::intersects(unsigned int left, unsigned int right) const {
+  return left == right || _meta_obs_groups.at(left)->intersects(*_meta_obs_groups.at(right));
 }
 
-/** Closes manager to further updates and appends remaining not referenced meta locations
-    to list of referenced meta locations (if 'bIncludePoolRemainders' is true). Appending not
-    referenced meta locations is needed when user requests the risk estimates file; otherwise
-    only meta locations referenced in the neighbors file will be reported in that optional file. 
-    Not that the number of referenced meta locations is stored in class variable 'giReferencedMetaLocations'.*/
-void MetaLocationManager::setStateFixed(bool bIncludePoolRemainders) {
-  assert(geState == accepting);
-  if (bIncludePoolRemainders) {
-    MetaLocationPool::MetaLocationsContainer_t::const_iterator itr=gMetaLocationPool.getLocations().begin(),
-                                                               itr_end=gMetaLocationPool.getLocations().end();
-    for (; itr != itr_end; ++itr) {
-      MetaLocationsRefContainer_t::iterator itrPos=std::lower_bound(gMetaLocations.begin(), gMetaLocations.begin() + giReferencedMetaLocations, *itr, compareIdentifiers());
-      if (itrPos == gMetaLocations.end() || strcmp((*itrPos)->getIndentifier(), (*itr)->getIndentifier()))
-        gMetaLocations.push_back(*itr);
+/** Closes manager to further updates and appends remaining not referenced meta obs-groups
+    to list of referenced meta obs-groups (if 'bIncludePoolRemainders' is true). Appending not
+    referenced meta obs-groups is needed when user requests the risk estimates file; otherwise
+    only meta obs-groups referenced in the neighbors file will be reported in that optional file. 
+    Note that the number of referenced meta obs-groups is stored in class variable '_referenced_meta_obs_groups'.*/
+void MetaObsGroupManager::setStateFixed(bool bIncludePoolRemainders) {
+    assert(_state == accepting);
+    if (bIncludePoolRemainders) {
+        for (auto gr: _meta_obs_group_pool.getMetaObsGroups()) {
+            MetaObsGroupRefContainer_t::iterator itrPos = std::lower_bound(_meta_obs_groups.begin(), _meta_obs_groups.begin() + _referenced_meta_obs_groups, gr, compareIdentifiers());
+            if (itrPos == _meta_obs_groups.end() || strcmp((*itrPos)->getIndentifier(), gr->getIndentifier()))
+                _meta_obs_groups.push_back(gr);
+        }
     }
-  }
-  geState = closed;
+    _state = closed;
 }
 
 ///////////////////////////// MetaNeighborManager //////////////////////////////
@@ -305,12 +296,12 @@ bool MetaNeighborManager::equal(const std::vector<tract_t>& v, const MinimalGrow
   return true;
 }
 
-/** Returns first tract index defined for meta location at index 'iCollectionIndex'. */
+/** Returns first obs-group index defined for meta obs-group at index 'iCollectionIndex'. */
 tract_t MetaNeighborManager::getFirst(unsigned int iCollectionIndex) const {
   return gvUnifiedIndexesCollection.at(iCollectionIndex)->operator[](0);
 }
 
-/** Returns tract indexes defined for meta location at index 'iCollectionIndex'. */
+/** Returns obs-group indexes defined for meta obs-group at index 'iCollectionIndex'. */
 std::vector<tract_t> & MetaNeighborManager::getIndexes(unsigned int iCollectionIndex, std::vector<tract_t>& v) const {
    MinimalGrowthArray<tract_t>& indexes = *gvUnifiedIndexesCollection.at(iCollectionIndex);
    v.resize(indexes.size());
@@ -318,57 +309,55 @@ std::vector<tract_t> & MetaNeighborManager::getIndexes(unsigned int iCollectionI
    return v;
 }
 
-/** Returns whether tract 'tTractIndex' intersects with any tracts defined by meta location at 'tMetaLocation'. */
-bool MetaNeighborManager::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
-  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(tMetaLocation);
+/** Returns whether obs-group 'obsGroupIdx' intersects with any obs-group defined by meta location at 'metaIdx'. */
+bool MetaNeighborManager::intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const {
+  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(metaIdx);
   for (unsigned int t=0; t < a.size(); ++t)
-     if (tTractIndex == a[t]) return true;
+     if (obsGroupIdx == a[t]) return true;
   return false;
 }
 
-/** Returns whether any tracts defined by meta location at 'tMetaLocationL' intersects with any tracts
-    defined by meta location 'tMetaLocationR'. */
-bool MetaNeighborManager::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
-  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(tMetaLocationL);
+/** Returns whether any obs-group defined by meta obs-group at 'left' intersects with any obs-group defined by meta obs-group 'right'. */
+bool MetaNeighborManager::intersects(unsigned int left, unsigned int right) const {
+  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(left);
   for (unsigned int t=0; t < a.size(); ++t)
-     if (intersectsTract(tMetaLocationR, a[t])) return true;
+     if (intersectsObsGroup(right, a[t])) return true;
   return false;
 }
 
 ///////////////////////////// MetaManagerProxy /////////////////////////////////
 
 /** constructor */
-MetaManagerProxy::MetaManagerProxy(const MetaLocationManager& LocationManager, const MetaNeighborManager& NeighborManager)
-                 :gpMetaLocationManager(&LocationManager), gpMetaNeighborManager(&NeighborManager) {}
+MetaManagerProxy::MetaManagerProxy(const MetaObsGroupManager& metaObsGroupsManager, const MetaNeighborManager& NeighborManager)
+                 :gpMetaObsGroupManager(&metaObsGroupsManager), gpMetaNeighborManager(&NeighborManager) {}
 
-/** Returns tract indexes defined by meta location at 'tMetaLocation'. */
-std::vector<tract_t> & MetaManagerProxy::getIndexes(unsigned int tMetaLocation, std::vector<tract_t>& Indexes) const {
-  if (tMetaLocation < gpMetaLocationManager->getLocations().size())
-    gpMetaLocationManager->getAtomicIndexes(tMetaLocation, Indexes);
+/** Returns obs-group indexes defined by meta location at 'metaIdx'. */
+std::vector<tract_t> & MetaManagerProxy::getIndexes(unsigned int metaIdx, std::vector<tract_t>& Indexes) const {
+  if (metaIdx < gpMetaObsGroupManager->getMetaObsGroups().size())
+    gpMetaObsGroupManager->getAtomicIndexes(metaIdx, Indexes);
   else
-    gpMetaNeighborManager->getIndexes(tMetaLocation, Indexes);
+    gpMetaNeighborManager->getIndexes(metaIdx, Indexes);
   return Indexes;
 }
 
-/** Returns number of defined meta locations. */
-unsigned int MetaManagerProxy::getNumMetaLocations() const {
-  return gpMetaLocationManager->getNumReferencedLocations() + gpMetaNeighborManager->size();
+/** Returns number of defined meta observation groups. */
+unsigned int MetaManagerProxy::getNumMeta() const {
+  return gpMetaObsGroupManager->getNumReferenced() + gpMetaNeighborManager->size();
 }
 
-/** Returns whether tract 'tTractIndex' intersects with any tracts defined by meta location at 'tMetaLocation'. */
-bool MetaManagerProxy::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
-  if (tMetaLocation < gpMetaLocationManager->getNumReferencedLocations())
-    return gpMetaLocationManager->intersectsTract(tMetaLocation, tTractIndex);
+/** Returns whether 'obsGroupIdx' intersects with any obs-group defined by meta obs-group at 'metaIdx'. */
+bool MetaManagerProxy::intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const {
+  if (metaIdx < gpMetaObsGroupManager->getNumReferenced())
+    return gpMetaObsGroupManager->intersectsObsGroup(metaIdx, obsGroupIdx);
   else
-    return gpMetaNeighborManager->intersectsTract(tMetaLocation, tTractIndex);
+    return gpMetaNeighborManager->intersectsObsGroup(metaIdx, obsGroupIdx);
 }
 
-/** Returns whether any tracts defined by meta location at 'tMetaLocationL' intersects with any tracts
-    defined by meta location 'tMetaLocationR'. */
-bool MetaManagerProxy::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
-  if (tMetaLocationL < gpMetaLocationManager->getNumReferencedLocations())
-    return gpMetaLocationManager->intersects(tMetaLocationL, tMetaLocationR);
+/** Returns whether any tracts defined by meta obs-group at 'left' intersects with any tracts defined by meta obs-group 'right'. */
+bool MetaManagerProxy::intersects(unsigned int left, unsigned int right) const {
+  if (left < gpMetaObsGroupManager->getNumReferenced())
+    return gpMetaObsGroupManager->intersects(left, right);
   else
-    return gpMetaNeighborManager->intersects(tMetaLocationL, tMetaLocationR);
+    return gpMetaNeighborManager->intersects(left, right);
 }
 

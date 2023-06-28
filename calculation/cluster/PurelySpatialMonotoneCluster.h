@@ -34,6 +34,7 @@ class CPSMonotoneCluster : public CCluster {
     virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
     virtual void                Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const;
     virtual void                DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
+    void                        DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract, tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;

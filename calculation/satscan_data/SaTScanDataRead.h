@@ -27,14 +27,14 @@ class SaTScanDataReader {
     BasePrint                 & gPrint;
     const CParameters         & gParameters;
     GInfo                     & gCentroidsHandler;
-    TractHandler              & gTractHandler;
+	ObservationGroupingManager& _group_manager;
     std::deque<void*>           gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
     bool                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
     bool                        ReadBernoulliData();
     bool                        ReadCoordinatesFile();
-    bool                        ReadCoordinatesFileAsCartesian(DataSource& Source);
-    bool                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
+    bool                        ReadCoordinatesFileAsCartesian(DataSource& Source, bool closeAdditions = true);
+    bool                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source, bool closeAdditions=true);
     bool                        ReadExponentialData();
     bool                        ReadGridFile();
     bool                        ReadGridFileAsCartiesian(DataSource& Source);

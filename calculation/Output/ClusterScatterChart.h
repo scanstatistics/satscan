@@ -62,7 +62,7 @@ protected:
     RegionSettings                      _clusterRegion;
     RegionSettings                      _entireRegion;
     std::stringstream                   _cluster_definitions;
-    std::vector<tract_t>                _clusterLocations;
+    boost::dynamic_bitset<>             _cluster_locations;
     unsigned int                        _clusters_written;
     double                              _median_parallel;
 

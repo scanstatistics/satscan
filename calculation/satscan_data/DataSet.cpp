@@ -345,11 +345,11 @@ TwoDimMeasureArray_t & DataSet::getMeasureData_Aux() const {
 
 /** For each allocated data structure which could contain meta data, reallocates and
     assigns meta data. */
-void DataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
-  giMetaLocations = MetaProxy.getNumMetaLocations();
+void DataSet::reassignMetaData(const MetaManagerProxy& MetaProxy) {
+  giMetaLocations = MetaProxy.getNumMeta();
   if (gpCaseData) {
     gpCaseData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
-    setCaseData_MetaLocations(MetaProxy);
+    setCaseDataMeta(MetaProxy);
   }
   if (gpCaseData_NC) {
     gpCaseData_NC->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
@@ -358,11 +358,11 @@ void DataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
   if (gvCaseData_Cat.size()) {
     for (unsigned int c=0; c < gvCaseData_Cat.size(); ++c)
        gvCaseData_Cat[c]->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
-    setCaseData_Cat_MetaLocations(MetaProxy);
+    setCaseDataCatMeta(MetaProxy);
   }
   if (gpMeasureData) {
     gpMeasureData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
-    setMeasureData_MetaLocations(MetaProxy);
+    setMeasureDataMeta(MetaProxy);
   }
   if (gpMeasureData_NC) {
     gpMeasureData_NC->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
@@ -370,12 +370,12 @@ void DataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
   }
   if (gpMeasureData_Aux) {
     gpMeasureData_Aux->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
-    setMeasureData_Aux_MetaLocations(MetaProxy);
+    setMeasureDataAuxMeta(MetaProxy);
   }
 }
 
 /** Sets case data at meta location indexes. */
-void DataSet::setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy) {
+void DataSet::setCaseDataMeta(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
   count_t ** ppCases = getCaseData().GetArray();
 
@@ -393,7 +393,7 @@ void DataSet::setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy) {
 }
 
 /** Sets case category data at meta location indexes. */
-void DataSet::setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy) {
+void DataSet::setCaseDataCatMeta(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
@@ -413,7 +413,7 @@ void DataSet::setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy) {
 }
 
 /** Sets measure data at meta location indexes. */
-void DataSet::setMeasureData_MetaLocations(const MetaManagerProxy& MetaLocations) {
+void DataSet::setMeasureDataMeta(const MetaManagerProxy& MetaLocations) {
   std::vector<tract_t>  AtomicIndexes;
   measure_t ** ppMeasure = getMeasureData().GetArray();
 
@@ -431,7 +431,7 @@ void DataSet::setMeasureData_MetaLocations(const MetaManagerProxy& MetaLocations
 }
 
 /** Sets measure auxillary data at meta location indexes. */
-void DataSet::setMeasureData_Aux_MetaLocations(const MetaManagerProxy& MetaLocations) {
+void DataSet::setMeasureDataAuxMeta(const MetaManagerProxy& MetaLocations) {
   std::vector<tract_t>  AtomicIndexes;
   measure_t ** ppMeasure = getMeasureData_Aux().GetArray();
 
@@ -758,8 +758,8 @@ TwoDimCountArray_t & RealDataSet::getControlData() const {
 
 /** For each allocated data structure which could contain meta data, reallocates and
     assigns meta data. */
-void RealDataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
-  DataSet::reassignMetaLocationData(MetaProxy);
+void RealDataSet::reassignMetaData(const MetaManagerProxy& MetaProxy) {
+  DataSet::reassignMetaData(MetaProxy);
   if (gpCaseData_Censored) {
     gpCaseData_Censored->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
     setCaseData_Censored_MetaLocations(MetaProxy);

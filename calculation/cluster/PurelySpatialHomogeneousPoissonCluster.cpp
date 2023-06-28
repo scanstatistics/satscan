@@ -44,8 +44,8 @@ PurelySpatialHomogeneousPoissonCluster::~PurelySpatialHomogeneousPoissonCluster(
 /** overloaded assignment operator */
 PurelySpatialHomogeneousPoissonCluster& PurelySpatialHomogeneousPoissonCluster::operator=(const PurelySpatialHomogeneousPoissonCluster& rhs) {
   m_Center                = rhs.m_Center;
-  m_MostCentralLocation   = rhs.m_MostCentralLocation;
-  m_nTracts               = rhs.m_nTracts;
+  _central_observation_group   = rhs._central_observation_group;
+  _num_observation_groups               = rhs._num_observation_groups;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   _ratio_sets             = rhs._ratio_sets;
@@ -60,8 +60,8 @@ PurelySpatialHomogeneousPoissonCluster& PurelySpatialHomogeneousPoissonCluster::
 
 void PurelySpatialHomogeneousPoissonCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_Center                = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_Center;
-  m_MostCentralLocation   = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_MostCentralLocation;
-  m_nTracts               = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nTracts;
+  _central_observation_group   = ((PurelySpatialHomogeneousPoissonCluster&)rhs)._central_observation_group;
+  _num_observation_groups               = ((PurelySpatialHomogeneousPoissonCluster&)rhs)._num_observation_groups;
   m_CartesianRadius       = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_CartesianRadius;
   m_nRatio                = ((PurelySpatialHomogeneousPoissonCluster&)rhs).m_nRatio;
   _ratio_sets             = ((const PurelySpatialHomogeneousPoissonCluster&)rhs)._ratio_sets;
@@ -77,13 +77,13 @@ void PurelySpatialHomogeneousPoissonCluster::CopyEssentialClassMembers(const CCl
     Updates cluster set given current state of this cluster object. */
 void PurelySpatialHomogeneousPoissonCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                        const CentroidNeighbors& CentroidDef,
-                                                                       const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                                                       const CentroidNeighborCalculator::DistanceContainer_t& locDist,
                                                                        CClusterSet& clusterSet,
                                                                        AbstractLikelihoodCalculator& Calculator) {
   measure_t tAdjustment = DataGateway.GetDataSetInterface().GetTotalMeasureAuxCount();
   for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
-    ++m_nTracts;
-    gpClusterData->gtCases = m_nTracts;
+    ++_num_observation_groups;
+    gpClusterData->gtCases = _num_observation_groups;
     gpClusterData->gtMeasure = pow(locDist[t].GetDistance(),2.0) * PI * tAdjustment;
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     clusterSet.update(*this);
@@ -112,8 +112,8 @@ measure_t PurelySpatialHomogeneousPoissonCluster::GetExpectedCountForTract(tract
   //return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
   std::vector<double>   ClusterCenter,TractCoords;
   DataHub.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);
-  CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), TractCoords);
-  double distance = std::sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, TractCoords));
+  CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, _num_observation_groups), TractCoords);
+  double distance = Coordinates::distanceBetween(ClusterCenter, TractCoords);
   measure_t tAdjustment = DataHub.GetDataSetHandler().GetDataSet().getTotalMeasureAux();
   return pow(distance,2.0) * PI * tAdjustment;
 }
@@ -132,8 +132,8 @@ std::string& PurelySpatialHomogeneousPoissonCluster::GetStartDate(std::string& s
 /** re-initializes cluster data */
 void PurelySpatialHomogeneousPoissonCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
-  m_MostCentralLocation = -1;
-  m_nTracts = 0;
+  _central_observation_group = -1;
+  _num_observation_groups = 0;
   m_nRatio = 0;
   m_CartesianRadius = -1;
   gpClusterData->InitializeData();

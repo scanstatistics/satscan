@@ -458,7 +458,7 @@ void TemporalChartGenerator::generateChart() const {
                 // replace the series
                 chart_series << observedSeries->toString(buffer).c_str();
 				if (expectedSeries.get())
-					chart_series << "," << expectedSeries->toString(buffer).c_str();
+                chart_series << "," << expectedSeries->toString(buffer).c_str();
 				if (clusterSeries.get())
 					chart_series << "," << clusterSeries->toString(buffer).c_str();
                 if (observedClusterSeries.get())
@@ -579,24 +579,12 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
         // if not purely temporal cluster, we're expressing this as outside verse inside cluster
         if (cluster_observedSeries || cluster_expectedSeries) {
             // calculate cluster observed and expected series across entire period, not just cluster window
-            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                if (tTract >= _dataHub.GetNumTracts() && _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations()) {
-                    //When the location index exceeds number of tracts and the meta neighbors manager contains
-                    //entries, we need to resolve meta location into it's real location indexes.
-                    std::vector<tract_t> indexes;
-                    _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
-                    for (size_t t=0; t < indexes.size(); ++t) {
-                        for (int i=itrGrp->first; i < itrGrp->second; ++i) {
-                            cluster_observed += (i == intervals - 1 ? ppcases[i][indexes[t]] : ppcases[i][indexes[t]] - ppcases[i+1][indexes[t]]);
-                            cluster_expected += (i == intervals - 1 ? ppmeasure[i][indexes[t]] : ppmeasure[i][indexes[t]] - ppmeasure[i+1][indexes[t]]);
-                        }
-                    }
-                } else {
-                    for (int i=itrGrp->first; i < itrGrp->second; ++i) {
-                        cluster_observed += (i == intervals - 1 ? ppcases[i][tTract] : ppcases[i][tTract] - ppcases[i+1][tTract]);
-                        cluster_expected += (i == intervals - 1 ? ppmeasure[i][tTract] : ppmeasure[i][tTract] - ppmeasure[i+1][tTract]);
-                    }
+            std::vector<tract_t> indexes;
+            cluster.getGroupIndexes(_dataHub, indexes, true);
+            for (auto t : indexes) {
+                for (int i = itrGrp->first; i < itrGrp->second; ++i) {
+                    cluster_observed += (i == intervals - 1 ? ppcases[i][t] : ppcases[i][t] - ppcases[i + 1][t]);
+                    cluster_expected += (i == intervals - 1 ? ppmeasure[i][t] : ppmeasure[i][t] - ppmeasure[i + 1][t]);
                 }
             }
             // removed observed and expected from overall temporal values
@@ -627,7 +615,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
 		if (cluster_observedSeries) {
 			cluster_observedSeries->datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",");
 			if (cluster.m_nFirstInterval <= itrGrp->first && itrGrp->second <= cluster.m_nLastInterval) {
-				cluster_observedSeries->datastream() << "{y:" << cluster_observed << "," << "color: '#BF0B23'}";
+				cluster_observedSeries->datastream() << "{y:" << cluster_observed << "," << "color:'#BF0B23'}";
 			} else
 				cluster_observedSeries->datastream() << cluster_observed;
 		}

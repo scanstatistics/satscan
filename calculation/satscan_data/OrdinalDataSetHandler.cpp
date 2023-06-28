@@ -43,16 +43,16 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void OrdinalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void OrdinalDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr)
-    (*itr)->setCaseData_Cat_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseDataCatMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
 }
 
 /** returns data gateway for real data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -99,7 +99,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
 AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -189,7 +189,7 @@ void OrdinalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseData_Cat_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setCaseDataCatMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
   }
 }
 

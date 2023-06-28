@@ -34,12 +34,12 @@ SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(Simulat
 }
 
 /** For each data set, assigns data at meta location indexes. */
-void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+void PoissonDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
     for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
         // Set the case data for meta locations unless we're doing a power evaluation without reading the case file.
         if (!gParameters.getPerformPowerEvaluation() || !(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))
-            (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-        (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+            (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+        (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
     }
 }
 
@@ -50,7 +50,7 @@ const RealDataContainer_t & PoissonDataSetHandler::buildOliveiraDataSets() {
             throw prg_error("buildOliveiraDataSets() is not implemented for analysis type '%d'.", "DataSetHandler::buildOliveiraDataSets()", gParameters.GetAnalysisType());
         _oliveira_data_sets.killAll();
         for (unsigned int i=0; i < gDataHub.GetNumDataSets(); ++i) {
-            _oliveira_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+            _oliveira_data_sets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups(), gDataHub.GetNumMetaObsGroups(), gParameters, i + 1));
             // allocate measure data and initialize from case data in real data set
             RealDataSet & oliveira_dataset = *_oliveira_data_sets.back();
             oliveira_dataset.allocateMeasureData();
@@ -116,8 +116,7 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
 bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   float                                                 fPopulation = 1000; /** arbitrarily selected population */
   PopulationData::PopulationDateContainer_t             vprPopulationDates;
-  const TractHandler&                                   theTracts = *(gDataHub.GetTInfo());
-  tract_t                                               t, tNumTracts = theTracts.getLocations().size();
+  tract_t                                               t, tNumTracts = gDataHub.GetGroupInfo().getObservationGroups().size();
   int                                                   iCategoryIndex;
 
   try {
@@ -146,7 +145,7 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
 AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+	  gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -208,7 +207,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
 AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
     DataSetInterface Interface(
         gDataHub.GetNumTimeIntervals(), 
-        gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+        gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
         gDataHub.getDataInterfaceIntervalStartIndex()
     );
 
@@ -253,7 +252,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetOliveraDataGateway(AbstractDa
 AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(), 
-      gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(),
+      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -314,7 +313,7 @@ void PoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations())
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
 }
 
 /** Attempts to read population and case data files into class RealDataSet objects. */

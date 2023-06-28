@@ -36,7 +36,7 @@ void DisplayInitialData(Julian  StartDate,
                         double* pAlpha,
                         int     nPops);
 
-bool ValidateMeasures(const TractHandler *pTInfo,
+bool ValidateMeasures(const ObservationGroupingManager& groups,
                       measure_t** Measures,
 		      measure_t   nTotalMeasure,
 		      measure_t   nMaxCircleSize,

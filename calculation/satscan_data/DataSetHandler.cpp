@@ -72,7 +72,7 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gDataHub.GetNumDataSets(); ++t)
-	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(), gParameters, t + 1));
+	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups(), gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(), gParameters, t + 1));
   return AllocateSimulationData(Container);
 }
 
@@ -256,10 +256,10 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCounts(RealDataSet& Data
                 //cumulatively add count to time by location structure
                 ppCounts[0][TractIndex] += Count;
                 if (ppCounts[0][TractIndex] < 0)
-                throw resolvable_error(
-                    "Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
-                    (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max()
-                );
+                    throw resolvable_error(
+                        "Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
+                        (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max()
+                    );
                 if (gParameters.GetAnalysisType() == SEASONALTEMPORAL && gParameters.GetProbabilityModelType() != POISSON) {
                     Date = gDataHub.convertToSeasonalDate(Date);
                     for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
@@ -570,11 +570,13 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
     }
-    if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(identifier)) == -1) {
+	auto groupIdx = gDataHub.GetGroupInfo().getObservationGroupIndex(identifier);
+    if (!groupIdx) {
         if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+            const char * coordinatessource = gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION ? "network" : "coordinates";
             gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
                           gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
-                         (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+                         (gParameters.UseLocationNeighborsFile() ? "neighbors" : gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION ? coordinatessource : "multiple locations"));
             return DataSetHandler::Rejected;
         }
         // Report to user if the data checking option is ignoring locations - because the user requested relaxed checking, that is unless
@@ -587,6 +589,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
         }
         return DataSetHandler::Ignored;
     }
+	tLocationIndex = static_cast<tract_t>(groupIdx.get());
     return DataSetHandler::Accepted;
 }
 
@@ -607,7 +610,7 @@ void DataSetHandler::Setup() {
         bool downCast = dynamic_cast<ClosedLoopData*>(&gDataHub) != 0 && gParameters.GetProbabilityModelType() == POISSON;
         int intervals = downCast ? gDataHub.CSaTScanData::GetNumTimeIntervals() : gDataHub.GetNumTimeIntervals();
         for (unsigned int i=0; i < gParameters.getNumFileSets(); ++i)
-            gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
+            gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumObsGroups(), gDataHub.GetNumMetaObsGroups(), gParameters, i + 1));
     } catch (prg_exception& x) {
         x.addTrace("Setup()","DataSetHandler");
         throw;

@@ -15,10 +15,10 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
     macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
     for (size_t t=0; t < _oliveira_sets.size(); ++t)
         _randomization_container->at(t)->RandomizeData(*_oliveira_sets.at(t), *_simulation_data_container->at(t), param);
-    // update meta location structures as necessary
+    // update meta structures as necessary
     if (_execution.getParameters().UseMetaLocationsFile() || _execution.getParameters().UsingMultipleCoordinatesMetaLocations())
         for (SimulationDataContainer_t::iterator itr=_simulation_data_container->begin(); itr != _simulation_data_container->end(); ++itr)
-            (*itr)->setCaseData_MetaLocations(_execution.getDataHub().GetTInfo()->getMetaManagerProxy());
+            (*itr)->setCaseDataMeta(_execution.getDataHub().GetGroupInfo().getMetaManagerProxy());
     macroRunTimeStopSerial();
 
     //calculate most likely clusters

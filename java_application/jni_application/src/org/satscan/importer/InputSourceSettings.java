@@ -17,8 +17,11 @@ import org.satscan.app.UnknownEnumException;
  */
 public class InputSourceSettings implements Cloneable  {
     public enum SourceDataFileType {CSV, dBase, Shapefile, Excel97_2003, Excel};
-    public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR, NETWORK, Neighbors, MetaLocations, AlternativeHypothesis};
-    public enum LinelistType       {EVENT_ID, EVENT_COORD_Y, EVENT_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA};
+    public enum InputFileType {
+        Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR,
+        NETWORK, Neighbors, MetaLocations, AlternativeHypothesis, Multiple_Locations
+    };
+    public enum LinelistType {EVENT_ID, EVENT_COORD_Y, EVENT_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA};
     
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;

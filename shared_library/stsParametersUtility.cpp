@@ -31,8 +31,14 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read(JNIEnv * pEnv, j
   catch (jni_error & x) {    
     return 1; // let the Java exception to be handled in the caller of JNI function
   }
+  catch (prg_exception& x) {
+      std::stringstream mssg;
+      mssg << x.what() << std::endl << x.trace();
+      jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, mssg.str().c_str());
+      return 1;
+  }
   catch (std::exception& x) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
     return 1;
   }
   catch (...) {
@@ -68,6 +74,12 @@ JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_ReadFromStringStream(
     catch (jni_error & x) {
         return 1; // let the Java exception to be handled in the caller of JNI function
     }
+    catch (prg_exception& x) {
+        std::stringstream mssg;
+        mssg << x.what() << std::endl << x.trace();
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, mssg.str().c_str());
+        return 1;
+    }
     catch (std::exception& x) {
         jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
         return 1;
@@ -91,12 +103,18 @@ JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write(JNIEnv * pEnv, jobj
   catch (jni_error & x) {    
     return; // let the Java exception to be handled in the caller of JNI function
   }
+  catch (prg_exception& x) {
+    std::stringstream mssg;
+    mssg << x.what() << std::endl << x.trace();
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, mssg.str().c_str());
+    return;
+  }
   catch (std::exception& x) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
     return;
   }
   catch (...) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return;
   }
 }
@@ -112,6 +130,11 @@ JNIEXPORT jstring JNICALL Java_org_satscan_app_Parameters_WriteToStringStream(JN
         IniParameterFileAccess(Parameters, NoPrint).Write(stream);
         return pEnv->NewStringUTF(stream.str().c_str());
     } catch (jni_error & x) {
+        return pEnv->NewStringUTF("");
+    } catch (prg_exception& x) {
+        std::stringstream mssg;
+        mssg << x.what() << std::endl << x.trace();
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, mssg.str().c_str());
         return pEnv->NewStringUTF("");
     } catch (std::exception& x) {
         jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
@@ -534,6 +557,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
         case MAXCIRCLEPOPFILE : Env.CallVoidMethod(issobject, mid, (jint)5); break;
         case ADJ_BY_RR_FILE : Env.CallVoidMethod(issobject, mid, (jint)6); break;
         case NETWORK_FILE : Env.CallVoidMethod(issobject, mid, (jint)7); break;
+        case MULTIPLE_LOCATIONS_FILE: Env.CallVoidMethod(issobject, mid, (jint)11); break;
         default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
 
@@ -848,6 +872,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
 
   mid = _getMethodId_Checked(Env, clazz, "setEmailAttachResults", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailAttachResults());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setMultipleLocationsFile", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getMultipleLocationsFile().c_str()));
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -1380,6 +1408,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
         case 5/*MaxCirclePopulation*/  : type = MAXCIRCLEPOPFILE; break;
         case 6/*AdjustmentsByRR*/      : type = ADJ_BY_RR_FILE; break;
         case 7/*NETWORK_FILE*/         : type = NETWORK_FILE; break;
+        case 11/*Multiple Locations*/  : type = MULTIPLE_LOCATIONS_FILE; break;
         default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
       // If file type is Case file, read any line list mappings.
@@ -1667,6 +1696,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   mid = _getMethodId_Checked(Env, clazz, "getEmailAttachResults", "()Z");
   Parameters.setEmailAttachResults(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getMultipleLocationsFile", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setMultipleLocationsFile(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return Parameters;
 }

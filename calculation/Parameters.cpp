@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 173;
+const int CParameters::giNumParameters                = 174;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -203,6 +203,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
   if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
   if (_cluster_significance_pval_value != _cluster_significance_pval_value) return false;
+  if (_multiple_locations_file != _multiple_locations_file) return false;
+  
   return true;
 }
 
@@ -457,6 +459,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _cluster_significance_ri_type = rhs._cluster_significance_ri_type;
   _cluster_significance_by_pval = rhs._cluster_significance_by_pval;
   _cluster_significance_pval_value = rhs._cluster_significance_pval_value;
+  _multiple_locations_file = rhs._multiple_locations_file;
 }
 
 /* Returns whether line list data is read from case file - which is indicated in two exclusive ways:
@@ -562,12 +565,12 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
   return (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME);
 }
 
-/** Returns whether the LLR of analysis is actually a test statistic. */
+/** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
     return (
         geProbabilityModelType == SPACETIMEPERMUTATION || 
-        geProbabilityModelType == RANK || 
-        geProbabilityModelType == UNIFORMTIME ||
+          geProbabilityModelType == RANK || 
+          geProbabilityModelType == UNIFORMTIME || 
         (geProbabilityModelType == BERNOULLI && GetIsProspectiveAnalysis() && GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) ||
         (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY)
     );
@@ -847,6 +850,14 @@ void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool
     AssignMissingPath(gsCoordinatesFileName);
 }
 
+/** Sets multiple locations for group file name.
+If bCorrectForRelativePath is true, an attempt is made to modify filename
+to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::setMultipleLocationsFile(const char * filename, bool bCorrectForRelativePath) {
+    _multiple_locations_file = filename;
+    if (bCorrectForRelativePath) AssignMissingPath(_multiple_locations_file);
+}
+
 /** Sets locations network data file name.
 If bCorrectForRelativePath is true, an attempt is made to modify filename
 to path relative to executable. This is only attempted if current file does not exist. */
@@ -1057,6 +1068,7 @@ void CParameters::SetAsDefaulted() {
   _cluster_significance_ri_type = DAY;
   _cluster_significance_by_pval = false;
   _cluster_significance_pval_value = 0.05;
+  _multiple_locations_file = "";
 }
 
 /** Sets start range start date. Throws exception. */

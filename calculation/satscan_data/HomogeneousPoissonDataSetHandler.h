@@ -5,7 +5,7 @@
 #include "DataSetHandler.h"
 #include "HomogeneousPoissonRandomizer.h"
 
-class TractHandler;
+class ObservationGroupingManager;
 class GInfo;
 
 /** Data set handler for the Homogeneous Poisson probablity model, expanding on
@@ -19,7 +19,7 @@ class GInfo;
 class HomogeneousPoissonDataSetHandler : public DataSetHandler {
   protected:
     ObserverableRegionContainer_t       gPolygons;
-    TractHandler                      & gTractHandler;
+	ObservationGroupingManager        & _groups;
     GInfo                             & gCentroidsHandler;
 
     bool                                ReadCoordinates(RealDataSet& DataSet, DataSource& Source);
@@ -29,11 +29,11 @@ class HomogeneousPoissonDataSetHandler : public DataSetHandler {
     virtual void                        SetRandomizers();
 
   public:
-    HomogeneousPoissonDataSetHandler(CSaTScanData& DataHub, TractHandler& TractHandler, GInfo& CentroidsHandler, BasePrint& Print);
+    HomogeneousPoissonDataSetHandler(CSaTScanData& DataHub, ObservationGroupingManager& groups, GInfo& CentroidsHandler, BasePrint& Print);
     virtual ~HomogeneousPoissonDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const {}
+    virtual void                        assignMetaData(RealDataContainer_t& Container) const {}
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
     bool                                isPointInRegions(double x, double y) const;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;

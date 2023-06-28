@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -315,6 +314,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case MaxCirclePopulation: setMaxCirclePopFileVariables(); break;
             case AdjustmentsByRR: setRelativeRisksFileVariables(); break;
             case NETWORK: setNetworkFileVariables(); break;
+            case Multiple_Locations: setMultipleLocationsFileVariables(); break;
             case Neighbors:
             case MetaLocations:
             case AlternativeHypothesis: break;
@@ -397,6 +397,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Neighbors:
             case MetaLocations:
             case NETWORK:
+            case Multiple_Locations:
             case AlternativeHypothesis: return false;
             case AdjustmentsByRR: return _import_variables.get(_dateVariableColumn).isMappedToSourceField();
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
@@ -524,6 +525,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
                 builder.append("&lt;First Location ID&gt;  &lt;Second Location ID&gt;  &lt;Distance&gt;");
                 break;
+            case Multiple_Locations:
+                heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
+                builder.append("&lt;Observation Group ID&gt;  &lt;Location ID&gt;");
+                break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");
@@ -584,6 +589,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case MetaLocations: return "Meta Locations";
             case AlternativeHypothesis: return "Alternative Hypothesis";
             case NETWORK: return "Network File";
+            case Multiple_Locations: return "Multiple Locations File";
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
     }    
@@ -780,6 +786,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case SpecialGrid:
             case MaxCirclePopulation:
             case NETWORK:
+            case Multiple_Locations:
             case AdjustmentsByRR: return true;
             case Neighbors:
             case MetaLocations:
@@ -1020,6 +1027,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 case MetaLocations: show_generatedId=false; show_oneCount=false; break;
                 case AlternativeHypothesis: show_generatedId=true; show_oneCount=false; break;
                 case NETWORK: show_generatedId=false; show_oneCount=false; break;
+                case Multiple_Locations: show_generatedId=false; show_oneCount=false; break;
                 default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
             }
         }
@@ -1294,6 +1302,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.addElement(new ImportVariable("Distance", 2, false));
     }    
     
+    /** Setup field descriptors for multiple locations file. */
+    private void setMultipleLocationsFileVariables() {
+        _import_variables.clear();
+        _import_variables.addElement(new ImportVariable("Observation Group ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Location ID", 1, true));
+    }     
+    
     /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
     private void setShowingVariables() {
         VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
@@ -1388,6 +1403,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case MaxCirclePopulation: defaultName = "MaximumSizeCircle"; extension =  ".max"; break;
             case AdjustmentsByRR: defaultName = "Adjustments"; extension =  ".adj"; break;
             case NETWORK: defaultName = "Network"; extension =  ".ntk"; break;
+            case Multiple_Locations: defaultName = "MultipleLocations"; extension =  ".mls"; break;
             case Neighbors: defaultName = "NonEuclidianNeighbors"; extension =  ".nei"; break;
             case MetaLocations: defaultName = "MetaLocations"; extension =  ".meta"; break;
             case AlternativeHypothesis: defaultName = "AlternativeHypothesis"; extension =  ".ha"; break;

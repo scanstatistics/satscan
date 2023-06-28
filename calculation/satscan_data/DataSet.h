@@ -96,16 +96,16 @@ class DataSet {
     AbstractTimeTrend         & getTimeTrend() {return *gpTimeTrend;}
     const AbstractTimeTrend   & getTimeTrend() const {return *gpTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
-    virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
+    virtual void                reassignMetaData(const MetaManagerProxy& MetaLocations);
     void                        setCaseDataToCumulative();
-    void                        setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy);
-    void                        setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setCaseDataMeta(const MetaManagerProxy& MetaProxy);
+    void                        setCaseDataCatMeta(const MetaManagerProxy& MetaProxy);
     void                        setCaseData_NC();
     void                        setCaseData_PT();
     void                        setCaseData_PT_Cat();
     void                        setCaseData_PT_NC();
-    void                        setMeasureData_MetaLocations(const MetaManagerProxy& MetaProxy);
-    void                        setMeasureData_Aux_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setMeasureDataMeta(const MetaManagerProxy& MetaProxy);
+    void                        setMeasureDataAuxMeta(const MetaManagerProxy& MetaProxy);
     void                        setMeasureData_NC();
     void                        setMeasureData_PT();
     void                        setMeasureData_PT_NC();
@@ -171,7 +171,7 @@ class RealDataSet : public DataSet {
     measure_t                   getTotalMeasureAux() const {return gtTotalMeasureAux;}
     measure_t                   getTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      getTotalPopulation() const {return gdTotalPop;}
-    virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
+    virtual void                reassignMetaData(const MetaManagerProxy& MetaLocations);
     void                        resetPopulationData();
     void                        setAggregateCovariateCategories(bool b) {_population->SetAggregateCovariateCategories(b);}
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}

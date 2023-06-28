@@ -6,9 +6,8 @@
 
 //specialized templated C array class -- used instead of standard template library containers
 //Reasoning: Standard library containers do not provide a public means for which to define growth,
-//           but instead commonly grow in chunks (Borland ~256b). In the context of the TractHandler
-//           class, we really want certain arrays to growth in an 'as needed' manner; otherwise
-//           we could be wasting considerable amounts of memory.
+//           but instead commonly grow in chunks (Borland ~256b). In the context of the coordinates
+//           we really want certain arrays to growth in an 'as needed' manner; otherwise we could be wasting considerable amounts of memory.
 template <class T>
 class MinimalGrowthArray {
    private:
@@ -24,6 +23,10 @@ class MinimalGrowthArray {
      const T       & operator[](const unsigned int i) const {return gpArray[i];}
      bool            operator!=(const MinimalGrowthArray<T> & rhs) const;
      void            add(const T& x, bool bSort);
+     template<typename Functor>
+     void sort(Functor functor) {
+         std::sort(gpArray, gpArray + giSize, functor);
+     }
      void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
      bool            exists(const T& x) const;
      std::vector<T>& get(std::vector<T>& v) const;

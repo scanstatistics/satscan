@@ -40,8 +40,8 @@ CSpaceTimeCluster::~CSpaceTimeCluster() {
 /** overloaded assignment operator */
 CSpaceTimeCluster& CSpaceTimeCluster::operator=(const CSpaceTimeCluster& rhs) {
   m_Center                      = rhs.m_Center;
-  m_MostCentralLocation         = rhs.m_MostCentralLocation;
-  m_nTracts                     = rhs.m_nTracts;
+  _central_observation_group         = rhs._central_observation_group;
+  _num_observation_groups                     = rhs._num_observation_groups;
   m_CartesianRadius             = rhs.m_CartesianRadius;
   m_nRatio                      = rhs.m_nRatio;
   _ratio_sets                   = rhs._ratio_sets;
@@ -61,8 +61,8 @@ CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
 
 void CSpaceTimeCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_Center                      = ((const CSpaceTimeCluster&)rhs).m_Center;
-  m_MostCentralLocation         = ((const CSpaceTimeCluster&)rhs).m_MostCentralLocation;
-  m_nTracts                     = ((const CSpaceTimeCluster&)rhs).m_nTracts;
+  _central_observation_group         = ((const CSpaceTimeCluster&)rhs)._central_observation_group;
+  _num_observation_groups                     = ((const CSpaceTimeCluster&)rhs)._num_observation_groups;
   m_CartesianRadius             = ((const CSpaceTimeCluster&)rhs).m_CartesianRadius;
   m_nRatio                      = ((const CSpaceTimeCluster&)rhs).m_nRatio;
   _ratio_sets                   = ((const CSpaceTimeCluster&)rhs)._ratio_sets;
@@ -130,7 +130,7 @@ void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const Abstrac
   tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
   unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
   for (tract_t t=0, tNumNeighbors = CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
-    ++m_nTracts;
+    ++_num_observation_groups;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     TimeIntervals.CompareClusterSet(*this, clusterSet);
   }
@@ -139,8 +139,8 @@ void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const Abstrac
 /** re-initializes cluster data */
 void CSpaceTimeCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
-  m_MostCentralLocation = -1;
-  m_nTracts = 0;
+  _central_observation_group = -1;
+  _num_observation_groups = 0;
   m_nRatio = 0;
   m_CartesianRadius = -1;  
   gpClusterData->InitializeData();

@@ -47,8 +47,8 @@ CPSMonotoneCluster::~CPSMonotoneCluster() {}
 CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs) {
   try {
     m_Center              = rhs.m_Center;
-    m_MostCentralLocation = rhs.m_MostCentralLocation;
-    m_nTracts             = rhs.m_nTracts;
+    _central_observation_group = rhs._central_observation_group;
+    _num_observation_groups             = rhs._num_observation_groups;
     m_nRatio              = rhs.m_nRatio;
     _ratio_sets           = rhs._ratio_sets;
     m_nRank               = rhs.m_nRank;
@@ -144,6 +144,37 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
   }
 }
 
+/** Writes clusters location information in format required by result output file. */
+void CPSMonotoneCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, tract_t nFirstTract, tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const {
+
+    // TODO: Revise for multiple coordinates. I need to recall how this feature works - what are the steps again?
+
+    std::string locations;
+    ObservationGrouping::CombinedGroupNames_t vTractIdentifiers;
+    try {
+        for (tract_t t=nFirstTract; t <= nLastTract; ++t) {
+            //get i'th neighbor tracts index
+            tract_t tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius);
+            // Print location identifiers if location data has not been removed in iterative scan.
+            if (!DataHub.isNullifiedObservationGroup(tTract)) {
+                //get all locations ids for tract at index tTract -- might be more than one if combined
+                DataHub.GetGroupInfo().retrieveAllIdentifiers(tTract, vTractIdentifiers);
+                for (unsigned int i=0; i < vTractIdentifiers.size(); ++i) {
+                    if (locations.size()) locations += ", ";
+                    locations += vTractIdentifiers[i].c_str();
+                }
+            }
+        }
+        // There should be at least one location printed, else there is likely a bug in the iterative scan code.
+        if (!locations.size()) throw prg_error("Attempting to print cluster with no location identifiers.", "DisplayCensusTractsInStep()");
+        PrintFormat.PrintAlignedMarginsDataString(fp, locations);
+    } catch (prg_exception& x) {
+        x.addTrace("DisplayCensusTractsInStep()", "CPSMonotoneCluster");
+        throw;
+    }
+}
+
+
 /** Prints cartesian coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
     std::vector<double> vCoordinates, vCoodinatesOfStep;
@@ -159,7 +190,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
         }
         // get coordinates of outer most step to calculate the cluster's radius
         CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[gpClusterData->m_nSteps - 1]), vCoodinatesOfStep);
-        nRadius = (float)sqrt(Data.GetTInfo()->getDistanceSquared(vCoordinates, vCoodinatesOfStep));
+        nRadius = (float)Coordinates::distanceBetween(vCoordinates, vCoodinatesOfStep);
         buffer += printString(work, "%g) / %s", vCoordinates.back(), getValueAsString(nRadius, work2).c_str());
         printClusterData(fp, PrintFormat, "Coordinates / radius", buffer, false);
     } catch (prg_exception& x) {
@@ -187,7 +218,7 @@ void CPSMonotoneCluster::Display(FILE* fp, const CSaTScanData& DataHub, const Cl
             case LATLON: {
                 for (int i=0; i < gpClusterData->m_nSteps; ++i) {
                     CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
-                    double dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
+                    double dRadius = 2 * EARTH_RADIUS_km * asin(Coordinates::distanceBetween(ClusterCenter, vCoodinatesOfStep)/(2 * EARTH_RADIUS_km));
                     printString(work, "%s km%s", getValueAsString(dRadius, work2).c_str(), (i < gpClusterData->m_nSteps - 1 ? ", " : "" ));
                     buffer += work;
                 } 
@@ -195,7 +226,7 @@ void CPSMonotoneCluster::Display(FILE* fp, const CSaTScanData& DataHub, const Cl
             case CARTESIAN : {
                 for (int i=0; i < gpClusterData->m_nSteps; ++i) {
                     CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[i]), vCoodinatesOfStep);
-                    double nRadius = sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep));
+                    double nRadius = Coordinates::distanceBetween(ClusterCenter, vCoodinatesOfStep);
                     printString(work, "%s%s", getValueAsString(nRadius, work2).c_str(), (i < gpClusterData->m_nSteps - 1 ? ", " : "" ));
                     buffer += work;
                 }
@@ -280,7 +311,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
         // get coordinates of outer most step to calculate the cluster's radius
         CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gpClusterData->gvLastNeighborList[gpClusterData->m_nSteps - 1]), vCoodinatesOfStep);
-        dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
+        dRadius = 2 * EARTH_RADIUS_km * asin(Coordinates::distanceBetween(ClusterCenter, vCoodinatesOfStep)/(2 * EARTH_RADIUS_km));
         buffer += printString(work, " / %s km", getValueAsString(dRadius, work2).c_str());
         printClusterData(fp, PrintFormat, "Coordinates / radius", buffer, false);
     } catch (prg_exception& x) {
@@ -336,8 +367,8 @@ std::string& CPSMonotoneCluster::GetStartDate(std::string& sDateString, const CS
 /** initialize cluster data and data members */
 void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
-  m_MostCentralLocation = -1;
-  m_nTracts        = 0;
+  _central_observation_group = -1;
+  _num_observation_groups        = 0;
   m_CartesianRadius= -1;
   m_nRatio         = 0;
   m_nRank          = 1;
@@ -372,9 +403,9 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
       for (i=gpClusterData->gvFirstNeighborList[i]; i <= gpClusterData->gvLastNeighborList[i]; ++i) {
          tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
          // Print location identifiers if location data has not been removed in iterative scan.
-         if (!DataHub.GetIsNullifiedLocation(tTract)) {
+         if (!DataHub.isNullifiedObservationGroup(tTract)) {
            CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, tTract, vCoords);
-           outfilestream << DataHub.GetTInfo()->getLocations()[tTract]->getIndentifier();
+		   outfilestream << DataHub.GetGroupInfo().getObservationGroups()[tTract]->groupname();
            for (size_t t=0; t < vCoords.size(); ++t)
              outfilestream << " " << vCoords[t];
            outfilestream << std::endl;
@@ -391,9 +422,9 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
 
 /** Returns the total number of tracts in cluster, across all steps. */
 void CPSMonotoneCluster::SetTotalTracts() {
-    m_nTracts = 0;
+    _num_observation_groups = 0;
     for (int i=0; i < gpClusterData->m_nSteps; ++i)
-        m_nTracts += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
+        _num_observation_groups += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
 }
 
 /** Writes cluster data to passed record buffer. */

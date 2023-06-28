@@ -77,6 +77,8 @@ void TwoDimensionArrayHandler<T>::Allocate() {
   size_t   i;
 
   try {
+      if (!g1stDimension || !g2ndDimension) 
+          throw prg_error("Attmepting to allocate to zero dimensions (%u x %u).", "Allocate()", g1stDimension, g2ndDimension);
     gppData = new T*[g1stDimension];
     memset(gppData, 0, sizeof(T*) * g1stDimension);
     for (i=0; i < g1stDimension; ++i)

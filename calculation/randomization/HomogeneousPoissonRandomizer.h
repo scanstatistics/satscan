@@ -8,7 +8,7 @@
 #include <fstream>
 
 typedef std::vector<ConvexPolygonObservableRegion> ObserverableRegionContainer_t;
-class TractHandler;
+class ObservationGroupingManager;
 class GInfo;
 
 /** Abstraction for Homogeneous Poisson data randomizers */
@@ -17,13 +17,13 @@ class HomogeneousPoissonRandomizer : public AbstractDenominatorDataRandomizer {
     const CParameters                   & gParameters;
     const ObserverableRegionContainer_t & gPolygons;
     std::auto_ptr<GInfo>                  gCentroidsHandler;
-    std::auto_ptr<TractHandler>           gTractHandler;
+    std::auto_ptr<ObservationGroupingManager> _groupings;
 
   public:
     HomogeneousPoissonRandomizer(const CParameters& Parameters, const ObserverableRegionContainer_t& Regions, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~HomogeneousPoissonRandomizer() {}
 
-    TractHandler                        & getTractHandler();
+	ObservationGroupingManager          & getGroupInfo();
     GInfo                               & getCentroidHandler();
 };
 

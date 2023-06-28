@@ -81,6 +81,10 @@ public class FileSelectionDialog {
                 filters = FileSourceWizard.getInputFilters();                
                 filters.add(new InputFileFilter("ntk", "Network Files (*.ntk)"));
                 break;
+            case Multiple_Locations : 
+                filters = FileSourceWizard.getInputFilters();                
+                filters.add(new InputFileFilter("mls", "Multiple Locations Files (*.mls)"));
+                break;
            default: throw new UnknownEnumException(fileType);
         }            
         setup(parent, browse_title, filters, lastBrowseDirectory);
@@ -114,6 +118,7 @@ public class FileSelectionDialog {
             case MetaLocations: return "Meta Locations";
             case AlternativeHypothesis: return "Alternative Hypothesis";
             case NETWORK: return "Network";
+            case Multiple_Locations: return "Multiple Locations";
             default: throw new UnknownEnumException(fileType);
         }                
     }    
@@ -203,7 +208,8 @@ public class FileSelectionDialog {
                     case Neighbors:
                     case MetaLocations:
                     case AlternativeHypothesis: 
-                    case NETWORK: break;
+                    case NETWORK:
+                    case Multiple_Locations: break;
                     default: throw new UnknownEnumException(inputSourceSettings.getInputFileType());
                 }                
             }

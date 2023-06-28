@@ -210,9 +210,9 @@ const char * ClusterMap::TEMPLATE = " \
   </body> \n \
 </html> \n";
 
-ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0), 
-     _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()) {
-    _cluster_locations.resize(_dataHub.GetNumTracts() + _dataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
+ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0),
+    _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()) { 
+    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
 }
 
 /** Alters pass Filename to include suffix and extension. */
@@ -263,41 +263,44 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
         if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
             break;
         if (cluster.m_nRatio >= gdMinRatioToReport) {
-            worker.str("");
-            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                    CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
+            NetworkLocationContainer_t networkLocations;
+            if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+                // Create collections of connections between the cluster nodes - we'll use them to create edges in display.
+                _dataHub.getClusterNetworkLocations(cluster, networkLocations);
+                Network::Connection_Details_t connections = GisUtils::getClusterConnections(networkLocations);
+                worker.str("");
+                for (auto itr = connections.begin(); itr != connections.end(); ++itr) {
+                    itr->get<0>()->coordinates()->retrieve(vCoordinates);
                     std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-                    worker << printString(buffer2, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-                    _cluster_locations.set(tTract);
+                    worker << printString(buffer2, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                    itr->get<1>()->coordinates()->retrieve(vCoordinates);
+                    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+                    worker << printString(buffer2, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
                 }
+                edges = worker.str();
+                trimString(edges, ",");
             }
-			points = worker.str();
-			trimString(points, ",");
-
+            // Compile collection of cluster points to display through known tracts of cluster.
+            worker.str("");
+            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            boost::dynamic_bitset<> clusterLocations;
+            CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &clusterLocations);
+            size_t index = clusterLocations.find_first();
+            while (index != clusterLocations.npos) {
+                locations[index].get()->coordinates()->retrieve(vCoordinates);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                worker << printString(buffer2, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                _cluster_locations.set(index);
+                index = clusterLocations.find_next(index);
+            }
+            points = worker.str();
+            trimString(points, ",");
+            // Add cluster definition to javascript hash collection.
             if (cluster.GetEllipseOffset() != 0)
                 throw prg_error("Not implemented for elliptical clusters", "ClusterMap::add()");
 
             GisUtils::pointpair_t clusterSegment = GisUtils::getClusterRadiusSegmentPoints(_dataHub, cluster);
             double radius = GisUtils::getRadiusInMeters(clusterSegment.first, clusterSegment.second);
-
-			// When using a network file, we'll drawn connections/edges between locations in cluster.
-			if (parameters.getUseLocationsNetworkFile()) {
-				Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
-				worker.str("");
-				Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
-				for (; itr != end; ++itr) {
-					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
-					std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-					worker << printString(buffer2, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
-					prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-					worker << printString(buffer2, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-				}
-				edges = worker.str();
-				trimString(edges, ",");
-			}
             // Record window start of MLC with prospective analyses - we'll potentially use this with events display.
             if (i == 0 && parameters.GetIsProspectiveAnalysis()) _recent_startdate = _dataHub.GetTimeIntervalStartTimes()[cluster.m_nFirstInterval];
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
@@ -450,12 +453,10 @@ void ClusterMap::finalize() {
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
         std::vector<double> vCoordinates;
-        const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
         worker.str("");
-        for (size_t t=0; t < locations.size(); ++t) {
-            if (!_cluster_locations.test(t)) {
-                locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
-                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+		for (auto location: _dataHub.GetGroupInfo().getLocationsManager().locations()) {
+            if (!_cluster_locations.test(location->index())) {
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(vCoordinates)));
                 worker << printString(buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
             }
         }

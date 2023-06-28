@@ -250,6 +250,12 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 gParameters.defineInputSource(NETWORK_FILE, source);
         }
+        // multiple locations file
+        if (GetSpecifications().GetParameterIniInfo(MULTIPLE_LOCATIONS_FILE, &section, &key)) {
+            CParameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                gParameters.defineInputSource(MULTIPLE_LOCATIONS_FILE, source);
+        }
     } catch (prg_exception& x) {
         x.addTrace("ReadInputSourceSettings()","IniParameterFileAccess");
         throw;
@@ -693,7 +699,7 @@ void IniParameterFileAccess::WriteIniParameter(IniFile& WriteFile, ParameterType
             pSection->AddLine(sKey, sValue);
         } else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
     } catch (prg_exception& x) {
-        x.addTrace("WriteIniParameters()","IniParameterFileAccess");
+        x.addTrace("WriteIniParameter(IniFile,ParameterType,const char*,const char*)","IniParameterFileAccess");
         throw;
     }
 }
@@ -913,8 +919,11 @@ void IniParameterFileAccess::WriteSpatialNeighborsSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
         WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
         WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
+        GetParameterString(MULTIPLE_LOCATIONS_FILE, s);
+        WriteIniParameter(WriteFile, MULTIPLE_LOCATIONS_FILE, s.c_str(), GetParameterComment(MULTIPLE_LOCATIONS_FILE));
+        if (s.size()) WriteInputSource(WriteFile, MULTIPLE_LOCATIONS_FILE, gParameters.getInputSource(MULTIPLE_LOCATIONS_FILE));
     } catch (prg_exception& x) {
-        x.addTrace("WriteSpatialNeighborsSettings()","IniParameterFileAccess");
+        x.addTrace("WriteSpatialNeighborsSettings(IniFile)","IniParameterFileAccess");
         throw;
     }
 }

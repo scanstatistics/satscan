@@ -176,7 +176,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case LOCATION_NEIGHBORS_FILE      : return "neighbors file";
       case USE_LOCATION_NEIGHBORS_FILE  : return "use neighbors file (y/n)";
       case RANDOMLY_GENERATE_SEED       : return "randomly generate seed (y/n)";
-      case MULTIPLE_COORDINATES_TYPE    : return "multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)";
+      case MULTIPLE_COORDINATES_TYPE    : return "multiple coordinates type (0=OnlyOneLocation, 1=AtLeastOneLocation, 2=AllLocations)";
       case META_LOCATIONS_FILE          : return "meta locations file";
       case USE_META_LOCATIONS_FILE      : return "use meta locations file (y/n)";
       case OBSERVABLE_REGIONS           : return "polygon inequalities (comma separated decimal values)";
@@ -257,6 +257,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case EMAIL_SUBJECT_SIGNIFICANT    : return "subject line of email - significant clusters";
       case EMAIL_BODY_SIGNIFICANT       : return "email message body - significant clusters";
       case EMAIL_ATTACH_RESULTS         : return "email message - attach results";
+      case MULTIPLE_LOCATIONS_FILE      : return "filename of multiple locations for groups";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -459,6 +460,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case EMAIL_SUBJECT_SIGNIFICANT    : s = gParameters.getEmailSubjectSignificant().c_str(); return s;
       case EMAIL_BODY_SIGNIFICANT       : s = gParameters.getEmailMessageBodySignificant().c_str(); return s;
       case EMAIL_ATTACH_RESULTS         : return AsString(s, gParameters.getEmailAttachResults());
+      case MULTIPLE_LOCATIONS_FILE      : s = gParameters.getMultipleLocationsFile(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -897,6 +899,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case EMAIL_SUBJECT_SIGNIFICANT    : gParameters.setEmailSubjectSignificant(sParameter.c_str()); break;
       case EMAIL_BODY_SIGNIFICANT       : gParameters.setEmailMessageBodySignificant(sParameter.c_str()); break;
       case EMAIL_ATTACH_RESULTS         : gParameters.setEmailAttachResults(ReadBoolean(sParameter, eParameterType)); break;
+      case MULTIPLE_LOCATIONS_FILE      : gParameters.setMultipleLocationsFile(sParameter.c_str(), true); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

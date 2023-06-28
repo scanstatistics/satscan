@@ -8,6 +8,7 @@
 #include "UtilityFunctions.h"
 #include "RandomNumberGenerator.h"
 #include "Toolkit.h"
+#include "GisUtils.h"
 
 const char * CartesianGraph::HTML_FILE_EXT = ".html";
 const char * CartesianGraph::FILE_SUFFIX_EXT = ".cluster";
@@ -24,12 +25,12 @@ const char * CartesianGraph::TEMPLATE = " \
         #chartContainer{ overflow: hidden; }\n \
         .chart-options{ display:none; }\n \
         .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver; }\n \
-        .options-row{ margin:0 10px 10px 10px }\n \
+        .options-row{ margin:0 5px 5px 5px }\n \
         .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold; }\n \
         .options-row input[type='radio']{ margin:5px }\n \
-        p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; }\n \
+        p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; margin-bottom:1px;}\n \
         .main-content{ margin: 5px; }\n \
-        .options-row label{ font-weight: normal; }\n \
+        .options-row label{ font-weight: normal; margin-bottom: 1px;}\n \
         input[type=checkbox]{ margin-right:5px; }\n \
         label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100 % ; }\n \
         .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; }\n \
@@ -37,7 +38,7 @@ const char * CartesianGraph::TEMPLATE = " \
         .cluster-selection{ border-bottom: dashed 1px #e6e9eb; }\n \
         .cluster-selection label{ white-space: nowrap; color: #313030; }\n \
         #id_display_count { margin:10px; }\n \
-        fieldset { margin-top: 10px; }\n \
+        /*fieldset { margin-top: 10px; }*/ \n \
         @media print{ title, #banner,.chart-options-section{ display: none; } #chartContainer{ margin: 20px; }.chart-column{ border-left: 0; } }\n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js'></script> \n \
@@ -230,17 +231,18 @@ const char * CartesianGraph::TEMPLATE = " \
      </body> \n \
 </html> \n";
 
-CartesianGraph::CartesianGraph(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0), _median_parallel(0.0) {
+CartesianGraph::CartesianGraph(const CSaTScanData& dataHub) : _dataHub(dataHub), _clusters_written(0), _median_parallel(0.0) {
+    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
     if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
         // Calculate the median parallel among all points.
-        std::vector<double> parallels;
-        const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
-        std::vector<double> vCoordinates;
-        for (size_t t = 0; t < locations.size(); ++t) {
-            locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
-            std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
-            parallels.push_back(latlong.first);
-        }
+        std::vector<double> parallels, vCoordinates;
+		for (auto itrGroup = _dataHub.GetGroupInfo().getObservationGroups().begin(); itrGroup != _dataHub.GetGroupInfo().getObservationGroups().end(); ++itrGroup) {
+            for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
+                itrGroup->get()->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
+                std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
+                parallels.push_back(latlong.first);
+            }
+		}
         std::sort(parallels.begin(), parallels.end());
         if (parallels.size() % 2 == 0)
             _median_parallel = (parallels[parallels.size() / 2 - 1] + parallels[parallels.size() / 2]) / 2;
@@ -289,9 +291,9 @@ std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates
 }
 
 void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
-    double gdMinRatioToReport = 0.001;
+    double gdMinRatioToReport = 0.001, radius = 0.0;
     std::vector<double> vCoordinates;
-    std::string buffer, buffer2, legend, clusterColor, pointsColor, points, edges;
+    std::string buffer, buffer2, legend, points, edges;
     std::stringstream  worker;
     unsigned int clusterOffset = _clusters_written;
 
@@ -309,67 +311,45 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
         std::vector<double> clusterCenterCoordinates;
         //write cluster details to 'cluster information' file
         if (cluster.m_nRatio >= gdMinRatioToReport) {
-            clusterColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD";
-            pointsColor = cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF";
-            getClusterLegend(cluster, i + clusterOffset, legend);
+            NetworkLocationContainer_t networkLocations;
+            if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+                // Create collections of connections between the cluster nodes - we'll use them to create edges in display.
+                _dataHub.getClusterNetworkLocations(cluster, networkLocations);
+                Network::Connection_Details_t connections = GisUtils::getClusterConnections(networkLocations);
+                worker.str("");
+                for (auto itr = connections.begin(); itr != connections.end(); ++itr) {
+                    itr->get<0>()->coordinates()->retrieve(vCoordinates);
+                    transform(vCoordinates);
+                    worker << printString(buffer2, "[[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                    itr->get<1>()->coordinates()->retrieve(vCoordinates);
+                    transform(vCoordinates);
+                    worker << printString(buffer2, "[%f, %f]],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                }
+                edges = worker.str();
+                trimString(edges, ",");
+            }
+            // Compile collection of cluster locations.
             worker.str("");
-            for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-                tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-                if (tTract < _dataHub.GetNumTracts()) {// is tract atomic?
-                    if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-                        CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract, vCoordinates);
-                        transform(vCoordinates);
-                        worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
-                        _clusterLocations.push_back(tTract);
-                        if (clusterCenterCoordinates.empty())
-                            clusterCenterCoordinates = vCoordinates;
-                    }
-                }
-                else {
-                    std::vector<tract_t> indexes;
-                    _dataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - _dataHub.GetNumTracts(), indexes);
-                    for (std::vector<tract_t>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr) {
-                        if (!_dataHub.GetIsNullifiedLocation(*itr)) {
-                            CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, *itr, vCoordinates);
-                            transform(vCoordinates);
-                            worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
-                            _clusterLocations.push_back(tTract);
-							if (clusterCenterCoordinates.empty())
-								clusterCenterCoordinates = vCoordinates;
-                        }
-                    }
-                }
+            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            std::vector<tract_t> vLocations;
+            CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, 0, &vLocations);
+            for (auto index: vLocations) {
+                locations[index].get()->coordinates()->retrieve(vCoordinates);
+                transform(vCoordinates);
+                if (clusterCenterCoordinates.empty()) clusterCenterCoordinates = vCoordinates;
+                worker << printString(buffer2, "[%f, %f],", vCoordinates.at(0), vCoordinates.at(1)).c_str();
+                _cluster_locations.set(index);
             }
-			points = worker.str();
-			trimString(points, ",");
-
-            double radius;
-			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
-				radius = 0.0;
-			} else if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
-                // Calcuate the radius from centroid to outer most location in cluster.
-                radius = std::sqrt(_dataHub.GetTInfo()->getDistanceSquared(clusterCenterCoordinates, vCoordinates));
-            } else {
+            points = worker.str();
+            trimString(points, ",");
+            if (_dataHub.GetParameters().getUseLocationsNetworkFile())
+                radius = 0.0;
+            else if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) // Calculate the radius from centroid to outer most location in cluster.
+                radius = Coordinates::distanceBetween(clusterCenterCoordinates, vCoordinates);
+            else
                 radius = cluster.GetCartesianRadius();
-            }
-
-			// When using a network file, we'll drawn connections/edges between locations in cluster.
-			if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
-				Network::Connection_Details_t connections = _dataHub.refLocationNetwork().getClusterConnections(cluster, _dataHub);
-				worker.str("");
-				Network::Connection_Details_t::const_iterator itr = connections.begin(), end = connections.end();
-				for (; itr != end; ++itr) {
-					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<0>(), vCoordinates);
-					std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-					worker << printString(buffer2, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-					CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, itr->get<1>(), vCoordinates);
-					prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-					worker << printString(buffer2, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-				}
-				edges = worker.str();
-				trimString(edges, ",");
-			}
-
+            // Add cluster definition to javascript hash collection.
+            getClusterLegend(cluster, i + clusterOffset, legend);
             const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             transform(vCoordinates);
@@ -393,8 +373,9 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
 				<< ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
 				<< ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
 				<< ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
-				<< ", color : '" << clusterColor.c_str() << "', pointscolor : '" << pointsColor.c_str() << "', tip : '" << legend.c_str()
-				<< "', edges : [" << edges << "], points : [" << points << "] },\n";
+				<< ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD")
+                << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
+                << "', tip : '" << legend.c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
         }
         ++_clusters_written;
     }
@@ -427,20 +408,16 @@ void CartesianGraph::finalize() {
         // Update cluster region to keep x and y ranges equal -- for proper scaling in graph
         _clusterRegion.setproportional();
         _entireRegion = _clusterRegion;
-        std::sort(_clusterLocations.begin(), _clusterLocations.end());
         std::stringstream cluster_region_points, entire_region_points;
-        const TractHandler::LocationsContainer_t & locations = _dataHub.GetTInfo()->getLocations();
         worker.str("");
         worker2.str("");
-        for (size_t t = 0; t < locations.size(); ++t) {
-            std::vector<tract_t>::iterator itr = std::lower_bound(_clusterLocations.begin(), _clusterLocations.end(), t);
-            if (itr == _clusterLocations.end() || *itr != t) {
-                locations[t]->getCoordinates()[locations[t]->getCoordinates().size() - 1]->retrieve(vCoordinates);
+        for (auto location : _dataHub.GetGroupInfo().getLocationsManager().locations()) {
+            if (!_cluster_locations.test(location->index())) {
+                location.get()->coordinates()->retrieve(vCoordinates);
                 transform(vCoordinates);
-                if (_clusterRegion.in(vCoordinates[0], vCoordinates[1])) {
+                if (_clusterRegion.in(vCoordinates[0], vCoordinates[1]))
                     worker2 << printString(buffer2, "[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
-                }
-                worker << printString(buffer2, "[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
+                worker << printString(buffer, "[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
                 _entireRegion._largestX = std::max(_entireRegion._largestX, vCoordinates[0]);
                 _entireRegion._smallestX = std::min(_entireRegion._smallestX, vCoordinates[0]);
                 _entireRegion._largestY = std::max(_entireRegion._largestY, vCoordinates[1]);

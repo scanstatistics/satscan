@@ -1215,18 +1215,17 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
         }
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || 
               gParameters.UseLocationNeighborsFile() || 
-              gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
-              gParameters.getUseLocationsNetworkFile())) {
-            buffer = "Multiple Coordinates Type";
+              gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+            buffer = "Observations with Multiple Locations";
             switch (gParameters.GetMultipleCoordinatesType()) {
                 case ONEPERLOCATION :
-                    settings.push_back(std::make_pair(buffer,"Allow only one set of coordinates per location ID."));
+                    settings.push_back(std::make_pair(buffer,"One location per observation."));
                     break;
                 case ATLEASTONELOCATION :
-                    settings.push_back(std::make_pair(buffer,"Include location ID in the scanning window if at least one set of coordinates is included."));
+                    settings.push_back(std::make_pair(buffer,"Include observation if at least one of its locations is in the window."));
                     break;
                 case ALLLOCATIONS :
-                    settings.push_back(std::make_pair(buffer,"Include location ID in the scanning window if and only if all sets of coordinates are in the window."));
+                    settings.push_back(std::make_pair(buffer,"Include observation only if all its locations are in the window."));
                     break;
                 default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialNeighborsParameters()", gParameters.GetMultipleCoordinatesType());
             }

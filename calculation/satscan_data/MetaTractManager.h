@@ -7,130 +7,129 @@
 #include "ptr_vector.h"
 #include <cstring>
 
-class TractHandler; // forward declaration
-class MetaLocation; // forward declaration
+class ObservationGroupingManager; // forward declaration
+class MetaObsGroup; // forward declaration
 
-/** abtract meta location */
-class AbstractMetaLocation {
+/** abtract meta observation group */
+class AbstractMetaObsGroup {
   private:
     char                          * gsIndentifier;
 
   public:
-     AbstractMetaLocation(const char * sIdentifier);
-     virtual ~AbstractMetaLocation();
-     virtual bool                   contains(const MetaLocation& pMetaLocation) const = 0;
+     AbstractMetaObsGroup(const char * sIdentifier);
+     virtual ~AbstractMetaObsGroup();
+     virtual bool                   contains(const MetaObsGroup& object) const = 0;
      virtual bool                   contains(tract_t tAtomicIndex) const = 0;
-     virtual bool                   intersects(const AbstractMetaLocation& pLocation) const = 0;
+     virtual bool                   intersects(const AbstractMetaObsGroup& object) const = 0;
      virtual void                   getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const = 0;
      const char                   * getIndentifier() const {return gsIndentifier;}
 };
-/** atomic meta location, representing a particular location/tract */
-class AtomicMetaLocation : public AbstractMetaLocation {
+/** atomic meta observation group, representing a particular observation group in data */
+class AtomicMetaObsGroup : public AbstractMetaObsGroup {
   private:
-    tract_t                        giTractIndex;
-    const MetaLocation           * gpPromotedMetaLocation;
+    tract_t                        _obs_group_index;
+    const MetaObsGroup           * gpPromotedMetaObsGroup;
 
   public:
-     AtomicMetaLocation(const char * sIdentifier);
+     AtomicMetaObsGroup(const char * sIdentifier);
 
-     virtual bool                   contains(const MetaLocation& pMetaLocation) const;
+     virtual bool                   contains(const MetaObsGroup& object) const;
      virtual bool                   contains(tract_t tAtomicIndex) const;
-     virtual bool                   intersects(const AbstractMetaLocation& pLocation) const;
+     virtual bool                   intersects(const AbstractMetaObsGroup& object) const;
      virtual void                   getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const;
-     tract_t                        getTractIndex() const {return giTractIndex;}
-     void                           setAsPromotedMetaLocation(const MetaLocation * pMetaLocation) {gpPromotedMetaLocation = pMetaLocation;}
-     void                           setTractIndex(tract_t iTractIndex) {giTractIndex = iTractIndex;}
+     tract_t                        getObsGroupIndex() const {return _obs_group_index;}
+     void                           setAsPromotedMetaObsGroup(const MetaObsGroup * pMetaObsGroup) {gpPromotedMetaObsGroup = pMetaObsGroup;}
+     void                           setObGroupIndex(tract_t idx) {_obs_group_index = idx;}
 };
-/** meta location, representing a collection of atomic and meta locations */
-class MetaLocation : public AbstractMetaLocation {
+/** meta observation group, representing a collection of atomic and meta observation group */
+class MetaObsGroup : public AbstractMetaObsGroup {
   public:
-    typedef MinimalGrowthArray<const AbstractMetaLocation*> Locations_t;
+    typedef MinimalGrowthArray<const AbstractMetaObsGroup*> MetaObsGroups_t;
 
   private:
-    Locations_t                     gLocations;
+    MetaObsGroups_t                     _meta_obs_groups;
 
   public:
-     MetaLocation(const char * sIdentifier);
+     MetaObsGroup(const char * sIdentifier);
 
-     bool                           operator==(const MetaLocation& rhs) const {
-                                      if (!strcmp(rhs.getIndentifier(), getIndentifier()) && !(gLocations != rhs.gLocations)) return true;
+     bool                           operator==(const MetaObsGroup& rhs) const {
+                                      if (!strcmp(rhs.getIndentifier(), getIndentifier()) && !(_meta_obs_groups != rhs._meta_obs_groups)) return true;
                                       return false;
                                     }
-     void                           addLocation(const AtomicMetaLocation* pLocation);
-     void                           addLocation(const MetaLocation* pLocation);
-     virtual bool                   contains(const MetaLocation& pMetaLocation) const;
+     void                           addMetaObsGroup(const AtomicMetaObsGroup* object);
+     void                           addMetaObsGroup(const MetaObsGroup* object);
+     virtual bool                   contains(const MetaObsGroup& object) const;
      virtual bool                   contains(tract_t tAtomicIndex) const;
-     virtual bool                   intersects(const AbstractMetaLocation& pLocation) const;
+     virtual bool                   intersects(const AbstractMetaObsGroup& object) const;
      virtual void                   getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const;
-     const Locations_t            & getLocations() const {return gLocations;}
+     const MetaObsGroups_t        & getMetaObsGroups() const {return _meta_obs_groups;}
 };
-/** Function object used to compare MetaLocation::gsIndentifier. */
+/** Function object used to compare MetaObsGroup::gsIndentifier. */
 class compareIdentifiers {
    public:
-     bool operator() (const AbstractMetaLocation* lhs, const AbstractMetaLocation* rhs) {
+     bool operator() (const AbstractMetaObsGroup* lhs, const AbstractMetaObsGroup* rhs) {
         return strcmp(lhs->getIndentifier(), rhs->getIndentifier()) < 0;
      }
 };
 
-/** Maintains meta locations, specifically in the context of meta locations as
-    defined by meta neighbors input file. */
-class MetaLocationManager {
+/** Maintains meta observation groups - specifically in the context of meta observation groups as defined by meta neighbors input file. */
+class MetaObsGroupManager {
   public:
-    typedef std::vector<const MetaLocation*> MetaLocationsRefContainer_t;
-    enum state_t                        {accepting=0, closed};
+    typedef std::vector<const MetaObsGroup*> MetaObsGroupRefContainer_t;
+    enum state_t {accepting=0, closed};
 
   private:
-    /** Maintains collection of meta location definitions. */
-    class MetaLocationPool {
+    /** Maintains collection of meta observation group definitions. */
+    class MetaObsGroupPool {
       public:
-        typedef ptr_vector<MetaLocation>            MetaLocationsContainer_t;
-        typedef ptr_vector<AtomicMetaLocation>      AtomicLocationsContainer_t;
-        enum addition_status_t                      {Accepting=0, Closed};
+        typedef ptr_vector<MetaObsGroup> MetaObsGroupContainer_t;
+        typedef ptr_vector<AtomicMetaObsGroup> AtomicObsGroupContainer_t;
+        enum addition_status_t {Accepting=0, Closed};
 
       private:
-        addition_status_t                   gAdditionStatus;
-        MetaLocationsContainer_t            gvMetaLocations;
-        AtomicLocationsContainer_t          gvAtomicLocations;
-        AtomicLocationsContainer_t          gvPromotedAtomicLocations;
+        addition_status_t                  _addition_status;
+        MetaObsGroupContainer_t            _meta_obs_groups;
+        AtomicObsGroupContainer_t          _atomic_obs_groups;
+        AtomicObsGroupContainer_t          _promoted_atomic_obs_groups;
 
-        tract_t                             getAtomicLocationIndex(const std::string& sIdentifier) const;
+        tract_t getAtomicObsGroupIndex(const std::string& sIdentifier) const;
 
       public:
-        MetaLocationPool() : gAdditionStatus(Accepting) {}
-        ~MetaLocationPool() {}
+        MetaObsGroupPool() : _addition_status(Accepting) {}
+        ~MetaObsGroupPool() {}
 
-        void                                additionsCompleted(TractHandler& TInfo);
-        bool                                addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers);
-        void                                assignAtomicIndexes(TractHandler& TInfo);
-        const MetaLocationsContainer_t    & getLocations() const {return gvMetaLocations;}
-        tract_t                             getMetaLocationIndex(const std::string& sMetaIdentifier) const;
-        void                                print(TractHandler& TInfo, FILE * stream=stdout) const;
-    };
+		void                                additionsCompleted(ObservationGroupingManager& groupManager);
+		bool                                addMetaObsGroup(const std::string& sMetaIdentifier, const std::string& neighborsCSV);
+		void                                assignAtomicIndexes(ObservationGroupingManager& groupManager);
+		const MetaObsGroupContainer_t     & getMetaObsGroups() const {return _meta_obs_groups;}
+        tract_t                             getMetaIndex(const std::string& sMetaIdentifier) const;
+		void                                print(const ObservationGroupingManager& groupManager, FILE * stream = stdout) const;
+	};
 
-    MetaLocationPool                    gMetaLocationPool;
-    MetaLocationsRefContainer_t         gMetaLocations;
-    state_t                             geState;
-    unsigned int                        giReferencedMetaLocations;
+    MetaObsGroupPool                    _meta_obs_group_pool;
+    MetaObsGroupRefContainer_t          _meta_obs_groups;
+    state_t                             _state;
+    unsigned int                        _referenced_meta_obs_groups;
 
   public:
-    MetaLocationManager() : geState(accepting), giReferencedMetaLocations(0) {}
-    ~MetaLocationManager() {}
+    MetaObsGroupManager() : _state(accepting), _referenced_meta_obs_groups(0) {}
+    ~MetaObsGroupManager() {}
 
-    unsigned int                        addReferenced(unsigned int tMetaLocation);
-    std::vector<tract_t>              & getAtomicIndexes(unsigned int tMetaLocation, std::vector<tract_t>& AtomicIndexes) const;
-    const MetaLocationsRefContainer_t & getLocations() const {return gMetaLocations;}
-    tract_t                             getMetaLocationIndex(const std::string& sMetaIdentifier) const;
-    MetaLocationPool                  & getMetaLocationPool();
-    const MetaLocationPool            & getMetaLocationPool() const {return gMetaLocationPool;}
-    unsigned int                        getNumReferencedLocations() const {return giReferencedMetaLocations;}
-    bool                                intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const;
-    bool                                intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const;
+    unsigned int                        addReferenced(unsigned int metaIdx);
+    std::vector<tract_t>              & getAtomicIndexes(unsigned int metaIdx, std::vector<tract_t>& AtomicIndexes) const;
+    const MetaObsGroupRefContainer_t & getMetaObsGroups() const {return _meta_obs_groups;}
+    tract_t                             getMetaIndex(const std::string& sMetaIdentifier) const;
+    MetaObsGroupPool                  & getMetaPool();
+    const MetaObsGroupPool            & getMetaPool() const {return _meta_obs_group_pool;}
+    unsigned int                        getNumReferenced() const {return _referenced_meta_obs_groups;}
+    bool                                intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const;
+    bool                                intersects(unsigned int left, unsigned int right) const;
     void                                setStateFixed(bool bIncludePoolRemainders);
 };
 
-/** Maintains collection of meta locations, as would be defined during the calculation of neighbors
-    about centroids. In particular, this class is used when the option for multiple coordinates is
-    not one location per location id (e.g. multiple coordinates per location id). */
+/** Maintains collection of meta observation groups as would be defined during the calculation of neighbors about centroids. 
+    In particular this class is used with multiple coordinates to ensure that observation groups at the same location
+    enter the cluster as the same time. */
 class MetaNeighborManager {
   public:
     typedef ptr_vector<MinimalGrowthArray<tract_t> > UnifiedCollection_t;
@@ -144,32 +143,28 @@ class MetaNeighborManager {
     void                                empty() {gvUnifiedIndexesCollection.killAll();}
     tract_t                             getFirst(unsigned int iCollectionIndex) const;
     std::vector<tract_t>              & getIndexes(unsigned int iCollectionIndex, std::vector<tract_t>& v) const;
-    bool                                intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const;
-    bool                                intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const;
+    bool                                intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const;
+    bool                                intersects(unsigned int left, unsigned int right) const;
     unsigned int                        size() const {return gvUnifiedIndexesCollection.size();}
 };
 
 class CSaTScanData; /** forward class declaration for class MetaManagerProxy */
 
-/** Proxy class for the MetaLocationManager and MetaNeighborManager classes; defining an interface
-    that directs access to underlying meta managers.
-    It should be noted that in the grand scheme of the project, using both the MetaLocationManager
-    and MetaNeighborManager simultaneously is not intended and using both in the contact of this class
-    might have unintended results. The MetaLocationManager class is used with the meta/neighbors input
-    options; were there are not coordinates. The MetaNeighborManager class is used to assist with
-    multiple coordinates per location id. */
+/** Proxy class for the MetaObsGroupManager and MetaNeighborManager classes; defining an interface that directs access to underlying meta managers.
+    It should be noted that in the grand scheme of the project, using both the MetaObsGroupManager and MetaNeighborManager simultaneously is not
+    intended and using both in the contact of this class might have unintended results. */
 class MetaManagerProxy {
   private:
-    const MetaLocationManager         * gpMetaLocationManager;
-    const MetaNeighborManager         * gpMetaNeighborManager;
+    const MetaObsGroupManager * gpMetaObsGroupManager;
+    const MetaNeighborManager * gpMetaNeighborManager;
 
   public:
-     MetaManagerProxy(const MetaLocationManager& LocationManager, const MetaNeighborManager& NeighborManager);
+     MetaManagerProxy(const MetaObsGroupManager& metaObsGroupsManager, const MetaNeighborManager& NeighborManager);
 
-     std::vector<tract_t>             & getIndexes(unsigned int tMetaLocation, std::vector<tract_t>& Indexes) const;
-     unsigned int                       getNumMetaLocations() const;
-    bool                                intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const;
-    bool                                intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const;
+     std::vector<tract_t>             & getIndexes(unsigned int metaIdx, std::vector<tract_t>& Indexes) const;
+     unsigned int                       getNumMeta() const;
+     bool                               intersectsObsGroup(unsigned int metaIdx, tract_t obsGroupIdx) const;
+     bool                               intersects(unsigned int left, unsigned int right) const;
 };
 //******************************************************************************
 #endif

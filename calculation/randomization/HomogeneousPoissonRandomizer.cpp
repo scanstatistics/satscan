@@ -9,10 +9,10 @@
 HomogeneousPoissonRandomizer::HomogeneousPoissonRandomizer(const CParameters& Parameters, const ObserverableRegionContainer_t& Regions, long lInitialSeed)
                              :AbstractDenominatorDataRandomizer(lInitialSeed), gParameters(Parameters), gPolygons(Regions) {
   try {
-     gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
-     gTractHandler->setCoordinateDimensions(2);
+	  _groupings.reset(new ObservationGroupingManager(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
+	  _groupings->setExpectedCoordinateDimensions(2);
      if (!gParameters.UseSpecialGrid())
-       gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler, gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION));
+       gCentroidsHandler.reset(new LocationsCentroidHandlerPassThrough(_groupings->getLocationsManager()));
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","HomogeneousPoissonRandomizer");
@@ -20,8 +20,8 @@ HomogeneousPoissonRandomizer::HomogeneousPoissonRandomizer(const CParameters& Pa
   }
 }
 
-TractHandler& HomogeneousPoissonRandomizer::getTractHandler() {
-   return *gTractHandler;
+ObservationGroupingManager& HomogeneousPoissonRandomizer::getGroupInfo() {
+   return *_groupings;
 }
 
 GInfo& HomogeneousPoissonRandomizer::getCentroidHandler() {
@@ -40,7 +40,7 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
   count_t distributedCount=0, distributionTotal=RealSet.getTotalCases();
   measure_t randomizedArea=0, areaTotal=RealSet.getTotalPopulation();
   ObserverableRegionContainer_t::const_iterator itr=gPolygons.begin();
-  TractHandler::CoordinatesContainer_t vCoordiantes;
+  ObservationGroupingManager::CoordinatesContainer_t vCoordiantes;
 
   SetSeed(iSimulation, SimSet.getSetIndex());
   vCoordiantes.reserve(distributionTotal);
@@ -50,9 +50,9 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
      for (count_t t=0; t < distribution;) {
          itr->retrieveRandomPointInRegion(rX, rY, gRandomNumberGenerator);         
          //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
-         std::auto_ptr<TractHandler::Coordinates> pCoordinates(new TractHandler::Coordinates(rX, rY));
-         ptr_vector<TractHandler::Coordinates>::iterator itrCoordinates;
-         itrCoordinates = std::lower_bound(vCoordiantes.begin(), vCoordiantes.end(), pCoordinates.get(), TractHandler::CompareCoordinates());
+         std::auto_ptr<Coordinates> pCoordinates(new Coordinates(rX, rY));
+         ptr_vector<Coordinates>::iterator itrCoordinates;
+         itrCoordinates = std::lower_bound(vCoordiantes.begin(), vCoordiantes.end(), pCoordinates.get(), CompareCoordinates());
          if (itrCoordinates != vCoordiantes.end() && *(pCoordinates.get()) == *(*itrCoordinates))
            continue; // Duplicate point generated.
          vCoordiantes.insert(itrCoordinates, pCoordinates.release());
@@ -62,6 +62,6 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
      randomizedArea += itr->getArea();
   }
   
-  gTractHandler->assignExplicitCoordinates(vCoordiantes);
+  _groupings->assignExplicitCoordinates(vCoordiantes);
 
 }

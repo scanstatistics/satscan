@@ -7,6 +7,7 @@
 #include "SimulationVariables.h"
 #include "ShapeFileWriter.h"
 #include "LocationRelevance.h"
+#include "LocationNetwork.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -67,18 +68,16 @@ class LocationInformationWriter : public AbstractDataFileWriter {
 
       void                      DefineFields(const CSaTScanData& DataHub);
       ShapeDataFileWriter     * gpShapeDataFileWriter;
+      boost::shared_ptr<NetworkLocationContainer_t> _clusterNetwork;
 
   public:
     LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
-      virtual void              Write(const CCluster& theCluster, 
-                                      const CSaTScanData& theData,
-                                      int iClusterNumber, 
-                                      tract_t tTract, 
-                                      const SimulationVariables& simVars,
-                                      const LocationRelevance& location_relevance);
-      void                      WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
+      virtual void Write(
+          const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, const SimulationVariables& simVars, const LocationRelevance& location_relevance
+      );
+      void WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************
 #endif

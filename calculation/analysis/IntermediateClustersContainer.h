@@ -87,7 +87,7 @@ class CClusterSet {
         bool any=false;
         for (size_t t=0; t < _clusterSet.size(); ++t) {
             CClusterObject&  clusterObj(_clusterSet[t]);
-            if (runcluster.GetNumTractsInCluster() <= clusterObj.getMaxNeighbors() && clusterObj.getCluster().m_nRatio < runcluster.GetRatio()) {
+            if (runcluster.getNumObservationGroups() <= clusterObj.getMaxNeighbors() && clusterObj.getCluster().m_nRatio < runcluster.GetRatio()) {
                 clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
                 any=true;
                 //break; // shortcut updating remainder of clusters with larger maximum neighbors -- call maximizeClusterSet() 

@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "GridTractCoordinates.h"
 #include "SSException.h"
+#include "LocationNetwork.h"
 
 /** Prints coordinates to file stream. */
 void GInfo::displayGridPoints(FILE* pDisplay) const {
@@ -21,7 +22,7 @@ void GInfo::displayGridPoints(FILE* pDisplay) const {
 void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates, const FocusInterval_t& foucsInterval) {
   try {
     if (gAdditionStatus == Closed)
-      throw prg_error("This TractHandler object is closed to insertions.", "addGridPoint()");
+      throw prg_error("This CentroidHandler object is closed to insertions.", "addGridPoint()");
 
     //validate that passed coordinates have same dimensions as class has defined
     if (vCoordinates.size() != (unsigned int)giPointDimensions)
@@ -59,21 +60,46 @@ void CentroidHandler::setDimensions(unsigned int iPointDimensions) {
   giPointDimensions = iPointDimensions;
 }
 
-//////////////////////// CentroidHandlerPassThrough /////////////////////////////
+//////////////////////// LocationsCentroidHandlerPassThrough /////////////////////////////
 
-tract_t CentroidHandlerPassThrough::getNumGridPoints() const {
-	return _network_locations ? gTractHandler.getLocations().size() : gTractHandler.getCoordinates().size();
+void LocationsCentroidHandlerPassThrough::retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const {
+	_locations_manager.locations()[tPoint]->coordinates()->retrieve(vRepository);
 }
 
-void CentroidHandlerPassThrough::retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const {
-	// When we're defining locations using the network file, we're really not generating clusters about a centroid point but
-	// instead from each location in the network (each node). So when we ask for the coordinates of a 'point', we're really asking for
-	// the coordinates of the location at index 'tPoint'.
-	if (_network_locations) {
-		if (gTractHandler.getLocations()[tPoint]->getCoordinates().size())
-			gTractHandler.getLocations()[tPoint]->getCoordinates()[0]->retrieve(vRepository);
-		else
-			vRepository.clear();
-	} else
-		gTractHandler.getCoordinates().at(tPoint)->retrieve(vRepository); 
+//////////////////////// NetworkCentroidHandlerPassThrough /////////////////////////////
+
+NetworkCentroidHandlerPassThrough::NetworkCentroidHandlerPassThrough(const Network& network) : GInfo(), _network(network) {
+    initialize();
+}
+
+/* Initializes collection of NetworkNode pointers from defined network nodes. */
+void NetworkCentroidHandlerPassThrough::initialize() const {
+    _networknodes.reserve(_network.getNodes().size());
+    for (auto itr = _network.getNodes().begin(); itr != _network.getNodes().end(); ++itr)
+        _networknodes.push_back(&(itr->second));
+}
+
+int NetworkCentroidHandlerPassThrough::getGridPointDimensions() const { 
+    return (*_networknodes.begin())->getLocation().coordinates()->getSize();
+}
+
+/* Returns the network location associated with this grid point. */
+const Location & NetworkCentroidHandlerPassThrough::getCentroidLocation(tract_t tPoint) const {
+    return _networknodes.at(tPoint)->getLocation();
+}
+
+/* Returns the number of nodes in the network - which are being used as grid points/centroids of clusters. */
+tract_t NetworkCentroidHandlerPassThrough::getNumGridPoints() const {
+    if (_networknodes.empty()) initialize();
+    return static_cast<tract_t>(_networknodes.size());
+}
+
+/* Retrieves the coordinates of the network node at grid point index. */
+void NetworkCentroidHandlerPassThrough::retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const {
+    if (_networknodes.empty()) initialize();
+    getCentroidLocation(tPoint).coordinates()->retrieve(vRepository);
+}
+
+tract_t NetworkCentroidHandlerPassThrough::retrieveLocationIndex(tract_t tPoint) const {
+    return static_cast<tract_t>(_networknodes.at(tPoint)->getLocationIndex());
 }

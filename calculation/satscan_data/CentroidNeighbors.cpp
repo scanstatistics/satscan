@@ -7,30 +7,29 @@
 #include "SSException.h"
 
 /** Comparison function for LocationDistance objects. */
-bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
-  //first check whether distances are equal - we may need to break a tie
-  if (lhs.GetDistance() == rhs.GetDistance()) {
-    // break ties in a controlled scheme:
-    //   - lesser coordinate breaks tie, not for any particular reason
-    //     that was the decision made by Martin
-    //   - if all coordinates are equal, then continue on to next set of associated coordinates
-    //   - finally compare number of associated coordinates
+bool CompareGroupDistance::operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs) {
+	//first check whether distances are equal - we may need to break a tie
+	if (lhs.GetDistance() == rhs.GetDistance()) {
+		// break ties in a controlled scheme:
+		//   - lesser coordinate breaks tie, not for any particular reason
+		//     that was the decision made by Martin
+		//   - if all coordinates are equal, then continue on to next set of associated coordinates
+		//   - finally compare number of associated coordinates
 
-    const TractHandler::Location::CoordsContainer_t& llhs = gTractInformation.getLocations()[lhs.GetTractNumber()]->getCoordinates();
-    const TractHandler::Location::CoordsContainer_t& rrhs = gTractInformation.getLocations()[rhs.GetTractNumber()]->getCoordinates();
-    if (llhs[lhs.GetRelativeCoordinateIndex()] == rrhs[rhs.GetRelativeCoordinateIndex()])
-      return false; //equalness is resulting from same coordinates
-    else
-      // else compare using TractHandler::Coordinates::operator<(const Coordinates& rhs) const
-      // this results in first lesser coordinate breaking tie, decision made by Martin
-      // not for any particular reason
-      return *(llhs[lhs.GetRelativeCoordinateIndex()]) < *(rrhs[rhs.GetRelativeCoordinateIndex()]);
-  }
-  //distances not equal, compare as normal
-  else
-    return (lhs.GetDistance() < rhs.GetDistance());
+		const ObservationGrouping::LocationsSet_t& llhs = _groups.getObservationGroups()[lhs.GetTractNumber()]->getLocations();
+		const ObservationGrouping::LocationsSet_t& rrhs = _groups.getObservationGroups()[rhs.GetTractNumber()]->getLocations();
+
+		if (llhs[lhs.GetRelativeCoordinateIndex()] == rrhs[rhs.GetRelativeCoordinateIndex()])
+			return false; //equalness is resulting from same coordinates
+		else
+			// else compare using Coordinates::operator<(const Coordinates& rhs) const
+			// this results in first lesser coordinate breaking tie, decision made by Martin not for any particular reason
+			return llhs[lhs.GetRelativeCoordinateIndex()]->coordinates().get() < rrhs[rhs.GetRelativeCoordinateIndex()]->coordinates().get();
+	}
+	//distances not equal, compare as normal
+	else
+		return (lhs.GetDistance() < rhs.GetDistance());
 }
-
 //******************************************************************************
 
 /** constructor */
@@ -66,7 +65,7 @@ CentroidNeighbors::~CentroidNeighbors() {}
     Allocates vector of either integers or unsigned shorts, based upon specified number of
     neighbors for centroid (iNumNeighbors). Sets maxium number of neighbors variable returned
     through GetNumNeighbors() method to that of 'iNumReportedNeighbors' variable. */
-void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, const std::vector<tract_t>& maxReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations) {
+void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, const std::vector<tract_t>& maxReportedNeighbors, const std::vector<DistanceToCentroid>& vOrderedLocations) {
 
   //conditionally allocate unsigned short vs tract_t
   if (vOrderedLocations.size() < (size_t)std::numeric_limits<unsigned short>::max()) {

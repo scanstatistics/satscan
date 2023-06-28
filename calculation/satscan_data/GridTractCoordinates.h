@@ -23,20 +23,21 @@ class GInfo {
         bool                        hasFocusIntervals() const {return _has_focus_intervals;}
         virtual void                retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const = 0;
         virtual FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const = 0;
+        virtual tract_t             retrieveLocationIndex(tract_t tPoint) const { return tPoint;  }
 };
 
 /** Manages centroid grid points in class collection structure. */
 class CentroidHandler : public GInfo {
     public:
         enum addition_status_t              {Accepting=0, Closed};
-        typedef TractHandler::Coordinates   Point_t;
+        //typedef Coordinates                 Point_t;
 
         class GridPoint {        
             public:
-                boost::shared_ptr<Point_t>          _point;
+                boost::shared_ptr<Coordinates>          _point;
                 boost::shared_ptr<IntervalRange_t>  _interval_range;
 
-                GridPoint(const std::vector<double>& Coordinates, unsigned int ordinal) {_point.reset(new Point_t(Coordinates, ordinal));}
+                GridPoint(const std::vector<double>& coordinates, unsigned int ordinal) {_point.reset(new Coordinates(coordinates, ordinal));}
                 bool operator<(const GridPoint& rhs) const {
                     if (*(_point.get()) == *(rhs._point.get())) {
                         // compare interval range -- they have one
@@ -91,21 +92,42 @@ class CentroidHandler : public GInfo {
         FocusInterval_t                     retrieveFocusInterval(tract_t tPoint) const;
 };
 
-/** Provides an interface to centroid grid points that are actually maintained by the TractHandler class.
-    This class is used when the user does not specifiy a special grid file and the locations of the
-    TractHandler class are also grid points. */
-class CentroidHandlerPassThrough : public GInfo {
-   private:
-     const TractHandler   & gTractHandler;
-	 bool                   _network_locations;
-     
-   public:
-     CentroidHandlerPassThrough(const TractHandler& Handler, bool networkLocations) : GInfo(), gTractHandler(Handler), _network_locations(networkLocations){}
+/** Provides an interface to centroid grid points that are actually maintained by the LocationsManager class.
+    This class is used when the user does not specifiy a special grid file and the coordinates of the LocationsManager class are also used as grid points. */
+class LocationsCentroidHandlerPassThrough : public GInfo {
+	private:
+		const LocationsManager & _locations_manager;
 
-    virtual int         getGridPointDimensions() const {return gTractHandler.getCoordinateDimensions();}
-	virtual tract_t     getNumGridPoints() const;
+	public:
+		LocationsCentroidHandlerPassThrough(const LocationsManager& manager) : GInfo(), _locations_manager(manager) {}
+
+	virtual int         getGridPointDimensions() const { return _locations_manager.expectedDimensions(); }
+	virtual tract_t     getNumGridPoints() const { return static_cast<tract_t>(_locations_manager.locations().size()); }
 	virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const;
-    FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const { throw prg_error("Not implemented for CentroidHandlerPassThrough class.", "retrieveFocusInterval()"); }
+	FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const { throw prg_error("Not implemented for LocationsCentroidHandlerPassThrough class.", "retrieveFocusInterval()"); }
+};
+
+class Network;
+class NetworkNode;
+
+/** Provides an interface to centroid grid points that are actually nodes of the Network class.
+    This class is used when the user does not specifiy a special grid file and the coordinates of the nodes in the network are also used as grid points. */
+class NetworkCentroidHandlerPassThrough : public GInfo {
+    private:
+        const Network & _network;
+        mutable std::vector<const NetworkNode*> _networknodes;
+
+        void initialize() const;
+
+    public:
+        NetworkCentroidHandlerPassThrough(const Network& network);
+
+        virtual int         getGridPointDimensions() const;
+        const Location &    getCentroidLocation(tract_t tPoint) const;
+        virtual tract_t     getNumGridPoints() const;
+        virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const;
+        FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const { throw prg_error("Not implemented for NetworkCentroidHandlerPassThrough class.", "retrieveFocusInterval()"); }
+        virtual tract_t retrieveLocationIndex(tract_t tPoint) const;
 };
 //*****************************************************************************
 #endif

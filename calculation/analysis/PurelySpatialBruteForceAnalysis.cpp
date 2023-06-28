@@ -50,7 +50,7 @@ void CPurelySpatialBruteForceAnalysis::AllocateTopClustersObjects(const Abstract
 const SharedClusterVector_t CPurelySpatialBruteForceAnalysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   _topClusters.reset(tCenter);
   gNeighborInfo.killAll();
-  const CentroidNeighborCalculator::LocationDistContainer_t& locDist = gCentroidCalculator->getLocationDistances();
+  const CentroidNeighborCalculator::DistanceContainer_t& locDist = gCentroidCalculator->getLocationDistances();
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      gNeighborInfo.push_back(new CentroidNeighbors());
      gCentroidCalculator->CalculateNeighborsAboutCentroid(j, tCenter, *gNeighborInfo.back());
@@ -74,7 +74,7 @@ double CPurelySpatialBruteForceAnalysis::MonteCarlo(const DataSetInterface& Inte
   SpatialHomogeneousData * pSpatialData = gAbstractClusterData.get();
 
   gMeasureList->Reset();
-  const CentroidNeighborCalculator::LocationDistContainer_t& locDist = gCentroidCalculator->getLocationDistances();
+  const CentroidNeighborCalculator::DistanceContainer_t& locDist = gCentroidCalculator->getLocationDistances();
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidNeighbors centroidDef;
@@ -102,7 +102,7 @@ void CPurelySpatialBruteForceAnalysis::AllocateAdditionalSimulationObjects(Rando
      //If using grid file, get handler from data hub; else get separate object held by randomizer.
      const GInfo& ginfo = (gParameters.UseSpecialGrid() ? *gDataHub.GetGInfo() : pRandomizer->getCentroidHandler());
      //Allocate CentroidNeighborCalculator object used during randomization.
-     gCentroidCalculator.reset(new CentroidNeighborCalculator(gDataHub, pRandomizer->getTractHandler(), ginfo, gPrintDirection));
+     gCentroidCalculator.reset(new CentroidNeighborCalculator(gDataHub, pRandomizer->getGroupInfo(), ginfo, gPrintDirection));
    }
    catch (prg_exception& x) {
      x.addTrace("AllocateAdditionalSimulationObjects()","CPurelySpatialBruteForceAnalysis");
