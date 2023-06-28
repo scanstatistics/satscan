@@ -241,7 +241,7 @@ class ObservationGroupingManager {
         bool addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance);
 		void assignExplicitCoordinates(CoordinatesContainer_t& coordinates);
 		bool getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
-		std::pair<bool, double> ObservationGroupingManager::getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
+		std::pair<bool, double> getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
 		ObservationGroupingManager::AddStatus addObservationGroup(const std::string& groupName, const std::string& locationame);
 		boost::optional<size_t> getObservationGroupIndex(const std::string& groupname) const;
 		const LocationsManager& getLocationsManager() const { return _locations_manager; }
