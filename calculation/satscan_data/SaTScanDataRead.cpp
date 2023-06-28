@@ -1556,7 +1556,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
               if (NeighborsSet.test(AtomicIndexes[t])) {
                 bValid = false;
                 gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
-					_group_manager.getObservationGroups()[AtomicIndexes[t]]->groupname(), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+					_group_manager.getObservationGroups()[AtomicIndexes[t]]->groupname().c_str(), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
               }
               NeighborsSet.set(AtomicIndexes[t]);
             }
