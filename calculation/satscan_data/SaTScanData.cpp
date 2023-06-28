@@ -1019,7 +1019,7 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
             throw resolvable_error("Error: For locationID '%s' in time interval %s - %s,\n"
                                    "       the expected number of cases is zero but there were cases observed.\n"
                                    "       Please review the correctness of population and case files.",
-				                   _observation_groups_manager->getObservationGroups().at(t)->groupname(),
+				                   _observation_groups_manager->getObservationGroups().at(t)->groupname().c_str(),
                                    JulianToString(sStart, gvTimeIntervalStartTimes[i], gParameters.GetPrecisionOfTimesType()).c_str(),
                                    JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1, gParameters.GetPrecisionOfTimesType()).c_str());
   }
