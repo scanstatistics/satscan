@@ -27,6 +27,20 @@ Network::Connection_Details_t GisUtils::getClusterConnections(const NetworkLocat
     return connections;
 }
 
+/* Returns the unique set of network connections. */
+Network::Connection_Details_t GisUtils::getNetworkConnections(const Network& network) {
+    Network::Connection_Details_t connections;
+    for (auto node : network.getNodes()) {
+        const Location* nodeLocation = &node.second.getLocation();
+        // Define edge from this node to connecting nodes.
+        for (auto connectedNode: node.second.getConnections()) {
+            const Location * connectionLocation = &connectedNode.get<0>()->getLocation();
+            connections.emplace(Network::Connection_Detail_t(std::min(nodeLocation, connectionLocation), std::max(nodeLocation, connectionLocation)));
+        }
+    }
+    return connections;
+}
+
 /* Returns the beginning and ending points of cluster radius segment. */
 GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster) {
     std::vector<double> vCoordinates, TractCoords;

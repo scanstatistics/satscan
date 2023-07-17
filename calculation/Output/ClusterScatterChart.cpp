@@ -47,7 +47,7 @@ const char * CartesianGraph::TEMPLATE = " \
             jQuery.noConflict(); \n \
         </script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.2.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.3.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
@@ -63,6 +63,7 @@ const char * CartesianGraph::TEMPLATE = " \
             var cluster_region_points = [--cluster-region-points--]; \n \
             var entire_region = {--entire-region-hash--}; \n \
             var entire_region_points = [--entire-region-points--]; \n \
+            var entire_region_edges = [--entire-region-edges--]; \n \
             var display_stats = {};\n \
 			function inViewport(el) {\n \
                 var elH = jQuery(el).outerHeight(), H = jQuery(window).height(), r = jQuery(el)[0].getBoundingClientRect(), t = r.top, b = r.bottom;\n \
@@ -121,6 +122,7 @@ const char * CartesianGraph::TEMPLATE = " \
                         display_stats.displayed_points += entire_region_points.length;\n \
                     }\n \
                 }\n \
+                if (jQuery('#id_show_all_edges').is(':checked')) { chart.addEdges(entire_region_edges, '#F39C12'); } \n \
                jQuery('#id_cluster_count').html(display_stats.displayed_clusters); \n \
                jQuery('#id_cluster_point_count').html(display_stats.displayed_cluster_points); \n \
                jQuery('#id_point_count').html(display_stats.displayed_points); \n \
@@ -148,6 +150,8 @@ const char * CartesianGraph::TEMPLATE = " \
                         });\n \
                         return false;\n \
                     });\n \
+                    jQuery('#id_show_all_edges').on('click', function(){ showGraph(); }); \n \
+                    if (entire_region_edges.length == 0) { $('#id_show_all_edges').parent().hide(); $('#id_show_all_edges').parent().next('p.help-block').hide(); } \n \
                } catch (error) { \n \
 				   jQuery('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
              	   throw( error ); \n \
@@ -194,8 +198,10 @@ const char * CartesianGraph::TEMPLATE = " \
                     <p class=\"help-block\">Toggle display of graph grid lines.</p>\n \
                     <label><input type=\"checkbox\" id=\"id_show_axes\" checked=checked />Show x and y axes</label>\n \
                     <p class=\"help-block\">Toggle display of graph x / y axes.</p>\n \
-                    <label><input type=\"checkbox\" id=\"id_show_location_points\" checked=checked />Show all location points</label>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_location_points\" />Show all location points</label>\n \
                     <p class=\"help-block\">Toggle display of location points.</p>\n \
+                    <label><input type=\"checkbox\" id=\"id_show_all_edges\" />Show all edges</label> \n \
+                    <p class=\"help-block\">Toggle display of all edges.</p> \n \
                     <label><input type=\"checkbox\" id=\"id_fit_graph_viewport\" />Fit graph to viewport</label>\n \
                     <p class=\"help-block\">Attempts to keep entire graph in view.</p>\n \
                 </div> \n \
@@ -437,6 +443,23 @@ void CartesianGraph::finalize() {
         // replace parameters hash
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
         templateReplace(html, "--parameters--", buffer.c_str());
+
+        std::vector<double> vCoordinates;
+        // Create collections of connections between the cluster nodes - we'll use them to create edges in display.
+        worker.str("");
+        if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+            Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
+            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+                connection.get<0>()->coordinates()->retrieve(vCoordinates);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                worker << printString(buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                connection.get<1>()->coordinates()->retrieve(vCoordinates);
+                prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+                worker << printString(buffer, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+            }
+        }
+        std::string all_edges = worker.str();
+        templateReplace(html, "--entire-region-edges--", trimString(trimString(all_edges, ","), ",").c_str());
 
         // replace region hashes in template
         const char * region_hash = "zmin:0,zmax:1,xsteps:%d,ysteps:%d,bubbleSize:8,xmin:%f,xmax:%f,ymin:%f,ymax:%f";

@@ -146,7 +146,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
                     clusterKML.open(fileCollection.back().getFullPath(buffer).c_str());
                     if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", fileCollection.back().getFullPath(buffer).c_str());
                     clusterKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-                    clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+                    clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
                     clusterKML << "<name>Cluster " << (iCluster + 1) << " Locations</name>" << std::endl << clusterPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
                     clusterKML.close();
                     // Now reference this kml file in NetworkLink tag of primary kml.
@@ -282,7 +282,8 @@ void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
     outKML << "\t<Style id=\"low-rate-placemark\"><IconStyle><color>" << getStyleColor(false, true, buffer) << "</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<Style id=\"location-placemark\"><IconStyle><color>ff019399</color><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
     outKML << "\t<StyleMap id=\"high-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << getStyleColor(true, true, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>" << getStyleColor(true, false, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
-    outKML << "\t<StyleMap id=\"low-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << getStyleColor(false, true, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge1\"><LineStyle><color>" << getStyleColor(false, false, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+    outKML << "\t<StyleMap id=\"low-line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << getStyleColor(false, true, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge2\"><LineStyle><color>" << getStyleColor(false, false, buffer) << "</color><width>3</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+    outKML << "\t<StyleMap id=\"line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge3\"><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
 
     FileName filename(_dataHub.GetParameters().GetOutputFileName().c_str());
     outKML << std::endl << "\t<name>SaTScan: " << filename.getFileName() << "</name>" << std::endl << std::endl;
@@ -407,7 +408,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     eventKML.open(_fileCollection.back().getFullPath(buffer).c_str());
     if (!eventKML) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
     eventKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-    eventKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+    eventKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
     // Iterate over data sets
     std::map<std::string, boost::shared_ptr<std::stringstream> > group_placemarks;
     std::map<std::string, unsigned int> group_frequency;
@@ -609,10 +610,46 @@ void ClusterKML::finalize() {
                     // Now reference this kml file in NetworkLink tag of primary kml.
                     _kml_out << "\t<NetworkLink><name>Locations Outside Clusters</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
                         << "locations_outside_clusters" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
-                }
-                else { // Insert locations into primary kml.
+                } else { // Insert locations into primary kml.
                     _kml_out << "\t<Folder><name>Locations Outside Clusters</name><description></description>" << std::endl << locationPlacemarks.str() << "\t</Folder>" << std::endl << std::endl;
                 }
+            }
+        }
+        if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+            // Add edges of entire network when using a network file.
+            std::string buffer;
+            std::stringstream edges;
+            std::vector<double> vCoordinates;
+
+            Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
+            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(connection.get<0>()->coordinates()->retrieve(vCoordinates)));
+                edges << "\t\t\t<Placemark><styleUrl>#line-edge</styleUrl><LineString><coordinates>";
+                edges << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0  ";
+                prLatitudeLongitude = ConvertToLatLong(connection.get<1>()->coordinates()->retrieve(vCoordinates));
+                edges << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0</coordinates></LineString></Placemark>" << std::endl;
+            }
+            if (_separateLocationsKML) {
+                // Create separate kml for this clusters locations, then reference in primary cluster.
+                _fileCollection.resize(_fileCollection.size() + 1);
+                _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+                _fileCollection.back().setFileName("network_edges");
+                _fileCollection.back().setExtension(KML_FILE_EXT);
+
+                std::ofstream kmlnetwork;
+                kmlnetwork.open(_fileCollection.back().getFullPath(buffer).c_str());
+                if (!kmlnetwork) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
+                kmlnetwork << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+                kmlnetwork << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+                kmlnetwork << "\t<StyleMap id=\"line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge3\"><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
+
+                kmlnetwork << "<name>Network Edges</name>" << std::endl << edges.str() << "</Document>" << std::endl << "</kml>" << std::endl;
+                kmlnetwork.close();
+                // Now reference this kml file in NetworkLink tag of primary kml.
+                _kml_out << "\t<NetworkLink><name>Network Edges</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility><Link><href>"
+                    << "network_edges" << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
+            }  else { // Insert edges into primary kml.
+                _kml_out << "\t<Folder><name>Network Edges</name><description></description>" << std::endl << edges.str() << "\t</Folder>" << std::endl << std::endl;
             }
         }
         /* Finish writing the KML file. */

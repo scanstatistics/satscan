@@ -18,6 +18,7 @@ class GisUtils {
         static double EARTH_RADIUS_METERS;
 
         static Network::Connection_Details_t getClusterConnections(const NetworkLocationContainer_t& networkLocations);
+        static Network::Connection_Details_t getNetworkConnections(const Network& network);
         static pointpair_t getClusterRadiusSegmentPoints(const CSaTScanData& datahub, const CCluster& cluster);
         static points_t getPointsOnCircleCircumference(point_t centerPoint, point_t pointOnCircumference);
         static double getRadiusInMeters(point_t centerPoint, point_t pointOnCircumference);

@@ -69,6 +69,7 @@ const char * ClusterMap::TEMPLATE = " \
          @media all and (max-width: 991px) { #map-outer  { height: 650px } } \n \
          table.info-window td { padding: 3px; }\n \
          #legend { display:none; font-family: Arial, sans-serif; background: #fff; padding: 10px; margin: 10px; border: 1px solid #000; } \n \
+         #cursor_position { display:none; font-family: Arial, sans-serif; background: #fff; padding: 3px; margin: 2px; border: 1px solid #000; } \n \
          .slider-round { height: 10px; margin: 3px 5px 5px 5px; } \n \
          .slider-round .noUi-connect { background: #387bbe; } \n \
          .slider-round .noUi-handle { height: 18px; width: 18px; top: -5px; right: -9px; /* half the width */ border-radius: 9px; background: #0052A3; border: 1px solid #0052A3; } \n \
@@ -123,6 +124,8 @@ const char * ClusterMap::TEMPLATE = " \
                     <p class='help-block'>Toggle display of graph grid lines.</p> --> \n \
                     <label><input type='checkbox' id='id_show_location_points' />Show all location points</label>\n \
                     <p class='help-block'>Toggle display of location points.</p>\n \
+                    <label><input type='checkbox' id='id_show_all_edges' />Show all network edges</label>\n \
+                    <p class='help-block'>Toggle display of all network edges.</p>\n \
                     <!--<label><input type='checkbox' id='id_fit_graph_viewport' checked=checked />Fit map to viewport</label>\n \
                     <p class='help-block'>Attempts to keep entire map in view.</p> --> \n \
                 </div> \n \
@@ -187,6 +190,7 @@ const char * ClusterMap::TEMPLATE = " \
             </div> \n \
             <div class='xx-col-md-10 chart-column' id='map'></div> \n \
             <div id='legend'><h3>Legend</h3></div> \n \
+            <div id='cursor_position'></div> \n \
             </div> \n \
         </div> \n \
      </div> \n \
@@ -201,6 +205,7 @@ const char * ClusterMap::TEMPLATE = " \
             if (parameters.scanrate != 3) { $('#id_rates_option').hide(); }\n \
             if (!parameters.giniscan) { $('#id_secondary_clusters_option').hide(); }\n \
             var entire_region_points = [--entire-region-points--]; \n \
+            var entire_region_edges = [--entire-region-edges--]; \n \
             var display_stats = {};\n \
             var clusters = [--cluster-definitions--]; \n \
             clusters.reverse();\n \
@@ -453,8 +458,23 @@ void ClusterMap::finalize() {
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
         std::vector<double> vCoordinates;
+        // Create collection of network connections - we'll use them to display edges in the entire network.
         worker.str("");
-		for (auto location: _dataHub.GetGroupInfo().getLocationsManager().locations()) {
+        if (params.getUseLocationsNetworkFile()) {
+            Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
+            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+                connection.get<0>()->coordinates()->retrieve(vCoordinates);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
+                worker << printString(buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                connection.get<1>()->coordinates()->retrieve(vCoordinates);
+                prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+                worker << printString(buffer, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+            }
+        }
+        std::string all_edges = worker.str();
+
+        worker.str("");
+        for (auto location: _dataHub.GetGroupInfo().getLocationsManager().locations()) {
             if (!_cluster_locations.test(location->index())) {
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(vCoordinates)));
                 worker << printString(buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
@@ -465,6 +485,7 @@ void ClusterMap::finalize() {
         buffer = _cluster_definitions.str();
         templateReplace(html, "--cluster-definitions--", trimString(buffer, ",\n").c_str());
         templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
+        templateReplace(html, "--entire-region-edges--", trimString(trimString(all_edges, ","), ",").c_str());
         std::stringstream options_group;
         if (_cluster_options_significant.tellp()) {
             options_group << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
