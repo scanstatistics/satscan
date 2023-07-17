@@ -231,7 +231,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { enabled: true, backgroundColor: '#F5F5F5', verticalAlign: 'top', y: 40 }, \n \
                     xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
-                    yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
+                    yAxis: [{ reversedStacks: false, title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [--series--]\n \
                 }; \n \
@@ -391,7 +391,7 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster Area)"), "4572A7", "square", 0, "observed"));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed outside cluster area"), "8BB8EB", "square", 0, "observed"));
                 // the remaining series are conditionally present in the chart
                 std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
 
@@ -400,26 +400,26 @@ void TemporalChartGenerator::generateChart() const {
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
-                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Cluster Area)", "003264", "square", 0, "observed"));
-                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Cluster Area)", "394521", "triangle", 0, ""));
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed in cluster area (red=cluster)", "003264", "square", 0, "observed"));
+                    expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected in cluster area", "394521", "triangle", 0, ""));
                 }
 
                 // the Poisson and Exponential models also graphs observed / expected
                 if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
                     // graphing observed / expected, with y-axis along right side
-                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
+                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
-						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster Area)"), "00FF00", "triangle", 1, ""));
+						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / expected" : "Observed / expected outside cluster area"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Cluster Area)", "FF8000", "triangle", 1, ""));
+                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / expected in cluster area", "FF8000", "triangle", 1, ""));
                 } else if (_dataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
-                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
+                    templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
-						odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster Area)"), "00FF00", "triangle", 1, ""));
+						odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases ratio" : "Cases ratio outside cluster area"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Cluster Area)", "FF8000", "triangle", 1, ""));
+                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases ratio in cluster area", "FF8000", "triangle", 1, ""));
                 } else {
                     templateReplace(chart_js, "--additional-yaxis--", "");
                 }
@@ -441,10 +441,10 @@ void TemporalChartGenerator::generateChart() const {
                 templateReplace(chart_js, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
 
                 // get series datastreams plus cluster indexes start and end ticks
-                std::pair<int,int> cluster_grp_idx = getSeriesStreams(cluster, groups, setIdx, categories, clusterSeries.get(), 
-                                                                      *observedSeries, expectedSeries.get(), 
-                                                                      observedClusterSeries.get(), expectedClusterSeries.get(),
-                                                                      odeSeries.get(), cluster_odeSeries.get());
+                std::pair<int,int> cluster_grp_idx = getSeriesStreams(
+                    cluster, groups, setIdx, categories, clusterSeries.get(), *observedSeries, expectedSeries.get(), 
+                    observedClusterSeries.get(), expectedClusterSeries.get(), odeSeries.get(), cluster_odeSeries.get()
+                );
 
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
@@ -456,19 +456,17 @@ void TemporalChartGenerator::generateChart() const {
                 templateReplace(chart_js, "--categories--", categories.str());
 
                 // replace the series
-                chart_series << observedSeries->toString(buffer).c_str();
-				if (expectedSeries.get())
-                chart_series << "," << expectedSeries->toString(buffer).c_str();
-				if (clusterSeries.get())
-					chart_series << "," << clusterSeries->toString(buffer).c_str();
+				// if (clusterSeries.get()) chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << clusterSeries->toString(buffer).c_str();
                 if (observedClusterSeries.get())
-                    chart_series << "," << observedClusterSeries->toString(buffer).c_str();
+                    chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << observedClusterSeries->toString(buffer).c_str();
                 if (expectedClusterSeries.get())
-                    chart_series << "," << expectedClusterSeries->toString(buffer).c_str();
-                if (odeSeries.get()) 
-                    chart_series << "," << odeSeries->toString(buffer).c_str();
+                    chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << expectedClusterSeries->toString(buffer).c_str();
+                //if (expectedSeries.get()) chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << expectedSeries->toString(buffer).c_str();
                 if (cluster_odeSeries.get())
-                    chart_series << "," << cluster_odeSeries->toString(buffer).c_str();
+                    chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << cluster_odeSeries->toString(buffer).c_str();
+                chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << observedSeries->toString(buffer).c_str();
+                if (odeSeries.get())
+                    chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << odeSeries->toString(buffer).c_str();
                 templateReplace(chart_js, "--series--", chart_series.str());
 
                 // add this charts javascript to collection
