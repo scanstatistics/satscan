@@ -451,11 +451,11 @@ void CartesianGraph::finalize() {
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
             for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
                 connection.get<0>()->coordinates()->retrieve(vCoordinates);
-                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-                worker << printString(buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                transform(vCoordinates);
+                worker << printString(buffer, "[[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();
                 connection.get<1>()->coordinates()->retrieve(vCoordinates);
-                prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-                worker << printString(buffer, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                transform(vCoordinates);
+                worker << printString(buffer, "[%f, %f]],", vCoordinates[0], vCoordinates[1]).c_str();
             }
         }
         std::string all_edges = worker.str();
