@@ -202,22 +202,20 @@ void PopulationData::AddCovariateCategoryControlCount(int iCategoryIndex, count_
     throw resolvable_error("Error: The total number of controls is greater than the maximum of %ld.\n", std::numeric_limits<count_t>::max());
 }
 
-/** Adds category data to the tract info structure. Caller is responsible for ensuring that
+/** Adds category population to the population data structure. Caller is responsible for ensuring that
     parameter 'fPopulation' is a positive value. An exception is thrown if 'tTractIndex' is invalid.
     If precision of parameter 'prPopulationDate' is DAY, the passed population is also assigned to
     day following date indicated by prPopulationDate.first. */
 void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex, const PopulationDate_t& prPopulationDate, float fPopulation) {
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gCovariateCategoriesPerLocation.size() - 1 )
-      throw prg_error("Index %d out of range [size=%u].","AddCovariateCategoryPopulation()",
-                      tTractIndex, gCovariateCategoriesPerLocation.size());
+      throw prg_error("Index %d out of range [size=%u].","AddCovariateCategoryPopulation()", tTractIndex, gCovariateCategoriesPerLocation.size());
 
     CovariateCategory & thisDescriptor = GetCovariateCategory(tTractIndex, iCategoryIndex, (int)gvPopulationDates.size());
-    bool populationAssigned = AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
-    //If precision of read population date is day, assign the day afters population to be the same.
-    //This is needed for the interpolation process. In method SetPopulationDates(...), it is
-    //ensured that this date is listed as one of the possible population dates.
-    if (prPopulationDate.second == DAY && populationAssigned)
+    AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
+    /* If precision of read population date is day then attempt to assign the same population to the day after. 
+       This is needed for the interpolation process. We handle the addition of a population date in method SetPopulationDates(). */
+    if (prPopulationDate.second == DAY)
       AssignPopulation(thisDescriptor, prPopulationDate.first + 1, fPopulation, false);
   }
   catch (prg_exception& x) {
@@ -258,13 +256,13 @@ bool PopulationData::AssignPopulation(CovariateCategory& thisCovariateCategory, 
       //after it; then assign it the same population. We are assuming that the study period start
       //date has the same population as first actual population date since we can't use interpolation
       //to determine the population.
-      if (iPopulationDateIndex == 1 && gbStartAsPopDt)
+      if (iPopulationDateIndex == 1 && _introduced_start_as_pop)
         thisCovariateCategory.AddPopulationAtDateIndex(fPopulation, 0L, *this);
       //If the study period end date was introduced and this is the population date immediately
       //prior to it; then assign it the same population. We are assuming that the study period end
       //date has the same population as last actual population date since we can't use interpolation
       //to determine the population.
-      if (iPopulationDateIndex == iNumPopulationDates - 2 && gbEndAsPopDt)
+      if (iPopulationDateIndex == iNumPopulationDates - 2 && _introduced_end_as_pop)
         thisCovariateCategory.AddPopulationAtDateIndex(fPopulation, iNumPopulationDates - 1, *this);
       return true; // The population data was assigned.
     }
@@ -336,9 +334,9 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
   std::vector<float>            vCategoryTotalPopulation(GetNumCovariateCategories(), 0);
 
   try {
-    if (gbStartAsPopDt)
+    if (_introduced_start_as_pop)
       nPStartIndex = 1;
-    if (gbEndAsPopDt)
+    if (_introduced_end_as_pop)
       nPEndIndex = (int)gvPopulationDates.size() - 2;
     else
       nPEndIndex = (int)gvPopulationDates.size() - 1;
@@ -390,9 +388,9 @@ bool PopulationData::CheckZeroPopulations(BasePrint& PrintDirection) const {
   const CovariateCategory     * pCategoryDescriptor;
 
   try {
-    if (gbStartAsPopDt)
+    if (_introduced_start_as_pop)
       nPStartIndex = 1;
-    if (gbEndAsPopDt)
+    if (_introduced_end_as_pop)
       nPEndIndex = (int)gvPopulationDates.size()-2;
     else
       nPEndIndex = (int)gvPopulationDates.size()-1;
@@ -508,9 +506,9 @@ void PopulationData::Display(FILE* pFile) const {
   UInt          month, day, year;
 
   try {
-    if (gbStartAsPopDt)
+    if (_introduced_start_as_pop)
       nPStartIndex = 1;
-    if (gbEndAsPopDt)
+    if (_introduced_end_as_pop)
       nPEndIndex = (int)gvPopulationDates.size()-2;
     else
       nPEndIndex = (int)gvPopulationDates.size()-1;
@@ -622,8 +620,8 @@ count_t PopulationData::GetNumCategoryTypeCases(int iCategoryIdx) const {
 void PopulationData::Init() {
   giNumberCovariatesPerCategory=0;
   gbAggregateCovariateCategories=false;
-  gbStartAsPopDt=false;
-  gbEndAsPopDt=false;
+  _introduced_start_as_pop=false;
+  _introduced_end_as_pop=false;
 }
 
 /** Returns pointer to category class with iCategoryIndex. Returns null pointer
@@ -923,9 +921,9 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
   const CovariateCategory     * pCategoryDescriptor;
 
   try {
-    if (gbStartAsPopDt)
+    if (_introduced_start_as_pop)
       nPStartIndex = 1;
-    if (gbEndAsPopDt)
+    if (_introduced_end_as_pop)
       nPEndIndex = GetNumPopulationDates() - 2;
     else
       nPEndIndex = GetNumPopulationDates() - 1;
@@ -994,37 +992,34 @@ void PopulationData::SetAggregateCovariateCategories(bool b) {
    }
 }
 
-/** Determines which population dates should be keep based upon specified study
-    period. Later we will use interpolation to estimate the population on dates
-    that were not supplied by input data with respect to the study period. Caller
-    is responsible for ensuring that StartDate <= EndDate. */
-void PopulationData::SetPopulationDates(PopulationDateContainer_t& PopulationDates, Julian StartDate, Julian EndDate, bool dayPlus) {
-  unsigned int  n, iLastIndexedDateIndex, iDateIndexOffset=0, iRetainedDates, iTotalPopulationDates;
-  bool          bStartFound=false, bEndFound=false;
+/** Determines the set of population dates based on the study period and the population dates read in the population file. 
+    Later we will use interpolation to estimate the population on dates that were not supplied by input data with respect to the study period. */
+void PopulationData::SetPopulationDates(PopulationDateContainer_t& readPopDates, Julian StartDate, Julian EndDate, bool dayPlus) {
+  unsigned int iLastIndexedDateIndex, iDateIndexOffset=0, iRetainedDates, iTotalPopulationDates;
+  bool bStartFound=false, bEndFound=false, startIsPopDate=false, startInserted=false;
 
   //first insert additional population dates for those read with precision of day
-
-  if (dayPlus) {
-    for (n=0; n < PopulationDates.size(); ++n)
-        if (PopulationDates[n].second == DAY) {
-            PopulationDates.insert(PopulationDates.begin() + (n + 1), std::make_pair(PopulationDates[n].first + 1, DAY));
-            ++n;
-        }
+  for (int n=0; n < readPopDates.size() && dayPlus; ++n) {
+    startIsPopDate |= readPopDates[n].first == StartDate;
+    if (readPopDates[n].second == DAY) {
+        readPopDates.insert(readPopDates.begin() + (n + 1), std::make_pair(readPopDates[n].first + 1, DAY));
+        startInserted |= (readPopDates[n].first + 1) == StartDate;
+        ++n;
+    }
   }
 
   //Loop over input defined population period to ascertain which population dates to keep.
-  for (n=0; n < PopulationDates.size() && (!bStartFound || !bEndFound); ++n) {
+  for (int n=0; n < readPopDates.size() && (!bStartFound || !bEndFound); ++n) {
      if (!bStartFound) {
        //With respects to interpolation, we can only make use of one population date prior
        //to the study period start date. Keep first prior population date but ignore rest.
-       if (PopulationDates[n].first > StartDate) {
+       if (readPopDates[n].first > StartDate) {
          bStartFound = true;
          //If the study period start date is less than all population dates, it will be
          //added as first population date. Note that in this case, the population for the
          //start date will be assumed to that of first population date.
-         gbStartAsPopDt = (n == 0);
-       }
-       else
+         _introduced_start_as_pop = (n == 0);
+       } else
          //Keep advancing offset index - we're removing population dates.
          iDateIndexOffset = n;
          //Note that the first population date could be equal to the study period start
@@ -1035,26 +1030,30 @@ void PopulationData::SetPopulationDates(PopulationDateContainer_t& PopulationDat
        iLastIndexedDateIndex = n;
        //With respects to interpolation, we can only make use of one population date after
        //to the study period end date. Keep first post population date but ignore rest.
-       if (PopulationDates[n].first > EndDate)
+       if (readPopDates[n].first > EndDate)
          bEndFound = true;
      }
   }
   //Calculate number of population dates retained from original list and total number of population dates.
   iTotalPopulationDates = iRetainedDates = iLastIndexedDateIndex - iDateIndexOffset + 1;
-  gbEndAsPopDt = !bEndFound && (iLastIndexedDateIndex == PopulationDates.size() - 1);
-  if (gbStartAsPopDt)
-    ++iTotalPopulationDates;
-  if (gbEndAsPopDt)
-    ++iTotalPopulationDates;
+  _introduced_end_as_pop = !bEndFound && (iLastIndexedDateIndex == readPopDates.size() - 1);
+  if (_introduced_start_as_pop) ++iTotalPopulationDates;
+  if (_introduced_end_as_pop) ++iTotalPopulationDates;
   //Copy retained population dates to class container.
   gvPopulationDates.clear();
   gvPopulationDates.reserve(iTotalPopulationDates);
-  if (gbStartAsPopDt)
-    gvPopulationDates.push_back(StartDate);
-  for (n=0; n < iRetainedDates; ++n)
-     gvPopulationDates.push_back(PopulationDates[n + iDateIndexOffset].first);
-  if (gbEndAsPopDt)
-    gvPopulationDates.push_back(EndDate + 1);
+  if (_introduced_start_as_pop) gvPopulationDates.push_back(StartDate);
+  for (int n=0; n < iRetainedDates; ++n)
+     gvPopulationDates.push_back(readPopDates[n + iDateIndexOffset].first);
+  if (_introduced_end_as_pop) gvPopulationDates.push_back(EndDate + 1);
+
+  // Special situation when the study period start date is a date in the population file and was inserted.
+  // We need to add back the date that caused it to be inserted and the inserted date.
+  // situation ex: StartDate=2020/1/1, EndDate=2020/11/30 and population file contains 2019/12/31 and 2020/1/1.
+  if (startInserted && startIsPopDate) {
+      gvPopulationDates.insert(gvPopulationDates.begin(), StartDate);
+      gvPopulationDates.insert(gvPopulationDates.begin(), StartDate - 1);
+  }
 }
 
 /** Finds the date of the smallest PopDate > Date. If none exist return -1. */

@@ -98,10 +98,8 @@ class PopulationData {
     std::vector<CovariateCategory*>     gCovariateCategoriesPerLocation;  /** CovariateCategory objects for each location */
     std::vector<CategoryType>           _category_types;                  /** categories defined for population stratified by category type */
     std::vector<Julian>                 gvPopulationDates;                /** collection of all population dates */
-    bool                                gbStartAsPopDt;                   /** indicates whether the study period start
-                                                                              date was introduced into gvPopulationDates */
-    bool                                gbEndAsPopDt;                     /** indicates whether the study period end
-                                                                              date was introduced into gvPopulationDates */
+    bool                                _introduced_start_as_pop;         /** indicates whether the study period start date was introduced into gvPopulationDates */
+    bool                                _introduced_end_as_pop;           /** indicates whether the study period end date was introduced into gvPopulationDates */
     mutable AdditionalCovariates_t      _additionalCovariates;
 
     bool                                AssignPopulation(CovariateCategory& thisCovariateCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
@@ -151,7 +149,7 @@ class PopulationData {
     void                                setAdditionalCovariates(CovariatesNames_t& covariates);
     void                                SetAggregateCovariateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gCovariateCategoriesPerLocation.resize(iTracts, 0);}
-    void                                SetPopulationDates(PopulationDateContainer_t& PopulationDates, Julian StartDate, Julian EndDate, bool dayPlus=true);
+    void                                SetPopulationDates(PopulationDateContainer_t& readPopDates, Julian StartDate, Julian EndDate, bool dayPlus=true);
     int                                 UpperPopIndex(Julian Date) const;
 };
 //******************************************************************************
