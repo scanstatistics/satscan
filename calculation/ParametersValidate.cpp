@@ -1102,18 +1102,6 @@ bool ParametersValidate::ValidateLocationNetworkParameters(BasePrint& PrintDirec
                 "A coordinates file is required to place locations geograghically. Geographical output files will not be created in this analysis.\n", BasePrint::P_WARNING
             );
         }
-        if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE) {
-            // There is a problem that has not been resolved yet -- see CentroidNeighborCalculator::CenterLocationDistancesAbout.
-            bReturn = false;
-            PrintDirection.Printf("%s:\nThe locations network file defined to override euclidean distances of the coordinates file is not currently implemented.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        }
-        if (gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE && gParameters.requestsGeogrphaicalOutput()) {
-            const_cast<CParameters&>(gParameters).toggleGeogrphaicalOutput(false);
-            PrintDirection.Printf("Parameter Setting Warning:\n"
-                "Geographical output file(s) have been requested in conjuction with a network file which is defined to override euclidean distances of the coordinates file.\n"
-                "File generation is not defined for this combination of settings and output files will not be created in this analysis.\n", BasePrint::P_WARNING
-            );
-        }
     } catch (prg_exception& x) {
         x.addTrace("ValidateLocationNetworkParameters()", "ParametersValidate");
         throw;

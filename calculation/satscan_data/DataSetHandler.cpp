@@ -573,7 +573,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
 	auto groupIdx = gDataHub.GetGroupInfo().getObservationGroupIndex(identifier);
     if (!groupIdx) {
         if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-            const char * coordinatessource = gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION ? "network" : "coordinates";
+            const char * coordinatessource = gParameters.getUseLocationsNetworkFile() ? "network" : "coordinates";
             gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
                           gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION ? coordinatessource : "multiple locations"));

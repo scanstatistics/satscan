@@ -19,12 +19,12 @@ bool CompareGroupDistance::operator() (const DistanceToCentroid& lhs, const Dist
 		const ObservationGrouping::LocationsSet_t& llhs = _groups.getObservationGroups()[lhs.GetTractNumber()]->getLocations();
 		const ObservationGrouping::LocationsSet_t& rrhs = _groups.getObservationGroups()[rhs.GetTractNumber()]->getLocations();
 
-		if (llhs[lhs.GetRelativeCoordinateIndex()] == rrhs[rhs.GetRelativeCoordinateIndex()])
+		if (*(llhs[lhs.GetRelativeCoordinateIndex()]->coordinates()) == *(rrhs[rhs.GetRelativeCoordinateIndex()]->coordinates()))
 			return false; //equalness is resulting from same coordinates
 		else
 			// else compare using Coordinates::operator<(const Coordinates& rhs) const
 			// this results in first lesser coordinate breaking tie, decision made by Martin not for any particular reason
-			return llhs[lhs.GetRelativeCoordinateIndex()]->coordinates().get() < rrhs[rhs.GetRelativeCoordinateIndex()]->coordinates().get();
+			return *(llhs[lhs.GetRelativeCoordinateIndex()]->coordinates()) < *(rrhs[rhs.GetRelativeCoordinateIndex()]->coordinates());
 	}
 	//distances not equal, compare as normal
 	else

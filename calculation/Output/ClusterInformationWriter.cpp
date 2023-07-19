@@ -106,7 +106,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(gDataHub), 0, uwOffset, 0);
     if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
-          (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !gDataHub.networkCanReportLocationCoordinates()))) {
+          (gParameters.getUseLocationsNetworkFile() && !gDataHub.networkCanReportLocationCoordinates()))) {
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
           gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
@@ -326,7 +326,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
       Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
     if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
-          (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION && !gDataHub.networkCanReportLocationCoordinates()))) {
+          (gParameters.getUseLocationsNetworkFile() && !gDataHub.networkCanReportLocationCoordinates()))) {
       WriteCoordinates(Record, theCluster);
       if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
         WriteEllipseAngle(Record, theCluster);

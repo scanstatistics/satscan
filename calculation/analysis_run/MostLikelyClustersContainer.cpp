@@ -333,10 +333,6 @@ void MostLikelyClustersContainer::getClusterLocationsSet(const CSaTScanData& Dat
 /** Returns indication of whether geographical overlap exists between passed
     clusters by examining tract locations to comprise the cluster.*/
 bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) const {
-    // Clusters have tracts in common if the most central location is the same.
-    if (ClusterOne.mostCentralObservationGroupIdx() == ClusterTwo.mostCentralObservationGroupIdx())
-        return true;
-
     tract_t tTwoNumTracts = ClusterTwo.getNumObservationGroups(), tOneNumTracts = ClusterOne.getNumObservationGroups();
     int iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
 
@@ -378,7 +374,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
         // If the distance of any location in one cluster - to the center of the other cluster is less than the radius of the other cluster, then they have overlapping locations.
 	    bool useLocationToRadiusMethod = (
 		    (iOneOffset == 0 || iTwoOffset == 0) && // one of the clusters is circular
-            (DataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta() == 0), // meta locations were not used
+            DataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta() == 0 && // meta locations were not used
             DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION // not using multiple coordinates
 	    );
         if (useLocationToRadiusMethod) {

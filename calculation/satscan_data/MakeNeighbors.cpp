@@ -236,7 +236,7 @@ void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub)
                 if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
                     frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
             }
-        } else if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION) {
+        } else if (gParameters.getUseLocationsNetworkFile()) {
             const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
             CalculateNeighborsByNetwork(dataHub);
         } else {
@@ -348,17 +348,6 @@ void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& da
     if (dataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) {
         cluster.getGroupIndexes(dataHub, vindexes, true);
         for (auto idx: vindexes) bindexes.set(idx);
-
-        auto groups = dataHub.GetGroupInfo().getObservationGroups();
-        for (auto idx : vindexes) {
-            auto group = groups[idx];
-            for (unsigned int i = 0; i < group->getLocations().size(); ++i) {
-                unsigned int lidx = group->getLocations()[i]->index();
-                if (idx != lidx)
-                    printf("%s idx != lidx, %u, %u\n", group->groupname().c_str(), idx, lidx);
-            }
-        }
-
     } else if (dataHub.GetParameters().getUseLocationsNetworkFile()) {
         NetworkLocationContainer_t networkLocations;
         dataHub.getClusterNetworkLocations(cluster, networkLocations);
@@ -367,7 +356,7 @@ void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& da
             vindexes.push_back(nodeLoc.first->getLocationIndex());
         }
     } else if (cluster.GetRadiusDefined()) {
-        // Determine which locations are within the circle/ellipse by calculating the distance from centriod to each location,
+        // Determine which locations are within the circle/ellipse by calculating the distance from centroid to each location,
         // then sorting, and finally taking only those within the radius of cluster.
         std::vector<std::pair<tract_t, double> > groupdistances;
         double distance, clusterRadius = cluster.GetCartesianRadius();
@@ -654,11 +643,6 @@ tract_t CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopul
 /** Calculates distances from centroid to all locations, storing in gvCentroidToLocationDistances object. */
 void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
     std::vector<double> vCentroidCoordinates, vLocationCoordinates;
-    bool checkOverrides(
-        gParameters.getUseLocationsNetworkFile() && 
-        gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE && 
-		_observation_groups.getLocationsDistanceOverridesExist()
-    );
 
     gCentroidInfo.retrieveCoordinates(tCentroidIndex, vCentroidCoordinates);
     gvCentroidDistances.resize(_observation_groups.getNumLocationCoordinates());
@@ -669,22 +653,6 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
             //if (!(*itr)->isEvaluatedLocation())
             //    //skip locations that are marked as not evaluated in cluster expansion
             //    continue;
-            if (checkOverrides) {
-
-                /*
-                  TODO:
-                  This is not correct since tCentroidIndex is the grid point index, not the location index.
-                  Do we need some sort of map from grid point to location index?
-
-                  Or perhaps the map is between std::vector<double> and tract index?
-                */
-                std::pair<bool, double> override = _observation_groups.getLocationsDistanceOverride(tCentroidIndex, k);
-                if (override.first) {
-                    gvCentroidDistances[i].Set(k, override.second, 0);
-                    ++i;
-                    continue;
-                }
-            }
 			for (unsigned int locIdx = 0; locIdx < itrGroup->get()->getLocations().size(); ++locIdx) {
 				itrGroup->get()->getLocations()[locIdx]->coordinates()->retrieve(vLocationCoordinates);
 				gvCentroidDistances[i].Set(k, Coordinates::distanceBetween(vCentroidCoordinates, vLocationCoordinates), locIdx);
@@ -697,8 +665,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
         vLocationCoordinates.resize(2);
         CalculateEllipticCoordinates(tEllipseOffsetIndex);
         //calculate distances from centroid to each location
-		for (tract_t k = 0, i = 0; itrGroup != itrGroupEnd; /*++itr,*/ ++k) {
-        //for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+		for (tract_t k = 0, i = 0; itrGroup != itrGroupEnd; ++itrGroup, ++k) {
             //if (!(*itr)->isEvaluatedLocation())
             //    //skip locations that are marked as not evaluated in cluster expansion
             //    continue;

@@ -182,7 +182,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
   if (_locations_network_filename != rhs._locations_network_filename) return false;
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
-  if (_network_file_purpose != rhs._network_file_purpose) return false;
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
   if (_prospective_frequency != rhs._prospective_frequency) return false;
   if (_casefile_includes_linedata != rhs._casefile_includes_linedata) return false;
@@ -437,7 +436,6 @@ void CParameters::Copy(const CParameters &rhs) {
   _drilldown_adjust_weekly_trends = rhs._drilldown_adjust_weekly_trends;
   _locations_network_filename = rhs._locations_network_filename;
   _use_locations_network_file = rhs._use_locations_network_file;
-  _network_file_purpose = rhs._network_file_purpose;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
   _local_timestamp = rhs._local_timestamp;
   _prospective_frequency_type = rhs._prospective_frequency_type;
@@ -1046,7 +1044,6 @@ void CParameters::SetAsDefaulted() {
   _drilldown_adjust_weekly_trends = false;
   _locations_network_filename = "";
   _use_locations_network_file = false;
-  _network_file_purpose = NETWORK_DEFINITION;
   _cluster_moniker_prefix = "";
   _local_timestamp = boost::posix_time::second_clock::local_time();
   _prospective_frequency_type = SAME_TIMEAGGREGATION;
@@ -1402,13 +1399,6 @@ void CParameters::setTemporalGraphReportType(TemporalGraphReportType e) {
   if (e < MLC_ONLY || e > SIGNIFICANT_ONLY)
     throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, MLC_ONLY, SIGNIFICANT_ONLY);
   _temporal_graph_report_type = e;
-}
-
-/** Sets network file purpose type. Throws exception if out of range. */
-void CParameters::setNetworkFilePurpose(NetworkPurposeType e) {
-	if (e < COORDINATES_OVERRIDE || e > NETWORK_DEFINITION)
-		throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, COORDINATES_OVERRIDE, NETWORK_DEFINITION);
-	_network_file_purpose = e;
 }
 
 /** Sets time aggregation length. Throws exception if out of range. */

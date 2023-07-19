@@ -285,7 +285,6 @@ class CParameters {
 
     std::string                         _locations_network_filename;
     bool                                _use_locations_network_file;
-    NetworkPurposeType                  _network_file_purpose;
 
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
@@ -378,8 +377,6 @@ class CParameters {
     void                                setUseLocationsNetworkFile(bool b) { _use_locations_network_file = b; }
     const std::string                 & getLocationsNetworkFilename() const { return _locations_network_filename; }
     void                                setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath = false);
-    NetworkPurposeType                  getNetworkFilePurpose() const { return _network_file_purpose; }
-    void                                setNetworkFilePurpose(NetworkPurposeType e);
 
     const std::string                 & getClusterMonikerPrefix() const { return _cluster_moniker_prefix; }
     void                                setClusterMonikerPrefix(const std::string& s) { _cluster_moniker_prefix = s; }

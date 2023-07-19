@@ -681,7 +681,6 @@ void IniParameterFileAccess::WriteLocationNetworkSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, NETWORK_FILE, s.c_str(), GetParameterComment(NETWORK_FILE));
         if (s.size()) WriteInputSource(WriteFile, NETWORK_FILE, gParameters.getInputSource(NETWORK_FILE));
         WriteIniParameter(WriteFile, USE_NETWORK_FILE, GetParameterString(USE_NETWORK_FILE, s).c_str(), GetParameterComment(USE_NETWORK_FILE));
-        WriteIniParameter(WriteFile, NETWORK_PURPOSE, GetParameterString(NETWORK_PURPOSE, s).c_str(), GetParameterComment(NETWORK_PURPOSE));
     }
     catch (prg_exception& x) {
         x.addTrace("WriteLocationNetworkSettings()", "IniParameterFileAccess");

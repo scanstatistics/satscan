@@ -63,7 +63,7 @@ void CentroidHandler::setDimensions(unsigned int iPointDimensions) {
 //////////////////////// LocationsCentroidHandlerPassThrough /////////////////////////////
 
 void LocationsCentroidHandlerPassThrough::retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const {
-	_locations_manager.locations()[tPoint]->coordinates()->retrieve(vRepository);
+	_locations_manager.locationsByCoordinates()[tPoint]->coordinates()->retrieve(vRepository);
 }
 
 //////////////////////// NetworkCentroidHandlerPassThrough /////////////////////////////

@@ -69,8 +69,8 @@ class Location {
 
 	public:
 		Location(const std::string& locationname) : _locationname(locationname), _index(0) {}
-        Location(const std::string& name, const std::vector<double>& coordinates) : _locationname(name), _coordinates(new Coordinates(coordinates)) {}
-        Location(const std::string& name, double x, double y) : _locationname(name), _coordinates(new Coordinates(x, y)) {}
+        Location(const std::string& name, const std::vector<double>& coordinates, unsigned int iInsertionOrdinal) : _locationname(name), _coordinates(new Coordinates(coordinates, iInsertionOrdinal)) {}
+        Location(const std::string& name, double x, double y, unsigned int iInsertionOrdinal) : _locationname(name), _coordinates(new Coordinates(x, y, iInsertionOrdinal)) {}
         virtual ~Location() {}
 
 		const std::string& name() const { return _locationname; }
@@ -139,7 +139,8 @@ class LocationsManager {
 			_expected_dimensions = i;
 		}
 		const LocationContainer_t& locations() const { return _locations; }
-		bool locationExists(const std::string& locationame) const {
+        const LocationContainer_t& locationsByCoordinates() const { return _locations_by_coordinates; }
+        bool locationExists(const std::string& locationame) const {
 			auto itr = std::lower_bound(_locations.begin(), _locations.end(), boost::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
 			return itr != _locations.end() && itr->get()->name() == locationame;
 		}

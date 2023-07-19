@@ -1223,9 +1223,11 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
                     break;
                 case ATLEASTONELOCATION :
                     settings.push_back(std::make_pair(buffer,"Include observation if at least one of its locations is in the window."));
+                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(gParameters.getMultipleLocationsFile(), gParameters.getTimestamp())));
                     break;
                 case ALLLOCATIONS :
                     settings.push_back(std::make_pair(buffer,"Include observation only if all its locations are in the window."));
+                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(gParameters.getMultipleLocationsFile(), gParameters.getTimestamp())));
                     break;
                 default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialNeighborsParameters()", gParameters.GetMultipleCoordinatesType());
             }
@@ -1246,12 +1248,6 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
             settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
-            switch (gParameters.getNetworkFilePurpose()) {
-                case COORDINATES_OVERRIDE: buffer = "Coordinates File Override"; break;
-                case NETWORK_DEFINITION: buffer = "Network Definition"; break;
-                default: throw prg_error("Unknown locations network file purpose type %d.\n", "PrintLocationNetworkParameters()", gParameters.getNetworkFilePurpose());
-            }
-            settings.push_back(std::make_pair("Locations Network Purpose", buffer));
             WriteSettingsContainer(settings, "Locations Network", fp);
         }
     } catch (prg_exception& x) {

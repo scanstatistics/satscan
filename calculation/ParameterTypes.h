@@ -158,7 +158,7 @@ enum ParameterType
     DRILLDOWN_ADJ_WEEKLY_TRENDS,    /* whether to adjust for weekly trends in Bernoulli drilldown, nonparametric */
     USE_NETWORK_FILE,               /* whether to use locations network file */
     NETWORK_FILE,                   /* locations network filename */
-    NETWORK_PURPOSE,                /* purpose of network file */
+    NETWORK_PURPOSE,                /* not used */
     PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
     PROSPECTIVE_FREQ,               /* frequency of prospective analysis type */
     LINELIST_CASEFILE,              /* whether case file contains line list data */
@@ -189,11 +189,6 @@ enum ProspectiveFrequency {
     MONTHLY,
     QUARTERLY,
     YEARLY
-};
-/** network file purpose */
-enum NetworkPurposeType {
-    COORDINATES_OVERRIDE=0,
-    NETWORK_DEFINITION
 };
 /** analysis and cluster types */
 enum AnalysisType

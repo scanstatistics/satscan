@@ -172,7 +172,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case DRILLDOWN_ADJ_WEEKLY_TRENDS        : return "adjust for weekly trends, purely spatial Bernoulli drilldown (line 136)";
     case USE_NETWORK_FILE                   : return "use locations network file (line 137)";
     case NETWORK_FILE                       : return "locations network filename (line 138)";
-    case NETWORK_PURPOSE                    : return "purpose of locations network file (line 139)";
+    case NETWORK_PURPOSE                    : return "*Not Used* (line 139)";
     case PROSPECTIVE_FREQ_TYPE              : return "frequency of prospective analyses type (line 140)";
     case PROSPECTIVE_FREQ                   : return "frequency of prospective analyses (line 141)";
     case LINELIST_CASEFILE                  : return "whether case file contains line list data (positive integer (line 142)";

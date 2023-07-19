@@ -339,7 +339,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
             gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
         } else if (gParameters.UseLocationNeighborsFile())
             bReturn = ReadUserSpecifiedNeighbors();
-        else if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION) {
+        else if (gParameters.getUseLocationsNetworkFile()) {
             _group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
             bReturn = ReadLocationNetworkFileAsDefinition();
         } else {
@@ -355,8 +355,6 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                 case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(*Source, gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION); break;
                 default : throw prg_error("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
             };
-            if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == COORDINATES_OVERRIDE)
-                bReturn = ReadLocationNetworkFileAsOverride();
         }
 
         if (bReturn && gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
@@ -396,8 +394,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                     case ObservationGroupingManager::Accepted:
                     default: 
                         // If we're using the multiple locations file with the network file, warn user if location is not in network.
-                        if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION
-                            && !gDataHub.getLocationNetwork().locationIndexInNetwork(_group_manager.getLocationsManager().getLocation(locationname).first.get())) {
+                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_group_manager.getLocationsManager().getLocation(locationname).first.get())) {
                             gPrint.Printf(
                                 "Warning: Record %ld of the multiple coordinates file references location '%s', which is not defined in the network file.\n",
                                 BasePrint::P_WARNING, MLSource->GetCurrentRecordIndex(), locationname
@@ -479,7 +476,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
                 bValid = false;
                 continue;
             }
-            if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION) {
+            if (gParameters.getUseLocationsNetworkFile()) {
                 // When using the network file, we've already defined the locations of interest but w/o coordinates. So when 
                 // reading the coordinates file, we are only interested in obtaining the coordinates of the location in the
                 // network, any other locations in the coordinates file should not be added to our collection of locations.
@@ -581,7 +578,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
                 bValid = false;
                 continue;
             }
-            if (gParameters.getUseLocationsNetworkFile() && gParameters.getNetworkFilePurpose() == NETWORK_DEFINITION) {
+            if (gParameters.getUseLocationsNetworkFile()) {
                 // When using the network file, we've already defined the locations of interest but w/o coordinates. So when 
                 // reading the coordinates file, we are only interested in obtaining the coordinates of the location in the
                 // network, any other locations in the coordinates file should not be added to our collection of locations.
@@ -1049,11 +1046,12 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 					_group_manager.addLocation(networkSource->GetValueAt(0));
 					firstlocation = locations.getLocation(networkSource->GetValueAt(0));
 				}
-                if (networkSource->GetNumValues() == 1) {
+                const char * secondvalue = networkSource->GetValueAt(1);
+                if (!secondvalue) {
                     locationNetwork.addNode(*firstlocation.first, *firstlocation.second);
 					secondlocation = LocationsManager::LocationIdx_t(boost::none, 0);
                 } else {
-					secondlocation = locations.getLocation(networkSource->GetValueAt(1));
+					secondlocation = locations.getLocation(secondvalue);
 					if (!secondlocation.first) {
                         // Network location is not already known through coordinates file, add location but we don't know it's coordinates.
 						_group_manager.addLocation(networkSource->GetValueAt(1));
@@ -1149,63 +1147,6 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
         }
     } catch (prg_exception& x) {
         x.addTrace("ReadLocationNetworkFileAsDefinition()", "SaTScanDataReader");
-        throw;
-    }
-    return bValid;
-}
-
-
-bool SaTScanDataReader::ReadLocationNetworkFileAsOverride() {
-    bool          bValid = true, bEmpty = true;
-    tract_t       TractIdentifierIndex;
-    double        distanceBetween;
-    Network     & locationNetwork(gDataHub.getLocationNetwork());
-
-    try {
-
-        gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
-        gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
-        std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
-            getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp(), true),
-            gParameters.getInputSource(NETWORK_FILE), gPrint)
-        );
-        while (!gPrint.GetMaximumReadErrorsPrinted() && networkSource->ReadRecord()) {
-            bEmpty = false;
-            if (networkSource->GetNumValues() != 3) {
-                gPrint.Printf("Error: Record %ld of the %s contains %ld values but expecting 3 values (<location id>, <location id>, <distance>).\n",
-                    BasePrint::P_READERROR, networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), networkSource->GetNumValues());
-                bValid = false;
-                continue;
-            }
-            auto firstLocation = _group_manager.getObservationGroupIndex(networkSource->GetValueAt(0));
-            if (!firstLocation) {
-                gPrint.Printf("Error: Record %ld, of %s, references an unknown identifier '%s' that is not defined in the coordinates file..\n",
-                    BasePrint::P_READERROR, networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), networkSource->GetValueAt(0));
-                bValid = false;
-                continue;
-            }
-            auto secondLocation = _group_manager.getObservationGroupIndex(networkSource->GetValueAt(1));
-            if (!secondLocation) {
-                gPrint.Printf("Error: Record %ld, of %s, references an unknown identifier '%s' that is not defined in the coordinates file..\n",
-                    BasePrint::P_READERROR, networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), networkSource->GetValueAt(1));
-                bValid = false;
-                continue;
-            }
-            if (!string_to_type<double>(networkSource->GetValueAt(2), distanceBetween) || distanceBetween < 0) {
-                gPrint.Printf("Error: The distance between value '%s' in record %ld, of %s, is not a positive decimal number.\n",
-                    BasePrint::P_READERROR, networkSource->GetValueAt(2), networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-                bValid = false;
-                continue;
-            }
-            if (!_group_manager.addLocationsDistanceOverride(*firstLocation, *secondLocation, distanceBetween)) {
-                gPrint.Printf("Error: The distance %s between node '%s' and '%s', in record %ld of %s, conflicts with a previous record.\n",
-                    BasePrint::P_READERROR, networkSource->GetValueAt(2), networkSource->GetValueAt(0), networkSource->GetValueAt(1), networkSource->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-                bValid = false;
-                continue;
-            }
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("ReadLocationNetworkFileAsOverride()", "SaTScanDataReader");
         throw;
     }
     return bValid;
@@ -1539,18 +1480,17 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
               continue;
           }
 		  auto locationIdx = _group_manager.getObservationGroupIndex(identifier);
-          if (!locationIdx) {
+          if (locationIdx) {
             if (NeighborsSet.test(*locationIdx)) {
               bValid = false;
               gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
                             Source->GetValueAt(uLocation0ffset), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-            }
-            else {
+            } else {
               NeighborsSet.set(*locationIdx);
               vRecordNeighborList.push_back(*locationIdx);
             }
           } else {
-			*locationIdx = _group_manager.getMetaObsGroupsManager().getMetaIndex(identifier);
+			locationIdx = boost::make_optional(_group_manager.getMetaObsGroupsManager().getMetaIndex(identifier));
 			_group_manager.getMetaObsGroupsManager().getAtomicIndexes(*locationIdx, AtomicIndexes);
             for (size_t t=0; t < AtomicIndexes.size(); ++t) {
               if (NeighborsSet.test(AtomicIndexes[t])) {

@@ -236,7 +236,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "adjust for weekly trends, purely spatial Bernoulli drilldown";
       case USE_NETWORK_FILE             : return "use locations network file";
       case NETWORK_FILE                 : return "locations network filename";
-      case NETWORK_PURPOSE              : return "purpose of locations network file (0=Coordinates File Override, 1=Network Definition)";
+      case NETWORK_PURPOSE              : return "n/a";
       case PROSPECTIVE_FREQ_TYPE        : return "frequency of prospective analyses type (0=Same Time Aggregation, 1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)";
       case PROSPECTIVE_FREQ             : return "frequency of prospective analyses  (positive integer)";
       case LINELIST_CASEFILE            : return "whether case file contains line list data (positive integer (y/n)";
@@ -439,7 +439,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return AsString(s, gParameters.getDrilldownAdjustWeeklyTrends());
       case USE_NETWORK_FILE             : return AsString(s, gParameters.getUseLocationsNetworkFile());
       case NETWORK_FILE                 : s = gParameters.getLocationsNetworkFilename().c_str(); return s;
-      case NETWORK_PURPOSE              : return AsString(s, gParameters.getNetworkFilePurpose());
+      case NETWORK_PURPOSE              : s = "0"; return s;
       case PROSPECTIVE_FREQ_TYPE        : return AsString(s, gParameters.getProspectiveFrequencyType());
       case PROSPECTIVE_FREQ             : return AsString(s, gParameters.getProspectiveFrequency());
       case LINELIST_CASEFILE            : return AsString(s, gParameters.getCasefileIncludesLineData());
@@ -875,8 +875,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case DRILLDOWN_ADJ_WEEKLY_TRENDS  : gParameters.setDrilldownAdjustWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
       case USE_NETWORK_FILE             : gParameters.setUseLocationsNetworkFile(ReadBoolean(sParameter, eParameterType)); break;
       case NETWORK_FILE                 : gParameters.setLocationsNetworkFilename(sParameter.c_str(), true); break;
-      case NETWORK_PURPOSE              : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, COORDINATES_OVERRIDE, NETWORK_DEFINITION);
-                                          gParameters.setNetworkFilePurpose((NetworkPurposeType)iValue); break;
+      case NETWORK_PURPOSE              : /* no longer used */ break;
       case PROSPECTIVE_FREQ_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, SAME_TIMEAGGREGATION, YEARLY);
                                           gParameters.setProspectiveFrequencyType((ProspectiveFrequency)iValue); break;
       case PROSPECTIVE_FREQ             : gParameters.setProspectiveFrequency(ReadUnsignedInt(sParameter, eParameterType)); break;

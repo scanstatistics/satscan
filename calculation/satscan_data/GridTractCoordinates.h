@@ -102,7 +102,7 @@ class LocationsCentroidHandlerPassThrough : public GInfo {
 		LocationsCentroidHandlerPassThrough(const LocationsManager& manager) : GInfo(), _locations_manager(manager) {}
 
 	virtual int         getGridPointDimensions() const { return _locations_manager.expectedDimensions(); }
-	virtual tract_t     getNumGridPoints() const { return static_cast<tract_t>(_locations_manager.locations().size()); }
+	virtual tract_t     getNumGridPoints() const { return static_cast<tract_t>(_locations_manager.locationsByCoordinates().size()); }
 	virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const;
 	FocusInterval_t     retrieveFocusInterval(tract_t tPoint) const { throw prg_error("Not implemented for LocationsCentroidHandlerPassThrough class.", "retrieveFocusInterval()"); }
 };

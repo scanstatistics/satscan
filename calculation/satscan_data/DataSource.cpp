@@ -436,6 +436,9 @@ bool CsvFileDataSource::ReadRecord() {
         }
     }
     ++_readCount;
+
+    // Do we need to apply the _fields_map with _read_values to get true collection of values?
+
     return (readbuffer.size() > 0 && GetNumValues());
 }
 
@@ -580,7 +583,7 @@ const char * ShapeFileDataSource::GetValueAtUnmapped(long iFieldIndex) {
         printString(_read_buffer, "%lf", (iFieldIndex == 1 ? y : x));
     } else {
         iFieldIndex -= 2; // Account for x/y columns being offset 0 and 1 when getting unmapped values.
-        if (!_dbase_file.get() || iFieldIndex > (long)(_dbase_file->GetNumFields()))
+        if (!_dbase_file.get() || iFieldIndex >= (long)(_dbase_file->GetNumFields()))
             return 0;
         _dbase_file->GetSystemRecord()->GetFieldValue(iFieldIndex, _read_buffer);
         if (_dbase_file->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && _read_buffer.size() == SaTScan::Timestamp::DATE_FLD_LEN)

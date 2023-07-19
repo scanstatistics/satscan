@@ -77,7 +77,8 @@ bool Coordinates::operator<(const Coordinates& rhs) const {
   if (giSize != rhs.giSize) return giSize < rhs.giSize;
   size_t t=0;
   while (t < giSize) {
-      if (gpCoordinates[t] != rhs.gpCoordinates[t]) return gpCoordinates[t] < rhs.gpCoordinates[t];
+      if (gpCoordinates[t] != rhs.gpCoordinates[t])
+          return gpCoordinates[t] < rhs.gpCoordinates[t];
       ++t;
   }
   return false;
@@ -106,7 +107,7 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& loc
 LocationsManager::AddStatus LocationsManager::addLocation(const std::string& name, const std::vector<double>& coordinates) {
     // Verify that coordinate dimensions match expected.
     if (coordinates.size() != _expected_dimensions) return LocationsManager::WrongDimensions;
-    boost::shared_ptr<Location> location(new Location(name, coordinates));
+    boost::shared_ptr<Location> location(new Location(name, coordinates, _locations.size()));
     // Check whether this location already exists by name.
     auto itrByName = std::lower_bound(_locations.begin(), _locations.end(), location, CompareLocationByName());
     if (itrByName != _locations.end() && itrByName->get()->name() == name)
@@ -127,7 +128,7 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& nam
 
 /* Returns the location object with specified coordinates. */
 boost::optional<boost::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
-    boost::shared_ptr<Location> location(new Location("", coordinates));
+    boost::shared_ptr<Location> location(new Location("", coordinates, 0));
     auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
     if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates)
         return boost::optional<boost::shared_ptr<Location> >(*itrByCoordinates);
@@ -176,6 +177,13 @@ ObservationGroupingManager::ObservationGroupingManager(bool aggregating, Multipl
    per location, also defines the location as an observation group. Returns the addition status of the location.*/
 LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::string& locationname) {
 	if (_aggregating) return LocationsManager::Accepted;
+
+    tract_t tLocationIndex = gMetaObsGroupsManager.getMetaPool().getMetaIndex(locationname);
+    if (tLocationIndex > -1) {
+        gMetaObsGroupsManager.addReferenced(tLocationIndex); 
+        return LocationsManager::Accepted;
+    }
+
 	LocationsManager::AddStatus status = _locations_manager.addLocation(locationname);
 	if (status == LocationsManager::Accepted && _multiple_coordinates_type == ONEPERLOCATION)
 		addObservationGroup(locationname, locationname);
@@ -191,9 +199,8 @@ LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::s
         addObservationGroup(locationname, locationname);
     else if (status == LocationsManager::CoordinateExists && _multiple_coordinates_type == ONEPERLOCATION) {
         // This should get picked up in the step which combines groups at the same coordinates.
-        addObservationGroup(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
-        return LocationsManager::Accepted;
-
+        AddStatus gStatus = addObservationGroup(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
+        return gStatus == MultipleLocations ? LocationsManager::CoordinateRedefinition : LocationsManager::Accepted;
         //_locations_manager.getLocationForCoordinates(coordinates).
     }    //combinedWith(const std::string& other)
 	return status;
@@ -437,7 +444,7 @@ void ObservationGroupingManager::assignExplicitCoordinates(CoordinatesContainer_
 				if (coordinates[t]->getSize() != _locations_manager.expectedDimensions())
 					throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates.size(), _locations_manager.expectedDimensions());
 				//Create new copy of coordinates object.
-				boost::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo)));
+				boost::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo), coordinates[t]->getInsertionOrdinal()));
 				_locations_manager._locations[t] = location;
 				//Create dummy location identifier and associate coordinate object.
 				_groupings[t] = boost::shared_ptr<ObservationGrouping>(new ObservationGrouping("_location_", *location.get()));

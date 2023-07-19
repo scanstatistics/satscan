@@ -29,9 +29,9 @@ CCluster::~CCluster() {}
 
 /** initializes cluster data  */
 void CCluster::Initialize(tract_t nCenter) {
-  m_Center         = nCenter;
+  m_Center = nCenter;
   _central_observation_group = -1;
-  _num_observation_groups        = 0;
+  _num_observation_groups = 0;
   m_CartesianRadius= -1;
   m_nRatio         = 0;
   m_nRank          = 1;
@@ -48,8 +48,8 @@ void CCluster::Initialize(tract_t nCenter) {
 /** overloaded assignment operator */
 CCluster& CCluster::operator=(const CCluster& rhs) {
   m_Center                = rhs.m_Center;
-  _central_observation_group   = rhs._central_observation_group;
-  _num_observation_groups               = rhs._num_observation_groups;
+  _central_observation_group  = rhs._central_observation_group;
+  _num_observation_groups = rhs._num_observation_groups;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   _ratio_sets             = rhs._ratio_sets;
@@ -239,7 +239,7 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
 		// - using non-euclidean neighbors
 		// - using a network file to define locations and the user didn't specify all the coordinates in coordinates file
         if (!(DataHub.GetParameters().UseLocationNeighborsFile() ||
-			  (DataHub.GetParameters().getUseLocationsNetworkFile() && DataHub.GetParameters().getNetworkFilePurpose() == NETWORK_DEFINITION && !DataHub.networkCanReportLocationCoordinates()))) {
+			  (DataHub.GetParameters().getUseLocationsNetworkFile() && !DataHub.networkCanReportLocationCoordinates()))) {
             if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
                 DisplayCoordinates(fp, DataHub, PrintFormat);
             else
@@ -287,31 +287,29 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex
 void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
     std::stringstream text;
     try {
-        PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);  
-        auto locationData = Data.GetGroupInfo().getLocationsManager().locations();
+        PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);
         std::vector<tract_t> clusterLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(Data, *this, 0, &clusterLocations);
-        for (auto index : clusterLocations) {
-            if (text.rdbuf()->in_avail()) text << ", ";
-            text << locationData[index].get()->name();
-        }
-        PrintFormat.PrintAlignedMarginsDataString(fp, text.str());
-
-        /*
-        text.str("");
-        PrintFormat.PrintSectionLabel(fp, "Observation Groups", false, true);
-        auto observationGroups = Data.GetGroupInfo().getObservationGroups();
-        getGroupIndexes(Data, clusterLocations, true);
-        ObservationGrouping::CombinedGroupNames_t groupnames;
-        for (auto index : clusterLocations) {
-            observationGroups[index]->retrieveAllIdentifiers(groupnames);
-            for (unsigned int i = 0; i < groupnames.size(); ++i) {
+        if (Data.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) {
+            ObservationGrouping::CombinedGroupNames_t identifiers;
+            for (tract_t t = 1; t <= _num_observation_groups; ++t) {
+                tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius);
+                if (!Data.isNullifiedObservationGroup(tTract)) {
+                    Data.GetGroupInfo().retrieveAllIdentifiers(tTract, identifiers);
+                    for (unsigned int i = 0; i < identifiers.size(); ++i) {
+                        if (text.rdbuf()->in_avail()) text << ", ";
+                        text << identifiers[i];
+                    }
+                }
+            }
+        } else {
+            auto locationData = Data.GetGroupInfo().getLocationsManager().locations();
+            CentroidNeighborCalculator::getLocationsAboutCluster(Data, *this, 0, &clusterLocations);
+            for (auto index : clusterLocations) {
                 if (text.rdbuf()->in_avail()) text << ", ";
-                text << groupnames[i];
+                text << locationData[index].get()->name();
             }
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, text.str());
-        */
     } catch (prg_exception& x) {
         x.addTrace("DisplayCensusTracts()","CCluster");
         throw;

@@ -52,7 +52,6 @@ public class Parameters implements Cloneable {
     /** geographical coordinates data checking type  */
     public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
     public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY, GENERIC };
-    public enum NetworkPurposeType            { COORDINATES_OVERRIDE, NETWORK_DEFINITION };
     public enum ProspectiveFrequency          { SAME_TIMEAGGREGATION, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY};
     public class CreationVersion {
       public int giMajor;
@@ -244,7 +243,6 @@ public class Parameters implements Cloneable {
     
     private String                          _locations_network_filename="";
     private boolean                         _use_locations_network_file=false;
-    private NetworkPurposeType              _network_file_purpose=NetworkPurposeType.NETWORK_DEFINITION;
     private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
     
     private boolean                         _casefile_includes_linedata=false;
@@ -482,7 +480,6 @@ public class Parameters implements Cloneable {
         if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
-        if (_network_file_purpose != rhs._network_file_purpose) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
         if (_casefile_includes_linedata != rhs._casefile_includes_linedata) return false;
         if (_casefile_includes_header != rhs._casefile_includes_header) return false;
@@ -559,11 +556,6 @@ public class Parameters implements Cloneable {
     public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
     public String getLocationsNetworkFilename() { return _locations_network_filename; }
     public void setLocationsNetworkFilename(final String s) { _locations_network_filename = s; }
-    public NetworkPurposeType getNetworkFilePurpose() { return _network_file_purpose; }
-    public void setNetworkFilePurpose(int iOrdinal) {
-        try { _network_file_purpose = NetworkPurposeType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _network_file_purpose.values()); }
-    }
     public boolean getPerformStandardDrilldown() { return _perform_standard_drilldown; }
     public void setPerformStandardDrilldown(boolean b) { _perform_standard_drilldown = b; }
     public boolean getPerformBernoulliDrilldown() { return _perform_bernoulli_drilldown; }

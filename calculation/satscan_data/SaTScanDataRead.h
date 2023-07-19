@@ -42,7 +42,6 @@ class SaTScanDataReader {
     bool                        ReadHomogeneousPoissonData();
     bool                        ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset, bool& warned);
 	bool                        ReadLocationNetworkFileAsDefinition();
-	bool                        ReadLocationNetworkFileAsOverride();
 	bool                        ReadMaxCirclePopulationFile();
     bool                        ReadMetaLocationsFile();
     bool                        ReadNormalData();
