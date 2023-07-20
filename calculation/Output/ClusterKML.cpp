@@ -577,9 +577,8 @@ void ClusterKML::finalize() {
             std::stringstream  locationPlacemarks;
             // create locations folder and locations within cluster placemarks
 			for (auto itrGroup = _dataHub.GetGroupInfo().getObservationGroups().begin(); itrGroup != _dataHub.GetGroupInfo().getObservationGroups().end(); ++itrGroup) {
-				size_t t = std::distance(_dataHub.GetGroupInfo().getObservationGroups().begin(), itrGroup);
-                if (!_cluster_locations.test(t)) {
-                    for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
+                for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
+                    if (!_cluster_locations.test(itrGroup->get()->getLocations()[loc]->index())) {
                         itrGroup->get()->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
                         std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
                         locationPlacemarks << "\t\t<Placemark>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
