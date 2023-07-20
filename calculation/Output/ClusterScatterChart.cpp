@@ -151,7 +151,7 @@ const char * CartesianGraph::TEMPLATE = " \
                         return false;\n \
                     });\n \
                     jQuery('#id_show_all_edges').on('click', function(){ showGraph(); }); \n \
-                    if (entire_region_edges.length == 0) { $('#id_show_all_edges').parent().hide(); $('#id_show_all_edges').parent().next('p.help-block').hide(); } \n \
+                    if (entire_region_edges.length == 0) { jQuery('#id_show_all_edges').parent().hide(); jQuery('#id_show_all_edges').parent().next('p.help-block').hide(); } \n \
                } catch (error) { \n \
 				   jQuery('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
              	   throw( error ); \n \
