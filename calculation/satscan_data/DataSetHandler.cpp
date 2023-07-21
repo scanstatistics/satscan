@@ -566,25 +566,33 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
     //Validate that tract identifer is one of those defined in the coordinates file.
     const char * identifier = Source.GetValueAt(guLocationIndex);
     if (!identifier || strlen(identifier) == 0) {
-        gPrint.Printf("Error: Missing location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
+        gPrint.Printf("Error: Missing identifier is missing in record %ld of %s.\n", BasePrint::P_READERROR,
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
     }
 	auto groupIdx = gDataHub.GetGroupInfo().getObservationGroupIndex(identifier);
     if (!groupIdx) {
+        std::string locationSource;
+        if (gParameters.UseLocationNeighborsFile()) 
+            locationSource = gPrint.getSourceFilenameForType(BasePrint::LOCATION_NEIGHBORS_FILE);
+        else if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION)
+            locationSource = gPrint.getSourceFilenameForType(BasePrint::MULTIPLE_LOCATIONS);
+        else 
+            locationSource = gParameters.getUseLocationsNetworkFile() ? gPrint.getSourceFilenameForType(BasePrint::NETWORK_FILE) : gPrint.getSourceFilenameForType(BasePrint::COORDFILE);
         if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-            const char * coordinatessource = gParameters.getUseLocationsNetworkFile() ? "network" : "coordinates";
-            gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
-                          gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
-                         (gParameters.UseLocationNeighborsFile() ? "neighbors" : gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION ? coordinatessource : "multiple locations"));
+            gPrint.Printf(
+                "Error: Unknown identifier in %s, record %ld. '%s' was not specified in the %s.\n", BasePrint::P_READERROR,
+                gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex), locationSource.c_str()
+            );
             return DataSetHandler::Rejected;
         }
         // Report to user if the data checking option is ignoring locations - because the user requested relaxed checking, that is unless
         // this is a drilldown where we set this option programmatically.
         if (!gDataHub.isDrilldown() && std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-            gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
-                          "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
-                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
+            gPrint.Printf(
+                "Warning: Some records in %s reference an identifier that was not specified in the %s.\n"
+                "         These will be ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(), locationSource.c_str()
+            );
             gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
         }
         return DataSetHandler::Ignored;

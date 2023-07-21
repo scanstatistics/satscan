@@ -35,6 +35,7 @@ class BasePrint {
     virtual void                        PrintStandard(const char * sMessage) = 0;
     virtual void                        PrintWarning(const char * sMessage) = 0;
 
+    const char *                        getSourceFilenameForType(eInputFileType eType) const;
     eInputFileType                      GetImpliedInputFileType() const {return geInputFileType;}
     const std::string                 & GetImpliedFileTypeString() const {return gsInputFileString;}
     virtual bool                        GetIsCanceled() const = 0;

@@ -105,22 +105,27 @@ void BasePrint::PrintReadError(const char * sMessage) {
      PrintError(sMessage);
 }
 
+/* Returns the file name of the input source type used when reporting messages to user. */
+const char * BasePrint::getSourceFilenameForType(eInputFileType eType) const {
+    switch (eType) {
+        case CASEFILE: return "case file";
+        case CONTROLFILE: return "control file";
+        case POPFILE: return "population file";
+        case COORDFILE: return "coordinates file";
+        case GRIDFILE: return "grid file";
+        case MAXCIRCLEPOPFILE: return "max circle size file";
+        case ADJ_BY_RR_FILE: return "adjustments file";
+        case LOCATION_NEIGHBORS_FILE: return "location neighbors file";
+        case META_LOCATIONS_FILE: return "meta locations file";
+        case NETWORK_FILE: return "locations network file";
+        case MULTIPLE_LOCATIONS: return "multiple locations file";
+        default: throw prg_error("Invalid input file type warning message!", "getSourceFilenameForType()");
+    }
+}
+
 void BasePrint::SetImpliedInputFileType(eInputFileType eType, bool clearWarningCount) {
     geInputFileType = eType;
-    switch (eType) {
-        case CASEFILE                : gsInputFileString = "case file"; break;
-        case CONTROLFILE             : gsInputFileString = "control file"; break;
-        case POPFILE                 : gsInputFileString = "population file"; break;
-        case COORDFILE               : gsInputFileString = "coordinates file"; break;
-        case GRIDFILE                : gsInputFileString = "grid file"; break;
-        case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;
-        case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
-        case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
-        case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
-        case NETWORK_FILE            : gsInputFileString = "locations network file"; break;
-        case MULTIPLE_LOCATIONS      : gsInputFileString = "multiple locations file"; break;
-        default : throw prg_error("Invalid input file type warning message!", "SetImpliedInputFileType()");
-    }
+    gsInputFileString = getSourceFilenameForType(geInputFileType);
     if (clearWarningCount) {
         auto iter = gInputFileWarningsMap.find(geInputFileType);
         if (iter != gInputFileWarningsMap.end()) iter->second = 0;
