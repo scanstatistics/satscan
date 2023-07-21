@@ -333,8 +333,15 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         WriteEllipseShape(Record, theCluster);
       }
     }
-    Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
-        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumObsGroups() : theCluster.numNonNullifiedObservationGroupsInCluster(gDataHub);
+    if (gDataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION)
+        Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumObsGroups() : theCluster.numNonNullifiedObservationGroupsInCluster(gDataHub);
+    else if (theCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+        Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = gDataHub.getLocationsManager().locations().size();
+    else {
+        boost::dynamic_bitset<> bLocations;
+        CentroidNeighborCalculator::getLocationsAboutCluster(gDataHub, theCluster, &bLocations, 0);
+        Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = bLocations.count();
+    }
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
