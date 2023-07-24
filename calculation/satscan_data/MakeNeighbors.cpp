@@ -346,8 +346,12 @@ void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& da
     boost::dynamic_bitset<> bindexes(dataHub.GetGroupInfo().getLocationsManager().locations().size());
     std::vector<tract_t> vindexes;
     if (dataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) {
-        cluster.getGroupIndexes(dataHub, vindexes, true);
-        for (auto idx: vindexes) bindexes.set(idx);
+        std::vector<tract_t> groupindexes;
+        cluster.getGroupIndexes(dataHub, groupindexes, true);
+        for (auto groupidx : groupindexes) {
+            vindexes.push_back(dataHub.GetGroupInfo().getObservationGroups()[groupidx]->getLocations()[0]->index());
+            bindexes.set(vindexes.back());
+        }
     } else if (dataHub.GetParameters().getUseLocationsNetworkFile()) {
         NetworkLocationContainer_t networkLocations;
         dataHub.getClusterNetworkLocations(cluster, networkLocations);

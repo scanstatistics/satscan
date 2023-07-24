@@ -1247,7 +1247,8 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
     try {
         if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
             settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
+            if (gParameters.getUseLocationsNetworkFile())
+                settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
             WriteSettingsContainer(settings, "Locations Network", fp);
         }
     } catch (prg_exception& x) {
