@@ -17,11 +17,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.Properties;
-import javax.swing.JOptionPane;
 import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.TextPrompt;
 import org.satscan.gui.utils.WaitCursor;
@@ -53,6 +50,9 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         initComponents();
         _checkFrequency.setModel(new javax.swing.DefaultComboBoxModel(updateFrequencyChoices()));
         _checkFrequency.setSelectedItem(getUpdateFrequency());
+        _file_browse_options.setEnabled(!System.getProperty("os.name").toLowerCase().startsWith("mac"));
+        _alternative_browsing.setEnabled(!System.getProperty("os.name").toLowerCase().startsWith("mac"));
+        if (_alternative_browsing.isEnabled()) _alternative_browsing.setSelected(SaTScanApplication.getAwtBrowse());        
         setLocationRelativeTo(parent);
         // Read mail server settings from SaTScan ini file - found in user directory.
         _ini_satscan = SystemUtils.getUserHome().getAbsolutePath() + File.separator + ".satscan" + File.separator   + "satscan.ini";
@@ -142,6 +142,16 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         return prefs.get(CHECK_FREQUENCY_KEY, CHECK_MONTHLY_KEY);
     }
    
+    /*
+     * Sets the type of file selection dialog to use.
+     */
+    public void setAlternativeBrowsing(boolean selected) {
+        if (_alternative_browsing.isEnabled()) {
+            setPreference(SaTScanApplication.FILE_BROWSE_KEY,Boolean.toString(selected));
+            SaTScanApplication.setAwtBrowse(selected);
+        }        
+    }    
+    
     public static String getPreference(String key) {
         Preferences prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
         return prefs.get(key, "");
@@ -206,18 +216,29 @@ public class ApplicationPreferences extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        cancelButton = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
         parallelProcessorsGroup = new javax.swing.JPanel();
         _checkFrequency = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        cancelButton = new javax.swing.JButton();
-        okButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        _alternative_browsing = new javax.swing.JCheckBox();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        _file_browse_options = new javax.swing.JTextPane();
+        jPanel3 = new javax.swing.JPanel();
         _alert_label_smtp = new javax.swing.JLabel();
         _alerts_smtp = new javax.swing.JTextField();
         TextPrompt tpSMTP = new TextPrompt("ex. smtp.somecompany.com:25", _alerts_smtp);
         tpSMTP.setForeground( Color.BLUE );
         tpSMTP.changeAlpha(0.5f);
         tpSMTP.changeStyle(Font.BOLD + Font.ITALIC);
+        _alert_label_add_curl = new javax.swing.JLabel();
+        _alerts_curl_additional = new javax.swing.JTextField();
+        TextPrompt tpAddCurl = new TextPrompt("ex. --user <user:password> --ssl-reqd", _alerts_curl_additional);
+        tpAddCurl.setForeground( Color.BLUE );
+        tpAddCurl.changeAlpha(0.5f);
+        tpAddCurl.changeStyle(Font.BOLD + Font.ITALIC);
         _alert_label_from = new javax.swing.JLabel();
         _alerts_from = new javax.swing.JTextField();
         TextPrompt tpFrom = new TextPrompt("ex. sender@domain.com", _alerts_from); 
@@ -230,12 +251,6 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         tpReply.setForeground( Color.BLUE );
         tpReply.changeAlpha(0.5f);
         tpReply.changeStyle(Font.BOLD + Font.ITALIC);
-        _alert_label_add_curl = new javax.swing.JLabel();
-        _alerts_curl_additional = new javax.swing.JTextField();
-        TextPrompt tpAddCurl = new TextPrompt("ex. --user <user:password> --ssl-reqd", _alerts_curl_additional);
-        tpAddCurl.setForeground( Color.BLUE );
-        tpAddCurl.changeAlpha(0.5f);
-        tpAddCurl.changeStyle(Font.BOLD + Font.ITALIC);
         _send_test_mail = new javax.swing.JButton();
         _send_test_mail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -261,30 +276,6 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         setTitle("Preferences and Settings");
         setModal(true);
 
-        parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
-
-        jLabel1.setText("Automatically check for updates:");
-
-        javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);
-        parallelProcessorsGroup.setLayout(parallelProcessorsGroupLayout);
-        parallelProcessorsGroupLayout.setHorizontalGroup(
-            parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(parallelProcessorsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_checkFrequency, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        parallelProcessorsGroupLayout.setVerticalGroup(
-            parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(parallelProcessorsGroupLayout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addGap(11, 11, 11)
-                .addComponent(_checkFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 9, Short.MAX_VALUE))
-        );
-
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -298,6 +289,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);
                 try {
                     setUpdateFrequency(_checkFrequency.getSelectedItem().toString());
+                    setAlternativeBrowsing(_alternative_browsing.isSelected());
                     FileWriter fw = new FileWriter(_ini_satscan);
                     // Write already defined section - other than that of mail server.
                     for (Map.Entry<String, Properties> entry : _ini_values.entrySet()) {
@@ -327,7 +319,69 @@ public class ApplicationPreferences extends javax.swing.JDialog {
             }
         });
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Mail Server Settings"));
+        parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
+
+        jLabel1.setText("Automatically check for updates:");
+
+        javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);
+        parallelProcessorsGroup.setLayout(parallelProcessorsGroupLayout);
+        parallelProcessorsGroupLayout.setHorizontalGroup(
+            parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(parallelProcessorsGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_checkFrequency, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        parallelProcessorsGroupLayout.setVerticalGroup(
+            parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(parallelProcessorsGroupLayout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addGap(11, 11, 11)
+                .addComponent(_checkFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 9, Short.MAX_VALUE))
+        );
+
+        _alternative_browsing.setText("Use Alternative File Browsing Dialog");
+
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        _file_browse_options.setEditable(false);
+        _file_browse_options.setBackground(new java.awt.Color(240, 240, 240));
+        _file_browse_options.setBorder(null);
+        _file_browse_options.setText("In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience.");
+        _file_browse_options.setMargin(new java.awt.Insets(10, 10, 10, 10));
+        jScrollPane2.setViewportView(_file_browse_options);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(_alternative_browsing, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_alternative_browsing)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(94, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("General", jPanel2);
 
         _alert_label_smtp.setText("Server Name:");
 
@@ -336,6 +390,8 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 enableSendTextMail();
             }
         });
+
+        _alert_label_add_curl.setText("Additional curl Parameters:");
 
         _alert_label_from.setText("'From' Address:");
 
@@ -347,8 +403,6 @@ public class ApplicationPreferences extends javax.swing.JDialog {
 
         _alert_label_reply.setText("'Reply' Address:");
 
-        _alert_label_add_curl.setText("Additional curl Parameters:");
-
         _send_test_mail.setText("Send Test Email");
         _send_test_mail.setToolTipText("Send test email to 'from' address");
 
@@ -357,30 +411,30 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         _send_test_mail_response.setRows(5);
         jScrollPane1.setViewportView(_send_test_mail_response);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_alert_label_from, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_alerts_curl_additional)
-                    .addComponent(_alert_label_add_curl, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .addComponent(_alert_label_reply, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_alerts_reply, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_alert_label_smtp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_alerts_smtp)
-                    .addComponent(_alerts_from)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(_send_test_mail, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 162, Short.MAX_VALUE))
+                    .addComponent(_alerts_smtp)
+                    .addComponent(_alert_label_smtp, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_alerts_curl_additional)
+                    .addComponent(_alert_label_add_curl, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_alerts_from)
+                    .addComponent(_alert_label_from, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
+                    .addComponent(_alerts_reply)
+                    .addComponent(_alert_label_reply, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addComponent(_alert_label_smtp)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_alerts_smtp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -399,34 +453,29 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_send_test_mail)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        jTabbedPane1.addTab("Mail Server Settings", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cancelButton)
                 .addContainerGap())
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addComponent(jTabbedPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
@@ -445,13 +494,18 @@ public class ApplicationPreferences extends javax.swing.JDialog {
     private javax.swing.JTextField _alerts_from;
     private javax.swing.JTextField _alerts_reply;
     private javax.swing.JTextField _alerts_smtp;
+    private javax.swing.JCheckBox _alternative_browsing;
     private javax.swing.JComboBox _checkFrequency;
+    private javax.swing.JTextPane _file_browse_options;
     private javax.swing.JButton _send_test_mail;
     private javax.swing.JTextArea _send_test_mail_response;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel parallelProcessorsGroup;
     // End of variables declaration//GEN-END:variables

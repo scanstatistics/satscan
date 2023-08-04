@@ -67,6 +67,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static String _user_guide = null;
     private static String _debug_url = "";
     private static String _debug_auth = "";
+    private static boolean _awt_browse = System.getProperty("os.name").toLowerCase().startsWith("mac");
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
@@ -80,7 +81,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final ApplicationPreferencesAction _applicationPreferencesAction = new ApplicationPreferencesAction();
     private JInternalFrame _focusedInternalFrame = null;
     private boolean _firstShow = true;
-    private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
+    private final Vector<JInternalFrame> allOpenFrames = new Vector<>();
     private static SaTScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
     WindowsMenu windowsMenu = null;
@@ -88,9 +89,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String WIDTH_KEY = "width";
     private final String DEFAULT_HEIGHT = "768";
     private final String DEFAULT_WIDTH = "1024";
-    private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
-    private static String RELAUNCH_TOKEN = "&";
-    private static String CHECK_UPDATE_START = "true";    
+    private static final String RELAUNCH_ARGS_OPTION = "relaunch_args=";
+    private static final String RELAUNCH_TOKEN = "&";
+    private static final String CHECK_UPDATE_START = "true";    
+    public static final String FILE_BROWSE_KEY = "filebrowse";
     private final UpdateCheckDialog _updateCheck;
     private HelpSet _mainHS = null;
     private HelpBroker _mainHB = null;
@@ -106,6 +108,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         initComponents();
         Preferences _prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
         setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
+        _awt_browse = Boolean.parseBoolean(_prefs.get(FILE_BROWSE_KEY, Boolean.toString(_awt_browse)));
         windowsMenu = new WindowsMenu(this.desktopPane);
         windowsMenu.setWindowPositioner(new CascadingWindowPositioner(this.desktopPane));
         windowsMenu.setMnemonic(KeyEvent.VK_W);
@@ -266,6 +269,14 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         return _debug_auth;
     }
 
+    public static boolean getAwtBrowse() {
+        return _awt_browse;
+    }   
+
+    public static void setAwtBrowse(boolean b) {
+        _awt_browse = b;
+    }       
+    
     /**
      * Open new session action.
      */

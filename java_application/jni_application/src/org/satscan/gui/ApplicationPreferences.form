@@ -25,29 +25,20 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="okButton" min="-2" pref="65" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="parallelProcessorsGroup" alignment="1" max="32767" attributes="1"/>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="okButton" min="-2" pref="65" max="-2" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cancelButton" min="-2" max="-2" attributes="1"/>
-                  </Group>
-                  <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
-              </Group>
+              <Component id="cancelButton" min="-2" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="parallelProcessorsGroup" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jPanel1" max="32767" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="okButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -58,58 +49,6 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JPanel" name="parallelProcessorsGroup">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Software Updates">
-              <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                <EtchetBorder/>
-              </Border>
-            </TitledBorder>
-          </Border>
-        </Property>
-      </Properties>
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_checkFrequency" max="32767" attributes="0"/>
-                      <Component id="jLabel1" pref="415" max="32767" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-                  <Component id="_checkFrequency" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="9" max="32767" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-      <SubComponents>
-        <Component class="javax.swing.JComboBox" name="_checkFrequency">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="0"/>
-            </Property>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JLabel" name="jLabel1">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Automatically check for updates:"/>
-          </Properties>
-        </Component>
-      </SubComponents>
-    </Container>
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Cancel"/>
@@ -123,135 +62,272 @@
         <Property name="text" type="java.lang.String" value="Ok"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="okButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent event) {&#xa;        WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);&#xa;        try {&#xa;            setUpdateFrequency(_checkFrequency.getSelectedItem().toString());&#xa;            FileWriter fw = new FileWriter(_ini_satscan);&#xa;            // Write already defined section - other than that of mail server.&#xa;            for (Map.Entry&lt;String, Properties&gt; entry : _ini_values.entrySet()) {&#xa;                String sectionName = &quot;[&quot; + entry.getKey() + &quot;]&quot;;&#xa;                if (!entry.getKey().equals(MAILSERVER_SECTION)) {&#xa;                    fw.write(sectionName + System.lineSeparator());&#xa;                    for (Map.Entry&lt;Object, Object&gt; e : entry.getValue().entrySet()) {&#xa;                        fw.write((String)e.getKey() + &quot;=&quot; + (String)e.getValue() + System.lineSeparator());&#xa;                    }&#xa;                    fw.write(System.lineSeparator());&#xa;                }&#xa;            }&#xa;            // Now write the mail server section.&#xa;            fw.write(&quot;[&quot; + MAILSERVER_SECTION + &quot;]&quot; + System.lineSeparator());&#xa;            fw.write(MAIL_SERVERNAME_KEY + &quot;=&quot; + _alerts_smtp.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_ADDITIONAL_KEY + &quot;=&quot; + _alerts_curl_additional.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_FROM_KEY + &quot;=&quot; + _alerts_from.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_REPLY_KEY + &quot;=&quot; + _alerts_reply.getText() + System.lineSeparator());&#xa;            fw.write(System.lineSeparator());&#xa;            fw.close();&#xa;            setVisible(false);&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ApplicationPreferences.this, t).setVisible(true);&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }        &#xa;    }&#xa;});"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="okButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent event) {&#xa;        WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);&#xa;        try {&#xa;            setUpdateFrequency(_checkFrequency.getSelectedItem().toString());&#xa;            setAlternativeBrowsing(_alternative_browsing.isSelected());&#xa;            FileWriter fw = new FileWriter(_ini_satscan);&#xa;            // Write already defined section - other than that of mail server.&#xa;            for (Map.Entry&lt;String, Properties&gt; entry : _ini_values.entrySet()) {&#xa;                String sectionName = &quot;[&quot; + entry.getKey() + &quot;]&quot;;&#xa;                if (!entry.getKey().equals(MAILSERVER_SECTION)) {&#xa;                    fw.write(sectionName + System.lineSeparator());&#xa;                    for (Map.Entry&lt;Object, Object&gt; e : entry.getValue().entrySet()) {&#xa;                        fw.write((String)e.getKey() + &quot;=&quot; + (String)e.getValue() + System.lineSeparator());&#xa;                    }&#xa;                    fw.write(System.lineSeparator());&#xa;                }&#xa;            }&#xa;            // Now write the mail server section.&#xa;            fw.write(&quot;[&quot; + MAILSERVER_SECTION + &quot;]&quot; + System.lineSeparator());&#xa;            fw.write(MAIL_SERVERNAME_KEY + &quot;=&quot; + _alerts_smtp.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_ADDITIONAL_KEY + &quot;=&quot; + _alerts_curl_additional.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_FROM_KEY + &quot;=&quot; + _alerts_from.getText() + System.lineSeparator());&#xa;            fw.write(MAIL_REPLY_KEY + &quot;=&quot; + _alerts_reply.getText() + System.lineSeparator());&#xa;            fw.write(System.lineSeparator());&#xa;            fw.close();&#xa;            setVisible(false);&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ApplicationPreferences.this, t).setVisible(true);&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }        &#xa;    }&#xa;});"/>
       </AuxValues>
     </Component>
-    <Container class="javax.swing.JPanel" name="jPanel1">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Mail Server Settings"/>
-          </Border>
-        </Property>
-      </Properties>
+    <Container class="javax.swing.JTabbedPane" name="jTabbedPane1">
 
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="jPanel2">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="General">
+                <Property name="tabTitle" type="java.lang.String" value="General"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="parallelProcessorsGroup" alignment="1" max="32767" attributes="1"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jScrollPane2" alignment="0" pref="0" max="32767" attributes="0"/>
+                                  <Component id="_alternative_browsing" alignment="0" pref="355" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="parallelProcessorsGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alternative_browsing" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jScrollPane2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="94" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="parallelProcessorsGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Software Updates">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_alert_label_from" alignment="1" max="32767" attributes="0"/>
-                      <Component id="_alerts_curl_additional" alignment="0" max="32767" attributes="0"/>
-                      <Component id="_alert_label_add_curl" alignment="0" pref="415" max="32767" attributes="0"/>
-                      <Component id="_alert_label_reply" alignment="0" max="32767" attributes="0"/>
-                      <Component id="_alerts_reply" alignment="1" max="32767" attributes="0"/>
-                      <Component id="_alert_label_smtp" alignment="0" max="32767" attributes="0"/>
-                      <Component id="_alerts_smtp" alignment="0" max="32767" attributes="0"/>
-                      <Component id="_alerts_from" alignment="0" max="32767" attributes="0"/>
-                      <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="_send_test_mail" min="-2" pref="193" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_checkFrequency" max="32767" attributes="0"/>
+                              <Component id="jLabel1" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <Component id="_alert_label_smtp" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alerts_smtp" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alert_label_add_curl" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alerts_curl_additional" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alert_label_from" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alerts_from" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alert_label_reply" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_alerts_reply" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_send_test_mail" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-      <SubComponents>
-        <Component class="javax.swing.JLabel" name="_alert_label_smtp">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Server Name:"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="_alerts_smtp">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpSMTP = new TextPrompt(&quot;ex. smtp.somecompany.com:25&quot;, _alerts_smtp);&#xa;tpSMTP.setForeground( Color.BLUE );&#xa;tpSMTP.changeAlpha(0.5f);&#xa;tpSMTP.changeStyle(Font.BOLD + Font.ITALIC);"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_smtp.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JLabel" name="_alert_label_from">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&apos;From&apos; Address:"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="_alerts_from">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpFrom = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_from); &#xd;&#xa;tpFrom.setForeground( Color.BLUE );&#xd;&#xa;tpFrom.changeAlpha(0.5f);&#xd;&#xa;tpFrom.changeStyle(Font.BOLD + Font.ITALIC);"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_from.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JLabel" name="_alert_label_reply">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&apos;Reply&apos; Address:"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="_alerts_reply">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpReply = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_reply); &#xd;&#xa;tpReply.setForeground( Color.BLUE );&#xd;&#xa;tpReply.changeAlpha(0.5f);&#xd;&#xa;tpReply.changeStyle(Font.BOLD + Font.ITALIC);"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JLabel" name="_alert_label_add_curl">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Additional curl Parameters:"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="_alerts_curl_additional">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpAddCurl = new TextPrompt(&quot;ex. --user &lt;user:password&gt; --ssl-reqd&quot;, _alerts_curl_additional);&#xa;tpAddCurl.setForeground( Color.BLUE );&#xa;tpAddCurl.changeAlpha(0.5f);&#xa;tpAddCurl.changeStyle(Font.BOLD + Font.ITALIC);"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JButton" name="_send_test_mail">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Send Test Email"/>
-            <Property name="toolTipText" type="java.lang.String" value="Send test email to &apos;from&apos; address"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_send_test_mail.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);&#xa;        try {&#xa;            _send_test_mail_response.setText(&quot;&quot;);&#xa;            String response = SendTestMail(&#xa;                _alerts_smtp.getText(), _alerts_curl_additional.getText(),&#xa;                _alerts_from.getText(), _alerts_reply.getText()&#xa;            );&#xa;            _send_test_mail_response.append(response);&#xa;            _send_test_mail_response.setCaretPosition(0);&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ApplicationPreferences.this, t).setVisible(true);&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }  &#xa;    }&#xa;});"/>
-          </AuxValues>
-        </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
-          <AuxValues>
-            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-          </AuxValues>
-
-          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-          <SubComponents>
-            <Component class="javax.swing.JTextArea" name="_send_test_mail_response">
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                          <Component id="_checkFrequency" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="9" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JComboBox" name="_checkFrequency">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                      <StringArray count="0"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel1">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Automatically check for updates:"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JCheckBox" name="_alternative_browsing">
               <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-                <Property name="columns" type="int" value="20"/>
-                <Property name="rows" type="int" value="5"/>
+                <Property name="text" type="java.lang.String" value="Use Alternative File Browsing Dialog"/>
               </Properties>
             </Component>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="null"/>
+                </Property>
+                <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextPane" name="_file_browse_options">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="f0" green="f0" red="f0" type="rgb"/>
+                    </Property>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="null"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience."/>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[10, 10, 10, 10]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="jPanel3">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Mail Server Settings">
+                <Property name="tabTitle" type="java.lang.String" value="Mail Server Settings"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="_send_test_mail" min="-2" pref="193" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="162" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="_alerts_smtp" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_alert_label_smtp" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_alerts_curl_additional" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_alert_label_add_curl" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_alerts_from" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_alert_label_from" alignment="1" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_alerts_reply" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_alert_label_reply" alignment="1" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="_alert_label_smtp" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alerts_smtp" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alert_label_add_curl" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alerts_curl_additional" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alert_label_from" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alerts_from" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alert_label_reply" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_alerts_reply" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_send_test_mail" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" pref="61" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="_alert_label_smtp">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Server Name:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_alerts_smtp">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpSMTP = new TextPrompt(&quot;ex. smtp.somecompany.com:25&quot;, _alerts_smtp);&#xa;tpSMTP.setForeground( Color.BLUE );&#xa;tpSMTP.changeAlpha(0.5f);&#xa;tpSMTP.changeStyle(Font.BOLD + Font.ITALIC);"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_smtp.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="_alert_label_add_curl">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Additional curl Parameters:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_alerts_curl_additional">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpAddCurl = new TextPrompt(&quot;ex. --user &lt;user:password&gt; --ssl-reqd&quot;, _alerts_curl_additional);&#xa;tpAddCurl.setForeground( Color.BLUE );&#xa;tpAddCurl.changeAlpha(0.5f);&#xa;tpAddCurl.changeStyle(Font.BOLD + Font.ITALIC);"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="_alert_label_from">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&apos;From&apos; Address:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_alerts_from">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpFrom = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_from); &#xd;&#xa;tpFrom.setForeground( Color.BLUE );&#xd;&#xa;tpFrom.changeAlpha(0.5f);&#xd;&#xa;tpFrom.changeStyle(Font.BOLD + Font.ITALIC);"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_from.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="_alert_label_reply">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&apos;Reply&apos; Address:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_alerts_reply">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpReply = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_reply); &#xd;&#xa;tpReply.setForeground( Color.BLUE );&#xd;&#xa;tpReply.changeAlpha(0.5f);&#xd;&#xa;tpReply.changeStyle(Font.BOLD + Font.ITALIC);"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_send_test_mail">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Send Test Email"/>
+                <Property name="toolTipText" type="java.lang.String" value="Send test email to &apos;from&apos; address"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_send_test_mail.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        WaitCursor waitCursor = new WaitCursor(ApplicationPreferences.this);&#xa;        try {&#xa;            _send_test_mail_response.setText(&quot;&quot;);&#xa;            String response = SendTestMail(&#xa;                _alerts_smtp.getText(), _alerts_curl_additional.getText(),&#xa;                _alerts_from.getText(), _alerts_reply.getText()&#xa;            );&#xa;            _send_test_mail_response.append(response);&#xa;            _send_test_mail_response.setCaretPosition(0);&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ApplicationPreferences.this, t).setVisible(true);&#xa;        } finally {&#xa;            waitCursor.restore();&#xa;        }  &#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="_send_test_mail_response">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="rows" type="int" value="5"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
       </SubComponents>
