@@ -258,28 +258,31 @@ void CParameters::AddObservableRegion(const char * sRegions, size_t iIndex, bool
     location and sample parameter files run immediately without having to edit
     input file paths. */
 void CParameters::AssignMissingPath(std::string & sInputFilename, bool bCheckWritable) {
-  FileName      fParameterFilename, fFilename;
-  std::string   buffer;
-
-  if (! sInputFilename.empty()) {
+    if (sInputFilename.empty()) return;
+    // Windows somewhat supports both back slashes and forward slashes (for the most part) starting around Vista.
+    // To facilitate the test for a file path, convert any forward slashes to back slash (standard Windows separator).
+    #ifdef _WINDOWS_
+    std::transform(sInputFilename.begin(), sInputFilename.end(), sInputFilename.begin(), [](char& ch) {
+        if (ch == FileName::FORWARDSLASH) ch = FileName::BACKSLASH;
+        return ch;
+    });
+    #endif
     //Assume that if slashes exist, then this is a complete file path, so
     //we'll make no attempts to determine what path might be otherwise.
-    if (sInputFilename.find(FileName::SLASH) == sInputFilename.npos) {
-      //If no slashes, then this file is assumed to be in same directory as parameters file.
-      fParameterFilename.setFullPath(GetSourceFileName().c_str());
-
-      fFilename.setFullPath(sInputFilename.c_str());
-      fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
-
-      if (bCheckWritable && !ValidateFileAccess(fFilename.getFullPath(buffer), true, true)) {
-        // if writability fails, then try setting to user documents directory
-        std::string temp;
-        fFilename.setLocation(GetUserDocumentsDirectory(buffer, fParameterFilename.getLocation(temp)).c_str());
-      }
-
-      fFilename.getFullPath(sInputFilename);
+    if (sInputFilename.find(FileName::getPathSeparator()) == sInputFilename.npos) {
+        FileName fParameterFilename, fFilename;
+        std::string buffer;
+        //If no slashes, then this file is assumed to be in same directory as parameters file.
+        fParameterFilename.setFullPath(GetSourceFileName().c_str());
+        fFilename.setFullPath(sInputFilename.c_str());
+        fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
+        if (bCheckWritable && !ValidateFileAccess(fFilename.getFullPath(buffer), true, true)) {
+            // if writability fails, then try setting to user documents directory
+            std::string temp;
+            fFilename.setLocation(GetUserDocumentsDirectory(buffer, fParameterFilename.getLocation(temp)).c_str());
+        }
+        fFilename.getFullPath(sInputFilename);
     }
-  }
 }
 
 /** Copies all class variables from the given CParameters object (rhs) into this one */
@@ -1149,7 +1152,7 @@ void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
     does not exist. */
 void CParameters::SetOutputFileNameSetting(const char * sOutPutFileName, bool bCorrectForRelativePath) {
     gsOutputFileNameSetting = sOutPutFileName;
-    if (bCorrectForRelativePath && !gsOutputFileNameSetting.empty() && gsOutputFileNameSetting.find(FileName::SLASH) == gsOutputFileNameSetting.npos) {
+    if (bCorrectForRelativePath && !gsOutputFileNameSetting.empty() && gsOutputFileNameSetting.find(FileName::getPathSeparator()) == gsOutputFileNameSetting.npos) {
         // We're applying relative path to a filename which doesn't appear to have a path.
         gsOutputFileNameSetting = getFilenameFormatTime(gsOutputFileNameSetting, getTimestamp()); // apply any formatting so we can properly test write
         AssignMissingPath(gsOutputFileNameSetting, true); // Assign path to fully formatted filename;
