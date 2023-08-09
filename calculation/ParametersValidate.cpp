@@ -722,6 +722,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.getUseLocationsNetworkFile()) {
         bValid &= checkFileExists(gParameters.getLocationsNetworkFilename(), "locations network", PrintDirection);
     }
+    // validate multiple locations file
+    if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) &&
+        gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
+        bValid &= checkFileExists(gParameters.getMultipleLocationsFile(), "multiple locations per observation", PrintDirection);
+    }
     //validate output file
     bValid &= checkFileExists(gParameters.GetOutputFileName(), "results", PrintDirection, true);
   } catch (prg_exception& x) {

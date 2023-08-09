@@ -1517,9 +1517,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * validate user settings of the Neighbors File tab.
+     * validate user settings of the Spatial Neighbors tab.
      */
-    private void validateNeighborsFileSettings() {
+    private void validateSpatialNeighborsSettings() {
         if (_specialNeighborFilesGroup.isEnabled() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
             //validate the case file for this dataset
             if (_neighborsFileTextField.getText().length() == 0) {
@@ -1545,6 +1545,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (!FileAccess.isValidFilename(_metaLocationsFileTextField.getText())) {                
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _metaLocationsFileTextField.getText()), FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
             }                
+        }
+        if (getMultipleCoordinatesType() != Parameters.MultipleCoordinatesType.ONEPERLOCATION && _multiple_locations_file.isEnabled()) {
+            if (_multiple_locations_file.getText().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify a multiple locations file.", FocusedTabSet.INPUT, (Component) _multiple_locations_file);
+            }
+            if (!FileAccess.ValidateFileAccess(_multiple_locations_file.getText(), false, false)) {
+                throw new AdvFeaturesExpection("The multiple locations file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
+                        FocusedTabSet.INPUT, (Component) _multiple_locations_file);
+            }            
         }
     }
 
@@ -1912,7 +1921,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     public void validateParameters() {
         validateInputFilesSettings();
-        validateNeighborsFileSettings();
+        validateSpatialNeighborsSettings();
         validateLinelistSettings();
         validateSpatialWindowSettings();
         validateAdjustmentSettings();
