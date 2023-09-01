@@ -16,6 +16,7 @@
 #include "ClusterSupplement.h"
 #include "LoglikelihoodRatioUnifier.h"
 #include "RankRandomizer.h"
+#include "GisUtils.h"
 
 unsigned int CCluster::MIN_RANK_RPT_GUMBEL = 10;
 
@@ -43,6 +44,7 @@ void CCluster::Initialize(tract_t nCenter) {
   _gini_cluster = false;
   _hierarchical_cluster = false;
   _ratio_sets.clear();
+  _span_of_locations = -1;
 }
 
 /** overloaded assignment operator */
@@ -63,6 +65,7 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   }
   _gini_cluster = rhs._gini_cluster;
   _hierarchical_cluster = rhs._hierarchical_cluster;
+  _span_of_locations = rhs._span_of_locations;
   return *this;
 }
 
@@ -219,7 +222,7 @@ void CCluster::DeallocateEvaluationAssistClassMembers() {
 void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
     try {
         AsciiPrintFormat PrintFormat = getAsciiPrintFormat();
-        std::string buffer;
+        std::string buffer, work;
         unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
 
         PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
@@ -244,6 +247,10 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
                 DisplayCoordinates(fp, DataHub, PrintFormat);
             else
                 DisplayLatLongCoords(fp, DataHub, PrintFormat);
+            double span = getLocationsSpan(DataHub);
+            printClusterData(
+                fp, PrintFormat, "Span", span >= 0.0 ? printString(buffer, "%s%s", getValueAsString(span, work).c_str(), DataHub.GetParameters().GetCoordinatesType() == LATLON ? " km" : "") : "N/A", false
+            );
         }
         if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
             buffer = isGiniCluster() ? "Yes" : "No";
@@ -1069,6 +1076,12 @@ double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size
 /** Returns Gumbel p-value. */
 std::pair<double,double> CCluster::GetGumbelPValue(const SimulationVariables& simVars) const {
     return calculateGumbelPValue(simVars, GetRatio());
+}
+
+/* Returns the distance between the furthest locations within this cluster. */
+double CCluster::getLocationsSpan(const CSaTScanData& DataHub) const {
+    if (_span_of_locations == -1.0) _span_of_locations = GisUtils::calculateDistanceFurthestLocations(DataHub, *this);
+    return _span_of_locations;
 }
 
 /** Returns population as string with varied precision, based upon value. */

@@ -35,6 +35,7 @@ class CCluster {
     mutable ReportCache_t       * gpCachedReportLines;
 	mutable bool                  _gini_cluster;           // indicates that cluster is gini cluster
     mutable bool                  _hierarchical_cluster;   // indicates that cluster is hierarchical cluster
+    mutable double                _span_of_locations;    // the distance between furthest locations in cluster
 
     void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=0) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
@@ -99,6 +100,7 @@ class CCluster {
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0, bool adjusted=true) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
+    double                        getLocationsSpan(const CSaTScanData& DataHub) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
     virtual std::vector<tract_t>& getGroupIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
     tract_t                       mostCentralObservationGroupIdx() const;

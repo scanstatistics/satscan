@@ -18,6 +18,7 @@ const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	        = ".sci";
 const char * ClusterInformationWriter::START_DATE_FLD	            = "START_DATE";
 const char * ClusterInformationWriter::END_DATE_FLD	                = "END_DATE";
 const char * ClusterInformationWriter::RADIUS_FIELD	                = "RADIUS";
+const char * ClusterInformationWriter::SPAN_FIELD                   = "SPAN";
 const char * ClusterInformationWriter::E_MINOR_FIELD                = "E_MINOR";
 const char * ClusterInformationWriter::E_MAJOR_FIELD                = "E_MAJOR";
 const char * ClusterInformationWriter::E_ANGLE_FIELD                = "E_ANGLE";
@@ -126,6 +127,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       }
       else
         CreateField(vFieldDefinitions, RADIUS_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      CreateField(vFieldDefinitions, SPAN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
         CreateField(vFieldDefinitions, START_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
@@ -332,6 +334,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         WriteEllipseAngle(Record, theCluster);
         WriteEllipseShape(Record, theCluster);
       }
+      if (theCluster.getLocationsSpan(gDataHub) >= 0.0) Record.GetFieldValue(SPAN_FIELD).AsDouble() = theCluster.getLocationsSpan(gDataHub);
     }
     if (gDataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION)
         Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumObsGroups() : theCluster.numNonNullifiedObservationGroupsInCluster(gDataHub);
@@ -542,9 +545,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 								  gpPolyLineShapeDataFileWriter->writePolyline(x, y);
 							  }
 						  }
-
-						  dRadius = gParameters.getUseLocationsNetworkFile() ? 0.0 : 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius() / (2 * EARTH_RADIUS_km));
-                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
+                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = gParameters.getUseLocationsNetworkFile() ? 0.0 : thisCluster.GetLatLongRadius();
                           break;
          default : throw prg_error("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());
        }
