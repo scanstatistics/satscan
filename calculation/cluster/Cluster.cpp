@@ -248,8 +248,9 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
             else
                 DisplayLatLongCoords(fp, DataHub, PrintFormat);
             double span = getLocationsSpan(DataHub);
+            buffer = "N/A";
             printClusterData(
-                fp, PrintFormat, "Span", span >= 0.0 ? printString(buffer, "%s%s", getValueAsString(span, work).c_str(), DataHub.GetParameters().GetCoordinatesType() == LATLON ? " km" : "") : "N/A", false
+                fp, PrintFormat, "Span", span >= 0.0 ? printString(buffer, "%s%s", getValueAsString(span, work).c_str(), DataHub.GetParameters().GetCoordinatesType() == LATLON ? " km" : "") : buffer, false
             );
         }
         if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
