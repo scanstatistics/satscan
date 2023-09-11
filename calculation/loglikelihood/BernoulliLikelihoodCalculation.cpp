@@ -15,7 +15,7 @@ BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(const CSaTScanData&
         measure_t U = DataHub.GetDataSetHandler().GetDataSet(d).getTotalMeasure();
         _datasetLogLikelihoodUnderNull->GetArray()[d][0] = (N*log(N / U) + (U - N)*log((U - N) / U));
     }
-    _time_stratified = DataHub.GetParameters().GetIsProspectiveAnalysis() && DataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION;
+    _time_stratified = DataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION;
 }
 
 /** destructor */
@@ -71,7 +71,7 @@ double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_
 }
 
 /** Calculates the Bernoulli log likelihood ratio given the number of observed and expected cases in time interval. */
-double BernoulliLikelihoodCalculator::CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
+double BernoulliLikelihoodCalculator::CalcLogLikelihoodTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
     double    nLL_A = 0.0;
     double    nLL_B = 0.0;
     double    nLL_C = 0.0;

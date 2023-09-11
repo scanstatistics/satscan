@@ -15,6 +15,7 @@ PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& Dat
     measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure();
     gvDataSetLogLikelihoodUnderNull.push_back((N*log(N/U)));
   }
+  _time_stratified = DataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION;
 }
 
 /** destructor */
@@ -32,6 +33,19 @@ double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) co
      return (N-n) * log((N-n)/(U-u));
    else
      return n*log(n/u);
+}
+
+/** Calculates the Poisson log likelihood ratio given the number of observed and expected cases in time interval. */
+double PoissonLikelihoodCalculator::CalcLogLikelihoodTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
+    double dLogLikelihood;
+    if (n != N && n != 0)
+        dLogLikelihood = n*log(n / u) + (N - n)*log((N - n) / (U - u));
+    else if (n == 0)
+        dLogLikelihood = (N - n) * log((N - n) / (U - u));
+    else
+        dLogLikelihood = n*log(n / u) - N*log(N / U);
+    // return the logliklihood ratio (loglikelihood - loglikelihood for total in window)
+    return dLogLikelihood - N*log(N / U);
 }
 
 /** calculates the Poisson log likelihood ratio given the number of observed, expected cases and data set index. */
@@ -69,8 +83,7 @@ double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(tract_t tSteps, co
     as this indicates that no significant maximizing value was calculated. */
 double PoissonLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
   if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
-
-  return dMaximizingValue - (gvDataSetLogLikelihoodUnderNull[tSetIndex]);
+  return dMaximizingValue - (_time_stratified ? 0.0 : gvDataSetLogLikelihoodUnderNull[tSetIndex]);
 }
 
 /** Calculates the maximizing value given observed cases, expected cases and data set index.

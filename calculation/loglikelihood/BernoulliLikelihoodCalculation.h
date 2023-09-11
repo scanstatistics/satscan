@@ -24,7 +24,7 @@ private:
     virtual double      CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const;
     virtual double      CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex=0) const;
     virtual double      CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex=0) const;
-    virtual double      CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const;
+    virtual double      CalcLogLikelihoodTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const;
     virtual double      CalcLogLikelihoodBernoulliSpatialStratified(count_t n, measure_t u, tract_t tract, size_t setIdx = 0) const;
 
     virtual double      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;

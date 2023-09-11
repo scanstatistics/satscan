@@ -54,8 +54,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateDateParameters(PrintDirection);
         bValid &= ValidateSpatialParameters(PrintDirection);
         bValid &= ValidateContinuousPoissonParameters(PrintDirection);
-        if (!excludeFileValidation)
-            bValid &= ValidateFileParameters(PrintDirection);
+        if (!excludeFileValidation) bValid &= ValidateFileParameters(PrintDirection);
         bValid &= ValidateLocationNetworkParameters(PrintDirection);
         bValid &= ValidateOutputOptionParameters(PrintDirection);
         bValid &= ValidateLinelistParameters(PrintDirection);
@@ -909,13 +908,15 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
 /** Validates the temporal cluster size parameters. */
 bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) const {
   std::string   sPrecisionString;
-  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
+  double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits, absoluteMaximum=90.0;
 
   try {
     //Maximum temporal cluster size parameters not used for these analyses.
     if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       return true;
-
+    // Lower the maximum temporal cluster size for space-time permutation, purely temporal analyses, or any spatial adjusment; 
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED)
+        absoluteMaximum = 50.0;
     if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
       //validate for maximum specified as percentage of study period
       if (gParameters.GetMaximumTemporalClusterSize() <= 0) {
@@ -925,51 +926,54 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetMaximumTemporalClusterSize());
         return false;
       }
-      //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
-      if (gParameters.GetMaximumTemporalClusterSize() > 100.0/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/) {
-        PrintDirection.Printf("%s:\nFor the %s model, the maximum temporal cluster size as a percent "
-                              "of the study period is %d percent.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 
-                              ParametersPrint(gParameters).GetProbabilityModelTypeAsString(),
-                              100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
+      //check maximum temporal cluster size(as percentage of population) is less than maximum for user settings
+      if (gParameters.GetMaximumTemporalClusterSize() > absoluteMaximum) {
+        PrintDirection.Printf(
+            "%s:\nThe maximum temporal cluster size as a percent of the study period is %d percent.\n", 
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, absoluteMaximum
+        );
         return false;
       }
 
       //validate the time aggregation length agree with the study period and maximum temporal cluster size
-      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                           DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                           gParameters.GetTimeAggregationUnitsType(), 1));
+      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(
+          DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+          DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+          gParameters.GetTimeAggregationUnitsType(), 1)
+      );
       dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize() / 100.0);
       if (dMaxTemporalLengthInUnits < 1) {
           GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-          PrintDirection.Printf("%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
-                                "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
-                                gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
-                                sPrecisionString.c_str(), sPrecisionString.c_str());
+          PrintDirection.Printf(
+              "%s:\nA maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
+              "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM,
+              gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(), sPrecisionString.c_str()
+          );
           return false;
       }
     } else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
       //validate for maximum specified as time aggregation unit
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
-        PrintDirection.Printf("%s:\nThe maximum temporal cluster size of '%2g' is invalid. "
-                              "Specifying the maximum in time aggregation units requires "
-                              "the value to be a whole number that is greater than zero.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetMaximumTemporalClusterSize());
+        PrintDirection.Printf(
+            "%s:\nThe maximum temporal cluster size of '%2g' is invalid.\nSpecifying the maximum in time aggregation units requires the value to be a whole number that is greater than zero.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetMaximumTemporalClusterSize()
+        );
         return false;
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                           DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-                                                                           gParameters.GetTimeAggregationUnitsType(), 1));
-      double maximum = (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetAnalysisType() == SEASONALTEMPORAL ? 50.0 : 90.0);
-      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * maximum /100.0);
+      dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(
+          DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+          DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+          gParameters.GetTimeAggregationUnitsType(), 1)
+      );
+      dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * absoluteMaximum /100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
-        PrintDirection.Printf("%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
-                              "Note that current settings limit the maximum to %d %s%s.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
-                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), static_cast<int>(maximum),
-                              static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
-                              static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(),
-                              (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        PrintDirection.Printf(
+            "%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\nNote that current settings limit the maximum to %d %s%s.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()), sPrecisionString.c_str(), 
+            (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), static_cast<int>(absoluteMaximum), static_cast<int>(dStudyPeriodLengthInUnits),
+            sPrecisionString.c_str(), static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s")
+        );
         return false;
       }
       dMaxTemporalLengthInUnits = gParameters.GetMaximumTemporalClusterSize();
@@ -978,18 +982,19 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
 
     if (gParameters.getMinimumTemporalClusterSize() < 1) {
         GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-        PrintDirection.Printf("%s:\nThe minimum temporal cluster size is 1 %s when time aggregating to %ss.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sPrecisionString.c_str(), sPrecisionString.c_str());
+        PrintDirection.Printf(
+            "%s:\nThe minimum temporal cluster size is 1 %s when time aggregating to %ss.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, sPrecisionString.c_str(), sPrecisionString.c_str()
+        );
         return false;
     }
     // compare the maximum temporal cluster size to the minimum temporal cluster size
     if (gParameters.getMinimumTemporalClusterSize() > static_cast<unsigned int>(dMaxTemporalLengthInUnits)) {
-        PrintDirection.Printf("%s:\nThe minimum temporal cluster size of %d %s%s is greater than the maximum temporal cluster size of %d %s%s.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 
-                              gParameters.getMinimumTemporalClusterSize(),
-                              sPrecisionString.c_str(), (gParameters.getMinimumTemporalClusterSize() == 1 ? "" : "s"),
-                              static_cast<unsigned int>(dMaxTemporalLengthInUnits), 
-                              sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        PrintDirection.Printf(
+            "%s:\nThe minimum temporal cluster size of %d %s%s is greater than the maximum temporal cluster size of %d %s%s.\n", BasePrint::P_PARAMERROR,
+            MSG_INVALID_PARAM, gParameters.getMinimumTemporalClusterSize(), sPrecisionString.c_str(), (gParameters.getMinimumTemporalClusterSize() == 1 ? "" : "s"),
+            static_cast<unsigned int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s")
+        );
         return false;
     }
 
@@ -1939,11 +1944,6 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                     PrintDirection.Printf("%s:\nThe Bernoulli model does not permit the nonparametric temporal trends adjustment\n"
                         "in conjunction with the nonparametric spatial adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
                 }*/
-                if (gParameters.GetAreaScanRateType() != HIGH) {
-                    bValid = false;
-                    PrintDirection.Printf("%s:\nThe Bernoulli model permits the nonparametric temporal trends adjustment\n"
-                        "in conjunction with high scanning rates only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                }
             } else {
                 bValid = false;
                 PrintDirection.Printf("%s:\nThe Bernoulli model permits only the nonparametric temporal trends adjustment. Other temporal trend adjustments are not implemented.\n",

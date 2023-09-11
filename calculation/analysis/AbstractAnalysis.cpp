@@ -137,14 +137,15 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
                 return new UniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
             return new MultiSetUniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
         case BERNOULLI:
-            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION){
-                if (gDataHub.GetNumDataSets() == 1)
-                    return new BernoulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-                return new MultiSetBernoulliTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
-            }
             if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
                 return new BernoulliSpatialStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
         default :
+            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+                if (gDataHub.GetNumDataSets() == 1)
+                    return new TimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+                return new MultiSetTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            }
+
             if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 if (gDataHub.GetNumDataSets() == 1)
                     return new ClosedLoopTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
@@ -188,7 +189,7 @@ void AbstractAnalysis::Setup() {
       gpClusterDataFactory = new ClusterDataFactory();
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
         geReplicationsProcessType = ClusterEvaluation;
-      else if (gParameters.GetProbabilityModelType() == BERNOULLI && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+      else if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
         geReplicationsProcessType = ClusterEvaluation;
       else
         geReplicationsProcessType = MeasureListEvaluation;

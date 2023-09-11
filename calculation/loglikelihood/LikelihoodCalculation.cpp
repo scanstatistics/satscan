@@ -12,8 +12,7 @@
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub): gDataHub(DataHub), _measure_adjustment(1.0),
     _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()), _low_risk_threshold(DataHub.GetParameters().getRiskThresholdLowClusters()),
     _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()), _high_risk_threshold(DataHub.GetParameters().getRiskThresholdHighClusters()),
-    gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0),
-    _risk_function(0), _risk_function_uniformtime(0), _risk_multiset_function(0), _rate_of_interest_multiset(0) {
+    gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _risk_function(0), _risk_multiset_function(0), _rate_of_interest_multiset(0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -79,7 +78,54 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                 case HIGH:
                 default: gpRateOfInterestUniformTime = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRiskUniformTime : &AbstractLikelihoodCalculator::HighRateUniformTime;
             }
-            _risk_function_uniformtime = &AbstractLikelihoodCalculator::getRelativeRiskUniformTime;
+        } if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+            /* Specialized for time stratification temporal adjustment. */
+            switch (parameters.GetExecuteScanRateType()) {
+                case LOW:
+                    gpRateOfInterestTimeStratified = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRiskTimeStratified : &AbstractLikelihoodCalculator::LowRateTimeStratified;
+                    if (parameters.getRiskLimitLowClusters())
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::LowRiskMultiset;
+                    else
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::LowRateMultiset;
+                    break;
+                case HIGHANDLOW:
+                    if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters()) {
+                        gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRiskOrLowRiskTimeStratified;
+                        if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRiskMultiset;
+                        else
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRiskMultiset;
+                    }
+                    else if (parameters.getRiskLimitLowClusters()) {
+                        gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRateOrLowRiskTimeStratified;
+                        if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRateOrLowRiskMultiset;
+                        else
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRateOrLowRiskMultiset;
+                    }
+                    else if (parameters.getRiskLimitHighClusters()) {
+                        gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRiskOrLowRateTimeStratified;
+                        if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRateMultiset;
+                        else
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRateMultiset;
+                    }
+                    else {
+                        gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighOrLowRateTimeStratified;
+                        if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighOrLowRateMultiset;
+                        else
+                            _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighOrLowRateMultiset;
+                    } break;
+                case HIGH:
+                default: 
+                    gpRateOfInterestTimeStratified = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRiskTimeStratified : &AbstractLikelihoodCalculator::HighRateTimeStratified;
+                    if (parameters.getRiskLimitHighClusters())
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRiskMultiset;
+                    else
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRateMultiset;
+            }
+            _risk_multiset_function = &AbstractLikelihoodCalculator::getRelativeRiskMultiset;
         } else {
             // Determine measure adjustment when restricting evaluated clusters by risk thresholds - this variable is only for singl data set.
             if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
@@ -88,7 +134,10 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
             switch (parameters.GetExecuteScanRateType()) {
                 case LOW:
                     gpRateOfInterest = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRisk : &AbstractLikelihoodCalculator::LowRate;
-                    _rate_of_interest_multiset = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRiskMultiset : &AbstractLikelihoodCalculator::LowRateMultiset;
+                    if (parameters.getRiskLimitLowClusters())
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::LowRiskMultiset;
+                    else
+                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::LowRateMultiset;
                     break;
                 case HIGHANDLOW: 
                     if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters()) {
@@ -118,10 +167,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     } break;
                 case HIGH:
                     gpRateOfInterest = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRisk : &AbstractLikelihoodCalculator::HighRate;
-                    if (parameters.getRiskLimitHighClusters() && parameters.GetProbabilityModelType() == BERNOULLI &&
-                        parameters.GetIsProspectiveAnalysis() && parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                        _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRiskMultisetBernoulliNonparametric;
-                    else if (parameters.getRiskLimitHighClusters())
+                    if (parameters.getRiskLimitHighClusters())
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRiskMultiset;
                     else 
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRateMultiset;
@@ -238,7 +284,7 @@ double AbstractLikelihoodCalculator::CalculateMaximizingValueUniformTime(count_t
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcLogLikelihoodBernoulliTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
+double AbstractLikelihoodCalculator::CalcLogLikelihoodTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
     throw prg_error("CalcLogLikelihoodBernoulliTimeStratified(count_t, measure_t, count_t, measure_t) not implementated.", "AbstractLikelihoodCalculator");
 }
 
@@ -259,40 +305,35 @@ AbstractLoglikelihoodRatioUnifier & AbstractLikelihoodCalculator::GetUnifier() c
 }
 
 /* Returns whether potential cluster exceeds the minimum cases for a high rate cluster when scanning mulitple data sets. */
-bool AbstractLikelihoodCalculator::HighRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::HighRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     return unifier.getObservedCount() >= _min_high_rate_cases;
 }
 
 /* Returns whether potential cluster exceeds the minimum cases for a low rate cluster when scanning mulitple data sets. */
-bool AbstractLikelihoodCalculator::LowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::LowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     return unifier.getObservedCount() >= _min_low_rate_cases;
 }
 
 /* Returns whether potential cluster exceeds the minimum cases for a high rate cluster and is exceeding risk threshold. */
-bool AbstractLikelihoodCalculator::HighRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::HighRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     return unifier.getObservedCount() >= _min_high_rate_cases &&
-        (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) >= _high_risk_threshold;
-}
-
-/* Returns whether potential cluster exceeds the minimum cases for a high rate cluster and is exceeding risk threshold. */
-bool AbstractLikelihoodCalculator::HighRiskMultisetBernoulliNonparametric(const AbstractLoglikelihoodRatioUnifier& unifier) const {
-    if (unifier.getObservedCount() < _min_high_rate_cases) return false;
-
-    return (this->*_risk_multiset_function)(
-        unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getTotalExpected()
-    ) >= _high_risk_threshold;
+        (this->*_risk_multiset_function)(
+            unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+        ) >= _high_risk_threshold;
 }
 
 /* Returns whether potential cluster exceeds the minimum cases for a low rate cluster and is meeting risk threshold for low rate clusters. */
-bool AbstractLikelihoodCalculator::LowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::LowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     return unifier.getObservedCount() >= _min_low_rate_cases &&
-        (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) <= _low_risk_threshold;
+        (this->*_risk_multiset_function)(
+            unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+        ) <= _low_risk_threshold;
 }
 
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Adjustment:
    - high rate / meets minimum number of high rate cases threshold
    - low rate / meets minimum number of low rate cases threshold */
-bool AbstractLikelihoodCalculator::AdjustmentHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::AdjustmentHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     if (unifier.GetRawLoglikelihoodRatio() >= 0.0) // high rate cluster
         return unifier.getObservedCount() >= _min_high_rate_cases;
     // low rate cluster
@@ -302,21 +343,25 @@ bool AbstractLikelihoodCalculator::AdjustmentHighOrLowRateMultiset(const Abstrac
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Adjustment:
 - high rate / meets minimum number of high rate cases threshold
 - low rate / meets minimum number of low rate cases threshold / meets minimum low rate relative risk threshold */
-bool AbstractLikelihoodCalculator::AdjustmentHighRateOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::AdjustmentHighRateOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     if (unifier.GetRawLoglikelihoodRatio() >= 0.0) // high rate cluster
         return unifier.getObservedCount() >= _min_high_rate_cases;
     // low rate cluster
     return unifier.getObservedCount() >= _min_low_rate_cases &&
-        (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) <= _low_risk_threshold;
+        (this->*_risk_multiset_function)(
+            unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+        ) <= _low_risk_threshold;
 }
 
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Adjustment:
 - high rate / meets minimum number of high rate cases threshold / meets minimum high rate relative risk threshold
 - low rate / meets minimum number of low rate cases threshold */
-bool AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     if (unifier.GetRawLoglikelihoodRatio() >= 0.0) // high rate cluster
         return unifier.getObservedCount() >= _min_high_rate_cases &&
-            (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) >= _high_risk_threshold;
+            (this->*_risk_multiset_function)(
+                unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+            ) >= _high_risk_threshold;
     // low rate cluster
     return unifier.getObservedCount() >= _min_low_rate_cases;
 }
@@ -324,19 +369,23 @@ bool AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRateMultiset(const Abs
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Adjustment:
 - high rate / meets minimum number of high rate cases threshold / meets minimum high rate relative risk threshold
 - low rate / meets minimum number of low rate cases threshold / meets minimum low rate relative risk threshold */
-bool AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     if (unifier.GetRawLoglikelihoodRatio() >= 0.0) // high rate cluster
         return unifier.getObservedCount() >= _min_high_rate_cases &&
-        (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) >= _high_risk_threshold;
+        (this->*_risk_multiset_function)(
+            unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+        ) >= _high_risk_threshold;
     // low rate cluster
     return unifier.getObservedCount() >= _min_low_rate_cases &&
-        (this->*_risk_multiset_function)(unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), unifier.getCaseTotal()) <= _low_risk_threshold;
+        (this->*_risk_multiset_function)(
+            unifier.getObserved(), unifier.getExpected(), unifier.getCaseTotal(), nonparametric ? unifier.getTotalExpected() : unifier.getCaseTotal()
+        ) <= _low_risk_threshold;
 }
 
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Multivariate:
 - high rate / meets minimum number of high rate cases threshold
 - low rate / meets minimum number of low rate cases threshold */
-bool AbstractLikelihoodCalculator::MultivariateHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::MultivariateHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t highPair = unifier.getHighRateAccumulationPair();
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t lowPair = unifier.getLowRateAccumulationPair();
     // See which accumulation is the greatest to determine whether this is a high or low rate cluster.
@@ -348,39 +397,47 @@ bool AbstractLikelihoodCalculator::MultivariateHighOrLowRateMultiset(const Abstr
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Multivariate:
 - high rate / meets minimum number of high rate cases threshold
 - low rate / meets minimum number of low rate cases threshold / meets minimum low rate relative risk threshold */
-bool AbstractLikelihoodCalculator::MultivariateHighRateOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::MultivariateHighRateOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t highPair = unifier.getHighRateAccumulationPair();
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t lowPair = unifier.getLowRateAccumulationPair();
     // See which accumulation is the greatest to determine whether this is a high or low rate cluster.
     if (lowPair.first > highPair.first)
         return lowPair.second->getObserved() >= _min_low_rate_cases && 
-          (this->*_risk_multiset_function)(lowPair.second->getObserved(), lowPair.second->getExpected(), lowPair.second->getCaseTotal(), lowPair.second->getCaseTotal()) <= _low_risk_threshold;
+          (this->*_risk_multiset_function)(
+              lowPair.second->getObserved(), lowPair.second->getExpected(), lowPair.second->getCaseTotal(), nonparametric ? lowPair.second->getTotalExpected() : lowPair.second->getCaseTotal()
+          ) <= _low_risk_threshold;
     return highPair.second->getObserved() >= _min_high_rate_cases;
 }
 
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Multivariate:
 - high rate / meets minimum number of high rate cases threshold / meets minimum high rate relative risk threshold
 - low rate / meets minimum number of low rate cases threshold */
-bool AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t highPair = unifier.getHighRateAccumulationPair();
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t lowPair = unifier.getLowRateAccumulationPair();
     // See which accumulation is the greatest to determine whether this is a high or low rate cluster.
     if (lowPair.first > highPair.first)
         return lowPair.second->getObserved() >= _min_low_rate_cases;
     return highPair.second->getObserved() >= _min_high_rate_cases &&
-        (this->*_risk_multiset_function)(highPair.second->getObserved(), highPair.second->getExpected(), highPair.second->getCaseTotal(), highPair.second->getCaseTotal()) >= _high_risk_threshold;
+        (this->*_risk_multiset_function)(
+            highPair.second->getObserved(), highPair.second->getExpected(), highPair.second->getCaseTotal(), nonparametric ? highPair.second->getTotalExpected() : highPair.second->getCaseTotal()
+        ) >= _high_risk_threshold;
 }
 
 /* Returns whether potential cluster meets one of these restrictions when multiple data set purpose is Multivariate:
 - high rate / meets minimum number of high rate cases threshold / meets minimum high rate relative risk threshold
 - low rate / meets minimum number of low rate cases threshold / meets minimum low rate relative risk threshold */
-bool AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier) const {
+bool AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const {
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t highPair = unifier.getHighRateAccumulationPair();
     AbstractLoglikelihoodRatioUnifier::AccumulationPair_t lowPair = unifier.getLowRateAccumulationPair();
     // See which accumulation is the greatest to determine whether this is a high or low rate cluster.
     if (lowPair.first > highPair.first)
         return lowPair.second->getObserved() >= _min_low_rate_cases && 
-          (this->*_risk_multiset_function)(lowPair.second->getObserved(), lowPair.second->getExpected(), lowPair.second->getCaseTotal(), lowPair.second->getCaseTotal()) <= _low_risk_threshold;
+          (this->*_risk_multiset_function)(
+              lowPair.second->getObserved(), lowPair.second->getExpected(), lowPair.second->getCaseTotal(), nonparametric ? lowPair.second->getTotalExpected() : lowPair.second->getCaseTotal()
+          ) <= _low_risk_threshold;
     return highPair.second->getObserved() >= _min_high_rate_cases &&
-        (this->*_risk_multiset_function)(highPair.second->getObserved(), highPair.second->getExpected(), highPair.second->getCaseTotal(), highPair.second->getCaseTotal()) >= _high_risk_threshold;
+        (this->*_risk_multiset_function)(
+            highPair.second->getObserved(), highPair.second->getExpected(), highPair.second->getCaseTotal(), nonparametric ? highPair.second->getTotalExpected() : highPair.second->getCaseTotal()
+        ) >= _high_risk_threshold;
 }

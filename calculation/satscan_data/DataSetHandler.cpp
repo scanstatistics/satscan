@@ -454,7 +454,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
     }
     if (!gDataHub.isDrilldown() && std::find(gmSourceDateWarned.begin(), gmSourceDateWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceDateWarned.end()) {
       gPrint.Printf("Warning: Some records in %s are outside the specified Study Period.\n"
-                    "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+                    "         These will be ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
       gmSourceDateWarned.push_back(reinterpret_cast<void*>(&Source));
     }
     return DataSetHandler::Ignored;

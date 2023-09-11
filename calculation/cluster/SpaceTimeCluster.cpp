@@ -84,12 +84,12 @@ measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const
   else
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
-  // The adjusted parameter is intended for Bernoulli prospective space-time nonparametric with in the context of calculating relative risk.
+  // The adjusted parameter is intended for Bernoulli space-time time-stratified with in the context of calculating relative risk.
   if (adjusted) {
-      if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+      if (params.GetProbabilityModelType() == BERNOULLI && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
           double totalCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nFirstInterval] - Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nLastInterval];
           double totalMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nFirstInterval] - Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT()[m_nLastInterval];
-          return (totalCases / totalMeasure) * tMeasure;
+          return tMeasure * (totalCases / totalMeasure);
       }
       return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
   } else

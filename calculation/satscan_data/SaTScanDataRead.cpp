@@ -1552,8 +1552,8 @@ SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(Dat
         // Report to user if the data checking option is ignoring locations - because the user requested relaxed checking, that is unless
         // this is a drilldown where we set this option programmatically.
         if (!gDataHub.isDrilldown() && std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-            gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
-                          "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
+            gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file.\n"
+                          "         These will be ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
                           (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
             gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
         }

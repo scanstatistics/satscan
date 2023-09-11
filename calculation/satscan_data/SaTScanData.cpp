@@ -530,7 +530,7 @@ void CSaTScanData::PostDataRead() {
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC)
 			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
 		CalculateExpectedCases();
-        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetProbabilityModelType() == BERNOULLI)
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
 		if (gParameters.UseMetaLocationsFile())
 			gDataSets->assignMetaData(gDataSets->getDataSets());

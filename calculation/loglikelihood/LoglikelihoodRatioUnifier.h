@@ -50,7 +50,7 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) = 0;
-        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) = 0;
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
@@ -98,7 +98,7 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
@@ -131,9 +131,7 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
-            throw prg_error("Not implemented", "AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
-        }
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
@@ -165,9 +163,7 @@ class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighLowRate(*this); };
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
-            throw prg_error("Not implemented", "AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator&,count_t,measure_t,size_t,double)");
-        }
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
@@ -206,7 +202,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+        virtual void        AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
@@ -230,7 +226,7 @@ class AdjustmentUnifierRiskThreshold : public AdjustmentUnifier {
         virtual ~AdjustmentUnifierRiskThreshold() {}
 
         virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+        virtual void        AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
 };
 //******************************************************************************
 #endif

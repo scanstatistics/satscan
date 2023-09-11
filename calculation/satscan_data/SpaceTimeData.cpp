@@ -67,7 +67,7 @@ void CSpaceTimeData::PostDataRead() {
         if (!(gParameters.getPerformPowerEvaluation() && 
              (gParameters.getPowerEvaluationMethod() == PE_ONLY_CASEFILE || gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
             SetPurelyTemporalCases();
-            if (gParameters.GetProbabilityModelType() == BERNOULLI && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
                 for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t)
                     gDataSets->GetDataSet(t).setMeasureData_PT();
             }

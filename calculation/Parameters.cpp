@@ -572,7 +572,7 @@ bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
         geProbabilityModelType == SPACETIMEPERMUTATION || 
           geProbabilityModelType == RANK || 
           geProbabilityModelType == UNIFORMTIME || 
-        (geProbabilityModelType == BERNOULLI && GetIsProspectiveAnalysis() && GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) ||
+          GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION ||
         (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY)
     );
 }

@@ -24,12 +24,12 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
 }
 
 /** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
-    This particular method is intended for the Bernoulli time stratified adjustment, where we're calculating the data sets
-    loglikelihood ratio by intervals separately in process previous to this call. */
-void MultivariateUnifierHighRate::AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+    This particular method is intended for the time stratified adjustment, where we're calculating the cluster window total cases and total measure
+    verses using that of the data set. */
+void MultivariateUnifierHighRate::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
     // Only looking for high rates clusters here.
     if (tCases * totalMeasure > tMeasure * totalCases) {
-        _llr += Calculator.CalcLogLikelihoodBernoulliTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _llr += Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure;
         _data_stream_accumulator._sum_case_totals += totalCases;
@@ -84,6 +84,21 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
     }
 }
 
+/** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
+    This particular method is intended for the time stratified adjustment, where we're calculating the cluster window total cases and total measure
+    verses using that of the data set. */
+void MultivariateUnifierLowRate::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+    // Only looking for low rates clusters here.
+    if (tCases * totalMeasure < tMeasure * totalCases) {
+        _llr += Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _data_stream_accumulator._sum_observed += tCases;
+        _data_stream_accumulator._sum_expected += tMeasure;
+        _data_stream_accumulator._sum_case_totals += totalCases;
+        _data_stream_accumulator._sum_total_expected += totalMeasure;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
 /** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
     Also maintains data stream observed cases accumulation for minimum number of cases restriction. */
 void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) {
@@ -123,6 +138,11 @@ void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& C
     _low_rate.AdjoinRatio(Calculator, tCases, tMeasure, tSetIndex);
 }
 
+void MultivariateUnifierHighLowRate::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+    _high_rate.AdjoinRatioNonparametric(Calculator, tCases, tMeasure, totalCases, totalMeasure, tSetIndex);
+    _low_rate.AdjoinRatioNonparametric(Calculator, tCases, tMeasure, totalCases, totalMeasure, tSetIndex);
+}
+
 /** Calculates loglikelihood ratio given cluster data; accumulating like high and low rate separately. */
 void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) {
     _high_rate.AdjoinRatio(Calculator, tCases, tMeasure, casesInPeriod, measureInPeriod, tSetIndex);
@@ -156,11 +176,13 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
 }
 
 /** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
-Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
-void AdjustmentUnifier::AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
-    // Only looking for high rates clusters here.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifier::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
     if (tCases * totalMeasure > tMeasure * totalCases) {
-        _llr += Calculator.CalcLogLikelihoodBernoulliTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _llr += Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _data_stream_accumulator._sum_observed += tCases;
+    } else if (tCases * totalMeasure < tMeasure * totalCases) {
+        _llr += -1 * Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
         _data_stream_accumulator._sum_observed += tCases;
     }
 }
@@ -221,12 +243,16 @@ void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& C
 }
 
 /** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
-This particular method is intended for the Bernoulli time stratified adjustment, where we're calculating the data sets
-loglikelihood ratio by intervals separately in process previous to this call. */
-void AdjustmentUnifierRiskThreshold::AdjoinRatioBernoulliNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
-    // Only looking for high rates clusters here.
+    This particular method is intended for the time stratified adjustment. */
+void AdjustmentUnifierRiskThreshold::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
     if (tCases * totalMeasure > tMeasure * totalCases) {
-        _llr += Calculator.CalcLogLikelihoodBernoulliTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _llr += Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
+        _data_stream_accumulator._sum_observed += tCases;
+        _data_stream_accumulator._sum_expected += tMeasure;
+        _data_stream_accumulator._sum_case_totals += totalCases;
+        _data_stream_accumulator._sum_total_expected += totalMeasure;
+    } else if (tCases * totalMeasure < tMeasure * totalCases) {
+        _llr += -1 * Calculator.CalcLogLikelihoodTimeStratified(tCases, tMeasure, totalCases, totalMeasure);
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure;
         _data_stream_accumulator._sum_case_totals += totalCases;

@@ -283,8 +283,9 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
 /** Prints annual cases to file stream is in format required by result output file. */
 void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer, buffer2;
+  const CParameters& parameters = DataHub.GetParameters();
 
-  if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
+  if (parameters.GetProbabilityModelType() == POISSON && parameters.UsePopulationFile() && parameters.GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION) {
     printString(buffer, "Annual cases / %.0f", DataHub.GetAnnualRatePop());
     buffer2 = getValueAsString(DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex), buffer2, 1);
     printClusterData(fp, PrintFormat, buffer.c_str(), buffer2, false);
@@ -888,7 +889,7 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
       params.GetProbabilityModelType() == RANK ||
       params.GetProbabilityModelType() == UNIFORMTIME ||
-      (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
+      (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
      printClusterData(fp, PrintFormat, "Test statistic", printString(buffer, "%lf", m_nRatio), false);
   } else {
     printClusterData(fp, PrintFormat, "Log likelihood ratio", printString(buffer, "%lf", m_nRatio / m_NonCompactnessPenalty), false);
@@ -971,7 +972,7 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
         else if (cases == casesInPeriod)
             return measure / (M * (measureInPeriod - measure));
         return 0.0; // should not happen
-    } else if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+    } else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
         // Retrieve the location indexes for this cluster.
         std::vector<tract_t> tracts;
         getGroupIndexes(DataHub, tracts, true);
@@ -981,9 +982,12 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
         measure_t expected = 0.0, * pmeasurenc = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT_NC();
         for (int interval=m_nFirstInterval; interval < m_nLastInterval; ++interval) {
             measure_t clusterMeaureInterval = 0;
-            for (auto neighbor=tracts.begin(); neighbor != tracts.end(); ++neighbor)
-                clusterMeaureInterval += ppmeasure[interval][*neighbor] - (interval < (m_nLastInterval - 1) ? ppmeasure[interval + 1][*neighbor] : 0.0);
-            if (pmeasurenc[interval]) expected += (pcasesnc[interval] / pmeasurenc[interval]) * clusterMeaureInterval;
+            for (auto neighbor : tracts)
+                clusterMeaureInterval += ppmeasure[interval][neighbor] - (interval < (m_nLastInterval - 1) ? ppmeasure[interval + 1][neighbor] : 0.0);
+            if (params.GetProbabilityModelType() == BERNOULLI) 
+                expected += (pmeasurenc[interval] ? pcasesnc[interval] / pmeasurenc[interval] : 0.0) * clusterMeaureInterval;
+            else
+                expected += clusterMeaureInterval;
         }
         return expected;
     } else
@@ -1163,7 +1167,7 @@ double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) 
 
   if (params.GetProbabilityModelType() == UNIFORMTIME) {
       return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCount(tSetIndex)) / expected); // when expected == 0, relative risk goes to infinity
-  } else if (params.GetProbabilityModelType() == BERNOULLI && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+  } else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
       return GetRelativeRisk(
           GetObservedCount(tSetIndex), GetClusterData()->GetMeasure(tSetIndex), // We want the unadjusted measure here.
           DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nFirstInterval] - DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT()[m_nLastInterval],
@@ -1193,7 +1197,7 @@ double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData
 
     if (DataHub.GetParameters().GetProbabilityModelType() == UNIFORMTIME)
         return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCountForTract(tTractIndex, DataHub, tSetIndex)) / expected); // when expected == 0, relative risk goes to infinity
-    else if (params.GetProbabilityModelType() == BERNOULLI && params.GetIsProspectiveAnalysis() && params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+    else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
         return GetRelativeRisk(
             GetObservedCountForTract(tTractIndex, DataHub, tSetIndex),
             GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex, false), // We want the unadjusted measure here.

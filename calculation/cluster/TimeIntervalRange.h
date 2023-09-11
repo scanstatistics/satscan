@@ -27,18 +27,14 @@ class TemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Temporal window evaluator used with Bernoulli model and adjusting for temporal trends nonparametrically. */
-class BernoulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
+/** Temporal window evaluator used when adjusting for temporal trends nonparametrically. */
+class TimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
     private:
         count_t * _pt_counts;
         measure_t * _pt_measure;
-        count_t  _min_high_rate_cases;
-        boost::optional<double> _high_risk_threshold;
-
-        bool isOfInterest(count_t cases, measure_t measure, count_t totalcases, measure_t totalmeasure) const;
 
     public:
-        BernoulliTimeStratifiedTemporalDataEvaluator(
+        TimeStratifiedTemporalDataEvaluator(
             const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
         );
 
@@ -47,14 +43,14 @@ class BernoulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Temporal window evaluator used with Bernoulli model and adjusting for temporal trends nonparametrically with multiple data sets. */
-class MultiSetBernoulliTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
+/** Temporal window evaluator used when adjusting for temporal trends nonparametrically with multiple data sets. */
+class MultiSetTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
     private:
         std::vector<count_t*>  _pt_counts;
         std::vector<measure_t*> _pt_measure;
 
     public:
-        MultiSetBernoulliTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+        MultiSetTimeStratifiedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
 
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
         virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);

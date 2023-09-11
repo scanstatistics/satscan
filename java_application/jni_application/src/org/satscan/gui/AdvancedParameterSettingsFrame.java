@@ -730,6 +730,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableMapsOutputGroup();
         enableDrilldownGroup();
         setSpatialDistanceCaption();
+        updateMaxiumTemporalSizeTextCaptions();
         enableCaseFileLinelistGroup();
         enableOtherOutputGroup();
         enableEmailAlerts();
@@ -788,7 +789,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxReportedRadiusLabel.setText(sLabelCaption);
     }
 
+    /* Updates the text of the maximum temporal cluster size label based on user settings. */
     public void updateMaxiumTemporalSizeTextCaptions() {
+        Parameters.AnalysisType analysisType = _settings_window.getAnalysisControlType();
+        boolean ptAnalysis = (
+            analysisType == Parameters.AnalysisType.PURELYTEMPORAL ||
+            analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
+        );
         switch (_settings_window.getModelControlType()) {
             case POISSON:
             case HOMOGENEOUSPOISSON:
@@ -797,8 +805,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case CATEGORICAL:
             case NORMAL:
             case EXPONENTIAL:
-                _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
-                break;
+                // Skip for purely temporal analysis or applying spatial adjustment.
+                if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
+                    _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
+                    break;
+                }
             case SPACETIMEPERMUTATION:
                 _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 50%, default = 50%)");
                 break;
@@ -1576,7 +1587,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialClusterSizeTextField);
             }
             if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false, false)) {
-                throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
+                throw new AdvFeaturesExpection(
+                        "The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + 
+                        "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + 
+                        "reported spatial cluster size by a population defined through a\nmaximum circle file.",
                         FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
             if (_maxReportedSpatialPercentFileTextField.isEnabled() && Double.parseDouble(_maxSpatialPercentFileTextField.getText()) < Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText())) {
@@ -1661,37 +1675,43 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /* Returns the absolute maximum temporal cluster size give the current analysis settings. */
+    private double getAbsoluteMaximumTemporalSizeForSettings() {
+        Parameters.AnalysisType analysisType = _settings_window.getAnalysisControlType();
+        boolean ptAnalysis = (
+            analysisType == Parameters.AnalysisType.PURELYTEMPORAL ||
+            analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
+        );        
+        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION || ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))
+            return 50.0;
+        return 90.0;
+    }
+    
+    /* Validates the temporal cluster size controls with consideration to other user settings. */
     private void validateTemporalClusterSize() {
+        if (!_maxTemporalOptionsGroup.isEnabled()) return;
         String sErrorMessage, sPrecisionString;
-        double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits = 0;
-
+        double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits = 0, absoluteMaximum = getAbsoluteMaximumTemporalSizeForSettings();
         //check whether we are specifiying temporal information
-        if (!_maxTemporalOptionsGroup.isEnabled()) {
-            return;
-        }
-
-        double maximum = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION || _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL ? 50 : 90;
         if (getMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.PERCENTAGETYPE) {
             if (_maxTemporalClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum temporal cluster size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
-            
-            if (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > maximum) {
-                sErrorMessage = "For the ";
-                if (_settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL) {
-                    sErrorMessage += "Seasonal analysis";
-                } else {
-                    sErrorMessage += Parameters.GetProbabilityModelTypeAsString(_settings_window.getModelControlType(), false) + " model";
-                }
-                sErrorMessage += ", the maximum temporal cluster size as a percent of the study period is " + maximum + " percent.";
-                throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
+            if (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > absoluteMaximum) {
+                throw new AdvFeaturesExpection(
+                    "The maximum temporal cluster size as a percent of the study period can be not greater than " + ((int)absoluteMaximum) + " percent for the current settings.",
+                    FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField
+                );
             }
             //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
             dStudyPeriodLengthInUnits = _settings_window.CalculateTimeAggregationUnitsInStudyPeriod();
             dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
             if (dMaxTemporalLengthInUnits < 1) {
                 sPrecisionString = _settings_window.getDatePrecisionAsString(_settings_window.getTimeAggregationControlType(), false, false);
-                sErrorMessage = "A maximum temporal cluster size as " + Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) + " percent of a " + Math.floor(dStudyPeriodLengthInUnits) + sPrecisionString + " study period\n" + "results in a maximum temporal cluster size that is less than one time\n" + "aggregation " + sPrecisionString + "\n";
+                sErrorMessage = "A maximum temporal cluster size as " + _maxTemporalClusterSizeTextField.getText();
+                sErrorMessage += " percent of a " + ((int)Math.floor(dStudyPeriodLengthInUnits)) + sPrecisionString + " study period\n";
+                sErrorMessage += "results in a maximum temporal cluster size that is less than one time\n" + "aggregation " + sPrecisionString + "\n";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
         } else if (getMaxTemporalClusterSizeControlType() == Parameters.TemporalSizeType.TIMETYPE) {
@@ -1700,9 +1720,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
             sPrecisionString = _settings_window.getDatePrecisionAsString(_settings_window.getTimeAggregationControlType(), false, false);
             dStudyPeriodLengthInUnits = _settings_window.CalculateTimeAggregationUnitsInStudyPeriod();
-            dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * maximum / 100.0);
+            dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * absoluteMaximum / 100.0);
             if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > dMaxTemporalLengthInUnits) {
-                sErrorMessage = "A maximum temporal cluster size of " + Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) + " " + sPrecisionString + (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1 ? "" : "s") + " exceeds " + maximum + " percent of a " + Math.floor(dStudyPeriodLengthInUnits) + " " + sPrecisionString + " study period.\n" + "Note that current settings limit the maximum to " + Math.floor(dMaxTemporalLengthInUnits) + " " + sPrecisionString + (dMaxTemporalLengthInUnits == 1 ? "" : "s") + ".";
+                sErrorMessage = "A maximum temporal cluster size of " + Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) + " ";
+                sErrorMessage += sPrecisionString + (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1 ? "" : "s");
+                sErrorMessage += " exceeds " + ((int)absoluteMaximum) + " percent of a " + ((int)Math.floor(dStudyPeriodLengthInUnits)) + " ";
+                sErrorMessage += sPrecisionString + " study period.\n" + "Note that current settings limit the maximum to ";
+                sErrorMessage += ((int)Math.floor(dMaxTemporalLengthInUnits)) + " " + sPrecisionString + (dMaxTemporalLengthInUnits == 1 ? "" : "s") + ".";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
             dMaxTemporalLengthInUnits = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
@@ -4393,11 +4417,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         _maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                double dMaxValue = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;
+                double dMaxValue = getAbsoluteMaximumTemporalSizeForSettings();
                 while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||
                     Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||
                     Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > dMaxValue) {
-                    if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText("50");
+                    if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(Double.toString(dMaxValue));
                 }
                 enableSetDefaultsButton();
             }
