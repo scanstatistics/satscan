@@ -47,7 +47,7 @@ You may incorporate and distribute the Software with other software to create a 
 nse agreement, (ii) the SaTScan}{\\fs20\\super\\insrsid2173126 TM}{\\insrsid2173126  component is clearly distinguished and marked as \"SaTScan}{\\fs20\\super\\insrsid2173126 TM}{\\insrsid2173126 \", and (iii) the SaTScan}{\\fs20\\super\\insrsid2173126 TM}{\
 \\insrsid2173126  running window is clearly shown to users when they run the SaTScan component of the Combined Product.\
 \\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 6.\\tab}Users of SaTScan should in any reference to the software note that: \\'93SaTScan}{\\fs20\\super\\insrsid2173126 TM}{\\insrsid2173126  is a trademark of Martin Kulldorff. The SaTScan}{\
-\\fs20\\super\\insrsid2173126 TM}{\\insrsid2173126  software was developed under the joint auspices of Martin Kulldorff, the National Cancer Institute and Farzad Mostashari at the New York City Department of Health and Mental Hygiene.\\'94\
+\\fs20\\super\\insrsid2173126 TM}{\\insrsid2173126  software was developed under the joint auspices of Martin Kulldorff, the National Cancer Institute and the New York City Department of Health and Mental Hygiene.\\'94\
 \\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid2173126 Term.\
 \\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 7.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid2173126 \
 This Agreement is effective for an unlimited duration. This Agreement will terminate automatically if you fail to comply with any of the limitations or other requirements described herein. Upon any termination or expiration of \
