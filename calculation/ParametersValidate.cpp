@@ -929,7 +929,7 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       //check maximum temporal cluster size(as percentage of population) is less than maximum for user settings
       if (gParameters.GetMaximumTemporalClusterSize() > absoluteMaximum) {
         PrintDirection.Printf(
-            "%s:\nThe maximum temporal cluster size as a percent of the study period is %d percent.\n", 
+            "%s:\nThe maximum temporal cluster size as a percent of the study period is %g percent.\n", 
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, absoluteMaximum
         );
         return false;
@@ -969,7 +969,7 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       dMaxTemporalLengthInUnits = std::floor(dStudyPeriodLengthInUnits * absoluteMaximum /100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
         PrintDirection.Printf(
-            "%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\nNote that current settings limit the maximum to %d %s%s.\n",
+            "%s:\nA maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\nPlease set the maximum to at most %d %s%s or extend the study period.\n",
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()), sPrecisionString.c_str(), 
             (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"), static_cast<int>(absoluteMaximum), static_cast<int>(dStudyPeriodLengthInUnits),
             sPrecisionString.c_str(), static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(), (dMaxTemporalLengthInUnits == 1 ? "" : "s")
