@@ -333,8 +333,8 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   if (this == &rhs)
     return *this;
   m_Center                      = rhs.m_Center;
-  _central_observation_group         = rhs._central_observation_group;
-  _num_observation_groups                     = rhs._num_observation_groups;
+  _central_identifier           = rhs._central_identifier;
+  _num_identifiers              = rhs._num_identifiers;
   m_CartesianRadius             = rhs.m_CartesianRadius;  
   m_nRatio                      = rhs.m_nRatio;
   _ratio_sets                   = rhs._ratio_sets;
@@ -350,7 +350,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
 
 /** add neighbor tract data from DataGateway */
 void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway) {
-  ++_num_observation_groups;
+  ++_num_identifiers;
   gClusterData->AddNeighborData(tNeighbor, DataGateway);
 }
 
@@ -364,7 +364,7 @@ void CSVTTCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractData
   tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
   unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
   for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
-    ++_num_observation_groups;
+    ++_num_identifiers;
     gClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     m_nRatio =  gClusterData->CalculateSVTTLoglikelihoodRatio(Calculator, DataGateway);
     clusterSet.update(*this);
@@ -472,12 +472,12 @@ std::string& CSVTTCluster::GetStartDate(std::string& sDateString, const CSaTScan
 
 /** re-initializes cluster data */
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbstractDataSetGateway & DataGateway) {
-  m_Center         = nCenter;
-  _central_observation_group = -1;
-  _num_observation_groups        = 0;
-  m_CartesianRadius= -1;
-  m_nRatio         = 0;
-  m_nRank          = 1;
+  m_Center = nCenter;
+  _central_identifier = -1;
+  _num_identifiers = 0;
+  m_CartesianRadius = -1;
+  m_nRatio = 0;
+  m_nRank = 1;
   m_NonCompactnessPenalty = 1;
   m_iEllipseOffset = 0;
   gClusterData->InitializeSVTTData(DataGateway);

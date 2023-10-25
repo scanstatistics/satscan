@@ -99,12 +99,12 @@ class Network {
 		void				         addNode(unsigned int t1, const Location& location);
         NetworkLocationContainer_t & buildNeighborsAboutNode(const NetworkNode& node, NetworkLocationContainer_t& networkLocations, unsigned int num_locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = boost::none) const;
         Connection_Details_t         getClusterConnections(const CCluster& cluster, const CSaTScanData& DataHub) const;
-        double                       getDistanceBetween(const Location& location1, const Location& location2, const ObservationGroupingManager& groups) const;
+        double                       getDistanceBetween(const Location& location1, const Location& location2, const IdentifiersManager& identifierMgr) const;
         const NetworkContainer_t   & getNodes() const { return _nodes; }
         bool                         locationIndexInNetwork(unsigned int locationIdx) { return _nodes.find(locationIdx) != _nodes.end(); }
-        static void                  printPath(const NetworkLocationContainer_t& nodePath, const ObservationGroupingManager& groups);
-		static void                  printTreePath(const NetworkPathTree& treePath, const ObservationGroupingManager& groups);
-		static void                  printTreePath(const NetworkNode& node, const ObservationGroupingManager& groups);
-		void                         printTreePath(const ObservationGroupingManager& groups, const CCluster& cluster) const;
+        static void                  printPath(const NetworkLocationContainer_t& nodePath, const IdentifiersManager& identifierMgr);
+		static void                  printTreePath(const NetworkPathTree& treePath, const IdentifiersManager& identifierMgr);
+		static void                  printTreePath(const NetworkNode& node, const IdentifiersManager& identifierMgr);
+		void                         printTreePath(const IdentifiersManager& identifierMgr, const CCluster& cluster) const;
 };
 #endif

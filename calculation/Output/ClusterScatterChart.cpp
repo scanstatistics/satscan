@@ -238,13 +238,13 @@ const char * CartesianGraph::TEMPLATE = " \
 </html> \n";
 
 CartesianGraph::CartesianGraph(const CSaTScanData& dataHub) : _dataHub(dataHub), _clusters_written(0), _median_parallel(0.0) {
-    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
+    _cluster_locations.resize(_dataHub.getLocationsManager().locations().size());
     if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
         // Calculate the median parallel among all points.
         std::vector<double> parallels, vCoordinates;
-		for (auto itrGroup = _dataHub.GetGroupInfo().getObservationGroups().begin(); itrGroup != _dataHub.GetGroupInfo().getObservationGroups().end(); ++itrGroup) {
-            for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
-                itrGroup->get()->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
+		for (const auto& identifier: _dataHub.getIdentifierInfo().getIdentifiers()) {
+            for (unsigned int loc = 0; loc < identifier->getLocations().size(); ++loc) {
+                identifier->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
                 std::pair<double, double> latlong = ConvertToLatLong(vCoordinates);
                 parallels.push_back(latlong.first);
             }
@@ -336,7 +336,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
             }
             // Compile collection of cluster locations.
             worker.str("");
-            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            const auto& locations = _dataHub.getLocationsManager().locations();
             std::vector<tract_t> vLocations;
             CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, 0, &vLocations);
             for (auto index: vLocations) {
@@ -417,7 +417,7 @@ void CartesianGraph::finalize() {
         std::stringstream cluster_region_points, entire_region_points;
         worker.str("");
         worker2.str("");
-        for (auto location : _dataHub.GetGroupInfo().getLocationsManager().locations()) {
+        for (const auto& location : _dataHub.getLocationsManager().locations()) {
             if (!_cluster_locations.test(location->index())) {
                 location.get()->coordinates()->retrieve(vCoordinates);
                 transform(vCoordinates);
@@ -449,7 +449,7 @@ void CartesianGraph::finalize() {
         worker.str("");
         if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
-            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+            for (const auto& connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
                 connection.get<0>()->coordinates()->retrieve(vCoordinates);
                 transform(vCoordinates);
                 worker << printString(buffer, "[[%f, %f],", vCoordinates[0], vCoordinates[1]).c_str();

@@ -177,7 +177,7 @@ bool RelativeRiskAdjustmentHandler::AdjustMeasure(const TwoDimMeasureArray_t& Me
                               "       of cases in the period %s to %s to be zero, but there\n"
                               "       are cases in that interval.\n"
                               "       If the expected is zero, the number of cases must also be zero.\n",
-                              (Tract == -1 ? "All" : _dataHub.GetGroupInfo().getObservationGroups().at(Tract)->groupname().c_str()),
+                              (Tract == -1 ? "All" : _dataHub.getIdentifierInfo().getIdentifiers().at(Tract)->name().c_str()),
                               JulianToString(sStart, StartDate, _dataHub.GetParameters().GetPrecisionOfTimesType()).c_str(),
                               JulianToString(sEnd, EndDate, _dataHub.GetParameters().GetPrecisionOfTimesType()).c_str());
      }
@@ -304,7 +304,7 @@ TractContainerIterator_t RelativeRiskAdjustmentHandler::GetMaxPeriodIndex(TractC
 } 
 
 /** Prints all defined adjustments to text file. */
-void RelativeRiskAdjustmentHandler::print(ObservationGroupingManager & groups) {
+void RelativeRiskAdjustmentHandler::print(IdentifiersManager & identifierMgr) {
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
   std::string                           sStart, sEnd;
@@ -315,7 +315,7 @@ void RelativeRiskAdjustmentHandler::print(ObservationGroupingManager & groups) {
 
   for (itr=gTractAdjustments.begin(); itr != gTractAdjustments.end(); ++itr) {
      const TractContainer_t & tract_deque = itr->second;
-     fprintf(pFile, "Tract %s:\n", groups.getObservationGroups().at(itr->first)->groupname().c_str());
+     fprintf(pFile, "Tract %s:\n", identifierMgr.getIdentifiers().at(itr->first)->name().c_str());
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {
         JulianToString(sStart,(*itr_deque).GetStartDate(), DAY);
         JulianToString(sEnd, (*itr_deque).GetEndDate(), DAY);

@@ -105,7 +105,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
   try {
     //define fields of data file that describes cluster properties
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(gDataHub), 0, uwOffset, 0);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, getLocationFieldLength(gDataHub), 0, uwOffset, 0);
     if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
           (gParameters.getUseLocationsNetworkFile() && !gDataHub.networkCanReportLocationCoordinates()))) {
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
@@ -114,7 +114,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
           gParameters.GetCoordinatesType() == CARTESIAN ? 19/* forces %g format */: 6/* same as in results file*/);
       //only Cartesian coordinates can have more than two dimensions
       if (gParameters.GetCoordinatesType() == CARTESIAN) {
-          for (i = 3; i <= gDataHub.GetGroupInfo().getLocationsManager().expectedDimensions(); ++i) {
+          for (i = 3; i <= gDataHub.getLocationsManager().expectedDimensions(); ++i) {
               printString(buffer, "%s%i", COORD_Z_FIELD, i - 2);
               CreateField(vFieldDefinitions, buffer.c_str(), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 19/* forces %g format */);
           }
@@ -271,19 +271,20 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
   }
 }
 
-/* Returns the identifier of the most central location in the cluster. */
-std::string& ClusterInformationWriter::GetLocationID(std::string& sAreaId, const CCluster& thisCluster) const {
+/* Returns the name of the most central location in the cluster. 
+   In the most general and common application, identifier and location reference the same label/name.*/
+std::string& ClusterInformationWriter::GetClusterLocation(std::string& locationID, const CCluster& thisCluster) const {
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-        sAreaId = "All";
+        locationID = "All";
     else if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION)
-        // The location name and the group name are indentical when using the typical one coordinate per observation group.
-        sAreaId = gDataHub.GetGroupInfo().getGroupname(thisCluster.mostCentralObservationGroupIdx(), sAreaId);
+        // The location name and the identifier name are indentical when using the typical one coordinate per observation.
+        locationID = gDataHub.getIdentifierInfo().getIdentifierNameAtIndex(thisCluster.mostCentralIdentifierIdx(), locationID);
     else {
         std::vector<tract_t> clusterLocations;
         CentroidNeighborCalculator::getLocationsAboutCluster(gDataHub, thisCluster, 0, &clusterLocations);
-        sAreaId = gDataHub.getLocationsManager().locations()[clusterLocations.front()]->name();
+        locationID = gDataHub.getLocationsManager().locations()[clusterLocations.front()]->name();
     }
-    return sAreaId;
+    return locationID;
 }
 
 /** Records the required data to be stored in the cluster output file, stores
@@ -324,7 +325,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
 
   try {
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-    Record.GetFieldValue(LOC_ID_FIELD).AsString() = GetLocationID(sBuffer, theCluster);
+    Record.GetFieldValue(LOC_ID_FIELD).AsString() = GetClusterLocation(sBuffer, theCluster);
     if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
       Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
     if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||
@@ -336,9 +337,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       }
       if (theCluster.getLocationsSpan(gDataHub) >= 0.0) Record.GetFieldValue(SPAN_FIELD).AsDouble() = theCluster.getLocationsSpan(gDataHub);
     }
-    if (gDataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION)
-        Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumObsGroups() : theCluster.numNonNullifiedObservationGroupsInCluster(gDataHub);
-    else if (theCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+    if (theCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
         Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = gDataHub.getLocationsManager().locations().size();
     else {
         boost::dynamic_bitset<> bLocations;
@@ -378,9 +377,10 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
             throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
-        dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(0),
-                                                Handler.GetDataSet().getTotalCases(), Handler.GetDataSet().getTotalMeasure(),
-                                                Handler.GetDataSet().getTotalMeasureAux());
+        dUnbiasedVariance = GetUnbiasedVariance(
+            static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(0), Handler.GetDataSet().getTotalCases(),
+            Handler.GetDataSet().getTotalMeasure(), Handler.GetDataSet().getTotalMeasureAux()
+        );
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
@@ -389,7 +389,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
 
         std::vector<tract_t> tractIndexes;
-        theCluster.getGroupIndexes(gDataHub, tractIndexes, true);
+        theCluster.getIdentifierIndexes(gDataHub, tractIndexes, true);
         AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
         statistics = pRandomizer->getClusterStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
 
@@ -534,7 +534,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 							  //std::vector<double> x, y;
                               NetworkLocationContainer_t networkLocations;
                               gDataHub.getClusterNetworkLocations(thisCluster, networkLocations);
-                              for (auto connection: GisUtils::getClusterConnections(networkLocations)) {
+                              for (const auto& connection: GisUtils::getClusterConnections(networkLocations)) {
                                   std::vector<double> x, y;
 								  std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(connection.get<0>()->coordinates()->retrieve(vCoordinates)));
 								  x.push_back(prLatitudeLongitude.second);
@@ -568,7 +568,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
 
   // Calculate cluster location indexes once for weight normal model.
   if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
-     theCluster.getGroupIndexes(gDataHub, tractIndexes, true);
+     theCluster.getIdentifierIndexes(gDataHub, tractIndexes, true);
 
   for (unsigned int iSetIndex=0; iSetIndex < gDataHub.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);

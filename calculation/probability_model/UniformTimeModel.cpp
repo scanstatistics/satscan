@@ -69,7 +69,7 @@ void UniformTimeModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& Da
 
             // Define a new PopulationData that will be grouped day of week covariate.
             boost::shared_ptr<PopulationData> populationData(new PopulationData());
-            populationData->SetNumTracts(gDataHub.GetNumObsGroups());
+            populationData->SetNumTracts(gDataHub.GetNumIdentifiers());
             // The weekly adjustment will have the population defined on every day in the study period.
             // Since this adjustment requires the time aggregation to be set to 1 day, just iterate through defined time interval dates.
             assert(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1);
@@ -149,15 +149,15 @@ double UniformTimeModel::GetLocationPopulation(size_t tSetIndex, tract_t tractId
     double population = 0.0;
     int ncats = Population.GetNumCovariateCategories();
     int nPops = static_cast<int>(Population.GetNumPopulationDates());
-    if (static_cast<size_t>(tractIdx) < DataHub.GetGroupInfo().getObservationGroups().size()) {
-        if (!DataHub.isNullifiedObservationGroup(tractIdx))
+    if (static_cast<size_t>(tractIdx) < DataHub.getIdentifierInfo().getIdentifiers().size()) {
+        if (!DataHub.isNullifiedIdentifier(tractIdx))
             for (int c=0; c < ncats; ++c)
                 Population.GetAlphaAdjustedPopulation(population, tractIdx, c, 0, nPops, _alpha);
     } else {
         std::vector<tract_t> AtomicIndexes;
-        DataHub.GetGroupInfo().getMetaObsGroupsManager().getMetaObsGroups().at(static_cast<size_t>(tractIdx) - DataHub.GetGroupInfo().getObservationGroups().size())->getAtomicIndexes(AtomicIndexes);
+        DataHub.getIdentifierInfo().getMetaIdentifiersManager().getMetaIdentifiers().at(static_cast<size_t>(tractIdx) - DataHub.getIdentifierInfo().getIdentifiers().size())->getAtomicIndexes(AtomicIndexes);
         for (size_t a=0; a < AtomicIndexes.size(); ++a) {
-            if (!DataHub.isNullifiedObservationGroup(AtomicIndexes[a]))
+            if (!DataHub.isNullifiedIdentifier(AtomicIndexes[a]))
                 for (int c=0; c < ncats; ++c)
                     Population.GetAlphaAdjustedPopulation(population, AtomicIndexes[a], c, 0, nPops, _alpha);
         }

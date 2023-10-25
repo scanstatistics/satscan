@@ -60,7 +60,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
 
       void                      DefineClusterInformationFields();
       void                      DefineClusterCaseInformationFields();
-      std::string             & GetLocationID(std::string& sAreaId, const CCluster& thisCluster) const;
+      std::string             & GetClusterLocation(std::string& locationID, const CCluster& thisCluster) const;
       void                      WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber);
       void                      WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars);
       void                      WriteCoordinates(RecordBuffer& Record, const CCluster& pCluster);

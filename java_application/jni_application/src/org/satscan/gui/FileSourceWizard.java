@@ -161,11 +161,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // Test whether user selected any event level inputs and verify.
         if (_combobox_event_y.isEnabled()) {
             if (_combobox_event_y.getSelectedIndex() > 0 && _combobox_event_x.getSelectedIndex() == 0)
-                message.append("An event longitude coordinate was selected but no latitude coordinate.\n");
+                message.append("A descriptive longitude was selected but no latitude coordinate.s\n");
             else if (_combobox_event_y.getSelectedIndex() == 0 && _combobox_event_x.getSelectedIndex() > 0)
-                message.append("An event latitude coordinate was selected but no longitude coordinate.\n");
+                message.append("A descriptive latitude coordinate was selected but no longitude coordinate.\n");
             if (message.length() > 0) {
-                message.append("Note: Event coordinates are only required to place events on Google Earth KML output.");
+                message.append("Note: Descriptive coordinates are only required to place line list data in geographical output files.");
                 JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
                 return true;
             }
@@ -190,11 +190,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // All appears to be correct -- clear then populate temporary line list map.
         _input_source_settings.getLinelistFieldMaps().clear();
         if (_combobox_eventid.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_eventid.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_ID, "EventID"));
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_eventid.getSelectedIndex() - 1, Pair.of(LinelistType.INDIVIDUAL_ID, "IndividualID"));
         if (_combobox_event_y.isEnabled() && _combobox_event_y.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_Y, "EventLongitude"));
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.DESCRIPTIVE_COORD_Y, "DescriptiveLongitude"));
         if (_combobox_event_x.isEnabled() && _combobox_event_x.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.EVENT_COORD_X, "EventLatitude"));
+            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.DESCRIPTIVE_COORD_X, "DescriptiveLatitude"));
         for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
             _input_source_settings.getLinelistFieldMaps().put(
                 model.getSourceColumnIndex((String)model.getValueAt(rowIdx, 0)) - 1, 
@@ -430,7 +430,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         builder.append("<html><head><style>th {font-weight:bold;text-align:right;}</style></head><body>");
         builder.append(getFileExpectedFormatParagraphs());
         if (isImportableFileType(_input_source_settings.getInputFileType())) {
-            builder.append("<p>If the selected file is not SaTScan formatted (whitespace delimited) or fields are not in the expected order, select the 'Next' button to specify how to read this file.</p>");
+            builder.append("<p>If the selected file is not in this whitespace delimited SaTScan format, select the ‘Next’ button to import the file.</p>");
         }
         builder.append("</body></html>");
         return builder.toString();
@@ -440,15 +440,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private String getFileExpectedFormatParagraphs() {
         String heplID="";
         StringBuilder builder = new StringBuilder();
-        builder.append("<p style=\"margin-top: 0;\">The expected format of the ");
-        builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file");
-        if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Case) {
-            builder.append(", using the ").append(Parameters.GetProbabilityModelTypeAsString(getModelControlType(), false)).append(" probability model");
-        } else if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates ||
-                   _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid) {
-            builder.append(", using ").append(getCoorinatesControlType() == Parameters.CoordinatesType.LATLON ? "Latitude/Longitude" : "Cartesian").append(" coordinates");
-        }
-        builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
+        builder.append("<p style=\"margin-top: 0;\">For the ");
+        builder.append(Parameters.GetProbabilityModelTypeAsString(getModelControlType(), false)).append(" model, the SaTScan ");
+        builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file format is:</p>");
+        builder.append("<span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
         switch (_input_source_settings.getInputFileType()) {
             case Case :
                 heplID = AppConstants.CASEFILE_HELPID;
@@ -456,66 +451,66 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case POISSON :
                     case SPACETIMEPERMUTATION :
                     case HOMOGENEOUSPOISSON :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Covariate 1&gt; ... &lt;Covariate 2&gt;");
                         break;
                     case BERNOULLI :
                     case UNIFORMTIME :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;");
                         break;
                     case ORDINAL :
                     case CATEGORICAL :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Category Type&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Category Type&gt;");
                         break;
                     case EXPONENTIAL :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Censored&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Censored&gt;");
                         break;
                     case NORMAL :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Weight&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Weight&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                         break;
                     case RANK :
-                        builder.append("&lt;Location ID&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Continuous Variable&gt;");
+                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Continuous Variable&gt;");
                         break;
                     default: throw new UnknownEnumException(getModelControlType());
                 }
                 break;
             case Control:
                 heplID = AppConstants.CONTROLFILE_HELPID;
-                builder.append("&lt;Location ID&gt;  &lt;Controls&gt;  &lt;Date/Time&gt;");
+                builder.append("&lt;Identifier&gt;  &lt;Controls&gt;  &lt;Date/Time&gt;");
                 break;
             case Population:
                 heplID = AppConstants.POPULTIONFILE_HELPID;
                 heplID = "Population File";
-                builder.append("&lt;Location ID&gt;  &lt;Date/Time&gt;  &lt;Population&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
+                builder.append("&lt;Identifier&gt;  &lt;Date/Time&gt;  &lt;Population&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                 break;
             case Coordinates:
                 heplID = AppConstants.COORDINATESFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
-                    builder.append("&lt;Location ID&gt;  &lt;X-Coordinate&gt;  &lt;Y-Ccoordinate&gt;  &lt;Z1-Coordinate&gt; ...  &lt;ZN-Coordinate&gt;");
+                    builder.append("&lt;Location&gt;  &lt;X-Coordinate&gt;  &lt;Y-Ccoordinate&gt;  &lt;Z1-Coordinate&gt; ...  &lt;ZN-Coordinate&gt;");
                 else
-                    builder.append("&lt;Location ID&gt;  &lt;Latitude&gt;  &lt;Longitude&gt;");
+                    builder.append("&lt;Location&gt;  &lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
             case SpecialGrid: builder.append("");
                 heplID = AppConstants.GRIDFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
-                    builder.append("&lt;X-Coordinate&gt;  &lt;Y-Coordinate&gt;  &lt;Z1-Coordinate&gt; ... &lt;ZN-Coordinate&gt;");
+                    builder.append("&lt;X-Coordinate&gt;  &lt;Y-Coordinate&gt;  &lt;Z1-Coordinate&gt; ... &lt;Z2-Coordinate&gt;");
                 else
                     builder.append("&lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
             case MaxCirclePopulation:
                 heplID = AppConstants.MAXCIRCLEFILE_HELPID;
-                builder.append("&lt;Location ID&gt;  &lt;Population&gt;");
+                builder.append("&lt;Identifier&gt;  &lt;Population&gt;");
                 break;
             case AdjustmentsByRR:
                 heplID = AppConstants.ADJUSTMENTSFILE_HELPID;
-                builder.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
+                builder.append("&lt;Identifier&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
             case Neighbors:
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
-                builder.append("&lt;Location ID 1&gt;  &lt;Location ID 2&gt; &lt;Location ID 3&gt; ... &lt;Location ID N&gt;");
+                builder.append("&lt;Identifier 1&gt;  &lt;Identifier 2&gt; &lt;Identifier 3&gt; ... &lt;Identifier 4&gt;");
                 break;
             case MetaLocations:
                 heplID = AppConstants.METALOCATIONSFILE_HELPID;
-                builder.append("&lt;Meta Location ID&gt;  (&lt;Location ID&gt; or &lt;Meta Location ID&gt;) ... (&lt;Location ID&gt; or &lt;Meta Location ID&gt;)");
+                builder.append("&lt;Meta Identifier&gt;  (&lt;Identifier&gt; or &lt;Meta Identifier&gt;) ... (&lt;Identifier&gt; or &lt;Meta Identifier&gt;)");
                 break;
             case AlternativeHypothesis:
                 heplID = AppConstants.ALTERNATIVEHYPOTHESIS_HELPID;
@@ -527,7 +522,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 break;
             case Multiple_Locations:
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
-                builder.append("&lt;Observation Group ID&gt;  &lt;Location ID&gt;");
+                builder.append("&lt;Identifier&gt;  &lt;Location&gt;");
                 break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
@@ -954,15 +949,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _sticky_ll_labels.clear();
             for (Map.Entry<Integer, Pair<LinelistType, String>> entry : _input_source_settings.getLinelistFieldMaps().entrySet()) {
                 switch (entry.getValue().getLeft()) {
-                    case EVENT_ID: 
+                    case INDIVIDUAL_ID: 
                         if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
                             _combobox_eventid.setSelectedIndex(entry.getKey() + 1);
                         break;
-                    case EVENT_COORD_Y: 
+                    case DESCRIPTIVE_COORD_Y: 
                         if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
                             _combobox_event_y.setSelectedIndex(entry.getKey() + 1);
                         break;
-                    case EVENT_COORD_X: 
+                    case DESCRIPTIVE_COORD_X: 
                         if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
                             _combobox_event_x.setSelectedIndex(entry.getKey() + 1);
                         break;
@@ -1152,7 +1147,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for case file. */
     private void setCaseFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true, null, null, "<locationid>"));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true, null, null, "<identifier>"));
         _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null, "<#cases>"));
         _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null, "<time>"));
         _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null, "<attribute>"));
@@ -1174,7 +1169,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for control file. */
     private void setControlFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
         _import_variables.addElement(new ImportVariable("Number of Controls", 1, true));
         _import_variables.addElement(new ImportVariable("Date/Time", 2, false));
     }
@@ -1182,7 +1177,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for coordinates file. */
     private void setGeoFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Location", 0, true));
         _import_variables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null, null));
         _import_variables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null, null));
         _import_variables.addElement(new ImportVariable("X", 1, true));
@@ -1258,14 +1253,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for maximum circle population file. */
     private void setMaxCirclePopFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
         _import_variables.addElement(new ImportVariable("Population", 1, true));
     }
     
     /** Setup field descriptors for population file. */
     private void setPopulationFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
         ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified", null);
         /* Set the variable index to below the one-based variables -- variables less than one
          * are considered special and are not actually a data source column option.
@@ -1288,7 +1283,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for relative risks file. */
     private void setRelativeRisksFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location ID", 0, true));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
         _import_variables.addElement(new ImportVariable("Relative Risk", 1, true));
         _import_variables.addElement(new ImportVariable("Start Date", 2, false));
         _import_variables.addElement(new ImportVariable("End Date", 3, false));
@@ -1297,16 +1292,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for network file. */
     private void setNetworkFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("First Location ID", 0, true));
-        _import_variables.addElement(new ImportVariable("Second Location ID", 1, false));
+        _import_variables.addElement(new ImportVariable("First Location", 0, true));
+        _import_variables.addElement(new ImportVariable("Second Location", 1, false));
         _import_variables.addElement(new ImportVariable("Distance", 2, false));
     }    
     
     /** Setup field descriptors for multiple locations file. */
     private void setMultipleLocationsFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Observation Group ID", 0, true));
-        _import_variables.addElement(new ImportVariable("Location ID", 1, true));
+        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
+        _import_variables.addElement(new ImportVariable("Location", 1, true));
     }     
     
     /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
@@ -1597,13 +1592,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 StringBuilder message = new StringBuilder();
                 message.append("The case file can contain line list data which is not used when performing analysis.\n");
                 message.append("The line list data can include two types of information:\n");
-                message.append("1) Event Identification:\n");
-                message.append(" - Uniquely identifies an event and its latitude/longitude coordinates.\n");
+                message.append("1) Individual Identification:\n");
+                message.append(" - Uniquely identifies an individual and its latitude/longitude coordinates.\n");
                 message.append(" - Coordinates are optional and only used to place the event in the KML output.\n");
                 message.append("2) Record Characteristics:\n");
-                message.append(" - Attributes of the event or record (age, gender, status, etc).\n\n");
-                message.append("When an Event ID column is defined, the number of cases for each record must be one;\n");
-                message.append("since you are indicating each record is a unique event.\n");
+                message.append(" - Attributes of the individual or record (age, gender, status, etc).\n\n");
+                message.append("When an Individual column is defined, the number of cases for each record must be one;\n");
+                message.append("since you are indicating each record is a unique record.\n");
                 message.append("This restriction will be enforced when the analysis is executed.\n");
                 JOptionPane.showMessageDialog(FileSourceWizard.this, message.toString(), "Note", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -1710,7 +1705,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _main_content_panel.add(_fileSourceSettingsPanel, "source-settings");
 
-        jLabel1.setText("Sampling of File Contents:"); // NOI18N
+        jLabel1.setText("Sample of the File Content:"); // NOI18N
 
         _fileContentsTextArea.setEditable(false);
         _fileContentsTextArea.setColumns(20);
@@ -1884,7 +1879,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
 
-        _displayVariablesLabel.setText("Display SaTScan Variables For:"); // NOI18N
+        _displayVariablesLabel.setText("Import SaTScan Variables for Analysis Using:"); // NOI18N
 
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -1927,7 +1922,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
                         .addComponent(_displayVariablesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_displayVariablesComboBox, 0, 340, Short.MAX_VALUE))
+                        .addComponent(_displayVariablesComboBox, 0, 273, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_clearSelectionButton))
@@ -1978,7 +1973,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
 
-        jLabel2.setText("# = Column is not actually defined in file but can be used as SaTScan variable.");
+        jLabel2.setText("(*) Column not in the source file, but can be used as a SaTScan variable.");
 
         javax.swing.GroupLayout _dataMappingPanelLayout = new javax.swing.GroupLayout(_dataMappingPanel);
         _dataMappingPanel.setLayout(_dataMappingPanelLayout);
@@ -2005,9 +2000,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         jSplitPane2.setDividerLocation(250);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        _casefile_linelist.setText("Case file contains line list data");
+        _casefile_linelist.setText("OPTIONAL: Import descriptive line list variables for output files.");
+        _casefile_linelist.setToolTipText("*  For Cluster Line List, KML, and HMTL Google Map output files only, not used by the SaTScan analysis.");
 
-        jLabel3.setText("Event ID (optional)");
+        jLabel3.setText("Individual ID (optional)");
 
         _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "not set" }));
         _combobox_eventid.setPreferredSize(new java.awt.Dimension(125, 20));
@@ -2037,9 +2033,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _down_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
 
-        jLabel8.setText("Event Latitude (optional)");
+        jLabel8.setText("Descriptive Latitude (optional)");
 
-        jLabel9.setText("Event Longitude (optional)");
+        jLabel9.setText("Descriptive Longitude (optional)");
 
         _linelist_help.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         _linelist_help.setToolTipText("What is this?");
@@ -2063,7 +2059,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 137, Short.MAX_VALUE))
+                        .addGap(0, 93, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)

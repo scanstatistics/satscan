@@ -23,7 +23,7 @@ const char * BaseClusterKML::KML_FILE_EXT = ".kml";
 double BaseClusterKML::_minRatioToReport=0.001;
 
 BaseClusterKML::BaseClusterKML(const CSaTScanData& dataHub) : _dataHub(dataHub), _visibleLocations(false) {
-    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
+    _cluster_locations.resize(_dataHub.getLocationsManager().locations().size());
     _separateLocationsKML = _dataHub.getLocationsManager().locations().size() > _dataHub.GetParameters().getLocationsThresholdKML();
 }
 
@@ -60,7 +60,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
     std::string                                legend, locations, buffer, buffer2;
     std::vector<double>                        vCoordinates;
     std::pair<double, double>                  prLatitudeLongitude;
-	ObservationGrouping::CombinedGroupNames_t  vTractIdentifiers;
+	Identifier::CombinedIdentifierNames_t  vTractIdentifiers;
     const double radius_km = cluster.GetLatLongRadius();
     bool isHighRate = cluster.getAreaRateForCluster(_dataHub) == HIGH;
 
@@ -114,7 +114,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         if (_dataHub.GetParameters().getIncludeLocationsKML()) {
             std::stringstream  clusterPlacemarks;
             // create locations folder and locations within cluster placemarks
-            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            const auto& locations = _dataHub.getLocationsManager().locations();
             boost::dynamic_bitset<> clusterLocations;
             CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &clusterLocations);
             size_t index = clusterLocations.find_first();
@@ -336,7 +336,7 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
             if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= _minRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
                 break;
             if (cluster.m_nRatio >= _minRatioToReport)
-                _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).getNumObservationGroups());
+                _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).getNumIdentifiers());
         }
     }
     _clusters_written += addClusters(clusters, simVars, _kml_out, _fileCollection, _clusters_written);
@@ -348,7 +348,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
     csv_string_to_typelist<std::string>(_dataHub.GetParameters().getKmlEventGroupAttribute().c_str(), g_values);
     std::set<std::string> grouping_by; // All the columns which we'll be generating an events kml file.
     for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= EVENT_COORD_Y) continue;
+        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
         if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
         grouping_by.emplace(demographic.first);
     }
@@ -384,8 +384,8 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     }
     // Find the grouping charateristic in mapping.
     bool found = false;
-    for (auto demographic: demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= EVENT_COORD_Y) continue;
+    for (const auto& demographic: demographics.getDataSetDemographics().getAttributes()) {
+        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
         if (boost::iequals(demographic.first, group_by)) {
             found = true; break;
         }
@@ -429,42 +429,50 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             ballonstyle << "<BalloonStyle><text><![CDATA[<b style=\"white-space:nowrap;\">$[snippet]</b><br/><table border=\"0\">";
             if (parameters.GetIsSpaceTimeAnalysis())
                 ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Event Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
-            for (auto llfm : Source->getLinelistFieldsMap()) {
-                if (!(llfm.second.get<0>() == EVENT_ID || llfm.second.get<0>() == EVENT_COORD_Y || llfm.second.get<0>() == EVENT_COORD_X)) {
+            for (const auto& llfm : Source->getLinelistFieldsMap()) {
+                if (!(llfm.second.get<0>() == DESCRIPTIVE_COORD_Y || llfm.second.get<0>() == DESCRIPTIVE_COORD_X)) {
                     ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << llfm.second.get<1>()
                                 << "</th><td style=\"white-space:nowrap;\">$[" << llfm.second.get<1>() << "]</td></tr>";
                 }
             }
             ballonstyle << "</table>]]></text></BalloonStyle>";
         }
-        // Iterate over the records of the case file - creating placemarks for each event;
+        // Iterate over the records of the case file - creating placemarks for each record.
         const char * value = 0;
         std::stringstream placemark, extended, coordinates;
-        std::string group_value, event_date, end_date, event_id, latitude, longitude;
+        std::string group_value, event_date, end_date, event_id, latitude, longitude, identifier;
         if (parameters.GetIsSpaceTimeAnalysis()) {
             JulianToString(end_date, _dataHub.GetStudyPeriodEndDate(), parameters.GetPrecisionOfTimesType(), "-", true, false, true);
         }
 		tract_t tid; count_t count; Julian case_date;
         while (Source->ReadRecord()) {
-			DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveLocationIndex(*Source, tid); //read and validate that tract identifier
+			DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
+
+            // TODO: What if count greater than zero? Create multiple of the same record?
+            //       If not, what happens if this record is split into 2 or more identical records?
+
+            _dataHub.getIdentifierInfo().getIdentifierNameAtIndex(tid, identifier);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
             group_value = ""; event_id = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;
+            placemark << "<name>Identifier: " << identifier << "</name>" << std::endl;
+            placemark << "<snippet>Identifier: " << identifier << "</snippet>" << std::endl;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                 value = Source->GetValueAtUnmapped(itr->first);
                 value = value == 0 ? "" : value;
-                if (itr->second.get<0>() == EVENT_ID) {
+                /*if (itr->second.get<0>() == INDIVIDUAL_ID) {
                     placemark << "<name>Event: " << value << "</name>" << std::endl;
                     placemark << "<snippet>Event: " << value << "</snippet>" << std::endl;
                     event_id = value;
-                } else if (itr->second.get<0>() == EVENT_COORD_Y) {
+                } else*/ if (itr->second.get<0>() == DESCRIPTIVE_COORD_Y) {
                     latitude = value;
-                } else if (itr->second.get<0>() == EVENT_COORD_X) {
+                } else if (itr->second.get<0>() == DESCRIPTIVE_COORD_X) {
                     longitude = value;
                 } else {
                     extended << "<Data name=\"" << itr->second.get<1>() << "\"><value>" << value << "</value></Data>";
@@ -472,7 +480,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
                 }
             }
             // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.
-            if (event_id.length() == 0 || latitude.length() == 0 || longitude.length() == 0 || group_value.length() == 0) {
+            if (/*event_id.length() == 0 ||*/ latitude.length() == 0 || longitude.length() == 0 || group_value.length() == 0) {
                 _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to KML.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
                 continue;
             }
@@ -508,7 +516,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     // Now that we've read all the data, write groups to KML file.
     // First create the ScreenOverlay, which is the legend.
     std::vector<std::pair<std::string, unsigned int> > ordered_frequency;
-    for (auto gr : group_frequency) {
+    for (const auto& gr : group_frequency) {
         ordered_frequency.push_back(gr);
     }
     std::sort(ordered_frequency.begin(), ordered_frequency.end(), [](const std::pair<std::string, unsigned int> &left, const std::pair<std::string, unsigned int> &right) { return left.second > right.second; });
@@ -523,7 +531,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     std::string website = AppToolkit::getToolkit().GetWebSite();
     std::stringstream squasheditems;
     auto itrShape = _visual_utils.getShapes().begin();
-    for (auto const&pgroup : ordered_frequency) {
+    for (auto const& pgroup : ordered_frequency) {
         if (itrShape != _visual_utils.getShapes().end()) {
             eventKML << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
                 << " width='16' height='16' src='" << website << "images/events/" << *itrShape << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>"
@@ -542,9 +550,9 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     eventKML << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
     eventKML << "<name>Events By " << group_by << "</name>" << std::endl;
     itrShape = itrShape = _visual_utils.getShapes().begin();
-    for (auto const&pgroup: ordered_frequency) {
-        auto shape = itrShape != _visual_utils.getShapes().end() ? *itrShape : std::string(_visual_utils.getAggregationShape());
-        auto groupHex = toHex(pgroup.first);
+    for (auto const& pgroup: ordered_frequency) {
+        const auto& shape = itrShape != _visual_utils.getShapes().end() ? *itrShape : std::string(_visual_utils.getAggregationShape());
+        const auto& groupHex = toHex(pgroup.first);
         eventKML << "<Style id=\"events-" << groupHex << "-new-style\"><IconStyle><color>" << toKmlColor("FF0000") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
             << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
         eventKML << "<StyleMap id=\"events-" << groupHex << "-new-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
@@ -576,7 +584,7 @@ void ClusterKML::finalize() {
             std::vector<double> vCoordinates;
             std::stringstream  locationPlacemarks;
             // create locations folder and locations within cluster placemarks
-			for (auto itrGroup = _dataHub.GetGroupInfo().getObservationGroups().begin(); itrGroup != _dataHub.GetGroupInfo().getObservationGroups().end(); ++itrGroup) {
+			for (auto itrGroup = _dataHub.getIdentifierInfo().getIdentifiers().begin(); itrGroup != _dataHub.getIdentifierInfo().getIdentifiers().end(); ++itrGroup) {
                 for (unsigned int loc = 0; loc < itrGroup->get()->getLocations().size(); ++loc) {
                     if (!_cluster_locations.test(itrGroup->get()->getLocations()[loc]->index())) {
                         itrGroup->get()->getLocations()[loc]->coordinates()->retrieve(vCoordinates);
@@ -621,7 +629,7 @@ void ClusterKML::finalize() {
             std::vector<double> vCoordinates;
 
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
-            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+            for (const auto& connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(connection.get<0>()->coordinates()->retrieve(vCoordinates)));
                 edges << "\t\t\t<Placemark><styleUrl>#line-edge</styleUrl><LineString><coordinates>";
                 edges << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0  ";

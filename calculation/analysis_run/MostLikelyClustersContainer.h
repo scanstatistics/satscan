@@ -85,10 +85,10 @@ class MostLikelyClustersContainer {
                         return true;
                     if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
                         return false;
-                    // Prefer the cluster with fewer groups.
-                    if (pCluster1->getNumObservationGroups() < pCluster2->getNumObservationGroups())
+                    // Prefer the cluster with fewer identifiers.
+                    if (pCluster1->getNumIdentifiers() < pCluster2->getNumIdentifiers())
                         return true;
-                    if (pCluster2->getNumObservationGroups() < pCluster1->getNumObservationGroups())
+                    if (pCluster2->getNumIdentifiers() < pCluster1->getNumIdentifiers())
                         return false;
 
                     // Clusters have the same number of locations - additional tie breakers.
@@ -112,8 +112,8 @@ class MostLikelyClustersContainer {
                     }
 
                     //if ratios are equal, lesser centroid index ranks greater
-                    if (pCluster1->mostCentralObservationGroupIdx() != pCluster2->mostCentralObservationGroupIdx())
-                        return (pCluster1->mostCentralObservationGroupIdx() < pCluster2->mostCentralObservationGroupIdx());
+                    if (pCluster1->mostCentralIdentifierIdx() != pCluster2->mostCentralIdentifierIdx())
+                        return (pCluster1->mostCentralIdentifierIdx() < pCluster2->mostCentralIdentifierIdx());
                     else
                         return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
                 } 
@@ -184,7 +184,7 @@ class MostLikelyClustersContainer {
     void                        Empty();
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
-    static void                 getClusterLocationsSet(const CSaTScanData& DataHub, const CCluster& theCluster, boost::dynamic_bitset<>& theSet);
+    static void                 getClusterIdentifiersSet(const CSaTScanData& DataHub, const CCluster& theCluster, boost::dynamic_bitset<>& theSet);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
     Cluster_t                 & GetClusterRef(tract_t tClusterIndex);
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;

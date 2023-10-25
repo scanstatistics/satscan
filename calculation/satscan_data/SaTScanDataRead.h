@@ -22,12 +22,12 @@ class SaTScanDataReader {
     enum RecordStatusType       {Rejected=0, Ignored, Accepted};
 
   private:
-    static const long           guLocationIndex;           /** input record index for location */
+    static const long           _identifier_column_index;           /** input record index for location */
     CSaTScanData              & gDataHub;
     BasePrint                 & gPrint;
     const CParameters         & gParameters;
     GInfo                     & gCentroidsHandler;
-	ObservationGroupingManager& _group_manager;
+	IdentifiersManager        & _identifier_mgr;
     std::deque<void*>           gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
     bool                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
@@ -51,7 +51,7 @@ class SaTScanDataReader {
     bool                        ReadUniformTimeData();
     bool                        ReadSpaceTimePermutationData();
     bool                        ReadUserSpecifiedNeighbors();
-    RecordStatusType            RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex);
+    RecordStatusType            RetrieveIdentifierIndex(DataSource& Source, tract_t& tLocationIndex);
 
   public:
     SaTScanDataReader(CSaTScanData& DataHub);

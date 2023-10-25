@@ -13,6 +13,12 @@ RecordBuffer::RecordBuffer(const ptr_vector<FieldDef>& vFields) : vFieldDefiniti
   }
 }
 
+/* class copy constructor */
+RecordBuffer::RecordBuffer(const RecordBuffer& copyme): vFieldDefinitions(copyme.vFieldDefinitions), gvBlankFields(copyme.gvBlankFields) {
+    for (const auto& fv : copyme.gvFieldValues)
+        gvFieldValues.push_back(FieldValue(fv));
+}
+
 /** class destructor */
 RecordBuffer::~RecordBuffer() {}
 
@@ -192,7 +198,7 @@ void AbstractDataFileWriter::CreateField(ptr_vector<FieldDef>& vFields, const st
 }
 
 /** Returns field length for location identifers fields. */
-short AbstractDataFileWriter::GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const {
+short AbstractDataFileWriter::getLocationFieldLength(const CSaTScanData& DataHub) const {
   return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, static_cast<short>(DataHub.getLocationsManager().getMaxNameLength())));
 }
 

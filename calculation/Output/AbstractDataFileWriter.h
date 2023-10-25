@@ -17,10 +17,11 @@ class RecordBuffer {
 
    public:
       RecordBuffer(const ptr_vector<FieldDef>& vFields);
+      RecordBuffer(const RecordBuffer& copyme);
       virtual ~RecordBuffer();
 
-      const FieldDef                   & GetFieldDefinition(unsigned int iFieldIndex) const;
-      const FieldDef                   & GetFieldDefinition(const std::string& sFieldName) const;
+      const FieldDef                  & GetFieldDefinition(unsigned int iFieldIndex) const;
+      const FieldDef                  & GetFieldDefinition(const std::string& sFieldName) const;
       unsigned int                      GetFieldIndex(const std::string& sFieldName) const;
       bool                              GetFieldIsBlank(unsigned int iFieldNumber) const;
       FieldValue                      & GetFieldValue(const std::string& sFieldName);
@@ -65,7 +66,7 @@ class AbstractDataFileWriter {
     DBaseDataFileWriter       * gpDBaseFileWriter;       /** dBase file writer              */
     ptr_vector<FieldDef>        vFieldDefinitions;       /** field definitions              */
 
-    short GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
+    short getLocationFieldLength(const CSaTScanData& DataHub) const;
 
   public:
     AbstractDataFileWriter(const CParameters& Parameters);

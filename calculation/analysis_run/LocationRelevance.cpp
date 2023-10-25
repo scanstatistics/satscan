@@ -8,21 +8,21 @@
 
 LocationRelevance::LocationRelevance(const CSaTScanData& data_hub) {
     const CParameters& parameters = data_hub.GetParameters();
-    unsigned int locations = static_cast<unsigned int>(data_hub.GetNumObsGroups() + data_hub.GetNumMetaObsGroups());
+    unsigned int numIdentifiers = static_cast<unsigned int>(data_hub.GetNumIdentifiers() + data_hub.GetNumMetaIdentifiers());
     if (!(parameters.getReportHierarchicalClusters() || parameters.getReportGiniOptimizedClusters())) {
-        _most_likely_only.resize(locations, 0);
+        _most_likely_only.resize(numIdentifiers, 0);
     }
     if (parameters.getReportHierarchicalClusters()) {
-        _hierarchical.resize(locations, 0);
+        _hierarchical.resize(numIdentifiers, 0);
     }
     /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
     if (parameters.getReportGiniOptimizedClusters()) {
-        _gini_optimal.resize(locations, 0);
-        _gini_maxima.resize(locations, 0);
+        _gini_optimal.resize(numIdentifiers, 0);
+        _gini_maxima.resize(numIdentifiers, 0);
     }
     if (parameters.getReportHierarchicalClusters() && parameters.getReportGiniOptimizedClusters()) {
-        _hierarchical_gini_optimal.resize(locations, 0);
-        _hierarchical_gini_maxima.resize(locations, 0);
+        _hierarchical_gini_optimal.resize(numIdentifiers, 0);
+        _hierarchical_gini_maxima.resize(numIdentifiers, 0);
     }
     */
 }
@@ -32,9 +32,9 @@ void LocationRelevance::updatePresence(const CSaTScanData& data_hub, const MostL
     maximum = std::min(maximum, static_cast<unsigned int>(mlc.GetNumClustersRetained()));
     for (unsigned int c=0; c < maximum; ++c) {
         const MostLikelyClustersContainer::Cluster_t& cluster = const_cast<MostLikelyClustersContainer&>(mlc).GetClusterRef(static_cast<tract_t>(c));
-        for (tract_t t=1; t <= cluster->getNumObservationGroups(); ++t) {
+        for (tract_t t=1; t <= cluster->getNumIdentifiers(); ++t) {
             tract_t tTract = data_hub.GetNeighbor(cluster->GetEllipseOffset(), cluster->GetCentroidIndex(), t, cluster->GetCartesianRadius());
-            if (!data_hub.isNullifiedObservationGroup(tTract)) {
+            if (!data_hub.isNullifiedIdentifier(tTract)) {
                 location_presence.set(tTract);
             }
         }

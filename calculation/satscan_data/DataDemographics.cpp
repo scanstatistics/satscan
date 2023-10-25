@@ -49,9 +49,9 @@ void ContinuousDemographicAttribute::print() const {
 DemographicAttributeSet::DemographicAttributeSet(const LineListFieldMapContainer_t& llmap) {
     for (auto itr = llmap.begin(); itr != llmap.end(); ++itr) {
         switch (itr->second.get<0>()) {
-            case EVENT_ID: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_ID)); break;
-            case EVENT_COORD_X: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_COORD_X)); break;
-            case EVENT_COORD_Y: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), EVENT_COORD_Y)); break;
+            case INDIVIDUAL_ID: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), INDIVIDUAL_ID)); break;
+            case DESCRIPTIVE_COORD_X: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), DESCRIPTIVE_COORD_X)); break;
+            case DESCRIPTIVE_COORD_Y: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), DESCRIPTIVE_COORD_Y)); break;
             case GENERAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>())); break;
             case CATEGORICAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->second.get<1>())); break;
             case CONTINUOUS_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->second.get<1>())); break;
@@ -69,17 +69,17 @@ boost::shared_ptr<DemographicAttribute> DemographicAttributeSet::get(LinelistTup
 }
 
 bool DemographicAttributeSet::hasEventAttribute() const {
-    for (auto attr : _attributes_set)
-        if (attr.second->gettype() == EVENT_ID)
+    for (const auto& attr : _attributes_set)
+        if (attr.second->gettype() == INDIVIDUAL_ID)
             return true;
     return false;
 }
 
 bool DemographicAttributeSet::hasEventCoordinatesAttributes() const {
     bool x = false, y = false;
-    for (auto attr : _attributes_set) {
-        x |= attr.second->gettype() == EVENT_COORD_X;
-        y |= attr.second->gettype() == EVENT_COORD_Y;
+    for (const auto& attr : _attributes_set) {
+        x |= attr.second->gettype() == DESCRIPTIVE_COORD_X;
+        y |= attr.second->gettype() == DESCRIPTIVE_COORD_Y;
     }
     return x && y;
 }
@@ -99,10 +99,10 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
         const CCluster& cluster = _clusters->GetCluster(i);
         if (cluster.isSignificant(handler.gDataHub, i + 1, sim_vars)) {
             // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
-            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumObsGroups());
+            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumIdentifiers());
             std::vector<tract_t> tractIndexes;
             if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-                for (auto tractIdx : cluster.getGroupIndexes(handler.gDataHub, tractIndexes, true))
+                for (auto tractIdx : cluster.getIdentifierIndexes(handler.gDataHub, tractIndexes, true))
                     locations.set(tractIdx);
             }
             _cluster_locations[i] = locations;
@@ -128,7 +128,7 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
 
 DataDemographicsProcessor::~DataDemographicsProcessor() {
     // Delete any temporary cluster files.
-    for (auto cfiles : _cluster_location_files) {
+    for (const auto& cfiles : _cluster_location_files) {
         try {
             remove(cfiles.second.c_str());
         } catch (...) {}
@@ -151,7 +151,7 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap) {
     std::vector<std::string> v = {"Cluster"};
     for (auto const& itr : llmap) {
-        if (itr.second.get<0>() == EVENT_ID) {
+        if (itr.second.get<0>() == INDIVIDUAL_ID) {
             v.push_back("Hierarchy");
             v.push_back("New Event");
         }
@@ -185,7 +185,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             _events_filter = getNewBloomFilter(_handler._approximate_case_records);
         }
         // Create  new demographics attrbite set for each cluster being reported.
-        for (auto cluster : _cluster_demographics_by_dataset)
+        for (const auto& cluster : _cluster_demographics_by_dataset)
             _cluster_demographics_by_dataset[cluster.first].push_back(DemographicAttributeSet(Source->getLinelistFieldsMap()));
 
         // Iterate over case file records of this data set.
@@ -196,7 +196,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         Source->getOrderedLinelistFieldsMap(linelistFieldsMap);
 		tract_t tid; count_t nCount; Julian nDate;
         while (!_handler.gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
-			DataSetHandler::RecordStatusType readStatus = _handler.RetrieveLocationIndex(*Source, tid);
+			DataSetHandler::RecordStatusType readStatus = _handler.RetrieveIdentifierIndex(*Source, tid);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
 			readStatus = _handler.RetrieveCaseCounts(*Source, nCount);
 			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
@@ -206,7 +206,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             int endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
             // Determine which clusters this record applys to.
             applicable.reset();
-            for (auto cluster_locs : _cluster_locations) {
+            for (const auto& cluster_locs : _cluster_locations) {
                 const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
                 if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.test(tid))
                     continue;
@@ -228,7 +228,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 // Add attribute to data set demographics.
                 _demographics_by_dataset.back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
-                if (fieldMap.second.get<0>() == EVENT_ID) {
+                if (fieldMap.second.get<0>() == INDIVIDUAL_ID) {
                     if (_events_filter->contains(values.back())) {
                         _handler.gDataHub.GetPrintDirection().PrintWarning(
                             printString(buffer,
@@ -277,7 +277,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         std::ofstream lineliststream;
         lineliststream.open(linelist.getFullPath(buffer).c_str());
         createHeadersFile(lineliststream, linelistFieldsMap);
-        for (auto cfiles : _cluster_location_files) {
+        for (const auto& cfiles : _cluster_location_files) {
             std::ifstream filestream(cfiles.second.c_str(), std::ios_base::binary);
             lineliststream << filestream.rdbuf();
         }
@@ -311,16 +311,16 @@ void DataDemographicsProcessor::finalize() {
 }
 
 void DataDemographicsProcessor::process() {
-    for (const auto dataset : _handler.getDataSets()) {
+    for (const auto& dataset : _handler.getDataSets()) {
         processCaseFileLinelist(*dataset);
     }
 }
 
 void DataDemographicsProcessor::print() {
-    for (auto attrpair : _demographics_by_dataset.back().getAttributes())
+    for (const auto& attrpair : _demographics_by_dataset.back().getAttributes())
         attrpair.second->print();
-    for (auto cluster_dem : _cluster_demographics_by_dataset) {
-        for (auto attrpair : _cluster_demographics_by_dataset[cluster_dem.first].back().getAttributes())
+    for (const auto& cluster_dem : _cluster_demographics_by_dataset) {
+        for (const auto& attrpair : _cluster_demographics_by_dataset[cluster_dem.first].back().getAttributes())
             attrpair.second->print();
     }
 }

@@ -430,7 +430,7 @@ bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection
                 }
             }
             std::vector<std::string> recevieSignificant = gParameters.getEmailSignificantRecipientsList();
-            for (auto const&email : recevieSignificant) {
+            for (auto const& email : recevieSignificant) {
                 if (!validEmailAdrress(email)) {
                     PrintDirection.Printf(
                         "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
@@ -873,7 +873,7 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
         if (inputsource && inputsource->getLinelistFieldsMap().size()) {
             std::vector<std::string> labels;
             std::set<std::string> s;
-            for (auto ll: inputsource->getLinelistFieldsMap()) {
+            for (const auto& ll: inputsource->getLinelistFieldsMap()) {
                 labels.push_back(ll.second.get<1>());
                 s.emplace(ll.second.get<1>());
             }

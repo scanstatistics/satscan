@@ -39,8 +39,8 @@ SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulatio
 /** For each data set, assigns data at meta location indexes. */
 void SpaceTimePermutationDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
   }
 }
 
@@ -49,7 +49,7 @@ void SpaceTimePermutationDataSetHandler::assignMetaData(RealDataContainer_t& Con
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -93,7 +93,7 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(), 
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -138,7 +138,7 @@ void SpaceTimePermutationDataSetHandler::RandomizeData(RandomizerContainer_t& Co
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
   }    
 }
 

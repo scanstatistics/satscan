@@ -9,10 +9,10 @@
 HomogeneousPoissonRandomizer::HomogeneousPoissonRandomizer(const CParameters& Parameters, const ObserverableRegionContainer_t& Regions, long lInitialSeed)
                              :AbstractDenominatorDataRandomizer(lInitialSeed), gParameters(Parameters), gPolygons(Regions) {
   try {
-	  _groupings.reset(new ObservationGroupingManager(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
-	  _groupings->setExpectedCoordinateDimensions(2);
+	  _identifiers.reset(new IdentifiersManager(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
+	  _identifiers->setExpectedCoordinateDimensions(2);
      if (!gParameters.UseSpecialGrid())
-       gCentroidsHandler.reset(new LocationsCentroidHandlerPassThrough(_groupings->getLocationsManager()));
+       gCentroidsHandler.reset(new LocationsCentroidHandlerPassThrough(_identifiers->getLocationsManager()));
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","HomogeneousPoissonRandomizer");
@@ -20,8 +20,8 @@ HomogeneousPoissonRandomizer::HomogeneousPoissonRandomizer(const CParameters& Pa
   }
 }
 
-ObservationGroupingManager& HomogeneousPoissonRandomizer::getGroupInfo() {
-   return *_groupings;
+IdentifiersManager& HomogeneousPoissonRandomizer::getIdentifierInfo() {
+   return *_identifiers;
 }
 
 GInfo& HomogeneousPoissonRandomizer::getCentroidHandler() {
@@ -40,7 +40,7 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
   count_t distributedCount=0, distributionTotal=RealSet.getTotalCases();
   measure_t randomizedArea=0, areaTotal=RealSet.getTotalPopulation();
   ObserverableRegionContainer_t::const_iterator itr=gPolygons.begin();
-  ObservationGroupingManager::CoordinatesContainer_t vCoordiantes;
+  IdentifiersManager::CoordinatesContainer_t vCoordiantes;
 
   SetSeed(iSimulation, SimSet.getSetIndex());
   vCoordiantes.reserve(distributionTotal);
@@ -52,7 +52,7 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
          //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
          std::auto_ptr<Coordinates> pCoordinates(new Coordinates(rX, rY));
          ptr_vector<Coordinates>::iterator itrCoordinates;
-         itrCoordinates = std::lower_bound(vCoordiantes.begin(), vCoordiantes.end(), pCoordinates.get(), CompareCoordinates());
+         itrCoordinates = std::lower_bound(vCoordiantes.begin(), vCoordiantes.end(), pCoordinates.get()/*, CompareCoordinates()*/);
          if (itrCoordinates != vCoordiantes.end() && *(pCoordinates.get()) == *(*itrCoordinates))
            continue; // Duplicate point generated.
          vCoordiantes.insert(itrCoordinates, pCoordinates.release());
@@ -62,6 +62,6 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
      randomizedArea += itr->getArea();
   }
   
-  _groupings->assignExplicitCoordinates(vCoordiantes);
+  _identifiers->assignExplicitCoordinates(vCoordiantes);
 
 }

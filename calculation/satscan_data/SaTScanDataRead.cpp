@@ -20,12 +20,12 @@
 #include "UniformTimeDataSetHandler.h"
 #include "Toolkit.h"
 
-const long SaTScanDataReader::guLocationIndex = 0;
+const long SaTScanDataReader::_identifier_column_index = 0;
 
 /** class constructor */
 SaTScanDataReader::SaTScanDataReader(CSaTScanData& DataHub):
     gDataHub(DataHub), gParameters(gDataHub.GetParameters()), gPrint(gDataHub.gPrint),
-    _group_manager(*DataHub._observation_groups_manager), gCentroidsHandler(*gDataHub.gCentroidsHandler.get()) {}
+    _identifier_mgr(*DataHub._identifiers_manager), gCentroidsHandler(*gDataHub.gCentroidsHandler.get()) {}
 
 
 /** Converts passed string specifiying a adjustment file date to a julian date.
@@ -183,7 +183,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
                                  "       you may want to define known relative risks that apply to all locations.");
         } else {
           //Validate that tract identifer is one of those defined in the coordinates file.
-          SaTScanDataReader::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIndex);
+          SaTScanDataReader::RecordStatusType eStatus = RetrieveIdentifierIndex(*Source, TractIndex);
           if (eStatus == SaTScanDataReader::Ignored)
             continue;
           if (eStatus == SaTScanDataReader::Rejected) {
@@ -248,7 +248,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
         }
         bEmpty = false;
         //perform adjustment
-        iMaxTract = (TractIndex == -1 ? gDataHub._num_observation_groups : TractIndex + 1);
+        iMaxTract = (TractIndex == -1 ? gDataHub._num_identifiers : TractIndex + 1);
         TractIndex = (TractIndex == -1 ? 0 : TractIndex);
         for (; TractIndex < iMaxTract; ++TractIndex)
            adjustments->add(TractIndex, dRelativeRisk, StartDate, EndDate);
@@ -336,14 +336,14 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
         );
 
         if (bNoPT_Coordinates) {
-            gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+            gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
         } else if (gParameters.UseLocationNeighborsFile())
             bReturn = ReadUserSpecifiedNeighbors();
         else if (gParameters.getUseLocationsNetworkFile()) {
-            _group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+            _identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
             bReturn = ReadLocationNetworkFileAsDefinition();
         } else {
-		    _group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+		    _identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
 		    gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
 		    gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
 		    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
@@ -358,7 +358,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
         }
 
         if (bReturn && gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
-            /* If the user have selected for multiple coordinates per observation group, then read the multiple locations file. */
+            /* If the user have selected for multiple coordinates per identifier, then read the multiple locations file. */
             gPrint.SetImpliedInputFileType(BasePrint::MULTIPLE_LOCATIONS);
             gPrint.Printf("Reading the multiple locations per observation file\n", BasePrint::P_STDOUT);
             std::auto_ptr<DataSource> MLSource(DataSource::GetNewDataSourceObject(
@@ -379,10 +379,10 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                     bReturn = false;
                     break; //stop reading records, the first record defines remaining records format
                 }
-                const char * groupname = MLSource->GetValueAt(0);
+                const char * name = MLSource->GetValueAt(0);
                 const char * locationname = MLSource->GetValueAt(1);
-                switch (_group_manager.addObservationGroup(groupname, locationname)) {
-                    case ObservationGroupingManager::UnknownLocation:
+                switch (_identifier_mgr.addIdentifier(name, locationname)) {
+                    case IdentifiersManager::UnknownLocation:
                         gPrint.Printf(
                             "Error: Record %ld of the multiple coordinates file references an unknown location.\n"
                             "       '%s' is not defined in the %s file.\n", BasePrint::P_READERROR,
@@ -390,11 +390,11 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                         );
                         bReturn = false;
                         break;
-                    case ObservationGroupingManager::MultipleLocations:
-                    case ObservationGroupingManager::Accepted:
+                    case IdentifiersManager::MultipleLocations:
+                    case IdentifiersManager::Accepted:
                     default: 
                         // If we're using the multiple locations file with the network file, warn user if location is not in network.
-                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_group_manager.getLocationsManager().getLocation(locationname).first.get())) {
+                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_identifier_mgr.getLocationsManager().getLocation(locationname).first.get())) {
                             gPrint.Printf(
                                 "Warning: Record %ld of the multiple coordinates file references location '%s', which is not defined in the network file.\n",
                                 BasePrint::P_WARNING, MLSource->GetCurrentRecordIndex(), locationname
@@ -404,9 +404,9 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                 }
             }
             //signal insertions completed
-            _group_manager.additionsCompleted();
+            _identifier_mgr.additionsCompleted();
             //record number of locations read
-            gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+            gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
             //record number of centroids read
             gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
         }
@@ -453,7 +453,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
                 }
                 //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
                 //data still could be invalid, but this will be determined like the remaining records
-		        _group_manager.setExpectedCoordinateDimensions(iScanCount - 1);
+		        _identifier_mgr.setExpectedCoordinateDimensions(iScanCount - 1);
 		        coordinates.resize(iScanCount - 1, 0);
             }
             //read and validate dimensions skip to next record if error reading coordinates as double
@@ -468,10 +468,10 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
                 bValid = false;
                 continue;
             }
-            if (coordinates.size() != _group_manager.getLocationsManager().expectedDimensions()) {
+            if (!_identifier_mgr.aggregatingIdentifiers() && coordinates.size() != _identifier_mgr.getLocationsManager().expectedDimensions()) {
                 gPrint.Printf(
                     "Error: Record %ld in the coordinates file defines coordinates with %u dimension but expecting %u.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                 );
                 bValid = false;
                 continue;
@@ -480,11 +480,11 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
                 // When using the network file, we've already defined the locations of interest but w/o coordinates. So when 
                 // reading the coordinates file, we are only interested in obtaining the coordinates of the location in the
                 // network, any other locations in the coordinates file should not be added to our collection of locations.
-                switch (_group_manager.setLocationCoordinates(identifier, coordinates)) {
+                switch (_identifier_mgr.setLocationCoordinates(identifier, coordinates)) {
                     case LocationsManager::CoordinateExists:
                         gPrint.Printf(
                             "Error: Record %ld in the coordinates file is attempting to define the same coordinates to more than one location.\n",
-                            BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                            BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                         );
                         bValid = false;
                         break;
@@ -498,18 +498,18 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
                 }
                 continue;
             }
-            switch (_group_manager.addLocation(identifier, coordinates)) {
+            switch (_identifier_mgr.addLocation(identifier, coordinates)) {
                 case LocationsManager::CoordinateExists:
                     gPrint.Printf(
                         "Error: Record %ld in the coordinates file is attempting to define the same coordinates to more than one location.\n",
-                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                     );
                     bValid = false;
                     break;
                 case LocationsManager::WrongDimensions:
                     gPrint.Printf(
                         "Error: Record %ld in the coordinates file defines coordinates with %u dimension but expecting %u.\n",
-                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                     );
                     bValid = false;
                     break;
@@ -531,7 +531,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
         else if (bEmpty) { //print indication if file contained no data
             gPrint.Printf("Error: The coordinates file contains no data.\n", BasePrint::P_ERROR);
             bValid = false;
-        } else if (_group_manager.getObservationGroups().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
+        } else if (_identifier_mgr.getIdentifiers().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
             //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
             gPrint.Printf(
                 "Error: For a %s analysis, the coordinates file must contain more than one location.\n",
@@ -541,9 +541,9 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source, bool 
         }
 	    if (closeAdditions) {
 		    //signal insertions completed
-		    _group_manager.additionsCompleted();
+		    _identifier_mgr.additionsCompleted();
 		    //record number of locations read
-		    gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+		    gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
 		    //record number of centroids read
 		    gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
 	    }
@@ -564,7 +564,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
 
     try {
 	    coordinates.resize(3/*for conversion*/, 0);
-	    _group_manager.setExpectedCoordinateDimensions(3/*for conversion*/);
+	    _identifier_mgr.setExpectedCoordinateDimensions(3/*for conversion*/);
         while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
             bEmpty=false;
             if (!ReadLatitudeLongitudeCoordinates(Source, gPrint, coordinates, 1, "coordinates")) {
@@ -582,11 +582,11 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
                 // When using the network file, we've already defined the locations of interest but w/o coordinates. So when 
                 // reading the coordinates file, we are only interested in obtaining the coordinates of the location in the
                 // network, any other locations in the coordinates file should not be added to our collection of locations.
-                switch (_group_manager.setLocationCoordinates(identifier, coordinates)) {
+                switch (_identifier_mgr.setLocationCoordinates(identifier, coordinates)) {
                     case LocationsManager::CoordinateExists:
                         gPrint.Printf(
                             "Error: Record %ld in the coordinates file is attempting to define the same coordinates to more than one location.\n",
-                            BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                            BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                         );
                         bValid = false;
                         break;
@@ -600,11 +600,11 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
                 }
                 continue;
             }
-            switch (_group_manager.addLocation(identifier, coordinates)) {
+            switch (_identifier_mgr.addLocation(identifier, coordinates)) {
                 case LocationsManager::CoordinateExists:
                     gPrint.Printf(
                         "Error: Record %ld in the coordinates file is attempting to define the same coordinates to more than one location.\n",
-                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _group_manager.getLocationsManager().expectedDimensions()
+                        BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), coordinates.size(), _identifier_mgr.getLocationsManager().expectedDimensions()
                     );
                     bValid = false;
                     break;
@@ -626,7 +626,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
         else if (bEmpty) { //print indication if file contained no data
             gPrint.Printf("Error: The coordinates file contains no data.\n", BasePrint::P_ERROR);
             bValid = false;
-        } else if (_group_manager.getObservationGroups().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
+        } else if (_identifier_mgr.getIdentifiers().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
             //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
             gPrint.Printf(
                 "Error: For a %s analysis, the coordinates file must contain more than one record.\n",
@@ -636,9 +636,9 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
         }
 	    if (closeAdditions) {
 		    //signal insertions completed
-		    _group_manager.additionsCompleted();
+		    _identifier_mgr.additionsCompleted();
 		    //record number of locations read
-		    gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+		    gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
 		    //record number of centroids read
 		    gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
 	    }
@@ -706,8 +706,8 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
-    pGridPoints->setDimensions(_group_manager.getLocationsManager().expectedDimensions());
-    vCoordinates.resize(_group_manager.getLocationsManager().expectedDimensions(), 0);
+    pGridPoints->setDimensions(_identifier_mgr.getLocationsManager().expectedDimensions());
+    vCoordinates.resize(_identifier_mgr.getLocationsManager().expectedDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty = false;
@@ -717,11 +717,11 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
            continue;
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
-        if (iScanCount < _group_manager.getLocationsManager().expectedDimensions()) {
+        if (iScanCount < _identifier_mgr.getLocationsManager().expectedDimensions()) {
           gPrint.Printf("Error: Record %ld in the grid file contains %d dimension%s but the\n"
                         "       coordinates file defined the number of dimensions as %d.\n",
                         BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), iScanCount,
-                        (iScanCount == 1 ? "" : "s"), _group_manager.getLocationsManager().expectedDimensions());
+                        (iScanCount == 1 ? "" : "s"), _identifier_mgr.getLocationsManager().expectedDimensions());
           bValid = false;
           continue;
         }
@@ -855,8 +855,8 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
-    pGridPoints->setDimensions(_group_manager.getLocationsManager().expectedDimensions());
-    vCoordinates.resize(_group_manager.getLocationsManager().expectedDimensions(), 0);
+    pGridPoints->setDimensions(_identifier_mgr.getLocationsManager().expectedDimensions());
+    vCoordinates.resize(_identifier_mgr.getLocationsManager().expectedDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty=false;
@@ -895,12 +895,12 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
 /** reads data from input files for a Homogeneous Poisson probability model */
 bool SaTScanDataReader::ReadHomogeneousPoissonData() {
   try {
-    gDataHub.gDataSets.reset(new HomogeneousPoissonDataSetHandler(gDataHub, _group_manager, gCentroidsHandler, gPrint));
-	_group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+    gDataHub.gDataSets.reset(new HomogeneousPoissonDataSetHandler(gDataHub, _identifier_mgr, gCentroidsHandler, gPrint));
+	_identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
     if (!gDataHub.gDataSets->ReadData())
       return false;
     //record number of locations read
-    gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+    gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
     //record number of centroids read
     gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
   }
@@ -986,9 +986,9 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
                 bValid = false;
                 continue;
             }
-			_group_manager.addLocation(networkSource->GetValueAt(0));
+			_identifier_mgr.addLocation(networkSource->GetValueAt(0));
             if (networkSource->GetNumValues() > 1 && networkSource->GetValueAt(1))
-				_group_manager.addLocation(networkSource->GetValueAt(1));
+				_identifier_mgr.addLocation(networkSource->GetValueAt(1));
             // If any record in the network file excludes distance value, then we need to read coordinates.
             readCoordiantesFile |= networkSource->GetNumValues() == 2;
         }
@@ -1005,7 +1005,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
         }
         if (readCoordiantesFile || gParameters.requestsGeogrphaicalOutput()) {
             // Now read the coordinates file - so we can have the location coordinates on hand when we need to calculate euclidean distances or write to geographical output files.
-			//_group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+			//_identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
             gPrint.Printf("Reading the coordinates file to obtain network distances and coordinates.\n", BasePrint::P_STDOUT);
 			gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
 			std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
@@ -1022,13 +1022,13 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
         } else {
             // Didn't read coordinates file, definitely can't report location coordinates.
             gDataHub._network_can_report_coordinates = false;
-            gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+            gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
         }
 		// Now re-read the network file.
         if (bValid) {
 			gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
 			LocationsManager::LocationIdx_t firstlocation, secondlocation(boost::none, 0);
-			const LocationsManager & locations(_group_manager.getLocationsManager());
+			const LocationsManager & locations(_identifier_mgr.getLocationsManager());
 			std::vector<double> coordinatesA, coordinatesB;
 			networkSource->GotoFirstRecord();
             while (!gPrint.GetMaximumReadErrorsPrinted() && networkSource->ReadRecord()) {
@@ -1043,7 +1043,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 				firstlocation = locations.getLocation(networkSource->GetValueAt(0));
 				if (!firstlocation.first) {
                     // Network location is not already known through coordinates file, add location but we don't know it's coordinates.
-					_group_manager.addLocation(networkSource->GetValueAt(0));
+					_identifier_mgr.addLocation(networkSource->GetValueAt(0));
 					firstlocation = locations.getLocation(networkSource->GetValueAt(0));
 				}
                 const char * secondvalue = networkSource->GetValueAt(1);
@@ -1054,7 +1054,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 					secondlocation = locations.getLocation(secondvalue);
 					if (!secondlocation.first) {
                         // Network location is not already known through coordinates file, add location but we don't know it's coordinates.
-						_group_manager.addLocation(networkSource->GetValueAt(1));
+						_identifier_mgr.addLocation(networkSource->GetValueAt(1));
 						secondlocation = locations.getLocation(networkSource->GetValueAt(1));
 					}
                     if (*firstlocation.first == *secondlocation.first) {
@@ -1138,9 +1138,9 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 
             if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
                 //signal insertions completed
-                _group_manager.additionsCompleted();
+                _identifier_mgr.additionsCompleted();
                 //record number of locations read
-                gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
+                gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
                 //record number of centroids read
                 gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
             }
@@ -1168,13 +1168,13 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
         gParameters.getInputSource(MAXCIRCLEPOPFILE), gPrint)
     );
     //initialize circle-measure array
-    gDataHub.gvMaxCirclePopulation.resize(gDataHub._num_observation_groups + gDataHub.GetGroupInfo().getMetaObsGroupsManager().getNumReferenced(), 0);
+    gDataHub.gvMaxCirclePopulation.resize(gDataHub._num_identifiers + gDataHub.getIdentifierInfo().getMetaIdentifiersManager().getNumReferenced(), 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
         //Validate that tract identifer is one of those defined in the coordinates file.
-        SaTScanDataReader::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIdentifierIndex);
+        SaTScanDataReader::RecordStatusType eStatus = RetrieveIdentifierIndex(*Source, TractIdentifierIndex);
         if (eStatus == SaTScanDataReader::Ignored)
           continue;
         if (eStatus == SaTScanDataReader::Rejected) {
@@ -1214,10 +1214,10 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
     }
     //set meta locations
     std::vector<tract_t> atomicIndexes;
-    for (size_t t=0; t < gDataHub.GetGroupInfo().getMetaObsGroupsManager().getNumReferenced(); ++t) {
-       gDataHub.GetGroupInfo().getMetaObsGroupsManager().getAtomicIndexes(t, atomicIndexes);
+    for (size_t t=0; t < gDataHub.getIdentifierInfo().getMetaIdentifiersManager().getNumReferenced(); ++t) {
+       gDataHub.getIdentifierInfo().getMetaIdentifiersManager().getAtomicIndexes(t, atomicIndexes);
        for (size_t a=0; a < atomicIndexes.size(); ++a)
-         gDataHub.gvMaxCirclePopulation[(size_t)gDataHub._num_observation_groups + t] += gDataHub.gvMaxCirclePopulation[atomicIndexes[a]];
+         gDataHub.gvMaxCirclePopulation[(size_t)gDataHub._num_identifiers + t] += gDataHub.gvMaxCirclePopulation[atomicIndexes[a]];
     }
   }
   catch (prg_exception& x) {
@@ -1235,7 +1235,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
 
   try {
     if (!gParameters.UseMetaLocationsFile()) {
-		_group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+		_identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
       return true;
     }
     gPrint.Printf("Reading the meta locations file\n", BasePrint::P_STDOUT);
@@ -1271,7 +1271,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
            ++uLocation0ffset;
         }
       }
-      if(!_group_manager.getMetaObsGroupsManager().getMetaPool().addMetaObsGroup(sIdentifier, neighbors)) {
+      if(!_identifier_mgr.getMetaIdentifiersManager().getMetaPool().addMetaIdentifier(sIdentifier, neighbors)) {
         gPrint.Printf("Error: Incorrectly defined meta location at record %d of the %s.\n",
                       BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         bValid = false;
@@ -1287,7 +1287,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-	_group_manager.getMetaObsGroupsManager().getMetaPool().additionsCompleted(_group_manager);
+	_identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
   }
   catch (prg_exception& x) {
     x.addTrace("ReadMetaLocationsFile()","SaTScanDataReader");
@@ -1442,7 +1442,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     if (!ReadMetaLocationsFile()) return false;
     gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
-	_group_manager.setExpectedCoordinateDimensions(0);
+	_identifier_mgr.setExpectedCoordinateDimensions(0);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp(), true),
         gParameters.getInputSource(LOCATION_NEIGHBORS_FILE), gPrint)
@@ -1453,7 +1453,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
       gDataHub.m_nGridTracts++;
       while (Source->GetValueAt(uLocation0ffset)) {
         //insert location identifier into tract handler class
-	    _group_manager.addLocation(Source->GetValueAt(uLocation0ffset));
+	    _identifier_mgr.addLocation(Source->GetValueAt(uLocation0ffset));
         ++uLocation0ffset;
         bEmpty = false;
       }
@@ -1461,9 +1461,9 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     //second pass - allocate respective sorted array
     if (!bEmpty) {
       //record number of locations read
-	  _group_manager.additionsCompleted(gParameters.GetOutputRelativeRisksFiles());
-	  gDataHub._num_observation_groups = _group_manager.getObservationGroups().size();
-      boost::dynamic_bitset<> NeighborsSet(gDataHub._num_observation_groups);
+	  _identifier_mgr.additionsCompleted(gParameters.GetOutputRelativeRisksFiles());
+	  gDataHub._num_identifiers = _identifier_mgr.getIdentifiers().size();
+      boost::dynamic_bitset<> NeighborsSet(gDataHub._num_identifiers);
       gDataHub.AllocateSortedArray();
       Source->GotoFirstRecord();
       while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
@@ -1479,7 +1479,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
                             Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
               continue;
           }
-		  auto locationIdx = _group_manager.getObservationGroupIndex(identifier);
+		  auto locationIdx = _identifier_mgr.getIdentifierIndex(identifier);
           if (locationIdx) {
             if (NeighborsSet.test(*locationIdx)) {
               bValid = false;
@@ -1490,17 +1490,17 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
               vRecordNeighborList.push_back(*locationIdx);
             }
           } else {
-			locationIdx = boost::make_optional(_group_manager.getMetaObsGroupsManager().getMetaIndex(identifier));
-			_group_manager.getMetaObsGroupsManager().getAtomicIndexes(*locationIdx, AtomicIndexes);
+			locationIdx = boost::make_optional(_identifier_mgr.getMetaIdentifiersManager().getMetaIndex(identifier));
+			_identifier_mgr.getMetaIdentifiersManager().getAtomicIndexes(*locationIdx, AtomicIndexes);
             for (size_t t=0; t < AtomicIndexes.size(); ++t) {
               if (NeighborsSet.test(AtomicIndexes[t])) {
                 bValid = false;
                 gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
-					_group_manager.getObservationGroups()[AtomicIndexes[t]]->groupname().c_str(), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+					_identifier_mgr.getIdentifiers()[AtomicIndexes[t]]->name().c_str(), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
               }
               NeighborsSet.set(AtomicIndexes[t]);
             }
-            vRecordNeighborList.push_back(*locationIdx + gDataHub._num_observation_groups);
+            vRecordNeighborList.push_back(*locationIdx + gDataHub._num_identifiers);
           }
           ++uLocation0ffset;
           bEmpty = false;
@@ -1533,19 +1533,19 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     - if coordinates data checking is relaxed, reports warning to BasePrint object
       and returns SaTScanDataReader::Ignored; reports only first occurance
     - else returns SaTScanDataReader::Accepted */
-SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
+SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveIdentifierIndex(DataSource& Source, tract_t& tLocationIndex) {
    //Validate that tract identifer is one of those defined in the coordinates file.
-    const char * identifier = Source.GetValueAt(guLocationIndex);
+    const char * identifier = Source.GetValueAt(_identifier_column_index);
     if (!identifier) {
        gPrint.Printf("Error: Location ID is missing in record %ld of %s.\n", BasePrint::P_READERROR,
                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return SaTScanDataReader::Rejected;
     }
-	auto groupIdx = gDataHub.GetGroupInfo().getObservationGroupIndex(identifier);
-    if (!groupIdx) {
+	auto identifierIdx = gDataHub.getIdentifierInfo().getIdentifierIndex(identifier);
+    if (!identifierIdx) {
         if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
             gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
-                          gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
+                          gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(_identifier_column_index),
                           (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
             return SaTScanDataReader::Rejected;
         }
@@ -1560,7 +1560,7 @@ SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(Dat
         return SaTScanDataReader::Ignored;
 	}
 	else
-		tLocationIndex = groupIdx.get();
+		tLocationIndex = identifierIdx.get();
     return SaTScanDataReader::Accepted;
 }
 

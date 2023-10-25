@@ -7,7 +7,7 @@
 #include "SSException.h"
 
 /** Comparison function for LocationDistance objects. */
-bool CompareGroupDistance::operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs) {
+bool CompareIdentifierDistance::operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs) {
 	//first check whether distances are equal - we may need to break a tie
 	if (lhs.GetDistance() == rhs.GetDistance()) {
 		// break ties in a controlled scheme:
@@ -16,8 +16,8 @@ bool CompareGroupDistance::operator() (const DistanceToCentroid& lhs, const Dist
 		//   - if all coordinates are equal, then continue on to next set of associated coordinates
 		//   - finally compare number of associated coordinates
 
-		const ObservationGrouping::LocationsSet_t& llhs = _groups.getObservationGroups()[lhs.GetTractNumber()]->getLocations();
-		const ObservationGrouping::LocationsSet_t& rrhs = _groups.getObservationGroups()[rhs.GetTractNumber()]->getLocations();
+		const Identifier::LocationsSet_t& llhs = _identifier_mgr.getIdentifiers()[lhs.GetTractNumber()]->getLocations();
+		const Identifier::LocationsSet_t& rrhs = _identifier_mgr.getIdentifiers()[rhs.GetTractNumber()]->getLocations();
 
 		if (*(llhs[lhs.GetRelativeCoordinateIndex()]->coordinates()) == *(rrhs[rhs.GetRelativeCoordinateIndex()]->coordinates()))
 			return false; //equalness is resulting from same coordinates

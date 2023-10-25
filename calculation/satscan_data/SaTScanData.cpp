@@ -46,7 +46,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
       //possibly re-allocate and assign meta data contained in DataSet objects
       if (gParameters.UsingMultipleCoordinatesMetaLocations())
         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
-           gDataSets->GetDataSet(t).reassignMetaData(GetGroupInfo().getMetaManagerProxy());
+           gDataSets->GetDataSet(t).reassignMetaData(getIdentifierInfo().getMetaManagerProxy());
     }
     gvCentroidNeighborStore.killAll();
   }
@@ -66,7 +66,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
-    if (!gParameters.UsingMultipleCoordinatesMetaLocations() && _num_observation_groups + (tract_t)(GetGroupInfo().getMetaManagerProxy().getNumMeta()) < std::numeric_limits<unsigned short>::max()) {
+    if (!gParameters.UsingMultipleCoordinatesMetaLocations() && _num_identifiers + (tract_t)(getIdentifierInfo().getMetaManagerProxy().getNumMeta()) < std::numeric_limits<unsigned short>::max()) {
       if (!gpSortedUShortHandler)
         gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
       else
@@ -305,7 +305,7 @@ void CSaTScanData::FindNeighbors() {
     //possibly re-allocate and assign meta data contained in DataSet objects
     if (gParameters.UsingMultipleCoordinatesMetaLocations())
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
-         gDataSets->GetDataSet(t).reassignMetaData(GetGroupInfo().getMetaManagerProxy());
+         gDataSets->GetDataSet(t).reassignMetaData(getIdentifierInfo().getMetaManagerProxy());
   }
   catch (prg_exception& x) {
     x.addTrace("FindNeighbors()","CSaTScanData");
@@ -350,23 +350,23 @@ NetworkLocationContainer_t& CSaTScanData::getClusterNetworkLocations(const CClus
     }
     // Obtain the clusters centroid location.
     const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(GetGInfo())->getCentroidLocation(cluster.GetCentroidIndex());
-    const NetworkNode& centroidNode = refLocationNetwork().getNodes().find(GetGroupInfo().getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+    const NetworkNode& centroidNode = refLocationNetwork().getNodes().find(getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
     // Calculate the network expanding out from this centroid node.
     networkLocations.clear();
-    refLocationNetwork().buildNeighborsAboutNode(centroidNode, networkLocations, GetGroupInfo().getLocationsManager().locations().size());
+    refLocationNetwork().buildNeighborsAboutNode(centroidNode, networkLocations, getLocationsManager().locations().size());
 
     // Figure out which location matches the user's multiple coordinates type.
-    tract_t lastTract = GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.getNumObservationGroups(), cluster.GetCartesianRadius());
-    if (lastTract >= GetNumObsGroups()) {
+    tract_t lastTract = GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.getNumIdentifiers(), cluster.GetCartesianRadius());
+    if (lastTract >= GetNumIdentifiers()) {
         std::vector<tract_t> atomicIndexes;
-        GetGroupInfo().getMetaManagerProxy().getIndexes(lastTract - GetNumObsGroups(), atomicIndexes);
+        getIdentifierInfo().getMetaManagerProxy().getIndexes(lastTract - GetNumIdentifiers(), atomicIndexes);
         lastTract = atomicIndexes.back();
     }
     NetworkLocationContainer_t::iterator itrLastNode = networkLocations.end();
     double dCurrent = -1;
-    for (unsigned int i = 0; i < GetGroupInfo().getObservationGroups()[lastTract]->getLocations().size(); ++i) {
-        const Location * tractLocation = GetGroupInfo().getObservationGroups()[lastTract]->getLocations()[i];
-        auto tractNode = &(refLocationNetwork().getNodes().find(GetGroupInfo().getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
+    for (unsigned int i = 0; i < getIdentifierInfo().getIdentifiers()[lastTract]->getLocations().size(); ++i) {
+        const Location * tractLocation = getIdentifierInfo().getIdentifiers()[lastTract]->getLocations()[i];
+        const auto& tractNode = &(refLocationNetwork().getNodes().find(getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
         double dDistance = -1;
         for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
             if (itr->first == tractNode) {
@@ -413,8 +413,8 @@ Julian CSaTScanData::intervalIndexToJulian(unsigned int intervalIdx) const {
 
 /** Returns whether data of location at index has been removed as a result of
     being part of most likely cluster in a iterative scan.*/
-bool CSaTScanData::isNullifiedObservationGroup(tract_t tLocationIndex) const {
-   return std::find(_nullified_observation_groups.begin(), _nullified_observation_groups.end(), tLocationIndex) != _nullified_observation_groups.end();
+bool CSaTScanData::isNullifiedIdentifier(tract_t tLocationIndex) const {
+   return std::find(_nullified_identifiers.begin(), _nullified_identifiers.end(), tLocationIndex) != _nullified_identifiers.end();
 }
 
 /** For Bernoulli model, returns ratio of total cases / total population for
@@ -478,7 +478,7 @@ void CSaTScanData::Init() {
   m_nFlexibleWindowEndRangeStartIndex=0;
   m_nFlexibleWindowEndRangeEndIndex=0;
   m_nGridTracts = 0;
-  _num_observation_groups = 0;
+  _num_identifiers = 0;
   gtTotalMeasureAux = 0;
   m_nStartDate = 0;
   m_nEndDate = 0;
@@ -556,19 +556,19 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
             }
         }
 
-        stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_observation_groups - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumObservationGroups()));
+        stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_identifiers - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumIdentifiers()));
         while (thisNeighbor != stopNeighbor) {
             thisNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? thisNeighbor + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
             // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
             if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
-           && isNullifiedObservationGroup(thisNeighbor))
+           && isNullifiedIdentifier(thisNeighbor))
          continue;
-       if (thisNeighbor < _num_observation_groups)
+       if (thisNeighbor < _num_identifiers)
          RemoveTractSignificance(Cluster, thisNeighbor);
        else {//tract is a meta location
           std::vector<tract_t> atomicIndexes;
-		 _observation_groups_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_observation_groups, atomicIndexes);
-         for (auto a: atomicIndexes) { if (!isNullifiedObservationGroup(a)) RemoveTractSignificance(Cluster, a); }
+		 _identifiers_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_identifiers, atomicIndexes);
+         for (auto a: atomicIndexes) { if (!isNullifiedIdentifier(a)) RemoveTractSignificance(Cluster, a); }
        }
     }
 
@@ -581,10 +581,10 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          measure_t tAdjustedTotalMeasure=0;
          measure_t tCalibration = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
          measure_t ** ppMeasure = DataSet.getMeasureData().GetArray();
-         for (int i=0; i < GetNumTimeIntervals()-1; ++i) for (tract_t t=0; t < _num_observation_groups; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
-         for (tract_t t=0; t < _num_observation_groups; ++t) ppMeasure[GetNumTimeIntervals() - 1][t] *= tCalibration;
+         for (int i=0; i < GetNumTimeIntervals()-1; ++i) for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
+         for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[GetNumTimeIntervals() - 1][t] *= tCalibration;
          DataSet.setMeasureDataToCumulative();
-         for (tract_t t=0; t < _num_observation_groups; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
+         for (tract_t t=0; t < _num_identifiers; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
          gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
       }
@@ -758,8 +758,8 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
     }
     
     // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
-    if ((Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER || Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && !isNullifiedObservationGroup(tTractIndex))
-        _nullified_observation_groups.push_back(tTractIndex);
+    if ((Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER || Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && !isNullifiedIdentifier(tTractIndex))
+        _nullified_identifiers.push_back(tTractIndex);
 }
 
 /** Set neighbor array pointer requested type. */
@@ -984,13 +984,13 @@ void CSaTScanData::Setup() {
             }
         }
     }
-	_observation_groups_manager.reset(new ObservationGroupingManager(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
+	_identifiers_manager.reset(new IdentifiersManager(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
     if (gParameters.UseSpecialGrid())
         gCentroidsHandler.reset(new CentroidHandler());
     else if (gParameters.getUseLocationsNetworkFile())
         gCentroidsHandler.reset(new NetworkCentroidHandlerPassThrough(_locations_network));
     else
-		gCentroidsHandler.reset(new LocationsCentroidHandlerPassThrough(_observation_groups_manager->getLocationsManager()));
+		gCentroidsHandler.reset(new LocationsCentroidHandlerPassThrough(_identifiers_manager->getLocationsManager()));
     gRelativeRiskAdjustments = RiskAdjustments_t(new RelativeRiskAdjustmentHandler(*this));
   } catch (prg_exception& x) {
     x.addTrace("Setup()","CSaTScanData");
@@ -1014,12 +1014,12 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
 
   try {
     for (i=0; i < m_nTimeIntervals; ++i)
-       for (t=0; t < _num_observation_groups; ++t)
+       for (t=0; t < _num_identifiers; ++t)
           if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(ppCumulativeCases, i, t))
             throw resolvable_error("Error: For locationID '%s' in time interval %s - %s,\n"
                                    "       the expected number of cases is zero but there were cases observed.\n"
                                    "       Please review the correctness of population and case files.",
-				                   _observation_groups_manager->getObservationGroups().at(t)->groupname().c_str(),
+				                   _identifiers_manager->getIdentifiers().at(t)->name().c_str(),
                                    JulianToString(sStart, gvTimeIntervalStartTimes[i], gParameters.GetPrecisionOfTimesType()).c_str(),
                                    JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1, gParameters.GetPrecisionOfTimesType()).c_str());
   }

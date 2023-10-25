@@ -221,7 +221,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
 
             // Define a new PopulationData that will be grouped day of week covariate.
             boost::shared_ptr<PopulationData> populationData(new PopulationData());
-            populationData->SetNumTracts(gDataHub.GetNumObsGroups());
+            populationData->SetNumTracts(gDataHub.GetNumIdentifiers());
             // The weekly adjustment will have the population defined on every day in the study period.
             // Since this adjustment requires the time aggregation to be set to 1 day, just iterate through defined time interval dates.
             assert(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1);
@@ -279,7 +279,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
             // At this point, we'll have the measure data (Set.getMeasureData()) and the case data (Set.getCaseData()) in non-seasonal structure.
             // Compress the measure data to seasonal intervals -- the measure data is currently non-cumulative.
             Julian date;
-            TwoDimMeasureArray_t measures(DataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups() + gDataHub.GetNumMetaObsGroups(), 0.0);
+            TwoDimMeasureArray_t measures(DataHub.GetNumTimeIntervals(), gDataHub.GetNumIdentifiers() + gDataHub.GetNumMetaIdentifiers(), 0.0);
             measure_t ** ppMeasure = measures.GetArray();
             for (int i=0; i < DataHub.CSaTScanData::GetNumTimeIntervals() - 1; ++i) {
                 measure_t nmeasure = Set.getMeasureData().GetArray()[i][0];
@@ -289,7 +289,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
                 }
             }
             // Compress the case data to seasonal intervals -- the case data is currently cumulative.
-            TwoDimCountArray_t cases(DataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups() + gDataHub.GetNumMetaObsGroups(), 0);
+            TwoDimCountArray_t cases(DataHub.GetNumTimeIntervals(), gDataHub.GetNumIdentifiers() + gDataHub.GetNumMetaIdentifiers(), 0);
             count_t ** ppCases = cases.GetArray();
             for (int i=0; i < DataHub.CSaTScanData::GetNumTimeIntervals() - 1; ++i) {
                 count_t ncases = Set.getCaseData().GetArray()[i][0] - Set.getCaseData().GetArray()[i + 1][0];
@@ -325,7 +325,7 @@ double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, c
         if (!DataHub.GetParameters().UsePopulationFile() || Cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
             throw prg_error("CPoissonModel::GetPopulation() is not implemented when not using population file or purely temporal clusters.", "GetPopulation()");
 
-        for (tract_t tIdx=1; tIdx <= Cluster.getNumObservationGroups(); ++tIdx) {
+        for (tract_t tIdx=1; tIdx <= Cluster.getNumIdentifiers(); ++tIdx) {
             tract_t ttractIdx = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), tIdx, Cluster.GetCartesianRadius());
             population += GetLocationPopulation(tSetIndex, ttractIdx, Cluster, DataHub);
         }
@@ -347,15 +347,15 @@ double CPoissonModel::GetLocationPopulation(size_t tSetIndex, tract_t tractIdx, 
     double population = 0.0;
     int ncats = Population.GetNumCovariateCategories();
     int nPops = static_cast<int>(Population.GetNumPopulationDates());
-    if (static_cast<size_t>(tractIdx) < DataHub.GetGroupInfo().getObservationGroups().size()) {
-        if (!DataHub.isNullifiedObservationGroup(tractIdx))
+    if (static_cast<size_t>(tractIdx) < DataHub.getIdentifierInfo().getIdentifiers().size()) {
+        if (!DataHub.isNullifiedIdentifier(tractIdx))
             for (int c=0; c < ncats; ++c)
                 Population.GetAlphaAdjustedPopulation(population, tractIdx, c, 0, nPops, _alpha);
     } else {
         std::vector<tract_t> AtomicIndexes;
-		DataHub.GetGroupInfo().getMetaManagerProxy().getIndexes(static_cast<size_t>(tractIdx) - DataHub.GetGroupInfo().getObservationGroups().size(), AtomicIndexes);
+		DataHub.getIdentifierInfo().getMetaManagerProxy().getIndexes(static_cast<size_t>(tractIdx) - DataHub.getIdentifierInfo().getIdentifiers().size(), AtomicIndexes);
         for (size_t a=0; a < AtomicIndexes.size(); ++a) {
-            if (!DataHub.isNullifiedObservationGroup(AtomicIndexes[a]))
+            if (!DataHub.isNullifiedIdentifier(AtomicIndexes[a]))
                 for (int c=0; c < ncats; ++c)
                     Population.GetAlphaAdjustedPopulation(population, AtomicIndexes[a], c, 0, nPops, _alpha);
         }

@@ -40,9 +40,9 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
 /** For each data set, assigns data at meta location indexes. */
 void ExponentialDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.GetGroupInfo().getMetaManagerProxy());
-    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
   }
 }
 
@@ -50,7 +50,7 @@ void ExponentialDataSetHandler::assignMetaData(RealDataContainer_t& Container) c
 AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -102,7 +102,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
 AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -156,8 +156,8 @@ void ExponentialDataSetHandler::RandomizeData(RandomizerContainer_t& Container, 
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-      (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+      (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
     }  
   }
 }
@@ -242,7 +242,7 @@ bool ExponentialDataSetHandler::ReadData() {
     messages to BasePrint object and returns RecordStatusType. */
 DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute) {
     try {
-        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid); //read and validate that tract identifier
+        DataSetHandler::RecordStatusType eStatus = RetrieveIdentifierIndex(Source, tid); //read and validate that tract identifier
         if (eStatus != DataSetHandler::Accepted) return eStatus;
         eStatus = RetrieveCaseCounts(Source, tPatients); // read and validate count
         if (eStatus != DataSetHandler::Accepted) return eStatus;

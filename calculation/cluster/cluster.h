@@ -26,8 +26,8 @@ class CCluster {
 
   protected:
     tract_t                       m_Center;                // Center of cluster (index to grid)
-    tract_t                       _central_observation_group; // Index of most central observation group in cluster
-    tract_t                       _num_observation_groups;               // Number of neighboring observations groups in cluster
+    tract_t                       _central_identifier;     // Index of most central identifier in cluster
+    tract_t                       _num_identifiers;        // Number of neighboring identifiers in cluster
     double                        m_CartesianRadius;       // radius based upon locations in cluster in Cartesian system
     unsigned int                  m_nRank;                 // Rank based on results of simulations
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
@@ -35,7 +35,7 @@ class CCluster {
     mutable ReportCache_t       * gpCachedReportLines;
 	mutable bool                  _gini_cluster;           // indicates that cluster is gini cluster
     mutable bool                  _hierarchical_cluster;   // indicates that cluster is hierarchical cluster
-    mutable double                _span_of_locations;    // the distance between furthest locations in cluster
+    mutable double                _span_of_locations;      // the distance between furthest locations in cluster
 
     void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=0) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
@@ -62,7 +62,7 @@ class CCluster {
     DataSetIndexes_t              getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const;
 	int                           getClusterLength() const { return m_nLastInterval - m_nFirstInterval + 1;	}
     virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
-    virtual bool                  ClusterDefined() const {return _num_observation_groups > 0;}
+    virtual bool                  ClusterDefined() const {return _num_identifiers > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();
     virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const;
@@ -102,10 +102,10 @@ class CCluster {
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        getLocationsSpan(const CSaTScanData& DataHub) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
-    virtual std::vector<tract_t>& getGroupIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
-    tract_t                       mostCentralObservationGroupIdx() const;
-    virtual tract_t               getNumObservationGroups() const {return _num_observation_groups;}
-    virtual tract_t               numNonNullifiedObservationGroupsInCluster(const CSaTScanData& DataHub) const;
+    virtual std::vector<tract_t>& getIdentifierIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
+    tract_t                       mostCentralIdentifierIdx() const;
+    virtual tract_t               getNumIdentifiers() const {return _num_identifiers;}
+    virtual tract_t               numNonNullifiedIdentifiersInCluster(const CSaTScanData& DataHub) const;
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
     virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetObservedCountForTract().", "GetObservedCountForTract()"); return 0; }
 	virtual count_t               GetCountForTractOutside(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex = 0) const { throw prg_error("GetCountForTractOutside().", "GetCountForTractOutside()"); return 0; }
@@ -130,7 +130,6 @@ class CCluster {
     bool                          isGiniCluster() const {return _gini_cluster;}
     bool                          isHierarchicalCluster() const { return _hierarchical_cluster; }
     boost::logic::tribool         isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
-    virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     static bool                   reportablePValue(const CParameters& parameters, const SimulationVariables& simVars);
@@ -140,14 +139,9 @@ class CCluster {
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
     void                          setAsGiniCluster(bool b) { _gini_cluster = b;}
     void                          setAsHierarchicalCluster(bool b) { _hierarchical_cluster = b; }
-    virtual void                  setMostCentralObservationGroup(const CSaTScanData& DataHub);
+    virtual void                  setMostCentralIdentifier(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
-    virtual void                  Write(LocationInformationWriter& LocationWriter, 
-                                        const CSaTScanData& DataHub,
-                                        unsigned int iReportedCluster,
-                                        const SimulationVariables& simVars,
-                                        const LocationRelevance& location_relevance) const;
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.
@@ -158,12 +152,9 @@ class CCluster {
 template <class T>
 T & GetClusterDataAsType(AbstractClusterData& DataObject) {
   T * t;
-
   if ( (t = dynamic_cast<T*>( &DataObject ) ) == 0 )
     throw prg_error("Unable to dynamically cast to type.","GetClusterDataAsType()");
-
   return *t;
 }
-
 //*****************************************************************************
 #endif

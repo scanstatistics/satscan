@@ -43,8 +43,8 @@ CPurelySpatialCluster::~CPurelySpatialCluster() {
 /** overloaded assignment operator */
 CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialCluster& rhs) {
   m_Center                = rhs.m_Center;
-  _central_observation_group   = rhs._central_observation_group;
-  _num_observation_groups               = rhs._num_observation_groups;
+  _central_identifier     = rhs._central_identifier;
+  _num_identifiers        = rhs._num_identifiers;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   _ratio_sets             = rhs._ratio_sets;
@@ -59,8 +59,8 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
 
 void CPurelySpatialCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_Center                = ((CPurelySpatialCluster&)rhs).m_Center;
-  _central_observation_group   = ((CPurelySpatialCluster&)rhs)._central_observation_group;
-  _num_observation_groups               = ((CPurelySpatialCluster&)rhs)._num_observation_groups;
+  _central_identifier     = ((CPurelySpatialCluster&)rhs)._central_identifier;
+  _num_identifiers        = ((CPurelySpatialCluster&)rhs)._num_identifiers;
   m_CartesianRadius       = ((CPurelySpatialCluster&)rhs).m_CartesianRadius;
   m_nRatio                = ((CPurelySpatialCluster&)rhs).m_nRatio;
   _ratio_sets             = ((const CPurelySpatialCluster&)rhs)._ratio_sets;
@@ -81,7 +81,7 @@ void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const Abs
   tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
   unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
   for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
-    ++_num_observation_groups;
+    ++_num_identifiers;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     _ratio_sets = gpClusterData->getRatioSets(Calculator);
@@ -125,8 +125,8 @@ std::string& CPurelySpatialCluster::GetStartDate(std::string& sDateString, const
 /** re-initializes cluster data */
 void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
-  _central_observation_group = -1;
-  _num_observation_groups = 0;
+  _central_identifier = -1;
+  _num_identifiers = 0;
   m_nRatio = -std::numeric_limits<double>::max();
   m_CartesianRadius = -1;
   gpClusterData->InitializeData();

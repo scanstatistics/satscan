@@ -35,7 +35,7 @@ class CentroidNeighborCalculator {
     const measure_t           * gpMaxCircleFilePopulation;
     const CParameters         & gParameters;
     const GInfo               & gCentroidInfo;
-	const ObservationGroupingManager& _observation_groups;
+	const IdentifiersManager &  _identifier_mgr;
 	BasePrint                 & gPrintDirection;
     tract_t                     gtCurrentEllipseCoordinates;
     std::vector<measure_t>      gvCalculatedPopulations;
@@ -75,7 +75,7 @@ class CentroidNeighborCalculator {
 
   public:
     CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection);
-    CentroidNeighborCalculator(const CSaTScanData& DataHub, const ObservationGroupingManager& groupInfo, const GInfo& gridInfo, BasePrint& PrintDirection);
+    CentroidNeighborCalculator(const CSaTScanData& DataHub, const IdentifiersManager& identifierMgr, const GInfo& gridInfo, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculator();
 
     void                        CalculateNeighbors(const CSaTScanData& dataHub);

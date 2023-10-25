@@ -41,8 +41,8 @@ DataSource::OrderedLineListField_t& DataSource::getOrderedLinelistFieldsMap(Orde
 /* Returns whether event id is in defined in list list attributes. */
 bool DataSource::hasEventIdLinelistMapping() const {
     if (boost::logic::indeterminate(_has_event_id)) {
-        for (auto fieldMap : _linelist_fields_map)
-            if (fieldMap.second.get<0>() == EVENT_ID) {
+        for (const auto& fieldMap : _linelist_fields_map)
+            if (fieldMap.second.get<0>() == INDIVIDUAL_ID) {
                 _has_event_id = true;
                 return _has_event_id;
             }
@@ -54,9 +54,9 @@ bool DataSource::hasEventIdLinelistMapping() const {
 /* Returns whether event x/y are defined in list list attributes. */
 bool DataSource::hasEventCoordinatesLinelistMapping() const {
     bool x = false, y = false;
-    for (auto fieldMap : _linelist_fields_map) {
-        x |= fieldMap.second.get<0>() == EVENT_COORD_X;
-        y |= fieldMap.second.get<0>() == EVENT_COORD_Y;
+    for (const auto& fieldMap : _linelist_fields_map) {
+        x |= fieldMap.second.get<0>() == DESCRIPTIVE_COORD_X;
+        y |= fieldMap.second.get<0>() == DESCRIPTIVE_COORD_Y;
     }
     return x && y;
 }

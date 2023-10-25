@@ -54,7 +54,7 @@ void CSVTTData::DisplayCounts(FILE* pFile,
   fprintf(pFile, "Counts                         Counts - Not Accumulated\n\n");
 
   for (int i = 0; i < GetNumTimeIntervals(); i++)
-    for (int j = 0; j < _num_observation_groups; j++)
+    for (int j = 0; j < _num_identifiers; j++)
     {
       fprintf(pFile, "%s [%i][%i] = %6li     ", szVarName, i,j,pCounts[i][j]);
       fprintf(pFile, "%s [%i][%i] = %6li\n", szVarNameNC, i,j,pCountsNC[i][j]);
@@ -81,7 +81,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) const {
      ppMeasure = gDataSets->GetDataSet(k).getMeasureData().GetArray();
      ppMeasureNC = gDataSets->GetDataSet(k).getMeasureData_NC().GetArray();
      for (i=0; i < (unsigned int)GetNumTimeIntervals(); ++i)
-        for (j=0; j < (unsigned int)_num_observation_groups; ++j) {
+        for (j=0; j < (unsigned int)_num_identifiers; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
            fprintf(pFile, "ppMeasure_NC [%i][%i] = %12.5f\n", i, j, ppMeasureNC[i][j]);
         }

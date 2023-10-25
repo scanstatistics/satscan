@@ -21,7 +21,7 @@ public class InputSourceSettings implements Cloneable  {
         Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR,
         NETWORK, Neighbors, MetaLocations, AlternativeHypothesis, Multiple_Locations
     };
-    public enum LinelistType {EVENT_ID, EVENT_COORD_Y, EVENT_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA};
+    public enum LinelistType {INDIVIDUAL_ID, DESCRIPTIVE_COORD_Y, DESCRIPTIVE_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA};
     
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;
@@ -151,9 +151,9 @@ public class InputSourceSettings implements Cloneable  {
         boolean event=false, eventx=false, eventy=false;
         for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : _linelist_field_map.entrySet()) {
             switch (mapEntry.getValue().getLeft()) {
-                case EVENT_ID: event = true; break;
-                case EVENT_COORD_X: eventx = true; break;
-                case EVENT_COORD_Y: eventy = true; break;
+                case INDIVIDUAL_ID: event = true; break;
+                case DESCRIPTIVE_COORD_X: eventx = true; break;
+                case DESCRIPTIVE_COORD_Y: eventy = true; break;
             }
         }
         return Pair.of(event, eventx && eventy);

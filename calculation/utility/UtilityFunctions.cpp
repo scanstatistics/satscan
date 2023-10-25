@@ -754,7 +754,7 @@ bool sendMail(const std::string& from, const std::vector<std::string>& to, const
     // Build curl command with parameters.
     destination.str("");
     destination << "curl -v " << (boost::starts_with(mailserver, "smtp://") || boost::starts_with(mailserver, "smtps://") ? "" : "smtp://") << mailserver;
-    for (auto rcpt : to) destination << " --mail-rcpt " << rcpt;
+    for (const auto& rcpt : to) destination << " --mail-rcpt " << rcpt;
     destination << " --mail-from " << from << " -T " << mail_file << " " << additionalpass;
 #if defined(_WINDOWS_)
     destination << " 1> " << buffer << " 2>&1";

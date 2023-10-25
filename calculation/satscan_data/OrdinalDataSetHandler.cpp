@@ -45,14 +45,14 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
 /** For each data set, assigns data at meta location indexes. */
 void OrdinalDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr)
-    (*itr)->setCaseDataCatMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setCaseDataCatMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
 }
 
 /** returns data gateway for real data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -99,7 +99,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
 AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -150,7 +150,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
 DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, std::string& categoryTypeLabel) {
     try {
         //read and validate that tract identifier exists in coordinates file
-        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+        DataSetHandler::RecordStatusType eStatus = RetrieveIdentifierIndex(Source, tid);
         if (eStatus != DataSetHandler::Accepted) return eStatus;
         eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
         if (eStatus != DataSetHandler::Accepted) return eStatus;
@@ -189,7 +189,7 @@ void OrdinalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simu
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseDataCatMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setCaseDataCatMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
   }
 }
 

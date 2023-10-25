@@ -8,6 +8,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
 
+/* Abtract base class for a demographic attribute. */
 class DemographicAttribute {
     protected:
         std::string _label;
@@ -22,6 +23,7 @@ class DemographicAttribute {
         virtual void print() const = 0;
 };
 
+/* Implements DemographicAttribute class to define a general demographic attribute. */
 class GeneralDemographicAttribute : public DemographicAttribute {
     private:
         LinelistType _true_type;
@@ -36,6 +38,7 @@ class GeneralDemographicAttribute : public DemographicAttribute {
         virtual void print() const {}
 };
 
+/* Implements DemographicAttribute class to define a categorical demographic attribute. */
 class CategoricalDemographicAttribute: public DemographicAttribute {
     protected:
         std::map<std::string, unsigned int> _category_counts;
@@ -49,6 +52,7 @@ class CategoricalDemographicAttribute: public DemographicAttribute {
         virtual void print() const;
 };
 
+/* Implements DemographicAttribute class to define a continuous demographic attribute. */
 class ContinuousDemographicAttribute : public DemographicAttribute {
     protected:
         std::vector<double> _values;
@@ -62,6 +66,7 @@ class ContinuousDemographicAttribute : public DemographicAttribute {
         virtual void print() const;
 };
 
+/* A class to collect demographic attributes of a data set. */
 class DemographicAttributeSet {
     protected:
         typedef std::map<std::string, boost::shared_ptr<DemographicAttribute> > AttributesSet_t;
@@ -84,6 +89,9 @@ class RealDataSet;
 class CCluster;
 class CParameters;
 
+/* A class which processes the line list attributes in the case files and facilitates generating csv, kml and maps output files.
+   In the case file, we're identifying an event through the 'identifier' column. This column might be a ss#, zipcode, etc.
+*/
 class DataDemographicsProcessor{
     public:
         typedef std::map<int, std::pair<unsigned int, unsigned int> > ClusterEventCounts_t;

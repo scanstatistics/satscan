@@ -18,7 +18,7 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
     // update meta structures as necessary
     if (_execution.getParameters().UseMetaLocationsFile() || _execution.getParameters().UsingMultipleCoordinatesMetaLocations())
         for (SimulationDataContainer_t::iterator itr=_simulation_data_container->begin(); itr != _simulation_data_container->end(); ++itr)
-            (*itr)->setCaseDataMeta(_execution.getDataHub().GetGroupInfo().getMetaManagerProxy());
+            (*itr)->setCaseDataMeta(_execution.getDataHub().getIdentifierInfo().getMetaManagerProxy());
     macroRunTimeStopSerial();
 
     //calculate most likely clusters

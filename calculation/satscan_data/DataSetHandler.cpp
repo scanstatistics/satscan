@@ -10,7 +10,7 @@
 #include "ClosedLoopData.h"
 #include "DataDemographics.h"
 
-const short DataSetHandler::guLocationIndex             = 0;
+const short DataSetHandler::_identifier_column_index    = 0;
 const short DataSetHandler::guCountIndex                = 1;
 const short DataSetHandler::guCountDateIndex            = 2;
 const short DataSetHandler::guCountCategoryIndexNone    = 2;
@@ -72,7 +72,7 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gDataHub.GetNumDataSets(); ++t)
-	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups(), gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(), gParameters, t + 1));
+	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumIdentifiers(), gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(), gParameters, t + 1));
   return AllocateSimulationData(Container);
 }
 
@@ -137,11 +137,11 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
         if (gParameters.getCasefileIncludesLineData() && Source->getFieldsMap().size() == 0 && Source->getLinelistFieldsMap().size() == 0) {
             if (!Source->ReadRecord()) throw resolvable_error("Error: Case file is empty.");
             // Define the types of colummns in the line-list meta row.
-            std::string event_id_type("<eventid>"), xcoord_type("<event-longitude>"), ycoord_type("<event-latitude>"), linelist_type("<linelist>"),
-                        covariate_type("<covariate>"), locationid_type("<locationid>"), count_type("<#cases>"), date_type("<time>"),
+            std::string individual_id_type("<individual-id>"), xcoord_type("<descriptive-longitude>"), ycoord_type("<descriptive-latitude>"), linelist_type("<linelist>"),
+                        covariate_type("<covariate>"), identifier_type("<identifier>"), count_type("<#cases>"), date_type("<time>"),
                         attribute_type("<attribute>"), censored_type("<censored>"), weight_type("<weight>");
             std::map<std::string, long> mapped_columns = {
-                { locationid_type, -1 },{ count_type, -1 } ,{ date_type, -1 },{ attribute_type, -1 },{ censored_type, -1 },{ weight_type, -1 }
+                { identifier_type, -1 },{ count_type, -1 } ,{ date_type, -1 },{ attribute_type, -1 },{ censored_type, -1 },{ weight_type, -1 }
             };
             std::vector<std::string> meta_record;
             while (Source->GetValueAt(static_cast<long>(meta_record.size())))
@@ -164,15 +164,15 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             std::vector<long> covariates;
             LineListFieldMapContainer_t fields_map;
             for (size_t t=0; t < meta_record.size(); ++t) {
-                if (meta_record[t] == event_id_type) {
-                    label = (header_record.size() ? header_record[t] : event_id_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_ID, label)));
+                if (meta_record[t] == individual_id_type) {
+                    label = (header_record.size() ? header_record[t] : individual_id_type);
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(INDIVIDUAL_ID, label)));
                 } else if (meta_record[t] == xcoord_type) {
                     label = (header_record.size() ? header_record[t] : xcoord_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_X, label)));
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(DESCRIPTIVE_COORD_X, label)));
                 } else if (meta_record[t] == ycoord_type) {
                     label = (header_record.size() ? header_record[t] : ycoord_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(EVENT_COORD_Y, label)));
+                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(DESCRIPTIVE_COORD_Y, label)));
                 } else if (meta_record[t] == linelist_type) {
                     ++numLineList;
                     fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(
@@ -191,8 +191,8 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             }
             // Now define the field maps based on types read from line list and user settings.
             std::vector<boost::any> map;
-            if (mapped_columns[locationid_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", locationid_type.c_str());
-            map.push_back(mapped_columns[locationid_type]);
+            if (mapped_columns[identifier_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", identifier_type.c_str());
+            map.push_back(mapped_columns[identifier_type]);
             if (mapped_columns[count_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", count_type.c_str());
             map.push_back(mapped_columns[count_type]);
             if (gParameters.GetPrecisionOfTimesType() != NONE) {
@@ -467,7 +467,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
     and DataSetHandler::Rejected is returned. */
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
     try {
-        DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid); //read and validate that tract identifier
+        DataSetHandler::RecordStatusType eStatus = RetrieveIdentifierIndex(Source, tid); //read and validate that tract identifier
         if (eStatus != DataSetHandler::Accepted) return eStatus;
         eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count
         if (eStatus != DataSetHandler::Accepted) return eStatus;
@@ -556,48 +556,45 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
     return true;
 }
 
-/** Retrieves location id index from data source. If location id not found:
-    - if coordinates data checking is strict, reports error to BasePrint object
-      and returns SaTScanDataReader::Rejected
-    - if coordinates data checking is relaxed, reports warning to BasePrint object
-      and returns SaTScanDataReader::Ignored; reports only first occurance
+/** Retrieves the identifier index from data source. If identifier not found:
+    - if coordinates data checking is strict, reports error to BasePrint object and returns SaTScanDataReader::Rejected
+    - if coordinates data checking is relaxed, reports warning to BasePrint object and returns SaTScanDataReader::Ignored; reports only first occurance
     - else returns SaTScanDataReader::Accepted */
-DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const {
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveIdentifierIndex(DataSource& Source, tract_t& tLocationIndex) const {
     //Validate that tract identifer is one of those defined in the coordinates file.
-    const char * identifier = Source.GetValueAt(guLocationIndex);
+    const char * identifier = Source.GetValueAt(_identifier_column_index);
     if (!identifier || strlen(identifier) == 0) {
         gPrint.Printf("Error: Missing identifier is missing in record %ld of %s.\n", BasePrint::P_READERROR,
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
     }
-	auto groupIdx = gDataHub.GetGroupInfo().getObservationGroupIndex(identifier);
-    if (!groupIdx) {
-        std::string locationSource;
+	auto identifierIdx = gDataHub.getIdentifierInfo().getIdentifierIndex(identifier);
+    if (!identifierIdx) {
+        std::string identifierSource;
         if (gParameters.UseLocationNeighborsFile()) 
-            locationSource = gPrint.getSourceFilenameForType(BasePrint::LOCATION_NEIGHBORS_FILE);
+            identifierSource = gPrint.getSourceFilenameForType(BasePrint::LOCATION_NEIGHBORS_FILE);
         else if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION)
-            locationSource = gPrint.getSourceFilenameForType(BasePrint::MULTIPLE_LOCATIONS);
+            identifierSource = gPrint.getSourceFilenameForType(BasePrint::MULTIPLE_LOCATIONS);
         else 
-            locationSource = gParameters.getUseLocationsNetworkFile() ? gPrint.getSourceFilenameForType(BasePrint::NETWORK_FILE) : gPrint.getSourceFilenameForType(BasePrint::COORDFILE);
+            identifierSource = gParameters.getUseLocationsNetworkFile() ? gPrint.getSourceFilenameForType(BasePrint::NETWORK_FILE) : gPrint.getSourceFilenameForType(BasePrint::COORDFILE);
         if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
             gPrint.Printf(
                 "Error: Unknown identifier in %s, record %ld. '%s' was not specified in the %s.\n", BasePrint::P_READERROR,
-                gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex), locationSource.c_str()
+                gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(_identifier_column_index), identifierSource.c_str()
             );
             return DataSetHandler::Rejected;
         }
-        // Report to user if the data checking option is ignoring locations - because the user requested relaxed checking, that is unless
-        // this is a drilldown where we set this option programmatically.
+        // Report to user if the data checking option is ignoring identifiers because the user requested relaxed checking, that is unless this is a drilldown where we set this option programmatically.
         if (!gDataHub.isDrilldown() && std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
             gPrint.Printf(
                 "Warning: Some records in %s reference an identifier that was not specified in the %s.\n"
-                "         These will be ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(), locationSource.c_str()
+                "         These will be ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(), identifierSource.c_str()
             );
             gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
         }
         return DataSetHandler::Ignored;
     }
-	tLocationIndex = static_cast<tract_t>(groupIdx.get());
+	tLocationIndex = static_cast<tract_t>(identifierIdx.get());
     return DataSetHandler::Accepted;
 }
 
@@ -618,7 +615,7 @@ void DataSetHandler::Setup() {
         bool downCast = dynamic_cast<ClosedLoopData*>(&gDataHub) != 0 && gParameters.GetProbabilityModelType() == POISSON;
         int intervals = downCast ? gDataHub.CSaTScanData::GetNumTimeIntervals() : gDataHub.GetNumTimeIntervals();
         for (unsigned int i=0; i < gParameters.getNumFileSets(); ++i)
-            gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumObsGroups(), gDataHub.GetNumMetaObsGroups(), gParameters, i + 1));
+            gvDataSets.push_back(new RealDataSet(intervals, gDataHub.GetNumIdentifiers(), gDataHub.GetNumMetaIdentifiers(), gParameters, i + 1));
     } catch (prg_exception& x) {
         x.addTrace("Setup()","DataSetHandler");
         throw;

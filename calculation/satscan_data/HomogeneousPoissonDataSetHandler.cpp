@@ -8,8 +8,8 @@
 #include "DataSource.h"
 #include "SSException.h"
 
-HomogeneousPoissonDataSetHandler::HomogeneousPoissonDataSetHandler(CSaTScanData& DataHub, ObservationGroupingManager& groups, GInfo& CentroidsHandler, BasePrint& Print)
-    :DataSetHandler(DataHub, Print), _groups(groups), gCentroidsHandler(CentroidsHandler) {
+HomogeneousPoissonDataSetHandler::HomogeneousPoissonDataSetHandler(CSaTScanData& DataHub, IdentifiersManager& identifierMgr, GInfo& CentroidsHandler, BasePrint& Print)
+    :DataSetHandler(DataHub, Print), _identifier_mgr(identifierMgr), gCentroidsHandler(CentroidsHandler) {
   try {
     // for each region defined, define regions from specifications
     for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
@@ -36,7 +36,7 @@ SimulationDataContainer_t& HomogeneousPoissonDataSetHandler::AllocateSimulationD
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & HomogeneousPoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta());
 
   try {
     DataGatway.Clear();
@@ -84,7 +84,7 @@ RandomizerContainer_t& HomogeneousPoissonDataSetHandler::GetRandomizerContainer(
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & HomogeneousPoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
-  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta());
 
   try {
     DataGatway.Clear();
@@ -121,7 +121,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
   std::vector<double>   vCoordinates(2);
   count_t               tTotalCases=0;
 
-  _groups.setExpectedCoordinateDimensions(iScanCount);
+  _identifier_mgr.setExpectedCoordinateDimensions(iScanCount);
 
   try {
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
@@ -154,10 +154,10 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
            continue;
          }
          //validate that we read the correct number of coordinates
-         if (iScanCount < _groups.getLocationsManager().expectedDimensions()) {
+         if (iScanCount < _identifier_mgr.getLocationsManager().expectedDimensions()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
            gPrint.Printf("Error: Record %ld in the coordinate file contains %d dimension%s but expecting %d.\n", BasePrint::P_READERROR,
-                         Source.GetCurrentRecordIndex(), iScanCount, (iScanCount == 1 ? "" : "s"), _groups.getLocationsManager().expectedDimensions());
+                         Source.GetCurrentRecordIndex(), iScanCount, (iScanCount == 1 ? "" : "s"), _identifier_mgr.getLocationsManager().expectedDimensions());
            bValid = false;
            continue;
          }
@@ -173,7 +173,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
          }
          
          //check that coordinates of case are not already defined
-         if (_groups.getLocationsManager().getCoordinatesExist(vCoordinates)) {
+         if (_identifier_mgr.getLocationsManager().getCoordinatesExist(vCoordinates)) {
              gPrint.Printf("Error: Record %ld in the coordinate file contains a duplicate coordinate.\n"
                            "       In the continuous Poisson model, two cases cannot have exactly the same location.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
              bValid = false;
@@ -181,14 +181,14 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
 
          //add the tract identifier and coordinates to tract handler
          if (bHasIdentifier) 
-			 _groups.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
+			 _identifier_mgr.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
          else {
              std::stringstream identifier;
              identifier << "point" << Source.GetCurrentRecordIndex();
-			 _groups.addLocation(identifier.str(), vCoordinates);
+			 _identifier_mgr.addLocation(identifier.str(), vCoordinates);
          }
     }
-    tTotalCases = _groups.getObservationGroups().size();
+    tTotalCases = _identifier_mgr.getIdentifiers().size();
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
@@ -235,8 +235,8 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
     focusInterval.first = false;
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
-    pGridPoints->setDimensions(_groups.getLocationsManager().expectedDimensions());
-    vCoordinates.resize(_groups.getLocationsManager().expectedDimensions(), 0);
+    pGridPoints->setDimensions(_identifier_mgr.getLocationsManager().expectedDimensions());
+    vCoordinates.resize(_identifier_mgr.getLocationsManager().expectedDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty = false;
@@ -246,11 +246,11 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
            continue;
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
-        if (iScanCount < _groups.getLocationsManager().expectedDimensions()) {
+        if (iScanCount < _identifier_mgr.getLocationsManager().expectedDimensions()) {
           gPrint.Printf("Error: Record %ld in the grid file contains %d dimension%s but the\n"
                         "       coordinates file defined the number of dimensions as %d.\n",
                         BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), iScanCount,
-                        (iScanCount == 1 ? "" : "s"), _groups.getLocationsManager().expectedDimensions());
+                        (iScanCount == 1 ? "" : "s"), _identifier_mgr.getLocationsManager().expectedDimensions());
           bValid = false;
           continue;
         }
@@ -336,7 +336,7 @@ bool HomogeneousPoissonDataSetHandler::ReadData() {
             if (!ReadCoordinatesFile(GetDataSet(t))) return false;
         }
         //signal insertions completed
-		_groups.additionsCompleted();
+		_identifier_mgr.additionsCompleted();
         if (gParameters.UseSpecialGrid()) {
             gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
             gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);

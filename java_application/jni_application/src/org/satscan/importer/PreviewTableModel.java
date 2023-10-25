@@ -20,7 +20,7 @@ public class PreviewTableModel extends AbstractTableModel {
     ArrayList<Object> _column_names;
     protected boolean _show_generatedId=true;
     protected boolean _show_oneCount=true;
-    protected String _non_datasource_column_suffix=" #";
+    protected String _non_datasource_column_suffix=" *";
 
     /** Constructs a new PreviewTableModel object. */
     public PreviewTableModel(ImportDataSource data_source, boolean show_generatedId, boolean show_oneCount) {

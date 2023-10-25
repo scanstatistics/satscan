@@ -3260,9 +3260,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         tryCSV = inputSourceSettings.getFieldMaps().size() == 0;
                         for (Map.Entry<Integer, Pair<LinelistType, String>> entry : inputSourceSettings.getLinelistFieldMaps().entrySet()) {
                             switch (entry.getValue().getLeft()) {
-                                case EVENT_ID:
-                                case EVENT_COORD_Y:
-                                case EVENT_COORD_X: break;
+                                case INDIVIDUAL_ID:
+                                case DESCRIPTIVE_COORD_Y:
+                                case DESCRIPTIVE_COORD_X: break;
                                 default:
                                 if (!values.contains(entry.getValue().getRight())) {
                                     MenuItem mi = new MenuItem(entry.getValue().getRight());
@@ -6799,14 +6799,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _panel_linelist.setBorder(javax.swing.BorderFactory.createTitledBorder("Case File Line List Columns"));
 
-        _checkbox_casefile_metarow.setText("Case file includes event characteristics meta row.");
+        _checkbox_casefile_metarow.setText("Case file includes meta row to define line list attributes.");
         _checkbox_casefile_metarow.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 _checkbox_casefile_metarowActionPerformed(evt);
             }
         });
 
-        _checkbox_casefile_header.setText("Case file includes header row which names event characteristics.");
+        _checkbox_casefile_header.setText("Case file includes header row to name line list attribute columns.");
 
         _label_linelist_filewizard.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         _label_linelist_filewizard.setText("* Line list data for the case file has already been defined through the file wizard. *");
@@ -6835,9 +6835,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Event Level Data"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Identifier Level Data"));
 
-        _event_cache_label.setText("Events Cache (stores previously seen event ids of significant clusters):"); // NOI18N
+        _event_cache_label.setText("Identifier Cache (stores previously seen identifiers of significant clusters):"); // NOI18N
 
         _event_cache_browse.setText("..."); // NOI18N
         _event_cache_browse.setToolTipText("Browse Results File");
@@ -6858,7 +6858,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _checkbox_grouping_kml.setText("Include event characteristics in KML or Google Maps output, if applicable.");
+        _checkbox_grouping_kml.setText("Include line list characteristics in csv, KML and Google Maps output, if applicable.");
 
         _grouping_input_label.setText("Grouped by characteristics named:");
 

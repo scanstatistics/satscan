@@ -47,8 +47,8 @@ CPSMonotoneCluster::~CPSMonotoneCluster() {}
 CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs) {
   try {
     m_Center              = rhs.m_Center;
-    _central_observation_group = rhs._central_observation_group;
-    _num_observation_groups             = rhs._num_observation_groups;
+    _central_identifier   = rhs._central_identifier;
+    _num_identifiers      = rhs._num_identifiers;
     m_nRatio              = rhs.m_nRatio;
     _ratio_sets           = rhs._ratio_sets;
     m_nRank               = rhs.m_nRank;
@@ -147,18 +147,18 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 /** Writes clusters location information in format required by result output file. */
 void CPSMonotoneCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, tract_t nFirstTract, tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const {
 
-    // TODO: Revise for multiple coordinates. I need to recall how this feature works - what are the steps again?
+    // TODO: Revise for multiple coordinates - would this option ever be used with that option?
 
     std::string locations;
-    ObservationGrouping::CombinedGroupNames_t vTractIdentifiers;
+    Identifier::CombinedIdentifierNames_t vTractIdentifiers;
     try {
         for (tract_t t=nFirstTract; t <= nLastTract; ++t) {
             //get i'th neighbor tracts index
             tract_t tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius);
             // Print location identifiers if location data has not been removed in iterative scan.
-            if (!DataHub.isNullifiedObservationGroup(tTract)) {
+            if (!DataHub.isNullifiedIdentifier(tTract)) {
                 //get all locations ids for tract at index tTract -- might be more than one if combined
-                DataHub.GetGroupInfo().retrieveAllIdentifiers(tTract, vTractIdentifiers);
+                DataHub.getIdentifierInfo().retrieveAll(tTract, vTractIdentifiers);
                 for (unsigned int i=0; i < vTractIdentifiers.size(); ++i) {
                     if (locations.size()) locations += ", ";
                     locations += vTractIdentifiers[i].c_str();
@@ -367,8 +367,8 @@ std::string& CPSMonotoneCluster::GetStartDate(std::string& sDateString, const CS
 /** initialize cluster data and data members */
 void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
-  _central_observation_group = -1;
-  _num_observation_groups        = 0;
+  _central_identifier = -1;
+  _num_identifiers        = 0;
   m_CartesianRadius= -1;
   m_nRatio         = 0;
   m_nRank          = 1;
@@ -377,69 +377,26 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   gpClusterData->InitializeData();
 }
 
-/** Prints name and coordinates of locations contained in cluster to ASCII file.
-    Note: This is a debug function and can be helpful when used with Excel to get
-    visual of cluster using scatter plotting. */
-void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
-  tract_t                       i, tTract;
-  std::ofstream                 outfilestream(sFilename.c_str(), std::ios::ate);
-
-  try {
-    if (!outfilestream)
-      throw prg_error("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
-
-    outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
-
-    std::vector<double> vCoords;
-    if (DataHub.GetParameters().UseSpecialGrid()) {
-      DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), vCoords);
-      outfilestream << "Central_Grid_Point";
-      for (size_t t=0; t < vCoords.size(); ++t)
-       outfilestream << " " << vCoords[t];
-      outfilestream << std::endl;
-    }
-
-    for (int s=0; s < gpClusterData->m_nSteps; ++s) {
-      for (i=gpClusterData->gvFirstNeighborList[i]; i <= gpClusterData->gvLastNeighborList[i]; ++i) {
-         tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-         // Print location identifiers if location data has not been removed in iterative scan.
-         if (!DataHub.isNullifiedObservationGroup(tTract)) {
-           CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, tTract, vCoords);
-		   outfilestream << DataHub.GetGroupInfo().getObservationGroups()[tTract]->groupname();
-           for (size_t t=0; t < vCoords.size(); ++t)
-             outfilestream << " " << vCoords[t];
-           outfilestream << std::endl;
-         }
-      }
-    }
-    outfilestream << std::endl;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintClusterLocationsToFile()","CPSMonotoneCluster");
-    throw;
-  }
-}
-
 /** Returns the total number of tracts in cluster, across all steps. */
 void CPSMonotoneCluster::SetTotalTracts() {
-    _num_observation_groups = 0;
+    _num_identifiers = 0;
     for (int i=0; i < gpClusterData->m_nSteps; ++i)
-        _num_observation_groups += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
+        _num_identifiers += gpClusterData->gvLastNeighborList[i] - gpClusterData->gvFirstNeighborList[i] + 1;
 }
 
 /** Writes cluster data to passed record buffer. */
-void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter,
-                               const CSaTScanData& Data,
-                               unsigned int iClusterNumber,
-                               const SimulationVariables& simVars,
-                               const LocationRelevance& location_relevance) const {
+void CPSMonotoneCluster::Write(
+    LocationInformationWriter& LocationWriter, const CSaTScanData& Data, unsigned int iClusterNumber, const SimulationVariables& simVars, const LocationRelevance& location_relevance
+) const {
     try {
-        for (int i=0; i < gpClusterData->m_nSteps; ++i) {
+        // TODO: I'm not sure how to revise this with the multiple locations update and uncertain whether it's worth the time for this little used analysis type.
+        throw prg_error("Writing of Location Information is not currently implemented for monotone analyses.", "CPSMonotoneCluster::Write()");
+        /*for (int i=0; i < gpClusterData->m_nSteps; ++i) {
             for (tract_t t=gpClusterData->gvFirstNeighborList[i]; t <= gpClusterData->gvLastNeighborList[i]; t++) {
                 tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
                 LocationWriter.Write(*this, Data, iClusterNumber, tTract, simVars, location_relevance);
             }
-        }
+        }*/
     } catch (prg_exception& x) {
         x.addTrace("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
         throw;

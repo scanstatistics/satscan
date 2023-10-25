@@ -4,11 +4,11 @@
 //******************************************************************************
 #include "Tracts.h"
 
-/** Distance from a centroid to a neighboring group/location. */
+/** Distance from a centroid to a neighboring location. */
 class DistanceToCentroid {
    private:
      tract_t m_tTractNumber;
-     double m_dDistance; /* distance from centroid to location at m_tTractNumber */
+     double m_dDistance;
      unsigned int m_RelativeCoordinateIndex; /* relative index into tracts respective coordinates container */
 
    public:
@@ -21,15 +21,15 @@ class DistanceToCentroid {
      void               Set(tract_t t, double d, unsigned int i) {m_tTractNumber=t;m_dDistance=d;m_RelativeCoordinateIndex=i;}
 };
 
-/** Function object used to compare LocationDistance objects by m_dDistance. */
-class CompareGroupDistance {
+/** Function object used to compare DistanceToCentroid. */
+class CompareIdentifierDistance {
 private:
-	const ObservationGroupingManager & _groups;
+	const IdentifiersManager & _identifier_mgr;
 
 public:
-	CompareGroupDistance(const ObservationGroupingManager & groups) : _groups(groups) {}
+	CompareIdentifierDistance(const IdentifiersManager & identifierMgr) : _identifier_mgr(identifierMgr) {}
 
-	bool                operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs);
+	bool operator() (const DistanceToCentroid& lhs, const DistanceToCentroid& rhs);
 };
 
 class CSaTScanData; /** forward class declaration */

@@ -578,7 +578,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
         if (cluster_observedSeries || cluster_expectedSeries) {
             // calculate cluster observed and expected series across entire period, not just cluster window
             std::vector<tract_t> indexes;
-            cluster.getGroupIndexes(_dataHub, indexes, true);
+            cluster.getIdentifierIndexes(_dataHub, indexes, true);
             for (auto t : indexes) {
                 for (int i = itrGrp->first; i < itrGrp->second; ++i) {
                     cluster_observed += (i == intervals - 1 ? ppcases[i][t] : ppcases[i][t] - ppcases[i + 1][t]);

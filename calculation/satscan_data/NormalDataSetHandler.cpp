@@ -41,9 +41,9 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
 /** For each data set, assigns data at meta location indexes. */
 void NormalDataSetHandler::assignMetaData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-    (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-    (*itr)->setMeasureDataAuxMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+    (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+    (*itr)->setMeasureDataAuxMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
   }
 }
 
@@ -52,7 +52,7 @@ void NormalDataSetHandler::assignMetaData(RealDataContainer_t& Container) const 
 AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -111,7 +111,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -171,8 +171,8 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-      (*itr)->setMeasureDataAuxMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+      (*itr)->setMeasureDataAuxMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
     }
   }
 }
@@ -410,7 +410,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
 
   try {
     //read and validate that tract identifier exists in coordinates file
-    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+    DataSetHandler::RecordStatusType eStatus = RetrieveIdentifierIndex(Source, tid);
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     eStatus = RetrieveCaseCounts(Source, nCount); // read and validate count

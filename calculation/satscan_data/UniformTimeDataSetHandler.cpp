@@ -31,8 +31,8 @@ void UniformTimeDataSetHandler::assignMetaData(RealDataContainer_t& Container) c
     for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
         // Set the case data for meta locations unless we're doing a power evaluation without reading the case file.
         if (!gParameters.getPerformPowerEvaluation() || !(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))
-            (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
-        (*itr)->setMeasureDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+            (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
+        (*itr)->setMeasureDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
     }
 }
 
@@ -42,7 +42,7 @@ void UniformTimeDataSetHandler::assignMetaData(RealDataContainer_t& Container) c
 bool UniformTimeDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   float                                                 fPopulation = 1000; /** arbitrarily selected population */
   PopulationData::PopulationDateContainer_t             vprPopulationDates;
-  tract_t                                               t, tNumTracts = gDataHub.GetGroupInfo().getObservationGroups().size();
+  tract_t                                               t, tNumTracts = gDataHub.getIdentifierInfo().getIdentifiers().size();
   int                                                   iCategoryIndex;
 
   try {
@@ -71,7 +71,7 @@ bool UniformTimeDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
 AbstractDataSetGateway & UniformTimeDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -120,7 +120,7 @@ AbstractDataSetGateway & UniformTimeDataSetHandler::GetDataGateway(AbstractDataS
 AbstractDataSetGateway & UniformTimeDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(
       gDataHub.GetNumTimeIntervals(),
-      gDataHub.GetNumObsGroups() + gDataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta(),
+      gDataHub.GetNumIdentifiers() + gDataHub.getIdentifierInfo().getMetaManagerProxy().getNumMeta(),
       gDataHub.getDataInterfaceIntervalStartIndex()
   );
 
@@ -167,7 +167,7 @@ void UniformTimeDataSetHandler::RandomizeData(RandomizerContainer_t& Container, 
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations())
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
-      (*itr)->setCaseDataMeta(gDataHub.GetGroupInfo().getMetaManagerProxy());
+      (*itr)->setCaseDataMeta(gDataHub.getIdentifierInfo().getMetaManagerProxy());
 }
 
 /** Attempts to read population and case data files into class RealDataSet objects. */

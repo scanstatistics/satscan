@@ -53,7 +53,6 @@ class CPSMonotoneCluster : public CCluster {
     virtual double              GetObservedDivExpectedForStep(tract_t step, const CSaTScanData& DataHub) const;
     double                      GetRelativeRiskForStep(tract_t step, const CSaTScanData& DataHub) const;
     virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
-    virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     void                        SetTotalTracts();
     virtual void                Write(LocationInformationWriter& LocationWriter, 
                                       const CSaTScanData& Data,

@@ -226,7 +226,7 @@ void DisplayInitialData(Julian StartDate, Julian EndDate, Julian* pIntvDates, in
 /* If any measures meet this condition, the function returns a value  */
 /* false.                                                             */
 /* Function added 5/31/97 by K. Rand                                  */
-bool ValidateMeasures(const ObservationGroupingManager& groups,
+bool ValidateMeasures(const IdentifiersManager& identifierMgr,
                       measure_t** Measures,
 		      measure_t   nTotalMeasure,
 		      measure_t   nMaxCircleSize,
@@ -262,7 +262,7 @@ bool ValidateMeasures(const ObservationGroupingManager& groups,
     	 if (bErrorThisTract)
     	 {
     		bError = true;
-    		tid    = groups.getObservationGroups().at(t)->groupname().c_str();
+    		tid    = identifierMgr.getIdentifiers().at(t)->name().c_str();
             char sMessage[200], sTemp[100];
     		sprintf(sMessage, "The maximum circle size is less than the expected number\n");
     		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);

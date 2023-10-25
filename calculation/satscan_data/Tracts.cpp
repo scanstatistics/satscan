@@ -116,8 +116,14 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& nam
     else {
         // New location - check whether this set of coordinates is already defined for another.
         auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
-        if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates) 
+        if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates) {
+            if (name < itrByCoordinates->get()->name()) {
+                // In order to keep consistent with the name of the location when combining, always choose the alpha-ordered location name.
+                itrByCoordinates->get()->rename(name);
+                std::sort(_locations.begin(), _locations.end(), CompareLocationByName()); // Now we need to resort.
+            }
             return LocationsManager::CoordinateExists; // The location is defined at the same coordinates as an existing location.
+        }
         // Insert location with coordinates into sorted structures.
         _locations.insert(itrByName, location);
         _locations_by_coordinates.insert(std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates()), location);
@@ -152,54 +158,54 @@ LocationsManager::LocationIdx_t LocationsManager::getLocation(const std::string&
 	return LocationIdx_t(boost::optional<unsigned int>(boost::none), 0);
 }
 
-//////////////// ObservationGrouping //////////////////////////////////
+//////////////// Identifier //////////////////////////////////
 
-ObservationGrouping::CombinedGroupNames_t& ObservationGrouping::retrieveAllIdentifiers(CombinedGroupNames_t& Identifiers) const {
+Identifier::CombinedIdentifierNames_t& Identifier::retrieveAll(CombinedIdentifierNames_t& Identifiers) const {
 	Identifiers.clear();
-	Identifiers.add(_groupname, false);
+	Identifiers.add(_name, false);
 	for (unsigned int i=0; i < _combined_with.size(); ++i)
 		Identifiers.add(_combined_with[i], false);
 	return Identifiers;
 }
 
-//////////////// ObservationGroupingManager ///////////////////////////
+//////////////// IdentifiersManager ///////////////////////////
 
-ObservationGroupingManager::ObservationGroupingManager(bool aggregating, MultipleCoordinatesType multiple_coordinates_type) :
-	_aggregating(aggregating), _multiple_coordinates_type(multiple_coordinates_type), _locations_manager(0), _write_status(Accepting), giNumLocationCoordinates(0) {
-	if (_aggregating) {
+IdentifiersManager::IdentifiersManager(bool aggregating, MultipleCoordinatesType multiple_coordinates_type) :
+	_aggregating_identifiers(aggregating), _multiple_coordinates_type(multiple_coordinates_type), _locations_manager(0), _write_status(Accepting), _num_location_coordinates(0) {
+	if (_aggregating_identifiers) {
         _locations_manager.addLocation("All");
-        _groupings.push_back(boost::shared_ptr<ObservationGrouping>(new ObservationGrouping("All", *_locations_manager.locations().front())));
+        _identifiers.push_back(boost::shared_ptr<Identifier>(new Identifier("All", *_locations_manager.locations().front())));
 	}
-	gMetaManagerProxy.reset(new MetaManagerProxy(gMetaObsGroupsManager, gMetaNeighborManager));
+	_meta_manager_proxy.reset(new MetaManagerProxy(_meta_identifiers_manager, _meta_neighbor_manager));
 }
 
 /* Adds location w/o coordinates to the collections of defined locations. If multiple coordinates type is defined as one
-   per location, also defines the location as an observation group. Returns the addition status of the location.*/
-LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::string& locationname) {
-	if (_aggregating) return LocationsManager::Accepted;
+   per location, also defines the location as an identifier. Returns the addition status of the location.*/
+LocationsManager::AddStatus IdentifiersManager::addLocation(const std::string& locationname) {
+	if (_aggregating_identifiers) return LocationsManager::Accepted;
 
-    tract_t tLocationIndex = gMetaObsGroupsManager.getMetaPool().getMetaIndex(locationname);
+    tract_t tLocationIndex = _meta_identifiers_manager.getMetaPool().getMetaIndex(locationname);
     if (tLocationIndex > -1) {
-        gMetaObsGroupsManager.addReferenced(tLocationIndex); 
+        _meta_identifiers_manager.addReferenced(tLocationIndex); 
         return LocationsManager::Accepted;
     }
 
 	LocationsManager::AddStatus status = _locations_manager.addLocation(locationname);
 	if (status == LocationsManager::Accepted && _multiple_coordinates_type == ONEPERLOCATION)
-		addObservationGroup(locationname, locationname);
+		addIdentifier(locationname, locationname);
 	return status;
 }
 
 /* Adds location w/ coordinates to the collections of defined locations. If multiple coordinates type is defined as one
-   per location, also defines the location as an observation group. Returns the addition status of the location.*/
-LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::string& locationname, const std::vector<double>& coordinates) {
-	if (_aggregating) return LocationsManager::Accepted;
+   per location, also defines the location as an identifier. Returns the addition status of the location.*/
+LocationsManager::AddStatus IdentifiersManager::addLocation(const std::string& locationname, const std::vector<double>& coordinates) {
+	if (_aggregating_identifiers) return LocationsManager::Accepted;
 	LocationsManager::AddStatus status = _locations_manager.addLocation(locationname, coordinates);
     if (status == LocationsManager::Accepted && _multiple_coordinates_type == ONEPERLOCATION)
-        addObservationGroup(locationname, locationname);
+        addIdentifier(locationname, locationname);
     else if (status == LocationsManager::CoordinateExists && _multiple_coordinates_type == ONEPERLOCATION) {
-        // This should get picked up in the step which combines groups at the same coordinates.
-        AddStatus gStatus = addObservationGroup(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
+        // This should get picked up in the step which combines identifiers at the same coordinates.
+        AddStatus gStatus = addIdentifier(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
         return gStatus == MultipleLocations ? LocationsManager::CoordinateRedefinition : LocationsManager::Accepted;
         //_locations_manager.getLocationForCoordinates(coordinates).
     }    //combinedWith(const std::string& other)
@@ -207,8 +213,8 @@ LocationsManager::AddStatus ObservationGroupingManager::addLocation(const std::s
 }
 
 /* Sets the coordinates of a known location which doesn't currently have a coordinates defined. */
-LocationsManager::AddStatus ObservationGroupingManager::setLocationCoordinates(const std::string& locationname, const std::vector<double>& coordinates) {
-    if (_aggregating) return LocationsManager::Accepted;
+LocationsManager::AddStatus IdentifiersManager::setLocationCoordinates(const std::string& locationname, const std::vector<double>& coordinates) {
+    if (_aggregating_identifiers) return LocationsManager::Accepted;
     if (coordinates.size() != _locations_manager.expectedDimensions()) return LocationsManager::WrongDimensions;
     LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationname);
     // First check to see if this location is currently defined - skip record if it isn't (i.e. it's not in the network).
@@ -227,82 +233,81 @@ LocationsManager::AddStatus ObservationGroupingManager::setLocationCoordinates(c
     return *(location.second->coordinates()) != coordinates ? LocationsManager::CoordinateRedefinition : LocationsManager::Accepted;
 }
 
-/* Adds observation group to collection if does not yet exist, otherwise added to collection. Location is then added to group. */
-ObservationGroupingManager::AddStatus ObservationGroupingManager::addObservationGroup(const std::string& groupName, const std::string& locationame) {
-	if (_aggregating) return ObservationGroupingManager::Accepted;
-	/* Adds observation grouping at location. */
+/* Adds identifier to collection if does not yet exist, otherwise added to collection. Location is then added to collection. */
+IdentifiersManager::AddStatus IdentifiersManager::addIdentifier(const std::string& identifierName, const std::string& locationame) {
+	if (_aggregating_identifiers) return IdentifiersManager::Accepted;
 	LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationame);
-	if (location.first == boost::none) return ObservationGroupingManager::UnknownLocation;
-	boost::shared_ptr<ObservationGrouping> grouping(new ObservationGrouping(groupName, *location.second));
-	auto itr = std::lower_bound(_groupings.begin(), _groupings.end(), grouping, CompareObservationGrouping());
-	if (itr != _groupings.end() && groupName == itr->get()->groupname()) {
+	if (location.first == boost::none) return IdentifiersManager::UnknownLocation;
+	boost::shared_ptr<Identifier> identifierObj(new Identifier(identifierName, *location.second));
+	auto itr = std::lower_bound(_identifiers.begin(), _identifiers.end(), identifierObj, CompareIdenitifers());
+	if (itr != _identifiers.end() && identifierName == itr->get()->name()) {
 		if (_multiple_coordinates_type == ONEPERLOCATION && itr->get()->getLocations().size())
-			return ObservationGroupingManager::MultipleLocations;
+			return IdentifiersManager::MultipleLocations;
         if (!itr->get()->getLocations().exists(location.second))
 		    itr->get()->addLocation(*location.second);
 	} else
-		_groupings.insert(itr, grouping);
-	return ObservationGroupingManager::Accepted;
+		_identifiers.insert(itr, identifierObj);
+	return IdentifiersManager::Accepted;
 }
 
-/* Returns the internal index of named observation group. */
-boost::optional<size_t> ObservationGroupingManager::getObservationGroupIndex(const std::string& groupname) const {
-	if (_aggregating) return boost::make_optional(static_cast<size_t>(0));
+/* Returns the internal index of named identifier. */
+boost::optional<size_t> IdentifiersManager::getIdentifierIndex(const std::string& identifiername) const {
+	if (_aggregating_identifiers) return boost::make_optional(static_cast<size_t>(0));
 
-    std::string gname;
-    // first search collection of known aggregated group names
-    std::map<std::string, std::string>::const_iterator itrm = gmAggregateTracts.find(groupname);
-    if (itrm != gmAggregateTracts.end())
-        gname = itrm->second;
+    std::string iname;
+    // first search collection of known aggregated identifiers names
+    std::map<std::string, std::string>::const_iterator itrm = aggregated_identifiers.find(identifiername);
+    if (itrm != aggregated_identifiers.end())
+        iname = itrm->second;
     else
-        gname = groupname;
+        iname = identifiername;
 
 	auto itr = std::lower_bound(
-		_groupings.begin(), _groupings.end(),
-		boost::shared_ptr<ObservationGrouping>(new ObservationGrouping(gname)), CompareObservationGrouping()
+		_identifiers.begin(), _identifiers.end(),
+		boost::shared_ptr<Identifier>(new Identifier(iname)), CompareIdenitifers()
 	);
-	if (itr != _groupings.end() && gname == itr->get()->groupname())
-		return boost::make_optional(static_cast<size_t>(std::distance(_groupings.begin(), itr)));
+	if (itr != _identifiers.end() && iname == itr->get()->name())
+		return boost::make_optional(static_cast<size_t>(std::distance(_identifiers.begin(), itr)));
 	return boost::none;
 }
 
-/** Combines ObservationGrouping objects which have the same locations. This ensures that observation groups that are
-    at the same location(s) will be evaluated together. This method should be called once all insertions are completed. */
-void ObservationGroupingManager::additionsCompleted(bool bReportingRiskEstimates) {
+/** Combines Identifier objects which have the same locations. This ensures that identifiers that are at the same location(s) will
+    be evaluated together. This method should be called once all insertions are completed. */
+void IdentifiersManager::additionsCompleted(bool bReportingRiskEstimates) {
 	_write_status = Closed;
-	gMetaObsGroupsManager.getMetaPool().assignAtomicIndexes(*this);
-	gMetaObsGroupsManager.setStateFixed(bReportingRiskEstimates);
+	_meta_identifiers_manager.getMetaPool().assignAtomicIndexes(*this);
+	_meta_identifiers_manager.setStateFixed(bReportingRiskEstimates);
 
     // Assign index to locations.
     _locations_manager.assignIndexes();
 
-	if (_groupings.size() < 2 || _locations_manager.expectedDimensions() == 0) return;
+	if (_identifiers.size() < 2 || _locations_manager.expectedDimensions() == 0) return;
 
 	// sort by coordinates
-	std::sort(_groupings.begin(), _groupings.end(), CompareObservationGroupingByLocation());
-	// search for duplicate observation groups -- those that have identical location(s)
-	size_t tSize = _groupings.size();
-	giNumLocationCoordinates = 0;
+	std::sort(_identifiers.begin(), _identifiers.end(), CompareIdenitifersByLocation());
+	// search for duplicate identifiers -- those that have identical location(s)
+	size_t tSize = _identifiers.size();
+	_num_location_coordinates = 0;
 	for (size_t tOuter = 0; tOuter < tSize; ++tOuter) {
-		giNumLocationCoordinates += _groupings[tOuter]->getLocations().size();
+		_num_location_coordinates += _identifiers[tOuter]->getLocations().size();
 		for (size_t tInner = tOuter + 1; tInner < tSize; ++tInner) {
-			if (_groupings[tOuter]->getLocations() != _groupings[tInner]->getLocations()) break;
+			if (_identifiers[tOuter]->getLocations() != _identifiers[tInner]->getLocations()) break;
 			//add identifier of tInner to tOuter, they reference the same coordinate sets
-			_groupings[tOuter]->combinedWith(_groupings[tInner]->groupname());
-			gmAggregateTracts[_groupings[tInner]->groupname()] = _groupings[tOuter]->groupname();
-			_groupings.erase(_groupings.begin() + tInner);
+			_identifiers[tOuter]->combinedWith(_identifiers[tInner]->name());
+			aggregated_identifiers[_identifiers[tInner]->name()] = _identifiers[tOuter]->name();
+			_identifiers.erase(_identifiers.begin() + tInner);
 			tInner = tInner - 1;
-			tSize = _groupings.size();
+			tSize = _identifiers.size();
 		}
 	}
-	//re-sort groupname so that the index of groups is consistent.
-	std::sort(_groupings.begin(), _groupings.end(), CompareObservationGrouping());
+	//re-sort identifiers so that the index of the identifier objects is consistent.
+	std::sort(_identifiers.begin(), _identifiers.end(), CompareIdenitifers());
 }
 
-void ObservationGroupingManager::print(FILE* pFile) const {
-	fprintf(pFile, "Total Observation Groupings: %u, Total Locations: %u\n\n", getObservationGroups().size(), getLocationsManager().locations().size());
-	for (auto itrg = getObservationGroups().begin(); itrg != getObservationGroups().end(); ++itrg) {
-		fprintf(pFile, "Observation Grouping: %s, ", itrg->get()->groupname().c_str());
+void IdentifiersManager::print(FILE* pFile) const {
+	fprintf(pFile, "Total Identifiers: %u, Total Locations: %u\n\n", getIdentifiers().size(), getLocationsManager().locations().size());
+	for (auto itrg = getIdentifiers().begin(); itrg != getIdentifiers().end(); ++itrg) {
+		fprintf(pFile, "Identifier: %s, ", itrg->get()->name().c_str());
 		for (unsigned int i = 0; i < itrg->get()->getLocations().size(); ++i) {
 			fprintf(pFile, "Locations: %s, Coordinates: ", itrg->get()->getLocations()[i]->name().c_str());
 			for (unsigned int c=0; c < itrg->get()->getLocations()[i]->coordinates()->getSize(); ++c)
@@ -312,19 +317,19 @@ void ObservationGroupingManager::print(FILE* pFile) const {
 	}
 }
 
-ObservationGrouping::CombinedGroupNames_t & ObservationGroupingManager::retrieveAllIdentifiers(size_t tIndex, ObservationGrouping::CombinedGroupNames_t& Identifiers) const {
-	if ((size_t)tIndex < getObservationGroups().size())
-		getObservationGroups()[tIndex]->retrieveAllIdentifiers(Identifiers);
-	else if (gMetaObsGroupsManager.getMetaObsGroups().size()) {
+Identifier::CombinedIdentifierNames_t & IdentifiersManager::retrieveAll(size_t tIndex, Identifier::CombinedIdentifierNames_t& Identifiers) const {
+	if ((size_t)tIndex < getIdentifiers().size())
+		getIdentifiers()[tIndex]->retrieveAll(Identifiers);
+	else if (_meta_identifiers_manager.getMetaIdentifiers().size()) {
 		Identifiers.clear();
-		Identifiers.add(std::string(gMetaObsGroupsManager.getMetaObsGroups().at((size_t)tIndex - getObservationGroups().size())->getIndentifier()), false);
+		Identifiers.add(std::string(_meta_identifiers_manager.getMetaIdentifiers().at((size_t)tIndex - getIdentifiers().size())->getIndentifier()), false);
 	} else {
 		Identifiers.clear();
 		std::vector<tract_t> indexes;
-		gMetaNeighborManager.getIndexes((size_t)tIndex - getObservationGroups().size(), indexes);
+		_meta_neighbor_manager.getIndexes((size_t)tIndex - getIdentifiers().size(), indexes);
 		for (size_t t = 0; t < indexes.size(); ++t) {
-            ObservationGrouping::CombinedGroupNames_t tract_identifiers;
-			getObservationGroups().at(indexes[t])->retrieveAllIdentifiers(tract_identifiers);
+            Identifier::CombinedIdentifierNames_t tract_identifiers;
+			getIdentifiers().at(indexes[t])->retrieveAll(tract_identifiers);
 			for (size_t i = 0; i < tract_identifiers.size(); ++i)
 				Identifiers.add(tract_identifiers[i], false);
 		}
@@ -332,30 +337,28 @@ ObservationGrouping::CombinedGroupNames_t & ObservationGroupingManager::retrieve
 	return Identifiers;
 }
 
-/** Prints formatted message to file which details the groups that are at the same locations and where combined
-    into one group for internal usage. 
-    Technically this function is only useful when the multiple coordinates type is one per observation group.
-    We don't report observation groups in the cluster results, just locations in the cluster. When multiple coordinates
-    type is one per observation group, the observation groups and locations will be the same set. */
-void ObservationGroupingManager::reportCombinedObsGroups(FILE * fDisplay) const {
+/** Prints formatted message to file which details the identifiers that are at the same locations and where combined
+    into one identifer object for internal usage. 
+    Technically this function is only useful when the multiple coordinates type is one per observation.
+    We don't report identifiers in the cluster results, just locations in the cluster. When multiple coordinates
+    type is one per observation, the identifiers and locations will be the same set. */
+void IdentifiersManager::reportCombinedIdentifiers(FILE * fDisplay) const {
 	AsciiPrintFormat PrintFormat;
 	bool bPrinted = false;
 
-	for (auto itr= getObservationGroups().begin(); itr != getObservationGroups().end(); ++itr) {
+	for (auto itr= getIdentifiers().begin(); itr != getIdentifiers().end(); ++itr) {
 		if (itr->get()->getCombinedWith().size()) {
 			if (!bPrinted) {
 				PrintFormat.SetMarginsAsOverviewSection();
-				std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
-					"coordinates that were combined into one location. In the "
-					"optional output files, combined locations are represented by a "
-					"single location ID as follows:";
+				std::string buffer = "\nNote: The coordinates file contains location IDs with identical coordinates that were combined into one location. In the "
+					"optional output files, combined locations are represented by a single location ID as follows:";
 				PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
 				PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
 				bPrinted = true;
 			}
 			//First retrieved location ID is the location that represents all others.
 			std::string buffer;
-			printString(buffer, "%s : %s", itr->get()->groupname().c_str(), itr->get()->getCombinedWith()[0].c_str());
+			printString(buffer, "%s : %s", itr->get()->name().c_str(), itr->get()->getCombinedWith()[0].c_str());
 			for (unsigned int i = 1; i < itr->get()->getCombinedWith().size(); ++i) {
 				buffer += ", "; buffer += itr->get()->getCombinedWith()[i].c_str();
 			}
@@ -366,20 +369,20 @@ void ObservationGroupingManager::reportCombinedObsGroups(FILE * fDisplay) const 
 
 /** Returns identifier associated with location at 'tIndex'. If 'tIndex' is greater than
 number of locations, it is assumed to be referencing a meta location. */
-std::string& ObservationGroupingManager::getGroupname(tract_t tIndex, std::string& groupname) const {
-	if ((size_t)tIndex < getObservationGroups().size())
-        groupname = getObservationGroups().at(tIndex)->groupname();
-	else if (gMetaObsGroupsManager.getMetaObsGroups().size())
-        groupname = gMetaObsGroupsManager.getMetaObsGroups().at((size_t)tIndex - getObservationGroups().size())->getIndentifier();
+std::string& IdentifiersManager::getIdentifierNameAtIndex(tract_t tIndex, std::string& name) const {
+	if ((size_t)tIndex < getIdentifiers().size())
+        name = getIdentifiers().at(tIndex)->name();
+	else if (_meta_identifiers_manager.getMetaIdentifiers().size())
+        name = _meta_identifiers_manager.getMetaIdentifiers().at((size_t)tIndex - getIdentifiers().size())->getIndentifier();
 	else {
 		//### still not certain what should be the behavior in this situation ###
-		tract_t tFirst = gMetaNeighborManager.getFirst((size_t)tIndex - getObservationGroups().size());
-        groupname = getObservationGroups().at(tFirst)->groupname();
+		tract_t tFirst = _meta_neighbor_manager.getFirst((size_t)tIndex - getIdentifiers().size());
+        name = getIdentifiers().at(tFirst)->name();
 	}
-    return groupname;
+    return name;
 }
 
-bool ObservationGroupingManager::addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance) {
+bool IdentifiersManager::addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance) {
 	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
 	LocationOverrides_t::iterator itrSmaller = _location_distance_overrides.find(smaller);
 	if (itrSmaller == _location_distance_overrides.end()) {
@@ -400,7 +403,7 @@ bool ObservationGroupingManager::addLocationsDistanceOverride(tract_t t1, tract_
 	return true;
 }
 
-std::pair<bool, double> ObservationGroupingManager::getLocationsDistanceOverride(tract_t t1, tract_t t2) const {
+std::pair<bool, double> IdentifiersManager::getLocationsDistanceOverride(tract_t t1, tract_t t2) const {
 	tract_t smaller = std::min(t1, t2), larger = std::max(t1, t2);
 	LocationOverrides_t::const_iterator itrSmaller = _location_distance_overrides.find(smaller);
 	if (itrSmaller != _location_distance_overrides.end()) {
@@ -413,18 +416,16 @@ std::pair<bool, double> ObservationGroupingManager::getLocationsDistanceOverride
 /** Assigns locations and coordinates explicitly. Note that this is a special use function, initially
 designed for use with the homogeneous poisson model. It might have been nicer to abstract this class
 instead of creating this function but that would have involved a significant re-factor with little benefit. */
-void ObservationGroupingManager::assignExplicitCoordinates(CoordinatesContainer_t& coordinates) {
+void IdentifiersManager::assignExplicitCoordinates(CoordinatesContainer_t& coordinates) {
 	assert(_write_status == Accepting);
 
 	try {
-		if (_aggregating) return; //ignore operation if aggregating tracts
+		if (_aggregating_identifiers) return; //ignore operation if aggregating identifiers
 
 		// If the internal container of coordinates is equal in size to new container, just copy coordinates.
 		if (_locations_manager.locations().size() == coordinates.size()) {
 			for (size_t t = 0; t < coordinates.size(); ++t) {
 				//Verify that coordinates have equal dimensions...
-				//if (!gvCoordinates[t])
-				//	throw prg_error("not allolcated.", "pushCoordinates()");
 				if (!coordinates[t])
 					throw prg_error("not allolcated.", "pushCoordinates()");
 				if (_locations_manager.locations()[t]->coordinates()->getSize() != coordinates[t]->getSize())
@@ -433,10 +434,10 @@ void ObservationGroupingManager::assignExplicitCoordinates(CoordinatesContainer_
 			}
 		} else {
 			//New container and internal container are not equal in size -- clear and rebuild.  
-			_groupings.clear();
+			_identifiers.clear();
 			_locations_manager._locations.clear();
 			_locations_manager._locations.resize(coordinates.size(), 0);
-			_groupings.resize(coordinates.size(), 0);
+			_identifiers.resize(coordinates.size(), 0);
 			//Note: I'm ignoring meta data, I think it ok to do that. Also, they are not likely used in conjunction with this function.
 			std::vector<double> repo;
 			for (size_t t = 0; t < coordinates.size(); ++t) {
@@ -447,13 +448,13 @@ void ObservationGroupingManager::assignExplicitCoordinates(CoordinatesContainer_
 				boost::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo), coordinates[t]->getInsertionOrdinal()));
 				_locations_manager._locations[t] = location;
 				//Create dummy location identifier and associate coordinate object.
-				_groupings[t] = boost::shared_ptr<ObservationGrouping>(new ObservationGrouping("_location_", *location.get()));
+				_identifiers[t] = boost::shared_ptr<Identifier>(new Identifier("_location_", *location.get()));
 			}
-			giNumLocationCoordinates = coordinates.size();
+			_num_location_coordinates = coordinates.size();
 		}
 	}
 	catch (prg_exception& x) {
-		x.addTrace("assignExplicitCoordinates()", "ObservationGroupingManager");
+		x.addTrace("assignExplicitCoordinates()", "IdentifiersManager");
 		throw;
 	}
 }

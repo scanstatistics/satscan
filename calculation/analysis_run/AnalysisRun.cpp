@@ -54,7 +54,7 @@ using namespace boost::assign;
 //////////////////////////// AbstractAnalysisDrilldown ///////////////////////////////////
 
 bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
-    bool should = cluster.getNumObservationGroups() >= parameters.getDrilldownMinimumLocationsCluster() &&
+    bool should = cluster.getNumIdentifiers() >= parameters.getDrilldownMinimumLocationsCluster() &&
         cluster.reportablePValue(parameters, simvars) &&
         cluster.getReportingPValue(parameters, simvars, parameters.GetIsIterativeScanning()) <= parameters.getDrilldownPvalueCutoff() &&
         cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
@@ -305,7 +305,7 @@ void  AnalysisExecution::finalize() {
         if (_parameters.GetProbabilityModelType() == POISSON && !_data_hub.isDrilldown())
             _data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, fp, &_print_direction);
         if (!_data_hub.isDrilldown() && _parameters.GetMultipleCoordinatesType() == ONEPERLOCATION)
-            _data_hub.GetGroupInfo().reportCombinedObsGroups(fp);
+            _data_hub.getIdentifierInfo().reportCombinedIdentifiers(fp);
         ParametersPrint(_parameters).Print(fp);
         macroRunTimeManagerPrint(fp);
         time(&CompletionTime);
@@ -470,7 +470,7 @@ void AnalysisExecution::executeCentricEvaluation() {
                 SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
                 //create new simulation data set object for each data set of this simulation
                 for (unsigned int j = 0; j < DataHandler.GetNumDataSets(); ++j)
-                    thisDataCollection.push_back(new DataSet(_data_hub.GetNumTimeIntervals(), _data_hub.GetNumObsGroups(), _data_hub.GetNumMetaObsGroupsReferenced(), _parameters, j + 1));
+                    thisDataCollection.push_back(new DataSet(_data_hub.GetNumTimeIntervals(), _data_hub.GetNumIdentifiers(), _data_hub.GetNumMetaIdentifiersReferenced(), _parameters, j + 1));
                 //allocate appropriate data structure for given data set handler (probablility model)
                 DataHandler.AllocateSimulationData(thisDataCollection);
                 //randomize data
@@ -1372,7 +1372,7 @@ Indication of true is returned if user requested iterative scan option and :
 - analysis type is purely spatial or monotone purely spatial
 - a most likely cluster was retained
 - most likely cluster's p-value is not less than user specified cutoff p- value
-- after removing most likely cluster's contained observation groups, there are still observation groups
+- after removing most likely cluster's identifiers, there are still more idenifiers
 - the number of requested iterative scans has not been already reached
 - last iteration of simulations did not terminate early
 Indication of false is returned if user did not request iterative scan option. */
@@ -1413,7 +1413,7 @@ bool AnalysisExecution::repeatAnalysis() {
             return false;
 
         //are there locations left?
-        if (!_parameters.GetIsPurelyTemporalAnalysis() && ((size_t)_data_hub.GetNumObsGroups() + _data_hub.GetNumMetaObsGroupsReferenced() - _data_hub.GetNumNullifiedObsGroups()) < 2)
+        if (!_parameters.GetIsPurelyTemporalAnalysis() && ((size_t)_data_hub.GetNumIdentifiers() + _data_hub.GetNumMetaIdentifiersReferenced() - _data_hub.GetNumNullifiedIdentifiers()) < 2)
             return false;
         //is the minimum number of cases per data set remaining, as required by probability model?
         if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
@@ -1481,7 +1481,7 @@ void AnalysisExecution::reportClusters() {
 
         // Create Cartesian graph, if requested.
         if (_parameters.getOutputCartesianGraph() && !_parameters.GetIsPurelyTemporalAnalysis() &&
-            (_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.GetGroupInfo().getLocationsManager().expectedDimensions() == 2 || _parameters.GetCoordinatesType() == LATLON)) {
+            (_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.getLocationsManager().expectedDimensions() == 2 || _parameters.GetCoordinatesType() == LATLON)) {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Cartesian map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_graph.reset(new CartesianGraph(_data_hub));
@@ -1568,7 +1568,7 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
 
             //print cluster definition to 'location information' record buffer
             if (_parameters.GetOutputAreaSpecificFiles())
-                TopCluster.Write(*ClusterLocationWriter, _data_hub, i + 1, _sim_vars, *_relevance_tracker);
+                ClusterLocationWriter->WriteClusterLocations(TopCluster, _data_hub, i + 1, _sim_vars, *_relevance_tracker);
             _clustersReported = true;
         }
 
@@ -1622,10 +1622,8 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
             if (_parameters.GetOutputClusterLevelFiles() || _parameters.GetOutputClusterCaseFiles())
                 ClusterInformationWriter(_data_hub, _analysis_count > 1).Write(TopCluster, _analysis_count, _sim_vars);
             //print cluster definition to 'location information' record buffer
-            if (_parameters.GetOutputAreaSpecificFiles()) {
-                LocationInformationWriter Writer(_data_hub, _analysis_count > 1);
-                TopCluster.Write(Writer, _data_hub, _analysis_count, _sim_vars, *_relevance_tracker);
-            }
+            if (_parameters.GetOutputAreaSpecificFiles())
+                LocationInformationWriter(_data_hub, _analysis_count > 1).WriteClusterLocations(TopCluster, _data_hub, _analysis_count, _sim_vars, *_relevance_tracker);
             //check track of whether this cluster was significant in top five percentage
             if (getIsCalculatingSignificantRatios() && macro_less_than(_significant_ratios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
                 ++_significant_at005;
@@ -1693,10 +1691,10 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
 
     /* Create a collection locations in detected cluster and re-read coordinates file - ignoring records which reference locations not in cluster. */
     std::set<std::string> clusterLocations, clusterLocations2;
-	ObservationGrouping::CombinedGroupNames_t tract_identifiers;
-    for (tract_t i = 1; i <= detectedCluster.getNumObservationGroups(); ++i) {
+	Identifier::CombinedIdentifierNames_t tract_identifiers;
+    for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
         tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-        source_data_hub.GetGroupInfo().retrieveAllIdentifiers(tTract, tract_identifiers);
+        source_data_hub.getIdentifierInfo().retrieveAll(tTract, tract_identifiers);
         for (unsigned int idx = 0; idx < tract_identifiers.size(); ++idx) {
             clusterLocations.insert(tract_identifiers[idx]);
         }
@@ -1705,7 +1703,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         std::vector<tract_t> vLocations;
         CentroidNeighborCalculator::getLocationsAboutCluster(source_data_hub, detectedCluster, 0, &vLocations);
         for (auto idx : vLocations) {
-            clusterLocations2.insert(source_data_hub.GetGroupInfo().getLocationsManager().locations()[idx]->name());
+            clusterLocations2.insert(source_data_hub.getLocationsManager().locations()[idx]->name());
         }
     }
     std::set<std::string> * coordinateLocations = _parameters.GetMultipleCoordinatesType() == ONEPERLOCATION ? &clusterLocations : &clusterLocations2;
@@ -1829,7 +1827,7 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
             getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(GRIDFILE), _print_direction)
         );
-        std::vector<double> gridCoordinates(source_data_hub.GetGroupInfo().getLocationsManager().expectedDimensions(), 0.0), clusterCoordinates;
+        std::vector<double> gridCoordinates(source_data_hub.getLocationsManager().expectedDimensions(), 0.0), clusterCoordinates;
         short iScanCount;
         source_data_hub.GetGInfo()->retrieveCoordinates(detectedCluster.GetCentroidIndex(), clusterCoordinates);
         stsClusterCentroidGeometry clusterCentroid(clusterCoordinates);
@@ -2035,9 +2033,9 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
         for (size_t d=0; d < source_data_hub.GetNumDataSets(); ++d) {
             count_t ** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().GetArray(),
                     ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
-            for (tract_t i=1; i <= detectedCluster.getNumObservationGroups(); ++i) {
+            for (tract_t i=1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                 tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                tract_t drilldown_tract = _data_hub->GetGroupInfo().getObservationGroupIndex(source_data_hub.GetGroupInfo().getGroupname(tTract, buffer)).get();
+                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
                 ppCases[0][drilldown_tract] = detectedCluster.GetObservedCountForTract(tTract, source_data_hub, d);
                 ppControls[0][drilldown_tract] = detectedCluster.GetCountForTractOutside(tTract, source_data_hub, d);
             }
@@ -2064,9 +2062,9 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             setControls.push_back(_data_hub->GetDataSetHandler().GetDataSet(d).allocateControlData().GetArray());
         }
         count_t ** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(0).getCaseData().GetArray();
-        for (tract_t i=1; i <= detectedCluster.getNumObservationGroups(); ++i) {
+        for (tract_t i=1; i <= detectedCluster.getNumIdentifiers(); ++i) {
             tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-			tract_t drilldown_tract = _data_hub->GetGroupInfo().getObservationGroupIndex(source_data_hub.GetGroupInfo().getGroupname(tTract, buffer)).get();
+			tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
             // record number of cases by interval for current tract - stratifying by day of week.
             for (int interval=detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
                 setCases[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
@@ -2264,7 +2262,7 @@ std::pair<double, double> AnalysisRunner::getMemoryApproxiation(const CParameter
   std::pair<double, double>  prMemoryAppoxiation;
 
    //the number of location IDs in the coordinates file
-  double L = data_hub.GetNumObsGroups();
+  double L = data_hub.GetNumIdentifiers();
   //the number of coordinates in the grid file (G=L if no grid file is specified)
   //double G = gpDataHub->GetGInfo()->getNumGridPoints();
   //maximum geographical cluster size, as a proportion of the population ( 0 < mg = ½ , mg=1 for a purely temporal analysis)
@@ -2325,12 +2323,12 @@ std::pair<double, double> AnalysisRunner::getMemoryApproxiation(const CParameter
   //is the number of Monte Carlo simulations
   double MC = parameters.GetNumReplicationsRequested();
   //sort array data type size
-  double SortedDataTypeSize(data_hub.GetNumObsGroups() < (int)std::numeric_limits<unsigned short>::max() ? static_cast<double>(sizeof(unsigned short)) : static_cast<double>(sizeof(int)));
+  double SortedDataTypeSize(data_hub.GetNumIdentifiers() < (int)std::numeric_limits<unsigned short>::max() ? static_cast<double>(sizeof(unsigned short)) : static_cast<double>(sizeof(int)));
   //size of sorted array -- this formula deviates from the user guide slightly
   double SortedNeighborsArray = (parameters.GetIsPurelyTemporalAnalysis() ? 0 :
                                  (double)sizeof(void**) * (parameters.GetNumTotalEllipses()+1) +
                                  (double)sizeof(void*) * (parameters.GetNumTotalEllipses()+1) * data_hub.m_nGridTracts +
-                                 (double)(parameters.GetNumTotalEllipses()+1) * data_hub.m_nGridTracts * SortedDataTypeSize * data_hub.GetNumObsGroups() * mg);
+                                 (double)(parameters.GetNumTotalEllipses()+1) * data_hub.m_nGridTracts * SortedDataTypeSize * data_hub.GetNumIdentifiers() * mg);
   //Standard Memory Allocation
   prMemoryAppoxiation.first = std::ceil((SortedNeighborsArray + (b + 4.0 * EXP * P) * L * TI * CAT * D + sizeof(measure_t) * C * R * P)/1000000);
   //Special Memory Allocation

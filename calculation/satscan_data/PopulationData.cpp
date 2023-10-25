@@ -357,7 +357,7 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
        }
        if (fTractTotalPopulation == 0 && pCases[tTractIndex] > 0)
          throw resolvable_error("Error: The total population is zero for location ID %s but it has %d cases.",
-                                Data.GetGroupInfo().getObservationGroups().at(tTractIndex)->groupname().c_str(), pCases[tTractIndex]);
+                                Data.getIdentifierInfo().getIdentifiers().at(tTractIndex)->name().c_str(), pCases[tTractIndex]);
     }
 
     //if there is at least one case in a category then the total population in
@@ -963,8 +963,8 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
             if ((lastdate != popdate - 1) && lastdate != popdate) {
               JulianToChar(sDateBuffer, gvPopulationDates[j]);
               if (pDisplay)
-                fprintf(pDisplay,"Location %s, %s\n", Data.GetGroupInfo().getObservationGroups().at(i)->groupname().c_str(), sDateBuffer);
-              PrintDirection.Printf("Location %s, %s\n", BasePrint::P_WARNING, Data.GetGroupInfo().getObservationGroups().at(i)->groupname().c_str(), sDateBuffer);
+                fprintf(pDisplay,"Location %s, %s\n", Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), sDateBuffer);
+              PrintDirection.Printf("Location %s, %s\n", BasePrint::P_WARNING, Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), sDateBuffer);
             }
             lastdate = gvPopulationDates[j];
           }

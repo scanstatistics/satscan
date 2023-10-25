@@ -102,7 +102,7 @@ void CPurelySpatialBruteForceAnalysis::AllocateAdditionalSimulationObjects(Rando
      //If using grid file, get handler from data hub; else get separate object held by randomizer.
      const GInfo& ginfo = (gParameters.UseSpecialGrid() ? *gDataHub.GetGInfo() : pRandomizer->getCentroidHandler());
      //Allocate CentroidNeighborCalculator object used during randomization.
-     gCentroidCalculator.reset(new CentroidNeighborCalculator(gDataHub, pRandomizer->getGroupInfo(), ginfo, gPrintDirection));
+     gCentroidCalculator.reset(new CentroidNeighborCalculator(gDataHub, pRandomizer->getIdentifierInfo(), ginfo, gPrintDirection));
    }
    catch (prg_exception& x) {
      x.addTrace("AllocateAdditionalSimulationObjects()","CPurelySpatialBruteForceAnalysis");

@@ -10,7 +10,7 @@
 #include "ptr_vector.h"
 #include <boost/optional.hpp>
 
- /** Class representing cartesian coordinates in any number of dimensions. */
+ /** Class representing coordinates in any number of dimensions. */
 class Coordinates {
 	protected:
 		double        * gpCoordinates;
@@ -48,44 +48,41 @@ class Coordinates {
 			if (giSize != coordinates.size()) return true;
 			return memcmp(gpCoordinates, &coordinates[0], giSize * sizeof(double)) != 0;
 		}
-		double * getCoordinates() const { return gpCoordinates; }
+        bool operator()(const Coordinates & other) {
+            return *this < other;
+        }
+        double * getCoordinates() const { return gpCoordinates; }
 		unsigned int getInsertionOrdinal() const { return giInsertionOrdinal; }
 		unsigned int getSize() const { return giSize; }
 		std::vector<double>& retrieve(std::vector<double>& Repository) const;
 };
 
-/** Function object used to compare Coordinates. */
-class CompareCoordinates {
-	public:
-		bool operator() (const Coordinates * plhs, const Coordinates * prhs) { return *plhs < *prhs; }
-};
-
-/* Class representing a location of a population, case control, etc. */
+/* Class representing a geographical location. */
 class Location {
 	protected:
-		std::string _locationname;
+		std::string _location_name;
         boost::shared_ptr<const Coordinates> _coordinates;
         unsigned int _index; // index in container structure when alphabetically ordered.
 
 	public:
-		Location(const std::string& locationname) : _locationname(locationname), _index(0) {}
-        Location(const std::string& name, const std::vector<double>& coordinates, unsigned int iInsertionOrdinal) : _locationname(name), _coordinates(new Coordinates(coordinates, iInsertionOrdinal)) {}
-        Location(const std::string& name, double x, double y, unsigned int iInsertionOrdinal) : _locationname(name), _coordinates(new Coordinates(x, y, iInsertionOrdinal)) {}
+		Location(const std::string& locationname) : _location_name(locationname), _index(0) {}
+        Location(const std::string& name, const std::vector<double>& coordinates, unsigned int iInsertionOrdinal) : _location_name(name), _coordinates(new Coordinates(coordinates, iInsertionOrdinal)) {}
+        Location(const std::string& name, double x, double y, unsigned int iInsertionOrdinal) : _location_name(name), _coordinates(new Coordinates(x, y, iInsertionOrdinal)) {}
         virtual ~Location() {}
 
-		const std::string& name() const { return _locationname; }
+		const std::string& name() const { return _location_name; }
+        void rename(const std::string& name) { _location_name = name; }
         unsigned int index() const { return _index; }
         void setindex(unsigned int i) { _index = i; }
         virtual bool hascoordinates() const { return _coordinates.get() != 0; }
-		virtual const boost::shared_ptr<const Coordinates>& coordinates() const {
-            return _coordinates;
-		}
+		virtual const boost::shared_ptr<const Coordinates>& coordinates() const { return _coordinates; }
         void setCoordinates(const std::vector<double>& coordinates) { 
             if (hascoordinates()) throw prg_error("Attempting to redefine location coordinates.", "setCoordinates()");
             _coordinates.reset(new Coordinates(coordinates));
         }
 };
 
+/* Defines operator() to compare by Location names. */
 class CompareLocationByName {
 	public:
 		bool operator() (const boost::shared_ptr<Location>& lhs, const boost::shared_ptr<Location>& rhs) {
@@ -93,6 +90,7 @@ class CompareLocationByName {
 		}
 };
 
+/* Defines operator() to compare by Location coordinates. */
 class CompareLocationByCoordinates {
     public:
 	    bool operator() (const boost::shared_ptr<Location>& lhs, const boost::shared_ptr<Location>& rhs) {
@@ -100,11 +98,10 @@ class CompareLocationByCoordinates {
 	    }
 };
 
-class ObservationGroupingManager;
-
-/* Add class to manage and maintain the collection of locations. */
+class IdentifiersManager; // forward class declaration
+/* A class to oversee the addition and access to all locations. */
 class LocationsManager {
-	friend class ObservationGroupingManager;
+	friend class IdentifiersManager;
 
 	public:
 		typedef std::vector<boost::shared_ptr<Location> > LocationContainer_t;
@@ -117,7 +114,6 @@ class LocationsManager {
         unsigned int _expected_dimensions;
         short _max_identifier_length;
 
-
 	public:
 		LocationsManager(unsigned int dimensions) : _expected_dimensions(dimensions), _max_identifier_length(0) {}
 		~LocationsManager() {}
@@ -125,6 +121,7 @@ class LocationsManager {
 		AddStatus addLocation(const std::string& locationame);
 		AddStatus addLocation(const std::string& locationame, const std::vector<double>& coordinates);
         void assignIndexes() {
+            // Assigns the Locations relative position to it's class member - for easy determine later.
             for (auto itr = _locations.begin(); itr != _locations.end(); ++itr)
                 itr->get()->setindex(std::distance(_locations.begin(), itr));
         }
@@ -132,10 +129,7 @@ class LocationsManager {
         bool getCoordinatesExist(const std::vector<double>& coordinates) const;
 		unsigned int expectedDimensions() const { return _expected_dimensions; }
 		void setExpectedDimensions(unsigned int i) {
-			/*
-            if (_locations.size())
-				throw prg_error("Unable to set coordinate expected dimensions - locations already exist", "setExpectedDimensions()");
-            */
+			/* if (_locations.size()) throw prg_error("Unable to set coordinate expected dimensions - locations already exist", "setExpectedDimensions()"); */
 			_expected_dimensions = i;
 		}
 		const LocationContainer_t& locations() const { return _locations; }
@@ -148,29 +142,29 @@ class LocationsManager {
         short getMaxNameLength() const { return _max_identifier_length; }
 };
 
-/* Observation grouping and it's associated locations. */
-class ObservationGrouping {
-	friend class ObservationGroupingManager;
+/* Analytic identifier and it's associated locations. */
+class Identifier {
+	friend class IdentifiersManager;
 
 	public:
 		typedef MinimalGrowthArray<const Location*> LocationsSet_t;
-		typedef MinimalGrowthArray<std::string> CombinedGroupNames_t;
+		typedef MinimalGrowthArray<std::string> CombinedIdentifierNames_t;
 
 	protected:
-		std::string _groupname;
+		std::string _name;
 		LocationsSet_t _locations;
-		CombinedGroupNames_t _combined_with;
+		CombinedIdentifierNames_t _combined_with;
 
-		ObservationGrouping(const std::string& groupname) : _groupname(groupname) {}
+		Identifier(const std::string& name) : _name(name) {}
 
 	public:
-		ObservationGrouping(const std::string& groupname, const Location& location) : _groupname(groupname) {
+		Identifier(const std::string& name, const Location& location) : _name(name) {
 			if (!_locations.exists(&location)) _locations.add(&location, true);
 		}
-		~ObservationGrouping() {}
+		~Identifier() {}
 
-		bool operator==(const ObservationGrouping& rhs) const {
-			return _groupname == rhs._groupname;
+		bool operator==(const Identifier& rhs) const {
+			return _name == rhs._name;
 		}
 
 		void addLocation(const Location& location) { 
@@ -181,37 +175,38 @@ class ObservationGrouping {
             _locations.sort(comp);
         }
 		const LocationsSet_t& getLocations() { return _locations; }
-		const std::string& groupname() const { return _groupname; }
-		const CombinedGroupNames_t& getCombinedWith() const { return _combined_with; }
+		const std::string& name() const { return _name; }
+		const CombinedIdentifierNames_t& getCombinedWith() const { return _combined_with; }
 		void combinedWith(const std::string& other) { if (!_combined_with.exists(other)) _combined_with.add(other, true); }
-		CombinedGroupNames_t& retrieveAllIdentifiers(CombinedGroupNames_t& Identifiers) const;
+		CombinedIdentifierNames_t& retrieveAll(CombinedIdentifierNames_t& Identifiers) const;
 };
 
-class CompareObservationGrouping {
+/* Defines operator() to compare by Identifier names. */
+class CompareIdenitifers {
 	public:
-		bool operator() (const boost::shared_ptr<ObservationGrouping>& lhs, const boost::shared_ptr<ObservationGrouping>& rhs) {
-			return lhs->groupname() < rhs->groupname();
+		bool operator() (const boost::shared_ptr<Identifier>& lhs, const boost::shared_ptr<Identifier>& rhs) {
+			return lhs->name() < rhs->name();
 		}
 };
 
-/* Comparision functor which compares the locations of the ObservationGrouping objects. */
-class CompareObservationGroupingByLocation {
+/* Defines operator() to compare by Identifier Location names. */
+class CompareIdenitifersByLocation {
 	public:
-		bool operator() (const boost::shared_ptr<ObservationGrouping> lhs, const boost::shared_ptr<ObservationGrouping> rhs) {
+		bool operator() (const boost::shared_ptr<Identifier> lhs, const boost::shared_ptr<Identifier> rhs) {
 			if (lhs->getLocations().size() != rhs->getLocations().size())
 				return lhs->getLocations().size() < rhs->getLocations().size();
 			for (unsigned int i=0; i < lhs->getLocations().size(); ++i) {
 				if (lhs->getLocations()[i]->name() != rhs->getLocations()[i]->name())
 					return lhs->getLocations()[i]->name() < rhs->getLocations()[i]->name();
 			}
-			return lhs->groupname() < rhs->groupname();
+			return lhs->name() < rhs->name();
 		}
 };
 
-/* A class which manages observation groups and their coordinates. */
-class ObservationGroupingManager {
+/* Manages Identifier objects and their coordinates. */
+class IdentifiersManager {
 	public:
-		typedef std::vector<boost::shared_ptr<ObservationGrouping>> ObservationGrouping_t;
+		typedef std::vector<boost::shared_ptr<Identifier>> Identifiers_t;
 		typedef ptr_vector<Coordinates> CoordinatesContainer_t;
         typedef std::map<tract_t, std::map<tract_t, double> > LocationOverrides_t;
         enum AddStatus { Accepted = 0, UnknownLocation, MultipleLocations };
@@ -219,52 +214,52 @@ class ObservationGroupingManager {
 
 	protected:
 		WriteStatus _write_status;
-		bool _aggregating;
+		bool _aggregating_identifiers;
 		MultipleCoordinatesType _multiple_coordinates_type;
-		ObservationGrouping_t _groupings;
-		LocationsManager  _locations_manager;
-		std::map<std::string, std::string> gmAggregateTracts;
+		Identifiers_t _identifiers;
+		LocationsManager _locations_manager;
+		std::map<std::string, std::string> aggregated_identifiers;
 
-		size_t                              giNumLocationCoordinates;
-		MetaObsGroupManager                 gMetaObsGroupsManager;
-		MetaNeighborManager                 gMetaNeighborManager;
-		std::auto_ptr<MetaManagerProxy>     gMetaManagerProxy;
+		size_t                              _num_location_coordinates;
+		MetaIdentifierManager               _meta_identifiers_manager;
+		MetaNeighborManager                 _meta_neighbor_manager;
+		std::auto_ptr<MetaManagerProxy>     _meta_manager_proxy;
 		LocationOverrides_t                 _location_distance_overrides;
 
 	public:
-		ObservationGroupingManager(bool aggregating, MultipleCoordinatesType multiple_coordinates_type);
-		virtual ~ObservationGroupingManager() {}
+		IdentifiersManager(bool aggregating, MultipleCoordinatesType multiple_coordinates_type);
+		virtual ~IdentifiersManager() {}
 
-		void additionsCompleted(bool bReportingRiskEstimates=false);
-		LocationsManager::AddStatus addLocation(const std::string& locationname);
-		LocationsManager::AddStatus addLocation(const std::string& locationname, const std::vector<double>& coordinates);
-        LocationsManager::AddStatus setLocationCoordinates(const std::string& locationname, const std::vector<double>& coordinates);
-        bool addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance);
-		void assignExplicitCoordinates(CoordinatesContainer_t& coordinates);
-		bool getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
-		std::pair<bool, double> getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
-		ObservationGroupingManager::AddStatus addObservationGroup(const std::string& groupName, const std::string& locationame);
-		boost::optional<size_t> getObservationGroupIndex(const std::string& groupname) const;
-		const LocationsManager& getLocationsManager() const { return _locations_manager; }
-		size_t getNumLocationCoordinates() const { return giNumLocationCoordinates; }
-		const ObservationGrouping_t& getObservationGroups() const { return _groupings; }
-        const std::map<std::string, std::string>& getAggregated() const { return gmAggregateTracts; }
-        const WriteStatus getWriteStatus() const { return _write_status; }
-        void print(FILE* pFile) const;
-		void setExpectedCoordinateDimensions(unsigned int expected_dimension) {
-			if (_aggregating) return;
+        bool                                aggregatingIdentifiers() const { return _aggregating_identifiers; }
+        IdentifiersManager::AddStatus       addIdentifier(const std::string& identifierName, const std::string& locationame);
+        void                                additionsCompleted(bool bReportingRiskEstimates=false);
+		LocationsManager::AddStatus         addLocation(const std::string& locationname);
+		LocationsManager::AddStatus         addLocation(const std::string& locationname, const std::vector<double>& coordinates);
+        bool                                addLocationsDistanceOverride(tract_t t1, tract_t t2, double distance);
+		void                                assignExplicitCoordinates(CoordinatesContainer_t& coordinates);
+        const std::map<std::string, std::string>& getAggregated() const { return aggregated_identifiers; }
+        std::string                       & getIdentifierNameAtIndex(tract_t tIndex, std::string& name) const;
+        bool                                getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
+		std::pair<bool, double>             getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
+		boost::optional<size_t>             getIdentifierIndex(const std::string& identifiername) const;
+        const Identifiers_t               & getIdentifiers() const { return _identifiers; }
+        const LocationsManager            & getLocationsManager() const { return _locations_manager; }
+		size_t                              getNumLocationCoordinates() const { return _num_location_coordinates; }
+        const WriteStatus                   getWriteStatus() const { return _write_status; }
+        void                                print(FILE* pFile) const;
+        void                                reportCombinedIdentifiers(FILE * fDisplay) const;
+        Identifier::CombinedIdentifierNames_t & retrieveAll(size_t tIndex, Identifier::CombinedIdentifierNames_t& Identifiers) const;
+        void                                setExpectedCoordinateDimensions(unsigned int expected_dimension) {
+			if (_aggregating_identifiers) return;
 			_locations_manager.setExpectedDimensions(expected_dimension);
 		}
+        LocationsManager::AddStatus         setLocationCoordinates(const std::string& locationname, const std::vector<double>& coordinates);
 
-		ObservationGrouping::CombinedGroupNames_t & retrieveAllIdentifiers(size_t tIndex, ObservationGrouping::CombinedGroupNames_t& Identifiers) const;
-		void reportCombinedObsGroups(FILE * fDisplay) const;
-		std::string& getGroupname(tract_t tIndex, std::string& groupname) const;
-
-		MetaObsGroupManager               & getMetaObsGroupsManager() { return gMetaObsGroupsManager; }
-		const MetaObsGroupManager         & getMetaObsGroupsManager() const { return gMetaObsGroupsManager; }
-		const MetaNeighborManager         & getMetaNeighborManager() const { return gMetaNeighborManager; }
-		MetaNeighborManager               & getMetaNeighborManager() { return gMetaNeighborManager; }
-		const MetaManagerProxy            & getMetaManagerProxy() const { return *gMetaManagerProxy; }
+		MetaIdentifierManager             & getMetaIdentifiersManager() { return _meta_identifiers_manager; }
+		const MetaIdentifierManager       & getMetaIdentifiersManager() const { return _meta_identifiers_manager; }
+		const MetaNeighborManager         & getMetaNeighborManager() const { return _meta_neighbor_manager; }
+		MetaNeighborManager               & getMetaNeighborManager() { return _meta_neighbor_manager; }
+		const MetaManagerProxy            & getMetaManagerProxy() const { return *_meta_manager_proxy; }
 };
 
 //*****************************************************************************

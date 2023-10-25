@@ -45,8 +45,8 @@ CPurelyTemporalCluster::~CPurelyTemporalCluster() {
 /** overloaded assignment operator */
 CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs) {
   m_Center              = rhs.m_Center;
-  _central_observation_group = rhs._central_observation_group;
-  _num_observation_groups             = rhs._num_observation_groups;
+  _central_identifier   = rhs._central_identifier;
+  _num_identifiers      = rhs._num_identifiers;
   m_nRatio              = rhs.m_nRatio;
   _ratio_sets           = rhs._ratio_sets;
   m_nRank               = rhs.m_nRank;
@@ -58,8 +58,8 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalC
 
 void CPurelyTemporalCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   m_Center              = ((CPurelyTemporalCluster&)rhs).m_Center;
-  _central_observation_group = ((CPurelyTemporalCluster&)rhs)._central_observation_group;
-  _num_observation_groups             = ((CPurelyTemporalCluster&)rhs)._num_observation_groups; _num_observation_groups=1;
+  _central_identifier   = ((CPurelyTemporalCluster&)rhs)._central_identifier;
+  _num_identifiers      = ((CPurelyTemporalCluster&)rhs)._num_identifiers; _num_identifiers=1;
   m_nRatio              = ((CPurelyTemporalCluster&)rhs).m_nRatio;
   _ratio_sets           = ((const CPurelyTemporalCluster&)rhs)._ratio_sets;
   m_nRank               = ((CPurelyTemporalCluster&)rhs).m_nRank;
@@ -117,15 +117,15 @@ std::string& CPurelyTemporalCluster::GetStartDate(std::string& sDateString, cons
 
 /** Returns collection of location indexes that define this cluster. If 'bAtomize' is true, breaks
     down meta locations into atomic indexes. */
-std::vector<tract_t> & CPurelyTemporalCluster::getGroupIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
+std::vector<tract_t> & CPurelyTemporalCluster::getIdentifierIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
    indexes.clear();
    indexes.push_back(0);
    return indexes;
 }
 
-/** Returns index of most central location. */
-tract_t CPurelyTemporalCluster::mostCentralObservationGroupIdx() const {
-  throw prg_error("GetMostCentralLocationIndex() not implemented for CPurelyTemporalCluster.","GetMostCentralLocationIndex()");
+/** Returns index of most central identifier. */
+tract_t CPurelyTemporalCluster::mostCentralIdentifierIdx() const {
+  throw prg_error("mostCentralIdentifierIdx() not implemented for CPurelyTemporalCluster.","mostCentralIdentifierIdx()");
 }
 
 /** returns the number of cases for tract as defined by cluster */

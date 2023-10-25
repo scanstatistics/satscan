@@ -30,10 +30,10 @@ Network::Connection_Details_t GisUtils::getClusterConnections(const NetworkLocat
 /* Returns the unique set of network connections. */
 Network::Connection_Details_t GisUtils::getNetworkConnections(const Network& network) {
     Network::Connection_Details_t connections;
-    for (auto node : network.getNodes()) {
+    for (const auto& node : network.getNodes()) {
         const Location* nodeLocation = &node.second.getLocation();
         // Define edge from this node to connecting nodes.
-        for (auto connectedNode: node.second.getConnections()) {
+        for (const auto& connectedNode: node.second.getConnections()) {
             const Location * connectionLocation = &connectedNode.get<0>()->getLocation();
             connections.emplace(Network::Connection_Detail_t(std::min(nodeLocation, connectionLocation), std::max(nodeLocation, connectionLocation)));
         }
@@ -56,7 +56,7 @@ GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData
 		pointOnCircumference = prLatitudeLongitude;
 	} else {
 		// get the coordinates of location farthest away from center
-		CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.getNumObservationGroups()), TractCoords);
+		CentroidNeighborCalculator::getTractCoordinates(datahub, cluster, datahub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), cluster.getNumIdentifiers()), TractCoords);
 		pointOnCircumference = ConvertToLatLong(TractCoords);
 	}
 
@@ -118,7 +118,8 @@ double GisUtils::getRadiusInMeters(point_t centerPoint, point_t pointOnCircumfer
    southern, eastern, and western locations in cluster. Then finding the locations outside that shape which are the furthest apart. */
 double GisUtils::calculateDistanceFurthestLocations(const CSaTScanData& datahub, const CCluster& cluster) {
     const CParameters& params = datahub.GetParameters();
-    if (params.GetCoordinatesType() == CARTESIAN && datahub.GetGroupInfo().getLocationsManager().expectedDimensions() != 2) return -2.0; // not implemented for this situation
+    if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER || (params.GetCoordinatesType() == CARTESIAN && datahub.getLocationsManager().expectedDimensions() != 2))
+        return -2.0; // not implemented for these situations
     bool spansAntiMeridian = false;
     std::vector<double> coordinates;
     auto transformCoordinates = [&coordinates](const CParameters& parameters, bool spansAntiMeridian) { // transforms 3-dimensional coordinates back to latitude/longitude
@@ -131,12 +132,12 @@ double GisUtils::calculateDistanceFurthestLocations(const CSaTScanData& datahub,
     // Find the four cluster locations that are furthest north, south, east, and west. (There are usually four, but could be three or even just two).
     std::vector<tract_t> vLocations;
     CentroidNeighborCalculator::getLocationsAboutCluster(datahub, cluster, 0, &vLocations);
-    auto locations = datahub.GetGroupInfo().getLocationsManager().locations();
+    const auto& locations = datahub.getLocationsManager().locations();
     point_t northMost, southMost, westMost, eastMost;
     auto calculateMosts = [&coordinates, &northMost, &southMost, &westMost, &eastMost, transformCoordinates](const CSaTScanData& datahub, const std::vector<tract_t>& vLocations, bool spansAntiMeridian) {
         northMost = point_t(0.0, -std::numeric_limits<double>::max()); southMost = point_t(0.0, std::numeric_limits<double>::max());
         westMost = point_t(std::numeric_limits<double>::max(), 0.0); eastMost = point_t(-std::numeric_limits<double>::max(), 0.0);
-        auto locations = datahub.GetGroupInfo().getLocationsManager().locations();
+        const auto& locations = datahub.getLocationsManager().locations();
         for (auto index : vLocations) {
             locations[index].get()->coordinates()->retrieve(coordinates);
             // transform 3-d coordinates back to latitude/longitude - this will allow use to calculate slope and intercept in either coordinate system

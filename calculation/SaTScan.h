@@ -87,13 +87,13 @@
   #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
 #endif
 /** case count type */
-typedef long            count_t;
+typedef long count_t;
 /** measure type */
-typedef double          measure_t;
-/** used for tract indeces */
-typedef int             tract_t;
+typedef double measure_t;
+/** used for identifier indices */
+typedef int tract_t;
 /** unsigned int type declaration */
-typedef unsigned int    UInt;
+typedef unsigned int UInt;
 /** data set index collection type */
 typedef std::set<size_t> DataSetIndexes_t;
 /** date precision units */
@@ -119,7 +119,7 @@ enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
 /* line-list types */
-enum LinelistType { EVENT_ID=0, EVENT_COORD_Y, EVENT_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
+enum LinelistType { INDIVIDUAL_ID=0, DESCRIPTIVE_COORD_Y, DESCRIPTIVE_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
 /* data source fields map container typedef for linelist */
 typedef boost::tuple<LinelistType, std::string> LinelistTuple_t;
 typedef std::map<unsigned int, LinelistTuple_t> LineListFieldMapContainer_t;

@@ -170,22 +170,22 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
     NetworkLocationContainer_t networkLocations;
     if (DataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
         const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(DataHub.GetGInfo())->getCentroidLocation(cluster.GetCentroidIndex());
-        const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.GetGroupInfo().getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
-        buildNeighborsAboutNode(centroidNode, networkLocations, DataHub.GetGroupInfo().getLocationsManager().locations().size());
+        const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+        buildNeighborsAboutNode(centroidNode, networkLocations, DataHub.getLocationsManager().locations().size());
     }
 
     // Build the collection of atomic tract indexes for this cluster.
-    cluster.getGroupIndexes(DataHub, clusterTracts, true);
-    // Create a collection of locations that are within this cluster per the tracts/groups of this cluster.
+    cluster.getIdentifierIndexes(DataHub, clusterTracts, true);
+    // Create a collection of locations that are within this cluster per the identifiers of this cluster.
     for (auto tTract: clusterTracts) {
-        auto grouping = DataHub.GetGroupInfo().getObservationGroups()[tTract];
+        const auto& identifier = DataHub.getIdentifierInfo().getIdentifiers()[tTract];
         LocationsManager::LocationIdx_t locationBest(boost::optional<unsigned int>(boost::none), 0);
         double dCurrent = -1;
-        for (unsigned int i = 0; i < grouping->getLocations().size(); ++i) {
+        for (unsigned int i = 0; i < identifier->getLocations().size(); ++i) {
             double dDistance = -1;
-            auto location = DataHub.GetGroupInfo().getLocationsManager().getLocation(grouping->getLocations()[i]->name());
+            const auto& location = DataHub.getLocationsManager().getLocation(identifier->getLocations()[i]->name());
             if (networkLocations.size()) {
-                auto tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.GetGroupInfo().getLocationsManager().getLocation(location.second->name()).first.get())->second);
+                const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(location.second->name()).first.get())->second);
                 double dDistance = -1;
                 for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
                     if (itr->first == tractNode) {
@@ -194,7 +194,7 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
                     }
                 }
                 if (dDistance == -1) throw prg_error("Unable to determine distance between cluster centroid and '%s'.", "getClusterConnections()", location.second->name().c_str());
-                //dDistance = DataHub.refLocationNetwork().getDistanceBetween(centroidLocation, *tractLocation, DataHub.GetGroupInfo());
+                //dDistance = DataHub.refLocationNetwork().getDistanceBetween(centroidLocation, *tractLocation, DataHub.getIdentifierInfo());
                 switch (DataHub.GetParameters().GetMultipleCoordinatesType()) {
                     case ATLEASTONELOCATION: if (locationBest.first == boost::none || dCurrent > dDistance) { locationBest = location; dCurrent = dDistance; } break; // Searching for the closest coordinate.
                     case ALLLOCATIONS: if (locationBest.first == boost::none || dCurrent < dDistance) { locationBest = location; dCurrent = dDistance; } break; //Searching for the farthest coordinate.
@@ -224,13 +224,13 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
     return connections;
 }
 
-double Network::getDistanceBetween(const Location& location1, const Location& location2, const ObservationGroupingManager& groups) const {
+double Network::getDistanceBetween(const Location& location1, const Location& location2, const IdentifiersManager& identifierMgr) const {
     if (location1.name() == location2.name()) return 0.0;
 
-    auto location1Node = _nodes.find(groups.getLocationsManager().getLocation(location1.name()).first.get())->second;
-    auto location2Node = &(_nodes.find(groups.getLocationsManager().getLocation(location2.name()).first.get())->second);
+    auto location1Node = _nodes.find(identifierMgr.getLocationsManager().getLocation(location1.name()).first.get())->second;
+    auto location2Node = &(_nodes.find(identifierMgr.getLocationsManager().getLocation(location2.name()).first.get())->second);
     NetworkLocationContainer_t networkLocations;
-    buildNeighborsAboutNode(location1Node, networkLocations, groups.getLocationsManager().locations().size());
+    buildNeighborsAboutNode(location1Node, networkLocations, identifierMgr.getLocationsManager().locations().size());
     for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
         if (itr->first == location2Node)
             return itr->second;
@@ -238,7 +238,7 @@ double Network::getDistanceBetween(const Location& location1, const Location& lo
     throw prg_error("Unable to determine distance between locations '%s' and '%s'.", "getDistanceBetween()", location1.name().c_str(), location2.name().c_str());
 }
 
-void Network::printPath(const NetworkLocationContainer_t& nodePath, const ObservationGroupingManager& groups) {
+void Network::printPath(const NetworkLocationContainer_t& nodePath, const IdentifiersManager& identifierMgr) {
     double length = 0;
     for (auto itr= nodePath.begin(); itr != nodePath.end(); ++itr) {
         length += itr->second;
@@ -246,29 +246,29 @@ void Network::printPath(const NetworkLocationContainer_t& nodePath, const Observ
     }
 }
 
-void Network::printTreePath(const NetworkPathTree& treePath, const ObservationGroupingManager& groups) {
+void Network::printTreePath(const NetworkPathTree& treePath, const IdentifiersManager& identifierMgr) {
     std::string buffer;
-    fprintf(AppToolkit::getToolkit().openDebugFile(), "Node tree path : %s\n", groups.getGroupname(treePath.getRoot().getLocationIndex(), buffer).c_str());
-    printTreePath(treePath.getRoot(), groups);
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "Node tree path : %s\n", identifierMgr.getIdentifierNameAtIndex(treePath.getRoot().getLocationIndex(), buffer).c_str());
+    printTreePath(treePath.getRoot(), identifierMgr);
 }
 
-void Network::printTreePath(const NetworkNode& node, const ObservationGroupingManager& groups) {
+void Network::printTreePath(const NetworkNode& node, const IdentifiersManager& identifierMgr) {
     NetworkNode::ConnectionsContainer_t::const_iterator end = node.getConnections().end(), itr = node.getConnections().begin();
     for (; itr != end; ++itr) {
         std::stringstream write;
-        write << groups.getLocationsManager().locations()[node.getLocationIndex()]->name() << " ==> " << groups.getLocationsManager().locations()[itr->get<0>()->getLocationIndex()]->name() << std::endl;
+        write << identifierMgr.getLocationsManager().locations()[node.getLocationIndex()]->name() << " ==> " << identifierMgr.getLocationsManager().locations()[itr->get<0>()->getLocationIndex()]->name() << std::endl;
         fprintf(AppToolkit::getToolkit().openDebugFile(), "%s", write.str().c_str());
     }
     end = node.getConnections().end(), itr = node.getConnections().begin();
     for (; itr != end; ++itr) {
-        printTreePath(*itr->get<0>(), groups);
+        printTreePath(*itr->get<0>(), identifierMgr);
     }
 }
 
-void Network::printTreePath(const ObservationGroupingManager& groups, const CCluster& cluster) const {
+void Network::printTreePath(const IdentifiersManager& identifierMgr, const CCluster& cluster) const {
     const NetworkNode& clusterRoot = _nodes.at(cluster.GetCentroidIndex());
     NetworkLocationContainer_t locationPath;
     NetworkPathTree networkPathTree(clusterRoot);
-    buildNeighborsAboutNode(clusterRoot, locationPath, groups.getLocationsManager().locations().size(), &networkPathTree, static_cast<size_t>(cluster.getNumObservationGroups()));
-    printTreePath(networkPathTree, groups);
+    buildNeighborsAboutNode(clusterRoot, locationPath, identifierMgr.getLocationsManager().locations().size(), &networkPathTree, static_cast<size_t>(cluster.getNumIdentifiers()));
+    printTreePath(networkPathTree, identifierMgr);
 }

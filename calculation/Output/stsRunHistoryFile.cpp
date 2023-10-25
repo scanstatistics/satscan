@@ -317,7 +317,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisExecution& analysisExecution
 
       SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
       SetDoubleField(*pRecord, analysisExecution.getDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetNumObsGroups(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
+      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetNumIdentifiers(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
       sTempValue = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");

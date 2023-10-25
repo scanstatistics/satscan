@@ -42,42 +42,30 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_TIME_TREND_OUT_FIELD;
       static const char       * CLU_TIME_TREND_DIFF_FIELD;
 
-      //static const char       * CLU_ALPHA_IN_FIELD;
-      //static const char       * CLU_BETA1_IN_FIELD;
-      //static const char       * CLU_BETA2_IN_FIELD;
-      //static const char       * CLU_ALPHA_OUT_FIELD;
-      //static const char       * CLU_BETA1_OUT_FIELD;
-      //static const char       * CLU_BETA2_OUT_FIELD;
-      //static const char       * CLU_ALPHA_GLOBAL_FIELD;
-      //static const char       * CLU_BETA1_GLOBAL_FIELD;
-      //static const char       * CLU_BETA2_GLOBAL_FIELD;
-      //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
-      //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
       static const char        * GINI_CLUSTER_FIELD;
       static const char        * OLIVEIRA_F_MLC_FIELD;
       static const char        * OLIVEIRA_F_HIERARCHICAL_FIELD;
-      /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/
-      static const char        * OLIVEIRA_F_GINI_OPTIMAL_FIELD;
-      static const char        * OLIVEIRA_F_GINI_MAXIMA_FIELD;
-      static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_OPTIMAL_FIELD;
-      static const char        * OLIVEIRA_F_HIERARCHICAL_GINI_MAXIMA_FIELD;
-      */
+      typedef std::vector<std::pair<const Location*, MinimalGrowthArray<size_t>>> LocationToIdentifiers_t;
 
   protected:
-      AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
-
-      void                      DefineFields(const CSaTScanData& DataHub);
-      ShapeDataFileWriter     * gpShapeDataFileWriter;
+      AbstractWeightedNormalRandomizer::ClusterLocationStatistics _weighted_nornal_statistics;
+      ShapeDataFileWriter * gpShapeDataFileWriter;
       boost::shared_ptr<NetworkLocationContainer_t> _clusterNetwork;
+      LocationToIdentifiers_t _location_to_identifiers;
+
+      void DefineFields(const CSaTScanData& DataHub);
+      std::pair<double, double> getWeightedNormalMeanForIdentifiers(const MinimalGrowthArray<size_t>& identifiers) const;
+      double getRelativeRiskForIdentifiers(const CSaTScanData& DataHub, const CCluster& cluster, const MinimalGrowthArray<size_t>& identifiers) const;
+      boost::shared_ptr<AbstractTimeTrend> getTimeTrendForIdentifiers(const CSaTScanData& DataHub, const MinimalGrowthArray<size_t>& identifiers) const;
 
   public:
     LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
-      virtual void Write(
-          const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, const SimulationVariables& simVars, const LocationRelevance& location_relevance
-      );
-      void WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
+    virtual void WriteClusterLocations(
+        const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, const SimulationVariables& simVars, const LocationRelevance& location_relevance
+    );
+    void WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************
 #endif

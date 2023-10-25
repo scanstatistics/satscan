@@ -19,7 +19,7 @@ void CSaTScanData::DisplayCases(FILE* pFile, bool nonCumulative) const {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
-        for (int t=0; t < _num_observation_groups; ++t)
+        for (int t=0; t < _num_identifiers; ++t)
            fprintf(pFile, "%i,%i,%li\n", i, t, ppCases[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppCases[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
@@ -35,7 +35,7 @@ void CSaTScanData::DisplayControls(FILE* pFile, bool nonCumulative) const {
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
-       for (int t=0; t < _num_observation_groups; ++t)
+       for (int t=0; t < _num_identifiers; ++t)
          fprintf(pFile, "%i,%i,%li\n", i, t, ppControls[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppControls[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
@@ -51,7 +51,7 @@ void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* p
      fprintf(pFile, "Data Set %u:\n", j);
      count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
-       for (int t=0; t < _num_observation_groups; ++t)
+       for (int t=0; t < _num_identifiers; ++t)
          fprintf(pFile, "%i,%i,%li\n", i, t, ppSimCases[i][t] - (nonCumulative && (i + 1) < GetNumTimeIntervals() ? ppSimCases[i + 1][t] : 0));
      fprintf(pFile, "\n");
   }
@@ -69,8 +69,8 @@ void CSaTScanData::DisplayMeasure(FILE* pFile, bool nonCumulative) const {
         fprintf(pFile, "Location,IntervalIdx,Measure,population\n", j);
         measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
         PopulationData & population = gDataSets->GetDataSet(j).getPopulationData();
-        for (int t = 0; t < _num_observation_groups; ++t) {
-   	        const char * locationId = _observation_groups_manager->getObservationGroups().at(t)->getLocations()[0]->name().c_str();
+        for (int t = 0; t < _num_identifiers; ++t) {
+   	        const char * locationId = _identifiers_manager->getIdentifiers().at(t)->getLocations()[0]->name().c_str();
             //const char * locationId = this->GetTInfo()->getIdentifier(t);
             for (int i = 0; i < GetNumTimeIntervals(); ++i) {
                 Julian date = GetTimeIntervalStartTimes()[i];
@@ -106,10 +106,10 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
         fprintf(pFile, "Grid Point # %i : ", i);
         if (pppSortedInt)
             for (j=0; j < ppNeighborCount[e][i]; ++j)
-                fprintf(pFile, "%s ", _observation_groups_manager->getObservationGroups().at(pppSortedInt[e][i][j])->groupname().c_str());
+                fprintf(pFile, "%s ", _identifiers_manager->getIdentifiers().at(pppSortedInt[e][i][j])->name().c_str());
         else
             for (j=0; j < ppNeighborCount[e][i]; ++j)
-                fprintf(pFile, "%s ", _observation_groups_manager->getObservationGroups().at(pppSortedUShort[e][i][j])->groupname().c_str());
+                fprintf(pFile, "%s ", _identifiers_manager->getIdentifiers().at(pppSortedUShort[e][i][j])->name().c_str());
         fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[e][i]);
     }
   }
@@ -135,12 +135,12 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     //print number locations scanned
       if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
           PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%ld\n", (long)_num_observation_groups + GetNumMetaObsGroupsReferenced() - GetNumNullifiedObsGroups());
+          fprintf(fp, "%ld\n", (long)_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers());
       } else {
           PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%u\n", GetGroupInfo().getLocationsManager().locations().size());
-          PrintFormat.PrintSectionLabel(fp, "Number of observation groups", false, false);
-          fprintf(fp, "%u\n", GetGroupInfo().getObservationGroups().size() + GetGroupInfo().getAggregated().size());
+          fprintf(fp, "%u\n", getLocationsManager().locations().size());
+          PrintFormat.PrintSectionLabel(fp, "Number of identifiers", false, false);
+          fprintf(fp, "%u\n", getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size());
       }
   }  
   //print total population per data set

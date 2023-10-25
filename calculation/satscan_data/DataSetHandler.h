@@ -27,7 +27,7 @@ class DataSetHandler {
     void                                Setup();
   
   protected:
-    static const short                  guLocationIndex;           /** input record index for location */
+    static const short                  _identifier_column_index;           /** input record index for location */
     static const short                  guCountIndex;              /** input record index for count in case/control files */
     static const short                  guCountDateIndex;          /** input record index for date in case/control files */
     static const short                  guCountCategoryIndexNone;  /** input record index for category in case/control files w/ no date field */
@@ -82,7 +82,7 @@ class DataSetHandler {
     void                                ReportZeroPops(CSaTScanData& Data, FILE* pDisplay, BasePrint* pPrintDirection);
 	RecordStatusType                    RetrieveCaseCounts(DataSource& Source, count_t& nCount) const;
 	RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate) const;
-	RecordStatusType                    RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) const;
+	RecordStatusType                    RetrieveIdentifierIndex(DataSource& Source, tract_t& tLocationIndex) const;
 	void                                removeDataSetsWithNoData();
     size_t                              getDataSetRelativeIndex(size_t iSet) const;
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet& thisRealSet);

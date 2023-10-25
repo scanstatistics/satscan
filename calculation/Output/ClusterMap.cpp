@@ -217,7 +217,7 @@ const char * ClusterMap::TEMPLATE = " \
 
 ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0),
     _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()) { 
-    _cluster_locations.resize(_dataHub.GetGroupInfo().getLocationsManager().locations().size());
+    _cluster_locations.resize(_dataHub.getLocationsManager().locations().size());
 }
 
 /** Alters pass Filename to include suffix and extension. */
@@ -287,7 +287,7 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             }
             // Compile collection of cluster points to display through known tracts of cluster.
             worker.str("");
-            auto locations = _dataHub.GetGroupInfo().getLocationsManager().locations();
+            const auto& locations = _dataHub.getLocationsManager().locations();
             boost::dynamic_bitset<> clusterLocations;
             CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &clusterLocations);
             size_t index = clusterLocations.find_first();
@@ -334,7 +334,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
     std::vector<std::string> g_values;
     csv_string_to_typelist<std::string>(parameters.getKmlEventGroupAttribute().c_str(), g_values);
     for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= EVENT_COORD_Y) continue; // Only want attributes, no event id or coordinates.
+        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue; // Only want attributes, no event id or coordinates.
         if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
         if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first; }) == _event_types.end())
             _event_types.push_back(EventType(demographic.first));
@@ -366,7 +366,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             std::stringstream eventtypes;
             std::vector<std::pair<std::string, std::string>> eventAttrs;
             while (Source->ReadRecord()) {
-                DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveLocationIndex(*Source, tid); //read and validate that tract identifier
+                DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
                 if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
                 readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
                 if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
@@ -378,17 +378,17 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 for (auto itr=Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
                     value = Source->GetValueAtUnmapped(itr->first);
                     value = value == 0 ? "" : value;
-                    if (itr->second.get<0>() == EVENT_ID)
+                    if (itr->second.get<0>() == INDIVIDUAL_ID)
                         event_id = value;
-                    else if (itr->second.get<0>() == EVENT_COORD_Y)
+                    else if (itr->second.get<0>() == DESCRIPTIVE_COORD_Y)
                         latitude = value;
-                    else if (itr->second.get<0>() == EVENT_COORD_X)
+                    else if (itr->second.get<0>() == DESCRIPTIVE_COORD_X)
                         longitude = value;
                     else {
                         // If this event column is one of those being grouped, add the value to the event-types categories.
                         auto eventtype = eventtype_map.find(itr->second.get<1>());
                         if (eventtype != eventtype_map.end()) {
-                            auto category = eventtype->second->addCategory(value);
+                            const auto& category = eventtype->second->addCategory(value);
                             if (eventtypes.tellp()) eventtypes << ",";
                             eventtypes << "'" << eventtype->second->className() << "': '" << category.get<0>() << "'";
                         }
@@ -462,7 +462,7 @@ void ClusterMap::finalize() {
         worker.str("");
         if (params.getUseLocationsNetworkFile()) {
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
-            for (auto connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
+            for (const auto& connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
                 connection.get<0>()->coordinates()->retrieve(vCoordinates);
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
                 worker << printString(buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
@@ -474,7 +474,7 @@ void ClusterMap::finalize() {
         std::string all_edges = worker.str();
 
         worker.str("");
-        for (auto location: _dataHub.GetGroupInfo().getLocationsManager().locations()) {
+        for (const auto& location: _dataHub.getLocationsManager().locations()) {
             if (!_cluster_locations.test(location->index())) {
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(vCoordinates)));
                 worker << printString(buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();

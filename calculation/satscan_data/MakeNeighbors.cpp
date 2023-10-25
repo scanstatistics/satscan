@@ -16,16 +16,16 @@
 /** constructor */
 CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)
                            :gPrintDirection(PrintDirection), gParameters(DataHub.GetParameters()),
-                            gCentroidInfo(*DataHub.GetGInfo()), _observation_groups(DataHub.GetGroupInfo()),
+                            gCentroidInfo(*DataHub.GetGInfo()), _identifier_mgr(DataHub.getIdentifierInfo()),
                             gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
-                            gNumTracts(DataHub.GetNumObsGroups()), gtCurrentEllipseCoordinates(0),
+                            gNumTracts(DataHub.GetNumIdentifiers()), gtCurrentEllipseCoordinates(0),
                             gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
                             gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
                             gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
                             gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
                             gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
                             gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()) {
-  gvCentroidDistances.resize(_observation_groups.getNumLocationCoordinates());
+  gvCentroidDistances.resize(_identifier_mgr.getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
   CalculateMaximumSpatialClusterSize(DataHub);
@@ -33,18 +33,18 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
 }
 
 /** constructor */
-CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, const ObservationGroupingManager& groupInfo, const GInfo& gridInfo, BasePrint& PrintDirection)
+CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, const IdentifiersManager& identifierMgr, const GInfo& gridInfo, BasePrint& PrintDirection)
                            :gPrintDirection(PrintDirection), gParameters(DataHub.GetParameters()),
-                            gCentroidInfo(gridInfo), _observation_groups(groupInfo),
+                            gCentroidInfo(gridInfo), _identifier_mgr(identifierMgr),
                             gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
-                            gNumTracts(DataHub.GetNumObsGroups()), gtCurrentEllipseCoordinates(0),
+                            gNumTracts(DataHub.GetNumIdentifiers()), gtCurrentEllipseCoordinates(0),
                             gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
                             gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
                             gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
                             gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
                             gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
                             gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()) {
-  gvCentroidDistances.resize(_observation_groups.getNumLocationCoordinates());
+  gvCentroidDistances.resize(_identifier_mgr.getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
   CalculateMaximumSpatialClusterSize(DataHub);
@@ -74,8 +74,8 @@ void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOf
 	if (tEllipseOffset == 0 || gtCurrentEllipseCoordinates == tEllipseOffset) return;
 	
 	double dAngle=GetEllipseAngle(tEllipseOffset), dShape=GetEllipseShape(tEllipseOffset);
-	gvLocationEllipticCoordinates.resize(_observation_groups.getLocationsManager().locations().size());
-	auto itr=_observation_groups.getLocationsManager().locations().begin(), itrEnd=_observation_groups.getLocationsManager().locations().end();
+	gvLocationEllipticCoordinates.resize(_identifier_mgr.getLocationsManager().locations().size());
+	auto itr=_identifier_mgr.getLocationsManager().locations().begin(), itrEnd=_identifier_mgr.getLocationsManager().locations().end();
 	for (; itr != itrEnd; ++itr) {
 		std::pair<double, double>& eCoords = gvLocationEllipticCoordinates[itr->get()->coordinates()->getInsertionOrdinal()];
 		Transform(itr->get()->coordinates()->getCoordinates()[0], itr->get()->coordinates()->getCoordinates()[1], dAngle, dShape, &(eCoords.first), &(eCoords.second));
@@ -284,7 +284,7 @@ void CentroidNeighborCalculator::ReduceMultipleCoordinates() {
 void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
     CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
     //sort locations clostest to farthest
-    std::sort(gvCentroidDistances.begin(), gvCentroidDistances.end(), CompareGroupDistance(_observation_groups));
+    std::sort(gvCentroidDistances.begin(), gvCentroidDistances.end(), CompareIdentifierDistance(_identifier_mgr));
     // Apply the multiple coordinates setting to the collection of location distances.
     ReduceMultipleCoordinates();
 }
@@ -332,45 +332,45 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
   Centroid.gtEllipseOffset = tEllipseOffsetIndex;
 }
 
-/* Returns the locations in this cluster. When settings allow only a single coordinate, this is just the group/tracts/locations in the cluster. When there
-   are possibly multiple coordinates per group/tract, then we need to derive this information. */
+/* Returns the locations in this cluster. When settings allow only a single coordinate, this is just the identifier/locations in the cluster. When there
+   are possibly multiple coordinates per identifier, then we need to derive this information. */
 void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& dataHub, const CCluster& cluster, boost::dynamic_bitset<>* bLocations, std::vector<tract_t>* vLocations) {
     // First search the cache for this information.
-    auto itrCache = dataHub._cluster_locations_cache.find(cluster.GetCentroidIndex());
+    auto itrCache = dataHub._cluster_locations_cache.find(std::make_pair(cluster.GetEllipseOffset(), cluster.GetCentroidIndex()));
     if (itrCache != dataHub._cluster_locations_cache.end()) {
         if (bLocations) *bLocations = itrCache->second.first;
         if (vLocations) *vLocations = itrCache->second.second;
         return;
     }
     // Otherwise derive the cluster locations.
-    boost::dynamic_bitset<> bindexes(dataHub.GetGroupInfo().getLocationsManager().locations().size());
+    boost::dynamic_bitset<> bindexes(dataHub.getLocationsManager().locations().size());
     std::vector<tract_t> vindexes;
     if (dataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) {
-        std::vector<tract_t> groupindexes;
-        cluster.getGroupIndexes(dataHub, groupindexes, true);
-        for (auto groupidx : groupindexes) {
-            vindexes.push_back(dataHub.GetGroupInfo().getObservationGroups()[groupidx]->getLocations()[0]->index());
+        std::vector<tract_t> identifierindexes;
+        cluster.getIdentifierIndexes(dataHub, identifierindexes, true);
+        for (auto identifieridx : identifierindexes) {
+            vindexes.push_back(dataHub.getIdentifierInfo().getIdentifiers()[identifieridx]->getLocations()[0]->index());
             bindexes.set(vindexes.back());
         }
     } else if (dataHub.GetParameters().getUseLocationsNetworkFile()) {
         NetworkLocationContainer_t networkLocations;
         dataHub.getClusterNetworkLocations(cluster, networkLocations);
-        for (auto nodeLoc: networkLocations) {
+        for (const auto& nodeLoc: networkLocations) {
             bindexes.set(nodeLoc.first->getLocationIndex());
             vindexes.push_back(nodeLoc.first->getLocationIndex());
         }
     } else if (cluster.GetRadiusDefined()) {
         // Determine which locations are within the circle/ellipse by calculating the distance from centroid to each location,
         // then sorting, and finally taking only those within the radius of cluster.
-        std::vector<std::pair<tract_t, double> > groupdistances;
+        std::vector<std::pair<tract_t, double> > identifierdistances;
         double distance, clusterRadius = cluster.GetCartesianRadius();
         std::vector<double> clusterCenter, locationCoordinates;
         dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), clusterCenter);
-        auto locations = dataHub.GetGroupInfo().getLocationsManager().locations();
+        const auto& locations = dataHub.getLocationsManager().locations();
         if (cluster.GetEllipseOffset() == 0) { // circular
             for (auto itr = locations.begin(); itr != locations.end(); ++itr) {
                 distance = Coordinates::distanceBetween(clusterCenter, itr->get()->coordinates()->retrieve(locationCoordinates));
-                if (distance <= clusterRadius) groupdistances.push_back(std::make_pair(std::distance(locations.begin(), itr), distance));
+                if (distance <= clusterRadius) identifierdistances.push_back(std::make_pair(std::distance(locations.begin(), itr), distance));
             }
         } else { // elliptic
             double angle = dataHub.gvEllipseAngles[cluster.GetEllipseOffset() - 1], shape = dataHub.gvEllipseShapes[cluster.GetEllipseOffset() - 1];
@@ -379,24 +379,24 @@ void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& da
                 itr->get()->coordinates()->retrieve(locationCoordinates);
                 Transform(locationCoordinates[0], locationCoordinates[1], angle, shape, &locationCoordinates[0], &locationCoordinates[1]);
                 distance = Coordinates::distanceBetween(clusterCenter, locationCoordinates);
-                if (distance <= clusterRadius) groupdistances.push_back(std::make_pair(std::distance(locations.begin(), itr), distance));
+                if (distance <= clusterRadius) identifierdistances.push_back(std::make_pair(std::distance(locations.begin(), itr), distance));
             }
         }
         // Now sort the collection of distances, least to greatest, so the order matches how the location wold enter the cluster.
-        std::sort(groupdistances.begin(), groupdistances.end(), [](const std::pair<tract_t, double> &left, const std::pair<tract_t, double> &right) {
+        std::sort(identifierdistances.begin(), identifierdistances.end(), [](const std::pair<tract_t, double> &left, const std::pair<tract_t, double> &right) {
             if (left.second == right.second)
                 return left.first < right.first;
             return left.second < right.second;
         });
-        // Now record those observation group indexes to bitset and vector for response and storage.
-        for (auto d : groupdistances) { bindexes.set(d.first); vindexes.push_back(d.first); }
+        // Now record those identifier indexes to bitset and vector for response and storage.
+        for (auto d : identifierdistances) { bindexes.set(d.first); vindexes.push_back(d.first); }
     } else 
         throw prg_error("Unknown situation encountered when attempting to get cluster locations.", "getLocationsAboutCluster");
     // Assign cluster locations data to requested data structure(s).
     if (bLocations) *bLocations = bindexes;
     if (vLocations) *vLocations = vindexes;
     // Store data in cache, associated by cluster centroid index.
-    dataHub._cluster_locations_cache.insert(std::make_pair(cluster.GetCentroidIndex(), std::make_pair(bindexes, vindexes)));
+    dataHub._cluster_locations_cache.insert(std::make_pair(std::make_pair(cluster.GetEllipseOffset(), cluster.GetCentroidIndex()), std::make_pair(bindexes, vindexes)));
 }
 
 /** Calculates neighboring locations about each centroid through expanding circle;
@@ -464,15 +464,15 @@ void CentroidNeighborCalculator::CalculateNeighborsByNetwork(const CSaTScanData&
 
     gPrintDirection.Printf("Constructing the network\n", BasePrint::P_STDOUT);
 
-    // Create a temporary structure to map locations to groups. The network structure is in terms of locations, not groups.
-    std::map<const Location*, MinimalGrowthArray<size_t> > _groupings_to_locations;
-    for (auto groupItr = _observation_groups.getObservationGroups().begin(); groupItr != _observation_groups.getObservationGroups().end(); ++groupItr) {
-        size_t groupIdx = std::distance(_observation_groups.getObservationGroups().begin(), groupItr);
-        for (unsigned int i = 0; i < groupItr->get()->getLocations().size(); ++i) {
-            const Location * plocation = groupItr->get()->getLocations()[i];
-            if (_groupings_to_locations.find(plocation) == _groupings_to_locations.end())
-                _groupings_to_locations[plocation] = MinimalGrowthArray<size_t>();
-            _groupings_to_locations[plocation].add(groupIdx, true);
+    // Create a temporary structure to map locations to identifiers. The network structure is in terms of locations, not identifiers.
+    std::map<const Location*, MinimalGrowthArray<size_t> > _identifiers_to_locations;
+    for (auto identifierItr = _identifier_mgr.getIdentifiers().begin(); identifierItr != _identifier_mgr.getIdentifiers().end(); ++identifierItr) {
+        size_t identifierIdx = std::distance(_identifier_mgr.getIdentifiers().begin(), identifierItr);
+        for (unsigned int i = 0; i < identifierItr->get()->getLocations().size(); ++i) {
+            const Location * plocation = identifierItr->get()->getLocations()[i];
+            if (_identifiers_to_locations.find(plocation) == _identifiers_to_locations.end())
+                _identifiers_to_locations[plocation] = MinimalGrowthArray<size_t>();
+            _identifiers_to_locations[plocation].add(identifierIdx, true);
         }
     }
 
@@ -481,18 +481,17 @@ void CentroidNeighborCalculator::CalculateNeighborsByNetwork(const CSaTScanData&
     for (; itrNode != end; ++itrNode) {
         size_t t = std::distance(locationNetwork.getNodes().begin(), itrNode);
         NetworkLocationContainer_t locationPath;
-        locationNetwork.buildNeighborsAboutNode(itrNode->second, locationPath, _observation_groups.getLocationsManager().locations().size());
-        //gvCentroidDistances.resize(_observation_groups.getNumLocationCoordinates());
+        locationNetwork.buildNeighborsAboutNode(itrNode->second, locationPath, _identifier_mgr.getLocationsManager().locations().size());
+        //gvCentroidDistances.resize(_identifier_mgr.getNumLocationCoordinates());
         gvCentroidDistances.clear();
         unsigned int c = 0;
         for (auto itrLoc = locationPath.begin(); itrLoc != locationPath.end(); ++itrLoc) {
-            // Translate location index into group index.
+            // Translate location index into identifier index.
             const Location & location = itrLoc->first->getLocation();
-            // Which groups are at this location in the network.
-            MinimalGrowthArray<size_t>& groups = _groupings_to_locations[&location];
-            for (unsigned int g=0; g < groups.size(); ++g) {
-                //gvCentroidDistances[c].Set(groups[g], itrLoc->second, 0);
-                gvCentroidDistances.push_back(DistanceToCentroid(groups[g], itrLoc->second, 0));
+            // Which identifiers are at this location in the network.
+            MinimalGrowthArray<size_t>& identifiers = _identifiers_to_locations[&location];
+            for (unsigned int g=0; g < identifiers.size(); ++g) {
+                gvCentroidDistances.push_back(DistanceToCentroid(identifiers[g], itrLoc->second, 0));
                 ++c;
             }
         }
@@ -649,16 +648,16 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     std::vector<double> vCentroidCoordinates, vLocationCoordinates;
 
     gCentroidInfo.retrieveCoordinates(tCentroidIndex, vCentroidCoordinates);
-    gvCentroidDistances.resize(_observation_groups.getNumLocationCoordinates());
-	auto itrGroup = _observation_groups.getObservationGroups().begin(), itrGroupEnd = _observation_groups.getObservationGroups().end();
+    gvCentroidDistances.resize(_identifier_mgr.getNumLocationCoordinates());
+	auto itrIdentifier = _identifier_mgr.getIdentifiers().begin(), itrIdentifierEnd = _identifier_mgr.getIdentifiers().end();
     if (tEllipseOffsetIndex == 0) {
         //calculate distances from centroid to each location
-		for (tract_t k=0, i=0; itrGroup != itrGroupEnd; ++itrGroup, ++k) {
+		for (tract_t k=0, i=0; itrIdentifier != itrIdentifierEnd; ++itrIdentifier, ++k) {
             //if (!(*itr)->isEvaluatedLocation())
             //    //skip locations that are marked as not evaluated in cluster expansion
             //    continue;
-			for (unsigned int locIdx = 0; locIdx < itrGroup->get()->getLocations().size(); ++locIdx) {
-				itrGroup->get()->getLocations()[locIdx]->coordinates()->retrieve(vLocationCoordinates);
+			for (unsigned int locIdx = 0; locIdx < itrIdentifier->get()->getLocations().size(); ++locIdx) {
+				itrIdentifier->get()->getLocations()[locIdx]->coordinates()->retrieve(vLocationCoordinates);
 				gvCentroidDistances[i].Set(k, Coordinates::distanceBetween(vCentroidCoordinates, vLocationCoordinates), locIdx);
 				++i;
 			}
@@ -669,12 +668,12 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
         vLocationCoordinates.resize(2);
         CalculateEllipticCoordinates(tEllipseOffsetIndex);
         //calculate distances from centroid to each location
-		for (tract_t k = 0, i = 0; itrGroup != itrGroupEnd; ++itrGroup, ++k) {
+		for (tract_t k = 0, i = 0; itrIdentifier != itrIdentifierEnd; ++itrIdentifier, ++k) {
             //if (!(*itr)->isEvaluatedLocation())
             //    //skip locations that are marked as not evaluated in cluster expansion
             //    continue;
-			for (unsigned int locIdx = 0; locIdx < itrGroup->get()->getLocations().size(); ++locIdx) {
-				unsigned int iPosition = itrGroup->get()->getLocations()[locIdx]->coordinates()->getInsertionOrdinal();
+			for (unsigned int locIdx = 0; locIdx < itrIdentifier->get()->getLocations().size(); ++locIdx) {
+				unsigned int iPosition = itrIdentifier->get()->getLocations()[locIdx]->coordinates()->getInsertionOrdinal();
 				vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;
 				vLocationCoordinates[1] = gvLocationEllipticCoordinates[iPosition].second;
 				gvCentroidDistances[i].Set(k, Coordinates::distanceBetween(vCentroidCoordinates, vLocationCoordinates), locIdx);
@@ -686,7 +685,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
 
 /** Scans gvCentroidToLocationDistances for adjacent locations that reference the same coordinates.
     These will have to grouped into a 'meta-location' to ensure that these neighbors are evaluated
-    at the same time, as one observation group. This method relies on gvCentroidToLocationDistances being
+    at the same time, as one identifier. This method relies on gvCentroidToLocationDistances being
     sorted by distance from target ellipse/centroid and that locations referencing the same coordinates
     are adjacent to each other. */
 void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int, std::vector<int> >& prNeighborsCount) {
@@ -694,9 +693,9 @@ void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int,
     std::vector<DistanceToCentroid>::iterator tGroupStart=gvCentroidDistances.begin(), tGroupEnd=gvCentroidDistances.end();
     for (int tCurrent=0; tCurrent < prNeighborsCount.first; ++tCurrent) {
         DistanceToCentroid& curr = gvCentroidDistances[tCurrent];
-        const Coordinates * currCoords = _observation_groups.getObservationGroups()[curr.GetTractNumber()]->getLocations()[curr.GetRelativeCoordinateIndex()]->coordinates().get();
+        const Coordinates * currCoords = _identifier_mgr.getIdentifiers()[curr.GetTractNumber()]->getLocations()[curr.GetRelativeCoordinateIndex()]->coordinates().get();
         DistanceToCentroid& next = gvCentroidDistances[tCurrent+1];
-        const Coordinates * nextCoords = _observation_groups.getObservationGroups()[next.GetTractNumber()]->getLocations()[next.GetRelativeCoordinateIndex()]->coordinates().get();
+        const Coordinates * nextCoords = _identifier_mgr.getIdentifiers()[next.GetTractNumber()]->getLocations()[next.GetRelativeCoordinateIndex()]->coordinates().get();
         if (*currCoords == *nextCoords)
             tGroupEnd = gvCentroidDistances.begin() + (tCurrent + 1);
         else if (tGroupEnd != gvCentroidDistances.end()) {
@@ -704,7 +703,7 @@ void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int,
             std::vector<int> indexes;
             for (std::vector<DistanceToCentroid>::iterator itr=tGroupStart; itr != tGroupEnd+1; ++itr)
                 indexes.push_back(itr->GetTractNumber());
-            DistanceToCentroid meta_location(gNumTracts + const_cast<ObservationGroupingManager&>(_observation_groups).getMetaNeighborManager().add(indexes), tGroupStart->GetDistance());
+            DistanceToCentroid meta_location(gNumTracts + const_cast<IdentifiersManager&>(_identifier_mgr).getMetaNeighborManager().add(indexes), tGroupStart->GetDistance());
             //replace tGroupStart to tGroupEnd with new LocationDistance that is the meta location
             tGroupStart = gvCentroidDistances.erase(tGroupStart, tGroupEnd + 1);
             tGroupStart = gvCentroidDistances.insert(tGroupStart, meta_location) + 1;
@@ -731,14 +730,14 @@ int CentroidNeighborCalculator::getAdjustedNeighborCountsForMultipleCoordinates(
     if (iNeigborsCount != 0 && (size_t)iNeigborsCount != gvCentroidDistances.size()) {
         //get coordinates of current farthest neighbor
         DistanceToCentroid& currMax = gvCentroidDistances[iNeigborsCount-1];
-        const Coordinates * currMaxCoords = _observation_groups.getObservationGroups()[currMax.GetTractNumber()]->getLocations()[currMax.GetRelativeCoordinateIndex()]->coordinates().get();
+        const Coordinates * currMaxCoords = _identifier_mgr.getIdentifiers()[currMax.GetTractNumber()]->getLocations()[currMax.GetRelativeCoordinateIndex()]->coordinates().get();
         //get coordinates of neighbor after current farthest
         DistanceToCentroid& beyondMax = gvCentroidDistances[iNeigborsCount];
-        const Coordinates * beyondMaxCoords = _observation_groups.getObservationGroups()[beyondMax.GetTractNumber()]->getLocations()[beyondMax.GetRelativeCoordinateIndex()]->coordinates().get();
+        const Coordinates * beyondMaxCoords = _identifier_mgr.getIdentifiers()[beyondMax.GetTractNumber()]->getLocations()[beyondMax.GetRelativeCoordinateIndex()]->coordinates().get();
         while (*currMaxCoords == *beyondMaxCoords) {
              if (--iNeigborsCount < 1) break;
              DistanceToCentroid& currMax = gvCentroidDistances[iNeigborsCount-1];
-             currMaxCoords = _observation_groups.getObservationGroups()[currMax.GetTractNumber()]->getLocations()[currMax.GetRelativeCoordinateIndex()]->coordinates().get();
+             currMaxCoords = _identifier_mgr.getIdentifiers()[currMax.GetTractNumber()]->getLocations()[currMax.GetRelativeCoordinateIndex()]->coordinates().get();
         }
     }
     return iNeigborsCount;
@@ -762,26 +761,26 @@ double CentroidNeighborCalculator::GetEllipseShape(int iEllipseIndex) const {
     This process takes into account the MultipleCoordinatesType. */
 std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& tractCoordinates, NetworkLocationContainer_t * clusterNetwork)  {
     // If tract index refers to a meta neighbor index, retrieve the index it maps to then proceed.
-    if (tTract >= DataHub.GetNumObsGroups()) tTract = DataHub.GetGroupInfo().getMetaNeighborManager().getFirst(tTract - DataHub.GetNumObsGroups());
-    if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION || DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations().size() == 1) {
+    if (tTract >= DataHub.GetNumIdentifiers()) tTract = DataHub.getIdentifierInfo().getMetaNeighborManager().getFirst(tTract - DataHub.GetNumIdentifiers());
+    if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION || DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations().size() == 1) {
         // If user have specified that multiple coordinates are one-per-location or this tract has only only coordinate, just retrieve the coordinates.
-        return DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations()[0]->coordinates()->retrieve(tractCoordinates);
-    } else if (DataHub.GetParameters().getUseLocationsNetworkFile() && Cluster.getNumObservationGroups() > 1) {
+        return DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[0]->coordinates()->retrieve(tractCoordinates);
+    } else if (DataHub.GetParameters().getUseLocationsNetworkFile() && Cluster.getNumIdentifiers() > 1) {
         boost::shared_ptr<NetworkLocationContainer_t> localClusterNetwork;
         if (!clusterNetwork) {
             // NetworkLocationContainer_t wasn't passed as function argument, so calculate this information now.
             localClusterNetwork.reset(new NetworkLocationContainer_t());
             clusterNetwork = localClusterNetwork.get();
             const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(DataHub.GetGInfo())->getCentroidLocation(Cluster.GetCentroidIndex());
-            const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.GetGroupInfo().getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
-            DataHub.refLocationNetwork().buildNeighborsAboutNode(centroidNode, *clusterNetwork, DataHub.GetGroupInfo().getLocationsManager().locations().size());
+            const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+            DataHub.refLocationNetwork().buildNeighborsAboutNode(centroidNode, *clusterNetwork, DataHub.getLocationsManager().locations().size());
         }
         const Coordinates *pTarget = 0;
         double dCurrent = -1;
-        for (unsigned int i = 0; i < DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations().size(); ++i) {
-            const Location * tractLocation = DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations()[i];
+        for (unsigned int i = 0; i < DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations().size(); ++i) {
+            const Location * tractLocation = DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[i];
             // tractLocation->index()
-            auto tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.GetGroupInfo().getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
+            const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
             double dDistance = -1;
             for (auto itr = clusterNetwork->begin(); itr != clusterNetwork->end(); ++itr) {
                 if (itr->first == tractNode) {
@@ -793,7 +792,7 @@ std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTS
             if (dDistance == -1) continue;
             //if (dDistance == -1) throw prg_error("Unable to determine distance between cluster center location '%s'.", "getDistanceBetween()", tractLocation->name().c_str());
 
-            //dDistance = DataHub.refLocationNetwork().getDistanceBetween(centroidLocation, *tractLocation, DataHub.GetGroupInfo());
+            //dDistance = DataHub.refLocationNetwork().getDistanceBetween(centroidLocation, *tractLocation, DataHub.getIdentifierInfo());
             switch (DataHub.GetParameters().GetMultipleCoordinatesType()) {
                 case ATLEASTONELOCATION: if (!pTarget || dCurrent > dDistance) { pTarget = tractLocation->coordinates().get(); dCurrent = dDistance; } break; // Searching for the closest coordinate.
                 case ALLLOCATIONS: if (!pTarget || dCurrent < dDistance) { pTarget = tractLocation->coordinates().get(); dCurrent = dDistance; } break; //Searching for the farthest coordinate.
@@ -811,8 +810,8 @@ std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTS
 		DataHub.GetGInfo()->retrieveCoordinates(Cluster.GetCentroidIndex(), clusterCenter);
 		if (Cluster.GetEllipseOffset() > 0)	Transform(clusterCenter[0], clusterCenter[1], dAngle, dShape, &clusterCenter[0], &clusterCenter[1]);
         // Iterate through tract coordinates to find the correct one by distance from centroid.
-		for (unsigned int i=0; i < DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations().size(); ++i) {
-			pCoordinates = DataHub.GetGroupInfo().getObservationGroups()[tTract]->getLocations()[i]->coordinates().get();
+		for (unsigned int i=0; i < DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations().size(); ++i) {
+			pCoordinates = DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[i]->coordinates().get();
 			pCoordinates->retrieve(tractCoords);
 			if (Cluster.GetEllipseOffset() > 0) Transform(tractCoords[0], tractCoords[1], dAngle, dShape, &tractCoords[0], &tractCoords[1]);
             // Calculate the distance from cluster center to this coordinate, then determine if this is the best candidate.
@@ -840,18 +839,18 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
   for (; itr != itr_end; ++itr) {
     if (itr->GetTractNumber() >= gNumTracts) {
       std::vector<tract_t> indexes;
-	  _observation_groups.getMetaNeighborManager().getIndexes(itr->GetTractNumber() - gNumTracts, indexes);
+	  _identifier_mgr.getMetaNeighborManager().getIndexes(itr->GetTractNumber() - gNumTracts, indexes);
       fprintf(stream, "distance=%.6lf\t\tindexes=", itr->GetDistance());
       for (size_t i=0; i < indexes.size(); ++i)
         fprintf(stream, "%s%d", (i == 0 ? "" : ","), indexes.at(i));
       fprintf(stream, "\n");
     }
     else {
-	  auto group = _observation_groups.getObservationGroups()[itr->GetTractNumber()];
-	  auto pCoords = group->getLocations()[itr->GetRelativeCoordinateIndex()]->coordinates().get();
+	  const auto& identifier = _identifier_mgr.getIdentifiers()[itr->GetTractNumber()];
+	  const auto pCoords = identifier->getLocations()[itr->GetRelativeCoordinateIndex()]->coordinates().get();
       for (size_t t=0; t < pCoords->getSize(); ++t)
         fprintf(stream, "%s%g", (t == 0 ? "coordinates=": ","), pCoords->getCoordinates()[t]);
-      fprintf(stream, "\t\tdistance=%.6lf\t\tname='%s'\t\tindex=%d\n", itr->GetDistance(), group->groupname().c_str(), itr->GetTractNumber());
+      fprintf(stream, "\t\tdistance=%.6lf\t\tname='%s'\t\tindex=%d\n", itr->GetDistance(), identifier->name().c_str(), itr->GetTractNumber());
     }
   }
   if (fp) fclose(fp);
@@ -859,11 +858,11 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
 
 /** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */
 void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMeasure) {
-  popMeasure.resize(gNumTracts + _observation_groups.getMetaObsGroupsManager().getNumReferenced(), 0);
+  popMeasure.resize(gNumTracts + _identifier_mgr.getMetaIdentifiersManager().getNumReferenced(), 0);
 
   std::vector<tract_t> atomicIndexes;
-  for (size_t t=0; t < _observation_groups.getMetaObsGroupsManager().getNumReferenced(); ++t) {
-	  _observation_groups.getMetaObsGroupsManager().getAtomicIndexes(t, atomicIndexes);
+  for (size_t t=0; t < _identifier_mgr.getMetaIdentifiersManager().getNumReferenced(); ++t) {
+	  _identifier_mgr.getMetaIdentifiersManager().getAtomicIndexes(t, atomicIndexes);
      for (size_t a=0; a < atomicIndexes.size(); ++a)
        popMeasure[(size_t)gNumTracts + t] += popMeasure[atomicIndexes[a]];
   }
@@ -883,10 +882,10 @@ void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataH
   if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
     switch (gParameters.GetProbabilityModelType()) {
       case NORMAL  :
-        gvCalculatedPopulations.resize(dataHub.GetNumObsGroups(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumIdentifiers(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
           pCases = DataSetHandler.GetDataSet(t).getCaseData().GetArray()[0];
-          for (int j=0; j < dataHub.GetNumObsGroups(); ++j)
+          for (int j=0; j < dataHub.GetNumIdentifiers(); ++j)
              gvCalculatedPopulations[j] += pCases[j];
         }
         setMetaLocations(gvCalculatedPopulations);
@@ -895,11 +894,11 @@ void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataH
       case ORDINAL :
         //For the Ordinal model, populations for each location are calculated by adding up the
         //total individuals represented in the catgory case arrays.
-        gvCalculatedPopulations.resize(dataHub.GetNumObsGroups(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumIdentifiers(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
            for (unsigned int k=0; k < DataSetHandler.GetDataSet(t).getCaseData_Cat().size(); ++k) {
              pCases = DataSetHandler.GetDataSet(t).getCaseData_Cat()[k]->GetArray()[0];
-             for (int j=0; j < dataHub.GetNumObsGroups(); ++j)
+             for (int j=0; j < dataHub.GetNumIdentifiers(); ++j)
                 gvCalculatedPopulations[j] += pCases[j];
            }
         }
@@ -907,7 +906,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataH
         gpPopulation = &gvCalculatedPopulations[0];  break;
       case EXPONENTIAL:
         // consider population as cases and non-censored cases
-        gvCalculatedPopulations.resize(dataHub.GetNumObsGroups(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumIdentifiers(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
           pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(t));
           if (!pRandomizer) throw prg_error("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
@@ -918,11 +917,11 @@ void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataH
       case HOMOGENEOUSPOISSON:
           break; // This model strictly uses distance to calculate neighbors ...
       default :
-        gvCalculatedPopulations.resize(dataHub.GetNumObsGroups(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumIdentifiers(), 0);
         //Population is calculated from all data sets
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
            measure_t * pMeasure = DataSetHandler.GetDataSet(t).getMeasureData().GetArray()[0];
-           for (int j=0; j < dataHub.GetNumObsGroups(); ++j)
+           for (int j=0; j < dataHub.GetNumIdentifiers(); ++j)
              gvCalculatedPopulations[j] += pMeasure[j];
         }
         setMetaLocations(gvCalculatedPopulations);

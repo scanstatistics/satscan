@@ -3,7 +3,6 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "cluster.h"
-#include "ClusterLocationsWriter.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
 #include "NormalClusterData.h"
@@ -31,8 +30,8 @@ CCluster::~CCluster() {}
 /** initializes cluster data  */
 void CCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
-  _central_observation_group = -1;
-  _num_observation_groups = 0;
+  _central_identifier = -1;
+  _num_identifiers = 0;
   m_CartesianRadius= -1;
   m_nRatio         = 0;
   m_nRank          = 1;
@@ -50,8 +49,8 @@ void CCluster::Initialize(tract_t nCenter) {
 /** overloaded assignment operator */
 CCluster& CCluster::operator=(const CCluster& rhs) {
   m_Center                = rhs.m_Center;
-  _central_observation_group  = rhs._central_observation_group;
-  _num_observation_groups = rhs._num_observation_groups;
+  _central_identifier  = rhs._central_identifier;
+  _num_identifiers = rhs._num_identifiers;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   _ratio_sets             = rhs._ratio_sets;
@@ -157,13 +156,13 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
                 double meanInside=0, meanOutside=0;
                 if (DataHub.GetParameters().getIsWeightedNormal()) {
                     const AbstractWeightedNormalRandomizer * pRandomizer=0;
-                    std::vector<tract_t> tractIndexes;
-                    getGroupIndexes(DataHub, tractIndexes, true);
+                    std::vector<tract_t> identifierIndexes;
+                    getIdentifierIndexes(DataHub, identifierIndexes, true);
                     AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
 
                     if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(handler.GetRandomizer(firstSetIdx))) == 0)
                         throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "getAreaRateForCluster()");
-                    statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, tractIndexes);
+                    statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, identifierIndexes);
                     meanInside = statistics.gtMeanIn;
                     meanOutside = statistics.gtMeanOut;
                 } else {
@@ -241,7 +240,7 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
 		// Display cluster coordinates but not when:
 		// - using non-euclidean neighbors
 		// - using a network file to define locations and the user didn't specify all the coordinates in coordinates file
-        if (!(DataHub.GetParameters().UseLocationNeighborsFile() ||
+        if (!(DataHub.GetParameters().UseLocationNeighborsFile() || GetClusterType() == PURELYTEMPORALCLUSTER ||
 			  (DataHub.GetParameters().getUseLocationsNetworkFile() && !DataHub.networkCanReportLocationCoordinates()))) {
             if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
                 DisplayCoordinates(fp, DataHub, PrintFormat);
@@ -299,11 +298,11 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
         PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);
         std::vector<tract_t> clusterLocations;
         if (Data.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) {
-            ObservationGrouping::CombinedGroupNames_t identifiers;
-            for (tract_t t = 1; t <= _num_observation_groups; ++t) {
+            Identifier::CombinedIdentifierNames_t identifiers;
+            for (tract_t t = 1; t <= _num_identifiers; ++t) {
                 tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius);
-                if (!Data.isNullifiedObservationGroup(tTract)) {
-                    Data.GetGroupInfo().retrieveAllIdentifiers(tTract, identifiers);
+                if (!Data.isNullifiedIdentifier(tTract)) {
+                    Data.getIdentifierInfo().retrieveAll(tTract, identifiers);
                     for (unsigned int i = 0; i < identifiers.size(); ++i) {
                         if (text.rdbuf()->in_avail()) text << ", ";
                         text << identifiers[i];
@@ -311,7 +310,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
                 }
             }
         } else {
-            auto locationData = Data.GetGroupInfo().getLocationsManager().locations();
+            const auto& locationData = Data.getLocationsManager().locations();
             CentroidNeighborCalculator::getLocationsAboutCluster(Data, *this, 0, &clusterLocations);
             for (auto index : clusterLocations) {
                 if (text.rdbuf()->in_avail()) text << ", ";
@@ -604,7 +603,7 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
   DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
 
   std::vector<tract_t> tractIndexes;
-  getGroupIndexes(DataHub, tractIndexes, true);
+  getIdentifierIndexes(DataHub, tractIndexes, true);
   for (auto setIdx: setIndexes) {
       const RealDataSet& dataSet = Handler.GetDataSet(setIdx);
       //get randomizer for data set to retrieve various information
@@ -973,16 +972,16 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
             return measure / (M * (measureInPeriod - measure));
         return 0.0; // should not happen
     } else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-        // Retrieve the location indexes for this cluster.
-        std::vector<tract_t> tracts;
-        getGroupIndexes(DataHub, tracts, true);
+        // Retrieve the identifier indexes for this cluster.
+        std::vector<tract_t> identifierIndexes;
+        getIdentifierIndexes(DataHub, identifierIndexes, true);
         // Calculate the expected by summing the expected within each interval of the cluster window.
         count_t * pcasesnc = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_PT_NC();
         measure_t ** ppmeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
         measure_t expected = 0.0, * pmeasurenc = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT_NC();
         for (int interval=m_nFirstInterval; interval < m_nLastInterval; ++interval) {
             measure_t clusterMeaureInterval = 0;
-            for (auto neighbor : tracts)
+            for (auto neighbor : identifierIndexes)
                 clusterMeaureInterval += ppmeasure[interval][neighbor] - (interval < (m_nLastInterval - 1) ? ppmeasure[interval + 1][neighbor] : 0.0);
             if (params.GetProbabilityModelType() == BERNOULLI) 
                 expected += (pmeasurenc[interval] ? pcasesnc[interval] / pmeasurenc[interval] : 0.0) * clusterMeaureInterval;
@@ -1004,42 +1003,38 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
 
 }
 
-/** Returns collection of location indexes that define this cluster. If 'bAtomize' is true, breaks
-    down meta locations into atomic indexes. */
-std::vector<tract_t> & CCluster::getGroupIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
-   indexes.clear();
-   std::vector<tract_t> atomicIndexes;
-   std::vector<tract_t>::iterator itr;
-
-   for (tract_t t=1; t <= _num_observation_groups; ++t) {
-      tract_t n = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius); 
-      if (n < DataHub.GetNumObsGroups() || !bAtomize) {
-          if (!DataHub.isNullifiedObservationGroup(n))
-            indexes.push_back(n);
-      } else {
-        DataHub.GetGroupInfo().getMetaManagerProxy().getIndexes(n - DataHub.GetNumObsGroups(), atomicIndexes);
-        for (itr=atomicIndexes.begin(); itr != atomicIndexes.end(); ++itr) {
-            if (!DataHub.isNullifiedObservationGroup(*itr))
-                indexes.push_back(*itr);
+/** Returns collection of identifier indexes that define this cluster. If 'bAtomize' is true, breaks down meta locations into atomic indexes. */
+std::vector<tract_t> & CCluster::getIdentifierIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
+    indexes.clear();
+    for (tract_t t=1; t <= _num_identifiers; ++t) {
+        tract_t n = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius); 
+        if (n < DataHub.GetNumIdentifiers() || !bAtomize) {
+            if (!DataHub.isNullifiedIdentifier(n))
+                indexes.push_back(n);
+        } else {
+            std::vector<tract_t> atomicIndexes;
+            DataHub.getIdentifierInfo().getMetaManagerProxy().getIndexes(n - DataHub.GetNumIdentifiers(), atomicIndexes);
+            for (auto idx: atomicIndexes) {
+                if (!DataHub.isNullifiedIdentifier(idx))
+                    indexes.push_back(idx);
+            }
         }
-      }
-   }
-      
-   return indexes;
+    }
+    return indexes;
 }
 
-/** Returns index of most central observation group. */
-tract_t CCluster::mostCentralObservationGroupIdx() const {
-    if (_central_observation_group == -1) throw prg_error("Most central location of cluster not calculated.","mostCentralObservationGroupIdx()");
-    return _central_observation_group;
+/** Returns index of most central identifier. */
+tract_t CCluster::mostCentralIdentifierIdx() const {
+    if (_central_identifier == -1) throw prg_error("Most central identifier of cluster not calculated.","mostCentralIdentifierIdx()");
+    return _central_identifier;
 }
 
-/** Returns the number of observation groups in cluster that are not nullified from previous iteration(s) of an iterative scan. */
-tract_t CCluster::numNonNullifiedObservationGroupsInCluster(const CSaTScanData& DataHub) const {
+/** Returns the number of identifiers in cluster that are not nullified from previous iteration(s) of an iterative scan. */
+tract_t CCluster::numNonNullifiedIdentifiersInCluster(const CSaTScanData& DataHub) const {
     tract_t tClusterLocationCount=0;
-    for (tract_t t=1; t <= getNumObservationGroups(); ++t) {
+    for (tract_t t=1; t <= getNumIdentifiers(); ++t) {
         tract_t tLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), t);
-        if (!DataHub.isNullifiedObservationGroup(tLocation))
+        if (!DataHub.isNullifiedIdentifier(tLocation))
             ++tClusterLocationCount;
     }
     return tClusterLocationCount;
@@ -1292,48 +1287,6 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
     return significant;
 }
 
-/** Prints name and coordinates of locations contained in cluster to ASCII file.
-    Note: This is a debug function and can be helpful when used with Excel to get
-    visual of cluster using scatter plotting. */
-void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
-  tract_t                       i, tTract;
-  std::ofstream                 outfilestream(sFilename.c_str(), std::ios::ate);
-
-  try {
-    if (!outfilestream)
-      throw prg_error("Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
-
-    outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
-
-    std::vector<double> vCoords;
-    if (DataHub.GetParameters().UseSpecialGrid()) {
-      DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), vCoords);
-      outfilestream << "Central_Grid_Point";
-      for (size_t t=0; t < vCoords.size(); ++t)
-       outfilestream << " " << vCoords.at(t);
-      outfilestream << std::endl;
-    }                                                                                 
-
-    for (i=1; i <= _num_observation_groups; ++i) {
-       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       // Print location identifiers if location data has not been removed in iterative scan.
-       if (!DataHub.isNullifiedObservationGroup(tTract)) {
-		   const std::string&sLocationID = DataHub.GetGroupInfo().getObservationGroups().at(tTract)->groupname();
-         CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, tTract, vCoords);
-         outfilestream << sLocationID.c_str();
-         for (size_t t=0; t < vCoords.size(); ++t)
-           outfilestream << " " << vCoords.at(t);
-         outfilestream << std::endl;
-       }
-    }
-    outfilestream << std::endl;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintClusterLocationsToFile()","CCluster");
-    throw;
-  }
-}
-
 /** Returns indication whether this cluster can report Gumbel p-value. */
 bool CCluster::reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const {
   //Check base p-value reportability.
@@ -1377,7 +1330,7 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
 
   if (ClusterDefined() && !DataHub.GetParameters().UseLocationNeighborsFile() && !DataHub.GetParameters().getUseLocationsNetworkFile()) {
     DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), ClusterCenter);
-    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, _num_observation_groups), TractCoords);
+    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, _num_identifiers), TractCoords);
     if (m_iEllipseOffset) {
      CentroidNeighborCalculator::Transform(ClusterCenter[0], ClusterCenter[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
                                            DataHub.GetEllipseShape(m_iEllipseOffset), &ClusterCenter[0], &ClusterCenter[1]);
@@ -1399,19 +1352,19 @@ void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
   SetNonCompactnessPenalty(DataHub.GetEllipseShape(iOffset), DataHub.GetParameters().GetNonCompactnessPenaltyPower());
 }
 
-/** Calculates the most central observation group of the cluster. */
-void CCluster::setMostCentralObservationGroup(const CSaTScanData& DataHub) {
+/** Calculates the most central identifier of the cluster. */
+void CCluster::setMostCentralIdentifier(const CSaTScanData& DataHub) {
     if (ClusterDefined()) {
-        // When iterative scan performed, we want the most central, not nullified, observation group.
-        _central_observation_group = -1;
-        for (tract_t t=1; t <= getNumObservationGroups() && _central_observation_group == -1; ++t) {
-            tract_t obsGroupIdx = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), t);
-            if (!DataHub.isNullifiedObservationGroup(obsGroupIdx))
-                _central_observation_group = obsGroupIdx;
+        // When iterative scan performed, we want the most central, not nullified, identifier.
+        _central_identifier = -1;
+        for (tract_t t=1; t <= getNumIdentifiers() && _central_identifier == -1; ++t) {
+            tract_t identifierIdx = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), t);
+            if (!DataHub.isNullifiedIdentifier(identifierIdx))
+                _central_identifier = identifierIdx;
         }
         //special case -- when most central location is still equal to '-1', 
         //that means all locations in cluster have been nullified, reset cluster to not defined
-        if (_central_observation_group == -1) _num_observation_groups = 0;
+        if (_central_identifier == -1) _num_identifiers = 0;
     }
 }
 
@@ -1420,18 +1373,14 @@ void CCluster::SetNonCompactnessPenalty(double dEllipseShape, double dPower) {
   m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape, dPower);
 }
 
-/** Set class members 'm_CartesianRadius' and '_central_observation_group' from
+/** Set class members 'm_CartesianRadius' and '_central_identifier' from
     neighbor information obtained from CentroidNeighbors object. */
 void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {
   std::vector<double> ClusterCenter, TractCoords;
 
   if (ClusterDefined()) {
     DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), ClusterCenter);
-
-    // TODO -- Should this get updated for multiple coordinate? 
-    // TODO -- Should CentroidNeighborCalculator::getTractCoordinates be used anywhere?
-
-    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, Neighbors.GetNeighborTractIndex(_num_observation_groups - 1), TractCoords);
+    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, Neighbors.GetNeighborTractIndex(_num_identifiers - 1), TractCoords);
     if (m_iEllipseOffset) {
         CentroidNeighborCalculator::Transform(
             ClusterCenter[0], ClusterCenter[1], DataHub.GetEllipseAngle(m_iEllipseOffset), DataHub.GetEllipseShape(m_iEllipseOffset), &ClusterCenter[0], &ClusterCenter[1]
@@ -1441,41 +1390,11 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
         );
     }
     m_CartesianRadius = Coordinates::distanceBetween(ClusterCenter, TractCoords);
-    //when iterative scan performed, we want the most central, not nullified, obs-group
-    _central_observation_group = -1;
-    for (tract_t t=0; t < getNumObservationGroups() && _central_observation_group == -1; ++t) {
-       if (!DataHub.isNullifiedObservationGroup(Neighbors.GetNeighborTractIndex(t)))
-         _central_observation_group = Neighbors.GetNeighborTractIndex(t);
+    //when iterative scan performed, we want the most central, not nullified, identifiers
+    _central_identifier = -1;
+    for (tract_t t=0; t < getNumIdentifiers() && _central_identifier == -1; ++t) {
+       if (!DataHub.isNullifiedIdentifier(Neighbors.GetNeighborTractIndex(t)))
+         _central_identifier = Neighbors.GetNeighborTractIndex(t);
     }
-  }
-}
-
-/** Writes location information to stsAreaSpecificData object for each tract contained in cluster. */
-void CCluster::Write(LocationInformationWriter& LocationWriter,
-                     const CSaTScanData& DataHub,
-                     unsigned int iReportedCluster,
-                     const SimulationVariables& simVars,
-                     const LocationRelevance& location_relevance) const {
-  tract_t       tTract;
-  int           i;
-
-  try {
-    LocationWriter.WritePrep(*this, DataHub);
-    for (i=1; i <= _num_observation_groups; ++i) {
-       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       if (tTract >= DataHub.GetNumObsGroups() && DataHub.GetGroupInfo().getMetaManagerProxy().getNumMeta()) {
-         //When the location index exceeds number of tracts and the meta neighbors manager contains
-         //entries, we need to resolve meta location into it's real location indexes.
-         std::vector<tract_t> indexes;
-         DataHub.GetGroupInfo().getMetaManagerProxy().getIndexes(tTract - DataHub.GetNumObsGroups(), indexes);
-         for (size_t t=0; t < indexes.size(); ++t)
-            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], simVars, location_relevance);
-       } else
-         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, simVars, location_relevance);
-    }   
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Write()","CCluster");
-    throw;
   }
 }
