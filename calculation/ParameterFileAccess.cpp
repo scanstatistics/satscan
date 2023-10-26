@@ -1029,7 +1029,9 @@ void AbtractParameterFileAccess::parseLinelistStr(const std::string& llmapStr, L
             throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
         if (!string_to_type<int>(values.front().c_str(), column) || !string_to_type<int>((values.begin() + 1)->c_str(), lltype))
             throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
-        fields_map.insert(std::make_pair(static_cast<unsigned int>(column), boost::tuple<LinelistType, std::string>(static_cast<LinelistType>(lltype), values.back())));
+        fields_map.push_back(
+            boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(column), static_cast<LinelistType>(lltype), values.back())
+        );
     }
 }
 

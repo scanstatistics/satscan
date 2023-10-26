@@ -27,14 +27,23 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
     return dataSource;
 }
 
+/* Added line list fields to collection - special type first then others as orginally ordered. */
 DataSource::OrderedLineListField_t& DataSource::getOrderedLinelistFieldsMap(OrderedLineListField_t& sorted) const {
-    for (auto const&f: _linelist_fields_map)
-        sorted.push_back(std::make_pair(f.first, f.second));
-    // Order by LinelistType
-    std::sort(std::begin(sorted), std::end(sorted), [](LineListField_t a, LineListField_t b) {
-        if (a.second.get<0>() != b.second.get<0>()) return a.second.get<0>() < b.second.get<0>();
-        else return boost::algorithm::lexicographical_compare(a.second.get<1>(), b.second.get<1>(), boost::is_iless());
+    sorted.clear();
+    // First add the 'special' line-list items and sort.
+    OrderedLineListField_t remainder;
+    for (auto const&f : _linelist_fields_map) {
+        if (f.get<1>() <= DESCRIPTIVE_COORD_X)
+            sorted.push_back(f);
+        else
+            remainder.push_back(f);
+    }
+    std::sort(std::begin(sorted), std::end(sorted), [](LinelistTuple_t a, LinelistTuple_t b) {
+        return a.get<1>() < b.get<1>();
     });
+    // Add back the remainder in original order - this will make the order match that specfied by user in file wizard.
+    for (auto const&f : remainder)
+        sorted.push_back(f);
     return sorted;
 }
 
@@ -42,7 +51,7 @@ DataSource::OrderedLineListField_t& DataSource::getOrderedLinelistFieldsMap(Orde
 bool DataSource::hasEventIdLinelistMapping() const {
     if (boost::logic::indeterminate(_has_event_id)) {
         for (const auto& fieldMap : _linelist_fields_map)
-            if (fieldMap.second.get<0>() == INDIVIDUAL_ID) {
+            if (fieldMap.get<1>() == INDIVIDUAL_ID) {
                 _has_event_id = true;
                 return _has_event_id;
             }
@@ -55,8 +64,8 @@ bool DataSource::hasEventIdLinelistMapping() const {
 bool DataSource::hasEventCoordinatesLinelistMapping() const {
     bool x = false, y = false;
     for (const auto& fieldMap : _linelist_fields_map) {
-        x |= fieldMap.second.get<0>() == DESCRIPTIVE_COORD_X;
-        y |= fieldMap.second.get<0>() == DESCRIPTIVE_COORD_Y;
+        x |= fieldMap.get<1>() == DESCRIPTIVE_COORD_X;
+        y |= fieldMap.get<1>() == DESCRIPTIVE_COORD_Y;
     }
     return x && y;
 }
@@ -68,7 +77,11 @@ bool DataSource::isLinelistOnlyColumn(long iFieldIndex) const {
     // User might have used file wizard but didn't define any line list columns.
     if (_linelist_fields_map.size() == 0) return false;
     // Is this field index not defined as line list column?
-    if (_linelist_fields_map.find(static_cast<size_t>(iFieldIndex)) == _linelist_fields_map.end()) return false;
+    bool inLineListFields = false;
+    for (auto& itr = _linelist_fields_map.begin(); itr != _linelist_fields_map.end() && !inLineListFields; ++itr) {
+        inLineListFields = itr->get<0>() == static_cast<unsigned int>(iFieldIndex);
+    }
+    if (!inLineListFields) return false;
     // It is a line list column, but is it also an input data column?
     for (auto itr = _fields_map.begin(); itr != _fields_map.end(); ++itr) {
         if (itr->type() == typeid(long) && boost::any_cast<long>(*itr) == iFieldIndex)

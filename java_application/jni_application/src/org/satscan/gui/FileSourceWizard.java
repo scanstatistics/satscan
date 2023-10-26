@@ -16,8 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -37,7 +35,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.undo.UndoManager;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.AppConstants;
 import org.satscan.importer.CSVImportDataSource;
 import org.satscan.importer.DBaseImportDataSource;
@@ -82,7 +80,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private final int _dateVariableColumn = 2;
     private final int _sourceFileLineSample = 200;
     private final UndoManager undo = new UndoManager();
-    private Vector<ImportVariable> _import_variables = new Vector();
+    private final ArrayList<ImportVariable> _import_variables = new ArrayList();
     private final Parameters.ProbabilityModelType _startingModelType;
     private Parameters.CoordinatesType _coordinatesType;
     private String _showing_maincontent_cardname;
@@ -190,16 +188,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // All appears to be correct -- clear then populate temporary line list map.
         _input_source_settings.getLinelistFieldMaps().clear();
         if (_combobox_eventid.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_eventid.getSelectedIndex() - 1, Pair.of(LinelistType.INDIVIDUAL_ID, "IndividualID"));
+            _input_source_settings.getLinelistFieldMaps().add(Triple.of(_combobox_eventid.getSelectedIndex() - 1, LinelistType.INDIVIDUAL_ID, "IndividualID"));
         if (_combobox_event_y.isEnabled() && _combobox_event_y.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_y.getSelectedIndex() - 1, Pair.of(LinelistType.DESCRIPTIVE_COORD_Y, "DescriptiveLongitude"));
+            _input_source_settings.getLinelistFieldMaps().add(Triple.of(_combobox_event_y.getSelectedIndex() - 1, LinelistType.DESCRIPTIVE_COORD_Y, "DescriptiveLongitude"));
         if (_combobox_event_x.isEnabled() && _combobox_event_x.getSelectedIndex() > 0)
-            _input_source_settings.getLinelistFieldMaps().put(_combobox_event_x.getSelectedIndex() - 1, Pair.of(LinelistType.DESCRIPTIVE_COORD_X, "DescriptiveLatitude"));
+            _input_source_settings.getLinelistFieldMaps().add(Triple.of(_combobox_event_x.getSelectedIndex() - 1, LinelistType.DESCRIPTIVE_COORD_X, "DescriptiveLatitude"));
         for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
-            _input_source_settings.getLinelistFieldMaps().put(
-                model.getSourceColumnIndex((String)model.getValueAt(rowIdx, 0)) - 1, 
-                Pair.of(LinelistType.GENERAL_DATA, (String)model.getValueAt(rowIdx, 1))
-            );
+            _input_source_settings.getLinelistFieldMaps().add(Triple.of(
+                model.getSourceColumnIndex((String)model.getValueAt(rowIdx, 0)) - 1,  LinelistType.GENERAL_DATA, (String)model.getValueAt(rowIdx, 1)
+            ));
         }
         return false; 
     }
@@ -207,7 +204,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Checks that required input variables are mapped to a field of the source file. */
     private boolean checkForRequiredVariables() {
         StringBuilder message = new StringBuilder();
-        Vector<ImportVariable> missing = new Vector<ImportVariable>();
+        ArrayList<ImportVariable> missing = new ArrayList<ImportVariable>();
         VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
         for (ImportVariable variable : _import_variables) {
             if (variable.getIsRequiredField() && 
@@ -609,7 +606,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Builds html which details the input source type and variable mappings to source file'variableIdx columns. */
     private String getMappingsHtml() {
-        Vector<String> columnNames = getSourceColumnNames();
+        ArrayList<String> columnNames = getSourceColumnNames();
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>th {font-weight: bold;text-align:right;}</style></head><body>");
         builder.append(getFileExpectedFormatParagraphs());
@@ -656,7 +653,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     builder.append("---");
                 } else {
                     if (col_idx <= columnNames.size()) {
-                      String name = columnNames.elementAt(col_idx - 1);
+                      String name = columnNames.get(col_idx - 1);
                       if (name.length() > 15) {
                           name = name.substring(0, 14) + " ...";
                       }
@@ -701,8 +698,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     }    
     
     /** Attempts to obtain the column names for the source file given InputSourceSettings. */
-    private Vector<String> getSourceColumnNames() {
-        Vector<String> column_names = new Vector<String>();
+    private ArrayList<String> getSourceColumnNames() {
+        ArrayList<String> column_names = new ArrayList<String>();
         try {
             File file = new File(getSourceFilename());
             if (file.exists()) {
@@ -947,23 +944,23 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             model.fireTableDataChanged();
             // Copy the values from current linelist field map.
             _sticky_ll_labels.clear();
-            for (Map.Entry<Integer, Pair<LinelistType, String>> entry : _input_source_settings.getLinelistFieldMaps().entrySet()) {
-                switch (entry.getValue().getLeft()) {
+            for (Triple<Integer, LinelistType, String> entry : _input_source_settings.getLinelistFieldMaps()) {
+                switch (entry.getMiddle()) {
                     case INDIVIDUAL_ID: 
-                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
-                            _combobox_eventid.setSelectedIndex(entry.getKey() + 1);
+                        if (entry.getLeft() >=0 && entry.getLeft() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_eventid.setSelectedIndex(entry.getLeft() + 1);
                         break;
                     case DESCRIPTIVE_COORD_Y: 
-                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
-                            _combobox_event_y.setSelectedIndex(entry.getKey() + 1);
+                        if (entry.getLeft() >=0 && entry.getLeft() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_event_y.setSelectedIndex(entry.getLeft() + 1);
                         break;
                     case DESCRIPTIVE_COORD_X: 
-                        if (entry.getKey() >=0 && entry.getKey() + 1 < _combobox_eventid.getItemCount())
-                            _combobox_event_x.setSelectedIndex(entry.getKey() + 1);
+                        if (entry.getLeft() >=0 && entry.getLeft() + 1 < _combobox_eventid.getItemCount())
+                            _combobox_event_x.setSelectedIndex(entry.getLeft() + 1);
                         break;
                     default:
-                        if (entry.getKey() >=0 && entry.getKey() + 1 < model._combo_box.getItemCount()) {
-                            model.addRow(new Object[]{(String)model._combo_box.getItemAt(entry.getKey() + 1), entry.getValue().getRight()});
+                        if (entry.getLeft() >=0 && entry.getLeft() + 1 < model._combo_box.getItemCount()) {
+                            model.addRow(new Object[]{(String)model._combo_box.getItemAt(entry.getLeft() + 1), entry.getRight()});
                             _sticky_ll_labels.add(true);
                         }
                 }
@@ -1055,14 +1052,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         int widthTotal = 0;
         //calculate the column widths to fit header/data
-        Vector<Integer> colWidths = new Vector<Integer>();
+        ArrayList<Integer> colWidths = new ArrayList<Integer>();
         for (int c=0; c < data_table.getColumnCount(); ++c) {
             colWidths.add(AutofitTableColumns.getMaxColumnWidth(data_table, c, true, 20));
-            widthTotal += colWidths.lastElement();
+            widthTotal += colWidths.get(colWidths.size() - 1);
         }
         int additional = Math.max(0, _importTableScrollPane.getViewport().getSize().width - widthTotal - 20/*scrollbar width?*/)/colWidths.size();
         for (int c=0; c < colWidths.size(); ++c) {
-            data_table.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);
+            data_table.getColumnModel().getColumn(c).setMinWidth(colWidths.get(c) + additional);
         }
     }
     
@@ -1147,66 +1144,66 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for case file. */
     private void setCaseFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true, null, null, "<identifier>"));
-        _import_variables.addElement(new ImportVariable("Number of Cases", 1, true, null, null, "<#cases>"));
-        _import_variables.addElement(new ImportVariable("Date/Time", 2, false, null, null, "<time>"));
-        _import_variables.addElement(new ImportVariable("Attribute (value)", 3, true, null, null, "<attribute>"));
-        _import_variables.addElement(new ImportVariable("Category Type", 3, true, null, null, "<attribute>"));
-        _import_variables.addElement(new ImportVariable("Censored", 4, false, null, null, "<censored>"));
-        _import_variables.addElement(new ImportVariable("Weight", 4, false, null, null, "<weight>"));
-        _import_variables.addElement(new ImportVariable("Covariate1", 5, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate2", 6, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate3", 7, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate4", 8, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate5", 9, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate6", 10, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate7", 11, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate8", 12, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate9", 13, false, null, null, "<covariate>"));
-        _import_variables.addElement(new ImportVariable("Covariate10", 14, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Identifier", 0, true, null, null, "<identifier>"));
+        _import_variables.add(new ImportVariable("Number of Cases", 1, true, null, null, "<#cases>"));
+        _import_variables.add(new ImportVariable("Date/Time", 2, false, null, null, "<time>"));
+        _import_variables.add(new ImportVariable("Attribute (value)", 3, true, null, null, "<attribute>"));
+        _import_variables.add(new ImportVariable("Category Type", 3, true, null, null, "<attribute>"));
+        _import_variables.add(new ImportVariable("Censored", 4, false, null, null, "<censored>"));
+        _import_variables.add(new ImportVariable("Weight", 4, false, null, null, "<weight>"));
+        _import_variables.add(new ImportVariable("Covariate1", 5, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate2", 6, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate3", 7, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate4", 8, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate5", 9, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate6", 10, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate7", 11, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate8", 12, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate9", 13, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Covariate10", 14, false, null, null, "<covariate>"));
     }
     
     /** Setup field descriptors for control file. */
     private void setControlFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
-        _import_variables.addElement(new ImportVariable("Number of Controls", 1, true));
-        _import_variables.addElement(new ImportVariable("Date/Time", 2, false));
+        _import_variables.add(new ImportVariable("Identifier", 0, true));
+        _import_variables.add(new ImportVariable("Number of Controls", 1, true));
+        _import_variables.add(new ImportVariable("Date/Time", 2, false));
     }
     
     /** Setup field descriptors for coordinates file. */
     private void setGeoFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Location", 0, true));
-        _import_variables.addElement(new ImportVariable("Latitude", 1, true, "y-axis", null, null));
-        _import_variables.addElement(new ImportVariable("Longitude", 2, true, "x-axis", null, null));
-        _import_variables.addElement(new ImportVariable("X", 1, true));
-        _import_variables.addElement(new ImportVariable("Y", 2, true));
-        _import_variables.addElement(new ImportVariable("Z1", 3, false));
-        _import_variables.addElement(new ImportVariable("Z2", 4, false));
-        _import_variables.addElement(new ImportVariable("Z3", 5, false));
-        _import_variables.addElement(new ImportVariable("Z4", 6, false));
-        _import_variables.addElement(new ImportVariable("Z5", 7, false));
-        _import_variables.addElement(new ImportVariable("Z6", 8, false));
-        _import_variables.addElement(new ImportVariable("Z7", 9, false));
-        _import_variables.addElement(new ImportVariable("Z8", 10, false));
+        _import_variables.add(new ImportVariable("Location", 0, true));
+        _import_variables.add(new ImportVariable("Latitude", 1, true, "y-axis", null, null));
+        _import_variables.add(new ImportVariable("Longitude", 2, true, "x-axis", null, null));
+        _import_variables.add(new ImportVariable("X", 1, true));
+        _import_variables.add(new ImportVariable("Y", 2, true));
+        _import_variables.add(new ImportVariable("Z1", 3, false));
+        _import_variables.add(new ImportVariable("Z2", 4, false));
+        _import_variables.add(new ImportVariable("Z3", 5, false));
+        _import_variables.add(new ImportVariable("Z4", 6, false));
+        _import_variables.add(new ImportVariable("Z5", 7, false));
+        _import_variables.add(new ImportVariable("Z6", 8, false));
+        _import_variables.add(new ImportVariable("Z7", 9, false));
+        _import_variables.add(new ImportVariable("Z8", 10, false));
     }
     
     /** Setup field descriptors for special grid file. */
     private void setGridFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Latitude", 0, true, "y-axis", null, null));
-        _import_variables.addElement(new ImportVariable("Longitude", 1, true, "x-axis", null, null));
-        _import_variables.addElement(new ImportVariable("X", 0, true));
-        _import_variables.addElement(new ImportVariable("Y", 1, true));
-        _import_variables.addElement(new ImportVariable("Z1", 2, false));
-        _import_variables.addElement(new ImportVariable("Z2", 3, false));
-        _import_variables.addElement(new ImportVariable("Z3", 4, false));
-        _import_variables.addElement(new ImportVariable("Z4", 5, false));
-        _import_variables.addElement(new ImportVariable("Z5", 6, false));
-        _import_variables.addElement(new ImportVariable("Z6", 7, false));
-        _import_variables.addElement(new ImportVariable("Z7", 8, false));
-        _import_variables.addElement(new ImportVariable("Z8", 9, false));
+        _import_variables.add(new ImportVariable("Latitude", 0, true, "y-axis", null, null));
+        _import_variables.add(new ImportVariable("Longitude", 1, true, "x-axis", null, null));
+        _import_variables.add(new ImportVariable("X", 0, true));
+        _import_variables.add(new ImportVariable("Y", 1, true));
+        _import_variables.add(new ImportVariable("Z1", 2, false));
+        _import_variables.add(new ImportVariable("Z2", 3, false));
+        _import_variables.add(new ImportVariable("Z3", 4, false));
+        _import_variables.add(new ImportVariable("Z4", 5, false));
+        _import_variables.add(new ImportVariable("Z5", 6, false));
+        _import_variables.add(new ImportVariable("Z6", 7, false));
+        _import_variables.add(new ImportVariable("Z7", 8, false));
+        _import_variables.add(new ImportVariable("Z8", 9, false));
     }
     
     /** Sets InputSourceSettings object from user selections in wizard. */
@@ -1253,55 +1250,55 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Setup field descriptors for maximum circle population file. */
     private void setMaxCirclePopFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
-        _import_variables.addElement(new ImportVariable("Population", 1, true));
+        _import_variables.add(new ImportVariable("Identifier", 0, true));
+        _import_variables.add(new ImportVariable("Population", 1, true));
     }
     
     /** Setup field descriptors for population file. */
     private void setPopulationFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
+        _import_variables.add(new ImportVariable("Identifier", 0, true));
         ImportVariable variable = new ImportVariable("Date/Time", 1, false, null, "unspecified", null);
         /* Set the variable index to below the one-based variables -- variables less than one
          * are considered special and are not actually a data source column option.
          * In this case, the population date will be set to 'unspecified'. */
         variable.setSourceFieldIndex(0);
-        _import_variables.addElement(variable);
-        _import_variables.addElement(new ImportVariable("Population", 2, true));
-        _import_variables.addElement(new ImportVariable("Covariate1", 3, false));
-        _import_variables.addElement(new ImportVariable("Covariate2", 4, false));
-        _import_variables.addElement(new ImportVariable("Covariate3", 5, false));
-        _import_variables.addElement(new ImportVariable("Covariate4", 6, false));
-        _import_variables.addElement(new ImportVariable("Covariate5", 7, false));
-        _import_variables.addElement(new ImportVariable("Covariate6", 8, false));
-        _import_variables.addElement(new ImportVariable("Covariate7", 9, false));
-        _import_variables.addElement(new ImportVariable("Covariate8", 10, false));
-        _import_variables.addElement(new ImportVariable("Covariate9", 11, false));
-        _import_variables.addElement(new ImportVariable("Covariate10", 12, false));
+        _import_variables.add(variable);
+        _import_variables.add(new ImportVariable("Population", 2, true));
+        _import_variables.add(new ImportVariable("Covariate1", 3, false));
+        _import_variables.add(new ImportVariable("Covariate2", 4, false));
+        _import_variables.add(new ImportVariable("Covariate3", 5, false));
+        _import_variables.add(new ImportVariable("Covariate4", 6, false));
+        _import_variables.add(new ImportVariable("Covariate5", 7, false));
+        _import_variables.add(new ImportVariable("Covariate6", 8, false));
+        _import_variables.add(new ImportVariable("Covariate7", 9, false));
+        _import_variables.add(new ImportVariable("Covariate8", 10, false));
+        _import_variables.add(new ImportVariable("Covariate9", 11, false));
+        _import_variables.add(new ImportVariable("Covariate10", 12, false));
     }
     
     /** Setup field descriptors for relative risks file. */
     private void setRelativeRisksFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
-        _import_variables.addElement(new ImportVariable("Relative Risk", 1, true));
-        _import_variables.addElement(new ImportVariable("Start Date", 2, false));
-        _import_variables.addElement(new ImportVariable("End Date", 3, false));
+        _import_variables.add(new ImportVariable("Identifier", 0, true));
+        _import_variables.add(new ImportVariable("Relative Risk", 1, true));
+        _import_variables.add(new ImportVariable("Start Date", 2, false));
+        _import_variables.add(new ImportVariable("End Date", 3, false));
     }
     
     /** Setup field descriptors for network file. */
     private void setNetworkFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("First Location", 0, true));
-        _import_variables.addElement(new ImportVariable("Second Location", 1, false));
-        _import_variables.addElement(new ImportVariable("Distance", 2, false));
+        _import_variables.add(new ImportVariable("First Location", 0, true));
+        _import_variables.add(new ImportVariable("Second Location", 1, false));
+        _import_variables.add(new ImportVariable("Distance", 2, false));
     }    
     
     /** Setup field descriptors for multiple locations file. */
     private void setMultipleLocationsFileVariables() {
         _import_variables.clear();
-        _import_variables.addElement(new ImportVariable("Identifier", 0, true));
-        _import_variables.addElement(new ImportVariable("Location", 1, true));
+        _import_variables.add(new ImportVariable("Identifier", 0, true));
+        _import_variables.add(new ImportVariable("Location", 1, true));
     }     
     
     /** Shows/hides variables based upon destination file type and mapping_model/coordinates type. */
@@ -2259,7 +2256,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 clearSaTScanVariableFieldIndexes();
                 _execute_import_now.setSelected(true);
                 _needs_import_save = true;
-                _refresh_related_settings = true;
+                //_refresh_related_settings = true;
                 _expectedFormatTextPane.setText(getFileExpectedFormatHtml());
                 _expectedFormatTextPane.setCaretPosition(0);
                 nextButtonSource.setText("Next >");
@@ -2580,13 +2577,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         private static final long serialVersionUID = 1L;
         private String[] _column_names = {"SaTScan Variable", "Source File Variable"};
-        private final Vector<ImportVariable> _static_variables;
-        private Vector<ImportVariable> _visible_variables;
+        private final ArrayList<ImportVariable> _static_variables;
+        private ArrayList<ImportVariable> _visible_variables;
         public JComboBox _combo_box = new JComboBox();
 
-        public VariableMappingTableModel(Vector<ImportVariable> variables) {
+        public VariableMappingTableModel(ArrayList<ImportVariable> variables) {
             _static_variables = variables;
-            _visible_variables = (Vector)_static_variables.clone();
+            _visible_variables = (ArrayList)_static_variables.clone();
         }
 
         public int getColumnCount() {

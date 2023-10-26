@@ -661,7 +661,7 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
 				std::stringstream s;
 				for (auto itr = source->getLinelistFieldsMap().begin(); itr != source->getLinelistFieldsMap().end(); ++itr) {
 					if (itr != source->getLinelistFieldsMap().begin()) { s << ","; }
-					s << itr->first << ":" << itr->second.get<0>() << ":\"" << itr->second.get<1>() << "\"";
+					s << itr->get<0>() << ":" << itr->get<1>() << ":\"" << itr->get<2>() << "\"";
 				}
 				printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceLinelistFieldMap);
 				section.AddLine(key.c_str(), s.str().c_str());

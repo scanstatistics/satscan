@@ -349,8 +349,8 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
     std::set<std::string> grouping_by; // All the columns which we'll be generating an events kml file.
     for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
         if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
-        if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
-        grouping_by.emplace(demographic.first);
+        if (std::find(g_values.begin(), g_values.end(), demographic.first.second) == g_values.end()) continue;
+        grouping_by.emplace(demographic.first.second);
     }
     if (grouping_by.size() == 0) {
         _dataHub.GetPrintDirection().Printf(
@@ -386,7 +386,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     bool found = false;
     for (const auto& demographic: demographics.getDataSetDemographics().getAttributes()) {
         if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
-        if (boost::iequals(demographic.first, group_by)) {
+        if (boost::iequals(demographic.first.second, group_by)) {
             found = true; break;
         }
     }
@@ -430,9 +430,9 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             if (parameters.GetIsSpaceTimeAnalysis())
                 ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Event Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
             for (const auto& llfm : Source->getLinelistFieldsMap()) {
-                if (!(llfm.second.get<0>() == DESCRIPTIVE_COORD_Y || llfm.second.get<0>() == DESCRIPTIVE_COORD_X)) {
-                    ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << llfm.second.get<1>()
-                                << "</th><td style=\"white-space:nowrap;\">$[" << llfm.second.get<1>() << "]</td></tr>";
+                if (!(llfm.get<1>() == DESCRIPTIVE_COORD_Y || llfm.get<1>() == DESCRIPTIVE_COORD_X)) {
+                    ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << llfm.get<2>()
+                                << "</th><td style=\"white-space:nowrap;\">$[" << llfm.get<2>() << "]</td></tr>";
                 }
             }
             ballonstyle << "</table>]]></text></BalloonStyle>";
@@ -464,19 +464,19 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "<name>Identifier: " << identifier << "</name>" << std::endl;
             placemark << "<snippet>Identifier: " << identifier << "</snippet>" << std::endl;
             for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
-                value = Source->GetValueAtUnmapped(itr->first);
+                value = Source->GetValueAtUnmapped(itr->get<0>());
                 value = value == 0 ? "" : value;
-                /*if (itr->second.get<0>() == INDIVIDUAL_ID) {
-                    placemark << "<name>Event: " << value << "</name>" << std::endl;
-                    placemark << "<snippet>Event: " << value << "</snippet>" << std::endl;
+                if (itr->get<1>() == INDIVIDUAL_ID) {
+                    placemark << "<name>Individual: " << value << "</name>" << std::endl;
+                    placemark << "<snippet>Individual: " << value << "</snippet>" << std::endl;
                     event_id = value;
-                } else*/ if (itr->second.get<0>() == DESCRIPTIVE_COORD_Y) {
+                } else if (itr->get<1>() == DESCRIPTIVE_COORD_Y) {
                     latitude = value;
-                } else if (itr->second.get<0>() == DESCRIPTIVE_COORD_X) {
+                } else if (itr->get<1>() == DESCRIPTIVE_COORD_X) {
                     longitude = value;
                 } else {
-                    extended << "<Data name=\"" << itr->second.get<1>() << "\"><value>" << value << "</value></Data>";
-                    if (boost::iequals(itr->second.get<1>(), group_by)) group_value = value;
+                    extended << "<Data name=\"" << itr->get<2>() << "\"><value>" << value << "</value></Data>";
+                    if (boost::iequals(itr->get<2>(), group_by)) group_value = value;
                 }
             }
             // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.

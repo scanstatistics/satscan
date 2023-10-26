@@ -13,6 +13,7 @@
 #include "TimeStamp.h"
 #include "DateStringParser.h"
 #include "Toolkit.h"
+#include <boost/optional.hpp>
 
 const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting";
 
@@ -868,20 +869,47 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
     // Skip if we're not reading line list data from the case file.
     if (!gParameters.getReadingLineDataFromCasefile()) return true;
 
+    bool  bValid = true;
     try {
         auto inputsource = gParameters.getInputSource(CASEFILE);
         if (inputsource && inputsource->getLinelistFieldsMap().size()) {
-            std::vector<std::string> labels;
-            std::set<std::string> s;
+            boost::optional<unsigned int> individualId, descriptiveLat, descriptiveLong;
             for (const auto& ll: inputsource->getLinelistFieldsMap()) {
-                labels.push_back(ll.second.get<1>());
-                s.emplace(ll.second.get<1>());
+                switch (ll.get<1>()) {
+                    case INDIVIDUAL_ID:
+                        if (individualId && individualId.get() != ll.get<0>()) {
+                            PrintDirection.Printf(
+                                "%s:\nLine list mappings are defined for the case file and the column to define Individual data is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                            );
+                            bValid = false;
+                        } else individualId = ll.get<0>();
+                        break;
+                    case DESCRIPTIVE_COORD_Y:
+                        if (descriptiveLat && descriptiveLat.get() != ll.get<0>()) {
+                            PrintDirection.Printf(
+                                "%s:\nLine list mappings are defined for the case file and the column to define the descriptive latitude is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                            );
+                            bValid = false;
+                        } else descriptiveLat = ll.get<0>();
+                        break;
+                    case DESCRIPTIVE_COORD_X:
+                        if (descriptiveLong && descriptiveLong.get() != ll.get<0>()) {
+                            PrintDirection.Printf(
+                                "%s:\nLine list mappings are defined for the case file and the column to define the descriptive longitude is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                            );
+                            bValid = false;
+                        } else descriptiveLong = ll.get<0>();
+                        break;
+                    default: break;
+                }
             }
-            if (labels.size() != s.size()) {
+            // If the IndividualId column is defined, check that either both descriptive lat/long as defined or neither.
+            if (individualId && ((descriptiveLat && !descriptiveLong) || (!descriptiveLat && descriptiveLong))) {
                 PrintDirection.Printf(
-                    "%s:\nLine list mappings are defined for the case file and the labels for these mapping are not unique, but must be.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    "%s:\nLine list mappings are defined for the case file and the column to define the descriptive %s is missing though descriptive %s is defined.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, (descriptiveLat && !descriptiveLong) ? "longitude" : "latitude", (descriptiveLat && !descriptiveLong) ? "latitude" : "longitude"
                 );
-                return false;
+                bValid = false;
             }
         }
         if (gParameters.getOutputKMLFile() && gParameters.getGroupLinelistEventsKML()) {
@@ -902,7 +930,7 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
         x.addTrace("ValidateLinelistParameters()", "ParametersValidate");
         throw;
     }
-    return true;
+    return bValid;
 }
 
 /** Validates the temporal cluster size parameters. */

@@ -166,18 +166,21 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             for (size_t t=0; t < meta_record.size(); ++t) {
                 if (meta_record[t] == individual_id_type) {
                     label = (header_record.size() ? header_record[t] : individual_id_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(INDIVIDUAL_ID, label)));
+                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), INDIVIDUAL_ID, label));
                 } else if (meta_record[t] == xcoord_type) {
                     label = (header_record.size() ? header_record[t] : xcoord_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(DESCRIPTIVE_COORD_X, label)));
+                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), DESCRIPTIVE_COORD_X, label));
                 } else if (meta_record[t] == ycoord_type) {
                     label = (header_record.size() ? header_record[t] : ycoord_type);
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(DESCRIPTIVE_COORD_Y, label)));
+                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), DESCRIPTIVE_COORD_Y, label));
                 } else if (meta_record[t] == linelist_type) {
                     ++numLineList;
-                    fields_map.insert(std::make_pair(static_cast<unsigned int>(t), boost::tuple<LinelistType, std::string>(
-                        GENERAL_DATA, (header_record.size() ? header_record[t] : printString(label, "linelist-%u", numLineList))
-                    )));
+                    fields_map.push_back(
+                        boost::tuple<unsigned int, LinelistType, std::string>(
+                            static_cast<unsigned int>(t), GENERAL_DATA, 
+                            (header_record.size() ? header_record[t] : printString(label, "linelist-%u", numLineList))
+                        )
+                    );
                 } else {
                     if (meta_record[t] == covariate_type)
                         covariates.push_back(t + 1);

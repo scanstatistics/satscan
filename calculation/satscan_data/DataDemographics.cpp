@@ -48,23 +48,24 @@ void ContinuousDemographicAttribute::print() const {
 
 DemographicAttributeSet::DemographicAttributeSet(const LineListFieldMapContainer_t& llmap) {
     for (auto itr = llmap.begin(); itr != llmap.end(); ++itr) {
-        switch (itr->second.get<0>()) {
-            case INDIVIDUAL_ID: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), INDIVIDUAL_ID)); break;
-            case DESCRIPTIVE_COORD_X: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), DESCRIPTIVE_COORD_X)); break;
-            case DESCRIPTIVE_COORD_Y: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>(), DESCRIPTIVE_COORD_Y)); break;
-            case GENERAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->second.get<1>())); break;
-            case CATEGORICAL_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->second.get<1>())); break;
-            case CONTINUOUS_DATA: _attributes_set[itr->second.get<1>()] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->second.get<1>())); break;
-            default: throw prg_error("Unsupported line list type '%d'.", "DemographicAttributeSet()", itr->second.get<0>());
+        auto mapKey = std::make_pair(itr->get<1>(), itr->get<2>());
+        switch (itr->get<1>()) {
+            case INDIVIDUAL_ID: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), INDIVIDUAL_ID)); break;
+            case DESCRIPTIVE_COORD_X: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_X)); break;
+            case DESCRIPTIVE_COORD_Y: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_Y)); break;
+            case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>())); break;
+            case CATEGORICAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
+            case CONTINUOUS_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->get<2>())); break;
+            default: throw prg_error("Unsupported line list type '%d'.", "DemographicAttributeSet()", itr->get<1>());
         }
     }
 }
 
 /* Attempts to retrieve DemographicAttribute for LinelistTuple_t. */
 boost::shared_ptr<DemographicAttribute> DemographicAttributeSet::get(LinelistTuple_t llt) {
-    auto itr = _attributes_set.find(llt.get<1>());
+    auto itr = _attributes_set.find(std::make_pair(llt.get<1>(), llt.get<2>()));
     if (itr == _attributes_set.end())
-        throw prg_error("Line-list tuple not defined (%d, %s).", "DemographicAttributeSet()", llt.get<0>(), llt.get<1>().c_str());
+        throw prg_error("Line-list tuple not defined (%d, %s).", "DemographicAttributeSet()", llt.get<1>(), llt.get<2>().c_str());
     return itr->second;
 }
 
@@ -151,11 +152,11 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 void DataDemographicsProcessor::createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap) {
     std::vector<std::string> v = {"Cluster"};
     for (auto const& itr : llmap) {
-        if (itr.second.get<0>() == INDIVIDUAL_ID) {
+        if (itr.get<1>() == INDIVIDUAL_ID) {
             v.push_back("Hierarchy");
             v.push_back("New Event");
         }
-        v.push_back(itr.second.get<1>());
+        v.push_back(itr.get<2>());
     }
     std::string buffer;
     typelist_to_csv_string<std::string>(v, buffer);
@@ -217,18 +218,18 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             const char * value = 0; std::vector<std::string> values; std::string eventid;
             for (auto const& fieldMap: linelistFieldsMap) {
                 // Retrieve the value to report for this demographic attribute.
-                value = Source->GetValueAtUnmapped(fieldMap.first);
+                value = Source->GetValueAtUnmapped(fieldMap.get<0>());
 				if (value == 0)
 					throw resolvable_error(
 						"Error: Unable to read line list data '%s', at column %d, from line %ld of case file.\n",
-						fieldMap.second.get<1>().c_str(), fieldMap.first + 1, Source->GetCurrentRecordIndex()
+						fieldMap.get<2>().c_str(), fieldMap.get<0>() + 1, Source->GetCurrentRecordIndex()
 					);
                 values.push_back(value);
                 trimString(values.back());
                 // Add attribute to data set demographics.
-                _demographics_by_dataset.back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
+                _demographics_by_dataset.back().get(fieldMap)->add(values.back(), static_cast<unsigned int>(nCount));
                 // Special behavior for event id linelist column.
-                if (fieldMap.second.get<0>() == INDIVIDUAL_ID) {
+                if (fieldMap.get<1>() == INDIVIDUAL_ID) {
                     if (_events_filter->contains(values.back())) {
                         _handler.gDataHub.GetPrintDirection().PrintWarning(
                             printString(buffer,
@@ -246,10 +247,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                     const CCluster& cluster = _clusters->GetCluster(static_cast<tract_t>(t));
                     // Add to cluster demographics only if location and time overlap.
                     if (applicable.test(t))
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap.second)->add(values.back(), static_cast<unsigned int>(nCount));
-                    else if (fieldMap.second.get<0>() == LinelistType::CATEGORICAL_DATA)
+                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap)->add(values.back(), static_cast<unsigned int>(nCount));
+                    else if (fieldMap.get<1>() == LinelistType::CATEGORICAL_DATA)
                         // Always add the categorical attribute label though, just so we have a complete set with each cluster.
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap.second)->add(values.back(), 0);
+                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap)->add(values.back(), 0);
                 }
             }
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.

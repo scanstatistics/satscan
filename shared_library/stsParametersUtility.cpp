@@ -616,7 +616,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
       if (key.first == CASEFILE) {
         mid = _getMethodId_Checked(Env, issclazz, "addLinelistFieldMapping", "(IILjava/lang/String;)V");
         for (auto llmap: iss.getLinelistFieldsMap()) {
-            Env.CallVoidMethod(issobject, mid, llmap.first, llmap.second.get<0>(), Env.NewStringUTF(llmap.second.get<1>().c_str()));
+            Env.CallVoidMethod(issobject, mid, llmap.get<0>(), llmap.get<1>(), Env.NewStringUTF(llmap.get<2>().c_str()));
             jni_error::_detectError(Env);
         }
       }
@@ -981,7 +981,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetPrecisionOfTimesType((DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "GetPrecisionOfTimesType", "Lorg/satscan/app/Parameters$DatePrecisionType;"));
   Parameters.SetCoordinatesType((CoordinatesType)getEnumTypeOrdinalIndex(Env, jParameters, "GetCoordinatesType", "Lorg/satscan/app/Parameters$CoordinatesType;"));
 
-  mid = _getMethodId_Checked(Env, clazz, "GetEllipseShapes", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetEllipseShapes", "()Ljava/util/ArrayList;");
   jobject vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
 
@@ -990,7 +990,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   jint vsize = Env.CallIntMethod(vectorobject, mid);
   jni_error::_detectError(Env);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jobject double_object = Env.CallObjectMethod(vectorobject, mid, i);
       jni_error::_detectError(Env);
       jclass dclazz = Env.GetObjectClass(double_object);
@@ -999,7 +999,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       jni_error::_detectError(Env);
   }
 
-  mid = _getMethodId_Checked(Env, clazz, "GetEllipseRotations", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetEllipseRotations", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
@@ -1007,7 +1007,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   vsize = Env.CallIntMethod(vectorobject, mid);
   jni_error::_detectError(Env);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jobject int_object = Env.CallObjectMethod(vectorobject, mid, i);
       jni_error::_detectError(Env);
       jclass iclazz = Env.GetObjectClass(int_object);
@@ -1085,7 +1085,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetSourceFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetCaseFileNames", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetCaseFileNames", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
@@ -1093,7 +1093,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   jni_error::_detectError(Env);
   vsize = Env.CallIntMethod(vectorobject, mid);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
       jni_error::_detectError(Env);
       sFilename = Env.GetStringUTFChars(str_object, &iscopy);
@@ -1101,7 +1101,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
   }
 
-  mid = _getMethodId_Checked(Env, clazz, "GetControlFileNames", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetControlFileNames", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
@@ -1109,7 +1109,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   vsize = Env.CallIntMethod(vectorobject, mid);
   jni_error::_detectError(Env);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
 	  jni_error::_detectError(Env);
       sFilename = Env.GetStringUTFChars(str_object, &iscopy);
@@ -1117,7 +1117,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
   }
 
-  mid = _getMethodId_Checked(Env, clazz, "GetPopulationFileNames", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetPopulationFileNames", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
@@ -1125,7 +1125,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   vsize = Env.CallIntMethod(vectorobject, mid);
   jni_error::_detectError(Env);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
       jni_error::_detectError(Env);
       sFilename = Env.GetStringUTFChars(str_object, &iscopy);
@@ -1289,7 +1289,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.UseMetaLocationsFile(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetObservableRegions", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "GetObservableRegions", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
@@ -1297,7 +1297,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   vsize = Env.CallIntMethod(vectorobject, mid);
   jni_error::_detectError(Env);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
       jni_error::_detectError(Env);
       sFilename = Env.GetStringUTFChars(str_object, &iscopy);
@@ -1305,21 +1305,21 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
   }
 
-  mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/Vector;");
+  mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   vclazz = Env.GetObjectClass(vectorobject);
   mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
   vsize = Env.CallIntMethod(vectorobject, mid);
   for (jint i=0; i < vsize; ++i) {
-      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jobject iss_object = (jobject)Env.CallObjectMethod(vectorobject, mid, i);
       jclass issclazz = Env.GetObjectClass(iss_object);
 
       CParameters::InputSource inputsource;
       inputsource.setSourceType((SourceType)getEnumTypeOrdinalIndex(Env, iss_object, "getSourceDataFileType", "Lorg/satscan/importer/InputSourceSettings$SourceDataFileType;"));
 
-      mid = _getMethodId_Checked(Env, issclazz, "getFieldMaps", "()Ljava/util/Vector;");
+      mid = _getMethodId_Checked(Env, issclazz, "getFieldMaps", "()Ljava/util/ArrayList;");
       jobject vectorobject_mappings = Env.CallObjectMethod(iss_object, mid);
       jni_error::_detectError(Env);
       jclass vclazz_mappings = Env.GetObjectClass(vectorobject_mappings);
@@ -1327,7 +1327,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       std::vector<boost::any> map;
       jint vsize_mappings = Env.CallIntMethod(vectorobject_mappings, mid);
       for (jint j=0; j < vsize_mappings; ++j) {
-        mid = _getMethodId_Checked(Env, vclazz_mappings, "elementAt", "(I)Ljava/lang/Object;");
+        mid = _getMethodId_Checked(Env, vclazz_mappings, "get", "(I)Ljava/lang/Object;");
         jstring str_object = (jstring)Env.CallObjectMethod(vectorobject_mappings, mid, j);
         jni_error::_detectError(Env);
         sFilename = Env.GetStringUTFChars(str_object, &iscopy);
@@ -1418,7 +1418,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
           inputsource.setLinelistFieldsMap(fields_map);
           if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
       }
-
       Parameters.defineInputSource(type, inputsource, datasetIdx);
   }
 

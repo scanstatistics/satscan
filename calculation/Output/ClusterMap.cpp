@@ -334,10 +334,10 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
     std::vector<std::string> g_values;
     csv_string_to_typelist<std::string>(parameters.getKmlEventGroupAttribute().c_str(), g_values);
     for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue; // Only want attributes, no event id or coordinates.
-        if (std::find(g_values.begin(), g_values.end(), demographic.first) == g_values.end()) continue;
-        if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first; }) == _event_types.end())
-            _event_types.push_back(EventType(demographic.first));
+        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue; // Only want attributes, not individual id or coordinates.
+        if (std::find(g_values.begin(), g_values.end(), demographic.first.second) == g_values.end()) continue;
+        if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first.second; }) == _event_types.end())
+            _event_types.push_back(EventType(demographic.first.second));
     }
     if (_event_types.size() == 0) {
         _dataHub.GetPrintDirection().Printf("No characteristics to group by. Event placements will not be added to Google Maps output.\n",  BasePrint::P_WARNING);
@@ -376,23 +376,23 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 eventtypes.str("");
                 eventAttrs.clear();
                 for (auto itr=Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
-                    value = Source->GetValueAtUnmapped(itr->first);
+                    value = Source->GetValueAtUnmapped(itr->get<0>());
                     value = value == 0 ? "" : value;
-                    if (itr->second.get<0>() == INDIVIDUAL_ID)
+                    if (itr->get<1>() == INDIVIDUAL_ID)
                         event_id = value;
-                    else if (itr->second.get<0>() == DESCRIPTIVE_COORD_Y)
+                    else if (itr->get<1>() == DESCRIPTIVE_COORD_Y)
                         latitude = value;
-                    else if (itr->second.get<0>() == DESCRIPTIVE_COORD_X)
+                    else if (itr->get<1>() == DESCRIPTIVE_COORD_X)
                         longitude = value;
                     else {
                         // If this event column is one of those being grouped, add the value to the event-types categories.
-                        auto eventtype = eventtype_map.find(itr->second.get<1>());
+                        auto eventtype = eventtype_map.find(itr->get<2>());
                         if (eventtype != eventtype_map.end()) {
                             const auto& category = eventtype->second->addCategory(value);
                             if (eventtypes.tellp()) eventtypes << ",";
                             eventtypes << "'" << eventtype->second->className() << "': '" << category.get<0>() << "'";
                         }
-                        eventAttrs.push_back(std::make_pair(itr->second.get<1>(), value));
+                        eventAttrs.push_back(std::make_pair(itr->get<2>(), value));
                     }
                 }
                 // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.

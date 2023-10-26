@@ -121,8 +121,8 @@ typedef std::vector<boost::any> FieldMapContainer_t;
 /* line-list types */
 enum LinelistType { INDIVIDUAL_ID=0, DESCRIPTIVE_COORD_Y, DESCRIPTIVE_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
 /* data source fields map container typedef for linelist */
-typedef boost::tuple<LinelistType, std::string> LinelistTuple_t;
-typedef std::map<unsigned int, LinelistTuple_t> LineListFieldMapContainer_t;
+typedef boost::tuple<unsigned int, LinelistType, std::string> LinelistTuple_t;
+typedef std::vector<LinelistTuple_t> LineListFieldMapContainer_t;
 /* arbitrary non-leap year for seasonal dates */
 #define SEASONAL_YEAR 2001
 /* arbitrary day of month for seasonal dates */

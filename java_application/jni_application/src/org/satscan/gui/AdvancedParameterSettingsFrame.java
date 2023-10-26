@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -35,6 +33,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.AdvFeaturesExpection;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
@@ -64,9 +63,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final UndoManager undo = new UndoManager();
     private final ParameterSettingsFrame _settings_window;
     private final DefaultListModel _dataSetsListModel = new DefaultListModel();
-    private Vector<String> _caseFilenames = new Vector<String>();
-    private Vector<String> _controlFilenames = new Vector<String>();
-    private Vector<String> _populationFilenames = new Vector<String>();
+    private ArrayList<String> _caseFilenames = new ArrayList<>();
+    private ArrayList<String> _controlFilenames = new ArrayList<>();
+    private ArrayList<String> _populationFilenames = new ArrayList<>();
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
     private final int MAXIMUM_ADDITIONAL_SETS = 11;
     final static String FLEXIBLE_COMPLETE = "flexible_complete";
@@ -2736,9 +2735,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableAdditionalDataSetsGroup(false);
         for (int i = 1; i < parameters.GetNumDataSets(); i++) { // multiple data sets
             _dataSetsListModel.addElement("Data Set " + Integer.toString(i + 1));
-            _caseFilenames.addElement(parameters.GetCaseFileName(i + 1));
-            _controlFilenames.addElement(parameters.GetControlFileName(i + 1));
-            _populationFilenames.addElement(parameters.GetPopulationFileName(i + 1));
+            _caseFilenames.add(parameters.GetCaseFileName(i + 1));
+            _controlFilenames.add(parameters.GetControlFileName(i + 1));
+            _populationFilenames.add(parameters.GetPopulationFileName(i + 1));
         }
         if (_dataSetsListModel.size() > 0) {
             _inputDataSetsList.setSelectedIndex(0);
@@ -3261,14 +3260,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     if (_settings_window._input_source_map.containsKey(key)) {
                         InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
                         tryCSV = inputSourceSettings.getFieldMaps().size() == 0;
-                        for (Map.Entry<Integer, Pair<LinelistType, String>> entry : inputSourceSettings.getLinelistFieldMaps().entrySet()) {
-                            switch (entry.getValue().getLeft()) {
+                        for (Triple<Integer, LinelistType, String> entry : inputSourceSettings.getLinelistFieldMaps()) {
+                            switch (entry.getMiddle()) {
                                 case INDIVIDUAL_ID:
                                 case DESCRIPTIVE_COORD_Y:
                                 case DESCRIPTIVE_COORD_X: break;
                                 default:
-                                if (!values.contains(entry.getValue().getRight())) {
-                                    MenuItem mi = new MenuItem(entry.getValue().getRight());
+                                if (!values.contains(entry.getRight())) {
+                                    MenuItem mi = new MenuItem(entry.getRight());
                                     mi.addActionListener(new ActionListener() {
                                         public void actionPerformed(ActionEvent e) {
                                             MenuItem source = (MenuItem)e.getSource();
@@ -3418,9 +3417,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 enableInputFileEdits();
                 if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
-                    _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
-                    _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
-                    _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
+                    _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                    _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                    _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.get(_inputDataSetsList.getSelectedIndex()));
                 }
                 enableSetDefaultsButton();
             }
@@ -3433,9 +3432,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));
 
                 // enable and clear the edit boxes
-                _caseFilenames.addElement("");
-                _controlFilenames.addElement("");
-                _populationFilenames.addElement("");
+                _caseFilenames.add("");
+                _controlFilenames.add("");
+                _populationFilenames.add("");
                 _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);
                 _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);
                 _caseFileTextField.setText("");
@@ -3451,7 +3450,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 int iDeleteIndex = _inputDataSetsList.getSelectedIndex();
 
-                Vector<InputSourceSettings.InputFileType> filetypes = new Vector<InputSourceSettings.InputFileType>();
+                ArrayList<InputSourceSettings.InputFileType> filetypes = new ArrayList<>();
                 filetypes.add(InputSourceSettings.InputFileType.Case);
                 filetypes.add(InputSourceSettings.InputFileType.Control);
                 filetypes.add(InputSourceSettings.InputFileType.Population);
@@ -4734,7 +4733,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );

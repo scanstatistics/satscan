@@ -69,7 +69,7 @@ class ContinuousDemographicAttribute : public DemographicAttribute {
 /* A class to collect demographic attributes of a data set. */
 class DemographicAttributeSet {
     protected:
-        typedef std::map<std::string, boost::shared_ptr<DemographicAttribute> > AttributesSet_t;
+        typedef std::map<std::pair<LinelistType, std::string>, boost::shared_ptr<DemographicAttribute> > AttributesSet_t;
         AttributesSet_t  _attributes_set;
 
     public:

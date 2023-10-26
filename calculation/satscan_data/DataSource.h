@@ -16,8 +16,7 @@ class DataSource {
     public:
         enum FieldType {ONECOUNT, GENERATEDID, DEFAULT_DATE, BLANK};
         enum ShapeFieldType {POINTX=0, POINTY};
-        typedef std::pair<unsigned int, LinelistTuple_t> LineListField_t;
-        typedef std::vector<LineListField_t> OrderedLineListField_t;
+        typedef std::vector<LinelistTuple_t> OrderedLineListField_t;
 
     protected:
         bool _blank_record_flag;

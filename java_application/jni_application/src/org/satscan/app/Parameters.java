@@ -1,5 +1,6 @@
 package org.satscan.app;
-import java.util.*;
+
+import java.util.ArrayList;
 import org.satscan.importer.InputSourceSettings;
 import org.satscan.utils.FileAccess;
 
@@ -136,8 +137,8 @@ public class Parameters implements Cloneable {
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
     /* Ellipse variables */
-    private Vector<Double>                  gvEllipseShapes; /** shape of each ellipsoid */
-    private Vector<Integer>                 gvEllipseRotations; /** number of rotations for each ellipsoid */
+    private ArrayList<Double>               gvEllipseShapes = new ArrayList<>(); /** shape of each ellipsoid */
+    private ArrayList<Integer>              gvEllipseRotations = new ArrayList<>(); /** number of rotations for each ellipsoid */
     private NonCompactnessPenaltyType       geNonCompactnessPenaltyType=NonCompactnessPenaltyType.MEDIUMPENALTY; /** indicates penalty for narrower ellipses */
     /* Pure Clusters variables */
     private boolean                         gbIncludePurelySpatialClusters=false, /** indicates whether to include purely spatial clusters */
@@ -170,9 +171,9 @@ public class Parameters implements Cloneable {
     private double                          gbIterativeCutOffPValue=0.05; /* P-Value used to exit Iterative analysis */
         /* Input/Output filenames */
     private String                          gsParametersSourceFileName=""; /** parameters source filename */
-    private Vector<String>                  gvCaseFilenames; /** case data source filenames */
-    private Vector<String>                  gvControlFilenames; /** control data source filenames */
-    private Vector<String>                  gvPopulationFilenames; /** population data source filenames */
+    private ArrayList<String>               gvCaseFilenames = new ArrayList<>(); /** case data source filenames */
+    private ArrayList<String>               gvControlFilenames = new ArrayList<>(); /** control data source filenames */
+    private ArrayList<String>               gvPopulationFilenames = new ArrayList<>(); /** population data source filenames */
     private String                          gsCoordinatesFileName=""; /** coordinates data source filename */
     private String                          gsSpecialGridFileName=""; /** special grid data source filename */
     private String                          gsMaxCirclePopulationFileName=""; /** special population file for constructing circles only */
@@ -194,7 +195,7 @@ public class Parameters implements Cloneable {
     private String                          gsEndRangeEndDate="2000/12/31";
     private String                          gsStartRangeStartDate="2000/1/1";
     private String                          gsStartRangeEndDate="2000/12/31";
-    private Vector<String>                  gvObservableRegions; /** collection of observable regions */
+    private ArrayList<String>               gvObservableRegions = new ArrayList<>(); /** collection of observable regions */
     private CreationVersion                 gCreationVersion;
     private int                             glRandomizationSeed=12345678; /** randomization seed */
     private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical LLR values */
@@ -222,7 +223,7 @@ public class Parameters implements Cloneable {
     private int                             _powerEvaluationTotalCases=600; /* number cases in power evaluation, user specified */
     private int                             _power_replica=1000; /* number of replications in power step of power evaluations */
     
-    private Vector<InputSourceSettings>     _input_sources;
+    private ArrayList<InputSourceSettings>  _input_sources = new ArrayList<>();
     
     private boolean                         _risk_limit_high_clusters=false;
     private double                          _risk_threshold_high_clusters=1.0;
@@ -274,69 +275,32 @@ public class Parameters implements Cloneable {
       super();
 
       gCreationVersion = new CreationVersion(7,0,0);
-      gvCaseFilenames = new Vector<>();
-      gvCaseFilenames.addElement("");
-      gvControlFilenames = new Vector<>();
-      gvControlFilenames.addElement("");
-      gvPopulationFilenames = new Vector<>();
-      gvPopulationFilenames.addElement("");
-      gvEllipseShapes = new Vector<>();
-      gvEllipseShapes.addElement(1.5);
-      gvEllipseShapes.addElement(2.0);
-      gvEllipseShapes.addElement(3.0);
-      gvEllipseShapes.addElement(4.0);
-      gvEllipseShapes.addElement(5.0);
-      gvEllipseRotations = new Vector<>();
-      gvEllipseRotations.addElement(4);
-      gvEllipseRotations.addElement(6);
-      gvEllipseRotations.addElement(9);
-      gvEllipseRotations.addElement(12);
-      gvEllipseRotations.addElement(15);
-      gvObservableRegions = new Vector<>();
-      _input_sources = new Vector<>();
+      gvCaseFilenames.add("");
+      gvControlFilenames.add("");
+      gvPopulationFilenames.add("");
+      gvEllipseShapes.add(1.5);
+      gvEllipseShapes.add(2.0);
+      gvEllipseShapes.add(3.0);
+      gvEllipseShapes.add(4.0);
+      gvEllipseShapes.add(5.0);
+      gvEllipseRotations.add(4);
+      gvEllipseRotations.add(6);
+      gvEllipseRotations.add(9);
+      gvEllipseRotations.add(12);
+      gvEllipseRotations.add(15);
     }
 
     @Override
     public Object clone() {
         try {
             Parameters newObject = (Parameters)super.clone();
-            newObject.gsStudyPeriodStartDate = new String(gsStudyPeriodStartDate);
-            newObject.gsStudyPeriodEndDate = new String(gsStudyPeriodEndDate);
-            newObject.gvCaseFilenames = new Vector<String>(gvCaseFilenames);
-            newObject.gvControlFilenames = new Vector<String>(gvControlFilenames);
-            newObject.gvPopulationFilenames = new Vector<String>(gvPopulationFilenames);
-            newObject.gsCoordinatesFileName = new String(gsCoordinatesFileName);
-            newObject.gsSpecialGridFileName = new String(gsSpecialGridFileName);
-            newObject.gsMaxCirclePopulationFileName = new String(gsMaxCirclePopulationFileName);
-            newObject.gsOutputFileName = new String(gsOutputFileName);
-            newObject.gsProspectiveStartDate = new String(gsProspectiveStartDate);
-            newObject.gsParametersSourceFileName = new String(gsParametersSourceFileName);
-            newObject.gsEndRangeStartDate = new String(gsEndRangeStartDate);
-            newObject.gsEndRangeEndDate = new String(gsEndRangeEndDate);
-            newObject.gsStartRangeStartDate = new String(gsStartRangeStartDate);
-            newObject.gsStartRangeEndDate = new String(gsStartRangeEndDate);
-            newObject.gsSimulationDataSourceFileName = new String(gsSimulationDataSourceFileName);
-            newObject.gsAdjustmentsByRelativeRisksFileName = new String(gsAdjustmentsByRelativeRisksFileName);
-            newObject.gsSimulationDataOutputFilename = new String(gsSimulationDataOutputFilename);
-            newObject.gsLocationNeighborsFilename = new String(gsLocationNeighborsFilename);
-            newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
-            newObject.gvObservableRegions = new Vector<String>(gvObservableRegions);
-            newObject.gsTitleName = new String(gsTitleName);
-            newObject._google_maps_api_key = new String(_google_maps_api_key);
-            newObject._input_sources = new Vector<InputSourceSettings>();
-            for (InputSourceSettings iss : _input_sources) {
-                newObject._input_sources.addElement(iss.clone());
-            }
-            newObject._locations_network_filename = new String(_locations_network_filename);
-            newObject._kml_event_group_attribute = new String(_kml_event_group_attribute);
-            newObject._event_cache_filename = new String(_event_cache_filename);
-            newObject._email_always_recipients = new String(_email_always_recipients);
-            newObject._email_significant_recipients = new String(_email_significant_recipients);
-            newObject._email_subject_line_no_significant = new String(_email_subject_line_no_significant);
-            newObject._email_message_body_no_significant = new String(_email_message_body_no_significant);
-            newObject._email_subject_line_significant = new String(_email_subject_line_significant);
-            newObject._email_message_body_significant = new String(_email_message_body_significant);
-            newObject._multiple_locations_file = new String(_multiple_locations_file);
+            newObject.gvCaseFilenames = new ArrayList<>(gvCaseFilenames);
+            newObject.gvControlFilenames = new ArrayList<>(gvControlFilenames);
+            newObject.gvPopulationFilenames = new ArrayList<>(gvPopulationFilenames);
+            newObject.gvObservableRegions = new ArrayList<>(gvObservableRegions);
+            newObject._input_sources = new ArrayList<>();
+            for (InputSourceSettings iss : _input_sources)
+                newObject._input_sources.add(iss.clone());
             return newObject;
         } catch (CloneNotSupportedException e) {
             throw new InternalError("But we are Cloneable!!!");
@@ -344,8 +308,12 @@ public class Parameters implements Cloneable {
     }
 
     @Override
-    public boolean equals(Object _rhs) {
-        Parameters rhs = (Parameters)_rhs;
+    public boolean equals(Object other) {
+        if (this == other) return true; // check self
+        if (other == null) return false; // check null
+        if (getClass() != other.getClass()) return false; // type check and cast
+        
+        Parameters rhs = (Parameters)other;
 
         if (geSpatialWindowType                    != rhs.geSpatialWindowType) return false;
         if (gvEllipseShapes                        != rhs.gvEllipseShapes) return false;
@@ -499,9 +467,7 @@ public class Parameters implements Cloneable {
         if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
         if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
         if (_email_attach_results != rhs._email_attach_results) return false;
-        if (!_multiple_locations_file.equals(rhs._multiple_locations_file)) return false;
-        
-        return true;
+        return _multiple_locations_file.equals(rhs._multiple_locations_file);
     }
     
     public String getMultipleLocationsFile() { return _multiple_locations_file; }
@@ -550,7 +516,7 @@ public class Parameters implements Cloneable {
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
     public void setProspectiveFrequencyType(int iOrdinal) {
         try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _prospective_frequency.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, ProspectiveFrequency.values()); }
     }
     public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
     public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
@@ -586,7 +552,7 @@ public class Parameters implements Cloneable {
     public void setOutputCartesianGraph(boolean b) {_output_cartesian_graph = b;}
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}
-    public Vector<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
+    public ArrayList<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
     public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
     public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
     public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
@@ -594,7 +560,7 @@ public class Parameters implements Cloneable {
     public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
     public void setTemporalGraphReportType(int iOrdinal) {
         try { _temporal_graph_report_type = TemporalGraphReportType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, CriticalValuesType.values()); }
     }        
     public int getMinimumTemporalClusterSize() {return _minimum_temporal_cluster_size;}
     public void setMinimumTemporalClusterSize(int i) {_minimum_temporal_cluster_size = i;}
@@ -617,25 +583,24 @@ public class Parameters implements Cloneable {
     public boolean GetReportGumbelPValue() {return gbReportGumbelPValue;}
     public void SetReportGumbelPValue(boolean b) {gbReportGumbelPValue = b;}
     /** Add ellipsoid shape to collection of spatial shapes evaluated. */
-    public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvEllipseShapes.setSize(0);
-        gvEllipseShapes.add(Double.valueOf(dShape));
+    public void AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
+        if (bEmptyFirst) gvEllipseShapes.clear();
+        gvEllipseShapes.add(dShape);
     }
     /** Add ellipsoid rotations to collection of spatial shapes evaluated. */
     public void AddEllipsoidRotations(int iRotations, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvEllipseRotations.setSize(0);
-        gvEllipseRotations.add(Integer.valueOf(iRotations));
+        if (bEmptyFirst) gvEllipseRotations.clear();
+        gvEllipseRotations.add(iRotations);
     }
     /** Add observable region to definition to collection. */
     public void ClearObservableRegions() {
-        gvObservableRegions.setSize(0);
+        gvObservableRegions.clear();
     }
     /** Add observable region to definition to collection. */
     public void AddObservableRegion(final String sRegions, int iIndex, boolean bEmptyFirst) {
-        if (bEmptyFirst) gvObservableRegions.setSize(0);
-        if (iIndex + 1 > gvObservableRegions.size())
-            gvObservableRegions.setSize(iIndex + 1);
-        gvObservableRegions.setElementAt(sRegions, iIndex);
+        if (bEmptyFirst) gvObservableRegions.clear();
+        setSize(gvObservableRegions, iIndex + 1);
+        gvObservableRegions.set(iIndex, sRegions);
     }
     public boolean getCalculateOliveirasF() {return _calculate_oliveira_f;}
     public void setCalculateOliveirasF(boolean b) {_calculate_oliveira_f = b;}
@@ -648,17 +613,17 @@ public class Parameters implements Cloneable {
     public CriticalValuesType getPowerEvaluationCriticalValueType() {return _critical_value_type;}
     public void setPowerEvaluationCriticalValueType(int iOrdinal) {
         try { _critical_value_type = CriticalValuesType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _critical_value_type.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, CriticalValuesType.values()); }
     }
     public PowerEstimationType getPowerEstimationType() {return _power_estimation_type;}
     public void setPowerEstimationType(int iOrdinal) {
         try { _power_estimation_type = PowerEstimationType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _power_estimation_type.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, PowerEstimationType.values()); }
     }
     public PowerEvaluationMethodType getPowerEvaluationMethod() {return _power_evaluation_method;}
     public void setPowerEvaluationMethod(int iOrdinal) {
         try { _power_evaluation_method = PowerEvaluationMethodType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _power_evaluation_method.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, PowerEvaluationMethodType.values()); }
     }
     public String getPowerEvaluationAltHypothesisFilename() {return _power_alt_hypothesis_filename;}
     public void setPowerEvaluationAltHypothesisFilename(final String s) {_power_alt_hypothesis_filename = s;}
@@ -676,7 +641,7 @@ public class Parameters implements Cloneable {
     public GiniIndexReportType getGiniIndexReportType() {return _giniIndexReportType;}
     public void setGiniIndexReportType(int iOrdinal) {
         try { _giniIndexReportType = GiniIndexReportType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _giniIndexReportType.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, GiniIndexReportType.values()); }
     }
     public boolean getReportGiniIndexCoefficents() {return _outputGiniIndexCoefficients;}
     public void setReportGiniIndexCoefficents(boolean b) {_outputGiniIndexCoefficients = b;}
@@ -703,23 +668,23 @@ public class Parameters implements Cloneable {
         return GetProbabilityModelTypeAsString(geProbabilityModelType, abbr);
     }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
-    public final Vector<String> GetObservableRegions() {return gvObservableRegions;}
+    public final ArrayList<String> GetObservableRegions() {return gvObservableRegions;}
     public final String GetCaseFileName(int iSetIndex/*=1*/) {
-        return gvCaseFilenames.elementAt(iSetIndex - 1);
+        return gvCaseFilenames.get(iSetIndex - 1);
     }
-    public final Vector<String> GetCaseFileNames() {return gvCaseFilenames;}
+    public final ArrayList<String> GetCaseFileNames() {return gvCaseFilenames;}
     public final String GetControlFileName(int iSetIndex/*=1*/) {
-      return gvControlFilenames.elementAt(iSetIndex - 1);
+      return gvControlFilenames.get(iSetIndex - 1);
     }
-    public final Vector<String> GetControlFileNames() {return gvControlFilenames;}
+    public final ArrayList<String> GetControlFileNames() {return gvControlFilenames;}
     public final String GetCoordinatesFileName() {return gsCoordinatesFileName;}
     public CoordinatesDataCheckingType GetCoordinatesDataCheckingType() {return geCoordinatesDataCheckingType;}
     public CoordinatesType GetCoordinatesType() {return geCoordinatesType;}
     public final CreationVersion GetCreationVersion() {return gCreationVersion;}
     public CriteriaSecondaryClustersType GetCriteriaSecondClustersType() {return geCriteriaSecondClustersType;}
     public int GetCreationVersionMajor() {return gCreationVersion.giMajor;}
-    public final Vector<Integer> GetEllipseRotations() {return gvEllipseRotations;}
-    public final Vector<Double> GetEllipseShapes() {return gvEllipseShapes;}
+    public final ArrayList<Integer> GetEllipseRotations() {return gvEllipseRotations;}
+    public final ArrayList<Double> GetEllipseShapes() {return gvEllipseShapes;}
     public final String GetEndRangeEndDate() {return gsEndRangeEndDate;}
     public final String GetEndRangeStartDate() {return gsEndRangeStartDate;}
     public ExecutionType GetExecutionType() {return geExecutionType;}
@@ -791,9 +756,9 @@ public class Parameters implements Cloneable {
         return geAnalysisType == AnalysisType.PURELYTEMPORAL || geAnalysisType == AnalysisType.SPACETIME || GetIsProspectiveAnalysis();
     }
     public final String GetPopulationFileName(int iSetIndex/*=1*/) {
-        return gvPopulationFilenames.elementAt(iSetIndex - 1);
+        return gvPopulationFilenames.get(iSetIndex - 1);
     }
-    public final Vector<String> GetPopulationFileNames() {return gvPopulationFilenames;}
+    public final ArrayList<String> GetPopulationFileNames() {return gvPopulationFilenames;}
     public DatePrecisionType GetPrecisionOfTimesType() {return gePrecisionOfTimesType;}
     public ProbabilityModelType GetProbabilityModelType() {return geProbabilityModelType;}
     public static final String GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType, boolean abbr) {
@@ -848,6 +813,11 @@ public class Parameters implements Cloneable {
     public double GetTimeTrendAdjustmentPercentage() {return gdTimeTrendAdjustPercentage;}
     public TimeTrendAdjustmentType GetTimeTrendAdjustmentType() {return geTimeTrendAdjustType;}
     public double GetTimeTrendConvergence() {return gdTimeTrendConverge;}
+    private <T> void setSize(ArrayList<T> list, int size) {
+        /* Replicates Vector setSize for ArrayList. */
+        while (list.size() > size) list.remove(list.size() - 1);
+        while (list.size() < size) list.add(null);
+    }
     public void SetAdjustForEarlierAnalyses(boolean b) {gbAdjustForEarlierAnalyses = b;}
     public void SetAdjustmentsByRelativeRisksFilename(String sAdjustmentsByRelativeRisksFileName) {gsAdjustmentsByRelativeRisksFileName = sAdjustmentsByRelativeRisksFileName;}
     public void SetAnalysisType(int iOrdinal) {
@@ -860,7 +830,7 @@ public class Parameters implements Cloneable {
     }
     public void SetPValueReportingType(int iOrdinal) {
         try { gePValueReportingType = PValueReportingType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, gePValueReportingType.values()); }
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, PValueReportingType.values()); }
     }
     public void SetAreaRateType(int iOrdinal) {
         try { geAreaScanRate = AreaRateType.values()[iOrdinal];
@@ -873,14 +843,12 @@ public class Parameters implements Cloneable {
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, ExecutionType.values()); }
     }
     public void SetCaseFileName(final String sCaseFileName, int iSetIndex/*=1*/) {
-        if (iSetIndex > gvCaseFilenames.size())
-            gvCaseFilenames.setSize(iSetIndex);
-        gvCaseFilenames.setElementAt(sCaseFileName, iSetIndex - 1);
+        setSize(gvCaseFilenames, iSetIndex);
+        gvCaseFilenames.set(iSetIndex - 1, sCaseFileName);
     }
     public void SetControlFileName(final String sControlFileName, int iSetIndex/*=1*/) {
-        if (iSetIndex > gvControlFilenames.size())
-            gvControlFilenames.setSize(iSetIndex);
-        gvControlFilenames.setElementAt(sControlFileName, iSetIndex - 1);
+        setSize(gvControlFilenames, iSetIndex);
+        gvControlFilenames.set(iSetIndex - 1, sControlFileName);
     }
     public void SetCoordinatesFileName(final String sCoordinatesFileName) {gsCoordinatesFileName = sCoordinatesFileName;}
     public void SetCoordinatesDataCheckingType(int iOrdinal) {
@@ -933,9 +901,9 @@ public class Parameters implements Cloneable {
     }
     public void SetNumDataSets(int iNumDataSets) {
         //adjust the number of filenames for case, control, and population
-        gvCaseFilenames.setSize(iNumDataSets);
-        gvControlFilenames.setSize(iNumDataSets);
-        gvPopulationFilenames.setSize(iNumDataSets);
+        setSize(gvCaseFilenames, iNumDataSets);
+        setSize(gvControlFilenames, iNumDataSets);
+        setSize(gvPopulationFilenames, iNumDataSets);
     }
     public void SetNumParallelProcessesToExecute(int i) {giNumRequestedParallelProcesses = i;}
     public void SetNumberMonteCarloReplications(int iReplications) {giReplications = iReplications;}
@@ -953,9 +921,8 @@ public class Parameters implements Cloneable {
     public void SetOutputSimLogLikeliRatiosDBase(boolean b) {gbOutputSimLogLikeliRatiosDBase = b;}
     public void SetOutputSimulationData(boolean b) {gbOutputSimulationData = b;}
     public void SetPopulationFileName(final String  sPopulationFileName, int iSetIndex/*=1*/) {
-        if (iSetIndex > gvPopulationFilenames.size())
-        gvPopulationFilenames.setSize(iSetIndex);
-        gvPopulationFilenames.setElementAt(sPopulationFileName, iSetIndex - 1);
+        setSize(gvPopulationFilenames, iSetIndex);
+        gvPopulationFilenames.set(iSetIndex - 1, sPopulationFileName);
     }
     public void SetPrecisionOfTimesType(int iOrdinal) {
         try { gePrecisionOfTimesType = DatePrecisionType.values()[iOrdinal];

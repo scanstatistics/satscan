@@ -4,11 +4,9 @@
  */
 package org.satscan.importer;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.UnknownEnumException;
 
 /**
@@ -26,14 +24,14 @@ public class InputSourceSettings implements Cloneable  {
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Case;
     private int _data_set_index=1;
-    private Vector<String> _mappings = new Vector<String>();
+    private ArrayList<String> _mappings = new ArrayList<>();
     // CVS specific options
     private String _delimiter=",";
     private String _grouper="\"";
     private int _skip_lines=0;
     private boolean _first_row_headers=false;
-    private Map<Integer, Pair<LinelistType, String>> _linelist_field_map = new LinkedHashMap<>();
-        
+    private ArrayList<Triple<Integer, LinelistType, String>> _linelist_field_map = new ArrayList<>();
+    
     public InputSourceSettings() {}
     public InputSourceSettings(InputFileType filetype) {
         _file_type = filetype;
@@ -43,23 +41,23 @@ public class InputSourceSettings implements Cloneable  {
         _source_type = inputsource._source_type;
         _file_type = inputsource._file_type;
         _data_set_index = inputsource._data_set_index;
-        _mappings = new Vector<String>(inputsource._mappings);
+        _mappings = new ArrayList<String>(inputsource._mappings);
         _delimiter = inputsource._delimiter;
         _grouper = inputsource._grouper;
         _skip_lines = inputsource._skip_lines;
         _first_row_headers = inputsource._first_row_headers;
-        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : inputsource.getLinelistFieldMaps().entrySet())
-          _linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());        
+        for (Triple<Integer, LinelistType, String> mapEntry : inputsource.getLinelistFieldMaps())
+          _linelist_field_map.add(mapEntry);
     }
     
     public InputSourceSettings clone() throws CloneNotSupportedException {
         InputSourceSettings iss = (InputSourceSettings) super.clone();
-        iss._mappings = (Vector<String>)_mappings.clone();
+        iss._mappings = (ArrayList<String>)_mappings.clone();
         iss._delimiter = new String(_delimiter);
         iss._grouper = new String(_grouper);
-        iss._linelist_field_map = new LinkedHashMap<>();
-        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : getLinelistFieldMaps().entrySet())
-          iss._linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());        
+        iss._linelist_field_map = new ArrayList<>();
+        for (Triple<Integer, LinelistType, String> mapEntry : getLinelistFieldMaps())
+          iss._linelist_field_map.add(mapEntry);
         return iss;
     }
     
@@ -73,8 +71,8 @@ public class InputSourceSettings implements Cloneable  {
         _skip_lines = other._skip_lines;
         _first_row_headers = other._first_row_headers;
         _linelist_field_map.clear();
-        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : other.getLinelistFieldMaps().entrySet())
-          _linelist_field_map.put(mapEntry.getKey(), mapEntry.getValue());
+        for (Triple<Integer, LinelistType, String> mapEntry : other.getLinelistFieldMaps())
+          _linelist_field_map.add(mapEntry);
     }
     
     @Override
@@ -125,22 +123,22 @@ public class InputSourceSettings implements Cloneable  {
     public int getDataSetIndex() {return _data_set_index;}
     public void setDataSetIndex(int i) {_data_set_index = i;}
 
-    public Vector<String> getFieldMaps() {return _mappings;}
-    public void addFieldMapping(String s) {_mappings.addElement(s);}    
-    public void setFieldMaps(Vector<String> v) {_mappings = new Vector<String>(v);}
+    public ArrayList<String> getFieldMaps() {return _mappings;}
+    public void addFieldMapping(String s) {_mappings.add(s);}    
+    public void setFieldMaps(ArrayList<String> v) {_mappings = new ArrayList<String>(v);}
         
-    public Map<Integer, Pair<LinelistType, String>> getLinelistFieldMaps() {return _linelist_field_map;}
+    public ArrayList<Triple<Integer, LinelistType, String>> getLinelistFieldMaps() {return _linelist_field_map;}
     public void addLinelistFieldMapping(int column, int iOrdinal, String label) {
         try { 
-            _linelist_field_map.put(column, Pair.of(LinelistType.values()[iOrdinal], label));
+            _linelist_field_map.add(Triple.of(column, LinelistType.values()[iOrdinal], label));
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, LinelistType.values()); }     
     }
-    public void setLinelsitFieldMaps(Map<Integer, Pair<LinelistType, String>> v) {_linelist_field_map = new HashMap(v);}    
+    public void setLinelsitFieldMaps(ArrayList<Triple<Integer, LinelistType, String>> v) {_linelist_field_map = new ArrayList(v);}    
     public String getLinelistFieldMapsStr() {
         StringBuilder builder = new StringBuilder();
-        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : _linelist_field_map.entrySet()) {
-            builder.append(mapEntry.getKey()).append(":").append("\"").append(mapEntry.getValue().getLeft().ordinal()).append("\"");
-            builder.append(":").append(mapEntry.getValue().getRight()).append(",");
+        for (Triple<Integer, LinelistType, String> mapEntry : _linelist_field_map) {
+            builder.append(mapEntry.getLeft()).append(":").append("\"").append(mapEntry.getMiddle().ordinal()).append("\"");
+            builder.append(":").append(mapEntry.getRight()).append(",");
         }
         String llmapStr = builder.toString();
         if (llmapStr.endsWith(","))
@@ -149,8 +147,8 @@ public class InputSourceSettings implements Cloneable  {
     }
     public Pair<Boolean, Boolean> hasLinelistEventIdAndPlotInfo() {
         boolean event=false, eventx=false, eventy=false;
-        for (Map.Entry<Integer, Pair<LinelistType, String>> mapEntry : _linelist_field_map.entrySet()) {
-            switch (mapEntry.getValue().getLeft()) {
+        for (Triple<Integer, LinelistType, String> mapEntry : _linelist_field_map) {
+            switch (mapEntry.getMiddle()) {
                 case INDIVIDUAL_ID: event = true; break;
                 case DESCRIPTIVE_COORD_X: eventx = true; break;
                 case DESCRIPTIVE_COORD_Y: eventy = true; break;

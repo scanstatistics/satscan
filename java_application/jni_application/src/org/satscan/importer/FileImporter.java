@@ -4,12 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.JProgressBar;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.*;
 
 /**
@@ -19,15 +18,15 @@ public class FileImporter {
     private final InputSourceSettings.InputFileType _input_file_type;
     private final File _destinationFile;
     private final ImportDataSource _dataSource;
-    private final Vector<ImportVariable> _importVariables;
-    private final Map<Integer, Pair<InputSourceSettings.LinelistType, String>> _linelist_field_map;
+    private final ArrayList<ImportVariable> _importVariables;
+    private final ArrayList<Triple<Integer, InputSourceSettings.LinelistType, String>> _linelist_field_map;
     private final JProgressBar _progress;
     private boolean _cancelled=false;
     private boolean _permits_blank_values=false;
     
     public FileImporter(
-            ImportDataSource dataSource, InputSourceSettings.InputFileType fileType, Vector<ImportVariable> importVariables, 
-            Map<Integer, Pair<InputSourceSettings.LinelistType, String>> linelist_field_map,
+            ImportDataSource dataSource, InputSourceSettings.InputFileType fileType, ArrayList<ImportVariable> importVariables, 
+            ArrayList<Triple<Integer, InputSourceSettings.LinelistType, String>> linelist_field_map,
             InputSourceSettings.SourceDataFileType sourceDataFileType, File destinationFile, JProgressBar progress) {
         _dataSource = dataSource;
         _importVariables = importVariables;
@@ -65,8 +64,8 @@ public class FileImporter {
         int iColumn=0;
         int iRow=0;
         String value;
-        Vector<String> record = new Vector<String>();
-        Vector<ImportVariable> mappedVariables = new Vector<ImportVariable>();
+        ArrayList<String> record = new ArrayList<>();
+        ArrayList<ImportVariable> mappedVariables = new ArrayList<>();
         
         //Attempt to open file writer and buffer ...
         FileWriter writer = new FileWriter(_destinationFile);
@@ -83,12 +82,12 @@ public class FileImporter {
                 }
             }
             // Now add the line list meta and header rows.
-            for (Map.Entry<Integer, Pair<InputSourceSettings.LinelistType, String>> entry : _linelist_field_map.entrySet()) {
-                switch (entry.getValue().getLeft()) {
+            for (Triple<Integer, InputSourceSettings.LinelistType, String> entry : _linelist_field_map) {
+                switch (entry.getMiddle()) {
                     case INDIVIDUAL_ID: meta_row.append("<individual-id> "); header_row.append("\"IndividualID\" "); break;
                     case DESCRIPTIVE_COORD_Y: meta_row.append("<descriptive-latitude> "); header_row.append("latitude "); break;
                     case DESCRIPTIVE_COORD_X: meta_row.append("<descriptive-longitude> "); header_row.append("longitude "); break;
-                    default: meta_row.append("<linelist> "); header_row.append("\"" + entry.getValue().getRight() + "\" ");
+                    default: meta_row.append("<linelist> "); header_row.append("\"" + entry.getRight() + "\" ");
                 }
             }           
             buffer.write(meta_row.toString());
@@ -144,8 +143,8 @@ public class FileImporter {
                 // If file type is CASE and user defined line list mappings, add line list mappings.
                 if (_input_file_type == InputSourceSettings.InputFileType.Case && !_linelist_field_map.isEmpty()) {
                     // Now add the line list meta and header rows.
-                    for (Map.Entry<Integer, Pair<InputSourceSettings.LinelistType, String>> entry : _linelist_field_map.entrySet()) {
-                        int colIdx = entry.getKey() + 2; // These are zero based but need to skip over 2 generated columns.
+                    for (Triple<Integer, InputSourceSettings.LinelistType, String> entry : _linelist_field_map) {
+                        int colIdx = entry.getLeft() + 2; // These are zero based but need to skip over 2 generated columns.
                         if (colIdx + 1 > values.length)
                             throw new ImportException(String.format(
                                 "Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
