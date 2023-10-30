@@ -94,6 +94,7 @@
                               <EmptySpace type="unrelated" max="32767" attributes="0"/>
                               <Component id="_moveDown" min="-2" pref="68" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="_refresh_results" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -119,7 +120,9 @@
                       <Component id="jSeparator2" min="-2" pref="5" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_remove_analysis" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_refresh_results" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="97" max="32767" attributes="0"/>
                       <Component id="_execute_progress" min="-2" pref="23" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_execute_selected" min="-2" max="-2" attributes="0"/>
@@ -220,6 +223,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_moveDownActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="_refresh_results">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Refresh Results"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_refresh_resultsActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

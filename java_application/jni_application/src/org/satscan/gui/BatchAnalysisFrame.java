@@ -277,6 +277,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         jSeparator3 = new javax.swing.JSeparator();
         _moveUp = new javax.swing.JButton();
         _moveDown = new javax.swing.JButton();
+        _refresh_results = new javax.swing.JButton();
         _analysesScrollpane = new javax.swing.JScrollPane();
         _analyses_table = new javax.swing.JTable();
 
@@ -457,6 +458,13 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
+        _refresh_results.setText("Refresh Results");
+        _refresh_results.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _refresh_resultsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout _actions_panelLayout = new javax.swing.GroupLayout(_actions_panel);
         _actions_panel.setLayout(_actions_panelLayout);
         _actions_panelLayout.setHorizontalGroup(
@@ -475,7 +483,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addGroup(_actions_panelLayout.createSequentialGroup()
                         .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_refresh_results, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _actions_panelLayout.setVerticalGroup(
@@ -497,7 +506,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_remove_analysis)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_refresh_results)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
                 .addComponent(_execute_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_execute_selected)
@@ -625,6 +636,10 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             if (_moveDown.isEnabled()) _moveDown.requestFocusInWindow();
         }
     }//GEN-LAST:event__moveDownActionPerformed
+
+    private void _refresh_resultsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__refresh_resultsActionPerformed
+        readBatchAnalysesFromFile();
+    }//GEN-LAST:event__refresh_resultsActionPerformed
 
     @Override
     public void internalFrameOpened(InternalFrameEvent e) {
@@ -1077,6 +1092,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private javax.swing.JButton _modify_analysis;
     private javax.swing.JButton _moveDown;
     private javax.swing.JButton _moveUp;
+    private javax.swing.JButton _refresh_results;
     private javax.swing.JButton _remove_analysis;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
