@@ -404,8 +404,8 @@ void TemporalChartGenerator::generateChart() const {
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected in cluster area", "394521", "triangle", 0, ""));
                 }
 
-                // the Poisson and Exponential models also graphs observed / expected
-                if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
+                // the Poisson, Exponential, and Space Time Permutation models also graph observed / expected
+                if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL || _dataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
