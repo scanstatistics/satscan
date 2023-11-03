@@ -26,7 +26,7 @@ const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 const char * AsciiPrintFormat::gsPerDataSetText                      = "per data set";
 
 /** constructor */
-AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet, unsigned int labelextra) : gbOneDataSet(bOneDataSet), _label_extra(labelextra) {
+AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet, unsigned int labelextra) : _label_extra(labelextra), gbOneDataSet(bOneDataSet) {
   SetMarginsAsOverviewSection();
 }
 

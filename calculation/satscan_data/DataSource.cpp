@@ -87,13 +87,13 @@ bool DataSource::isLinelistOnlyColumn(long iFieldIndex) const {
     if (_linelist_fields_map.size() == 0) return false;
     // Is this field index not defined as line list column?
     bool inLineListFields = false;
-    for (auto& itr = _linelist_fields_map.begin(); itr != _linelist_fields_map.end() && !inLineListFields; ++itr) {
-        inLineListFields = itr->get<0>() == static_cast<unsigned int>(iFieldIndex);
+    for (const auto& lfm: _linelist_fields_map) {
+        inLineListFields = lfm.get<0>() == static_cast<unsigned int>(iFieldIndex);
     }
     if (!inLineListFields) return false;
     // It is a line list column, but is it also an input data column?
-    for (auto itr = _fields_map.begin(); itr != _fields_map.end(); ++itr) {
-        if (itr->type() == typeid(long) && boost::any_cast<long>(*itr) == iFieldIndex)
+    for (const auto& fm: _fields_map) {
+        if (fm.type() == typeid(long) && boost::any_cast<long>(fm) == iFieldIndex)
             return false;
     } return true;
 }

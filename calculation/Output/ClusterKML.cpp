@@ -61,7 +61,6 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
     std::vector<double>                        vCoordinates;
     std::pair<double, double>                  prLatitudeLongitude;
 	Identifier::CombinedIdentifierNames_t  vTractIdentifiers;
-    const double radius_km = cluster.GetLatLongRadius();
     bool isHighRate = cluster.getAreaRateForCluster(_dataHub) == HIGH;
 
     try {

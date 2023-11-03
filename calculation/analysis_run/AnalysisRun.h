@@ -159,7 +159,7 @@ class AbstractAnalysisDrilldown {
 
     public:
         AbstractAnalysisDrilldown(const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path) :
-            _parameters(source_parameters), _base_output(base_output), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), _significant_clusters(0){
+            _parameters(source_parameters), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), _base_output(base_output), _significant_clusters(0){
             // Record start time of drilldown start -- of course this excludes time reading data.
             time(&_start_time);
             _cluster_path = (cluster_path ? cluster_path.get() : "");

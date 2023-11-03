@@ -28,7 +28,7 @@ class NetworkNode {
 		ConnectionsContainer_t _connections;
 
 	public:
-		NetworkNode(tract_t location_index, const Location& location) : _location_index(location_index), _location(location) {}
+		NetworkNode(tract_t location_index, const Location& location) : _location(location), _location_index(location_index) {}
 
 		bool                             operator<(const NetworkNode& rhs) const { return getLocationIndex() < rhs.getLocationIndex(); }
 

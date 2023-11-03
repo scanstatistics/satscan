@@ -17,7 +17,7 @@ class MinimalGrowthArray {
    public:
      MinimalGrowthArray(const std::vector<T>& v);
      MinimalGrowthArray(const MinimalGrowthArray& a);
-     MinimalGrowthArray() : giSize(0), gpArray(0) {}
+     MinimalGrowthArray() : gpArray(0), giSize(0) {}
      ~MinimalGrowthArray();
 
      const T       & operator[](const unsigned int i) const {return gpArray[i];}

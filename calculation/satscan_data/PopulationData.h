@@ -44,7 +44,7 @@ class CategoryType {
     std::string _category_label;
 
   public:
-    CategoryType(const std::string& category_label, count_t tInitialCount=0) : _category_label(category_label), gtTotalCases(tInitialCount) {}
+    CategoryType(const std::string& category_label, count_t tInitialCount=0) : gtTotalCases(tInitialCount), _category_label(category_label) {}
     ~CategoryType() {}
 
     bool                    operator==(const CategoryType& rhs) const { return (_category_label == rhs._category_label); }

@@ -34,7 +34,7 @@ class ChartSeries {
         ChartSeries(const std::string& id, unsigned int zindex, const std::string& type, 
                     const std::string& name, const std::string& color, const std::string& symbol,
 			        unsigned int y_axis, const std::string& stack)
-                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis), _stack(stack){}
+                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _stack(stack), _y_axis(y_axis) {}
 
         std::stringstream & datastream() {return _data_stream;}
         std::string & toString(std::string& r) const {

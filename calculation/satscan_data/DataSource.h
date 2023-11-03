@@ -73,7 +73,8 @@ class AsciiFileDataSource : public DataSource {
          void                        ThrowAsciiException();
 
        public:
-         StringParser(BasePrint& Print, const char cDelimiter) : gPrint(Print), gwCurrentWordIndex(-1), gcp(0), gcDelimiter(cDelimiter) {}
+         StringParser(BasePrint& Print, const char cDelimiter) : 
+             gwCurrentWordIndex(-1), gPrint(Print), gpParseLine(0), gcp(0), gcDelimiter(cDelimiter) {}
 
          bool                        HasWords() {return GetWord(0) != 0;}
          bool                        isDelimiter(char c) const {return isspace(gcDelimiter) ? isspace(c) : c == gcDelimiter;}

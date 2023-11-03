@@ -34,8 +34,12 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
         const auto& identifiers = DataHub.getIdentifierInfo().getIdentifiers();
         for (size_t idx = 0; idx < static_cast<size_t>(DataHub.GetNumIdentifiers()); ++idx) {
             const auto& locations = identifiers[idx]->getLocations();
-            for (size_t t = 0; t < locations.size(); ++t)
-                _location_to_identifiers[locations[t]].add(idx, false);
+            for (size_t t = 0; t < locations.size(); ++t) {
+                const Location * location = locations[t];
+                if (_location_to_identifiers.find(location) == _location_to_identifiers.end())
+                    _location_to_identifiers.emplace(location, IndentifierList_t());
+                _location_to_identifiers[location].add(idx, false);
+            }
         }
         // Store which locations will be reported in results - sometimes not all locations are utilized by analysis - for example this could happen with networks.
         _report_locations.resize(DataHub.getLocationsManager().locations().size());
