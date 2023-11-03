@@ -47,8 +47,8 @@ DataSource::OrderedLineListField_t& DataSource::getOrderedLinelistFieldsMap(Orde
     return sorted;
 }
 
-/* Returns whether event id is in defined in list list attributes. */
-bool DataSource::hasEventIdLinelistMapping() const {
+/* Returns whether individual id is in defined in list list attributes. */
+bool DataSource::hasIndividualLinelistMapping() const {
     if (boost::logic::indeterminate(_has_event_id)) {
         for (const auto& fieldMap : _linelist_fields_map)
             if (fieldMap.get<1>() == INDIVIDUAL_ID) {
@@ -60,14 +60,23 @@ bool DataSource::hasEventIdLinelistMapping() const {
     return _has_event_id;
 }
 
-/* Returns whether event x/y are defined in list list attributes. */
-bool DataSource::hasEventCoordinatesLinelistMapping() const {
+/* Returns whether descriptive coordinates are defined in list list attributes. */
+bool DataSource::hasDescriptiveCoordinatesLinelistMapping() const {
     bool x = false, y = false;
     for (const auto& fieldMap : _linelist_fields_map) {
         x |= fieldMap.get<1>() == DESCRIPTIVE_COORD_X;
         y |= fieldMap.get<1>() == DESCRIPTIVE_COORD_Y;
     }
     return x && y;
+}
+
+/* Returns whether any list list attributes are defined other than INDIVIDUAL_ID, DESCRIPTIVE_COORD_Y or DESCRIPTIVE_COORD_X. */
+bool DataSource::hasGeneralLinelistMapping() const {
+    for (const auto& fieldMap : _linelist_fields_map) {
+        if (fieldMap.get<1>() > DESCRIPTIVE_COORD_X)
+            return true;
+    }
+    return false;
 }
 
 /* Returns whether column is used only for line-list purposes - meaning not input data used in analyses (e.g identifier, case count, covariate, etc.). */

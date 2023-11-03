@@ -84,9 +84,9 @@ public class FileImporter {
             // Now add the line list meta and header rows.
             for (Triple<Integer, InputSourceSettings.LinelistType, String> entry : _linelist_field_map) {
                 switch (entry.getMiddle()) {
-                    case INDIVIDUAL_ID: meta_row.append("<individual-id> "); header_row.append("\"IndividualID\" "); break;
-                    case DESCRIPTIVE_COORD_Y: meta_row.append("<descriptive-latitude> "); header_row.append("latitude "); break;
-                    case DESCRIPTIVE_COORD_X: meta_row.append("<descriptive-longitude> "); header_row.append("longitude "); break;
+                    case INDIVIDUAL_ID: meta_row.append("<individual-id> "); header_row.append("\"Individual ID\" "); break;
+                    case DESCRIPTIVE_COORD_Y: meta_row.append("<descriptive-latitude> "); header_row.append("\"Descriptive Latitude\" "); break;
+                    case DESCRIPTIVE_COORD_X: meta_row.append("<descriptive-longitude> "); header_row.append("\"Descriptive Longitude\" "); break;
                     default: meta_row.append("<linelist> "); header_row.append("\"" + entry.getRight() + "\" ");
                 }
             }           

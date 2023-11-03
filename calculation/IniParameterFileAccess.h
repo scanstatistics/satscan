@@ -48,7 +48,6 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteSystemSettings(IniFile& WriteFile);
     void                                WriteTemporalGraphSettings(IniFile& WriteFile);
     void                                WriteTemporalWindowSettings(IniFile& WriteFile);
-    void                                WriteLineListSettings(IniFile& WriteFile);
     void                                WriteEmailAlertSettings(IniFile& WriteFile);
 
   public:

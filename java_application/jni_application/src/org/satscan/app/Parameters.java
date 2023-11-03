@@ -246,11 +246,6 @@ public class Parameters implements Cloneable {
     private boolean                         _use_locations_network_file=false;
     private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
     
-    private boolean                         _casefile_includes_linedata=false;
-    private boolean                         _casefile_includes_header=false;
-    private boolean                         _group_kml_linelist_attribute=false;
-    private String                          _kml_event_group_attribute="";
-    private String                          _event_cache_filename="";
     private boolean                         _cluster_significance_by_ri=false;
     private int                             _cluster_significance_ri_value=100;
     private DatePrecisionType               _cluster_significance_ri_type=DatePrecisionType.DAY;
@@ -449,11 +444,6 @@ public class Parameters implements Cloneable {
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
-        if (_casefile_includes_linedata != rhs._casefile_includes_linedata) return false;
-        if (_casefile_includes_header != rhs._casefile_includes_header) return false;
-        if (_group_kml_linelist_attribute != rhs._group_kml_linelist_attribute) return false;
-        if (!_kml_event_group_attribute.equals(rhs._kml_event_group_attribute)) return false;
-        if (!_event_cache_filename.equals(rhs._event_cache_filename)) return false;
         if (_cluster_significance_by_ri != rhs._cluster_significance_by_ri) return false;
         if (_cluster_significance_ri_value != rhs._cluster_significance_ri_value) return false;
         if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
@@ -490,16 +480,6 @@ public class Parameters implements Cloneable {
     public String getEmailMessageBodySignificant() { return _email_message_body_significant; }
     public void setEmailMessageBodySignificant(final String s) { _email_message_body_significant = s; }    
     
-    public boolean getCasefileIncludesLineData() { return _casefile_includes_linedata; }
-    public void setCasefileIncludesLineData(boolean b) { _casefile_includes_linedata = b; }
-    public boolean getCasefileIncludesHeader() { return _casefile_includes_header; }
-    public void setCasefileIncludesHeader(boolean b) { _casefile_includes_header = b; }
-    public boolean getGroupLinelistEventsKML() { return _group_kml_linelist_attribute; }
-    public void setGroupLinelistEventsKML(boolean b) { _group_kml_linelist_attribute = b; }
-    public String getKmlEventGroupAttribute() { return _kml_event_group_attribute; }
-    public void setKmlEventGroupAttribute(String s) { _kml_event_group_attribute = s; }
-    public String getEventCacheFileName() { return _event_cache_filename;}
-    public void setEventCacheFileName(String s) { _event_cache_filename = s;}
     public boolean getClusterSignificanceByRecurrence() { return _cluster_significance_by_ri; }
     public void setClusterSignificanceByRecurrence(boolean b) { _cluster_significance_by_ri = b; }    
     public int getClusterSignificanceRecurrenceCutoff() {return _cluster_significance_ri_value;}

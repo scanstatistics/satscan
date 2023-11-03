@@ -44,8 +44,9 @@ class DataSource {
         virtual const char               * GetValueAt(long iFieldIndex) = 0;
         virtual const char               * GetValueAtUnmapped(long iFieldIndex) = 0;
         virtual void                       GotoFirstRecord() = 0;
-        bool                               hasEventIdLinelistMapping() const;
-        bool                               hasEventCoordinatesLinelistMapping() const;
+        bool                               hasIndividualLinelistMapping() const;
+        bool                               hasDescriptiveCoordinatesLinelistMapping() const;
+        bool                               hasGeneralLinelistMapping() const;
         bool                               isLinelistOnlyColumn(long iFieldIndex) const;
         virtual bool                       ReadRecord() = 0;
         void                               tripBlankRecordFlag() {_blank_record_flag=true;}

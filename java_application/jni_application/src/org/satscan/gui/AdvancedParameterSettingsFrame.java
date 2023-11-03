@@ -6,14 +6,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
-import java.awt.MenuItem;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +28,6 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.AdvFeaturesExpection;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
@@ -43,12 +37,9 @@ import org.satscan.app.UnknownEnumException;
 import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.FileSelectionDialog;
 import org.satscan.gui.utils.InputFileFilter;
-import org.satscan.gui.utils.WaitCursor;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.importer.CSVImportDataSource;
-import org.satscan.importer.ImportUtils;
 import org.satscan.importer.InputSourceSettings;
-import org.satscan.importer.InputSourceSettings.LinelistType;
 
 /*
  * ParameterSettingsFrame.java
@@ -221,7 +212,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Data Checking", null, _dataCheckingTab, null);
                 jTabbedPane1.addTab("Spatial Neighbors", null, _spatialNeighborsTab, null);
                 jTabbedPane1.addTab("Network", null, _network_tab, null);
-                jTabbedPane1.addTab("Line List", null, _linelist_tab, null);
         }
     }
 
@@ -383,62 +373,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _email_subject_significant.setEnabled(Utils.selected(_checkbox_sendmail));  
         _email_message_significant.setEnabled(Utils.selected(_checkbox_sendmail));
         _alert_tags_display_significant.setEnabled(Utils.selected(_checkbox_sendmail));
-    }
-    
-    /* Sets linelist options selected after user imports case file.*/
-    public void setLinelistImported() {
-        _checkbox_casefile_metarow.setSelected(true);
-        _checkbox_casefile_header.setSelected(true);
-    }
-    
-    /* Enables controls of the case file line list group. */
-    public void enableCaseFileLinelistGroup() {
-        boolean bEnable = _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
-        _panel_linelist.setEnabled(bEnable);
-        
-        boolean hasCaseFileLinelistMappings = false;
-        Pair<Boolean, Boolean> eventInfo = Pair.of(false, false);
-        String key = InputSourceSettings.InputFileType.Case.toString() + "1";
-        if (_settings_window._input_source_map.containsKey(key)) {
-          InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-          hasCaseFileLinelistMappings = !inputSourceSettings.getLinelistFieldMaps().isEmpty();
-          eventInfo = inputSourceSettings.hasLinelistEventIdAndPlotInfo();
-        }
-        _checkbox_casefile_metarow.setEnabled(bEnable && !hasCaseFileLinelistMappings);
-        _checkbox_casefile_header.setEnabled(Utils.selected(_checkbox_casefile_metarow));
-        // Hide or show the text indicating line list settings defined through file wizard.
-        _label_linelist_filewizard.setForeground(hasCaseFileLinelistMappings ? new java.awt.Color(0, 0, 0) : new java.awt.Color(240, 240, 240));
-        
-        // If user choose case file meta row, try to determine event info from case file directly.s
-        if (Utils.selected(_checkbox_casefile_metarow)) {
-            try {
-                CSVImportDataSource sourceCase = new CSVImportDataSource(
-                    new File(_settings_window._caseFileTextField.getText()), false, '\n', ' ', '"', 0
-                );
-                Object[] meta = sourceCase.readRow();
-                boolean event=false, eventx=false, eventy=false;
-                for (int i=0; i < meta.length; ++i) {
-                   if (((String)meta[i]).equals("<eventid>")) {
-                       event = true;
-                   } else if (((String)meta[i]).equals("<event-longitude-x>")) {
-                       eventx = true;
-                   } else if (((String)meta[i]).equals("<event-latitude-y>")) {
-                       eventy = true;
-                   }
-                }
-                eventInfo = Pair.of(event, eventx && eventy);
-            } catch (Exception ex) {
-                eventInfo = Pair.of(false, false);
-            }
-        }
-         _event_cache_field.setEnabled(eventInfo.getLeft() || Utils.selected(_checkbox_casefile_metarow));
-         _event_cache_browse.setEnabled(eventInfo.getLeft() || Utils.selected(_checkbox_casefile_metarow));
-        _checkbox_grouping_kml.setEnabled((eventInfo.getLeft() && eventInfo.getRight()) || Utils.selected(_checkbox_casefile_metarow));
-        _grouping_input_label.setEnabled(Utils.selected(_checkbox_grouping_kml));
-        _linelist_grouping.setEnabled(Utils.selected(_checkbox_grouping_kml));
-        _view_linelist_choices.setEnabled(Utils.selected(_checkbox_grouping_kml));
-        _clear_grouped.setEnabled(Utils.selected(_checkbox_grouping_kml));
-    }    
+    }   
 
     /* Enables controls of the other output group. */
     public void enableOtherOutputGroup() {
@@ -730,7 +665,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableDrilldownGroup();
         setSpatialDistanceCaption();
         updateMaxiumTemporalSizeTextCaptions();
-        enableCaseFileLinelistGroup();
         enableOtherOutputGroup();
         enableEmailAlerts();
     }
@@ -908,11 +842,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.textIs(_multiple_locations_file, "");
         bReturn &= Utils.selected(_locations_network, false);
         bReturn &= Utils.textIs(_network_filename, "");
-        bReturn &= Utils.selected(_checkbox_casefile_metarow, false);
-        bReturn &= Utils.selected(_checkbox_casefile_header, false);
-        bReturn &= Utils.textIs(_event_cache_field, "");
-        bReturn &= Utils.selected(_checkbox_grouping_kml, false);
-        bReturn &= Utils.textIs(_linelist_grouping, "");
         return bReturn;
     }
 
@@ -1368,13 +1297,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Network tab
         parameters.setUseLocationsNetworkFile(_locations_network.isEnabled() && _locations_network.isSelected());
         parameters.setLocationsNetworkFilename(_network_filename.getText());
-        
-        // Line List
-        parameters.setCasefileIncludesLineData(Utils.selected(_checkbox_casefile_metarow));
-        parameters.setCasefileIncludesHeader(Utils.selected(_checkbox_casefile_header));
-        parameters.setEventCacheFileName(_event_cache_field.getText());
-        parameters.setGroupLinelistEventsKML(Utils.selected(_checkbox_grouping_kml));
-        parameters.setKmlEventGroupAttribute(_linelist_grouping.getText());
         
         // Email Alerts
         parameters.setEmailAnalysisResults(Utils.selected(_checkbox_sendmail));
@@ -1948,7 +1870,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void validateParameters() {
         validateInputFilesSettings();
         validateSpatialNeighborsSettings();
-        validateLinelistSettings();
         validateSpatialWindowSettings();
         validateAdjustmentSettings();
         validateTemporalWindowSettings();
@@ -1957,31 +1878,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validatePowerEvaluationsSettings();
         validateDrilldownSettings();
         validateEmailSettings();
-    }
-
-    private void validateLinelistSettings() throws AdvFeaturesExpection {
-        // validate linelist parameters.
-        if (_event_cache_field.isEnabled() && _event_cache_field.getText().length() > 0) {
-            if (!FileAccess.ValidateFileAccess(_event_cache_field.getText(), true, true)) {
-                throw new AdvFeaturesExpection(
-                        "Event cache file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
-                        FocusedTabSet.INPUT, (Component) _event_cache_field
-                );
-            }
-            if (!FileAccess.isValidFilename(_event_cache_field.getText())) {
-                throw new AdvFeaturesExpection(
-                        String.format(AppConstants.FILENAME_ASCII_ERROR, _event_cache_field.getText()),
-                        FocusedTabSet.INPUT, (Component) _event_cache_field
-                );
-            }
-        }
-        if (Utils.selected(_checkbox_grouping_kml) && _linelist_grouping.getText().isEmpty()) {
-            throw new AdvFeaturesExpection(
-                "The option to include event characteristics in KML output has been selected\n" +
-                "yet no group by characteristics have been selected.",
-                FocusedTabSet.INPUT, (Component) _checkbox_grouping_kml
-            );              
-        }
     }
 
     /* Validates the email settings. */
@@ -2130,13 +2026,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // network file
         _locations_network.setSelected(false);
         _network_filename.setText("");
-        
-        // Line List
-        _checkbox_casefile_metarow.setSelected(false);
-        _checkbox_casefile_header.setSelected(false);
-        _event_cache_field.setText("");
-        _checkbox_grouping_kml.setSelected(false);
-        _linelist_grouping.setText("");
     }
 
     /**
@@ -2796,13 +2685,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _locations_network.setSelected(parameters.getUseLocationsNetworkFile());
         _network_filename.setText(parameters.getLocationsNetworkFilename());
         
-        // Line List
-        _checkbox_casefile_metarow.setSelected(parameters.getCasefileIncludesLineData());
-        _checkbox_casefile_header.setSelected(parameters.getCasefileIncludesHeader());
-        _event_cache_field.setText(parameters.getEventCacheFileName());
-        _checkbox_grouping_kml.setSelected(parameters.getGroupLinelistEventsKML());
-        _linelist_grouping.setText(parameters.getKmlEventGroupAttribute());
-
         // Email Alerts
         _checkbox_sendmail.setSelected(parameters.getEmailAnalysisResults());
         _always_email.setText(parameters.getEmailAlwaysRecipients());
@@ -3221,109 +3103,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _network_file_label = new HelpLinkedLabel("Network File:", AppConstants.ADJUSTMENTSFILE_HELPID);
         _network_filename = new javax.swing.JTextField();
         _browse_network_filename = new javax.swing.JButton();
-        _linelist_tab = new javax.swing.JPanel();
-        _panel_linelist = new javax.swing.JPanel();
-        _checkbox_casefile_metarow = new javax.swing.JCheckBox();
-        _checkbox_casefile_metarow.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableCaseFileLinelistGroup();
-            }
-        });
-        _checkbox_casefile_header = new javax.swing.JCheckBox();
-        _checkbox_casefile_header.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableCaseFileLinelistGroup();
-            }
-        });
-        _label_linelist_filewizard = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        _event_cache_label = new javax.swing.JLabel();
-        _event_cache_field = new javax.swing.JTextField();
-        _event_cache_browse = new javax.swing.JButton();
-        _checkbox_grouping_kml = new javax.swing.JCheckBox();
-        _checkbox_grouping_kml.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableCaseFileLinelistGroup();
-            }
-        });
-        _grouping_input_label = new javax.swing.JLabel();
-        _linelist_grouping = new javax.swing.JTextField();
-        _view_linelist_choices = new javax.swing.JButton();
-        _view_linelist_choices.addMouseListener(new MouseAdapter() {
-            public void mouseReleased(MouseEvent e){
-                WaitCursor waitCursor = new WaitCursor(AdvancedParameterSettingsFrame.this);
-                try {
-                    ArrayList<String> values = ImportUtils.parseLine(_linelist_grouping.getText(), ",", "\"", true, true);
-                    boolean tryCSV = true;
-                    popupMenu1.removeAll();
-                    String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                    if (_settings_window._input_source_map.containsKey(key)) {
-                        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                        tryCSV = inputSourceSettings.getFieldMaps().size() == 0;
-                        for (Triple<Integer, LinelistType, String> entry : inputSourceSettings.getLinelistFieldMaps()) {
-                            switch (entry.getMiddle()) {
-                                case INDIVIDUAL_ID:
-                                case DESCRIPTIVE_COORD_Y:
-                                case DESCRIPTIVE_COORD_X: break;
-                                default:
-                                if (!values.contains(entry.getRight())) {
-                                    MenuItem mi = new MenuItem(entry.getRight());
-                                    mi.addActionListener(new ActionListener() {
-                                        public void actionPerformed(ActionEvent e) {
-                                            MenuItem source = (MenuItem)e.getSource();
-                                            values.add(source.getLabel());
-                                            _linelist_grouping.setText(String.join(",", values));
-                                        }
-                                    });
-                                    popupMenu1.add(mi);
-                                }
-                            }
-                        }
-                    }
-                    if (tryCSV) {
-                        CSVImportDataSource sourceCase = new CSVImportDataSource(
-                            new File(_settings_window._caseFileTextField.getText()), false, '\n', ' ', '"', 0
-                        );
-                        ArrayList<Pair<String, String>> header_rows = new ArrayList();
-                        Object[] meta = sourceCase.readRow();
-                        Object[] header = null;
-                        if (_checkbox_casefile_header.isSelected()) {
-                            header = sourceCase.readRow();
-                            if (meta.length != header.length)
-                            throw new Exception("Unable to read case file.");
-                        }
-                        for (int i=0; i < meta.length; ++i) {
-                            if (((String)meta[i]).equals("<linelist>")) {
-                                String itemName = (header == null ? ("linelist-" + (popupMenu1.getItemCount() + 1)) : (String)header[i]);
-                                if (!values.contains(itemName)) {
-                                    MenuItem mi = new MenuItem(itemName);
-                                    mi.addActionListener(new ActionListener() {
-                                        public void actionPerformed(ActionEvent e) {
-                                            MenuItem source = (MenuItem)e.getSource();
-                                            values.add(source.getLabel());
-                                            _linelist_grouping.setText(String.join(",", values));
-                                        }
-                                    });
-                                    popupMenu1.add(mi);
-                                }
-                            }
-                        }
-                    }
-                    popupMenu1.show(_view_linelist_choices, e.getX(), e.getY());
-                } catch (Exception ex) {
-                    popupMenu1.removeAll();
-                    popupMenu1.add(new MenuItem("** Unable to read options from case file. **"));
-                } finally {
-                    waitCursor.restore();
-                }
-            }
-        });
-        _clear_grouped = new javax.swing.JButton();
-        _clear_grouped.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                _linelist_grouping.setText("");
-            }
-        });
         _alerts_tab = new javax.swing.JPanel();
         _panel_email_notifications = new javax.swing.JPanel();
         _checkbox_sendmail = new javax.swing.JCheckBox();
@@ -3750,7 +3529,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(220, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3866,7 +3645,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(246, Short.MAX_VALUE))
+                .addContainerGap(286, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -4085,7 +3864,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(131, Short.MAX_VALUE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -4376,7 +4155,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(147, Short.MAX_VALUE))
+                .addContainerGap(187, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -4814,7 +4593,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(105, Short.MAX_VALUE))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -5090,7 +4869,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(106, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -5364,7 +5143,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(173, Short.MAX_VALUE))
+                .addContainerGap(213, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -5677,7 +5456,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(71, Short.MAX_VALUE))
+                .addContainerGap(111, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
@@ -5875,7 +5654,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Other Output", _otherOutputTab);
@@ -6133,7 +5912,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(110, Short.MAX_VALUE))
+                .addContainerGap(150, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
@@ -6268,7 +6047,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_temporalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(294, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
@@ -6381,7 +6160,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(294, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
@@ -6544,7 +6323,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(286, Short.MAX_VALUE))
+                .addContainerGap(326, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
@@ -6712,7 +6491,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_drilldown_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(162, Short.MAX_VALUE))
+                .addContainerGap(202, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Drilldown", _drilldown_tab);
@@ -6794,154 +6573,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_network_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_network_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(346, Short.MAX_VALUE))
+                .addContainerGap(386, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Network", _network_tab);
-
-        _panel_linelist.setBorder(javax.swing.BorderFactory.createTitledBorder("Case File Line List Columns"));
-
-        _checkbox_casefile_metarow.setText("Case file includes meta row to define line list attributes.");
-        _checkbox_casefile_metarow.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _checkbox_casefile_metarowActionPerformed(evt);
-            }
-        });
-
-        _checkbox_casefile_header.setText("Case file includes header row to name line list attribute columns.");
-
-        _label_linelist_filewizard.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        _label_linelist_filewizard.setText("* Line list data for the case file has already been defined through the file wizard. *");
-
-        javax.swing.GroupLayout _panel_linelistLayout = new javax.swing.GroupLayout(_panel_linelist);
-        _panel_linelist.setLayout(_panel_linelistLayout);
-        _panel_linelistLayout.setHorizontalGroup(
-            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_linelistLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_checkbox_casefile_metarow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_checkbox_casefile_header, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_label_linelist_filewizard, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _panel_linelistLayout.setVerticalGroup(
-            _panel_linelistLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_linelistLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_checkbox_casefile_metarow)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkbox_casefile_header)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_label_linelist_filewizard)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Identifier Level Data"));
-
-        _event_cache_label.setText("Identifier Cache (stores previously seen identifiers of significant clusters):"); // NOI18N
-
-        _event_cache_browse.setText("..."); // NOI18N
-        _event_cache_browse.setToolTipText("Browse Results File");
-        _event_cache_browse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
-                filters.add(new InputFileFilter("txt","Text Files (*.txt)"));
-                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Cache File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_saveas();
-                if (file != null) {
-                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    String filename = file.getAbsolutePath();
-                    if (new File(filename).getName().lastIndexOf('.') == -1){
-                        filename = filename + ".txt";
-                    }
-                    _event_cache_field.setText(filename);
-                }
-            }
-        });
-
-        _checkbox_grouping_kml.setText("Include line list characteristics in csv, KML and Google Maps output, if applicable.");
-
-        _grouping_input_label.setText("Grouped by characteristics named:");
-
-        _linelist_grouping.setEditable(false);
-        _linelist_grouping.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _linelist_groupingActionPerformed(evt);
-            }
-        });
-
-        _view_linelist_choices.setText("Add");
-
-        _clear_grouped.setText("Clear");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(_grouping_input_label, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_linelist_grouping)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_view_linelist_choices)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_clear_grouped))
-                    .addComponent(_checkbox_grouping_kml, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_event_cache_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_event_cache_field))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_event_cache_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_event_cache_label)
-                .addGap(0, 0, 0)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_event_cache_browse)
-                    .addComponent(_event_cache_field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkbox_grouping_kml)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_grouping_input_label)
-                    .addComponent(_linelist_grouping, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_view_linelist_choices)
-                    .addComponent(_clear_grouped))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _linelist_tabLayout = new javax.swing.GroupLayout(_linelist_tab);
-        _linelist_tab.setLayout(_linelist_tabLayout);
-        _linelist_tabLayout.setHorizontalGroup(
-            _linelist_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_linelist_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_linelist_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_panel_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _linelist_tabLayout.setVerticalGroup(
-            _linelist_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_linelist_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_panel_linelist, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(183, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Line List", _linelist_tab);
 
         _panel_email_notifications.setBorder(javax.swing.BorderFactory.createTitledBorder("Email Notifications"));
 
@@ -6993,7 +6628,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_panel_insignificantLayout.createSequentialGroup()
                         .addComponent(_label_email_message_insignificant)
-                        .addGap(0, 130, Short.MAX_VALUE))
+                        .addGap(0, 174, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -7040,7 +6675,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_panel_significantLayout.createSequentialGroup()
                         .addComponent(_label_email_message_significant)
-                        .addGap(0, 130, Short.MAX_VALUE))
+                        .addGap(0, 174, Short.MAX_VALUE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -7155,14 +6790,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event__mainAnalysisDrilldownActionPerformed
 
-    private void _checkbox_casefile_metarowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__checkbox_casefile_metarowActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__checkbox_casefile_metarowActionPerformed
-
-    private void _linelist_groupingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__linelist_groupingActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__linelist_groupingActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
     private javax.swing.JPanel _additionalDataSetsGroup;
@@ -7189,12 +6816,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _caseFileTextField;
     private javax.swing.JCheckBox _checkReportGumbel;
     private javax.swing.JCheckBox _checkboxReportIndexCoefficients;
-    private javax.swing.JCheckBox _checkbox_casefile_header;
-    private javax.swing.JCheckBox _checkbox_casefile_metarow;
-    private javax.swing.JCheckBox _checkbox_grouping_kml;
     private javax.swing.JCheckBox _checkbox_sendmail;
     private javax.swing.JRadioButton _circularRadioButton;
-    private javax.swing.JButton _clear_grouped;
     private javax.swing.JButton _closeButton;
     private javax.swing.JPanel _cluster_restrictions_tab;
     private javax.swing.JPanel _cluster_significance_panel;
@@ -7245,9 +6868,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _endRangeStartYearTextField;
     private javax.swing.JLabel _endRangeToLabel;
     private javax.swing.JLabel _endWindowRangeLabel;
-    private javax.swing.JButton _event_cache_browse;
-    private javax.swing.JTextField _event_cache_field;
-    private javax.swing.JLabel _event_cache_label;
     private javax.swing.JPanel _fileInputGroup;
     private javax.swing.JPanel _flexibleTemporalWindowDefinitionGroup;
     private javax.swing.JPanel _flexible_window_cards;
@@ -7255,7 +6875,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
     private javax.swing.JCheckBox _giniOptimizedClusters;
     private javax.swing.JPanel _graphOutputGroup;
-    private javax.swing.JLabel _grouping_input_label;
     private javax.swing.JLabel _hierarchicalLabel;
     private java.awt.Choice _hierarchicalSecondaryClusters;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
@@ -7274,7 +6893,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _label_email_subject_insignificant;
     private javax.swing.JLabel _label_email_subject_significant;
     private javax.swing.JLabel _label_kml_options;
-    private javax.swing.JLabel _label_linelist_filewizard;
     private javax.swing.JLabel _label_prospective_frequency;
     private javax.swing.JLabel _label_significant_email;
     private javax.swing.JCheckBox _launch_map_viewer;
@@ -7283,8 +6901,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _limit_high_clusters_value;
     private javax.swing.JCheckBox _limit_low_clusters;
     private javax.swing.JTextField _limit_low_clusters_value;
-    private javax.swing.JTextField _linelist_grouping;
-    private javax.swing.JPanel _linelist_tab;
     private javax.swing.JCheckBox _locations_network;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
@@ -7350,7 +6966,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _pValueOptionsGroup;
     private javax.swing.JPanel _panel_email_notifications;
     private javax.swing.JPanel _panel_insignificant;
-    private javax.swing.JPanel _panel_linelist;
     private javax.swing.JPanel _panel_significant;
     private javax.swing.JRadioButton _partOfRegularAnalysis;
     private javax.swing.JLabel _percentageOfPopFileLabel;
@@ -7452,10 +7067,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel _userDefinedRunTitle;
-    private javax.swing.JButton _view_linelist_choices;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

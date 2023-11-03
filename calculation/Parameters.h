@@ -187,11 +187,7 @@ class CParameters {
     /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
-    bool                                _casefile_includes_linedata;            /* indication whether case file contains line list data, and therefore a first row meta-line */
-    bool                                _casefile_includes_header;              /* indication whether case file contains header row, used for line list labels */
-    std::string                         _event_cache_filename;
-    bool                                _group_kml_linelist_attribute;          /* indication whether to include linelist events in kml output, grouped */
-    std::string                         _kml_event_group_attribute;             /* label of line-list colummn that should be used to group events in KML file */
+    std::string                         _linelist_individuals_cache_name;
     bool                                _cluster_significance_by_ri;
     unsigned int                        _cluster_significance_ri_value;
     DatePrecisionType                   _cluster_significance_ri_type;
@@ -361,14 +357,6 @@ class CParameters {
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
     void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
-    bool                                getCasefileIncludesLineData() const { return _casefile_includes_linedata; }
-    void                                setCasefileIncludesLineData(bool b) { _casefile_includes_linedata = b; }
-    bool                                getCasefileIncludesHeader() const { return _casefile_includes_header; }
-    void                                setCasefileIncludesHeader(bool b) { _casefile_includes_header = b; }
-    bool                                getGroupLinelistEventsKML() const { return _group_kml_linelist_attribute; }
-    void                                setGroupLinelistEventsKML(bool b) { _group_kml_linelist_attribute = b; }
-    const std::string                 & getKmlEventGroupAttribute() const { return _kml_event_group_attribute; }
-    void                                setKmlEventGroupAttribute(const char * attr) { _kml_event_group_attribute = attr; }
     bool                                getReadingLineDataFromCasefile() const;
 
     boost::posix_time::ptime            getTimestamp() const { return _local_timestamp; }
@@ -474,6 +462,7 @@ class CParameters {
     bool                                GetIsSpaceTimeAnalysis() const;
     bool                                getLaunchMapViewer() const {return _launch_map_viewer;}
     void                                setLaunchMapViewer(bool b) {_launch_map_viewer = b;}
+    const std::string                 & getLinelistIndividualsCacheFileName() const { return _linelist_individuals_cache_name; }
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
@@ -509,7 +498,6 @@ class CParameters {
     bool                                GetOutputClusterLevelFiles() const;
     const std::string                 & GetOutputFileNameSetting() const {return gsOutputFileNameSetting; }
     const std::string                 & GetOutputFileName() const { return _results_filename; }
-    const std::string                 & getEventCacheFileName() const { return _event_cache_filename; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
     bool                                getOutputCartesianGraph() const {return _output_cartesian_graph;}
     bool                                getOutputKMLFile() const { return _output_kml; }
@@ -677,7 +665,7 @@ class CParameters {
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationSimulationDataSourceFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);
-    void                                setEventCacheFileName(const char * filename, bool bCorrectForRelativePath = false);
+    std::string                       & setLinelistIndividualsCacheFileName();
     void                                setPowerEvaluationSimulationType(SimulationType eSimulationType);
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);

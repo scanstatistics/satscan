@@ -13,14 +13,14 @@ enum ParameterType
     COORDFILE,                      /* coordinates filename (string) */
     OUTPUTFILE,                     /* text results filename (string) */
     PRECISION,                      /* case/control file date precision (enumeration) */
-    DIMENSION,                      /* not used */
+    DIMENSION,                      /* no longer used */
     SPECIALGRID,                    /* use grid file (boolean) */
     GRIDFILE,                       /* grid filename (string) */
     GEOSIZE,                        /* maximum spatial cluster size (numeric) */
     STARTDATE,                      /* study period start date (string) */
     ENDDATE,                        /* study period end date (string) */
     CLUSTERS,                       /* temporal clusters evaluated (enumeration) */
-    EXACTTIMES,                     /* not used */
+    EXACTTIMES,                     /* no longer used */
     TIME_AGGREGATION_UNITS,         /* time aggregation units (enumeration) */
     TIME_AGGREGATION,               /* time aggregation (integer) */
     PURESPATIAL,                    /* include purely spatial clusters (boolean) */
@@ -40,7 +40,7 @@ enum ParameterType
     ITERATIVE,                      /* perform iterative scans (boolean) */
     ITERATIVE_NUM,                  /* maximum iterations for iterative scan (integer) */
     ITERATIVE_PVAL,                 /* max p-value for iterative scan before cutoff (numeric) */
-    VALIDATE,                       /* not used */
+    VALIDATE,                       /* no longer used */
     OUTPUT_RR_ASCII,                /* output relative risks in ASCII format (boolean) */
     WINDOW_SHAPE,                   /* spatial window shape (enumeration) */
     ESHAPES,                        /* elliptic shapes (csv string) */
@@ -51,7 +51,7 @@ enum ParameterType
     CRITERIA_SECOND_CLUSTERS,       /* criteria for reporting secondary clusters (enumeration) */
     MAX_TEMPORAL_TYPE,              /* maximum temporal cluster size type (enumeration) */
     MAX_SPATIAL_TYPE,               /* maximum spatial cluster size type (enumeration) */
-    RUN_HISTORY_FILENAME,           /* not used */
+    RUN_HISTORY_FILENAME,           /* no longer used */
     OUTPUT_MLC_DBASE,               /* output cluster information in dBase format (boolean) */
     OUTPUT_AREAS_DBASE,             /* output location information in dBase format (boolean) */
     OUTPUT_RR_DBASE,                /* output relative risks in dBase format (boolean) */
@@ -158,14 +158,14 @@ enum ParameterType
     DRILLDOWN_ADJ_WEEKLY_TRENDS,    /* whether to adjust for weekly trends in Bernoulli drilldown, nonparametric */
     USE_NETWORK_FILE,               /* whether to use locations network file */
     NETWORK_FILE,                   /* locations network filename */
-    NETWORK_PURPOSE,                /* not used */
+    NETWORK_PURPOSE,                /* no longer used */
     PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
     PROSPECTIVE_FREQ,               /* frequency of prospective analysis type */
-    LINELIST_CASEFILE,              /* whether case file contains line list data */
-    LL_HEADER_CASEFILE,             /* whether case file contains line list header row */
-    KML_EVENT_GROUP,                /* indication whether to include linelist events in kml output, grouped */
-    KML_EVENT_GROUP_BY,             /* label of line-list colummn that should be used to group events in KML file */
-    LL_EVENT_CACHE_FILE,            /* file to store events ids */
+    LINELIST_CASEFILE,              /* no longer used */
+    LL_HEADER_CASEFILE,             /* no longer used */
+    KML_EVENT_GROUP,                /* no longer used */
+    KML_EVENT_GROUP_BY,             /* no longer used */
+    LL_EVENT_CACHE_FILE,            /* no longer used */
     CLUSTER_SIGNIFICANCE_BY_RI,     /* cluster significant by recurrence interval */
     CLUSTER_SIGNIFICANCE_RI_VALUE,  /* cluster significant recurrence interval cutoff */
     CLUSTER_SIGNIFICANCE_RI_TYPE,   /* cluster significant recurrence interval type */

@@ -866,65 +866,79 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
 
 /* Validate line list parameters. */
 bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) const {
-    // Skip if we're not reading line list data from the case file.
-    if (!gParameters.getReadingLineDataFromCasefile()) return true;
-
-    bool  bValid = true;
+    bool  bValid = true, usingLinelistcache = false;
     try {
-        auto inputsource = gParameters.getInputSource(CASEFILE);
-        if (inputsource && inputsource->getLinelistFieldsMap().size()) {
-            boost::optional<unsigned int> individualId, descriptiveLat, descriptiveLong;
-            for (const auto& ll: inputsource->getLinelistFieldsMap()) {
-                switch (ll.get<1>()) {
+        for (unsigned int idx=1; idx <= gParameters.getNumFileSets(); ++idx) {
+            auto inputsource = gParameters.getInputSource(CASEFILE, idx);
+            if (inputsource && inputsource->getLinelistFieldsMap().size()) {
+                std::vector<std::string> labels;
+                std::set<std::string> s;
+                boost::optional<unsigned int> individualId, descriptiveLat, descriptiveLong;
+                for (const auto& ll : inputsource->getLinelistFieldsMap()) {
+                    labels.push_back(ll.get<2>());
+                    s.emplace(ll.get<2>());
+                    switch (ll.get<1>()) {
                     case INDIVIDUAL_ID:
                         if (individualId && individualId.get() != ll.get<0>()) {
                             PrintDirection.Printf(
-                                "%s:\nLine list mappings are defined for the case file and the column to define Individual data is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                                "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define Individual data is defined to more than one column.\n",
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
                             );
                             bValid = false;
-                        } else individualId = ll.get<0>();
+                        }
+                        else individualId = ll.get<0>();
                         break;
                     case DESCRIPTIVE_COORD_Y:
                         if (descriptiveLat && descriptiveLat.get() != ll.get<0>()) {
                             PrintDirection.Printf(
-                                "%s:\nLine list mappings are defined for the case file and the column to define the descriptive latitude is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                                "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define the descriptive latitude is defined to more than one column.\n",
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
                             );
                             bValid = false;
-                        } else descriptiveLat = ll.get<0>();
+                        }
+                        else descriptiveLat = ll.get<0>();
                         break;
                     case DESCRIPTIVE_COORD_X:
                         if (descriptiveLong && descriptiveLong.get() != ll.get<0>()) {
                             PrintDirection.Printf(
-                                "%s:\nLine list mappings are defined for the case file and the column to define the descriptive longitude is defined to more than one column.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                                "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define the descriptive longitude is defined to more than one column.\n",
+                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
                             );
                             bValid = false;
-                        } else descriptiveLong = ll.get<0>();
+                        }
+                        else descriptiveLong = ll.get<0>();
                         break;
                     default: break;
+                    }
                 }
-            }
-            // If the IndividualId column is defined, check that either both descriptive lat/long as defined or neither.
-            if (individualId && ((descriptiveLat && !descriptiveLong) || (!descriptiveLat && descriptiveLong))) {
-                PrintDirection.Printf(
-                    "%s:\nLine list mappings are defined for the case file and the column to define the descriptive %s is missing though descriptive %s is defined.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, (descriptiveLat && !descriptiveLong) ? "longitude" : "latitude", (descriptiveLat && !descriptiveLong) ? "latitude" : "longitude"
-                );
-                bValid = false;
+                // If the IndividualId column is defined, check that either both descriptive lat/long as defined or neither.
+                if (individualId && ((descriptiveLat && !descriptiveLong) || (!descriptiveLat && descriptiveLong))) {
+                    PrintDirection.Printf(
+                        "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define the descriptive %s is missing though descriptive %s is defined.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx, (descriptiveLat && !descriptiveLong) ? "longitude" : "latitude", (descriptiveLat && !descriptiveLong) ? "latitude" : "longitude"
+                    );
+                    bValid = false;
+                }
+                if (labels.size() != s.size()) {
+                    PrintDirection.Printf(
+                        "%s:\nLine list mappings are defined for the case file of data set %u and\nthe labels for these mapping are not unique but must be.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
+                    );
+                    return false;
+                }
+                usingLinelistcache |= bool(individualId);
             }
         }
-        if (gParameters.getOutputKMLFile() && gParameters.getGroupLinelistEventsKML()) {
-            if (gParameters.getKmlEventGroupAttribute().size() == 0) {
-                PrintDirection.Printf(
-                    "%s:\nThe option to output a KML file has been selected along with line list event grouping\n"
-                    "yet no grouping characteristic has been specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-                return false;
-            }
-        }
-        if (!gParameters.getEventCacheFileName().empty()) {
-            if (boost::filesystem::exists(gParameters.getEventCacheFileName().c_str()) && 
-                !checkFileExists(gParameters.getEventCacheFileName(), "event cache", PrintDirection, false))
-                return false;
+        if (usingLinelistcache) {
+            // This analysis will be reading and possibly writing to a line list individuals cache file.
+            // If the file name isn't already assigned, then this is the primary analysis and the filename is derived from output filename.
+            // If the file is assigned, then this object is from a drilldown and the filename is that of primary analysis.
+            if (!gParameters.getLinelistIndividualsCacheFileName().size())
+                const_cast<CParameters&>(gParameters).setLinelistIndividualsCacheFileName();
+            if (!checkFileExists(
+                gParameters.getLinelistIndividualsCacheFileName(), "line list cache", PrintDirection, 
+                !boost::filesystem::exists(gParameters.getLinelistIndividualsCacheFileName().c_str())
+            )) return false;
         }
     } catch (prg_exception& x) {
         x.addTrace("ValidateLinelistParameters()", "ParametersValidate");

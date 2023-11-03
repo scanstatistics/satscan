@@ -12,26 +12,62 @@
 #include "GisUtils.h"
 #include "DataDemographics.h"
 
+////////////////////////////// EventType ///////////////////////////
+
 unsigned int EventType::_counter = 0;
 
-std::string EventType::getCategoryColor(unsigned int offset) const {
-    if (offset > _visual_utils.getColors().size() - 1) {
-        return _visual_utils.getRandomHtmlColor();
-    } else {
-        return _visual_utils.getColors()[offset];
-    }
+/* EventType constructor */
+EventType::EventType(const std::string& name) {
+    ++_counter; // increment counter to tract number of event types
+    _name = name;
+    printString(_class, "event_type_%u", _counter);
+    _type = formatTypeString(name);
 }
 
-std::string EventType::toJson(const std::string& resource_path) {
+// Attempts to add new category to event collection.
+const EventType::CategoryTuple_t& EventType::addCategory(const std::string& category_label) {
+    for (auto& category: _categories) { // does this category label already exist?
+        if (category.get<1>() == category_label) {
+            category.get<2>() += 1; // increment the number of times this category was encountered
+            return category;
+        }
+    }
+    _categories.push_back(CategoryTuple_t(formatTypeString(category_label), category_label, 1));
+    return _categories.back();
+}
+
+/* Formats string for use as javascript hash string. */
+std::string EventType::formatTypeString(const std::string& str) {
+    std::stringstream text(str);
+    std::string return_value = templateReplace(text, " ", "_").str(); // strip spaces from type string for javascript
+    return lowerString(return_value);
+
+}
+
+/* Returns event type as json formatted string. */
+std::string& EventType::toJson(std::string& json_str) {
     std::stringstream json;
     json << "{ event_class: '" << _class << "', " << "event_type: '" << _type << "', " << "event_name: '" << _name << "', ";
     json << "categories: [";
     for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
-        json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << itr->get<0>() << "', label: '" << itr->get<1>() << "', color: '" << itr->get<2>() << "'}";
+        json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << _class << "-" << itr->get<0>() << "', label: '" << itr->get<1>() << "'}";
     }
     json << "] }";
-    return json.str();
+    json_str = json.str();
+    return json_str;
 }
+
+/* Sorts categories times encountered, falling back to label as tie breaker. */
+const EventType::CategoriesContainer_t& EventType::sortCategories() {
+    std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
+        if (left.get<2>() == right.get<2>()) return left.get<1>() < right.get<1>();
+        return left.get<2>() > right.get<2>();
+    });
+    return _categories;
+}
+
+
+////////////////////////////// ClusterMap ///////////////////////////
 
 const char * ClusterMap::HTML_FILE_EXT = ".html";
 const char * ClusterMap::FILE_SUFFIX_EXT = ".clustermap";
@@ -131,25 +167,25 @@ const char * ClusterMap::TEMPLATE = " \
                 </div> \n \
                 <div class='options-row event-controls'> \n \
                     <div id='id_display_events'> \n \
-                        <label for='id_select_event_type'>Display Events By:</label> \n \
+                        <label for='id_select_event_type'>Display Individuals By:</label> \n \
                         <select name='select_event_type' id='id_select_event_type' multiple='multiple' class='events-select'> \n \
                         --select-groups-event-type-display-- \n \
                         </select> \n \
                     </div> \n \
-                    <p class='help-block'>Displays markers for selected events.</p> \n \
+                    <p class='help-block'>Displays markers for selected groups.</p> \n \
                     <div id='id_group_events'>  \n \
                     <label for='id_group_event_type'>Separate Icons:</label> \n \
                     <select name='group_event_type' id='id_group_event_type' multiple='multiple' class='events-group'></select> \n \
                     </div> \n \
                     <p class='help-block'>Maximum of 8 can be distinguished by icon.</p> \n \
                     <div id='id_filter_events'> \n \
-                        <label for='id_filter_event_type'>Exclude Events:</label> \n \
+                        <label for='id_filter_event_type'>Exclude Individuals:</label> \n \
                         <select name='filter_event_type' id='id_filter_event_type' multiple='multiple' class='events-filter'> \n \
                         --select-groups-event-type-exclude-- \n \
                         </select> \n \
                     </div> \n \
-                    <p class='help-block'>Filter to exclude markers of displayed events.</p> \n \
-                    <label for='slider_display'>Events In Study Period</label> \n \
+                    <p class='help-block'>Filter to exclude markers of displayed individuals.</p> \n \
+                    <label for='slider_display'>Individuals In Study Period</label> \n \
                     <div class='slider-styled slider-round' id='slider_display'></div> \n \
                     <div style='font-size: small;padding-bottom: 5px;'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
                     <div class='pull-left'> \n \
@@ -160,12 +196,12 @@ const char * ClusterMap::TEMPLATE = " \
                     <div class='clearfix'></div> \n \
                     <label for='slider_speed' style='font-size:12px;margin-bottom:0;margin-left:2px;'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
                     <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
-                    <label for='slider_display' style='margin-top:5px;'>Recent Events</label> \n \
+                    <label for='slider_display' style='margin-top:5px;'>Recent Individuals</label> \n \
                     <div class='slider-styled slider-round' id='slider_recent'></div> \n \
                     <div style='font-size: small;padding-bottom: 5px;'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
                     <!-- <p class='help-block'>Show events by study period.</p> --> \n \
-                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Event Legend</label> \n \
-                    <div style='margin-top: 1px;'><label>Events Size</label></div> \n \
+                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Individuals Legend</label> \n \
+                    <div style='margin-top: 1px;'><label>Individuals Icon Size</label></div> \n \
                      <div class='slider-styled slider-round' id='slider_size' ></div> \n \
                      <div style='font-size:small;text-align:center;'><span style='margin-right:15px;'>&#129048; smaller</span><span style='margin-left:15px;'>larger &#x1F81A;</span></div> \n \
                     <div class='clearfix'></div> \n \
@@ -176,7 +212,7 @@ const char * ClusterMap::TEMPLATE = " \
                             <div><span id='id_cluster_count'></span> Clusters</div>\n \
                             <div><span id='id_cluster_point_count'></span> Cluster Locations</div>\n \
                             <div><span id='id_point_count'></span> Total Locations</div> \n \
-                            <div><span id='id_event_count'>0</span> Total Events</div> \n \
+                            <div><span id='id_event_count'>0</span> Total Individuals</div> \n \
                     </fieldset>\n \
                 </div>\n \
                 <div class='options-row'> \n \
@@ -220,28 +256,26 @@ ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _cluster
     _cluster_locations.resize(_dataHub.getLocationsManager().locations().size());
 }
 
-/** Alters pass Filename to include suffix and extension. */
+/** Updates passed FileName object to name of file generated by this class. */
 FileName& ClusterMap::getFilename(FileName& filename) {
     std::string buffer;
-    printString(buffer, "%s%s", filename.getFileName().c_str(), FILE_SUFFIX_EXT);
-    filename.setFileName(buffer.c_str());
+    filename.setFileName(printString(buffer, "%s%s", filename.getFileName().c_str(), FILE_SUFFIX_EXT).c_str());
     filename.setExtension(HTML_FILE_EXT);
     return filename;
 }
 
-/** Return legend of cluster information to be used as popup in html page. */
+/** Returns cluster legend to be used as popup in html page. */
 std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
     std::stringstream  lines;
-    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
 
     lines << "<div style=\"text-decoration:underline;\">Cluster " << iCluster + 1 << "</div>";
-    for (; itr != itr_end; ++itr) {
-        if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
-            lines << "Data Set " << itr->second.second << "<br>";
-            currSetIdx = itr->second.second;
+    for (const auto& ci: cluster.getReportLinesCache()) {
+        if (numFilesSets > 1 && ci.second.second > 0 && currSetIdx != ci.second.second) {
+            lines << "Data Set " << ci.second.second << "<br>";
+            currSetIdx = ci.second.second;
         }
-        lines << itr->first << " : " << itr->second.first << "<br>";
+        lines << ci.first << " : " << ci.second.first << "<br>";
     }
     legend = lines.str();
     std::replace(legend.begin(), legend.end(), '\n', ' ');
@@ -327,220 +361,227 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
     }
 }
 
-/* Adds events/case demographic markers to Google Map. */
+/* Adds case demographic markers to Google Map. */
 void ClusterMap::add(const DataDemographicsProcessor& demographics) {
-    const CParameters& parameters = _dataHub.GetParameters();
-    // Create collection of event types that we'll be grouping the events into.
-    std::vector<std::string> g_values;
-    csv_string_to_typelist<std::string>(parameters.getKmlEventGroupAttribute().c_str(), g_values);
-    for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue; // Only want attributes, not individual id or coordinates.
-        if (std::find(g_values.begin(), g_values.end(), demographic.first.second) == g_values.end()) continue;
-        if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first.second; }) == _event_types.end())
-            _event_types.push_back(EventType(demographic.first.second));
+    // First test whether any of the data sets include indivdual and descriptive coordinates.
+    if (!demographics.hasIndividualGeographically()) {
+        _dataHub.GetPrintDirection().Printf(
+            "Descriptive coordinates were not found in line list data. Line list individuals will not be added to Google Map file.\n", BasePrint::P_WARNING
+        );
+        return;
     }
-    if (_event_types.size() == 0) {
-        _dataHub.GetPrintDirection().Printf("No characteristics to group by. Event placements will not be added to Google Maps output.\n",  BasePrint::P_WARNING);
-    } else {
-        // Sort so event types are reported alphabetically.
-        std::sort(_event_types.begin(), _event_types.end(), [](const EventType &left, const EventType &right) { return left.name() < right.name(); });
-        // Create a map for quick event-type to EventType object.
-        std::map<std::string, EventType*> eventtype_map;
-        for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) eventtype_map[eventtype->name()] = &(*eventtype);
-        // Determine lowest date for displayed events - for prospective space-time, we're excluding those below cluster window.
-        UInt jyear, jmonth, jday;
-        //std::map<std::string, boost::shared_ptr<std::stringstream>> group_events;
-        for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
-            // First test whether this data set reported event id and coordinates.
-            if (!(demographics.getEventStatus(idx).get<0>() && demographics.getEventStatus(idx).get<1>())) continue;
-            // Open the data source and read all the records of the case file again.
-            std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
-                getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
-                parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
-            ));
-            if (Source->getLinelistFieldsMap().size() == 0) continue; // no mappings defined for this data set.
-            // Iterate over the records of the case file - creating event types and event entries;
-            const char * value = 0;
-            tract_t tid; count_t count; Julian case_date;
-            std::string event_date, event_id, latitude, longitude, status;
-            std::stringstream eventtypes;
-            std::vector<std::pair<std::string, std::string>> eventAttrs;
-            while (Source->ReadRecord()) {
-                DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
-                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-                readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
-                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-                readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
-                if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-                // Compile event attributes from this record.
-                eventtypes.str("");
-                eventAttrs.clear();
-                for (auto itr=Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
-                    value = Source->GetValueAtUnmapped(itr->get<0>());
-                    value = value == 0 ? "" : value;
-                    if (itr->get<1>() == INDIVIDUAL_ID)
-                        event_id = value;
-                    else if (itr->get<1>() == DESCRIPTIVE_COORD_Y)
-                        latitude = value;
-                    else if (itr->get<1>() == DESCRIPTIVE_COORD_X)
-                        longitude = value;
-                    else {
-                        // If this event column is one of those being grouped, add the value to the event-types categories.
-                        auto eventtype = eventtype_map.find(itr->get<2>());
-                        if (eventtype != eventtype_map.end()) {
-                            const auto& category = eventtype->second->addCategory(value);
-                            if (eventtypes.tellp()) eventtypes << ",";
-                            eventtypes << "'" << eventtype->second->className() << "': '" << category.get<0>() << "'";
-                        }
-                        eventAttrs.push_back(std::make_pair(itr->get<2>(), value));
-                    }
-                }
-                // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.
-                if (event_id.length() == 0 || latitude.length() == 0 || longitude.length() == 0) {
-                    _dataHub.GetPrintDirection().Printf("Unable to place event of record %ld in case file to Google Map.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
-                    continue;
-                }
-                double dlat, dlong;
-                if (!string_to_type<double>(latitude.c_str(), dlat) || !string_to_type<double>(longitude.c_str(), dlong) || fabs(dlat) > 90.0 && fabs(dlong) > 180.0) {
-                    _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to Google Map.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
-                    continue;
-                }
-                // Determine status of this event.
-                if (demographics.isNewEvent(event_id))
-                    status = "new";
-                else if (demographics.isExistingEvent(event_id))
-                    status = "ongoing";
-                else
-                    status = "outside";
-                // Write event definition to collection of events.
-                if (_event_definitions.tellp()) _event_definitions << ",";
-                _event_definitions << std::endl << "{ eventid: '" << event_id << "', status: '" << status << "', marker: null, coordinates: [" << longitude << "," << latitude << "], ";
-                if (parameters.GetPrecisionOfTimesType() == GENERIC) {
-                    _event_definitions << "date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-", false, false, true) << ",";
-                } else {
-                    JulianToMDY(&jmonth, &jday, &jyear, case_date);
-                    _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
-                }
-                if (eventtypes.tellp()) { _event_definitions << eventtypes.str(); }
-                _event_definitions << ", info: '<div style=\"padding:5px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << event_id << "</div>Event Date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType()) << "<br>";
-                std::sort(eventAttrs.begin(), eventAttrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
-                    return left.first < right.first;
-                });
-                for (auto attr = eventAttrs.begin(); attr != eventAttrs.end(); ++attr) {
-                    _event_definitions << attr->first << ": " << attr->second << "<br>";
-                }
-                _event_definitions << "</div>'}";
-            }
+    // Create collection of event types which we'll be reporting in KML file.
+    // The event types don't have to be matching between data sets - they can match completely, partially, or not at all.
+    for (size_t idx = 0; idx < _dataHub.GetNumDataSets(); ++idx) {
+        const auto& demographic_set = demographics.getDataSetDemographics(idx);
+        if (!demographic_set.hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
+        for (auto const &demographic : demographic_set.getAttributes()) {
+            if (demographic.second->gettype() <= DESCRIPTIVE_COORD_X) continue; // skip individual id and descriptive coordinates.
+            if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first.second; }) == _event_types.end())
+                _event_types.push_back(EventType(demographic.first.second));
         }
     }
+    if (_event_types.size() == 0) {
+        _dataHub.GetPrintDirection().Printf("No line list attributes to display individuals by. Individuals were not added to Google Map file.\n",  BasePrint::P_WARNING);
+        return;
+    }
+    bool storeWarn = _dataHub.GetPrintDirection().isSuppressingWarnings(); // prevent re-printing case file warnings
+    _dataHub.GetPrintDirection().SetSuppressWarnings(true);
+    const CParameters& parameters = _dataHub.GetParameters();
+    // Sort so event types are reported alphabetically.
+    std::sort(_event_types.begin(), _event_types.end(), [](const EventType &left, const EventType &right) { return left.name() < right.name(); });
+    // Create a map for quick event-type to EventType object access.
+    std::map<std::string, EventType*> eventtype_map;
+    for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) eventtype_map[eventtype->name()] = &(*eventtype);
+    UInt jyear, jmonth, jday;
+    for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
+        if (!demographics.getDataSetDemographics(idx).hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+            getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
+            parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
+        ));
+        if (Source->getLinelistFieldsMap().size() == 0) continue; // skip this data set if no line-list mappings defined
+        // Iterate over the records of the case file - creating event types and event entries.
+        const char * value = 0;
+        tract_t tid; count_t count; Julian case_date;
+        std::string event_date, individual, latitude, longitude, status;
+        std::stringstream event_types;
+        std::vector<std::pair<std::string, std::string>> event_attrs;
+        std::set<const EventType*> unseen_events; // tracks which event types haven't been seen in this record
+        while (Source->ReadRecord()) {
+            DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
+            if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
+            if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
+            if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            // Compile individual attributes from this record.
+            event_types.str("");
+            event_attrs.clear();
+            unseen_events.clear(); // clear and reset unseen attributes
+            for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) unseen_events.emplace(&(*eventtype));
+            // iterate over data source line list mappings
+            for (const auto& llfm: Source->getLinelistFieldsMap()) {
+                value = Source->GetValueAtUnmapped(llfm.get<0>());
+                value = value == 0 ? "" : value;
+                if (llfm.get<1>() == INDIVIDUAL_ID)
+                    individual = value;
+                else if (llfm.get<1>() == DESCRIPTIVE_COORD_Y)
+                    latitude = value;
+                else if (llfm.get<1>() == DESCRIPTIVE_COORD_X)
+                    longitude = value;
+                else {
+                    // If this column is one of those being grouped, add the value to the event-type category.
+                    value = strlen(value) == 0 ? "~ blank ~" : value;
+                    auto eventtype = eventtype_map.find(llfm.get<2>());
+                    if (eventtype != eventtype_map.end()) {
+                        const auto& category = eventtype->second->addCategory(value);
+                        if (event_types.tellp()) event_types << ",";
+                        event_types << "'" << eventtype->second->className() << "': '" << eventtype->second->className() << "-" << category.get<0>() << "'";
+                        unseen_events.erase(eventtype->second); // mark this event type as seen in this record
+                    }
+                    event_attrs.push_back(std::make_pair(llfm.get<2>(), value));
+                }
+            }
+            // At least the minimal checking - confirm that individual, coordinates and group value are present in record.
+            if (individual.length() == 0 || latitude.length() == 0 || longitude.length() == 0) { // warn and skip record if descriptive coordinates don't cast or are invalid
+                _dataHub.GetPrintDirection().Printf("Unable to place individual of record %ld in case file to Google Map.\n", BasePrint::P_WARNING, Source->GetCurrentRecordIndex());
+                continue;
+            }
+            double dlat, dlong; // warn and skip record if descriptive coordinates don't cast or are invalid
+            if (!string_to_type<double>(latitude.c_str(), dlat) || !string_to_type<double>(longitude.c_str(), dlong) || fabs(dlat) > 90.0 && fabs(dlong) > 180.0) {
+                _dataHub.GetPrintDirection().Printf("Unable to place individual of record %ld in case file to Google Map.\n", BasePrint::P_WARNING, Source->GetCurrentRecordIndex());
+                continue;
+            }
+            // Determine status of this individual.
+            if (demographics.isNewIndividual(individual))
+                status = "new";
+            else if (demographics.isExistingIndividual(individual))
+                status = "ongoing";
+            else
+                status = "outside";
+            // write the individual/event hash to the javascript collection
+            if (_event_definitions.tellp()) _event_definitions << ","; // add comma if this isn't the first one
+            _event_definitions << std::endl << "{ eventid: '" << individual << "', status: '" << status << "', marker: null, coordinates: [" << longitude << "," << latitude << "], ";
+            if (parameters.GetPrecisionOfTimesType() == GENERIC) {
+                _event_definitions << "date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-", false, false, true) << ",";
+            } else {
+                JulianToMDY(&jmonth, &jday, &jyear, case_date);
+                _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
+            }
+            for (auto& unseen : unseen_events) { // now add unseen event types so that each record in the javascript hash is complete
+                if (event_types.tellp()) event_types << ",";
+                event_types << "'" << unseen->className() << "': '" << unseen->className() << "-not-applicable-'";
+            }
+            if (event_types.tellp()) { _event_definitions << event_types.str(); }
+            _event_definitions << ", info: '<div style=\"padding:5px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << individual << "</div>Date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType()) << "<br>";
+            std::sort(event_attrs.begin(), event_attrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
+                return left.first < right.first;
+            });
+            for (auto attr = event_attrs.begin(); attr != event_attrs.end(); ++attr) {
+                _event_definitions << attr->first << ": " << attr->second << "<br>";
+            }
+            _event_definitions << "</div>'}";
+        }
+    }
+    _dataHub.GetPrintDirection().SetSuppressWarnings(storeWarn);
 }
 
-/** Render scatter chart to html page. */
+/** Finalize generating the html page which will contain the Google Map, along with supporting html inputs and javascript variables. */
 void ClusterMap::finalize() {
-    std::string buffer;
-    std::stringstream html, worker;
-    FileName fileName;
+    std::string str_buffer, website(AppToolkit::getToolkit().GetWebSite());
+    std::stringstream html, stream_buffer;
     const CParameters& params = _dataHub.GetParameters();
+    std::vector<double> coordinates;
+    std::ofstream html_out;
 
     try {
-        fileName.setFullPath(params.GetOutputFileName().c_str());
+        FileName fileName(params.GetOutputFileName().c_str());
         getFilename(fileName);
-        std::ofstream HTMLout;
         //open output file
-        HTMLout.open(fileName.getFullPath(buffer).c_str());
-        if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
-
-        // read template into stringstream
-        html << TEMPLATE << std::endl;
-        // site resource link path
-        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
-        // site resource link path
-        templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
-
-        std::vector<double> vCoordinates;
-        // Create collection of network connections - we'll use them to display edges in the entire network.
-        worker.str("");
+        html_out.open(fileName.getFullPath(str_buffer).c_str());
+        if (!html_out) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(str_buffer).c_str());
+        html << TEMPLATE << std::endl; // read template into stringstream
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite()); // site resource link path
+        templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail()); // site resource link path
+        str_buffer = _cluster_definitions.str(); // write cluster definitions
+        templateReplace(html, "--cluster-definitions--", trimString(str_buffer, ",\n").c_str());
+        // If we're using a network, create collection of network connections - we'll use them to display edges in the entire network.
         if (params.getUseLocationsNetworkFile()) {
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
             for (const auto& connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
-                connection.get<0>()->coordinates()->retrieve(vCoordinates);
-                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
-                worker << printString(buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
-                connection.get<1>()->coordinates()->retrieve(vCoordinates);
-                prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-                worker << printString(buffer, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                connection.get<0>()->coordinates()->retrieve(coordinates);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(coordinates));
+                stream_buffer << printString(str_buffer, "[[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+                connection.get<1>()->coordinates()->retrieve(coordinates);
+                prLatitudeLongitude = ConvertToLatLong(coordinates);
+                stream_buffer << printString(str_buffer, "[%f, %f]],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
             }
         }
-        std::string all_edges = worker.str();
-
-        worker.str("");
+        str_buffer = stream_buffer.str();
+        templateReplace(html, "--entire-region-edges--", trimString(trimString(str_buffer, ","), ",").c_str());
+        // create collection of all the location in the analysis
+        stream_buffer.str("");
         for (const auto& location: _dataHub.getLocationsManager().locations()) {
-            if (!_cluster_locations.test(location->index())) {
-                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(vCoordinates)));
-                worker << printString(buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+            if (_cluster_locations.test(location->index())) continue; // skip locations which will already be represented with a cluster
+            std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(coordinates)));
+            stream_buffer << printString(str_buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+        }
+        str_buffer = stream_buffer.str();
+        templateReplace(html, "--entire-region-points--", trimString(trimString(str_buffer, ","), ",").c_str());
+        // write significant clusters option group
+        stream_buffer.str("");
+        if (_cluster_options_significant.tellp())
+            stream_buffer << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
+        templateReplace(html, "--significant-cluster-options--", stream_buffer.str());
+        // write non-significant clusters option group
+        stream_buffer.str("");
+        if (_cluster_options_non_significant.tellp())
+            stream_buffer << "<optgroup label='Non-Significant' class='non_significant_clusters'>" << _cluster_options_non_significant.str() << "</optgroup>";
+        templateReplace(html, "--non-significant-cluster-options--", stream_buffer.str());
+        // write individual (event) option groups
+        stream_buffer.str("");
+        for (auto& eventtype: _event_types) {
+            stream_buffer << "<optgroup label='" << eventtype.name() << "' class='" << eventtype.className() << "'>";
+            for (const auto& category: eventtype.sortCategories()) {
+                stream_buffer << "<option value='" << eventtype.className() << "-" << category.get<0>() << "' class='" << eventtype.className() << "'>";
+                stream_buffer << category.get<1>() << " (" << category.get<2>() << ")" << "</option>";
             }
+            stream_buffer << "</optgroup>";
         }
-        std::string entire_points = worker.str();
-        // site resource link path
-        buffer = _cluster_definitions.str();
-        templateReplace(html, "--cluster-definitions--", trimString(buffer, ",\n").c_str());
-        templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
-        templateReplace(html, "--entire-region-edges--", trimString(trimString(all_edges, ","), ",").c_str());
-        std::stringstream options_group;
-        if (_cluster_options_significant.tellp()) {
-            options_group << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
-        }
-        templateReplace(html, "--significant-cluster-options--", options_group.str());
-        options_group.str("");
-        if (_cluster_options_non_significant.tellp()) {
-            options_group << "<optgroup label='Non-Significant' class='non_significant_clusters'>" << _cluster_options_non_significant.str() << "</optgroup>";
-        }
-        templateReplace(html, "--non-significant-cluster-options--", options_group.str());
-        // Write any event types and definitions.
-        std::stringstream selecteventgroups;
-        for (auto eventtype = _event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
-            selecteventgroups << "<optgroup label='" << eventtype->name() << "' class='" << eventtype->className() << "'>";
-            eventtype->sortCategories();
-            for (auto category = eventtype->getCategories().begin(); category != eventtype->getCategories().end(); ++category)
-                selecteventgroups << "<option value='" << category->get<0>() << "' class='" << eventtype->className() << "'>" << category->get<1>() << " (" << category->get<3>() << ")" << "</option>";
-            selecteventgroups << "</optgroup>";
-        }
-        templateReplace(html, "--select-groups-event-type-display--", selecteventgroups.str());
-        templateReplace(html, "--select-groups-event-type-exclude--", selecteventgroups.str());
-        std::stringstream event_type_definitions;
-        std::string website = AppToolkit::getToolkit().GetWebSite();
+        templateReplace(html, "--select-groups-event-type-display--", stream_buffer.str());
+        templateReplace(html, "--select-groups-event-type-exclude--", stream_buffer.str());
+        stream_buffer.str("");
         for (auto eventtype=_event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
-            event_type_definitions << std::endl << eventtype->toJson(website) << ((eventtype + 1) == _event_types.end() ? "" : ",");
-        } event_type_definitions << std::endl;
-        templateReplace(html, "--event-types-definitions--", event_type_definitions.str());
+            stream_buffer << std::endl << eventtype->toJson(str_buffer) << ((eventtype + 1) == _event_types.end() ? "" : ",");
+        } stream_buffer << std::endl;
+        templateReplace(html, "--event-types-definitions--", stream_buffer.str());
         templateReplace(html, "--event-definitions--", _event_definitions.str());
-
-        UInt jyear, jmonth, jday;
+        UInt jyear, jmonth, jday; // write supporting javascript variables
         if (params.GetPrecisionOfTimesType() == GENERIC) {
-            templateReplace(html, "--event-range-begin--", JulianToString(buffer, _dataHub.GetStudyPeriodStartDate(), params.GetPrecisionOfTimesType()));
-            templateReplace(html, "--event-range-start--", JulianToString(buffer, _recent_startdate, params.GetPrecisionOfTimesType()));
-            templateReplace(html, "--event-range-end--", JulianToString(buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--event-range-begin--", JulianToString(str_buffer, _dataHub.GetStudyPeriodStartDate(), params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--event-range-start--", JulianToString(str_buffer, _recent_startdate, params.GetPrecisionOfTimesType()));
+            templateReplace(html, "--event-range-end--", JulianToString(str_buffer, _dataHub.GetStudyPeriodEndDate(), params.GetPrecisionOfTimesType()));
             templateReplace(html, "--true-dates--", "false");
         } else {
             JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodStartDate());
-            templateReplace(html, "--event-range-begin--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            templateReplace(html, "--event-range-begin--", printString(str_buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
             JulianToMDY(&jmonth, &jday, &jyear, _recent_startdate);
-            templateReplace(html, "--event-range-start--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            templateReplace(html, "--event-range-start--", printString(str_buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
             JulianToMDY(&jmonth, &jday, &jyear, _dataHub.GetStudyPeriodEndDate());
-            templateReplace(html, "--event-range-end--", printString(buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
+            templateReplace(html, "--event-range-end--", printString(str_buffer, "new Date(%u, %u, %u)", jyear, jmonth - 1, jday));
             templateReplace(html, "--true-dates--", "true");
         }
-
-        // replace parameters hash
-        printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));
-        templateReplace(html, "--parameters--", buffer.c_str());
+        templateReplace(html, "--parameters--", printString( // replace parameters hash
+            str_buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s",
+            _dataHub.GetParameters().GetAreaScanRateType(), (_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true" : "false")).c_str()
+        );
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
 		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));
-
-        HTMLout << html.str() << std::endl;
-        HTMLout.close();
+        html_out << html.str() << std::endl;
+        html_out.close();
     } catch (prg_exception& x) {
-        x.addTrace("renderScatterChart()", "ClusterScatterChart");
+        x.addTrace("finalize()", "ClusterMap");
         throw;
     }
 }

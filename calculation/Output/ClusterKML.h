@@ -44,7 +44,7 @@ class BaseClusterKML {
 
 class ClusterKML : public BaseClusterKML {
     protected:
-        file_collection_t _fileCollection;
+        file_collection_t _kml_files;
         std::ofstream _kml_out;
         unsigned int _clusters_written;
         unsigned int _locations_written;

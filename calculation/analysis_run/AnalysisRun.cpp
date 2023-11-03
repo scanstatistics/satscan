@@ -272,8 +272,8 @@ void AnalysisExecution::execute() {
 void  AnalysisExecution::finalize() {
     FILE * fp = 0;
     try {
-        // Finalize the data demographica process now -- updating unique events file for this analysis.
-        if (_data_demographic_processor.get() && !getDataHub().isDrilldown()) _data_demographic_processor->finalize();
+        // Finalize the data demograhics process now -- updating cache file for this analysis.
+        if (_data_demographic_processor.get()) _data_demographic_processor->finalize();
 
         /** Finalizes the reporting to result output file.
         - indicates whether clusters were found
@@ -338,17 +338,17 @@ void  AnalysisExecution::finalize() {
             // Determine if there are any significant clusters - significant per user settings.
             MostLikelyClustersContainer::ClusterList_t significantClusters; ClusterSupplementInfo supplement;
             _reportClusters.getSignificantClusters(_data_hub, _sim_vars, significantClusters, supplement);
-            /* If the user specified line-list data in the case file, we might also have event_ids to help distinguish if a
+            /* If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
                significant cluster should be considered when emailing -- otherwise repeated noise i.e. same cluster as yesterdays run. */
             if (!significantClusters.empty()) {
-                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->getDataSetDemographics().hasEventAttribute()) {
+                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
                     std::stringstream signaltext;
-                    const auto& clusterNewCounts = _data_demographic_processor->getClusterNewEventsCounts();
+                    const auto& cluster_counts = _data_demographic_processor->getClusterEventTotals();
                     for (auto const&cluster: significantClusters) {
                         unsigned int clusterReportNumber = supplement.getClusterReportIndex(*cluster);
-                        unsigned int clusterNewCount = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).first;
+                        unsigned int clusterNewCount = cluster_counts.at(static_cast<int>(clusterReportNumber - 1)).first;
                         if (clusterNewCount) {
-                            count_t clusterTotalCases = clusterNewCounts.at(static_cast<int>(clusterReportNumber - 1)).second;
+                            count_t clusterTotalCases = cluster_counts.at(static_cast<int>(clusterReportNumber - 1)).second;
                             if (clusterNewCount == clusterTotalCases)
                                 signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << clusterReportNumber << ".<linebreak>";
                             else
@@ -1502,7 +1502,7 @@ void AnalysisExecution::reportClusters() {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Google Earth file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_kml.reset(new ClusterKML(_data_hub));
-            if (_data_demographic_processor.get() && _parameters.getGroupLinelistEventsKML()) _cluster_kml->add(*_data_demographic_processor);
+            if (_data_demographic_processor.get() && _analysis_count == 1) _cluster_kml->add(*_data_demographic_processor);
             _cluster_kml->add(_reportClusters, _sim_vars);
         }
     } catch (prg_exception& x) {

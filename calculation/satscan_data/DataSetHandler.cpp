@@ -131,102 +131,6 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& Da
             getFilenameFormatTime(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
             gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint)
         );
-        /* Are we expecting the case file to contain extra columns for linelist data?
-           If so, we're expecting the first row to contain information detailing the column types.
-           If mapped fields exist, that indicates the user chose the option to use file wizard to define these line list fields. so skip. */
-        if (gParameters.getCasefileIncludesLineData() && Source->getFieldsMap().size() == 0 && Source->getLinelistFieldsMap().size() == 0) {
-            if (!Source->ReadRecord()) throw resolvable_error("Error: Case file is empty.");
-            // Define the types of colummns in the line-list meta row.
-            std::string individual_id_type("<individual-id>"), xcoord_type("<descriptive-longitude>"), ycoord_type("<descriptive-latitude>"), linelist_type("<linelist>"),
-                        covariate_type("<covariate>"), identifier_type("<identifier>"), count_type("<#cases>"), date_type("<time>"),
-                        attribute_type("<attribute>"), censored_type("<censored>"), weight_type("<weight>");
-            std::map<std::string, long> mapped_columns = {
-                { identifier_type, -1 },{ count_type, -1 } ,{ date_type, -1 },{ attribute_type, -1 },{ censored_type, -1 },{ weight_type, -1 }
-            };
-            std::vector<std::string> meta_record;
-            while (Source->GetValueAt(static_cast<long>(meta_record.size())))
-                meta_record.push_back(Source->GetValueAt(static_cast<long>(meta_record.size())));
-            // Now read the header row if user indicated that there is one.
-            std::vector<std::string> header_record;
-            if (gParameters.getCasefileIncludesHeader()) {
-                if (!Source->ReadRecord()) throw resolvable_error("Error: Case file contains no data.");
-                while (Source->GetValueAt(static_cast<long>(header_record.size())))
-                    header_record.push_back(Source->GetValueAt(static_cast<long>(header_record.size())));
-                if (meta_record.size() != header_record.size())
-                    throw resolvable_error(
-                        "Error: Case file contains conflicting line-list information. The number of columns in meta line (%u) do not match the header line (%u).",
-                        meta_record.size(), header_record.size()
-                    );
-            }
-            // Iterate over the line-list meta row to discover what the file defines as input data and line list data.
-            unsigned int numLineList = 0;
-            std::string label;
-            std::vector<long> covariates;
-            LineListFieldMapContainer_t fields_map;
-            for (size_t t=0; t < meta_record.size(); ++t) {
-                if (meta_record[t] == individual_id_type) {
-                    label = (header_record.size() ? header_record[t] : individual_id_type);
-                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), INDIVIDUAL_ID, label));
-                } else if (meta_record[t] == xcoord_type) {
-                    label = (header_record.size() ? header_record[t] : xcoord_type);
-                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), DESCRIPTIVE_COORD_X, label));
-                } else if (meta_record[t] == ycoord_type) {
-                    label = (header_record.size() ? header_record[t] : ycoord_type);
-                    fields_map.push_back(boost::tuple<unsigned int, LinelistType, std::string>(static_cast<unsigned int>(t), DESCRIPTIVE_COORD_Y, label));
-                } else if (meta_record[t] == linelist_type) {
-                    ++numLineList;
-                    fields_map.push_back(
-                        boost::tuple<unsigned int, LinelistType, std::string>(
-                            static_cast<unsigned int>(t), GENERAL_DATA, 
-                            (header_record.size() ? header_record[t] : printString(label, "linelist-%u", numLineList))
-                        )
-                    );
-                } else {
-                    if (meta_record[t] == covariate_type)
-                        covariates.push_back(t + 1);
-                    else {
-                        auto itr = mapped_columns.find(meta_record[t]);
-                        if (itr == mapped_columns.end())
-                            throw resolvable_error("Error: Case file contains unknown line-list meta type '%s'.", meta_record[t].c_str());
-                        mapped_columns[meta_record[t]] = t + 1;
-                    }
-                }
-            }
-            // Now define the field maps based on types read from line list and user settings.
-            std::vector<boost::any> map;
-            if (mapped_columns[identifier_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", identifier_type.c_str());
-            map.push_back(mapped_columns[identifier_type]);
-            if (mapped_columns[count_type] == -1) throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", count_type.c_str());
-            map.push_back(mapped_columns[count_type]);
-            if (gParameters.GetPrecisionOfTimesType() != NONE) {
-                if (mapped_columns[date_type] == -1) 
-                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", date_type.c_str());
-                map.push_back(mapped_columns[date_type]);
-            }
-            ProbabilityModelType model = gParameters.GetProbabilityModelType();
-            if (model == ORDINAL || model == EXPONENTIAL || model == NORMAL || model == CATEGORICAL) {
-                if (mapped_columns[attribute_type] != -1) 
-                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", attribute_type.c_str());
-                map.push_back(mapped_columns[attribute_type]);
-            }
-            if (model == EXPONENTIAL) {
-                if (mapped_columns[censored_type] != -1)
-                    throw resolvable_error("Error: Case file line-list meta did not define '%s' column.", censored_type.c_str());
-                map.push_back(mapped_columns[censored_type]);
-            }
-            if (model == NORMAL && mapped_columns[weight_type] != -1)
-                map.push_back(mapped_columns[weight_type]);
-            // Lastly append covariates.
-            for (auto c: covariates) map.push_back(c);
-            // Update the source's field map and line lsit field map so we can read the case file correctly.
-            Source->setFieldsMap(map);
-            Source->setLinelistFieldsMap(fields_map);
-            // Also define a new InputSource object which stores what we've discovered for follow-up line list read - during cluster reporting.
-            CParameters::InputSource inputSource(CSV, " ", "\"", 1, true);
-            inputSource.setFieldsMap(map);
-            inputSource.setLinelistFieldsMap(fields_map);
-            const_cast<CParameters&>(gParameters).defineInputSource(CASEFILE, inputSource, DataSet.getSetIndex());
-        }
         DataSetHandler::CountFileReadStatus readStatus = ReadCounts(DataSet, *Source); // Now we're ready to read the case file.
         _approximate_case_records += static_cast<unsigned long>(Source->GetCurrentRecordIndex());
         return readStatus;
@@ -363,7 +267,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseCounts(DataSource& 
             );
             return DataSetHandler::Rejected;
         }
-        if (gParameters.getReadingLineDataFromCasefile() && Source.hasEventIdLinelistMapping() && nCount > 1) {
+        if (gParameters.getReadingLineDataFromCasefile() && Source.hasIndividualLinelistMapping() && nCount > 1) {
             gPrint.Printf(
                 "Error: The case count in record %ld of %s is not valid for current parameter settings and file data.\n"
                 "       Case count must be 1 or 0 when case file includes event id as part of line-list data.\n", BasePrint::P_READERROR,

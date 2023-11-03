@@ -68,9 +68,9 @@ class ContinuousDemographicAttribute : public DemographicAttribute {
 
 /* A class to collect demographic attributes of a data set. */
 class DemographicAttributeSet {
-    protected:
+    public:
         typedef std::map<std::pair<LinelistType, std::string>, boost::shared_ptr<DemographicAttribute> > AttributesSet_t;
-        AttributesSet_t  _attributes_set;
+        AttributesSet_t _attributes_set;
 
     public:
         DemographicAttributeSet(const LineListFieldMapContainer_t& llmap);
@@ -78,8 +78,9 @@ class DemographicAttributeSet {
         boost::shared_ptr<DemographicAttribute> get(LinelistTuple_t llt);
         const AttributesSet_t& getAttributes() const { return _attributes_set; }
 
-        bool hasEventAttribute() const;
-        bool hasEventCoordinatesAttributes() const;
+        bool hasIndividual() const;
+        bool hasIndividualGeographically() const;
+        bool hasDescriptiveCoordinates() const;
 };
 
 class MostLikelyClustersContainer;
@@ -89,9 +90,7 @@ class RealDataSet;
 class CCluster;
 class CParameters;
 
-/* A class which processes the line list attributes in the case files and facilitates generating csv, kml and maps output files.
-   In the case file, we're identifying an event through the 'identifier' column. This column might be a ss#, zipcode, etc.
-*/
+/* A class which processes the line list attributes in the case files and facilitates generating csv, kml and maps output files. */
 class DataDemographicsProcessor{
     public:
         typedef std::map<int, std::pair<unsigned int, unsigned int> > ClusterEventCounts_t;
@@ -102,42 +101,35 @@ class DataDemographicsProcessor{
         const MostLikelyClustersContainer * _clusters;
         const SimulationVariables * _sim_vars;
 
-        // acculates demographics by data
-        std::vector<DemographicAttributeSet> _demographics_by_dataset;
-        std::vector<boost::tuple<bool, bool> > _events_by_dataset;
-        // cluster locations <mlc cluster index, locations of cluster bitset>
-        std::map<int, boost::dynamic_bitset<> > _cluster_locations;
-        // cluster demographics <mlc cluster index, demograpghics set>
-        std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset;
-        // event ids from previous analyses
-        std::set<std::string> _existing_event_ids;
-        boost::shared_ptr<bloom_filter> _events_filter;
-        // new event ids
-        std::set<std::string> _new_event_ids;
-        std::string _temp_events_cache_filename;
-        // cluster temporary filenames <mlc cluster index, temporary filename>
-        std::map<int, std::string> _cluster_location_files;
-        // cluster new event counts <mlc cluster index, <# new events, total events>>
-        ClusterEventCounts_t _cluster_new_events;
+        std::vector<DemographicAttributeSet> _demographics_by_dataset; // accumulates demographics by data
+        std::map<int, boost::dynamic_bitset<>> _cluster_locations; // cluster locations <mlc cluster index, locations of cluster bitset>
+        std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset; // cluster demographics <mlc cluster index, demograpghics set>
+        std::set<std::string> _existing_individuals; // individuals from previous analyses
+        boost::shared_ptr<bloom_filter> _individuals_filter;
+        std::set<std::string> _new_individuals; // new individuals
+        std::string _temp_individuals_cache_filename;
+        std::map<int, std::string> _cluster_location_files; // cluster temporary filenames <mlc cluster index, temporary filename>
+        ClusterEventCounts_t _cluster_event_totals; // cluster event totals <mlc cluster index, <total new individuals, total events/individuals>>
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
-        void createHeadersFile(std::ofstream& linestream, const DataSource::OrderedLineListField_t& llmap);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
+        void removeTempClusterFiles();
+        void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet);
 
     public:
         DataDemographicsProcessor(const DataSetHandler& handler);
         DataDemographicsProcessor(const DataSetHandler& handler, const MostLikelyClustersContainer& clusters, const SimulationVariables& sim_vars);
         ~DataDemographicsProcessor();
 
-        void finalize();
-        const ClusterEventCounts_t & getClusterNewEventsCounts() const { return _cluster_new_events; }
-        const DemographicAttributeSet& getDataSetDemographics(unsigned int idx=0) const { return _demographics_by_dataset.at(idx); }
-        boost::tuple<bool, bool> getEventStatus(unsigned int idx = 0) const { return _events_by_dataset.at(idx); }
-        const std::set<std::string>& getNewEventIds() const { return _new_event_ids; }
-        bool isExistingEvent(const std::string& s) const { return _existing_event_ids.find(s) != _existing_event_ids.end(); }
-        bool isNewEvent(const std::string& s) const { return _new_event_ids.find(s) != _new_event_ids.end(); }
-        void print();
-        void process();
+        void                             finalize();
+        const ClusterEventCounts_t     & getClusterEventTotals() const { return _cluster_event_totals; }
+        const DemographicAttributeSet  & getDataSetDemographics(unsigned int idx) const { return _demographics_by_dataset.at(idx); }
+        bool                             hasIndividualAttribute() const;
+        bool                             hasIndividualGeographically() const;
+        bool                             isExistingIndividual(const std::string& s) const { return _existing_individuals.find(s) != _existing_individuals.end(); }
+        bool                             isNewIndividual(const std::string& s) const { return _new_individuals.find(s) != _new_individuals.end(); }
+        void                             print();
+        void                             process();
 };
 
 //*****************************************************************************

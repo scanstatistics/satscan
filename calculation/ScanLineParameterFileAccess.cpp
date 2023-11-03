@@ -175,11 +175,11 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case NETWORK_PURPOSE                    : return "*Not Used* (line 139)";
     case PROSPECTIVE_FREQ_TYPE              : return "frequency of prospective analyses type (line 140)";
     case PROSPECTIVE_FREQ                   : return "frequency of prospective analyses (line 141)";
-    case LINELIST_CASEFILE                  : return "whether case file contains line list data (positive integer (line 142)";
-    case LL_HEADER_CASEFILE                 : return "whether case file contains line list header row (positive integer (line 143)";
-    case KML_EVENT_GROUP                    : return "indication whether to include linelist events in kml output, grouped (line 144)";
-    case KML_EVENT_GROUP_BY                 : return "label of line-list colummn that should be used to group events in KML (line 145)";
-    case LL_EVENT_CACHE_FILE                : return "file to store events ids (line 146)";
+    case LINELIST_CASEFILE                  : return "*Not Used* (line 142)";
+    case LL_HEADER_CASEFILE                 : return "*Not Used* (positive integer (line 143)";
+    case KML_EVENT_GROUP                    : return "*Not Used* (line 144)";
+    case KML_EVENT_GROUP_BY                 : return "*Not Used* (line 145)";
+    case LL_EVENT_CACHE_FILE                : return "*Not Used* (line 146)";
     case CLUSTER_SIGNIFICANCE_BY_RI         : return "cluster significance by recurrence interval (line 147)";
     case CLUSTER_SIGNIFICANCE_RI_VALUE      : return "cluster significance recurrence interval cutoff (line 148)";
     case CLUSTER_SIGNIFICANCE_RI_TYPE       : return "cluster significance recurrence interval type (line 149)";

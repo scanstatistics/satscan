@@ -5,62 +5,35 @@
 #include<vector>
 #include "SimulationVariables.h"
 #include "MostLikelyClustersContainer.h"
-#include "GisUtils.h"
 #include <fstream>
 
 class CSaTScanData;
 class DataDemographicsProcessor;
 
 class EventType {
-public:
-    typedef boost::tuple<std::string, std::string, std::string, unsigned int> CategoryTuple_t; // type, label, color, count
+    public:
+        typedef boost::tuple<std::string, std::string, unsigned int> CategoryTuple_t; // key_name, label, count
+        typedef std::vector<CategoryTuple_t> CategoriesContainer_t;
 
-private:
-    static unsigned int _counter;
-    std::string _class;
-    std::string _type;
-    std::string _name;
-    std::vector<CategoryTuple_t> _categories;
-    mutable VisualizationUtils _visual_utils;
+    private:
+        static unsigned int _counter;
+        std::string _class;
+        std::string _type;
+        std::string _name;
+        std::vector<CategoryTuple_t> _categories;
 
-public:
-    EventType(const std::string& name) {
-        ++_counter;
-        _name = name;
-        printString(_class, "event_type_%u", _counter);
-        std::stringstream text(name);
-        _type = templateReplace(text, " ", "_").str();
-        lowerString(_type);
-    }
+        std::string                           formatTypeString(const std::string& str);
 
-    const std::string& name() const { return _name; }
-    const std::string& className() const { return _class; }
-    const std::string& typeName() const { return _type; }
+    public:
+        EventType(const std::string& name);
 
-    void sortCategories() {
-        std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
-            if (left.get<3>() == right.get<3>())
-                return left.get<1>() < right.get<1>();
-            return left.get<3>() > right.get<3>();
-        });
-    }
-    std::string toJson(const std::string& resource_path);
-    std::string getCategoryColor(unsigned int offset) const;
-    const CategoryTuple_t& addCategory(const std::string& label) {
-        for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
-            if (itr->get<1>() == label) {
-                itr->get<3>() += 1;
-                return *itr;
-            }
-        }
-        std::string color(getCategoryColor(_categories.size()));
-        std::stringstream replacer;
-        replacer << label;
-        std::string ctypename(templateReplace(replacer, " ", "_").str());
-        _categories.push_back(CategoryTuple_t(lowerString(ctypename), label, color, 1));
-        return _categories.back();
-    }
-    const std::vector<CategoryTuple_t>& getCategories() const { return _categories; }
+        const CategoryTuple_t               & addCategory(const std::string& category_label);
+        const std::string                   & className() const { return _class; }
+        const CategoriesContainer_t         & getCategories() const { return _categories; }
+        const std::string                   & name() const { return _name; }
+        const CategoriesContainer_t         & sortCategories();
+        std::string                         & toJson(std::string& json_str);
+        const std::string                   & typeName() const { return _type; }
 };
 
 class ClusterMap {

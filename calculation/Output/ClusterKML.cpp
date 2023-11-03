@@ -314,14 +314,14 @@ unsigned int BaseClusterKML::addClusters(const MostLikelyClustersContainer& clus
 /////////////////////// ClusterKML //////////////////////////////
 
 ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _clusters_written(0), _locations_written(0) {
-    _fileCollection.resize(_fileCollection.size() + 1);
-    _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
-    _fileCollection.back().setExtension(KML_FILE_EXT);
+    _kml_files.resize(_kml_files.size() + 1);
+    _kml_files.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+    _kml_files.back().setExtension(KML_FILE_EXT);
 
     std::string buffer;
     //open output file
-    _kml_out.open(_fileCollection.back().getFullPath(buffer).c_str());
-    if (!_kml_out) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
+    _kml_out.open(_kml_files.back().getFullPath(buffer).c_str());
+    if (!_kml_out) throw resolvable_error("Error: Could not create file '%s'.\n", _kml_files.back().getFullPath(buffer).c_str());
     writeOpenBlockKML(_kml_out);
 }
 
@@ -339,241 +339,222 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
                 _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).getNumIdentifiers());
         }
     }
-    _clusters_written += addClusters(clusters, simVars, _kml_out, _fileCollection, _clusters_written);
+    _clusters_written += addClusters(clusters, simVars, _kml_out, _kml_files, _clusters_written);
 }
 
-/* Adds event level data to the KML output for all event attributes. */
+/* Adds individual level data to the Google Earth file. */
 void ClusterKML::add(const DataDemographicsProcessor& demographics) {
-    std::vector<std::string> g_values; // Get the values specified by user.
-    csv_string_to_typelist<std::string>(_dataHub.GetParameters().getKmlEventGroupAttribute().c_str(), g_values);
-    std::set<std::string> grouping_by; // All the columns which we'll be generating an events kml file.
-    for (auto const &demographic : demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
-        if (std::find(g_values.begin(), g_values.end(), demographic.first.second) == g_values.end()) continue;
-        grouping_by.emplace(demographic.first.second);
-    }
-    if (grouping_by.size() == 0) {
+    // First test whether any of the data sets include indivdual and descriptive coordinates.
+    if (!demographics.hasIndividualGeographically()) {
         _dataHub.GetPrintDirection().Printf(
-            "No characteristics to group by. Event placements will not be added to KML output.\n",
-            BasePrint::P_WARNING
+            "Descriptive coordinates were not found in line list data. Line list individuals will not be added to Google Earth KML file.\n", BasePrint::P_WARNING
         );
         return;
     }
-    _dataHub.GetPrintDirection().SetImpliedInputFileType(BasePrint::CASEFILE, true);
-    int storeMax = _dataHub.GetPrintDirection().getMaximumReadErrors();
-    for (auto const&group_by : grouping_by) {
-        _dataHub.GetPrintDirection().Printf("Adding event data by '%s' to Google Earth file ...\n", BasePrint::P_STDOUT, group_by.c_str());
-        add(demographics, group_by);
-        _dataHub.GetPrintDirection().SetMaximumReadErrors(0); // Don't repeat same read errors.
-    }
-    _dataHub.GetPrintDirection().SetMaximumReadErrors(storeMax);
-}
-
-/* Adds event level data to the KML output - if case data defines line-list data and event-id information. */
-void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::string& group_by) {
-    const CParameters& parameters = _dataHub.GetParameters();
-    // First test whether any of the data sets report event-id level and it's coordinates.
-    bool anySet = false;
-    for (size_t idx = 0; idx < _dataHub.GetNumDataSets() && anySet == false; ++idx)
-        anySet |= demographics.getEventStatus(idx).get<0>() && demographics.getEventStatus(idx).get<1>();
-    if (!anySet) {
-        _dataHub.GetPrintDirection().Printf(
-            "Event coordinates were no found in line list data. Event placements will not be added to KML output.\n",
-            BasePrint::P_WARNING);
-        return; // nothing to report in terms of event level data
-    }
-    // Find the grouping charateristic in mapping.
-    bool found = false;
-    for (const auto& demographic: demographics.getDataSetDemographics().getAttributes()) {
-        if (demographic.second->gettype() <= DESCRIPTIVE_COORD_Y) continue;
-        if (boost::iequals(demographic.first.second, group_by)) {
-            found = true; break;
+    // Create collection of event types that we'll be grouping the individuals into.
+    // The event types don't have to be matching between data sets - they can match, partially match or not match at all.
+    std::vector<std::string> event_types;
+    for (size_t idx = 0; idx < _dataHub.GetNumDataSets(); ++idx) {
+        const auto& demographic_set = demographics.getDataSetDemographics(idx);
+        if (!demographic_set.hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
+        for (auto const &demographic : demographic_set.getAttributes()) {
+            if (demographic.second->gettype() <= DESCRIPTIVE_COORD_X) continue; // Only want attributes, not individual id or descripive coordinates.
+            if (std::find_if(event_types.begin(), event_types.end(), [&demographic](const std::string& et) { return et == demographic.first.second; }) == event_types.end())
+                event_types.push_back(demographic.first.second);
         }
     }
-    if (!found) {
-        _dataHub.GetPrintDirection().Printf("Unable to find grouping charateristic '%s' in line list.\nEvent placements will not be added to KML output.\n", BasePrint::P_WARNING, group_by.c_str());
+    if (event_types.size() == 0) {
+        _dataHub.GetPrintDirection().Printf("No line list attributes to display individuals by. Individuals were not added to Google KML file.\n", BasePrint::P_WARNING);
         return;
     }
+    // Generating kml files for event type/grouping.
+    _dataHub.GetPrintDirection().SetImpliedInputFileType(BasePrint::CASEFILE, true);
+    bool storeWarn = _dataHub.GetPrintDirection().isSuppressingWarnings(); // prevent re-printing case file warnings
+    _dataHub.GetPrintDirection().SetSuppressWarnings(true);
+    std::sort(event_types.begin(), event_types.end());
+    for (auto const&event_type : event_types) {
+        _dataHub.GetPrintDirection().Printf("Adding line list data by '%s' to Google Earth file ...\n", BasePrint::P_STDOUT, event_type.c_str());
+        add(demographics, event_type);
+    }
+    _dataHub.GetPrintDirection().SetSuppressWarnings(storeWarn);
+}
+
+/* Creates KML file for event type / grouping attribute. */
+void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::string& group_by) {
+    const CParameters& parameters = _dataHub.GetParameters();
     std::string buffer, buffer2;
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
     std::string file_name = group_by;
     std::transform(std::begin(group_by), std::end(group_by), std::begin(file_name), [](char ch) {
         return (ch == '<' || ch == '>' || ch == ':' || ch == '"' || ch == '/' || ch == '\\' || ch == '|' || ch == '?' || ch == '*' || ch == ' ') ? '_' : ch;
     });
-    _fileCollection.resize(_fileCollection.size() + 1);
-    _fileCollection.back().setFullPath(parameters.GetOutputFileName().c_str());
-    _fileCollection.back().setFileName(printString(buffer, "%s_events%u_by_%s", _fileCollection.back().getFileName().c_str(), _fileCollection.size(), file_name.c_str()).c_str());
-    _fileCollection.back().setExtension(KML_FILE_EXT);
-    std::ofstream eventKML;
-    eventKML.open(_fileCollection.back().getFullPath(buffer).c_str());
-    if (!eventKML) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
-    eventKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-    eventKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+    _kml_files.resize(_kml_files.size() + 1);
+    _kml_files.back().setFullPath(parameters.GetOutputFileName().c_str());
+    _kml_files.back().setFileName(printString(buffer, "%s_events%u_by_%s", _kml_files.back().getFileName().c_str(), _kml_files.size(), file_name.c_str()).c_str());
+    _kml_files.back().setExtension(KML_FILE_EXT);
+    std::ofstream kml_out;
+    kml_out.open(_kml_files.back().getFullPath(buffer).c_str());
+    if (!kml_out) throw resolvable_error("Error: Could not create file '%s'.\n", _kml_files.back().getFullPath(buffer).c_str());
+    kml_out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+    kml_out << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
+    std::map<std::string, boost::shared_ptr<std::stringstream>> category_placemarks; // store placemarks of same category together
+    std::map<std::string, unsigned int> category_frequency; // category frequency tracker
+    std::map<size_t, boost::shared_ptr<std::stringstream>> dataset_ballonstyle;
     // Iterate over data sets
-    std::map<std::string, boost::shared_ptr<std::stringstream> > group_placemarks;
-    std::map<std::string, unsigned int> group_frequency;
-    std::stringstream ballonstyle;
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
-        // First test whether this data set reported event id and coordinates.
-        if (!(demographics.getEventStatus(idx).get<0>() && demographics.getEventStatus(idx).get<1>()))
-            continue;
-        // Open the data source and read all the records of the case file again.
+        // skip data sets which don't include line list individuals at descriptive coordinates
+        if (!demographics.getDataSetDemographics(idx).hasIndividualGeographically()) continue;
         std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
             parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
         ));
-        if (Source->getLinelistFieldsMap().size() == 0) continue; // no mappings defined for this data set.
-        // Define the ballonstyle based on the line-list field maps of primary data set.
-        // We'd expect all sets to be same in line-list columns but we aren't checking ... just assume for now.
-        if (idx == 0) {
-            ballonstyle << "<BalloonStyle><text><![CDATA[<b style=\"white-space:nowrap;\">$[snippet]</b><br/><table border=\"0\">";
-            if (parameters.GetIsSpaceTimeAnalysis())
-                ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Event Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
-            for (const auto& llfm : Source->getLinelistFieldsMap()) {
-                if (!(llfm.get<1>() == DESCRIPTIVE_COORD_Y || llfm.get<1>() == DESCRIPTIVE_COORD_X)) {
-                    ballonstyle << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << llfm.get<2>()
-                                << "</th><td style=\"white-space:nowrap;\">$[" << llfm.get<2>() << "]</td></tr>";
-                }
+        if (Source->getLinelistFieldsMap().size() == 0) continue; // skip data sources w/o line list mappings
+        // Define the ballonstyle based on the line-list field maps of current data set - also test that this data source includes group by attribute.
+        bool groupInSet = false;
+        dataset_ballonstyle[idx] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+        *(dataset_ballonstyle[idx]) << "<BalloonStyle><text><![CDATA[<b style=\"white-space:nowrap;\">$[snippet]</b><br/><table border=\"0\">";
+        if (parameters.GetIsSpaceTimeAnalysis())
+            *(dataset_ballonstyle[idx]) << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
+        for (const auto& llfm : Source->getLinelistFieldsMap()) {
+            if (llfm.get<1>() > DESCRIPTIVE_COORD_X) {
+                *(dataset_ballonstyle[idx]) << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">" << llfm.get<2>()
+                    << "</th><td style=\"white-space:nowrap;\">$[" << llfm.get<2>() << "]</td></tr>";
             }
-            ballonstyle << "</table>]]></text></BalloonStyle>";
+            groupInSet |= boost::iequals(llfm.get<2>(), group_by);
         }
+        *(dataset_ballonstyle[idx]) << "</table>]]></text></BalloonStyle>";
+        // If this group by attribute isn't present in this data source, skip reading it.
+        if (!groupInSet) continue;
         // Iterate over the records of the case file - creating placemarks for each record.
         const char * value = 0;
         std::stringstream placemark, extended, coordinates;
-        std::string group_value, event_date, end_date, event_id, latitude, longitude, identifier;
-        if (parameters.GetIsSpaceTimeAnalysis()) {
+        std::string category, event_date, end_date, individual, latitude, longitude;
+        if (parameters.GetIsSpaceTimeAnalysis())
             JulianToString(end_date, _dataHub.GetStudyPeriodEndDate(), parameters.GetPrecisionOfTimesType(), "-", true, false, true);
-        }
 		tract_t tid; count_t count; Julian case_date;
         while (Source->ReadRecord()) {
 			DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
-
-            // TODO: What if count greater than zero? Create multiple of the same record?
-            //       If not, what happens if this record is split into 2 or more identical records?
-
-            _dataHub.getIdentifierInfo().getIdentifierNameAtIndex(tid, identifier);
-			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
+			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCaseCounts(*Source, count);
-			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-
+			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
-			if (readStatus != DataSetHandler::Accepted) continue; // Should only be either Accepted or Ignored.
-            group_value = ""; event_id = ""; latitude = ""; longitude = "";
+			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            category = ""; individual = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;
-            placemark << "<name>Identifier: " << identifier << "</name>" << std::endl;
-            placemark << "<snippet>Identifier: " << identifier << "</snippet>" << std::endl;
-            for (auto itr = Source->getLinelistFieldsMap().begin(); itr != Source->getLinelistFieldsMap().end(); ++itr) {
-                value = Source->GetValueAtUnmapped(itr->get<0>());
+            for (const auto& llfm : Source->getLinelistFieldsMap()) {
+                value = Source->GetValueAtUnmapped(llfm.get<0>());
                 value = value == 0 ? "" : value;
-                if (itr->get<1>() == INDIVIDUAL_ID) {
+                if (llfm.get<1>() == INDIVIDUAL_ID) {
                     placemark << "<name>Individual: " << value << "</name>" << std::endl;
                     placemark << "<snippet>Individual: " << value << "</snippet>" << std::endl;
-                    event_id = value;
-                } else if (itr->get<1>() == DESCRIPTIVE_COORD_Y) {
+                    individual = value;
+                } else if (llfm.get<1>() == DESCRIPTIVE_COORD_Y) {
                     latitude = value;
-                } else if (itr->get<1>() == DESCRIPTIVE_COORD_X) {
+                } else if (llfm.get<1>() == DESCRIPTIVE_COORD_X) {
                     longitude = value;
                 } else {
-                    extended << "<Data name=\"" << itr->get<2>() << "\"><value>" << value << "</value></Data>";
-                    if (boost::iequals(itr->get<2>(), group_by)) group_value = value;
+                    value = strlen(value) == 0 ? "~ blank ~" : value;
+                    extended << "<Data name=\"" << llfm.get<2>() << "\"><value>" << value << "</value></Data>";
+                    if (boost::iequals(llfm.get<2>(), group_by)) category = value;
                 }
             }
-            // At least the minimal checking - confirm that event_id, coordinates and group value are present in record.
-            if (/*event_id.length() == 0 ||*/ latitude.length() == 0 || longitude.length() == 0 || group_value.length() == 0) {
-                _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to KML.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
+            if (category.length() == 0) continue; // skip this record if it does not contain the grouping attribute
+            if (individual.length() == 0 || latitude.length() == 0 || longitude.length() == 0) { // warn then skip if we don't have enough information in the record
+                _dataHub.GetPrintDirection().Printf("Unable to placemark individual of record %ld in case file to KML.\n", BasePrint::P_WARNING, Source->GetCurrentRecordIndex());
                 continue;
             }
-            double dlat, dlong;
+            double dlat, dlong; // warn and skip record if descriptive coordinates don't cast or are invalid
             if (!string_to_type<double>(latitude.c_str(), dlat) || !string_to_type<double>(longitude.c_str(), dlong) || fabs(dlat) > 90.0 && fabs(dlong) > 180.0) {
-                _dataHub.GetPrintDirection().Printf("Unable to placemark event of record %ld in case file to KML.\n", BasePrint::P_READERROR, Source->GetCurrentRecordIndex());
+                _dataHub.GetPrintDirection().Printf("Unable to placemark individual of record %ld in case file to KML.\n", BasePrint::P_WARNING, Source->GetCurrentRecordIndex());
                 continue;
             }
-            if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis()) { // Set time span of event if this is a space-time analysis.
+            if (_dataHub.GetParameters().GetIsSpaceTimeAnalysis()) { // set time span of individual if this is a space-time analysis
                 placemark << "<TimeSpan>" << "<begin>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "-", false, false, true) << "</begin><end>" << end_date << "</end>" << "</TimeSpan>" << std::endl;
                 extended << "<Data name=\"eventcasedate\"><value>" << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType(), "/") << "</value></Data>";
             }
             placemark << "<Point><coordinates>" << longitude << " , " << latitude << ", 500</coordinates></Point>" << std::endl;
             placemark << "<ExtendedData>" << extended.str() << "</ExtendedData>" << std::endl;
-            placemark << "<styleUrl>#events-" << toHex(group_value);
-            if (demographics.isNewEvent(event_id))
+            placemark << "<styleUrl>#events-" << toHex(category) << idx; // define the style for this category and current set index
+            if (demographics.isNewIndividual(individual)) // individual status is also part of the style
                 placemark << "-new";
-            else if (demographics.isExistingEvent(event_id))
+            else if (demographics.isExistingIndividual(individual))
                 placemark << "-ongoing";
             else
                 placemark << "-outside";
             placemark << "-stylemap</styleUrl>" << std::endl << "</Placemark>" << std::endl;
-            // Add placemark to correct placemark group.
-            auto pgroup = group_placemarks.find(group_value);
-            if (pgroup == group_placemarks.end()) {
-                group_placemarks[group_value] = boost::shared_ptr<std::stringstream>(new std::stringstream());
-                group_frequency[group_value] = 0;
+            auto pgroup = category_placemarks.find(category); // add placemark to correct placemark collection and update frequency
+            if (pgroup == category_placemarks.end()) {
+                category_placemarks[category] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+                category_frequency[category] = 0;
             }
-            *(group_placemarks[group_value]) << placemark.str();
-            group_frequency[group_value] += 1;
+            *(category_placemarks[category]) << placemark.str();
+            category_frequency[category] += 1;
         }
     }
-    // Now that we've read all the data, write groups to KML file.
-    // First create the ScreenOverlay, which is the legend.
+    // Now that we've read all the data, write groups to KML file
     std::vector<std::pair<std::string, unsigned int> > ordered_frequency;
-    for (const auto& gr : group_frequency) {
-        ordered_frequency.push_back(gr);
-    }
+    for (const auto& gr : category_frequency) ordered_frequency.push_back(gr); // create new collection which sorts the categories by frequency
     std::sort(ordered_frequency.begin(), ordered_frequency.end(), [](const std::pair<std::string, unsigned int> &left, const std::pair<std::string, unsigned int> &right) { return left.second > right.second; });
-    eventKML << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << group_by;
-    eventKML << "</div></name><Snippet></Snippet><description><div style='border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;'><div>" << std::endl;
-    eventKML << "<ul style='padding-left:3px;margin-left:5px;margin-top:5px;padding-right: 5px;margin-bottom: 3px;'>" << std::endl;
-    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
-    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#971D03;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, not new entry</span></li>" << std::endl;
-    eventKML << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FFFFFF;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Outside Clusters</span></li>" << std::endl;
-    eventKML << "</ul></div><hr style='border-top: 1px solid black;margin-top:10px;margin-bottom:5px;margin-left:10px;margin-right:10px;'/>" << std::endl;
-    eventKML << "<ul style='padding-left:0'>" << std::endl;
+    // write the screen overlay / legend
+    kml_out << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << group_by;
+    kml_out << "</div></name><Snippet></Snippet><description><div style='border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;'><div>" << std::endl;
+    kml_out << "<ul style='padding-left:3px;margin-left:5px;margin-top:5px;padding-right: 5px;margin-bottom: 3px;'>" << std::endl;
+    kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
+    kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#971D03;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, not new entry</span></li>" << std::endl;
+    kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FFFFFF;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Outside Clusters</span></li>" << std::endl;
+    kml_out << "</ul></div><hr style='border-top: 1px solid black;margin-top:10px;margin-bottom:5px;margin-left:10px;margin-right:10px;'/>" << std::endl;
+    kml_out << "<ul style='padding-left:0'>" << std::endl;
     std::string website = AppToolkit::getToolkit().GetWebSite();
+    // write the legend items for the categories - we'll squash together less frequent categories if there are too many
     std::stringstream squasheditems;
     auto itrShape = _visual_utils.getShapes().begin();
     for (auto const& pgroup : ordered_frequency) {
         if (itrShape != _visual_utils.getShapes().end()) {
-            eventKML << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
+            kml_out << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
                 << " width='16' height='16' src='" << website << "images/events/" << *itrShape << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>"
                 << pgroup.first << "</span></li>" << std::endl;
             ++itrShape;
-        } else {
+        } else
             squasheditems << (squasheditems.rdbuf()->in_avail() ? ", " : "") << pgroup.first;
-        }
     }
     if (squasheditems.rdbuf()->in_avail()) {
-        eventKML << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;' title='" << squasheditems.str() << "'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
+        kml_out << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;' title='" << squasheditems.str() << "'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
             << " width='16' height='16' src='" << website << "images/events/" << _visual_utils.getAggregationShape() << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>Other(s)</span></li>" << std::endl;
     }
-    eventKML << "</ul></div></description>" << std::endl;
-    eventKML << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
-    eventKML << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
-    eventKML << "<name>Events By " << group_by << "</name>" << std::endl;
+    kml_out << "</ul></div></description>" << std::endl;
+    kml_out << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
+    kml_out << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
+    kml_out << "<name>Individuals By " << group_by << "</name>" << std::endl;
     itrShape = itrShape = _visual_utils.getShapes().begin();
-    for (auto const& pgroup: ordered_frequency) {
+    for (auto const& pgroup: ordered_frequency) { // write the styles, balloon style, and placesmarks
         const auto& shape = itrShape != _visual_utils.getShapes().end() ? *itrShape : std::string(_visual_utils.getAggregationShape());
         const auto& groupHex = toHex(pgroup.first);
-        eventKML << "<Style id=\"events-" << groupHex << "-new-style\"><IconStyle><color>" << toKmlColor("FF0000") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
-            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
-        eventKML << "<StyleMap id=\"events-" << groupHex << "-new-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
-            << "-new-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-new-style</styleUrl></Pair></StyleMap>" << std::endl;
-        eventKML << "<Style id=\"events-" << groupHex << "-ongoing-style\"><IconStyle><color>" << toKmlColor("971D03") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
-            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
-        eventKML << "<StyleMap id=\"events-" << groupHex << "-ongoing-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
-            << "-ongoing-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-ongoing-style</styleUrl></Pair></StyleMap>" << std::endl;
-        eventKML << "<Style id=\"events-" << groupHex << "-outside-style\"><IconStyle><color>" << toKmlColor("FFFFFF") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
-            << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << ballonstyle.str() << "</Style>" << std::endl;
-        eventKML << "<StyleMap id=\"events-" << groupHex << "-outside-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << groupHex
-            << "-outside-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << groupHex << "-outside-style</styleUrl></Pair></StyleMap>" << std::endl;
-
-        eventKML << "<Folder><name>" << pgroup.first << " (" << pgroup.second << ")</name>" << std::endl << group_placemarks[pgroup.first]->str() << "</Folder>";
+        for (size_t idx = 0; idx < _dataHub.GetNumDataSets(); ++idx) {
+            if (!demographics.getDataSetDemographics(idx).hasIndividualGeographically()) continue;
+            std::stringstream styleHex;
+            styleHex << groupHex << idx;
+            kml_out << "<Style id=\"events-" << styleHex.str() << "-new-style\"><IconStyle><color>" << toKmlColor("FF0000") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+                << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << dataset_ballonstyle[idx]->str() << "</Style>" << std::endl;
+            kml_out << "<StyleMap id=\"events-" << styleHex.str() << "-new-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << styleHex.str()
+                << "-new-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << styleHex.str() << "-new-style</styleUrl></Pair></StyleMap>" << std::endl;
+            kml_out << "<Style id=\"events-" << styleHex.str() << "-ongoing-style\"><IconStyle><color>" << toKmlColor("971D03") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+                << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << dataset_ballonstyle[idx]->str() << "</Style>" << std::endl;
+            kml_out << "<StyleMap id=\"events-" << styleHex.str() << "-ongoing-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << styleHex.str()
+                << "-ongoing-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << styleHex.str() << "-ongoing-style</styleUrl></Pair></StyleMap>" << std::endl;
+            kml_out << "<Style id=\"events-" << styleHex.str() << "-outside-style\"><IconStyle><color>" << toKmlColor("FFFFFF") << "</color><Icon><href>" << website << "images/events/" << shape << "-whitecenter.png"
+                << "</href></Icon><scale>0.5</scale></IconStyle><LabelStyle><scale>0</scale></LabelStyle>" << dataset_ballonstyle[idx]->str() << "</Style>" << std::endl;
+            kml_out << "<StyleMap id=\"events-" << styleHex.str() << "-outside-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << styleHex.str()
+                << "-outside-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << styleHex.str() << "-outside-style</styleUrl></Pair></StyleMap>" << std::endl;
+        }
+        kml_out << "<Folder><name>" << pgroup.first << " (" << pgroup.second << ")</name>" << std::endl << category_placemarks[pgroup.first]->str() << "</Folder>";
         if (itrShape != _visual_utils.getShapes().end()) ++itrShape;
     }
-    eventKML << "</Document>" << std::endl << "</kml>" << std::endl;
-    eventKML.close();
+    kml_out << "</Document>" << std::endl << "</kml>" << std::endl;
+    kml_out.close();
     // Now reference this event kml file in a NetworkLink tag of primary kml.
-    _kml_out << "\t<NetworkLink><name>Events By " << group_by << "</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility>"
-        << "<Link><href>"<< _fileCollection.back().getFileName() << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
+    _kml_out << "\t<NetworkLink><name>Individuals By " << group_by << "</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility>";
+    _kml_out << "<Link><href>"<< _kml_files.back().getFileName() << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
 }
 
 void ClusterKML::finalize() {
@@ -592,7 +573,7 @@ void ClusterKML::finalize() {
                         locationPlacemarks << "\t\t<Placemark>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>";
                         if (_separateLocationsKML) {
                             // If creating separate KML files for locations, styles of primary kml need to be qualified in sub-kml files.
-                            locationPlacemarks << _fileCollection.front().getFileName() << _fileCollection.front().getExtension();
+                            locationPlacemarks << _kml_files.front().getFileName() << _kml_files.front().getExtension();
                         }
                         locationPlacemarks << "#location-placemark</styleUrl><Point><coordinates>" << prLatitudeLongitude.second << ",";
                         locationPlacemarks << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
@@ -602,14 +583,14 @@ void ClusterKML::finalize() {
             if (locationPlacemarks.str().size()) {
                 if (_separateLocationsKML) {
                     // Create separate kml for this clusters locations, then reference in primary cluster.
-                    _fileCollection.resize(_fileCollection.size() + 1);
-                    _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
-                    _fileCollection.back().setFileName("locations_outside_clusters");
-                    _fileCollection.back().setExtension(KML_FILE_EXT);
+                    _kml_files.resize(_kml_files.size() + 1);
+                    _kml_files.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+                    _kml_files.back().setFileName("locations_outside_clusters");
+                    _kml_files.back().setExtension(KML_FILE_EXT);
 
                     std::ofstream clusterKML;
-                    clusterKML.open(_fileCollection.back().getFullPath(buffer).c_str());
-                    if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
+                    clusterKML.open(_kml_files.back().getFullPath(buffer).c_str());
+                    if (!clusterKML) throw resolvable_error("Error: Could not create file '%s'.\n", _kml_files.back().getFullPath(buffer).c_str());
                     clusterKML << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
                     clusterKML << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
                     clusterKML << "<name>Locations Outside Clusters</name>" << std::endl << locationPlacemarks.str() << "</Document>" << std::endl << "</kml>" << std::endl;
@@ -638,14 +619,14 @@ void ClusterKML::finalize() {
             }
             if (_separateLocationsKML) {
                 // Create separate kml for this clusters locations, then reference in primary cluster.
-                _fileCollection.resize(_fileCollection.size() + 1);
-                _fileCollection.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
-                _fileCollection.back().setFileName("network_edges");
-                _fileCollection.back().setExtension(KML_FILE_EXT);
+                _kml_files.resize(_kml_files.size() + 1);
+                _kml_files.back().setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+                _kml_files.back().setFileName("network_edges");
+                _kml_files.back().setExtension(KML_FILE_EXT);
 
                 std::ofstream kmlnetwork;
-                kmlnetwork.open(_fileCollection.back().getFullPath(buffer).c_str());
-                if (!kmlnetwork) throw resolvable_error("Error: Could not create file '%s'.\n", _fileCollection.back().getFullPath(buffer).c_str());
+                kmlnetwork.open(_kml_files.back().getFullPath(buffer).c_str());
+                if (!kmlnetwork) throw resolvable_error("Error: Could not create file '%s'.\n", _kml_files.back().getFullPath(buffer).c_str());
                 kmlnetwork << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
                 kmlnetwork << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
                 kmlnetwork << "\t<StyleMap id=\"line-edge\"><Pair><key>normal</key><Style><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair><Pair><key>highlight</key><Style id=\"line-edge3\"><LineStyle><color>" << toKmlColor("#F39C12", "ff") << "</color><width>1.5</width><scale>1.0</scale></LineStyle></Style></Pair></StyleMap>" << std::endl;
@@ -663,7 +644,7 @@ void ClusterKML::finalize() {
         _kml_out << "</Document>" << std::endl << "</kml>" << std::endl;
         _kml_out.close();
         if (_dataHub.GetParameters().getCompressClusterKML())
-            createKMZ(_fileCollection);
+            createKMZ(_kml_files);
     } catch (prg_exception& x) {
         x.addTrace("finalize()", "ClusterKML");
         throw;

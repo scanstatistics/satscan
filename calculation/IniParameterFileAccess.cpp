@@ -337,7 +337,6 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteMultipleDataSetsSettings(ini);
         WriteDataCheckingSettings(ini);
         WriteLocationNetworkSettings(ini);
-        WriteLineListSettings(ini);
         WriteSpatialNeighborsSettings(ini);
         WriteSpatialWindowSettings(ini);
         WriteTemporalWindowSettings(ini);
@@ -426,22 +425,7 @@ void IniParameterFileAccess::WriteMiscellaneousAnalysisSettings(IniFile& WriteFi
     }
 }
 
-/** Writes parameter settings grouped under 'Line List'. */
-void IniParameterFileAccess::WriteLineListSettings(IniFile& WriteFile) {
-    std::string s;
-    try {
-        WriteIniParameter(WriteFile, LINELIST_CASEFILE, GetParameterString(LINELIST_CASEFILE, s).c_str(), GetParameterComment(LINELIST_CASEFILE));
-        WriteIniParameter(WriteFile, LL_HEADER_CASEFILE, GetParameterString(LL_HEADER_CASEFILE, s).c_str(), GetParameterComment(LL_HEADER_CASEFILE));
-        WriteIniParameter(WriteFile, LL_EVENT_CACHE_FILE, GetParameterString(LL_EVENT_CACHE_FILE, s).c_str(), GetParameterComment(LL_EVENT_CACHE_FILE));
-        WriteIniParameter(WriteFile, KML_EVENT_GROUP, GetParameterString(KML_EVENT_GROUP, s).c_str(), GetParameterComment(KML_EVENT_GROUP));
-        WriteIniParameter(WriteFile, KML_EVENT_GROUP_BY, GetParameterString(KML_EVENT_GROUP_BY, s).c_str(), GetParameterComment(KML_EVENT_GROUP_BY));
-    } catch (prg_exception& x) {
-        x.addTrace("WriteAnalysisSettings()", "IniParameterFileAccess");
-        throw;
-    }
-}
-
-/** Writes parameter settings grouped under 'Line List'. */
+/** Writes parameter settings grouped under 'Alerts'. */
 void IniParameterFileAccess::WriteEmailAlertSettings(IniFile& WriteFile) {
     std::string s;
     try {

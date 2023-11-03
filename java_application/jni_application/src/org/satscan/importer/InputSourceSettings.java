@@ -104,6 +104,7 @@ public class InputSourceSettings implements Cloneable  {
     }    
     
     public SourceDataFileType getSourceDataFileType() {return _source_type;}
+    public boolean isExcelSourceDataFileType() { return _source_type == SourceDataFileType.Excel || _source_type == SourceDataFileType.Excel97_2003; }
     public void setSourceDataFileType(int iOrdinal) {
         try { setSourceDataFileType(SourceDataFileType.values()[iOrdinal]);
         } catch (ArrayIndexOutOfBoundsException e) { 

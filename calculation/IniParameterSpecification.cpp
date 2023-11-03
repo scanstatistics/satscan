@@ -694,11 +694,11 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
 void IniParameterSpecification::Build_10_1_x_ParameterList() {
     Build_10_0_x_ParameterList();
 
-    _parameter_info[LINELIST_CASEFILE] = ParamInfo(LINELIST_CASEFILE, "LineListCaseFile", 1, _linelist_section);
-    _parameter_info[LL_HEADER_CASEFILE] = ParamInfo(LL_HEADER_CASEFILE, "LineListHeaderCaseFile", 2, _linelist_section);
-    _parameter_info[LL_EVENT_CACHE_FILE] = ParamInfo(LL_EVENT_CACHE_FILE, "LineListEventCache", 3, _linelist_section);
-    _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, "EventGroupKML", 4, _linelist_section);
-    _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, "EventGroupByKML", 5, _linelist_section);
+    _parameter_info[LINELIST_CASEFILE] = ParamInfo(LINELIST_CASEFILE, NotUsed, 0, _not_used_section);
+    _parameter_info[LL_HEADER_CASEFILE] = ParamInfo(LL_HEADER_CASEFILE, NotUsed, 0, _not_used_section);
+    _parameter_info[LL_EVENT_CACHE_FILE] = ParamInfo(LL_EVENT_CACHE_FILE, NotUsed, 0, _not_used_section);
+    _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, NotUsed, 0, _not_used_section);
+    _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, NotUsed, 0, _not_used_section);
 
     _parameter_info[CLUSTER_SIGNIFICANCE_BY_RI] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_RI, "ClusterSignificanceByRecurrence", 5, _other_output_section);
     _parameter_info[CLUSTER_SIGNIFICANCE_RI_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_RI_VALUE, "ClusterSignificanceRecurrenceCutoff", 6, _other_output_section);

@@ -866,29 +866,25 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     }
 }
 
-/** Prints 'Line List' tab parameters to file stream. */
+/** Prints 'Line List' related parameters to file stream. */
 void ParametersPrint::PrintLinelistParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
 
     try {
-        const CParameters::InputSource * source = gParameters.getInputSource(CASEFILE);
-        if (source) {
-            settings.push_back(std::make_pair("Line list data, file wizard.", "Yes"));
-        } else {
-            settings.push_back(std::make_pair("Case file includes line list data", (gParameters.getCasefileIncludesLineData() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Case file includes header row", (gParameters.getCasefileIncludesHeader() ? "Yes" : "No")));
-        }
-        settings.push_back(std::make_pair("Events Cache File", gParameters.getEventCacheFileName()));
         if (gParameters.getReadingLineDataFromCasefile()) {
-            settings.push_back(std::make_pair("Include event grouping (KML output)", (gParameters.getGroupLinelistEventsKML() ? "Yes" : "No")));
-            if (gParameters.getGroupLinelistEventsKML())
-                settings.push_back(std::make_pair("Event grouped characteristic", gParameters.getKmlEventGroupAttribute()));
             FileName linelist(gParameters.GetOutputFileName().c_str());
-            linelist.setExtension(printString(buffer, ".linelist.csv").c_str());
-            settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
+            for (unsigned int idx=1; idx <= gParameters.getNumFileSets(); ++idx) {
+                if (gParameters.getNumFileSets() == 1) {
+                    linelist.setExtension(".linelist.csv");
+                } else
+                    linelist.setExtension(printString(buffer, ".linelist.dataset%u.csv", idx).c_str());
+                settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
+            }
+            if (gParameters.getLinelistIndividualsCacheFileName().size())
+                settings.push_back(std::make_pair("Line List Individuals Cache File", gParameters.getLinelistIndividualsCacheFileName()));
+            WriteSettingsContainer(settings, "Line List", fp);
         }
-        WriteSettingsContainer(settings, "Line List", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintLinelistParameters()", "ParametersPrint");
         throw;
