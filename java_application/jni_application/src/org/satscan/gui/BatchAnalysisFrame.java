@@ -538,7 +538,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 return types [columnIndex];
             }
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return !_batch_executing && canEdit[columnIndex];
             }
         });
         _analyses_table.getTableHeader().setOpaque(false);
@@ -800,6 +800,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         }
 
         @Override public void mouseClicked(MouseEvent e) {
+            if (_batch_executing) return;
             JTableHeader header = (JTableHeader) e.getComponent();
             JTable tbl = header.getTable();
             TableColumnModel columnModel = tbl.getColumnModel();
