@@ -88,6 +88,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private boolean _table_initiallized = false;
     private final String _lag_helptext = "If specified, the Study Period End Date is replaced with a value relative to today’s date. For example, a Lag Time of 3 days would set the Study Period End Date equal to today’s date minus 3 days. If the No Lag box is checked, the Study Period End Date defaults to the date specified in the parameter settings.";
     private final String _study_period_helptext = "Study Length is the length of time between the Study Period Start Date and the Study Period End Date (inclusive). If specified, the Study Period Start Date is replaced with a value relative to the Study Period End Date. If the No Offset box is checked, the Study Period Start Date defaults to the date specified in the parameter settings.";
+    private boolean _batch_executing = false;
     
     /* Creates new form AnalysisBatchFrame */
     public BatchAnalysisFrame(final JRootPane root_pane) {
@@ -103,13 +104,24 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
     /* Enables side buttons based on table and selection. */
     private void enableButtons() {
-        ArrayList<ImmutablePair<BatchAnalysis, Integer>> selected = getSelectedAnalysis();
-        _remove_analysis.setEnabled(!selected.isEmpty());
-        _modify_analysis.setEnabled(selected.size() == 1);
-        _duplicate_analysis.setEnabled(selected.size() == 1);
-        _execute_selected.setEnabled(!selected.isEmpty() && _open_settings_frames.isEmpty());
-        _moveUp.setEnabled(selected.size() == 1 && selected.get(0).right > 0);
-        _moveDown.setEnabled(selected.size() == 1 && selected.get(0).right < _analyses_table.getModel().getRowCount() - 1);
+        if (!_batch_executing) {
+            ArrayList<ImmutablePair<BatchAnalysis, Integer>> selected = getSelectedAnalysis();
+            _add_analysis.setEnabled(true);
+            _remove_analysis.setEnabled(!selected.isEmpty());
+            _modify_analysis.setEnabled(selected.size() == 1);
+            _duplicate_analysis.setEnabled(selected.size() == 1);
+            _execute_selected.setEnabled(!selected.isEmpty() && _open_settings_frames.isEmpty());
+            _moveUp.setEnabled(selected.size() == 1 && selected.get(0).right > 0);
+            _moveDown.setEnabled(selected.size() == 1 && selected.get(0).right < _analyses_table.getModel().getRowCount() - 1);
+            _refresh_results.setEnabled(true);
+        }
+    }
+    
+    /* Disables all side buttons. */
+    private void disableButtons() {
+        for (Component c: _actions_panel.getComponents()) {
+            c.setEnabled(false);
+        }
     }
     
     public void redisplay() {
@@ -277,6 +289,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         jSeparator3 = new javax.swing.JSeparator();
         _moveUp = new javax.swing.JButton();
         _moveDown = new javax.swing.JButton();
+        _refresh_results = new javax.swing.JButton();
         _analysesScrollpane = new javax.swing.JScrollPane();
         _analyses_table = new javax.swing.JTable();
 
@@ -457,6 +470,13 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
+        _refresh_results.setText("Refresh Results");
+        _refresh_results.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _refresh_resultsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout _actions_panelLayout = new javax.swing.GroupLayout(_actions_panel);
         _actions_panel.setLayout(_actions_panelLayout);
         _actions_panelLayout.setHorizontalGroup(
@@ -475,7 +495,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addGroup(_actions_panelLayout.createSequentialGroup()
                         .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_refresh_results, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _actions_panelLayout.setVerticalGroup(
@@ -497,7 +518,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_remove_analysis)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_refresh_results)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
                 .addComponent(_execute_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_execute_selected)
@@ -515,7 +538,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 return types [columnIndex];
             }
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return !_batch_executing && canEdit[columnIndex];
             }
         });
         _analyses_table.getTableHeader().setOpaque(false);
@@ -625,6 +648,10 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             if (_moveDown.isEnabled()) _moveDown.requestFocusInWindow();
         }
     }//GEN-LAST:event__moveDownActionPerformed
+
+    private void _refresh_resultsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__refresh_resultsActionPerformed
+        readBatchAnalysesFromFile();
+    }//GEN-LAST:event__refresh_resultsActionPerformed
 
     @Override
     public void internalFrameOpened(InternalFrameEvent e) {
@@ -773,6 +800,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         }
 
         @Override public void mouseClicked(MouseEvent e) {
+            if (_batch_executing) return;
             JTableHeader header = (JTableHeader) e.getComponent();
             JTable tbl = header.getTable();
             TableColumnModel columnModel = tbl.getColumnModel();
@@ -1032,6 +1060,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         @Override
         protected Void doInBackground() throws Exception {
             try {
+                _batch_executing = true;
+                disableButtons();
                 ArrayList<ImmutablePair<BatchAnalysis, Integer>> selectedAnalyses = getSelectedAnalysis();
                 _num_records = selectedAnalyses.size();
                 DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
@@ -1061,6 +1091,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         public void done() {
             waitCursor.restore();
             _execute_progress.setVisible(false);
+            _batch_executing = false;
+            enableButtons();
         }
     }
     
@@ -1077,6 +1109,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private javax.swing.JButton _modify_analysis;
     private javax.swing.JButton _moveDown;
     private javax.swing.JButton _moveUp;
+    private javax.swing.JButton _refresh_results;
     private javax.swing.JButton _remove_analysis;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

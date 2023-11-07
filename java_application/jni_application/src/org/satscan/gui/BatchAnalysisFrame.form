@@ -94,6 +94,7 @@
                               <EmptySpace type="unrelated" max="32767" attributes="0"/>
                               <Component id="_moveDown" min="-2" pref="68" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="_refresh_results" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -119,7 +120,9 @@
                       <Component id="jSeparator2" min="-2" pref="5" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_remove_analysis" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_refresh_results" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="97" max="32767" attributes="0"/>
                       <Component id="_execute_progress" min="-2" pref="23" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_execute_selected" min="-2" max="-2" attributes="0"/>
@@ -222,6 +225,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_moveDownActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JButton" name="_refresh_results">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Refresh Results"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_refresh_resultsActionPerformed"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JScrollPane" name="_analysesScrollpane">
@@ -234,7 +245,7 @@
             <Component class="javax.swing.JTable" name="_analyses_table">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;    new Object [][] {},&#xa;    new String [] { &quot;&quot;, &quot;Description&quot;, &quot;Analysis&quot;, &quot;Model&quot;, &quot;Study Length&quot;, &quot;Lag&quot;, &quot;Status&quot; }){&#xa;    Class[] types = new Class [] {&#xa;        java.lang.Boolean.class, String.class, String.class, String.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.class&#xa;    };&#xa;    boolean[] canEdit = new boolean [] { true, true, false, false, true, true, false };&#xa;    public Class getColumnClass(int columnIndex) {&#xa;        return types [columnIndex];&#xa;    }&#xa;    public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;        return canEdit [columnIndex];&#xa;    }&#xa;}" type="code"/>
+                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;    new Object [][] {},&#xa;    new String [] { &quot;&quot;, &quot;Description&quot;, &quot;Analysis&quot;, &quot;Model&quot;, &quot;Study Length&quot;, &quot;Lag&quot;, &quot;Status&quot; }){&#xa;    Class[] types = new Class [] {&#xa;        java.lang.Boolean.class, String.class, String.class, String.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.StudyPeriodOffset.class, BatchAnalysis.class&#xa;    };&#xa;    boolean[] canEdit = new boolean [] { true, true, false, false, true, true, false };&#xa;    public Class getColumnClass(int columnIndex) {&#xa;        return types [columnIndex];&#xa;    }&#xa;    public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;        return !_batch_executing &amp;&amp; canEdit[columnIndex];&#xa;    }&#xa;}" type="code"/>
                 </Property>
               </Properties>
               <AuxValues>
