@@ -1187,6 +1187,9 @@
     <ClCompile Include="integrationtest_closedloop.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
+    <ClCompile Include="integrationtest_linelist.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
     <ClCompile Include="integrationtest_squish66408.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>

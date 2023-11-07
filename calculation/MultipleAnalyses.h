@@ -221,7 +221,7 @@ protected:
     virtual void ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters);
 
 public:
-    PrintProxy(AnalysisDefinition& analysisDef, BasePrint& print, bool bSuppressWarnings = true) : BasePrint(bSuppressWarnings), _print(print), _analysisDef(analysisDef){
+    PrintProxy(AnalysisDefinition& analysisDef, BasePrint& print, bool bSuppressWarnings = true) : BasePrint(bSuppressWarnings), _analysisDef(analysisDef), _print(print){
         _warn_error_stream >> std::noskipws; // Make sure stream doesn't skip whitespace.
     }
     virtual ~PrintProxy() {}

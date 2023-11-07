@@ -17,18 +17,16 @@ public:
   typedef OliveiraJobSource::result_type result_type;
 
 private:
-	AnalysisExecution const & _execution;
-  const RealDataContainer_t& _oliveira_sets;
-
-  boost::shared_ptr<AbstractDataSetGateway> _data_gateway;
-  boost::shared_ptr<CAnalysis> _analysis;
-
-  boost::shared_ptr<SimulationDataContainer_t> _simulation_data_container;
-  boost::shared_ptr<RandomizerContainer_t> _randomization_container;
+    AnalysisExecution const & _execution;
+    const RealDataContainer_t& _oliveira_sets;
+    boost::shared_ptr<AbstractDataSetGateway> _data_gateway;
+    boost::shared_ptr<CAnalysis> _analysis;
+    boost::shared_ptr<SimulationDataContainer_t> _simulation_data_container;
+    boost::shared_ptr<RandomizerContainer_t> _randomization_container;
 
 public:
   OliveiraFunctor(const RealDataContainer_t& oliveira_sets, AnalysisExecution const & execution, boost::shared_ptr<CAnalysis> pAnalysis)
-      : _oliveira_sets(oliveira_sets), _execution(execution), _analysis(pAnalysis) {
+      : _execution(execution), _oliveira_sets(oliveira_sets), _analysis(pAnalysis) {
 
     // create data gateway
     _data_gateway.reset(_execution.getDataHub().GetDataSetHandler().GetNewDataGatewayObject());

@@ -19,7 +19,7 @@ unsigned int getLineCount(std::ifstream& stream);
 void run_analysis(const std::string& analysis_name, std::string& results_user_directory, CParameters& parameters, BasePrint& print);
 
 typedef std::vector<std::string> CSV_Row_t;
-CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row);
+CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row, const char * sep="\t\v\f\r\n ", const char * grp="\"");
 
 bool compare_files(const std::string& filename1, const std::string& filename2);
 #endif

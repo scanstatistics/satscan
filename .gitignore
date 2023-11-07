@@ -58,9 +58,12 @@ test/test.vcxproj.user
 installers/examples/*.txt
 test/test-log.txt
 test/test-results.xml
+test/test-results-debug.txt
+test/test-results-debug.xml
 test/test-sets/multiple-trees/poisson.txt
 test/test-sets/squish97/TreeTemporal-censordata.txt
 test/test-sets/squish97/TreeTemporal-timeonly-censordata.txt
+test/test-sets/linelist/*.txt
 test/Release
 /java_application/updater_application/nbproject/private/
 /java_application/updater_application/dist/

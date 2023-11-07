@@ -487,6 +487,7 @@
     <ClCompile Include="integrationtest_closedloop.cpp" />
     <ClCompile Include="integrationtest_oliveira.cpp" />
     <ClCompile Include="integrationtest_points.cpp" />
+    <ClCompile Include="integrationtest_linelist.cpp" />
     <ClCompile Include="integrationtest_squish66408.cpp" />
     <ClCompile Include="integrationtest_squish66425.cpp" />
     <ClCompile Include="integrationtest_squish66508.cpp" />

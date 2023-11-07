@@ -24,7 +24,7 @@
 /** constructor */
 AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
                  :gParameters(Parameters), gDataHub(DataHub), gPrintDirection(PrintDirection),
-                  gpClusterDataFactory(0), geReplicationsProcessType(MeasureListEvaluation), gpLikelihoodCalculator(0) {
+                  gpClusterDataFactory(0), gpLikelihoodCalculator(0), geReplicationsProcessType(MeasureListEvaluation) {
   try {
     Setup();
   }

@@ -89,14 +89,11 @@ inline void SpatialHomogeneousData::AddMeasureList(const CentroidNeighbors& Cent
                                                    CMeasureList* pMeasureList) {
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 
-  tract_t               t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  tract_t               t, tNumNeighbors=CentroidDef.GetNumNeighbors();
   measure_t             tAdjustment = Interface.GetTotalMeasureAuxCount();
 
   gtCases=0;gtMeasure=0; //initialize data
   for (t=0; t < tNumNeighbors; ++t) {
-    //tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
     ++gtCases;
     gtMeasure = pow(locDist[t].GetDistance(),2.0) * PI * tAdjustment;
     pMeasureList->AddMeasure(gtCases, gtMeasure);
