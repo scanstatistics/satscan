@@ -798,6 +798,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getProspectiveFrequencyType());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setLinelistIndividualsCacheFileName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getLinelistIndividualsCacheFileName().c_str()));
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceByRecurrence", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getClusterSignificanceByRecurrence());
   jni_error::_detectError(Env);
@@ -1573,6 +1577,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   Parameters.setProspectiveFrequencyType((ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/satscan/app/Parameters$ProspectiveFrequency;"));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getLinelistIndividualsCacheFileName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setLinelistIndividualsCacheFileName(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceByRecurrence", "()Z");
   Parameters.setClusterSignificanceByRecurrence(Env.CallBooleanMethod(jParameters, mid));

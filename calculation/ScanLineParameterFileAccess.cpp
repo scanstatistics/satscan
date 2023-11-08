@@ -179,7 +179,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case LL_HEADER_CASEFILE                 : return "*Not Used* (positive integer (line 143)";
     case KML_EVENT_GROUP                    : return "*Not Used* (line 144)";
     case KML_EVENT_GROUP_BY                 : return "*Not Used* (line 145)";
-    case LL_EVENT_CACHE_FILE                : return "*Not Used* (line 146)";
+    case LL_INDIVIDUALS_CACHE_FILE          : return "line list individuals cache filename (line 146)";
     case CLUSTER_SIGNIFICANCE_BY_RI         : return "cluster significance by recurrence interval (line 147)";
     case CLUSTER_SIGNIFICANCE_RI_VALUE      : return "cluster significance recurrence interval cutoff (line 148)";
     case CLUSTER_SIGNIFICANCE_RI_TYPE       : return "cluster significance recurrence interval type (line 149)";

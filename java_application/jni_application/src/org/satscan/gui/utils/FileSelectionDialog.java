@@ -162,19 +162,21 @@ public class FileSelectionDialog {
         
         // If we have a filename at this point, display the file source wizard.
         if (filename != null) {
-            FileSourceWizard wizard = new FileSourceWizard(SaTScanApplication.getInstance(), 
-                                                           filename, 
-                                                           settingsFrame.getParameters().GetSourceFileName(), 
-                                                           inputSourceSettings,
-                                                           settingsFrame.getModelControlType(), 
-                                                           settingsFrame.getCoordinatesType());
+            FileSourceWizard wizard = new FileSourceWizard(
+                SaTScanApplication.getInstance(), filename, settingsFrame.getParameters().GetSourceFileName(), 
+                inputSourceSettings, settingsFrame.getModelControlType(), settingsFrame.getCoordinatesType(),
+                settingsFrame.getParameters().getLinelistIndividualsCacheFileName()
+            );
             wizard.setVisible(true);
             if (wizard.getExecutedImport()) {
                 inputSourceSettings.reset();
                 inputSourceFilename.setText(wizard.getDestinationFilename());
             } else {
-                if (wizard.getNeedsImportSourceSave())
+                if (wizard.getNeedsImportSourceSave()) {
                     inputSourceSettings.copy(wizard.getInputSourceSettings());
+                    if (inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Case && inputSourceSettings.getDataSetIndex() == 1)
+                        settingsFrame.getParameters().setLinelistIndividualsCacheFileName(wizard.getLineListCacheFilename());
+                }
                 inputSourceFilename.setText(wizard.getSourceFilename());
                 //inputSourceSettings.setSourceDataFileType(wizard.getSourceFileType(inputSourceFilename.getText()));
             }

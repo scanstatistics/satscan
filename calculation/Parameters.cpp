@@ -198,6 +198,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
   if (_cluster_significance_pval_value != _cluster_significance_pval_value) return false;
   if (_multiple_locations_file != _multiple_locations_file) return false;
+  if (_linelist_individuals_cache_name != _linelist_individuals_cache_name) return false;  
   
   return true;
 }
@@ -317,7 +318,7 @@ void CParameters::Copy(const CParameters &rhs) {
   geCoordinatesType                      = rhs.geCoordinatesType;
   gsOutputFileNameSetting                = rhs.gsOutputFileNameSetting;
   _results_filename                      = rhs._results_filename;
-  _linelist_individuals_cache_name                  = rhs._linelist_individuals_cache_name;
+  _linelist_individuals_cache_name       = rhs._linelist_individuals_cache_name;
   gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
   gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
   gbIterativeRuns                        = rhs.gbIterativeRuns;
@@ -537,11 +538,10 @@ AreaRateType CParameters::GetExecuteScanRateType() const {
   return geAreaScanRate;
 }
 
-/* Sets the line list individuals cache filename - derived from results filename. */
-std::string & CParameters::setLinelistIndividualsCacheFileName() {
-    FileName signalled(GetOutputFileName().c_str());
-    signalled.setExtension(".event-cache.txt");
-    return signalled.getFullPath(_linelist_individuals_cache_name);
+/* Sets the line list individuals cache filename. */
+void CParameters::setLinelistIndividualsCacheFileName(const char * s, bool bCorrectForRelativePath) {
+    _linelist_individuals_cache_name = s;
+    if (bCorrectForRelativePath) AssignMissingPath(_linelist_individuals_cache_name);
 }
 
 /** Returns whether analysis is a prospective analysis. */

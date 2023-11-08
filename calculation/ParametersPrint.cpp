@@ -149,7 +149,6 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintDataCheckingParameters(fp);
         PrintSpatialNeighborsParameters(fp);
         PrintLocationNetworkParameters(fp);
-        PrintLinelistParameters(fp);
         PrintSpatialWindowParameters(fp);
         PrintTemporalWindowParameters(fp);
         PrintClusterRestrictionsParameters(fp);
@@ -161,6 +160,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
+        PrintLinelistParameters(fp);
         PrintEmailAlertsParameters(fp);
         PrintEllipticScanParameters(fp);
         PrintPowerSimulationsParameters(fp);

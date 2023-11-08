@@ -349,6 +349,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteSpatialOutputSettings(ini);
         WriteTemporalGraphSettings(ini);
         WriteOtherOutputSettings(ini);
+        WriteLineListSettings(ini);
         WriteEmailAlertSettings(ini);
 
         //write settings as provided only through user mofication of parameter file and batch executable
@@ -421,6 +422,17 @@ void IniParameterFileAccess::WriteMiscellaneousAnalysisSettings(IniFile& WriteFi
         WriteIniParameter(WriteFile, PROSPECTIVE_FREQ, GetParameterString(PROSPECTIVE_FREQ, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ));
     } catch (prg_exception& x) {
         x.addTrace("WriteMiscellaneousAnalysisSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Line List'. */
+void IniParameterFileAccess::WriteLineListSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, LL_INDIVIDUALS_CACHE_FILE, GetParameterString(LL_INDIVIDUALS_CACHE_FILE, s).c_str(), GetParameterComment(LL_INDIVIDUALS_CACHE_FILE));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteLineListSettings()", "IniParameterFileAccess");
         throw;
     }
 }

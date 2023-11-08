@@ -262,6 +262,7 @@ public class Parameters implements Cloneable {
     private boolean                         _email_attach_results=false;  
     
     private String                          _multiple_locations_file="";
+    private String                          _linelist_individuals_cache_name="";
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -457,9 +458,12 @@ public class Parameters implements Cloneable {
         if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
         if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
         if (_email_attach_results != rhs._email_attach_results) return false;
+        if (_linelist_individuals_cache_name != rhs._linelist_individuals_cache_name) return false;
         return _multiple_locations_file.equals(rhs._multiple_locations_file);
     }
     
+    public String getLinelistIndividualsCacheFileName() { return _linelist_individuals_cache_name; }
+    public void setLinelistIndividualsCacheFileName(final String s) { _linelist_individuals_cache_name = s; }
     public String getMultipleLocationsFile() { return _multiple_locations_file; }
     public void setMultipleLocationsFile(final String s) { _multiple_locations_file = s; }
     

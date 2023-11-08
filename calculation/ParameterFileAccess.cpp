@@ -243,7 +243,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case LL_HEADER_CASEFILE           : return "n/a";
       case KML_EVENT_GROUP              : return "n/a";
       case KML_EVENT_GROUP_BY           : return "n/a";
-      case LL_EVENT_CACHE_FILE          : return "n/a";
+      case LL_INDIVIDUALS_CACHE_FILE    : return "line list individuals cache filename";
       case CLUSTER_SIGNIFICANCE_BY_RI   : return "cluster significance by recurrence interval  (y/n)";
       case CLUSTER_SIGNIFICANCE_RI_VALUE: return "cluster significance recurrence interval cutoff (positive integer)";
       case CLUSTER_SIGNIFICANCE_RI_TYPE : return "cluster significance recurrence interval type (YEAR=1, DAY=3)";
@@ -446,7 +446,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case LL_HEADER_CASEFILE           : s = ""; return s;
       case KML_EVENT_GROUP              : s = ""; return s;
       case KML_EVENT_GROUP_BY           : s = ""; return s;
-      case LL_EVENT_CACHE_FILE          : s = ""; return s;
+      case LL_INDIVIDUALS_CACHE_FILE    : s = gParameters.getLinelistIndividualsCacheFileName().c_str(); return s;
       case CLUSTER_SIGNIFICANCE_BY_RI   : return AsString(s, gParameters.getClusterSignificanceByRecurrence());
       case CLUSTER_SIGNIFICANCE_RI_VALUE: return AsString(s, gParameters.getClusterSignificanceRecurrenceCutoff());
       case CLUSTER_SIGNIFICANCE_RI_TYPE : return AsString(s, gParameters.getClusterSignificanceRecurrenceType());
@@ -883,7 +883,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case LL_HEADER_CASEFILE           : /* no longer used */ break;
       case KML_EVENT_GROUP              : /* no longer used */ break;
       case KML_EVENT_GROUP_BY           : /* no longer used */ break;
-      case LL_EVENT_CACHE_FILE          : /* no longer used */ break;
+      case LL_INDIVIDUALS_CACHE_FILE    : gParameters.setLinelistIndividualsCacheFileName(sParameter.c_str(), true); break;
       case CLUSTER_SIGNIFICANCE_BY_RI   : gParameters.setClusterSignificanceByRecurrence(ReadBoolean(sParameter, eParameterType)); break;
       case CLUSTER_SIGNIFICANCE_RI_VALUE: gParameters.setClusterSignificanceRecurrenceCutoff(ReadUnsignedInt(sParameter, eParameterType)); break;
       case CLUSTER_SIGNIFICANCE_RI_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);

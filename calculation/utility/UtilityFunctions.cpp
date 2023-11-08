@@ -341,7 +341,7 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable, bool use
         if (fp) fclose(fp);
         remove(test.getFullPath(buffer).c_str());
     } else {
-        bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
+        bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "a+" : "r")) != NULL);
         if (fp) fclose(fp);
     }
     return bReturn;

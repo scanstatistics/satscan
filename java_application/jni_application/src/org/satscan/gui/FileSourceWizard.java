@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -93,7 +94,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private boolean _needs_import_save=false;
     private boolean _refresh_related_settings=false;
     private boolean _excel_has_header=false;
-    private ArrayList<Boolean> _sticky_ll_labels = new ArrayList();
+    private final ArrayList<Boolean> _sticky_ll_labels = new ArrayList();
 
     /** Creates new form FileSourceWizard */
     public FileSourceWizard(java.awt.Frame parent,
@@ -101,11 +102,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                               final String suggested_filename,
                               InputSourceSettings inputSourceSettings,
                               Parameters.ProbabilityModelType modelType,
-                              Parameters.CoordinatesType coordinatesType) {
+                              Parameters.CoordinatesType coordinatesType,
+                              final String llcachename) {
         super(parent, true);
         setSuggestedImportName(sourceFile, suggested_filename, inputSourceSettings.getInputFileType());
         initComponents();
         _source_filename.setText(sourceFile);
+        _individuals_line_list_cache.setText(llcachename);
         _input_source_settings = new InputSourceSettings(inputSourceSettings);
         if (!_input_source_settings.isSet())
             _input_source_settings.setSourceDataFileType(getSourceFileType(sourceFile));
@@ -138,14 +141,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             nextButtonSource.requestFocus();
         }
     }
-    
-    private boolean checkForLinelistColumns() {
-        StringBuilder message = new StringBuilder();
+
+    /** Checks the line list settings if user has selected for this option.*/
+    private boolean checkLinelistSettings() {
         // Test whether user enabled this option.
         if (!_casefile_linelist.isSelected()) {
             _input_source_settings.getLinelistFieldMaps().clear();
             return false;
         }
+        StringBuilder message = new StringBuilder();
         LinelistMappingTableModel model = (LinelistMappingTableModel) _mapping_table_linelist.getModel();
         // Test whether the user have defined any line list mappings.
         if (_combobox_eventid.getSelectedIndex() <= 0 && model.getRowCount() == 0) {
@@ -156,7 +160,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                _casefile_linelist.setSelected(false);
                return false;
         }
-        // Test whether user selected any event level inputs and verify.
+        // Test whether both descriptive coordinates have been defined or neither.
         if (_combobox_event_y.isEnabled()) {
             if (_combobox_event_y.getSelectedIndex() > 0 && _combobox_event_x.getSelectedIndex() == 0)
                 message.append("A descriptive longitude was selected but no latitude coordinate.s\n");
@@ -184,6 +188,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         if (llnames.stream().map(String::toString).distinct().count() != llnames.size()) {
             JOptionPane.showMessageDialog(this, "Line list mapping labels must be unique.", "Note", JOptionPane.WARNING_MESSAGE);
             return true;            
+        }
+        // If the user specified an individual line list cache, confirm it is writable.
+        if (!_individuals_line_list_cache.getText().isEmpty() && 
+            !FileAccess.ValidateFileAccess(_individuals_line_list_cache.getText(), true, false)) {
+            JOptionPane.showMessageDialog(this, 
+                "Individuals cache file could not be created or opened for writing.\n"
+                + "Please confirm the file name/path is valid and you have write permissions.", 
+                "Note", JOptionPane.WARNING_MESSAGE
+            );
+            return true;
         }
         // All appears to be correct -- clear then populate temporary line list map.
         _input_source_settings.getLinelistFieldMaps().clear();
@@ -604,6 +618,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return _input_source_settings;
     }
     
+    /** Returns the line list individuals cache filename in wizard. */
+    public final String getLineListCacheFilename() {
+        return _casefile_linelist.isSelected() ? _individuals_line_list_cache.getText() : "";
+    }    
+    
     /** Builds html which details the input source type and variable mappings to source file'variableIdx columns. */
     private String getMappingsHtml() {
         ArrayList<String> columnNames = getSourceColumnNames();
@@ -835,7 +854,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 else
                     makeActivePanel(_output_settings_cardname);
             } else if (_showing_maincontent_cardname == _linelist_settings_cardname) {
-                if (checkForLinelistColumns()) return;
+                if (checkLinelistSettings()) return;
                 makeActivePanel(_output_settings_cardname);
             }
         } catch (org.satscan.importer.ImportDataSource.UnsupportedException e) {
@@ -990,7 +1009,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         int selectedIdx = _mapping_table_linelist.getSelectedRow();
         _remove_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx >= 0); 
         _up_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx > 0); 
-        _down_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx >= 0 && selectedIdx < _mapping_table_linelist.getModel().getRowCount() - 1); 
+        _down_linelist.setEnabled(_casefile_linelist.isSelected() && selectedIdx >= 0 && selectedIdx < _mapping_table_linelist.getModel().getRowCount() - 1);
+
+        // Only enable the cache file inputs for the primary data set - all data sets will use the same cache.
+        _individuals_line_list_cache_label.setEnabled(_casefile_linelist.isSelected() && _input_source_settings.getDataSetIndex() == 1 && _combobox_eventid.getSelectedIndex() > 0);
+        _individuals_line_list_cache.setEnabled(_casefile_linelist.isSelected() && _input_source_settings.getDataSetIndex() == 1 && _combobox_eventid.getSelectedIndex() > 0);
+        _browse_individuals_cache.setEnabled(_casefile_linelist.isSelected() && _input_source_settings.getDataSetIndex() == 1 && _combobox_eventid.getSelectedIndex() > 0);
     }
     
     /** Preparation for viewing the output settings panel. */
@@ -1521,7 +1545,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         jLabel2 = new javax.swing.JLabel();
         _linelistPanel = new javax.swing.JPanel();
         jSplitPane2 = new javax.swing.JSplitPane();
-        jPanel1 = new javax.swing.JPanel();
+        _line_list_panel_settings = new javax.swing.JPanel();
         _casefile_linelist = new javax.swing.JCheckBox();
         _casefile_linelist.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -1618,6 +1642,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         });
         _label_other_linelist_variables = new javax.swing.JLabel();
+        _individuals_line_list_cache = new javax.swing.JTextField();
+        _browse_individuals_cache = new javax.swing.JButton();
+        _individuals_line_list_cache_label = new javax.swing.JLabel();
         _source_table_panel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         _source_data_table_linelist = new javax.swing.JTable();
@@ -2014,11 +2041,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         jSplitPane2.setDividerLocation(250);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setBorder(null);
 
         _casefile_linelist.setText("OPTIONAL: Import descriptive line list variables for output files.");
         _casefile_linelist.setToolTipText("*  For Cluster Line List, KML, and HMTL Google Map output files only, not used by the SaTScan analysis.");
 
-        _label_individual.setText("Individual ID (optional)");
+        _label_individual.setText("Individual (optional)");
 
         _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "not set" }));
         _combobox_eventid.setPreferredSize(new java.awt.Dimension(125, 20));
@@ -2057,79 +2085,105 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _label_other_linelist_variables.setText("Add other line list variables:");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        _individuals_line_list_cache.setText(_suggested_import_filename.getAbsolutePath());
+
+        _browse_individuals_cache.setText("..."); // NOI18N
+        _browse_individuals_cache.setToolTipText("Browse for line list individuals cache file ...");
+        _browse_individuals_cache.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+                filters.add(new InputFileFilter("txt","Text Files (*.txt)"));
+                filters.add(new InputFileFilter("csv","CSV Files (*.csv)"));
+                FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), "Select Individuals Cache File", filters, SaTScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_saveas();
+                if (file != null) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _individuals_line_list_cache.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        _individuals_line_list_cache_label.setText("Individuals Cache (optional):");
+
+        javax.swing.GroupLayout _line_list_panel_settingsLayout = new javax.swing.GroupLayout(_line_list_panel_settings);
+        _line_list_panel_settings.setLayout(_line_list_panel_settingsLayout);
+        _line_list_panel_settingsLayout.setHorizontalGroup(
+            _line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_remove_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_add_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_up_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_down_linelist, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
+                .addComponent(_casefile_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_linelist_help, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(_label_other_linelist_variables, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
+                        .addComponent(_individuals_line_list_cache_label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_individuals_line_list_cache)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_browse_individuals_cache, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
+                        .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_combobox_eventid, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_label_individual, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(_remove_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                            .addComponent(_add_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_up_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_down_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(_casefile_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(18, 18, 18)
-                        .addComponent(_linelist_help, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(_label_other_linelist_variables, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(_combobox_eventid, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_label_individual, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(_label_descriptive_lat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_combobox_event_y, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(_label_descriptive_long, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_combobox_event_x, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addGap(0, 93, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_label_descriptive_lat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_combobox_event_y, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_label_descriptive_long, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_combobox_event_x, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_casefile_linelist)
-                    .addComponent(_linelist_help))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        _line_list_panel_settingsLayout.setVerticalGroup(
+            _line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_linelist_help, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(_casefile_linelist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(6, 6, 6)
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_label_individual)
                     .addComponent(_label_descriptive_lat)
                     .addComponent(_label_descriptive_long))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_combobox_eventid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_combobox_event_y, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_combobox_event_x, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_label_other_linelist_variables)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_individuals_line_list_cache, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_browse_individuals_cache)
+                    .addComponent(_individuals_line_list_cache_label))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_label_other_linelist_variables)
+                .addGap(2, 2, 2)
+                .addGroup(_line_list_panel_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(_line_list_panel_settingsLayout.createSequentialGroup()
                         .addComponent(_add_linelist)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_remove_linelist)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_up_linelist)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_down_linelist)
-                        .addGap(0, 22, Short.MAX_VALUE))))
+                        .addComponent(_down_linelist))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)))
         );
 
         _linelist_help.getAccessibleContext().setAccessibleDescription("Help On This.");
 
-        jSplitPane2.setTopComponent(jPanel1);
+        jSplitPane2.setTopComponent(_line_list_panel_settings);
 
         _source_data_table_linelist.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -2151,15 +2205,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _source_table_panel.setLayout(_source_table_panelLayout);
         _source_table_panelLayout.setHorizontalGroup(
             _source_table_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _source_table_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
         );
         _source_table_panelLayout.setVerticalGroup(
             _source_table_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_source_table_panelLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -2178,7 +2229,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _linelistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_linelistPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane2)
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2510,6 +2561,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _add_linelist;
+    private javax.swing.JButton _browse_individuals_cache;
     private javax.swing.JButton _browse_source;
     private javax.swing.JPanel _button_cards_panel;
     private javax.swing.JCheckBox _casefile_linelist;
@@ -2544,10 +2596,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JTextField _ignoreRowsTextField;
     private javax.swing.JScrollPane _importTableScrollPane;
     private javax.swing.ButtonGroup _import_operation_buttonGroup;
+    private javax.swing.JTextField _individuals_line_list_cache;
+    private javax.swing.JLabel _individuals_line_list_cache_label;
     private javax.swing.JLabel _label_descriptive_lat;
     private javax.swing.JLabel _label_descriptive_long;
     private javax.swing.JLabel _label_individual;
     private javax.swing.JLabel _label_other_linelist_variables;
+    private javax.swing.JPanel _line_list_panel_settings;
     private javax.swing.JPanel _linelistPanel;
     private javax.swing.JButton _linelist_help;
     private javax.swing.JPanel _linelist_settings_buttons_panel;
@@ -2580,7 +2635,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

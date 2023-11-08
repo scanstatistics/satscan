@@ -284,7 +284,7 @@ bool DataDemographicsProcessor::hasIndividualGeographically() const {
 void DataDemographicsProcessor::finalize() {
     // Write signalling individuals from this analysis to the cache file - excluding drilldowns, only the primary analysis writes to cache.
     if (_temp_individuals_cache_filename.size()) {
-        if (!_handler.gDataHub.isDrilldown()) {
+        if (_parameters.getLinelistIndividualsCacheFileName().size() && !_handler.gDataHub.isDrilldown()) {
             _handler.gDataHub.GetPrintDirection().Printf(
                 "A cache file is being maintained for this analysis to track line list individuals seen in significant clusters.\n"
                 "This cache will be used in subsequent runs of this analysis to determine whether an individual is considered 'new' or 'ongoing'.\n",

@@ -508,7 +508,7 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
   return bValid;
 }
 
-/**/
+/* Checks whether filename is defined and whether it is read or writable - reports negative determinations to BasePrint. */
 bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck) const {
     // Trim whitespace and apply any time formats.
     std::string buffer = getFilenameFormatTime(filename, gParameters.getTimestamp(), true);
@@ -517,11 +517,11 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
         PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
         return false;
     } else if (!ValidateFileAccess(buffer, writeCheck)) {
-        PrintDirection.Printf("%s:\nThe %s file '%s' could not be opened for %s. "
-                              "Please confirm that the path and/or file name are valid and that you "
-                              "have permissions to %s from this directory and file.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str(), buffer.c_str(), 
-                              (writeCheck ? "writing": "reading"), (writeCheck ? "write": "read"));
+        PrintDirection.Printf(
+            "%s:\nThe %s file could not be opened for %s.\n"
+            "Please confirm the file name/path is valid and you have %s permissions:\n%s\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str(), (writeCheck ? "writing": "reading"), (writeCheck ? "write": "read"), buffer.c_str()
+        );
         return false;
     }
     return true;
@@ -929,17 +929,9 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
                 usingLinelistcache |= bool(individualId);
             }
         }
-        if (usingLinelistcache) {
-            // This analysis will be reading and possibly writing to a line list individuals cache file.
-            // If the file name isn't already assigned, then this is the primary analysis and the filename is derived from output filename.
-            // If the file is assigned, then this object is from a drilldown and the filename is that of primary analysis.
-            if (!gParameters.getLinelistIndividualsCacheFileName().size())
-                const_cast<CParameters&>(gParameters).setLinelistIndividualsCacheFileName();
-            if (!checkFileExists(
-                gParameters.getLinelistIndividualsCacheFileName(), "line list cache", PrintDirection, 
-                !boost::filesystem::exists(gParameters.getLinelistIndividualsCacheFileName().c_str())
-            )) return false;
-        }
+        if (usingLinelistcache && gParameters.getLinelistIndividualsCacheFileName().size() &&
+            !checkFileExists(gParameters.getLinelistIndividualsCacheFileName(), "individual line list cache", PrintDirection, true)) 
+            return false;
     } catch (prg_exception& x) {
         x.addTrace("ValidateLinelistParameters()", "ParametersValidate");
         throw;

@@ -696,7 +696,7 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
 
     _parameter_info[LINELIST_CASEFILE] = ParamInfo(LINELIST_CASEFILE, NotUsed, 0, _not_used_section);
     _parameter_info[LL_HEADER_CASEFILE] = ParamInfo(LL_HEADER_CASEFILE, NotUsed, 0, _not_used_section);
-    _parameter_info[LL_EVENT_CACHE_FILE] = ParamInfo(LL_EVENT_CACHE_FILE, NotUsed, 0, _not_used_section);
+    _parameter_info[LL_INDIVIDUALS_CACHE_FILE] = ParamInfo(LL_INDIVIDUALS_CACHE_FILE, "LineListEventCache", 3, _linelist_section);
     _parameter_info[KML_EVENT_GROUP] = ParamInfo(KML_EVENT_GROUP, NotUsed, 0, _not_used_section);
     _parameter_info[KML_EVENT_GROUP_BY] = ParamInfo(KML_EVENT_GROUP_BY, NotUsed, 0, _not_used_section);
 
@@ -722,6 +722,7 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
 void IniParameterSpecification::Build_10_2_x_ParameterList() {
     Build_10_1_x_ParameterList();
 
+    _parameter_info[LL_INDIVIDUALS_CACHE_FILE] = ParamInfo(LL_INDIVIDUALS_CACHE_FILE, "LineListIndividualCache", 3, _linelist_section);
     _parameter_info[MULTIPLE_LOCATIONS_FILE] = ParamInfo(MULTIPLE_LOCATIONS_FILE, "MultipleLocationsFile", 6, _spatial_neighbors_section);
 
     assert(_parameter_info.size() == 174);

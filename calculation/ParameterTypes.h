@@ -165,7 +165,7 @@ enum ParameterType
     LL_HEADER_CASEFILE,             /* no longer used */
     KML_EVENT_GROUP,                /* no longer used */
     KML_EVENT_GROUP_BY,             /* no longer used */
-    LL_EVENT_CACHE_FILE,            /* no longer used */
+    LL_INDIVIDUALS_CACHE_FILE,      /* line list individuals cache filename */
     CLUSTER_SIGNIFICANCE_BY_RI,     /* cluster significant by recurrence interval */
     CLUSTER_SIGNIFICANCE_RI_VALUE,  /* cluster significant recurrence interval cutoff */
     CLUSTER_SIGNIFICANCE_RI_TYPE,   /* cluster significant recurrence interval type */

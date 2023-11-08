@@ -653,7 +653,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jSplitPane2" max="32767" attributes="0"/>
+                          <Component id="jSplitPane2" pref="394" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -665,10 +665,13 @@
                     <Property name="dividerLocation" type="int" value="250"/>
                     <Property name="orientation" type="int" value="0"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jSplitPane2.setBorder(null);"/>
+                  </AuxValues>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
                   <SubComponents>
-                    <Container class="javax.swing.JPanel" name="jPanel1">
+                    <Container class="javax.swing.JPanel" name="_line_list_panel_settings">
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
                           <JSplitPaneConstraints position="top"/>
@@ -678,60 +681,61 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jScrollPane4" pref="471" max="32767" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_remove_linelist" max="32767" attributes="0"/>
+                                      <Component id="_add_linelist" max="32767" attributes="0"/>
+                                      <Component id="_up_linelist" max="32767" attributes="0"/>
+                                      <Component id="_down_linelist" min="-2" pref="73" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" attributes="0">
+                                  <Component id="_casefile_linelist" max="32767" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="_linelist_help" min="-2" pref="31" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_label_other_linelist_variables" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="jScrollPane4" pref="0" max="32767" attributes="0"/>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="_remove_linelist" pref="73" max="32767" attributes="0"/>
-                                              <Component id="_add_linelist" max="32767" attributes="0"/>
-                                              <Component id="_up_linelist" max="32767" attributes="0"/>
-                                              <Component id="_down_linelist" max="32767" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_casefile_linelist" max="32767" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="_linelist_help" min="-2" pref="31" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_individuals_line_list_cache_label" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_individuals_line_list_cache" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_browse_individuals_cache" min="-2" pref="33" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="_label_other_linelist_variables" alignment="0" max="32767" attributes="0"/>
-                                              <Group type="102" attributes="0">
-                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                      <Component id="_combobox_eventid" max="32767" attributes="0"/>
-                                                      <Component id="_label_individual" min="-2" pref="125" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                      <Component id="_label_descriptive_lat" max="32767" attributes="0"/>
-                                                      <Component id="_combobox_event_y" max="32767" attributes="0"/>
-                                                  </Group>
-                                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                      <Component id="_label_descriptive_long" max="32767" attributes="0"/>
-                                                      <Component id="_combobox_event_x" max="32767" attributes="0"/>
-                                                  </Group>
-                                              </Group>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_combobox_eventid" max="32767" attributes="0"/>
+                                              <Component id="_label_individual" min="-2" pref="125" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="93" max="32767" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_label_descriptive_lat" max="32767" attributes="0"/>
+                                              <Component id="_combobox_event_y" min="-2" pref="144" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_label_descriptive_long" max="32767" attributes="0"/>
+                                              <Component id="_combobox_event_x" min="-2" pref="152" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_casefile_linelist" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_linelist_help" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_linelist_help" pref="0" max="32767" attributes="0"/>
+                                      <Component id="_casefile_linelist" max="32767" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="_label_individual" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_label_descriptive_lat" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -743,11 +747,16 @@
                                       <Component id="_combobox_event_y" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_combobox_event_x" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="_label_other_linelist_variables" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jScrollPane4" pref="0" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_individuals_line_list_cache" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_browse_individuals_cache" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_individuals_line_list_cache_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="_label_other_linelist_variables" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Group type="102" attributes="0">
                                           <Component id="_add_linelist" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
@@ -756,8 +765,8 @@
                                           <Component id="_up_linelist" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_down_linelist" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace min="0" pref="22" max="32767" attributes="0"/>
                                       </Group>
+                                      <Component id="jScrollPane4" pref="121" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -775,7 +784,7 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="_label_individual">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Individual ID (optional)"/>
+                            <Property name="text" type="java.lang.String" value="Individual (optional)"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JComboBox" name="_combobox_eventid">
@@ -906,6 +915,25 @@
                             <Property name="text" type="java.lang.String" value="Add other line list variables:"/>
                           </Properties>
                         </Component>
+                        <Component class="javax.swing.JTextField" name="_individuals_line_list_cache">
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_individuals_line_list_cache.setText(_suggested_import_filename.getAbsolutePath());"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_browse_individuals_cache">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="..." noResource="true"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Browse for line list individuals cache file ..."/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_browse_individuals_cache.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;        filters.add(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        filters.add(new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Individuals Cache File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _individuals_line_list_cache.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_individuals_line_list_cache_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Individuals Cache (optional):"/>
+                          </Properties>
+                        </Component>
                       </SubComponents>
                     </Container>
                     <Container class="javax.swing.JPanel" name="_source_table_panel">
@@ -918,17 +946,13 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jScrollPane3" pref="534" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="jScrollPane3" alignment="0" pref="554" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="jScrollPane3" pref="138" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane3" pref="142" max="32767" attributes="0"/>
                                   <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               </Group>
                           </Group>

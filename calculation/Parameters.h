@@ -665,8 +665,7 @@ class CParameters {
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationSimulationDataSourceFilename(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);
-    std::string                       & setLinelistIndividualsCacheFileName();
-    void                                setLinelistIndividualsCacheFileName(const char * s) { _linelist_individuals_cache_name = s; /* intended for testing only */}
+    void                                setLinelistIndividualsCacheFileName(const char * s, bool bCorrectForRelativePath = false);
     void                                setPowerEvaluationSimulationType(SimulationType eSimulationType);
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);
