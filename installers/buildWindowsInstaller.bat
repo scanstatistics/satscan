@@ -6,14 +6,14 @@ REM This steps can't be executed from build environment -- currently Linux.
 REM script definitions
 set fileshare=\\oriole-03-int
 
-set satscanversion=10.1
-set satscanversionf=10_1
+set satscanversion=10.2
+set satscanversionf=10_2
 set satscanexe=%fileshare%\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.exe
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.6+10_windows_x64
+set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.9+9_windows_x64
 set runtimeoutputx64=%fileshare%\satscan\build.area\satscan\installers\java\jre_x64
-set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.6+10_windows_x86
+set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.9+9_windows_x86
 set runtimeoutputx86=%fileshare%\satscan\build.area\satscan\installers\java\jre_x86
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"

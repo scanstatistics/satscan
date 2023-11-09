@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SaTScan"
-#define MyAppVersion "10.1.1"
+#define MyAppVersion "10.2 Beta 5 Build 1"
 #define MyAppPublisher "Information Management Services, Ins."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"
@@ -10,7 +10,9 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}
+; AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}
+; Beta 10.2 installer -- B102 in GUID
+AppId={{AD0046EA-B102-4AD7-B623-ADC246EA46EA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -24,8 +26,8 @@ LicenseFile=Q:\licence\SaTScanLicenseAgreement.rtf
 InfoBeforeFile=Q:\build.area\satscan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=Q:\installers\v.10.1.x
-OutputBaseFilename=install-10_1_windows
+OutputDir=Q:\installers\v.10.2.x
+OutputBaseFilename=install-10_2_windows
 ;SetupIconFile=Q:\build.area\satscan\installers\resources\SaTScan.ico
 Compression=lzma
 SolidCompression=yes
