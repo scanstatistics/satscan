@@ -1670,7 +1670,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_timeAggregationMonthRadioButton">
@@ -1686,7 +1686,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_timeAggregationDayRadioButton">
@@ -1702,7 +1702,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_timeAggregationLengthLabel">
