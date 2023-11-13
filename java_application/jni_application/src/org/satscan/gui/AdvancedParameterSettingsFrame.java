@@ -664,7 +664,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableMapsOutputGroup();
         enableDrilldownGroup();
         setSpatialDistanceCaption();
-        updateMaxiumTemporalSizeTextCaptions();
+        updateMaximumTemporalSizeTextCaptions();
+        enableCaseFileLinelistGroup();
         enableOtherOutputGroup();
         enableEmailAlerts();
     }
@@ -723,13 +724,32 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /* Updates the text of the maximum temporal cluster size label based on user settings. */
-    public void updateMaxiumTemporalSizeTextCaptions() {
+    public void updateMaximumTemporalSizeTextCaptions() {
         Parameters.AnalysisType analysisType = _settings_window.getAnalysisControlType();
         boolean ptAnalysis = (
             analysisType == Parameters.AnalysisType.PURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
         );
+        
+        String unitsLabel = "";
+        switch (_settings_window.getTimeAggregationControlType()) {
+            case YEAR:
+                unitsLabel = "years";
+                break;
+            case MONTH:
+                unitsLabel = "months";
+                break;
+            case DAY:
+                unitsLabel = "days";
+                break;
+            case GENERIC:
+                unitsLabel = "units";
+                break;
+        }
+        
+        _minTemporalTimeUnitsLabel.setText(unitsLabel);
+        
         switch (_settings_window.getModelControlType()) {
             case POISSON:
             case HOMOGENEOUSPOISSON:
@@ -741,33 +761,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 // Skip for purely temporal analysis or applying spatial adjustment.
                 if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
                     _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
-                    _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)");
+                    _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=90% of the study period)");
                     break;
                 }
             case SPACETIMEPERMUTATION:
                 _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 50%, default = 50%)");
-                _maxTemporalTimeUnitsLabel.setText("years (<=50% of the study period)");
-                break;
-        }
-    }
-
-    public void updateMaxiumTemporalTextCaptions() {
-        switch (_settings_window.getTimeAggregationControlType()) {
-            case YEAR:
-                _maxTemporalTimeUnitsLabel.setText("years");
-                _minTemporalTimeUnitsLabel.setText("years");
-                break;
-            case MONTH:
-                _maxTemporalTimeUnitsLabel.setText("months");
-                _minTemporalTimeUnitsLabel.setText("months");
-                break;
-            case DAY:
-                _maxTemporalTimeUnitsLabel.setText("days");
-                _minTemporalTimeUnitsLabel.setText("days");
-                break;
-            case GENERIC:
-                _maxTemporalTimeUnitsLabel.setText("units");
-                _minTemporalTimeUnitsLabel.setText("units");
+                _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=50% of the study period)");
                 break;
         }
     }
@@ -1666,7 +1665,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // compare the maximum temporal cluster size to the minimum temporal cluster size
         if (minTemporalClusterSize > dMaxTemporalLengthInUnits) {
             sPrecisionString = _settings_window.getDatePrecisionAsString(_settings_window.getTimeAggregationControlType(), dMaxTemporalLengthInUnits > 1, false);
-            sErrorMessage = "The minimum temporal cluster size is greater than the maximum temporal cluster size of " + dMaxTemporalLengthInUnits + " " + sPrecisionString + ".";
+            sErrorMessage = "The minimum temporal cluster size is greater than the maximum temporal cluster size of " + ((int)Math.floor(dMaxTemporalLengthInUnits)) + " " + sPrecisionString + ".";
             throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
         }
     }
