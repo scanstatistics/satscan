@@ -1311,7 +1311,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         }
         if (_timeAggregationGroup.isEnabled() && bGenericType) {
-            getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();
+            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();
             _aggregrationUnitsLabel.setText("Units");            
         }
         
@@ -2839,7 +2839,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();
+                    getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();
                     _aggregrationUnitsLabel.setText("Years");
                 }
             }
@@ -2851,7 +2851,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();
+                    getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();
                     _aggregrationUnitsLabel.setText("Months");
                 }
             }
@@ -2863,7 +2863,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    getAdvancedParameterInternalFrame().updateMaxiumTemporalTextCaptions();
+                    getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();
                     _aggregrationUnitsLabel.setText("Days");
                 }
             }
