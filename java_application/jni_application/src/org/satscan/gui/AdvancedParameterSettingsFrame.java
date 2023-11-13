@@ -665,7 +665,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableDrilldownGroup();
         setSpatialDistanceCaption();
         updateMaximumTemporalSizeTextCaptions();
-        enableCaseFileLinelistGroup();
         enableOtherOutputGroup();
         enableEmailAlerts();
     }
