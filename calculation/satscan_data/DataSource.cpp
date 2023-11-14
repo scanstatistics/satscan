@@ -458,15 +458,23 @@ bool CsvFileDataSource::ReadRecord() {
         }
     }
     ++_readCount;
-
-    // Do we need to apply the _fields_map with _read_values to get true collection of values?
-
     return (readbuffer.size() > 0 && GetNumValues());
 }
 
-/** Returns number of values in record -- if fields are being mapped, fields are restricted them only. */
+/** Returns number of values in record. */
 long CsvFileDataSource::GetNumValues() {
-    return _fields_map.size() ? static_cast<long>(_fields_map.size()) : static_cast<long>(_read_values.size());
+    if (_fields_map.size()) { //  restricted to these fields only - regardless of the actual number in record
+        std::vector<std::string> test;
+        for (const auto& f : _fields_map) {
+            const char * value = GetValueAt(static_cast<long>(test.size()));
+            // GetValueAt() returns null if a value can't be gotten, consider this record shortened to the prior column.
+            // This can happen in files like the network - which can have varied number of columns per row.
+            if (!value) return test.size();
+            test.push_back(value);
+        }
+        return static_cast<long>(test.size());
+    } else // otherwise it's just the number of values in record
+        return static_cast<long>(_read_values.size());
 }
 
 const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
