@@ -342,6 +342,10 @@ void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::Order
     ).c_str());
     std::ofstream lineliststream;
     lineliststream.open(linelist.getFullPath(buffer).c_str());
+    if (!lineliststream)
+        throw resolvable_error(
+            "Error: The line list csv file could not be opened for writing:\n'%s'\n", buffer.c_str()
+        );
     lineliststream << typelist_to_csv_string<std::string>(v, buffer) << std::endl; // write header row
     for (const auto& cfiles : _cluster_location_files) {
         std::ifstream filestream(cfiles.second.c_str(), std::ios_base::binary);
