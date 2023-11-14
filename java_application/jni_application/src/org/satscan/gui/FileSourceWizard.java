@@ -176,15 +176,24 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
             if (((String)model.getValueAt(rowIdx, 0)).equals(_unassigned_variable)) {
                message.append("At least one row references a line list mapping which does not name a source column.\n"); 
-               message.append("A source colummn must be selected or use the remove option to delete row.");
+               message.append("A source column must be selected or use the remove option to delete row.");
                JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+               return true;
+            }
+            if (((String)model.getValueAt(rowIdx, 1)).isBlank()) {
+               message.append("At least one row references a line list mapping which does specify a label."); 
+               JOptionPane.showMessageDialog(this, 
+                   "At least one row references a line list mapping which does specify a label.", "Note",
+                   JOptionPane.WARNING_MESSAGE
+               );
                return true;
             }
         }
         // Check that user hasn't defined duplicate line list column names.
         ArrayList<String> llnames = new ArrayList();
-        for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx)
+        for (int rowIdx=0; rowIdx < model.getRowCount(); ++rowIdx) {
             llnames.add((String)model.getValueAt(rowIdx, 1));
+        }
         if (llnames.stream().map(String::toString).distinct().count() != llnames.size()) {
             JOptionPane.showMessageDialog(this, "Line list mapping labels must be unique.", "Note", JOptionPane.WARNING_MESSAGE);
             return true;            
@@ -2058,6 +2067,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _combobox_event_x.setPreferredSize(new java.awt.Dimension(125, 20));
 
         _mapping_table_linelist.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        _mapping_table_linelist.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         ListSelectionModel selectionModel = _mapping_table_linelist.getSelectionModel();
         selectionModel.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {

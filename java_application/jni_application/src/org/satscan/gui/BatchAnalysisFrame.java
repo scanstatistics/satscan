@@ -541,6 +541,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 return !_batch_executing && canEdit[columnIndex];
             }
         });
+        _analyses_table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         _analyses_table.getTableHeader().setOpaque(false);
         // Set custom header renderer for the row selection header.
         TableColumn column = _analyses_table.getColumnModel().getColumn(SELECT_IDX);

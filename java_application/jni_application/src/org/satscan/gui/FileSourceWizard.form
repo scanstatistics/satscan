@@ -845,7 +845,7 @@
                                 <Property name="selectionMode" type="int" value="0"/>
                               </Properties>
                               <AuxValues>
-                                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="ListSelectionModel selectionModel = _mapping_table_linelist.getSelectionModel();&#xd;&#xa;selectionModel.addListSelectionListener(new ListSelectionListener() {&#xd;&#xa;    public void valueChanged(ListSelectionEvent e) {&#xd;&#xa;        if (e.getValueIsAdjusting())&#xd;&#xa;            return;&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});"/>
+                                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_mapping_table_linelist.putClientProperty(&quot;terminateEditOnFocusLost&quot;, Boolean.TRUE);&#xd;&#xa;ListSelectionModel selectionModel = _mapping_table_linelist.getSelectionModel();&#xd;&#xa;selectionModel.addListSelectionListener(new ListSelectionListener() {&#xd;&#xa;    public void valueChanged(ListSelectionEvent e) {&#xd;&#xa;        if (e.getValueIsAdjusting())&#xd;&#xa;            return;&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});"/>
                               </AuxValues>
                             </Component>
                           </SubComponents>
