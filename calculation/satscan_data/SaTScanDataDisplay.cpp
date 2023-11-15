@@ -131,7 +131,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
     fprintf(fp,"%s to %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
   }  
-  if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile())) {
+  if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile() || gParameters.getUseLocationsNetworkFile())) {
     //print number locations scanned
       if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
           PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
