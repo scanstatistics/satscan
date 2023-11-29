@@ -6,12 +6,6 @@
 #include "AsciiPrintFormat.h"
 #include "UtilityFunctions.h"
 
-/** constructor */
-RunTimeComponentManager::RunTimeComponentManager() {}
-
-/** destructor */
-RunTimeComponentManager::~RunTimeComponentManager() {}
-
 /** Returns corresponding SerialRunTimeComponent type which FocusRunTimeComponent
     type belongs to. */
 SerialRunTimeComponent::Type RunTimeComponentManager::GetCorrespondingRunTimeComponent(FocusRunTimeComponent::Type eType) const {
@@ -45,74 +39,48 @@ const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComp
   return "?";
 }
 
-/** Returns formated string which indicates total run time. */
-std::string & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, std::string& sTimeString) const {
-//  short                 uwDays, uwHours, uwMinutes;
-  std::string           buffer;
-
-  sTimeString = "";
-
-//  uwDays = static_cast<short>(dTimeInSeconds / 86400);
-//  dTimeInSeconds -= uwDays * 86400;
-//  uwHours = static_cast<short>(dTimeInSeconds / 3600);
-//  dTimeInSeconds -= uwHours * 3600;
-//  uwMinutes = static_cast<short>(dTimeInSeconds / 60);
-//  dTimeInSeconds -= uwMinutes * 60;
-
-//  if (uwDays)
-//    sTimeString << uwDays << " d ";
-//  if (uwHours)
-//    sTimeString << uwHours << " h ";
-//  if (uwMinutes)
-//    sTimeString << uwMinutes << " m ";
-
-  printString(buffer, "%g", std::max(dTimeInSeconds, 0.0));
-  sTimeString += buffer;
-  sTimeString += " s ";
-
-  return sTimeString;
-}
-
 /** Initializes run time manager for another analysis. */
 void RunTimeComponentManager::Initialize() {
-  gtRunTimeComponents.clear();
-  gtCurrent=gtRunTimeComponents.end();
-  gtFocusedRunTimeComponents.clear();
-  gTimer.restart();
+  _run_time_components.clear();
+  _current=_run_time_components.end();
+  _focused_run_time_components.clear();
+  _timer.start();
 }
 
 /** Prints details of component runtimes to file stream. */
 void RunTimeComponentManager::Print(FILE* fp) {
-  double                dTotalExecutionTime;
-  std::string           buffer;
-  AsciiPrintFormat      Printer;
+  boost::timer::cpu_times catch_all;
+  std::string buffer;
+  AsciiPrintFormat Printer;
+  const std::string default_fmt("%us");
 
   //stop total execution timer
-  dTotalExecutionTime = gTimer.elapsed();
+  catch_all = _timer.elapsed();
   Printer.SetMarginsAsRunTimeReportSection();
   fprintf(fp, "\nRUN TIME EVALUATION\n\n");
   //print SerialRunTimeComponent objects
   fprintf(fp, "Run Time Components\n");
   fprintf(fp, "-------------------\n");
   Printer.PrintSectionLabel(fp, "Total Time", false, true);
-  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, buffer));
-  for (const_srt_itr_t itr=gtRunTimeComponents.begin(); itr != gtRunTimeComponents.end(); ++itr) {
-     printString(buffer, "%d) %s", itr->second.GetType(), GetLabel(itr->second.GetType()));
+  Printer.PrintAlignedMarginsDataString(fp, _timer.format(6, default_fmt));
+  for (auto& rtc: _run_time_components) {
+     printString(buffer, "%d) %s", rtc.second.GetType(), GetLabel(rtc.second.GetType()));
      Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
-     dTotalExecutionTime -= itr->second.GetTotalTime();
-     Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), buffer));
+     catch_all.system -= rtc.second.getTimes().system;
+     catch_all.wall -= rtc.second.getTimes().wall;
+     catch_all.user -= rtc.second.getTimes().user;
+     Printer.PrintAlignedMarginsDataString(fp, boost::timer::format(rtc.second.getTimes(), 6, default_fmt));
   }
-  printString(buffer, "%d) %s", SerialRunTimeComponent::CatchAll, GetLabel(SerialRunTimeComponent::CatchAll));
-  Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
-  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, buffer));
+  Printer.PrintSectionLabel(fp, printString(buffer, "%d) %s", SerialRunTimeComponent::CatchAll, GetLabel(SerialRunTimeComponent::CatchAll)).c_str(), false, true);
+  Printer.PrintAlignedMarginsDataString(fp, boost::timer::format(catch_all, 6, default_fmt));
   //print FocusRunTimeComponent objects
-  if (gtFocusedRunTimeComponents.size()) {
+  if (_focused_run_time_components.size()) {
     fprintf(fp, "\nFocused Components\n");
     fprintf(fp, "------------------\n");
-    for (const_frt_itr_t itr=gtFocusedRunTimeComponents.begin(); itr != gtFocusedRunTimeComponents.end(); ++itr) {
-       printString(buffer, "%s (%d)", GetLabel(itr->second.GetType()), itr->second.GetBelongingSerialType());
+    for (auto& frtc : _focused_run_time_components) {
+       printString(buffer, "%s (%d)", GetLabel(frtc.second.GetType()), frtc.second.GetBelongingSerialType());
        Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
-       Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), buffer));
+       Printer.PrintAlignedMarginsDataString(fp, boost::timer::format(frtc.second.getTimes(), 6, default_fmt));
     }
   }  
   Printer.PrintSectionSeparatorString(fp);
@@ -121,20 +89,20 @@ void RunTimeComponentManager::Print(FILE* fp) {
 /** Starts timing of SerialRunTimeComponent type, stopping current component, creating
     new SerialRunTimeComponent object if component of type does not already exist. */
 void RunTimeComponentManager::StartSerialComponent(SerialRunTimeComponent::Type eComponent) {
-  if (gtCurrent != gtRunTimeComponents.end()) gtCurrent->second.Stop();
-  gtCurrent = gtRunTimeComponents.find(eComponent);
-  if (gtCurrent == gtRunTimeComponents.end())
-    gtCurrent = gtRunTimeComponents.insert(gtRunTimeComponents.begin(),
+  if (_current != _run_time_components.end()) _current->second.Stop();
+  _current = _run_time_components.find(eComponent);
+  if (_current == _run_time_components.end())
+    _current = _run_time_components.insert(_run_time_components.begin(),
                                            std::make_pair(eComponent, SerialRunTimeComponent(eComponent)));
-  gtCurrent->second.Start();
+  _current->second.Start();
 }
 
 /** Starts timing of FocusRunTimeComponent type, creating new FocusRunTimeComponent object if
     component of type does not already exist. */
 void RunTimeComponentManager::StartFocused(FocusRunTimeComponent::Type eComponent) {
-  frt_itr_t itr = gtFocusedRunTimeComponents.find(eComponent);
-  if (itr == gtFocusedRunTimeComponents.end())
-    itr = gtFocusedRunTimeComponents.insert(gtFocusedRunTimeComponents.begin(),
+  frt_itr_t itr = _focused_run_time_components.find(eComponent);
+  if (itr == _focused_run_time_components.end())
+    itr = _focused_run_time_components.insert(_focused_run_time_components.begin(),
                                             std::make_pair(eComponent,
                                                            FocusRunTimeComponent(GetCorrespondingRunTimeComponent(eComponent), eComponent)));
   itr->second.Start();
@@ -142,14 +110,14 @@ void RunTimeComponentManager::StartFocused(FocusRunTimeComponent::Type eComponen
 
 /** Stops timing of current SerialRunTimeComponent object. */
 void RunTimeComponentManager::StopSerialComponent() {
-  if (gtCurrent != gtRunTimeComponents.end()) gtCurrent->second.Stop();
-  gtCurrent = gtRunTimeComponents.end();
+  if (_current != _run_time_components.end()) _current->second.Stop();
+  _current = _run_time_components.end();
 }
 
 /** Stops timing of FocusRunTimeComponent object for type. */
 void RunTimeComponentManager::StopFocused(FocusRunTimeComponent::Type eComponent) {
-  frt_itr_t itr = gtFocusedRunTimeComponents.find(eComponent);
-  if (itr != gtFocusedRunTimeComponents.end())
+  frt_itr_t itr = _focused_run_time_components.find(eComponent);
+  if (itr != _focused_run_time_components.end())
     itr->second.Stop();
 }
 

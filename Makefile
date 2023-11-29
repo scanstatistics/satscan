@@ -40,10 +40,9 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBAS
                -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(SHAPELIB) -I$(ZLIB) -I$(ZLIB_MINIZIP)\
 	           -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI) -I$(JNI_PLAT)
 
-DEFINES     := -D__BATCH_COMPILE \
-               -DBOOST_ALL_NO_LIB
+DEFINES     := -D__BATCH_COMPILE -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF $(PLAT_DEFINES)
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lz -lm -Wl,-Bdynamic -lrt -lpthread
 # static libgcc flags
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread
@@ -226,25 +225,14 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(CALCULATION)/IniParameterFileAccess.cpp \
                $(CALCULATION)/RunTimeComponents.cpp \
+               $(BOOSTDIR)/libs/timer/src/cpu_timer.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
-               $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/cpp_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/cregex.cpp \
-               $(BOOSTDIR)/libs/regex/src/fileiter.cpp \
-               $(BOOSTDIR)/libs/regex/src/icu.cpp \
-               $(BOOSTDIR)/libs/regex/src/instances.cpp \
                $(BOOSTDIR)/libs/regex/src/posix_api.cpp \
                $(BOOSTDIR)/libs/regex/src/regex.cpp \
                $(BOOSTDIR)/libs/regex/src/regex_debug.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_raw_buffer.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_traits_defaults.cpp \
                $(BOOSTDIR)/libs/regex/src/static_mutex.cpp \
-               $(BOOSTDIR)/libs/regex/src/usinstances.cpp \
-               $(BOOSTDIR)/libs/regex/src/w32_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/wc_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/winstances.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
@@ -259,6 +247,8 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/chrono/src/thread_clock.cpp \
                $(BOOSTDIR)/libs/system/src/error_code.cpp \
                $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/directory.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/exception.cpp \
                $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
                $(BOOSTDIR)/libs/filesystem/src/path.cpp \
                $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \

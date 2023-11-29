@@ -291,7 +291,7 @@ void DataDemographicsProcessor::finalize() {
                 BasePrint::P_WARNING, _parameters.getLinelistIndividualsCacheFileName().c_str()
             );
             boost::filesystem::path from = _temp_individuals_cache_filename, to = _parameters.getLinelistIndividualsCacheFileName();
-            boost::filesystem::detail::copy_file(from, to, boost::filesystem::detail::overwrite_if_exists);
+            boost::filesystem::detail::copy_file(from, to, static_cast<unsigned int>(boost::filesystem::copy_options::overwrite_existing));
         }
         remove(_temp_individuals_cache_filename.c_str());
     }

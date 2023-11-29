@@ -1,21 +1,21 @@
 #!/bin/sh
 
-# Check for minimum number of arguments.
-REQUIRED_ARGS=1 # Script requires 3 argument
-if [ $# -lt "$REQUIRED_ARGS" ]
-then
-  echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries output directory>])"
-  echo "   example: `basename $0` /Users/satscsvc/prj/satscan.development/satscan /Users/satscsvc/prj/boost/boost_1_68_0 /Users/satscsvc/prj/satscan.development/binaries/mac"
-  exit 1
-fi
+### # Check for minimum number of arguments.
+### REQUIRED_ARGS=1 # Script requires 3 argument
+### if [ $# -lt "$REQUIRED_ARGS" ]
+### then
+###   echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries output directory>])"
+###   echo "   example: `basename $0` /Users/satscsvc/prj/satscan.development/satscan /Users/satscsvc/prj/boost/boost_1_81_0 /Users/satscsvc/prj/satscan.development/binaries/mac"
+###   exit 1
+### fi
 
 (
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
 osx_min_version="-mmacosx-version-min=10.13"
-binaries="$3"
-satscan_src="$1"
-boost_src="$2"
+binaries="${3:-/Users/satscsvc/prj/satscan.development/binaries/mac}"
+satscan_src="${1:-/Users/satscsvc/prj/satscan.development/satscan}"
+boost_src="${2:-/Users/satscsvc/prj/boost/boost_1_81_0}"
 processors="-j2"
 
 rm -f $binaries/*

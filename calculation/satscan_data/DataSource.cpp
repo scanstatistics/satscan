@@ -53,11 +53,11 @@ bool DataSource::hasIndividualLinelistMapping() const {
         for (const auto& fieldMap : _linelist_fields_map)
             if (fieldMap.get<1>() == INDIVIDUAL_ID) {
                 _has_event_id = true;
-                return _has_event_id;
+                return static_cast<bool>(_has_event_id);
             }
         _has_event_id = false;
     }
-    return _has_event_id;
+    return static_cast<bool>(_has_event_id);
 }
 
 /* Returns whether descriptive coordinates are defined in list list attributes. */

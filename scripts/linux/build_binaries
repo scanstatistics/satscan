@@ -1,21 +1,21 @@
 #!/bin/sh
 
-# Check for minimum number of arguments.
-REQUIRED_ARGS=1 # Script requires 3 argument
-if [ $# -lt "$REQUIRED_ARGS" ]
-then
-  echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries ouitput directory>])"
-  echo "   example: `basename $0` /prj/satscan/build.area/satscan /prj/satscan/build.area/boost/boost_1_68_0 /prj/satscan/build.area/binaries/linux"
-  exit 1
-fi
+### # Check for minimum number of arguments.
+### REQUIRED_ARGS=1 # Script requires 3 argument
+### if [ $# -lt "$REQUIRED_ARGS" ]
+### then
+###   echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries ouitput directory>])"
+###   echo "   example: `basename $0` /prj/satscan/build.area/satscan /prj/satscan/build.area/boost/boost_1_81_0 /prj/satscan/build.area/binaries/linux"
+###   exit 1
+### fi
 
 (
 
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
-binaries="$3"
-satscan_src="$1"
-boost_src="$2"
+binaries="${3:-/prj/satscan/build.area/binaries/linux}"
+satscan_src="${1:-/prj/satscan/build.area/satscan}"
+boost_src="${2:-/prj/satscan/build.area/boost/boost_1_81_0}"
 processors="-j8"
 pthread="-pthread"
 lib_target="libsatscan.linux.so"
