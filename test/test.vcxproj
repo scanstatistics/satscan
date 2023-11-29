@@ -54,7 +54,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -76,7 +76,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;BOOST_TEST_NO_LIB;__BATCH_COMPILE;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>

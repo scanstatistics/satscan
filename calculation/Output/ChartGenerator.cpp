@@ -778,7 +778,7 @@ void GiniChartGenerator::generateChart() const {
         for (MLC_Collections_t::const_iterator itrMLC=_mlc.begin(); itrMLC != _mlc.end(); ++itrMLC) {
             categories << (itrMLC == _mlc.begin() ? "" : ",") << itrMLC->getMaximumWindowSize();
             double gini = itrMLC->getGiniCoefficient(_dataHub, _simVars, _dataHub.GetParameters().getGiniIndexPValueCutoff());
-            getValueAsString(gini, buffer, 4).c_str();
+            getValueAsString(gini, buffer, 4);
             gini_data << (itrMLC == _mlc.begin() ? "" : ",");
             if (maximizedCollection == &(*itrMLC)) {
                 gini_data << "{y: " << buffer.c_str() << ", name: 'Optimal Gini coefficient', marker: {symbol: 'circle', radius: 6, fillColor: 'red', states: {hover: {fillColor: 'red', radius: 8}}} }";

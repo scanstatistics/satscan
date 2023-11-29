@@ -2,7 +2,8 @@
 #ifndef __SATSCAN_H
 #define __SATSCAN_H
 //*****************************************************************************
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER)
+#define NOMINMAX
 #include <Windows.h>
 #endif
 #include <cstdlib>
@@ -15,34 +16,25 @@
 #include <ctime>
 #include <set>
 #ifdef _WINDOWS_
-  #include <io.h>
+#include <io.h>
 #else
-  #include <unistd.h>
+#include <unistd.h>
 #endif
 
-#ifndef _WINDOWS_
-   #define   stricmp strcasecmp
-   #define   strnicmp strncasecmp
+#ifdef _WINDOWS_
+#define stricmp _stricmp
+#define strnicmp _strnicmp
+#else
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
 #endif
 
 #include <utility>
 #include <deque>
-#ifdef __BORLANDC__
-#pragma warn -8012
-#pragma warn -8008
-#pragma warn -8066
-#pragma warn -8055
-#endif
 #include "boost/dynamic_bitset.hpp"
 #define DATE_TIME_INLINE
 #include "boost/date_time/posix_time/ptime.hpp"
 #undef DATE_TIME_INLINE
-#ifdef __BORLANDC__
-#pragma warn +8012
-#pragma warn +8008
-#pragma warn +8066
-#pragma warn +8055
-#endif
 
 #include "boost/tuple/tuple.hpp"
 #include <boost/any.hpp>
