@@ -91,7 +91,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -121,7 +121,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\print;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\utility;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -132,7 +132,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Debug\zlib64.lib</AdditionalDependencies>
+    	<AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Debug\zlib64.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
