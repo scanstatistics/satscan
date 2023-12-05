@@ -1211,9 +1211,6 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\chrono\src\chrono.cpp">
       <Filter>Source Files\source\boost\chrono</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\c_regex_traits.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\cmdline.cpp">
       <Filter>Source Files\source\boost\program_options</Filter>
     </ClCompile>
@@ -1223,23 +1220,8 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\convert.cpp">
       <Filter>Source Files\source\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\cpp_regex_traits.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\cregex.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp">
       <Filter>Source Files\source\boost\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\fileiter.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\icu.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\instances.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp">
       <Filter>Source Files\source\boost\filesystem</Filter>
@@ -1277,12 +1259,6 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp">
       <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_traits_defaults.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_raw_buffer.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp">
       <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
@@ -1291,9 +1267,6 @@
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\split.cpp">
       <Filter>Source Files\source\boost\program_options</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\usinstances.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\chrono\src\thread_clock.cpp">
       <Filter>Source Files\source\boost\chrono</Filter>
@@ -1310,19 +1283,10 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\source\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\winstances.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp">
       <Filter>Source Files\source\boost\filesystem</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wc_regex_traits.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\w32_regex_traits.cpp">
       <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\variables_map.cpp">
@@ -1334,9 +1298,6 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\source\boost\threads</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\timer\src\cpu_timer.cpp">
-      <Filter>Source Files\boost</Filter>
-    </ClCompile>        
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
       <Filter>Source Files\source\calculation\Output</Filter>
     </ClCompile>
@@ -1356,6 +1317,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_81_0\libs\timer\src\cpu_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
