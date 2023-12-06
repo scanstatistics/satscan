@@ -160,8 +160,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
             outKML << std::endl;
         }
 
-    }
-    catch (prg_exception& x) {
+    } catch (prg_exception& x) {
         x.addTrace("writeCluster()", "BaseClusterKML");
         throw;
     }
@@ -611,7 +610,7 @@ void ClusterKML::finalize() {
             Network::Connection_Details_t connections = GisUtils::getNetworkConnections(_dataHub.refLocationNetwork());
             for (const auto& connection : GisUtils::getNetworkConnections(_dataHub.refLocationNetwork())) {
                 std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(connection.get<0>()->coordinates()->retrieve(vCoordinates)));
-                edges << "\t\t\t<Placemark><styleUrl>#line-edge</styleUrl><LineString><coordinates>";
+                edges << "\t\t\t<Placemark><visibility>0</visibility><styleUrl>#line-edge</styleUrl><LineString><coordinates>";
                 edges << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0  ";
                 prLatitudeLongitude = ConvertToLatLong(connection.get<1>()->coordinates()->retrieve(vCoordinates));
                 edges << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0</coordinates></LineString></Placemark>" << std::endl;
