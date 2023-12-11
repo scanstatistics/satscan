@@ -638,32 +638,23 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
         //this function currently discriminates by geographical orientation only - so candiddate cluster can not be purely temporal 
         if (CandidateCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
             return true; //always keep purely temporal cluster - we don't apply geographical overlap for these clusters
+        auto checkTemporalOverlap = [&bResult, &DataHub](CCluster const& cluster1, CCluster const& cluster2) {
+            // Potentially override detected geographical overlap if they don't overlap temporally - both must be space-time clusters,
+            // since we're already skipping purely-temporal clusters and purely spatial clusters span entire study period which means
+            // the geographical overlap is enough.
+            if (!bResult && cluster1.GetClusterType() == SPACETIMECLUSTER && cluster2.GetClusterType() == SPACETIMECLUSTER)
+                return cluster1.m_nLastInterval < cluster2.m_nFirstInterval || cluster1.m_nFirstInterval > cluster2.m_nLastInterval;
+            return bResult;
+        };
         if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
             std::auto_ptr<stsClusterCentroidGeometry> CandidateCenter;
-            // we will potentially use the radius shortcut method if many locations and candidate cluster is circular
-            bool shouldShortCut = false; 
-            // We believe the new brute force algorithm will produce faster times such that this shortcut method is not needed.
-            // The shortcut method isn't ideal since it does not ensure non-overlap in cluster locations, but only in cluster radius.
-            if (shouldShortCut) {
-                dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
-                // retrieve coordinates of candidate cluster
-                DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
-		        CandidateCenter.reset(new stsClusterCentroidGeometry(vCandidateCenterCoords));
-            }
             for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
-                if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)
+                CCluster const& currCluster = **itrCurr;
+                if (currCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
                     continue; //skip comparison against retained purely temporal cluster - can't compare
-                //if **itrCurr and CandidateCluster are both not elliptical and there are many locations; do not use brute force HasAnyTractsInCommon() but instead use shortcut.
-                if (shouldShortCut && (**itrCurr).GetEllipseOffset() == 0) {
-                    CCluster const & currCluster = **itrCurr;
-                    DataHub.GetGInfo()->retrieveCoordinates(currCluster.GetCentroidIndex(), vCurrCenterCoords);
-                    stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
-                    dCurrRadius = GetClusterRadius(DataHub, currCluster);
-                    dDistanceCenters = CandidateCenter->DistanceTo(currCenter) - (dCurrRadius + dCandidateRadius);
-                    bResult = std::fabs(dDistanceCenters) > DBL_CMP_TOLERANCE && dDistanceCenters > 0.0;
-                } else {
-                    bResult = !HasAnyTractsInCommon(DataHub, **itrCurr, CandidateCluster);
-                }
+                bResult = !HasAnyTractsInCommon(DataHub, currCluster, CandidateCluster);
+                // Potentially override the geographical overlap detection by considering the temporal aspect of the clusters as well.
+                bResult = checkTemporalOverlap(currCluster, CandidateCluster);
             }
         } else { // standard geographical overlap checking
             std::auto_ptr<stsClusterCentroidGeometry> currCenter, CandidateCenter;
@@ -771,6 +762,8 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                     } break;
                     default:  throw prg_error("Unknown Criteria for Reporting Secondary Clusters '%d'.","MostLikelyClustersContainer", eCriterion);
                 }
+                // Potentially override the geographical overlap detection by considering the temporal aspect of the clusters as well.
+                bResult = checkTemporalOverlap(currCluster, CandidateCluster);
             }
         }
     } catch (prg_exception& x) {
