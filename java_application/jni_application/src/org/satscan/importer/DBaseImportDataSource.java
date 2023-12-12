@@ -1,19 +1,12 @@
-/*
- * DBaseImportDataSource.java
- *
- * Created on December 20, 2007, 9:41 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+
 package org.satscan.importer;
 
 import com.linuxense.javadbf.DBFDataType;
 import com.linuxense.javadbf.DBFException;
-import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -23,33 +16,34 @@ import java.util.GregorianCalendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * DBaseImportDataSource acts as a data source for the Importer by reading a dBase file.
+ */
 public class DBaseImportDataSource implements ImportDataSource {
 
-    private final File _sourceFile;
-    InputStream _inputStream=null;
+    private final File _source_file;
+    InputStream _input_stream=null;
     private final DBFReader _reader;
-    private int _currentRowNumber = 0;
-    private boolean _formatDates;
-    private final String _libDateFormat = "EEE MMM dd HH:mm:ss z yyyy"; //"Fri Aug 30 00:00:00 EDT 2002"
-    private boolean _show_generateid=true;
-    private boolean _show_onecont=true;
+    private int _current_row = 0;
+    private boolean _format_dates;
+    private final String DATE_FORMAT = "EEE MMM dd HH:mm:ss z yyyy"; //"Fri Aug 30 00:00:00 EDT 2002"
     private ArrayList<Object> _column_names; 
 
     /** Creates a new instance of DBaseImportDataSource */
     public DBaseImportDataSource(File file, boolean formatDates) {
-        _column_names = new ArrayList<Object>();
-        _sourceFile = file;
-        _formatDates = formatDates;
+        _column_names = new ArrayList<>();
+        _source_file = file;
+        _format_dates = formatDates;
         try {
-            _inputStream = new FileInputStream(_sourceFile);
-            _reader = new DBFReader(_inputStream);
+            _input_stream = new FileInputStream(_source_file);
+            _reader = new DBFReader(_input_stream);
             _column_names.add("Generated Id");
             _column_names.add("One Count");
             for (int i=0; i < _reader.getFieldCount(); ++i) {
                 String name = _reader.getField(i).getName();
                 _column_names.add(name.isEmpty() ? ("Column " + (i + 1)) : name);
             }            
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -57,7 +51,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     @Override
     public void close() {        
         try {
-            if (_inputStream != null) {_inputStream.close(); _inputStream=null;}
+            if (_input_stream != null) {_input_stream.close(); _input_stream=null;}
         } catch (IOException ex) {
             Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -97,7 +91,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     /** Returns current row index. */
     @Override
     public long getCurrentRecordNum() {
-        return _currentRowNumber;
+        return _current_row;
     }
 
     /** Returns array of objects that define the column names of table. */
@@ -119,13 +113,13 @@ public class DBaseImportDataSource implements ImportDataSource {
     /** Advances row index and reads data into object array. Returns array of objects if not end of file, otherwise returns null. */
     @Override
     public Object[] readRow() {
-        ArrayList<Object> values = new ArrayList<Object>();
+        ArrayList<Object> values = new ArrayList<>();
         try {
             Object[] record = _reader.nextRecord();
             if (record == null) {
                 return null;
             }
-            values.add("location" + (_currentRowNumber + 1));
+            values.add("location" + (_current_row + 1));
             values.add("1");
             for (int i=0; i < record.length; ++i) {
                 if (record[i] == null) {//replace null values with empty string
@@ -133,10 +127,10 @@ public class DBaseImportDataSource implements ImportDataSource {
                 } else if (isColumnDate(i + 2)) {
                     //reformat date to format that we want either YYYYMMDD or YYYY/MM/DD
                     GregorianCalendar date = new GregorianCalendar();
-                    date.setTime(new SimpleDateFormat(_libDateFormat).parse(record[i].toString()));
+                    date.setTime(new SimpleDateFormat(DATE_FORMAT).parse(record[i].toString()));
                     StringBuilder str = new StringBuilder();
                     str.append(date.get(GregorianCalendar.YEAR));
-                    if (_formatDates) {
+                    if (_format_dates) {
                         str.append("/");
                     }
                     int month = date.get(GregorianCalendar.MONTH);
@@ -144,7 +138,7 @@ public class DBaseImportDataSource implements ImportDataSource {
                         str.append("0");
                     }
                     str.append(month + 1);
-                    if (_formatDates) {
+                    if (_format_dates) {
                         str.append("/");
                     }
                     int day = date.get(GregorianCalendar.DAY_OF_MONTH);
@@ -164,10 +158,8 @@ public class DBaseImportDataSource implements ImportDataSource {
                     values.add(record[i].toString());
                 }
             }
-            ++_currentRowNumber;
-        } catch (ParseException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (DBFException e) {
+            ++_current_row;
+        } catch (ParseException | DBFException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
         return values.toArray();

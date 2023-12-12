@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.satscan.importer;
 
 import java.io.File;
@@ -12,8 +8,8 @@ import org.satscan.gui.SaTScanApplication;
 import org.satscan.utils.FileAccess;
 
 /**
- *
- * @author hostovic
+ * ShapefileDataSource acts as a data source for the Importer by reading from a shape file
+ * and associated dBase file.
  */
 public class ShapefileDataSource implements ImportDataSource {
     private final File _source_file;
@@ -22,7 +18,7 @@ public class ShapefileDataSource implements ImportDataSource {
     private ArrayList<Object> _column_names;   
     
     public ShapefileDataSource(File source_file, boolean formatDates) {
-        _column_names = new ArrayList<Object>();
+        _column_names = new ArrayList<>();
         _source_file = source_file;
         try {
             // check for existance of dBase file
@@ -48,6 +44,7 @@ public class ShapefileDataSource implements ImportDataSource {
         }   
     }
      
+    @Override
     public void close() {
         try {
             if (_dbase_data_source != null) _dbase_data_source.close();
@@ -56,10 +53,12 @@ public class ShapefileDataSource implements ImportDataSource {
         }
     }
     
+    @Override
     public Object[] getColumnNames() {
         return _column_names.toArray();
     }   
     
+    @Override
     public int getColumnIndex(String name) {
         for (int i=0; i < _column_names.size(); ++i) {
             String column_name = (String)_column_names.get(i);
@@ -106,7 +105,7 @@ public class ShapefileDataSource implements ImportDataSource {
         ++_current_row_number;
         if (_current_row_number > getNumRecords())
             return null;
-        ArrayList<Object> values = new ArrayList<Object>();
+        ArrayList<Object> values = new ArrayList<>();
         values.add("location" + _current_row_number);
         values.add("1");
         double[] coordinates = getCoordinates(_current_row_number - 1);
