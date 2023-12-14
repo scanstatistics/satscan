@@ -26,7 +26,7 @@ public class BatchAnalysis implements Cloneable {
         }
 
         public TreeNode<T> addChild(T child) {
-            TreeNode<T> childNode = new TreeNode<T>(child);
+            TreeNode<T> childNode = new TreeNode<>(child);
             childNode.parent = this;
             this.children.add(childNode);
             return childNode;
@@ -178,7 +178,7 @@ public class BatchAnalysis implements Cloneable {
         }
         if (analysisType == Parameters.AnalysisType.PURELYSPATIAL || analysisType == Parameters.AnalysisType.SPATIALVARTEMPTREND
                 || analysisType == Parameters.AnalysisType.SPACETIME || analysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
-            description.append(", ").append(parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), false) + "%");
+            description.append(", ").append(parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), false)).append("%");
             if (parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false)) {
                 description.append(", ").append(parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), false));
             }
@@ -194,15 +194,15 @@ public class BatchAnalysis implements Cloneable {
         return _description;
     }
 
-    public void setDescription(final String s) {
-        _description = new String(s);
+    public void setDescription(String s) {
+        _description = s;
     }
 
     public Parameters getParameters() {
         return _parameters;
     }
 
-    public void setParameters(final Parameters p) {
+    public void setParameters(Parameters p) {
         _parameters = (Parameters) p.clone();
     }
 
@@ -250,7 +250,7 @@ public class BatchAnalysis implements Cloneable {
         return _last_results_filename;
     }
 
-    public void setLastResultsFilename(final String s) {
-        _last_results_filename = new String(s);
+    public void setLastResultsFilename(String s) {
+        _last_results_filename = s;
     }    
 }

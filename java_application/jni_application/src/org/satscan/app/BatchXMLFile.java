@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.satscan.app;
 
 import org.w3c.dom.NodeList;
@@ -10,6 +6,12 @@ import org.w3c.dom.Node;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,18 +20,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.utils.FileAccess;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
-/* XML file class to to reda and write BatchAnalysis objects. */
+/* XML file class to read and write BatchAnalysis objects, along with execution results information. */
 public class BatchXMLFile {
 
     private static final String ANALYSES = "analyses";
@@ -129,6 +135,47 @@ public class BatchXMLFile {
         return dateFormat.format(date);
     } 
     
+    public static FileTime last_modified(String filename) {
+        try {
+            if (!FileAccess.ValidateFileAccess(filename, false, false))
+                return null;
+            Path file = Paths.get(filename);
+            BasicFileAttributes attr = Files.readAttributes(file, BasicFileAttributes.class);
+            return attr.lastModifiedTime();
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    /** Reads batch analysis results information only from XML file. */
+    public static BatchAnalysis readResultsFromElement(Element srcElement, BatchAnalysis batchAnalysis) {
+        batchAnalysis.setLastResultsFilename(srcElement.getElementsByTagName(LAST_RESULTS).item(0).getTextContent());
+        batchAnalysis.setLastExecutedDate(parseDate(srcElement.getElementsByTagName(LAST_EXEC_DATE).item(0).getTextContent()));
+        batchAnalysis.setLastExecutedStatus(parseStatus(srcElement.getElementsByTagName(LAST_EXEC_STATUS).item(0).getTextContent()));
+        batchAnalysis.setLastExecutedMessage(srcElement.getElementsByTagName(LAST_EXEC_MSSG).item(0).getTextContent());
+        // Attempt to read drilldown results tree.
+        NodeList drilldown_tree = srcElement.getElementsByTagName(DRILLDOWN_TREE);
+        NodeList drilldown_nodes = srcElement.getElementsByTagName(DRILLDOWN_NODE);
+        if (drilldown_tree != null && drilldown_tree.getLength() > 0 && drilldown_nodes.getLength() > 0) {
+            Map<String, BatchAnalysis.TreeNode<Pair<String, Integer>>> tree_map = new HashMap<>();
+            for (int i=0; i < drilldown_nodes.getLength(); ++i) {
+                Element e = (Element)drilldown_nodes.item(i);
+                String results_filename = e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
+                Integer significant = Integer.valueOf(e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getAttributes().getNamedItem(DRILLDOWN_SIGNIFICANT).getNodeValue());
+                String parent_filename = ((Element)e.getParentNode()).getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
+                if (parent_filename.equals(results_filename)) { // Root node
+                    BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = batchAnalysis.getNewTreeNode(results_filename, significant);
+                    tree_map.put(results_filename, rootNode);
+                    batchAnalysis.setDrilldownRoot(rootNode);
+                } else {
+                    tree_map.put(results_filename, tree_map.get(parent_filename).addChild(Pair.of(results_filename, significant)));
+                }
+            }
+        }
+        return batchAnalysis;
+    }
+    
+    /** Reads batch analysis settings and results information from XML file. */
     public static ArrayList<BatchAnalysis> read(String filename) {
         ArrayList<BatchAnalysis> _batch_analyses = new ArrayList();
         try {
@@ -171,37 +218,41 @@ public class BatchXMLFile {
                         Boolean.parseBoolean(eElement.getAttributes().getNamedItem(ANALYSIS_SELECTED).getNodeValue()),
                         eElement.getElementsByTagName(DESCRIPTION).item(0).getTextContent(), 
                         parameters, study_length, lag, null, last_results_filename
-                    );                    
-                    batchAnalysis.setLastExecutedDate(parseDate(eElement.getElementsByTagName(LAST_EXEC_DATE).item(0).getTextContent()));
-                    batchAnalysis.setLastExecutedStatus(parseStatus(eElement.getElementsByTagName(LAST_EXEC_STATUS).item(0).getTextContent()));
-                    batchAnalysis.setLastExecutedMessage(eElement.getElementsByTagName(LAST_EXEC_MSSG).item(0).getTextContent());
-                    
-                    // Attempt to read drilldown results tree.
-                    NodeList drilldown_tree = eElement.getElementsByTagName(DRILLDOWN_TREE);
-                    NodeList drilldown_nodes = eElement.getElementsByTagName(DRILLDOWN_NODE);
-                    if (drilldown_tree != null && drilldown_tree.getLength() > 0 && drilldown_nodes.getLength() > 0) {
-                        Map<String, BatchAnalysis.TreeNode<Pair<String, Integer>>> tree_map = new HashMap<>();
-                        for (int i=0; i < drilldown_nodes.getLength(); ++i) {
-                            Element e = (Element)drilldown_nodes.item(i);
-                            String results_filename = e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
-                            Integer significant = Integer.parseInt(e.getElementsByTagName(DRILLDOWN_RESULTS).item(0).getAttributes().getNamedItem(DRILLDOWN_SIGNIFICANT).getNodeValue());
-                            String parent_filename = ((Element)e.getParentNode()).getElementsByTagName(DRILLDOWN_RESULTS).item(0).getTextContent();
-                            if (parent_filename.equals(results_filename)) { // Root node
-                                BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = batchAnalysis.getNewTreeNode(results_filename, significant);
-                                tree_map.put(results_filename, rootNode);
-                                batchAnalysis.setDrilldownRoot(rootNode);
-                            } else {
-                                tree_map.put(results_filename, tree_map.get(parent_filename).addChild(Pair.of(results_filename, significant)));
-                            }
-                        }
-                    }
+                    );
+                    readResultsFromElement(eElement, batchAnalysis);
                     _batch_analyses.add(batchAnalysis);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException | NumberFormatException | ParserConfigurationException | DOMException | SAXException e) {
             e.printStackTrace();
         }
         return _batch_analyses;
+    }
+
+    /** Reads batch analysis results information only from XML file. This is a specialized method to read only the 
+     *  result attributes into existing BatchAnalysis objects. 
+     */
+    public static ArrayList<BatchAnalysis> readResults(String filename, ArrayList<BatchAnalysis> batch_analyses) {
+        try {
+            File fXmlFile = new File(filename);
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(fXmlFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName(ANALYSIS);
+            if (nList.getLength() != batch_analyses.size())
+                throw new RuntimeException("Expecting number of analyses in XML file to match number of BatchAnalysis objects (" + nList.getLength() + " != " + batch_analyses.size() + ").");
+            for (int idx=0; idx < nList.getLength(); idx++) {
+                BatchAnalysis batchAnalysis = batch_analyses.get(idx);
+                Node nNode = nList.item(idx);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    readResultsFromElement((Element)nNode, batchAnalysis);
+                }
+            }
+        } catch (IOException | NumberFormatException | ParserConfigurationException | DOMException | SAXException e) {
+            e.printStackTrace();
+        }
+        return batch_analyses;
     }
     
     public static void write(String filename, Collection<BatchAnalysis> batchAnalyses) {
@@ -280,7 +331,7 @@ public class BatchXMLFile {
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(new File(filename));
             transformer.transform(source, result);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | ParserConfigurationException | TransformerException | DOMException e) {
             e.printStackTrace();
         }
     }

@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.satscan.gui;
 
 import java.awt.Component;
@@ -15,8 +11,11 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -62,11 +60,17 @@ import org.satscan.app.CalculationThread;
 import org.satscan.app.OutputFileRegister;
 import org.satscan.app.Parameters;
 import org.satscan.gui.utils.WaitCursor;
-
+import org.apache.commons.vfs2.FileChangeEvent;
+import org.apache.commons.vfs2.FileListener;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.impl.DefaultFileMonitor;
 
 /**
- *
- * @author hostovic
+ * BatchAnalysisFrame defines the internal frame which manages the creation, editing, execution, and display of
+ * parameter settings. The key difference from normal parameter setting files is that these parameter settings
+ * are stored in an XML file, not separate files, along with run results information. This allows the user to
+ * execute multiple analyses in sequence either from the GUI or from the command-line application.
  */
 public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements InternalFrameListener {
     private final JRootPane _root_pane;
@@ -89,19 +93,52 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private final String _lag_helptext = "If specified, the Study Period End Date is replaced with a value relative to today’s date. For example, a Lag Time of 3 days would set the Study Period End Date equal to today’s date minus 3 days. If the No Lag box is checked, the Study Period End Date defaults to the date specified in the parameter settings.";
     private final String _study_period_helptext = "Study Length is the length of time between the Study Period Start Date and the Study Period End Date (inclusive). If specified, the Study Period Start Date is replaced with a value relative to the Study Period End Date. If the No Offset box is checked, the Study Period Start Date defaults to the date specified in the parameter settings.";
     private boolean _batch_executing = false;
-    
+    private FileTime _xml_last_modified;
+    private DefaultFileMonitor _file_monitor;
+      
     /* Creates new form AnalysisBatchFrame */
     public BatchAnalysisFrame(final JRootPane root_pane) {
-        initComponents();
-        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
-        _root_pane = rootPane;
-        addInternalFrameListener(this);
-        pack();
-        readBatchAnalysesFromFile();
-        enableButtons();
-        _add_analysis.requestFocusInWindow();
+            initComponents();
+            setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
+            _root_pane = rootPane;
+            addInternalFrameListener(this);
+            pack();
+            readBatchAnalysesFromFile();
+            enableButtons();
+            _xml_last_modified = org.satscan.app.BatchXMLFile.last_modified(_saved_filename);
+            // Define file listener monitor to take action when the storage XML file is updated outside of this GUI.
+            try {
+                _file_monitor = new DefaultFileMonitor(new FileListener() {
+                    private boolean assumedExternalUpdate() {
+                        if (_xml_last_modified == null) return true;
+                        LocalDateTime three_seconds_ago = LocalDateTime.now().minusSeconds(3);
+                        LocalDateTime last_active_write = LocalDateTime.ofInstant(_xml_last_modified.toInstant(), ZoneId.systemDefault());
+                        // Assume this listener wasn't triggered by the writeBatchAnalysesFromFile() method if stored file timestamp
+                        // isn't in the last 3 seconds - implying that the file was updated through other means, for instance the command-line application.
+                        return last_active_write.isBefore(three_seconds_ago);
+                    }
+                    @Override
+                    public void fileCreated(FileChangeEvent fce) throws Exception { /* nop */ }
+                    @Override
+                    public void fileDeleted(FileChangeEvent fce) throws Exception { /* nop */ }
+                    @Override
+                    public void fileChanged(FileChangeEvent fce) throws Exception {
+                        if (assumedExternalUpdate()) {
+                            // We're maintaining the XML file in sync with changes to the JTable model,
+                            // so we can merge the results from the file with existing BatchAnalysis objects.
+                            // Doing this ensures that references to those objects remain valid in the open frames list
+                            // and assuming this file was not edited manually, it's the only attributes that would be updated.
+                            org.satscan.app.BatchXMLFile.readResults(_saved_filename, _batch_analyses);
+                            ((DefaultTableModel)_analyses_table.getModel()).fireTableDataChanged();
+                        }
+                    }
+                });
+                _file_monitor.addFile(VFS.getManager().resolveFile(_saved_filename));
+                _file_monitor.start();
+            } catch (FileSystemException ex) { _file_monitor = null; }            
+            _add_analysis.requestFocusInWindow();
     }
-
+    
     /* Enables side buttons based on table and selection. */
     private void enableButtons() {
         if (!_batch_executing) {
@@ -113,7 +150,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             _execute_selected.setEnabled(!selected.isEmpty() && _open_settings_frames.isEmpty());
             _moveUp.setEnabled(selected.size() == 1 && selected.get(0).right > 0);
             _moveDown.setEnabled(selected.size() == 1 && selected.get(0).right < _analyses_table.getModel().getRowCount() - 1);
-            _refresh_results.setEnabled(true);
         }
     }
     
@@ -173,6 +209,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     /* Writes all batch analysis settings to storage file. */
     private void writeBatchAnalysesFromFile() {
         org.satscan.app.BatchXMLFile.write(_saved_filename, _batch_analyses);
+        // store the date last modified, we'll use this information with file listener
+        _xml_last_modified = org.satscan.app.BatchXMLFile.last_modified(_saved_filename);
     }
     
     /* Returns the selected BatchAnalysis or null. */
@@ -225,7 +263,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             _open_settings_frames.put(copyAnalysis, frame);
             frame.setSelected(true);
             enableButtons();
-        } catch (Throwable t) {
+        } catch (PropertyVetoException t) {
             new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
         } finally {
             waitCursor.restore();
@@ -265,8 +303,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             TableColumn column = table.getColumnModel().getColumn(i);
             column.setPreferredWidth((int)(tablePreferredWidth * (percentages[i] / total)));
         }
-}
-    
+    }    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -289,7 +326,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         jSeparator3 = new javax.swing.JSeparator();
         _moveUp = new javax.swing.JButton();
         _moveDown = new javax.swing.JButton();
-        _refresh_results = new javax.swing.JButton();
         _analysesScrollpane = new javax.swing.JScrollPane();
         _analyses_table = new javax.swing.JTable();
 
@@ -470,13 +506,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
-        _refresh_results.setText("Refresh Results");
-        _refresh_results.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _refresh_resultsActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout _actions_panelLayout = new javax.swing.GroupLayout(_actions_panel);
         _actions_panel.setLayout(_actions_panelLayout);
         _actions_panelLayout.setHorizontalGroup(
@@ -495,8 +524,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addGroup(_actions_panelLayout.createSequentialGroup()
                         .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_refresh_results, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _actions_panelLayout.setVerticalGroup(
@@ -518,9 +546,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_remove_analysis)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_refresh_results)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
                 .addComponent(_execute_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_execute_selected)
@@ -573,11 +599,15 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     int column = e.getColumn();
                     if (column == SELECT_IDX) {
                         DefaultTableModel model = (DefaultTableModel)e.getSource();
+                        boolean curr_value = _batch_analyses.get(row).getSelected();
                         _batch_analyses.get(row).setSelected((boolean)model.getValueAt(row, column));
+                        if (curr_value != _batch_analyses.get(row).getSelected())
                         writeBatchAnalysesFromFile();
                     } else if (column == DESCRIPTION_IDX) {
                         DefaultTableModel model = (DefaultTableModel)e.getSource();
+                        String curr_value = _batch_analyses.get(row).getDescription();
                         _batch_analyses.get(row).setDescription((String)model.getValueAt(row, column));
+                        if (!curr_value.equals(_batch_analyses.get(row).getDescription()))
                         writeBatchAnalysesFromFile();
                     }
                 }
@@ -649,10 +679,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             if (_moveDown.isEnabled()) _moveDown.requestFocusInWindow();
         }
     }//GEN-LAST:event__moveDownActionPerformed
-
-    private void _refresh_resultsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__refresh_resultsActionPerformed
-        readBatchAnalysesFromFile();
-    }//GEN-LAST:event__refresh_resultsActionPerformed
 
     @Override
     public void internalFrameOpened(InternalFrameEvent e) {
@@ -783,10 +809,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
         private boolean fireUpdateEvent(DefaultTableModel m, TableColumn column, Object status) {
             if (status == null) {
-                List<Boolean> l = ((Vector<?>) m.getDataVector()).stream()
-                .map(v -> (Boolean) ((Vector<?>) v).get(targetColumnIndex))
-                .distinct()
-                .collect(Collectors.toList());
+                List<Boolean> l = ((java.util.Vector<?>) m.getDataVector()).stream()
+                .map(v -> (Boolean) ((java.util.Vector<?>) v).get(targetColumnIndex)).distinct().collect(Collectors.toList());
                 boolean isOnlyOneSelected = l.size() == 1;
                 if (isOnlyOneSelected) {
                     column.setHeaderValue(l.get(0) ? Boolean.TRUE : Boolean.FALSE);
@@ -845,8 +869,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             super();
             // Add mouse motion listener - to change cursor on cell hover.
             _analyses_table.addMouseMotionListener(new java.awt.event.MouseMotionListener() {
-                @Override
-                public void mouseMoved(java.awt.event.MouseEvent evt) {
+                @Override public void mouseMoved(java.awt.event.MouseEvent evt) {
                     if (_analyses_table.columnAtPoint(evt.getPoint()) == STATUS_IDX){
                         int rowIdx = _analyses_table.rowAtPoint(evt.getPoint());
                         if (rowIdx >= 0 && _batch_analyses.get(rowIdx).getLastExecutedStatus() != BatchAnalysis.STATUS.NEVER) {
@@ -856,21 +879,13 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     }
                     _analyses_table.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));                    
                 }
-
-                @Override
-                public void mouseDragged(MouseEvent e) {}
+                @Override public void mouseDragged(MouseEvent e) {}
             });
             // Add mouse listener - to launcher results viewer
-            _analyses_table.addMouseListener(new java.awt.event.MouseAdapter() {
-        
-                @Override
-                public void mouseEntered(java.awt.event.MouseEvent evt) {}
-        
-                @Override
-                public void mouseExited(java.awt.event.MouseEvent evt) {}
-        
-                @Override
-                public void mousePressed(java.awt.event.MouseEvent evt) {
+            _analyses_table.addMouseListener(new java.awt.event.MouseAdapter() {        
+                @Override public void mouseEntered(java.awt.event.MouseEvent evt) {}
+                @Override public void mouseExited(java.awt.event.MouseEvent evt) {}
+                @Override public void mousePressed(java.awt.event.MouseEvent evt) {
                     int row = _analyses_table.rowAtPoint(evt.getPoint());
                     int col = _analyses_table.columnAtPoint(evt.getPoint());
                     if (row >= 0 && col == STATUS_IDX) { 
@@ -908,7 +923,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             super(new JTextField());
         }
         
-        public boolean stopCellEditing() {
+        @Override public boolean stopCellEditing() {
             if (((JTextField)editorComponent).getText().isBlank())
                 return false;
             fireEditingStopped();
@@ -976,18 +991,22 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         private double _num_records;
         private double _num_executed = 0;
         // Store execution start date to ensure that all analyses use todays's date.
-        private LocalDate _start_date = LocalDate.now();
+        private final LocalDate _start_date = LocalDate.now();
 
         private LocalDate getLocalDate(LocalDate initial, BatchAnalysis.StudyPeriodOffset offset, boolean isStudyPeriod) {
             if (offset == null)
                 return initial;
             switch (offset.getUnits()) {
-                case YEAR : return initial.minusYears(offset.getOffset());
-                case MONTH : return initial.minusMonths(offset.getOffset());
-                case DAY :  
-                case GENERIC: 
+                case YEAR -> {
+                    return initial.minusYears(offset.getOffset());
+                }
+                case MONTH -> { 
+                    return initial.minusMonths(offset.getOffset());
+                }
+                case DAY, GENERIC -> {
                     // special case with study period - since end date is included
                     return initial.minusDays(offset.getOffset() - (isStudyPeriod ? 1 : 0));
+                }
             }
             return initial;
         }
@@ -1045,8 +1064,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     frame.setClosed(true); // Close analysis run frame.
             } catch (java.lang.InterruptedException ie) {
                 Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, null, ie);
-            } catch (Exception e) {
-                Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, "Execution failed with error: " + e.toString());
+            } catch (PropertyVetoException e) {
+                Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, "Execution failed with error: {0}", e.toString());
                 JOptionPane.showInternalMessageDialog(BatchAnalysisFrame.this, e.getMessage());
                 //throw new RuntimeException(e.getMessage(), e);
             } finally {
@@ -1110,7 +1129,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private javax.swing.JButton _modify_analysis;
     private javax.swing.JButton _moveDown;
     private javax.swing.JButton _moveUp;
-    private javax.swing.JButton _refresh_results;
     private javax.swing.JButton _remove_analysis;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
