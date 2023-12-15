@@ -357,6 +357,13 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
         if (!demographic_set.hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
         for (auto const &demographic : demographic_set.getAttributes()) {
             if (demographic.second->gettype() <= DESCRIPTIVE_COORD_X) continue; // Only want attributes, not individual id or descripive coordinates.
+            if (!demographic.second->reportedInVisualizations()) { //skip if excluded from visualizations.
+                _dataHub.GetPrintDirection().Printf(
+                    "Excluding line list attribute '%s' from Google Earth KML file.\nAttribute has too many group values for reporting in KML output.\n",
+                    BasePrint::P_WARNING, demographic.second->label().c_str()
+                );
+                continue;
+            }
             if (std::find_if(event_types.begin(), event_types.end(), [&demographic](const std::string& et) { return et == demographic.first.second; }) == event_types.end())
                 event_types.push_back(demographic.first.second);
         }

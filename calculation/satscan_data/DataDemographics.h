@@ -7,6 +7,7 @@
 #include "DataSource.h"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
+#include <numeric> 
 
 /* Abtract base class for a demographic attribute. */
 class DemographicAttribute {
@@ -21,6 +22,7 @@ class DemographicAttribute {
         const std::string & label() const { return _label; }
         virtual LinelistType gettype() const = 0;
         virtual void print() const = 0;
+        virtual bool reportedInVisualizations() const { return true; }
 };
 
 /* Implements DemographicAttribute class to define a general demographic attribute. */
@@ -41,15 +43,36 @@ class GeneralDemographicAttribute : public DemographicAttribute {
 /* Implements DemographicAttribute class to define a categorical demographic attribute. */
 class CategoricalDemographicAttribute: public DemographicAttribute {
     protected:
+        // The maximum number of categories before attribute is excluded from map/earth visualizations.
+        size_t MAXIMUM_CATEGORIES_FOR_VISUALIZATIONS;
+        double MAXIMUM_PERCENTAGE_CATEGORIES_FOR_VISUALIZATIONS;
         std::map<std::string, unsigned int> _category_counts;
 
     public:
-        CategoricalDemographicAttribute(const std::string& s): DemographicAttribute(s) {}
+        CategoricalDemographicAttribute(const std::string& s) : DemographicAttribute(s) { 
+            MAXIMUM_CATEGORIES_FOR_VISUALIZATIONS = 12; MAXIMUM_PERCENTAGE_CATEGORIES_FOR_VISUALIZATIONS = 50;
+        }
         virtual ~CategoricalDemographicAttribute() {}
 
         virtual void add(const std::string& value, unsigned int times);
         virtual LinelistType gettype() const { return CATEGORICAL_DATA;  }
         virtual void print() const;
+        virtual bool reportedInVisualizations() const { 
+            // Returns whether this attribute would be reported in earth/map visualizations.
+            // There really isn't a hard limit here, this property is just a way to prevent
+            // reporting attributes with many different values (e.g. street address) in Earth/Maps
+            // were the user typically wouldn't find so many values useful.
+            // We'll also limit the number of group values to no more than 50% of the total individuals (e.g. 9 group values and 16 individuals = 56%).
+            unsigned int total_individuals = std::accumulate(
+                std::begin(_category_counts), std::end(_category_counts), 0,
+                [](unsigned int value, const std::map<std::string, unsigned int>::value_type& p) { return value + p.second; }
+            );
+            return (
+                static_cast<double>(_category_counts.size()) / static_cast<double>(total_individuals) <= MAXIMUM_PERCENTAGE_CATEGORIES_FOR_VISUALIZATIONS 
+                &&
+                _category_counts.size() <= MAXIMUM_CATEGORIES_FOR_VISUALIZATIONS
+            );
+        }
 };
 
 /* Implements DemographicAttribute class to define a continuous demographic attribute. */

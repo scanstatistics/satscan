@@ -57,7 +57,7 @@ std::string& EventType::toJson(std::string& json_str) {
     return json_str;
 }
 
-/* Sorts categories times encountered, falling back to label as tie breaker. */
+/* Sorts categories by times encountered, falling back to label as tie breaker. */
 const EventType::CategoriesContainer_t& EventType::sortCategories() {
     std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
         if (left.get<2>() == right.get<2>()) return left.get<1>() < right.get<1>();
@@ -377,6 +377,13 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
         if (!demographic_set.hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
         for (auto const &demographic : demographic_set.getAttributes()) {
             if (demographic.second->gettype() <= DESCRIPTIVE_COORD_X) continue; // skip individual id and descriptive coordinates.
+            if (!demographic.second->reportedInVisualizations()) { //skip if excluded from visualizations.
+                _dataHub.GetPrintDirection().Printf(
+                    "Excluding line list attribute '%s' from Google Map file.\nAttribute has too many group values for reporting in Map output.\n",
+                    BasePrint::P_WARNING, demographic.second->label().c_str()
+                );
+                continue;
+            }
             if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first.second; }) == _event_types.end())
                 _event_types.push_back(EventType(demographic.first.second));
         }

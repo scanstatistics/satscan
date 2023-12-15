@@ -53,7 +53,8 @@ DemographicAttributeSet::DemographicAttributeSet(const LineListFieldMapContainer
             case INDIVIDUAL_ID: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), INDIVIDUAL_ID)); break;
             case DESCRIPTIVE_COORD_X: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_X)); break;
             case DESCRIPTIVE_COORD_Y: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_Y)); break;
-            case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>())); break;
+            //case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>())); break;
+            case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
             case CATEGORICAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
             case CONTINUOUS_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->get<2>())); break;
             default: throw prg_error("Unsupported line list type '%d'.", "DemographicAttributeSet()", itr->get<1>());
