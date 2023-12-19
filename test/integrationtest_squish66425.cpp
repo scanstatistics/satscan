@@ -295,21 +295,22 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
     if (itrOBS == headers.end()) BOOST_FAIL("observed column not found");
     std::vector<std::string>::iterator itrEXP = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::EXPECTED_FIELD));
     if (itrEXP == headers.end()) BOOST_FAIL("expected column not found");
-    double high_rr=std::numeric_limits<double>::max(), low_rr= std::numeric_limits<double>::max(), observed, expected;
+    double rr, high_rr=-std::numeric_limits<double>::max(), low_rr=-std::numeric_limits<double>::max(), observed, expected;
     CSV_Row_t data;
     getCSVRow(stream, data);
-    while (data.size() && (high_rr == std::numeric_limits<double>::max() || low_rr == std::numeric_limits<double>::max())) {
+    while (data.size()) {
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrOBS)).c_str(), observed));
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrEXP)).c_str(), expected));
-        if (observed > expected && high_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), high_rr));
-        if (observed < expected && low_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), low_rr));
+        BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr));
+        if (observed > expected)
+            high_rr = std::max(rr, high_rr);
+        else if (observed < expected)
+            low_rr = std::max(rr, low_rr);
         getCSVRow(stream, data);
     }
     stream.close();
     // Make sure that there are both high and low clusters in the result.
-    BOOST_CHECK(high_rr != std::numeric_limits<double>::max() && low_rr != std::numeric_limits<double>::max());
+    BOOST_CHECK(high_rr != -std::numeric_limits<double>::max() && low_rr != -std::numeric_limits<double>::max());
 
     // Re-run the analysis but restrict low clusters by risk level less than low rate cluster's relative risk.
     _parameters.setRiskLimitLowClusters(true);
@@ -318,7 +319,7 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
 
     // open the cluster information file and confirm that the low risk threshold was enforced but the high rate cluster still exists.
     getFileStream(stream, printString(buffer, "test2%s%s", ClusterInformationWriter::CLUSTER_FILE_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT), results_user_directory);
-    double high2_rr = std::numeric_limits<double>::max(), low2_rr = std::numeric_limits<double>::max();
+    double high2_rr = -std::numeric_limits<double>::max(), low2_rr = -std::numeric_limits<double>::max();
     getCSVRow(stream, headers);
     itrRR = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::RELATIVE_RISK_FIELD));
     if (itrRR == headers.end()) BOOST_FAIL("relative risk column not found");
@@ -327,21 +328,21 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
     itrEXP = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::EXPECTED_FIELD));
     if (itrEXP == headers.end()) BOOST_FAIL("expected column not found");
     getCSVRow(stream, data);
-    while (data.size() && (high2_rr == std::numeric_limits<double>::max() || low2_rr == std::numeric_limits<double>::max())) {
+    while (data.size()) {
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrOBS)).c_str(), observed));
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrEXP)).c_str(), expected));
-        if (observed > expected && high2_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), high2_rr));
-        if (observed < expected && low2_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), low2_rr));
+        BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr));
+        if (observed > expected)
+            high2_rr = std::max(rr, high2_rr);
+        else if (observed < expected)
+            low2_rr = std::max(rr, low2_rr);
         getCSVRow(stream, data);
     }
     stream.close();
     // Make sure that there are both high and low clusters in the result.
-    BOOST_CHECK(high2_rr != std::numeric_limits<double>::max() && low2_rr != std::numeric_limits<double>::max());
-    // Make sure that the high rate cluster's relative risk is the same but the low cluster's relative risk is less than baseline.
-    BOOST_CHECK(high_rr == high2_rr);
-    BOOST_CHECK(low2_rr < low_rr);
+    BOOST_CHECK(high2_rr != -std::numeric_limits<double>::max() && low2_rr != -std::numeric_limits<double>::max());
+    // Make sure that the low cluster's relative risk is less than or equal to risk restriction.
+    BOOST_CHECK(low2_rr <= _parameters.getRiskThresholdLowClusters());
 
     // Re-run the analysis but restrict low clusters by risk level less than low rate cluster's relative risk.
     _parameters.setRiskLimitLowClusters(false);
@@ -351,7 +352,7 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
 
     // open the cluster information file and confirm that the high risk threshold was enforced but the low rate cluster still exists.
     getFileStream(stream, printString(buffer, "test3%s%s", ClusterInformationWriter::CLUSTER_FILE_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT), results_user_directory);
-    double high3_rr = std::numeric_limits<double>::max(), low3_rr = std::numeric_limits<double>::max();
+    double high3_rr = -std::numeric_limits<double>::max(), low3_rr = -std::numeric_limits<double>::max();
     getCSVRow(stream, headers);
     itrRR = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::RELATIVE_RISK_FIELD));
     if (itrRR == headers.end()) BOOST_FAIL("relative risk column not found");
@@ -360,21 +361,21 @@ BOOST_AUTO_TEST_CASE(test_restricting_mixed_risk_rate) {
     itrEXP = std::find(headers.begin(), headers.end(), std::string(ClusterInformationWriter::EXPECTED_FIELD));
     if (itrEXP == headers.end()) BOOST_FAIL("expected column not found");
     getCSVRow(stream, data);
-    while (data.size() && (high3_rr == std::numeric_limits<double>::max() || low3_rr == std::numeric_limits<double>::max())) {
+    while (data.size()) {
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrOBS)).c_str(), observed));
         BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrEXP)).c_str(), expected));
-        if (observed > expected && high3_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), high3_rr));
-        if (observed < expected && low3_rr == std::numeric_limits<double>::max())
-            BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), low3_rr));
+        BOOST_CHECK(string_to_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr));
+        if (observed > expected)
+            high3_rr = std::max(rr, high3_rr);
+        else if (observed < expected)
+            low3_rr = std::max(rr, low3_rr);
         getCSVRow(stream, data);
     }
     stream.close();
     // Make sure that there are both high and low clusters in the result.
-    BOOST_CHECK(high3_rr != std::numeric_limits<double>::max() && low3_rr != std::numeric_limits<double>::max());
-    // Make sure that the high rate cluster's relative risk is the same but the low cluster's relative risk is less than baseline.
-    BOOST_CHECK(high_rr < high3_rr);
-    BOOST_CHECK(low3_rr == low_rr);
+    BOOST_CHECK(high3_rr != -std::numeric_limits<double>::max() && low3_rr != -std::numeric_limits<double>::max());
+    // Make sure that the high cluster's relative risk is more than or equal risk restriction.
+    BOOST_CHECK(high3_rr >= _parameters.getRiskThresholdHighClusters());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
