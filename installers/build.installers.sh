@@ -9,7 +9,6 @@ binaries="/prj/satscan/build.area/binaries/linux"
 
 javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2-linux_x64"
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
-IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.5.1.3"
 
 #### Windows ##############################################################################
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
@@ -32,11 +31,6 @@ zip $installer_version/satscan.${version}_windows.zip -j documents/*
 zip $installer_version/satscan.${version}_windows.zip sample_data/*
 
 #######   ############ Linux ################################################################################
-# Build the IzPack Java installer for Linux. (Note that someday we might replace this process with jpackageInstallerLinux.sh)
-
-# Build Linux installer. 
-$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-${versionf}_linux.jar -k standard
-chmod a+x $installer_version/install-${versionf}_linux.jar
 
 # Build batch binaries archive for Linux. This is an alternative download option that is command-line only (no GUI/Java).
 rm -f $installer_version/satscan.${version}_linux.tar.gz
