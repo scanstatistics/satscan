@@ -22,16 +22,16 @@ lib_target="libsatscan.linux.so"
 
 rm -f $binaries/*
 
-echo building SaTScan for 32-bit system using gcc3.4.4
+echo building SaTScan for 32-bit system using gcc
 ./makescript.sh $binaries/satscan32 $satscan_src $boost_src -m32 "-O3 -Wall -Wextra" $cpp_compiler $c_compiler $processors $pthread
 
-echo building SaTScan shared object for 32-bit system using gcc3.4.4
+echo building SaTScan shared object for 32-bit system using gcc
 ./makescript.so.sh $lib_target $binaries/libsatscan32.so $satscan_src $boost_src -m32 "-O3 -Wall -Wextra" $cpp_compiler $c_compiler $processors $pthread
 
-echo building SaTScan for 64-bit system using gcc3.4.4
+echo building SaTScan for 64-bit system using gcc
 ./makescript.sh $binaries/satscan64 $satscan_src $boost_src -m64 "-O3 -Wall -Wextra" $cpp_compiler $c_compiler $processors $pthread
 
-echo building SaTScan shared object for 64-bit system using gcc3.4.4
+echo building SaTScan shared object for 64-bit system using gcc
 ./makescript.so.sh $lib_target $binaries/libsatscan64.so $satscan_src $boost_src -m64 "-O3 -Wall -Wextra" $cpp_compiler $c_compiler $processors $pthread
 
 ) 1> build.stdout 2> build.stderr

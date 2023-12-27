@@ -14,7 +14,7 @@ launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
 
 # Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
-$javajdk/bin/java -jar $launch4j/launch4j.jar $build/satscan/installers/izpack/windows/launch4j_app.xml
+$javajdk/bin/java -jar $launch4j/launch4j.jar $build/satscan/installers/sign4j/launch4j_app.xml
 
 # Prompt user to codesign SaTScan.exe then build installer and codesign that file as well.
 chmod g+w $build/satscan/java_application/jni_application/dist/SaTScan.exe
