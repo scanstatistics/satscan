@@ -19,16 +19,16 @@ set satscanversion=10.1
 set satscanversionf=10_1
 
 set satscan32exe=%fileshare%\satscan\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe
-set satscan32dll=%fileshare%\satscan\build.area\satscan\shared_library\Win32\Release\satscan32.dll
+set satscan32dll=%fileshare%\satscan\build.area\satscan\shared_library\Release\satscan32.dll
 set satscan64exe=%fileshare%\satscan\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe
 set satscan64dll=%fileshare%\satscan\build.area\satscan\shared_library\x64\Release\satscan64.dll
-set satscanguiexe=%fileshare%\satscan\build.area.area\satscan\java_application\jni_application\dist\SaTScan.exe
+set satscanguiexe=%fileshare%\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.exe
 
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.6+10_windows_x64
+set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.9+9_windows_x64
 set runtimeoutputx64=%fileshare%\satscan\build.area\satscan\installers\java\jre_x64
-set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.6+10_windows_x86
+set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.9+9_windows_x86
 set runtimeoutputx86=%fileshare%\satscan\build.area\satscan\installers\java\jre_x86
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"

@@ -9,7 +9,7 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/satscan/installers/install.applications/java/jdk-17.0.6+10_linux_x64"
+javajdk="/prj/satscan/installers/install.applications/java/jdk-17.0.9+9_linux_x64"
 version=$1
 srcdir="/prj/satscan/build.area/satscan"
 bundleinputdir="/prj/satscan/build.area/jpackage/satscanbundlesrc"
@@ -44,10 +44,9 @@ $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
 $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/SaTScan --app-version $version \
             --name SaTScan --resource-dir $srcdir/installers/resources --dest $2 \
             --description "Software for the spatial, temporal, and space-time scan statistics" \
-            --about-url https://www.satscan.org/ \
             --vendor "Martin Kulldorff together with Information Management Services Inc." \
             --linux-shortcut --linux-rpm-license-type "see SaTScan License Agreement @ https://www.satscan.org/techdoc.html" \
-            --license-file $srcdir/installers/documents/eula/License.txt --linux-app-category misc \            
+            --license-file $srcdir/installers/documents/eula/License.txt --linux-app-category misc \
             --linux-app-release "0" --copyright "Copyright 2021, All rights reserved"
 
 #  Create application deb
