@@ -459,11 +459,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Builds html which details the expected format of the input file type. */
     private String getFileExpectedFormatParagraphs() {
         String heplID="";
-        StringBuilder builder = new StringBuilder();
-        builder.append("<p style=\"margin-top: 0;\">For the ");
-        builder.append(Parameters.GetProbabilityModelTypeAsString(getModelControlType(), false)).append(" model, the SaTScan ");
-        builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file format is:</p>");
-        builder.append("<span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
+        StringBuilder file_format = new StringBuilder();
         switch (_input_source_settings.getInputFileType()) {
             case Case :
                 heplID = AppConstants.CASEFILE_HELPID;
@@ -471,82 +467,90 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case POISSON :
                     case SPACETIMEPERMUTATION :
                     case HOMOGENEOUSPOISSON :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Covariate 1&gt; ... &lt;Covariate 2&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Covariate 1&gt; ... &lt;Covariate 2&gt;");
                         break;
                     case BERNOULLI :
                     case UNIFORMTIME :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;");
                         break;
                     case ORDINAL :
                     case CATEGORICAL :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Category Type&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Category Type&gt;");
                         break;
                     case EXPONENTIAL :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Censored&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Censored&gt;");
                         break;
                     case NORMAL :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Weight&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Attribute&gt;  &lt;Weight&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                         break;
                     case RANK :
-                        builder.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Continuous Variable&gt;");
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Continuous Variable&gt;");
                         break;
                     default: throw new UnknownEnumException(getModelControlType());
                 }
                 break;
             case Control:
                 heplID = AppConstants.CONTROLFILE_HELPID;
-                builder.append("&lt;Identifier&gt;  &lt;Controls&gt;  &lt;Date/Time&gt;");
+                file_format.append("&lt;Identifier&gt;  &lt;Controls&gt;  &lt;Date/Time&gt;");
                 break;
             case Population:
                 heplID = AppConstants.POPULTIONFILE_HELPID;
                 heplID = "Population File";
-                builder.append("&lt;Identifier&gt;  &lt;Date/Time&gt;  &lt;Population&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
+                file_format.append("&lt;Identifier&gt;  &lt;Date/Time&gt;  &lt;Population&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                 break;
             case Coordinates:
                 heplID = AppConstants.COORDINATESFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
-                    builder.append("&lt;Location&gt;  &lt;X-Coordinate&gt;  &lt;Y-Ccoordinate&gt;  &lt;Z1-Coordinate&gt; ...  &lt;ZN-Coordinate&gt;");
+                    file_format.append("&lt;Location&gt;  &lt;X-Coordinate&gt;  &lt;Y-Ccoordinate&gt;  &lt;Z1-Coordinate&gt; ...  &lt;ZN-Coordinate&gt;");
                 else
-                    builder.append("&lt;Location&gt;  &lt;Latitude&gt;  &lt;Longitude&gt;");
+                    file_format.append("&lt;Location&gt;  &lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
-            case SpecialGrid: builder.append("");
+            case SpecialGrid: file_format.append("");
                 heplID = AppConstants.GRIDFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
-                    builder.append("&lt;X-Coordinate&gt;  &lt;Y-Coordinate&gt;  &lt;Z1-Coordinate&gt; ... &lt;Z2-Coordinate&gt;");
+                    file_format.append("&lt;X-Coordinate&gt;  &lt;Y-Coordinate&gt;  &lt;Z1-Coordinate&gt; ... &lt;Z2-Coordinate&gt;");
                 else
-                    builder.append("&lt;Latitude&gt;  &lt;Longitude&gt;");
+                    file_format.append("&lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
             case MaxCirclePopulation:
                 heplID = AppConstants.MAXCIRCLEFILE_HELPID;
-                builder.append("&lt;Identifier&gt;  &lt;Population&gt;");
+                file_format.append("&lt;Identifier&gt;  &lt;Population&gt;");
                 break;
             case AdjustmentsByRR:
                 heplID = AppConstants.ADJUSTMENTSFILE_HELPID;
-                builder.append("&lt;Identifier&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
+                file_format.append("&lt;Identifier&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
             case Neighbors:
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
-                builder.append("&lt;Identifier 1&gt;  &lt;Identifier 2&gt; &lt;Identifier 3&gt; ... &lt;Identifier 4&gt;");
+                file_format.append("&lt;Identifier 1&gt;  &lt;Identifier 2&gt; &lt;Identifier 3&gt; ... &lt;Identifier 4&gt;");
                 break;
             case MetaLocations:
                 heplID = AppConstants.METALOCATIONSFILE_HELPID;
-                builder.append("&lt;Meta Identifier&gt;  (&lt;Identifier&gt; or &lt;Meta Identifier&gt;) ... (&lt;Identifier&gt; or &lt;Meta Identifier&gt;)");
+                file_format.append("&lt;Meta Identifier&gt;  (&lt;Identifier&gt; or &lt;Meta Identifier&gt;) ... (&lt;Identifier&gt; or &lt;Meta Identifier&gt;)");
                 break;
             case AlternativeHypothesis:
                 heplID = AppConstants.ALTERNATIVEHYPOTHESIS_HELPID;
-                builder.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
+                file_format.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
             case NETWORK:
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
-                builder.append("&lt;First Location ID&gt;  &lt;Second Location ID&gt;  &lt;Distance&gt;");
+                file_format.append("&lt;First Location ID&gt;  &lt;Second Location ID&gt;  &lt;Distance&gt;");
                 break;
             case Multiple_Locations:
                 heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
-                builder.append("&lt;Identifier&gt;  &lt;Location&gt;");
+                file_format.append("&lt;Identifier&gt;  &lt;Location&gt;");
                 break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
-        builder.append("&nbsp;&nbsp;</span>");
+        StringBuilder builder = new StringBuilder();
+        builder.append("<p style=\"margin-top: 0;\">");
+        if (_input_source_settings.getInputFileType() == Case)
+            builder.append("For the ").append(Parameters.GetProbabilityModelTypeAsString(getModelControlType(), false)).append(" model, the ");
+        else 
+            builder.append("The ");
+        builder.append("SaTScan ").append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file format is:</p>");
+        builder.append("<span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
+        builder.append(file_format.toString()).append("&nbsp;&nbsp;</span>");
         //builder.append("<span style=\"padding-left:20px;\">(<a style=\"font-weight:bold;color:black;font-size:smaller;\" href=\"").append(heplID).append("\">More Information</a>)</span>");
         return builder.toString();
     }
