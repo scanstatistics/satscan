@@ -185,7 +185,7 @@ const char * ClusterMap::TEMPLATE = " \
                         </select> \n \
                     </div> \n \
                     <p class='help-block'>Filter to exclude markers of displayed individuals.</p> \n \
-                    <label for='slider_display'>Individuals In Study Period</label> \n \
+                    <label for='slider_display'>Individuals In Period</label> \n \
                     <div class='slider-styled slider-round' id='slider_display'></div> \n \
                     <div style='font-size: small;padding-bottom: 5px;'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
                     <div class='pull-left'> \n \
