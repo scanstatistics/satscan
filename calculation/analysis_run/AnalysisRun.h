@@ -219,6 +219,8 @@ public:
     };
 
     virtual const char                * getTypeIdentifier() { return "bin"; };
+    static const int                  DEFAULT_NUM_ITERATIVE_SCANS;
+    static const double               DEFAULT_ITERATIVE_CUTOFF_PVALUE;
 };
 
 /** Coordinates the execution of analysis defined by parameters. */

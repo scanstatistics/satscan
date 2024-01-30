@@ -14,21 +14,21 @@
     <ProjectGuid>{66D4375A-8F9A-4E64-9C70-2ABBC9EF26C9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>test</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -126,7 +126,7 @@
     <ClInclude Include="..\calculation\cluster\AbstractClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\CategoricalClusterData.h" />
     <ClInclude Include="..\calculation\cluster\CategoricalClusterDataFactory.h" />
-    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h" />    
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\cluster.h" />
     <ClInclude Include="..\calculation\cluster\ClusterData.h" />
     <ClInclude Include="..\calculation\cluster\ClusterDataFactory.h" />
@@ -147,8 +147,8 @@
     <ClInclude Include="..\calculation\cluster\TimeIntervalRange.h" />
     <ClInclude Include="..\calculation\cluster\TimeIntervals.h" />
     <ClInclude Include="..\calculation\cluster\TimeTrend.h" />
-    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h" />    
-    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h" />    
+    <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h" />
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\IniParameterSpecification.h" />
     <ClInclude Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.h" />
@@ -161,7 +161,7 @@
     <ClInclude Include="..\calculation\loglikelihood\WeightedNormalCovariatesLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.h" />
-    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h" />    
+    <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\Output\AbstractDataFileWriter.h" />
     <ClInclude Include="..\calculation\Output\AsciiPrintFormat.h" />
     <ClInclude Include="..\calculation\Output\ChartGenerator.h" />
@@ -194,7 +194,7 @@
     <ClInclude Include="..\calculation\probability_model\ProbabilityModel.h" />
     <ClInclude Include="..\calculation\probability_model\RankModel.h" />
     <ClInclude Include="..\calculation\probability_model\SpaceTimePermutationModel.h" />
-    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h" />    
+    <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h" />
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\ExponentialRandomizer.h" />
@@ -235,7 +235,7 @@
     <ClInclude Include="..\calculation\satscan_data\PurelySpatialData.h" />
     <ClInclude Include="..\calculation\satscan_data\PurelyTemporalData.h" />
     <ClInclude Include="..\calculation\satscan_data\RankDataSetHandler.h" />
-    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h" />    
+    <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\SaTScanData.h" />
     <ClInclude Include="..\calculation\satscan_data\SaTScanDataRead.h" />
     <ClInclude Include="..\calculation\satscan_data\SpaceTimeData.h" />
@@ -410,7 +410,7 @@
     <ClCompile Include="..\calculation\probability_model\ProbabilityModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\RankModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\SpaceTimePermutationModel.cpp" />
-    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp" />    
+    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp" />
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\ExponentialRandomizer.cpp" />
