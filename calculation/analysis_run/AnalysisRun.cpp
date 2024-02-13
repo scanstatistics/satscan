@@ -49,6 +49,9 @@
 #include <algorithm>
 using namespace boost::assign;
 
+const int BernoulliAnalysisDrilldown::DEFAULT_NUM_ITERATIVE_SCANS = 10;
+const double BernoulliAnalysisDrilldown::DEFAULT_ITERATIVE_CUTOFF_PVALUE = 0.05;
+
 //////////////////////////// AbstractAnalysisDrilldown ///////////////////////////////////
 
 bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
@@ -1987,6 +1990,10 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     // Only one level with this drilldown type.
     _parameters.setPerformStandardDrilldown(false);
     _parameters.setPerformBernoulliDrilldown(false);
+    // Perform scan iteratively with default settings
+    _parameters.SetIterativeScanning(true);
+    _parameters.SetNumIterativeScans(DEFAULT_NUM_ITERATIVE_SCANS);
+    _parameters.SetIterativeCutOffPValue(DEFAULT_ITERATIVE_CUTOFF_PVALUE);
     // Toggle off all parameter settings copied from primary analysis that are invalidate for purely spatial Beronulli.
     _parameters.setCalculateOliveirasF(false);
     _parameters.SetSimulationType(STANDARD);
