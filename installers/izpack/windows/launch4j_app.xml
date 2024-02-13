@@ -20,12 +20,12 @@
     <path>jre</path>
   </jre>
   <versionInfo>
-    <fileVersion>10.1.2.0</fileVersion>
-    <txtFileVersion>Version 10.1.2</txtFileVersion>
+    <fileVersion>10.1.3.0</fileVersion>
+    <txtFileVersion>Version 10.1.3</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>10.1.2.0</productVersion>
-    <txtProductVersion>Version 10.1.2</txtProductVersion>
+    <productVersion>10.1.3.0</productVersion>
+    <txtProductVersion>Version 10.1.3</txtProductVersion>
     <productName>SaTScan</productName>
     <companyName>SaTscan.org</companyName>
     <internalName>SaTScan</internalName>
