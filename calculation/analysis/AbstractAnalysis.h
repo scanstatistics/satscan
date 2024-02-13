@@ -12,30 +12,26 @@ class CMeasureList;
 class CSaTScanData;
 class CTimeIntervals;
 
-/** Abstract base class which defines methods for calculating top clusters and
-    simulated log likelihood ratios. */
+/** Abstract base class which defines methods for calculating top clusters and simulated log likelihood ratios. */
 class AbstractAnalysis {
-  private:
-    void                                Setup();
+    protected:
+        enum ReplicationsProcessType {MeasureListEvaluation=0, ClusterEvaluation};
 
-  protected:
-    enum ReplicationsProcessType          {MeasureListEvaluation=0, ClusterEvaluation};
+        const CParameters & _parameters;
+        const CSaTScanData & _data_hub;
+        BasePrint & _print;
+        AbstractClusterDataFactory * _cluster_data_factory;
+        AbstractLikelihoodCalculator * _likelihood_calculator;
+        ReplicationsProcessType _replica_process_type;
 
-    const CParameters                   & gParameters;
-    const CSaTScanData                  & gDataHub;
-    BasePrint                           & gPrintDirection;
-    AbstractClusterDataFactory          * gpClusterDataFactory;
-    AbstractLikelihoodCalculator        * gpLikelihoodCalculator;
-    ReplicationsProcessType               geReplicationsProcessType;
+        CMeasureList                        * GetNewMeasureListObject() const;
+        CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType, ExecutionType eExecutionType) const;
 
-    CMeasureList                        * GetNewMeasureListObject() const;
-    CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType, ExecutionType eExecutionType) const;
+    public:
+        AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
+        virtual ~AbstractAnalysis();
 
-  public:
-    AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
-    virtual ~AbstractAnalysis();
-
-    static AbstractLikelihoodCalculator * GetNewLikelihoodCalculator(const CSaTScanData& DataHub);
+        static AbstractLikelihoodCalculator * GetNewLikelihoodCalculator(const CSaTScanData& DataHub);
 };    
 //******************************************************************************
 #endif

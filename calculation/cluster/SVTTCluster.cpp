@@ -369,7 +369,6 @@ void CSVTTCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractData
     m_nRatio =  gClusterData->CalculateSVTTLoglikelihoodRatio(Calculator, DataGateway);
     clusterSet.update(*this);
   }    
-  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CSVTTCluster */
@@ -387,7 +386,7 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   if (gClusterData->getInsideTrend().getType() == LINEAR) {
      printClusterData(fp, PrintFormat, "Inside time trend", GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend()), false);
      printClusterData(fp, PrintFormat, "Outside time trend", GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend()), false);
-     //buffer = "?"; printClusterData(fp, PrintFormat, "Time trend difference", GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend()), false);
+     //buffer = "?"; printClusterData(fp, PrintFormat, "Time trend difference", GetFormattedTimeTrend(buffer, _cluster_data_pt->getOutsideTrend()), false);
   }
 
   const AbstractTimeTrend& InTrend = gClusterData->getInsideTrend();

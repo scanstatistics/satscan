@@ -270,11 +270,9 @@
     <ClCompile Include="..\calculation\analysis\SpaceTimeAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SpaceTimeCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.cpp" />
-    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.cpp" />
-    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SVTTAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis\SVTTCentricAnalysis.cpp" />
     <ClCompile Include="..\calculation\analysis_run\AnalysisRun.cpp" />
@@ -444,11 +442,9 @@
     <ClInclude Include="..\calculation\analysis\SpaceTimeAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SpaceTimeCentricAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.h" />
-    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.h" />
-    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SVTTAnalysis.h" />
     <ClInclude Include="..\calculation\analysis\SVTTCentricAnalysis.h" />
     <ClInclude Include="..\calculation\analysis_run\AnalysisRun.h" />

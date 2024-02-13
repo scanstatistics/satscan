@@ -6,23 +6,27 @@
 #include "SSException.h"
 
 /** constructor */
-SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(const CParameters& Parameters,
-                                                           const CSaTScanData& Data,
-                                                           BasePrint& PrintDirection,
-                                                           const AbstractDataSetGateway& RealDataGateway,
-                                                           const DataSetGatewayContainer_t& vSimDataGateways)
-                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _topClusters(Data) {
-  try {
-    Setup(RealDataGateway, vSimDataGateways);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor()","SpatialVarTempTrendCentricAnalysis");
-    throw;
-  }
+SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(
+    const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
+    const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways)
+:AbstractCentricAnalysis(Parameters, Data, PrintDirection), _top_clusters(Data) {
+    try {
+        //allocate objects used to evaluate real data
+        _cluster_compare.reset(new CSVTTCluster(_cluster_data_factory, RealDataGateway));
+        _top_clusters.setTopClusters(*_cluster_compare.get());
+        //allocate objects used to evaluate simulation data
+        if (_parameters.GetNumReplicationsRequested()) {
+            //Simulations performed using same process as real data set. Since we will be taking
+            //the greatest loglikelihood ratios among all centroids, but analyzing each centroids
+            //replications separately, we need to maintain a vector of llr values.
+            gCalculatedRatios.reset(new std::vector<double>(_parameters.GetNumReplicationsRequested(), 0));
+            _cluster_data.reset(new SVTTClusterData(_data_hub.GetNumTimeIntervals()));
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("constructor()","SpatialVarTempTrendCentricAnalysis");
+        throw;
+    }
 }
-
-/** destructor */
-SpatialVarTempTrendCentricAnalysis::~SpatialVarTempTrendCentricAnalysis() {}
 
 /** Calculates greatest loglikelihood ratios about centroid for each defined data set gateway object,
     storing maximum ratio for each simulation in class member gCalculatedRatios.
@@ -39,13 +43,13 @@ void SpatialVarTempTrendCentricAnalysis::CalculateRatiosAboutCentroidDefinition(
   itrGateway=vDataGateways.begin();
   itrLoglikelihoodRatios=gCalculatedRatios->begin();
   for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
-     gClusterData->InitializeSVTTData(*(*itrGateway));
+     _cluster_data->InitializeSVTTData(*(*itrGateway));
      tNumNeighbors = CentroidDef.GetNumNeighbors();
      for (t=0; t < tNumNeighbors; ++t) {
         //update cluster data
-        gClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
+        _cluster_data->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
         //calculate loglikehood ratio and compare against current top cluster
-        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gClusterData->CalculateSVTTLoglikelihoodRatio(*gpLikelihoodCalculator, *(*itrGateway)));
+        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, _cluster_data->CalculateSVTTLoglikelihoodRatio(*_likelihood_calculator, *(*itrGateway)));
      }
      //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
      //      use an IntermediateClustersContainer, as used in other top cluster method to
@@ -62,14 +66,14 @@ void SpatialVarTempTrendCentricAnalysis::CalculateRatiosAboutCentroidDefinition(
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
 void SpatialVarTempTrendCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
-  if (_topClusters.getClusterSet(0).get(0).getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
+  if (_top_clusters.getClusterSet(0).getSet().front().getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster objects if evaluating data about new centroid
-    _topClusters.resetSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
-  gClusterComparator->InitializeSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
-  gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
-  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(0), *gpLikelihoodCalculator);
+    _top_clusters.resetAboutCentroidSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
+  _cluster_compare->InitializeSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
+  _cluster_compare->SetEllipseOffset(CentroidDef.GetEllipseIndex(), _data_hub);
+  _cluster_compare->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _top_clusters.getClusterSet(0), *_likelihood_calculator);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
-  _topClusters.setClusterNonPersistantNeighborInfo(CentroidDef);
+  _top_clusters.setClusterNonPersistantNeighborInfo(CentroidDef);
 }
 
 /** Returns cluster object with greatest llr value as specified by gTopCluster.
@@ -78,12 +82,12 @@ void SpatialVarTempTrendCentricAnalysis::CalculateTopClusterAboutCentroidDefinit
     is necessary if you want to keep object around in current state. */
 const SharedClusterVector_t SpatialVarTempTrendCentricAnalysis::GetTopCalculatedClusters() {
     SharedClusterVector_t topClusters; 
-    _topClusters.getTopClusters(topClusters);
+    _top_clusters.getTopClusters(topClusters);
     for (size_t t=0; t < topClusters.size(); ++t) {
       if (topClusters[t]->ClusterDefined())
-        dynamic_cast<CSVTTCluster*>(topClusters[t].get())->SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+        dynamic_cast<CSVTTCluster*>(topClusters[t].get())->SetTimeTrend(_parameters.GetTimeAggregationUnitsType(), _parameters.GetTimeAggregationLength());
     }
-    return _topClusters.getTopClusters(topClusters);
+    return _top_clusters.getTopClusters(topClusters);
 }
 
 /** Updates CMeasureList objects for each defined data set of gateway object.
@@ -94,27 +98,3 @@ const SharedClusterVector_t SpatialVarTempTrendCentricAnalysis::GetTopCalculated
 void SpatialVarTempTrendCentricAnalysis::MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
   throw prg_error("MonteCarloAboutCentroidDefinition(const CentroidNeighbors&,const DataSetGatewayContainer_t&) not implementated.","SpatialVarTempTrendCentricAnalysis");
 }
-
-/** Internal function which allocates appropriate objects for evaulate real and simulated data. */
-void SpatialVarTempTrendCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
-  try {
-    //allocate objects used to evaluate real data
-    gClusterComparator.reset(new CSVTTCluster(gpClusterDataFactory, RealDataGateway));
-    _topClusters.setTopClusters(*gClusterComparator.get());
-
-    //allocate objects used to evaluate simulation data
-    if (gParameters.GetNumReplicationsRequested()) {
-      //Simulations performed using same process as real data set. Since we will be taking
-      //the greatest loglikelihood ratios among all centroids, but analyzing each centroids
-      //replications separately, we need to maintain a vector of llr values.
-      gCalculatedRatios.reset(new std::vector<double>(gParameters.GetNumReplicationsRequested(), 0));
-      gClusterData.reset(new SVTTClusterData(gDataHub.GetNumTimeIntervals()));
-    }
-  }
-  catch (prg_exception& x) {
-    gClusterComparator.reset(0); gClusterData.reset(0);
-    x.addTrace("Setup()","SpatialVarTempTrendCentricAnalysis");
-    throw;
-  }
-}
-

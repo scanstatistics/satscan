@@ -204,9 +204,6 @@
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.cpp">
       <Filter>Source Files\calculation\analysis</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp">
-      <Filter>Source Files\calculation\analysis</Filter>
-    </ClCompile>
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.cpp">
       <Filter>Source Files\calculation\analysis</Filter>
     </ClCompile>
@@ -214,9 +211,6 @@
       <Filter>Source Files\calculation\analysis</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.cpp">
-      <Filter>Source Files\calculation\analysis</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp">
       <Filter>Source Files\calculation\analysis</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\analysis\SVTTAnalysis.cpp">
@@ -779,9 +773,6 @@
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.h">
       <Filter>Header Files\calculation\analysis</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.h">
-      <Filter>Header Files\calculation\analysis</Filter>
-    </ClInclude>
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.h">
       <Filter>Header Files\calculation\analysis</Filter>
     </ClInclude>
@@ -789,9 +780,6 @@
       <Filter>Header Files\calculation\analysis</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.h">
-      <Filter>Header Files\calculation\analysis</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.h">
       <Filter>Header Files\calculation\analysis</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\analysis\SVTTAnalysis.h">

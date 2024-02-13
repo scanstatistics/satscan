@@ -336,7 +336,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
    are possibly multiple coordinates per identifier, then we need to derive this information. */
 void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& dataHub, const CCluster& cluster, boost::dynamic_bitset<>* bLocations, std::vector<tract_t>* vLocations) {
     // First search the cache for this information.
-    auto itrCache = dataHub._cluster_locations_cache.find(std::make_pair(cluster.GetEllipseOffset(), cluster.GetCentroidIndex()));
+    auto itrCache = dataHub._cluster_locations_cache.find(cluster.getIdentifyingKey());
     if (itrCache != dataHub._cluster_locations_cache.end()) {
         if (bLocations) *bLocations = itrCache->second.first;
         if (vLocations) *vLocations = itrCache->second.second;
@@ -396,7 +396,7 @@ void CentroidNeighborCalculator::getLocationsAboutCluster(const CSaTScanData& da
     if (bLocations) *bLocations = bindexes;
     if (vLocations) *vLocations = vindexes;
     // Store data in cache, associated by cluster centroid index.
-    dataHub._cluster_locations_cache.insert(std::make_pair(std::make_pair(cluster.GetEllipseOffset(), cluster.GetCentroidIndex()), std::make_pair(bindexes, vindexes)));
+    dataHub._cluster_locations_cache.insert(std::make_pair(cluster.getIdentifyingKey(), std::make_pair(bindexes, vindexes)));
 }
 
 /** Calculates neighboring locations about each centroid through expanding circle;

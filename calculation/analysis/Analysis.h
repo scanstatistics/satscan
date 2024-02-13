@@ -23,7 +23,7 @@ class CAnalysis : public AbstractAnalysis {
 
   public:
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
-    virtual ~CAnalysis();
+    virtual ~CAnalysis() {}
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;

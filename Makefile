@@ -74,9 +74,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(ANALYSIS)/AbstractCentricAnalysis.cpp \
                $(ANALYSIS)/PurelySpatialCentricAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeCentricAnalysis.cpp \
-               $(ANALYSIS)/SpaceTimeIncludePureCentricAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelySpatialCentricAnalysis.cpp \
-               $(ANALYSIS)/SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp \
                $(ANALYSIS)/AbstractBruteForceAnalysis.cpp \
                $(ANALYSIS)/PurelySpatialBruteForceAnalysis.cpp \
                $(ANALYSIS)_run/AnalysisRun.cpp \

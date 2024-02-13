@@ -568,53 +568,51 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     purely temporal clusters. The ranking performed is based soley on geographical
     orientation.   */
 void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print, unsigned int numKeepOverride) {
-   const CParameters& parameters(DataHub.GetParameters());
-   unsigned int       uClustersToKeepEachPass;
+    const CParameters& parameters(DataHub.GetParameters());
+    unsigned int uClustersToKeepEachPass;
 
-   try {
-     //return if analysis is purely temporal -- there will be at most one cluster
-     if (parameters.GetIsPurelyTemporalAnalysis()) return;
-     //return from function if no clusters retained
-     if (!gvTopClusterList.size()) return;
-     //determine maximum number of clusters to retain
-     if (numKeepOverride > 0) {
-         uClustersToKeepEachPass = numKeepOverride;
-     }
-     else if (parameters.GetIsIterativeScanning())
-       uClustersToKeepEachPass = 1;
-     else if (eOverlapType == NORESTRICTIONS)
-       uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumIdentifiers());
-     else
-       uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
-     //sort by descending m_ratio
-     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios(DataHub, this));
-
-     if (eOverlapType != NORESTRICTIONS)
-       print.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
-     //remove geographically overlapping clusters
-     if (gvTopClusterList.size() > 0) {
-       ClusterList_t vRetainedClusters;
-       size_t tNumSpatialRetained=0;
-       ClusterList_t::iterator itrCurr, itrEnd;
-       for (itrCurr=gvTopClusterList.begin(),itrEnd=gvTopClusterList.end(); (tNumSpatialRetained < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
-          if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eOverlapType)) {
-            //transfer ownership of cluster to vRetainedClusters
-              vRetainedClusters.push_back(*itrCurr);
-            //since previous version had it so that the purely temporal cluster was added after
-            //this ranking process, we don't want to consider a purely temporal cluster as
-            //part of the retained list when determining whether list is at maximum size
-            if ((*itrCurr)->GetClusterType() != PURELYTEMPORALCLUSTER) ++tNumSpatialRetained;
-            //*itrCurr = 0;
-          }
-       }
-       gvTopClusterList.clear();
-       gvTopClusterList.resize(vRetainedClusters.size());
-       std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
-     }
-   } catch (prg_exception& x) {
-     x.addTrace("rankClusters()", "MostLikelyClustersContainer");
-     throw;
-   }
+    try {
+        //return if analysis is purely temporal -- no overlap check is needed
+        if (parameters.GetIsPurelyTemporalAnalysis()) return;
+        //return from function if no clusters retained
+        if (!gvTopClusterList.size()) return;
+        //determine maximum number of clusters to retain
+        if (numKeepOverride > 0)
+            uClustersToKeepEachPass = numKeepOverride;
+        else if (parameters.GetIsIterativeScanning())
+            uClustersToKeepEachPass = 1;
+        else if (parameters.GetAnalysisType() == SPACETIME)
+            // retrospective space-time can have more than one cluster per centroid
+            uClustersToKeepEachPass = MAX_RANKED_CLUSTERS;
+        else if (eOverlapType == NORESTRICTIONS)
+            uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumIdentifiers());
+        else
+            uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
+        //sort by descending m_ratio
+        std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios(DataHub, this));
+        if (eOverlapType != NORESTRICTIONS) print.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
+        //remove geographically overlapping clusters
+        ClusterList_t vRetainedClusters;
+        size_t tNumSpatialRetained=0;
+        ClusterList_t::iterator itrCurr, itrEnd;
+        for (itrCurr=gvTopClusterList.begin(),itrEnd=gvTopClusterList.end(); (tNumSpatialRetained < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
+            if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eOverlapType)) {
+                //transfer ownership of cluster to vRetainedClusters
+                vRetainedClusters.push_back(*itrCurr);
+                //since previous version had it so that the purely temporal cluster was added after
+                //this ranking process, we don't want to consider a purely temporal cluster as
+                //part of the retained list when determining whether list is at maximum size
+                if ((*itrCurr)->GetClusterType() != PURELYTEMPORALCLUSTER) ++tNumSpatialRetained;
+                //*itrCurr = 0;
+            }
+        }
+        gvTopClusterList.clear();
+        gvTopClusterList.resize(vRetainedClusters.size());
+        std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
+    } catch (prg_exception& x) {
+        x.addTrace("rankClusters()", "MostLikelyClustersContainer");
+        throw;
+    }
 }
 
 //Given an index (into gvTopClusterList) of a candidate cluster and a supporting

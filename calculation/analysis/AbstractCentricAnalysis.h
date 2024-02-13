@@ -15,8 +15,7 @@ class CentroidNeighbors;
 class CentroidNeighborCalculator;
 class CCluster;
 
-/** Defines analysis class which evaluates real and simulated data for each
-    centroid separate than other centroids. */
+/** Defines analysis class which evaluates real and simulated data for each centroid separate than other centroids. */
 class AbstractCentricAnalysis : public AbstractAnalysis {
   public:
     typedef ptr_vector<CMeasureList>                    MeasureListContainer_t;
@@ -39,7 +38,7 @@ class AbstractCentricAnalysis : public AbstractAnalysis {
 
   public:
     AbstractCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
-    virtual ~AbstractCentricAnalysis();
+    virtual ~AbstractCentricAnalysis() {}
 
     virtual void                        ExecuteAboutCentroid(tract_t tCentroidIndex,
                                                              CentroidNeighborCalculator& CentroidCalculator,

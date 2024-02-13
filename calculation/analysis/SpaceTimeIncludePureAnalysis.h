@@ -7,23 +7,21 @@
 /** Derives from base class to re-define methods for a space-time analysis
     which includes purely spatial and purely temporal clusters. */
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
-  private:
-    std::auto_ptr<CPurelyTemporalCluster>      gTopPurelyTemporalCluster; /** cluster object utilized in calculating simulation llr */
-    std::auto_ptr<CPurelyTemporalCluster>      gPTClusterComparator;      /** cluster object utilized in calculating simulation llr */
-    std::auto_ptr<AbstractTemporalClusterData> gPTClusterData;
+    private:
+        boost::shared_ptr<AbstractTemporalClusterData> _pt_cluster_data;
 
-  protected:
-    virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
-    virtual double              MonteCarlo(const DataSetInterface& Interface);
-    virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
-    double                      MonteCarloProspective(const DataSetInterface& Interface);
-    double                      MonteCarloProspective(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+    protected:
+        virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+        virtual double              MonteCarlo(const DataSetInterface& Interface);
+        virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+        double                      MonteCarloProspective(const DataSetInterface& Interface);
+        double                      MonteCarloProspective(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
-  public:
-    C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
-    virtual ~C_ST_PS_PT_Analysis();
+    public:
+        C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
+        virtual ~C_ST_PS_PT_Analysis() {}
 
-    virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers);
+        virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers);
 };
 //*************************************************************************
 #endif

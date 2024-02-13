@@ -402,6 +402,7 @@ CategoricalSpaceTimeData * CategoricalSpaceTimeData::Clone() const {
     and on assertion will fail if called. */
 void CategoricalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
     gCategoryCasesHandler.reset(0); gppCategoryCases = 0;
+    geEvaluationAssistDataStatus = Deallocated;
 }
 
 /** overloaded assignement operator */

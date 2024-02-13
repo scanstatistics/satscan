@@ -85,7 +85,7 @@ void CPSMonotoneCluster::CalculateTopClusterAboutCentroidDefinition(const Abstra
   if (gpClusterData->m_nSteps == 0) Initialize(m_Center);
 
   //TODO: This implies/requires no index based cluster reporting. This feature might come at a later date.
-  CClusterObject& clusterObj = clusterSet.get(0);
+  CClusterObject& clusterObj = clusterSet.getSet().front();
   if (m_nRatio > clusterObj.getCluster().GetRatio()) {
     gpClusterData->SetCasesAndMeasures(); //re-calculate case and measure for outer tracts absorber into remainder
     SetTotalTracts();                     //re-calculate total tracts for outer tracts absorber into remainder

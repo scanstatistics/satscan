@@ -87,7 +87,6 @@ void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const Abs
     _ratio_sets = gpClusterData->getRatioSets(Calculator);
     clusterSet.update(*this);
   }
-  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CPurelySpatialCluster */

@@ -13,22 +13,22 @@ class SpaceTimeData;
 
 /** Derives from base class to re-define methods for a space-time analysis. */
 class CSpaceTimeAnalysis : public CAnalysis {
-  protected:
-    std::auto_ptr<CSpaceTimeCluster>            gClusterComparator;   /** cluster object utilized to find top cluster */
-    std::auto_ptr<AbstractTemporalClusterData>  gAbstractClusterData;
-    std::auto_ptr<CMeasureList>                 gMeasureList;         /** measure list object utilized in calculated simulation ratio */
-    std::auto_ptr<CTimeIntervals>               gTimeIntervals;       /** iterates through temporal windows of cluster data */
-    CClusterSetCollections                      _topClusters;         /** collection of clusters representing top cluster for each shape */
+    protected:
+        boost::shared_ptr<CSpaceTimeCluster> _cluster_compare; // cluster object utilized to find top cluster
+        boost::shared_ptr<AbstractTemporalClusterData> _cluster_data;
+        boost::shared_ptr<CMeasureList> _measure_list; // measure list object utilized in calculated simulation ratio
+        boost::shared_ptr<CTimeIntervals> _time_intervals; // iterates through temporal windows of cluster data
+        CClusterSetCollections _top_clusters; // collection of clusters representing top cluster for each shape
 
-    virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
-    virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
-    virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
-    virtual double                      MonteCarlo(const DataSetInterface& Interface);
-    virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+        virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+        virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
+        virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+        virtual double                      MonteCarlo(const DataSetInterface& Interface);
+        virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
-  public:
-    CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
-    virtual ~CSpaceTimeAnalysis();
+    public:
+        CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
+        virtual ~CSpaceTimeAnalysis() {}
 };
 //******************************************************************************
 #endif

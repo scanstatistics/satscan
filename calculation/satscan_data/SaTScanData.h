@@ -30,10 +30,9 @@ class CSaTScanData {
   public:
     typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
     enum ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
-    typedef std::pair<int, tract_t> ClusterLocationCacheKey_t;
     typedef std::pair<boost::dynamic_bitset<>, std::vector<tract_t>> ClusterLocationCacheData_t;
-    typedef std::map<ClusterLocationCacheKey_t, ClusterLocationCacheData_t> ClusterLocationCache_t;
-    typedef std::map<tract_t, NetworkLocationContainer_t> ClusterNetworkLocationCache_t;
+    typedef std::map<std::string, ClusterLocationCacheData_t> ClusterLocationCache_t;
+    typedef std::map<std::string, NetworkLocationContainer_t> ClusterNetworkLocationCache_t;
 
   private:
     void                                        AllocateSortedArray();
@@ -231,29 +230,32 @@ inline unsigned short ** CSaTScanData::GetSortedArrayAsUShort_T(int iEllipseInde
       - third, calculate neighbor information, either by distance or population, stores
         results in gvCentroidNeighborStore object */
 inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius) const {
-  if (gpSortedUShortHandler)
-    return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
-  else if (gpSortedIntHandler)
-    return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
-  else {//not storing neighbor information in sorted array
-    //first, look for neighbor information in store
-    if (!gvCentroidNeighborStore.size())
-      gvCentroidNeighborStore.resize(m_nGridTracts, 0);
-    // check the centroid neighbor store but only if ellipse/centroid match that of stored
-    if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
-      return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
-    else {//else calculate
-      delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;
-      gvCentroidNeighborStore[t] = new CentroidNeighbors();
-      CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
-      if (dClusterRadius != -1 && !gParameters.getReportGiniOptimizedClusters())
-          // can't use cluster radius with index based cluster reporting since this cluster radius might be a lesser maxima than another for cluster about same centroid
-        CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
-      else  
-        CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
-      return NeighborInfo.GetNeighborTractIndex(nearness - 1);
+    if (gpSortedUShortHandler)
+        return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
+    else if (gpSortedIntHandler)
+        return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+    else {//not storing neighbor information in sorted array
+        //first, look for neighbor information in store
+        if (!gvCentroidNeighborStore.size())
+            gvCentroidNeighborStore.resize(m_nGridTracts, 0);
+        // check the centroid neighbor store but only if ellipse/centroid match that of stored
+        if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse && gvCentroidNeighborStore[t]->GetNumNeighbors() >= nearness)
+            return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
+        else {//else calculate
+            delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;
+            gvCentroidNeighborStore[t] = new CentroidNeighbors();
+            CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
+            // We can't use cluster radius with index based cluster reporting since this cluster radius might be a lesser maxima
+            // than another for cluster about same centroid. 
+            // We can't use this shortcut method with a restrospective space-time analysis either since we're potentially
+            // reporting more than one cluster about a centroid - varing radius can cause the order to change (ex. radius = 0 => [12], radius = 13.6 => [7,12]).
+            if (dClusterRadius != -1 && !(gParameters.getReportGiniOptimizedClusters() || gParameters.GetAnalysisType() == SPACETIME))
+                CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
+            else  
+                CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
+            return NeighborInfo.GetNeighborTractIndex(nearness - 1);
+        }
     }
-  }
 }
 
 /** Deletes CentroidNeighbor object for iCentroidIndex, if exists. */

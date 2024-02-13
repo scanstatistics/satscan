@@ -58,7 +58,6 @@ void TemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& cl
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Iterates through previously defined temporal window for accumulated data of
@@ -148,7 +147,6 @@ void TimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** No implemented for this class */
@@ -235,7 +233,6 @@ void MultiSetTimeStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster& Ru
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -324,7 +321,6 @@ void BernoulliSpatialStratifiedTemporalDataEvaluator::CompareClusterSet(CCluster
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** No implemented for this class */
@@ -420,7 +416,6 @@ void ClosedLoopTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClus
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Iterates through previously defined temporal window for accumulated data of
@@ -516,7 +511,6 @@ void MultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CCluste
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -593,7 +587,6 @@ void MultiSetUniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Runni
             clusterSet.update(Running);
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -687,7 +680,6 @@ void ClosedLoopMultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Runnin
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -768,7 +760,6 @@ void NormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterS
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -844,7 +835,6 @@ void UniformTimeTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClu
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 void UniformTimeTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
@@ -953,7 +943,6 @@ void ClosedLoopNormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running,
             }
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -1026,7 +1015,6 @@ void MultiSetNormalTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
             clusterSet.update(Running);
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -1114,7 +1102,6 @@ void ClosedLoopMultiSetNormalTemporalDataEvaluator::CompareClusterSet(CCluster& 
             clusterSet.update(Running);
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -1334,7 +1321,6 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusterSet(CCluster& Runni
             clusterSet.update(Running);
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */
@@ -1419,7 +1405,6 @@ void ClosedLoopMultiSetCategoricalTemporalDataEvaluator::CompareClusterSet(CClus
             clusterSet.update(Running);
         }
     }
-    clusterSet.maximizeClusterSet();
 }
 
 /** Not implemented - throws prg_error */

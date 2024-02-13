@@ -32,8 +32,6 @@
 #include "PurelySpatialCentricAnalysis.h"
 #include "SpaceTimeCentricAnalysis.h"
 #include "SpaceTimeIncludePurelySpatialCentricAnalysis.h"
-#include "SpaceTimeIncludePurelyTemporalCentricAnalysis.h"
-#include "SpaceTimeIncludePureCentricAnalysis.h"
 #include "ParametersPrint.h"
 #include "SSException.h" 
 #include "SVTTCentricAnalysis.h"
@@ -157,7 +155,8 @@ void AnalysisExecution::calculateMostLikelyClusters() {
     }
 }
 
-/** Iterates through all reporting clusters to determine which overlap with other clusters. Overlapping added a cluster information, to be reported in results file. */
+/** Iterates through all reporting clusters to determine which overlap with other clusters geographically.
+    Overlapping added a cluster information, to be reported in results file. */
 void AnalysisExecution::calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement) {
     if (_parameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP && !_parameters.getReportGiniOptimizedClusters()) return;
 
@@ -169,6 +168,7 @@ void AnalysisExecution::calculateOverlappingClusters(const MostLikelyClustersCon
     // iterate over all reporting clusters, checking for overlapping locations
     for (size_t i = 0; i < numClusters; ++i) {
         const CCluster& cluster = mlc.GetCluster(i);
+        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) continue;
         boost::dynamic_bitset<>& clusterSet = overlappingClusters[i];
         for (size_t j = 1; j < numClusters; ++j) {
             if (i == j) continue; // skip self

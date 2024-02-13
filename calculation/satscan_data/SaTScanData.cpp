@@ -343,7 +343,7 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
 /* Calculates the network locations for this cluster. */
 NetworkLocationContainer_t& CSaTScanData::getClusterNetworkLocations(const CCluster& cluster, NetworkLocationContainer_t& networkLocations) const {
     // First check for this information in the cache.
-    auto itrNetworkLocations = _cluster_network_locations_cache.find(cluster.GetCentroidIndex());
+    auto itrNetworkLocations = _cluster_network_locations_cache.find(cluster.getIdentifyingKey());
     if (itrNetworkLocations != _cluster_network_locations_cache.end()) {
         networkLocations = itrNetworkLocations->second;
         return networkLocations;
@@ -387,7 +387,7 @@ NetworkLocationContainer_t& CSaTScanData::getClusterNetworkLocations(const CClus
     // Reduce the network locations collection to the last node in cluster.
     if (itrLastNode != networkLocations.end()) networkLocations.erase(itrLastNode + 1, networkLocations.end());
     // Add network locations to cache since we'll be asking for this information repeatedly in output files.
-    _cluster_network_locations_cache.insert(std::make_pair(cluster.GetCentroidIndex(), networkLocations));
+    _cluster_network_locations_cache.insert(std::make_pair(cluster.getIdentifyingKey(), networkLocations));
     return networkLocations;
 }
 

@@ -23,185 +23,168 @@
 
 /** constructor */
 AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                 :gParameters(Parameters), gDataHub(DataHub), gPrintDirection(PrintDirection),
-                  gpClusterDataFactory(0), gpLikelihoodCalculator(0), geReplicationsProcessType(MeasureListEvaluation) {
-  try {
-    Setup();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor()","AbstractAnalysis");
-    throw;
-  }
+:_parameters(Parameters), _data_hub(DataHub), _print(PrintDirection), _cluster_data_factory(0),
+ _likelihood_calculator(0), _replica_process_type(MeasureListEvaluation) {
+    try {
+        //createSetup cluster data factory
+        if (_parameters.GetProbabilityModelType() == NORMAL) {
+            _replica_process_type = ClusterEvaluation;
+            if (_data_hub.GetNumDataSets() == 1)
+                _cluster_data_factory = new NormalClusterDataFactory(_data_hub);
+            else
+                _cluster_data_factory = new MultiSetNormalClusterDataFactory(_data_hub);
+        } else if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
+            _replica_process_type = ClusterEvaluation;
+            if (_data_hub.GetNumDataSets() == 1)
+                _cluster_data_factory = new CategoricalClusterDataFactory();
+            else
+                _cluster_data_factory = new MultiSetsCategoricalClusterDataFactory(_parameters);
+        } else if (_parameters.GetProbabilityModelType() == UNIFORMTIME) {
+            _replica_process_type = MeasureListEvaluation;
+            if (_data_hub.GetNumDataSets() == 1)
+                _cluster_data_factory = new UniformTimeClusterDataFactory();
+            else {
+                _replica_process_type = ClusterEvaluation;
+                _cluster_data_factory = new MultiSetUniformTimeClusterDataFactory();
+            }
+        } else if (_data_hub.GetNumDataSets() > 1) {
+            _cluster_data_factory = new MultiSetClusterDataFactory(_parameters);
+            _replica_process_type = ClusterEvaluation;
+        } else {
+            _cluster_data_factory = new ClusterDataFactory();
+            if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND || (_parameters.GetAnalysisType() == PURELYSPATIAL && _parameters.GetRiskType() == MONOTONERISK))
+                _replica_process_type = ClusterEvaluation;
+            else if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                _replica_process_type = ClusterEvaluation;
+            else
+                _replica_process_type = MeasureListEvaluation;
+        }
+        //create likelihood calculator
+        _likelihood_calculator = GetNewLikelihoodCalculator(_data_hub);
+    } catch (prg_exception& x) {
+        delete _cluster_data_factory; delete _likelihood_calculator;
+        x.addTrace("constructor()","AbstractAnalysis");
+        throw;
+    }
 }
 
 /** destructor */
 AbstractAnalysis::~AbstractAnalysis() {
-  try {
-    delete gpClusterDataFactory;
-    delete gpLikelihoodCalculator;
-  }
-  catch(...){}
+    try {
+        delete _cluster_data_factory;
+        delete _likelihood_calculator;
+    } catch(...){}
 }
 
 /** Returns newly allocated log likelihood ratio calculator based upon requested
     probability model. Caller is responsible for object deletion.
     - throws prg_error if model type is not known */
 AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
-  //create likelihood calculator
-  switch (DataHub.GetParameters().GetProbabilityModelType()) {
-	case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
-		                          if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
-                                    return new PoissonQuadraticTrendLikelihoodCalculator(DataHub);
-								  else
-                                    return new PoissonLinearTrendLikelihoodCalculator(DataHub);
+    //create likelihood calculator
+    switch (DataHub.GetParameters().GetProbabilityModelType()) {
+	    case POISSON            : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
+		                            if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
+                                        return new PoissonQuadraticTrendLikelihoodCalculator(DataHub);
+								    else
+                                        return new PoissonLinearTrendLikelihoodCalculator(DataHub);
 								}
-    case HOMOGENEOUSPOISSON   :
-    case SPACETIMEPERMUTATION :
-    case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
-    case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
-    case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
-    case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
-                                    if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
-                                       return new WeightedNormalCovariatesLikelihoodCalculator(DataHub);
-                                    else 
-                                       return new WeightedNormalLikelihoodCalculator(DataHub);
-                                }
-                                return new NormalLikelihoodCalculator(DataHub);
-    case CATEGORICAL          : /*** may or may not implement separate class ***/
-    case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
-    case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
-    default                   :
-     throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
-                      DataHub.GetParameters().GetProbabilityModelType());
-  };
+        case HOMOGENEOUSPOISSON   :
+        case SPACETIMEPERMUTATION :
+        case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
+        case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
+        case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
+        case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
+                                        if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
+                                            return new WeightedNormalCovariatesLikelihoodCalculator(DataHub);
+                                        else 
+                                            return new WeightedNormalLikelihoodCalculator(DataHub);
+                                    }
+                                    return new NormalLikelihoodCalculator(DataHub);
+        case CATEGORICAL          : /*** may or may not implement separate class ***/
+        case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
+        case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
+        default                   : 
+            throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()", DataHub.GetParameters().GetProbabilityModelType());
+    };
 }
 
 /** Returns newly allocated CMeasureList object - caller is responsible for deletion.
     - throws prg_error if type is not known */
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
-    switch (gParameters.GetExecuteScanRateType()) {
-    case HIGH:
-        if (gParameters.getRiskLimitHighClusters()) 
-            return new RiskMinMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdHighClusters());
-        if (gParameters.GetProbabilityModelType() == RANK)
-            return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-        return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
-    case LOW: 
-        if (gParameters.getRiskLimitLowClusters())
-            return new RiskMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters());
-        if (gParameters.GetProbabilityModelType() == RANK)
-            return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
-        return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    case HIGHANDLOW:
-        if (gParameters.getRiskLimitHighClusters() && gParameters.getRiskLimitLowClusters())
-            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters(), gParameters.getRiskThresholdHighClusters());
-        else if (gParameters.getRiskLimitLowClusters())
-            /* We're restricting the low clusters only -- pass 1.0 for high risk restriction, which will always pass for high rates. */
-            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, gParameters.getRiskThresholdLowClusters(), 1.0);
-        else if (gParameters.getRiskLimitHighClusters())
-            /* We're restricting the high clusters only -- pass 1.0 for low risk restriction, which will always pass for low rates. */
-            return new RiskMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator, 1.0, gParameters.getRiskThresholdHighClusters());
-        return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    default : throw prg_error("Unknown incidence rate specifier '%d'.","GetNewMeasureListObject()", gParameters.GetExecuteScanRateType());
+    switch (_parameters.GetExecuteScanRateType()) {
+        case HIGH:
+            if (_parameters.getRiskLimitHighClusters()) 
+                return new RiskMinMeasureList(_data_hub, *_likelihood_calculator, _parameters.getRiskThresholdHighClusters());
+            if (_parameters.GetProbabilityModelType() == RANK)
+                return new CMaxMeasureList(_data_hub, *_likelihood_calculator);
+            return new CMinMeasureList(_data_hub, *_likelihood_calculator);
+        case LOW: 
+            if (_parameters.getRiskLimitLowClusters())
+                return new RiskMaxMeasureList(_data_hub, *_likelihood_calculator, _parameters.getRiskThresholdLowClusters());
+            if (_parameters.GetProbabilityModelType() == RANK)
+                return new CMinMeasureList(_data_hub, *_likelihood_calculator);
+            return new CMaxMeasureList(_data_hub, *_likelihood_calculator);
+        case HIGHANDLOW:
+            if (_parameters.getRiskLimitHighClusters() && _parameters.getRiskLimitLowClusters())
+                return new RiskMinMaxMeasureList(_data_hub, *_likelihood_calculator, _parameters.getRiskThresholdLowClusters(), _parameters.getRiskThresholdHighClusters());
+            else if (_parameters.getRiskLimitLowClusters())
+                /* We're restricting the low clusters only -- pass 1.0 for high risk restriction, which will always pass for high rates. */
+                return new RiskMinMaxMeasureList(_data_hub, *_likelihood_calculator, _parameters.getRiskThresholdLowClusters(), 1.0);
+            else if (_parameters.getRiskLimitHighClusters())
+                /* We're restricting the high clusters only -- pass 1.0 for low risk restriction, which will always pass for low rates. */
+                return new RiskMinMaxMeasureList(_data_hub, *_likelihood_calculator, 1.0, _parameters.getRiskThresholdHighClusters());
+            return new CMinMaxMeasureList(_data_hub, *_likelihood_calculator);
+        default : throw prg_error("Unknown incidence rate specifier '%d'.","GetNewMeasureListObject()", _parameters.GetExecuteScanRateType());
     }
 }
 
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
-    switch (gParameters.GetProbabilityModelType()) {
+    switch (_parameters.GetProbabilityModelType()) {
         case NORMAL:
-            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
-                if (gDataHub.GetNumDataSets() == 1)
-                    return new ClosedLoopNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-                return new ClosedLoopMultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new ClosedLoopNormalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetNormalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
             }
-            if (gDataHub.GetNumDataSets() == 1)
-                return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-            return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_data_hub.GetNumDataSets() == 1)
+                return new NormalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetNormalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
         case ORDINAL:
         case CATEGORICAL :
-            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
-                if (gDataHub.GetNumDataSets() == 1)
-                    return new ClosedLoopCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-                return new ClosedLoopMultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new ClosedLoopCategoricalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetCategoricalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
             }
-            if (gDataHub.GetNumDataSets() == 1)
-                return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-            return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_data_hub.GetNumDataSets() == 1)
+                return new CategoricalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetCategoricalTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
         case UNIFORMTIME:
-            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
+            if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 throw prg_error("Uniform time model not implemented for seasonal scan.", "GetNewTemporalDataEvaluatorObject()");
             }
-            if (gDataHub.GetNumDataSets() == 1)
-                return new UniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-            return new MultiSetUniformTimeTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_data_hub.GetNumDataSets() == 1)
+                return new UniformTimeTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetUniformTimeTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
         case BERNOULLI:
-            if (gParameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
-                return new BernoulliSpatialStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+            if (_parameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
+                return new BernoulliSpatialStratifiedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
         default :
-            if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-                if (gDataHub.GetNumDataSets() == 1)
-                    return new TimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-                return new MultiSetTimeStratifiedTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new TimeStratifiedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new MultiSetTimeStratifiedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
             }
 
-            if (gParameters.GetAnalysisType() == SEASONALTEMPORAL) {
-                if (gDataHub.GetNumDataSets() == 1)
-                    return new ClosedLoopTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-                return new ClosedLoopMultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new ClosedLoopTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
             }
-            if (gDataHub.GetNumDataSets() == 1)
-                return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
-            return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
+            if (_data_hub.GetNumDataSets() == 1)
+                return new TemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
     }
 }
-
-/** internal setup function - allocates cluster data factory object and loglikelihood
-    calculator object */
-void AbstractAnalysis::Setup() {
-  try {
-    //create cluster data factory
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
-      geReplicationsProcessType = ClusterEvaluation;
-      if (gDataHub.GetNumDataSets() == 1)
-        gpClusterDataFactory = new NormalClusterDataFactory(gDataHub);
-      else
-        gpClusterDataFactory = new MultiSetNormalClusterDataFactory(gDataHub);
-    } else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
-      geReplicationsProcessType = ClusterEvaluation;
-      if (gDataHub.GetNumDataSets() == 1)
-        gpClusterDataFactory = new CategoricalClusterDataFactory();
-      else
-        gpClusterDataFactory = new MultiSetsCategoricalClusterDataFactory(gParameters);
-    } else if (gParameters.GetProbabilityModelType() == UNIFORMTIME) {
-        geReplicationsProcessType = MeasureListEvaluation;
-        if (gDataHub.GetNumDataSets() == 1)
-            gpClusterDataFactory = new UniformTimeClusterDataFactory();
-        else {
-            geReplicationsProcessType = ClusterEvaluation;
-            gpClusterDataFactory = new MultiSetUniformTimeClusterDataFactory();
-        }
-    } else if (gDataHub.GetNumDataSets() > 1) {
-      gpClusterDataFactory = new MultiSetClusterDataFactory(gParameters);
-      geReplicationsProcessType = ClusterEvaluation;
-    } else {
-      gpClusterDataFactory = new ClusterDataFactory();
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
-        geReplicationsProcessType = ClusterEvaluation;
-      else if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-        geReplicationsProcessType = ClusterEvaluation;
-      else
-        geReplicationsProcessType = MeasureListEvaluation;
-    }
-    //create likelihood calculator
-    gpLikelihoodCalculator = GetNewLikelihoodCalculator(gDataHub);
-  }
-  catch (prg_exception& x) {
-    delete gpClusterDataFactory;
-    delete gpLikelihoodCalculator;
-    x.addTrace("Setup()","AbstractAnalysis");
-    throw;
-  }
-}
-

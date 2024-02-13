@@ -11,23 +11,19 @@
 C_ST_PT_Analysis::C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
                  :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection) {}
 
-/** Destructor */
-C_ST_PT_Analysis::~C_ST_PT_Analysis() {}
-
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
 void C_ST_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
-  try {
-    //allocate objects for space-time part of simulations
-    CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
-    //create simulation objects based upon which process used to perform simulations
-    gAbstractPTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(DataGateway));
-  }
-  catch (prg_exception& x) {
-    x.addTrace("AllocateSimulationObjects()","C_ST_PT_Analysis");
-    throw;
-  }
+    try {
+        //allocate objects for space-time part of simulations
+        CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
+        //create simulation objects based upon which process used to perform simulations
+        _pt_cluster_data.reset(_cluster_data_factory->GetNewTemporalClusterData(DataGateway));
+    } catch (prg_exception& x) {
+        x.addTrace("AllocateSimulationObjects()","C_ST_PT_Analysis");
+        throw;
+    }
 }
 
 /** calculates top cluster about each centroid/grid point - iterating through
@@ -35,29 +31,36 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & 
     cluster about each grid point plus , possible, one more for purely temporal
     cluster. */
 void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGateway, MLC_Collections_t& TopClustersContainers) {
-  IncludeClustersType           eIncludeClustersType;
-
-  try {
-    //calculate top cluster over all space-time
-    CSpaceTimeAnalysis::FindTopClusters(DataGateway, TopClustersContainers);
-    //detect user cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-    eIncludeClustersType = (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gParameters.GetIncludeClustersType());
-    //create comparator cluster
-    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
-    CClusterSet clusterSet;
-    CClusterObject clusterObject(ClusterComparator);
-    clusterSet.add(clusterObject);
-    gTimeIntervals->resetIntervalRange();
-    gTimeIntervals->CompareClusterSet(ClusterComparator, clusterSet);
-    for (MLC_Collections_t::iterator itr = TopClustersContainers.begin(); itr != TopClustersContainers.end(); ++itr)
-       itr->Add(clusterSet.get(0).getCluster());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("FindTopClusters()","C_ST_PT_Analysis");
-    throw;
-  }
+    try {
+        //calculate top cluster over all space-time
+        CSpaceTimeAnalysis::FindTopClusters(DataGateway, TopClustersContainers);
+        //detect user cancellation
+        if (_print.GetIsCanceled()) return;
+        //create comparator cluster
+        CPurelyTemporalCluster ClusterComparator(
+            _cluster_data_factory, DataGateway, 
+            _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), _data_hub
+        );
+        boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
+        CClusterObject clusterObject(ClusterComparator);
+        clusterSet->add(clusterObject);
+        _time_intervals->resetIntervalRange();
+        _time_intervals->CompareClusterSet(ClusterComparator, *clusterSet);
+        // If there is a most likely cluster, possibly search for other clusters then add to MLC container.
+        if (clusterSet->getSet().front().getCluster().ClusterDefined()) {
+            CClusterSet::ClusterContainer_t clusters;
+            clusters.push_back(clusterSet->getSet().front()); // Add MLC to the collection of purely temporal clusters.
+            // Search for other purely temporal clusters that don't overlap temporally with the MLC, or each other.
+            if (_parameters.GetAnalysisType() == SPACETIME && !_parameters.GetIsIterativeScanning()) // retrospective space-time only
+                CClusterSetTemporalOverlap::findOtherNotTemporalOverlapping(clusters, *clusterSet, _data_hub);
+            assert(TopClustersContainers.size() == 1);
+            for (auto& clusterObj : clusters)
+                TopClustersContainers.front().Add(clusterObj.getCluster());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("FindTopClusters()","C_ST_PT_Analysis");
+        throw;
+    }
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
@@ -65,39 +68,39 @@ double C_ST_PT_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGatewa
   tract_t                       t, tNumNeighbors, * pIntegerArray;
   unsigned short              * pUnsignedShortArray;
   double                        dMaximizingValue;
-  std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+  std::vector<double>           vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
   std::vector<double>::iterator itr, itr_end;
 
-  gAbstractPTClusterData->InitializeData();
+  _pt_cluster_data->InitializeData();
   //iterate through time intervals, finding top maximizing value
-  gTimeIntervals->resetIntervalRange();
-  dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gAbstractPTClusterData);
+  _time_intervals->resetIntervalRange();
+  dMaximizingValue = _time_intervals->ComputeMaximizingValue(*_pt_cluster_data);
   if (dMaximizingValue > vMaximizingValues[0]) vMaximizingValues[0] = dMaximizingValue;
 
-  gTimeIntervals->setIntervalRange(tCenter);
-  for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
+  _time_intervals->setIntervalRange(tCenter);
+  for (int j=0; j <= _parameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
-     gAbstractClusterData->InitializeData();
-     CentroidNeighbors CentroidDef(j, gDataHub);
+     _cluster_data->InitializeData();
+     CentroidNeighbors CentroidDef(j, _data_hub);
      CentroidDef.Set(tCenter);
      tNumNeighbors = CentroidDef.GetNumNeighbors();
      pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
      pIntegerArray = CentroidDef.GetRawIntegerArray();
      for (t=0; t < tNumNeighbors; ++t) {
-        gAbstractClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-        dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gAbstractClusterData);
+        _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = _time_intervals->ComputeMaximizingValue(*_cluster_data);
         if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
      }   
   }
   //if maximizing value is not a ratio/test statistic, convert them now
-  if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+  if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
     for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
-      *itr = gpLikelihoodCalculator->CalculateFullStatistic(*itr);
+      *itr = _likelihood_calculator->CalculateFullStatistic(*itr);
   //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
-  double dPenalty = gDataHub.GetParameters().GetNonCompactnessPenaltyPower();
-  dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(0), dPenalty);
+  double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();
+  dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);
   for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
-     *itr *= CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(t), dPenalty);
+     *itr *= CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(t), dPenalty);
      dMaximizingValue = std::max(*itr, dMaximizingValue);
   }
   return dMaximizingValue;
@@ -106,24 +109,24 @@ double C_ST_PT_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGatewa
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   tract_t               k, i;
-  SpaceTimeData       * pSpaceTimeData = dynamic_cast<SpaceTimeData*>(gAbstractClusterData.get());
+  SpaceTimeData       * pSpaceTimeData = dynamic_cast<SpaceTimeData*>(_cluster_data.get());
 
-  gMeasureList->Reset();
+  _measure_list->Reset();
   //compare purely temporal cluster in same ratio correction as circle
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
-  gTimeIntervals->resetIntervalRange();
-  gTimeIntervals->CompareMeasures(*gAbstractPTClusterData, *gMeasureList);
+  _time_intervals->resetIntervalRange();
+  _time_intervals->CompareMeasures(*_pt_cluster_data, *_measure_list);
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     CentroidNeighbors CentroidDef(k, gDataHub);
-     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+  for (k=0; k <= _parameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, _data_hub);
+     for (i=0; i < _data_hub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
-        gTimeIntervals->setIntervalRange(i);
-        pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
+        _time_intervals->setIntervalRange(i);
+        pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *_time_intervals, *_measure_list);
      }
-     gMeasureList->SetForNextIteration(k);
+     _measure_list->SetForNextIteration(k);
   }
-  return gMeasureList->GetMaximumLogLikelihoodRatio();
+  return _measure_list->GetMaximumLogLikelihoodRatio();
 }
 

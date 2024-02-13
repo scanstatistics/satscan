@@ -10,20 +10,13 @@
 /** Defines centric space-time analysis which evaluates real and simulated
     data for each centroid separate than other centroids. */
 class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
-  private:
-    void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
-
   protected:
-    CClusterSetCollections                     _topClusters;          /** collection of clusters representing top cluster
-                                                                         - used to evaluate real data */
-    std::auto_ptr<CSpaceTimeCluster>           gClusterComparator;    /** instance of space-time cluster
-                                                                         - used to evaluate real data */
-    std::auto_ptr<SpaceTimeData>               gClusterData;          /** concrete instance of space-time cluster data object
-                                                                         - used by simulation process */
-    std::auto_ptr<AbstractTemporalClusterData> gAbstractClusterData;  /** abstract instance of temporal data object
-                                                                        - used by simulation process */
-    std::auto_ptr<CTimeIntervals>              gTimeIntervals_R;      /** iterates through temporal windows of cluster data */
-    std::auto_ptr<CTimeIntervals>              gTimeIntervals_S;      /** iterates through temporal windows of cluster data */
+    CClusterSetCollections _top_clusters; // collection of clusters representing top cluster - used to evaluate real data
+    boost::shared_ptr<CSpaceTimeCluster> _cluster_compare; // instance of space-time cluster - used to evaluate real data
+    boost::shared_ptr<SpaceTimeData> _cluster_data; // concrete instance of space-time cluster data object - used by simulation process
+    boost::shared_ptr<AbstractTemporalClusterData> _cluster_data_pt; // abstract instance of temporal data object - used by simulation process
+    boost::shared_ptr<CTimeIntervals> _time_intervals_r; // iterates through temporal windows of cluster data
+    boost::shared_ptr<CTimeIntervals> _time_Intervals_s; // iterates through temporal windows of cluster data
 
     virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
     virtual void                        CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
@@ -34,7 +27,16 @@ class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
   public:
     SpaceTimeCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
                              const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
-    virtual ~SpaceTimeCentricAnalysis();
+    virtual ~SpaceTimeCentricAnalysis() {}
+};
+
+/** Defines inteface for space-time analysis that includes purely temporal clusters
+    evaluating real and simulated data for each centroid separate than other centroids. */
+class SpaceTimeIncludePurelyTemporalCentricAnalysis : public SpaceTimeCentricAnalysis {
+public:
+    SpaceTimeIncludePurelyTemporalCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
+        const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    virtual ~SpaceTimeIncludePurelyTemporalCentricAnalysis() {}
 };
 //******************************************************************************
 #endif

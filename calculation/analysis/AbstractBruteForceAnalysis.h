@@ -21,8 +21,8 @@ class AbstractBruteForceAnalysis : public CAnalysis {
   protected:    
     typedef ptr_vector<CentroidNeighbors> NeighborContainer_t;
 
-    NeighborContainer_t                       gNeighborInfo;
-    std::auto_ptr<CentroidNeighborCalculator> gCentroidCalculator; //centroid neighbors calculator
+    NeighborContainer_t _neighbor_info;
+    boost::shared_ptr<CentroidNeighborCalculator> _centroid_calculator; //centroid neighbors calculator
 
     virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
     virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
@@ -35,7 +35,6 @@ class AbstractBruteForceAnalysis : public CAnalysis {
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        FindTopClusters(const AbstractDataSetGateway & DataGateway, MLC_Collections_t& TopClustersContainers);
-    double                              ExecuteSimulation(const AbstractDataSetGateway& DataGateway);
     virtual void                        AllocateAdditionalSimulationObjects(RandomizerContainer_t& Container) = 0;
 };
 //*****************************************************************************

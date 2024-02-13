@@ -116,7 +116,6 @@ void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinitio
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     clusterSet.update(*this);
   }
-  clusterSet.maximizeClusterSet();
 }
 
 /** re-initializes cluster data */

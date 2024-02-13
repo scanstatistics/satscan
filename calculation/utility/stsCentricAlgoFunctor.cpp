@@ -40,7 +40,8 @@ stsCentricAlgoFunctor::result_type stsCentricAlgoFunctor::operator() (param_type
   return temp_result;
 }
 
-stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
+
+stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
   contractor_type & rContractor
  ,job_source_type & rJobSource
    ,stsCentricAlgoJobSource::result_type & rPurelyTemporalExecutionResult

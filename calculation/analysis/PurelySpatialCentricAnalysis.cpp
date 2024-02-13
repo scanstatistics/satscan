@@ -9,23 +9,39 @@
 #include "SSException.h"
 
 /** constructor */
-PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Parameters,
-                                                           const CSaTScanData& Data,
-                                                           BasePrint& PrintDirection,
-                                                           const AbstractDataSetGateway& RealDataGateway,
-                                                           const DataSetGatewayContainer_t& vSimDataGateways)
-                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _topClusters(Data) {
-  try {
-    Setup(RealDataGateway, vSimDataGateways);
-  }
-  catch (prg_exception& x) {
-    x.addTrace("constructor()","PurelySpatialCentricAnalysis");
-    throw;
-  }
+PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(
+    const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
+    const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways)
+:AbstractCentricAnalysis(Parameters, Data, PrintDirection), _top_clusters(Data) {
+    try {
+        //allocate objects used to evaluate real data
+        _cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory, RealDataGateway));
+        _top_clusters.setTopClusters(*_cluster_compare.get());
+        //allocate objects used to evaluate simulation data
+        if (_parameters.GetNumReplicationsRequested()) {
+            gvMeasureLists.killAll();
+            //create simulation objects based upon which process used to perform simulations
+            if (_replica_process_type == MeasureListEvaluation) {
+                //create a measure list object for each requested replication - we do this inorder
+                //to prevent excess calls to loglikelihood calculation method; unfortunately this
+                //also consumes more memory...
+                _cluster_data.reset(new SpatialData(*(*vSimDataGateways.begin())));
+                for (size_t t=0; t < vSimDataGateways.size(); ++t)
+                    gvMeasureLists.push_back(GetNewMeasureListObject());
+            } else {
+                //Simulations performed using same process as real data set. Since we will be taking
+                //the greatest loglikelihood ratios among all centroids, but analyzing each centroids
+                //replications separately, we need to maintain a vector of llr values.
+                gCalculatedRatios.reset(new std::vector<double>(_parameters.GetNumReplicationsRequested(), 0));
+                _cluster_data_sim.reset(_cluster_data_factory->GetNewSpatialClusterData(*(*vSimDataGateways.begin())));
+            }
+        }
+    } catch (prg_exception& x) {
+        gvMeasureLists.killAll(); gCalculatedRatios.reset();
+        x.addTrace("constructor()","PurelySpatialCentricAnalysis");
+        throw;
+    }
 }
-
-/** destructor */
-PurelySpatialCentricAnalysis::~PurelySpatialCentricAnalysis() {}
 
 /** Calculates greatest loglikelihood ratios about centroid for each defined data set gateway object,
     storing maximum ratio for each simulation in class member gCalculatedRatios.
@@ -42,13 +58,13 @@ void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const 
   itrGateway=vDataGateways.begin();
   itrLoglikelihoodRatios=gCalculatedRatios->begin();
   for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
-     gAbstractClusterData->InitializeData();
+     _cluster_data_sim->InitializeData();
      tNumNeighbors = CentroidDef.GetNumNeighbors();
      for (t=0; t < tNumNeighbors; ++t) {
         //update cluster data
-        gAbstractClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
+        _cluster_data_sim->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
         //calculate loglikehood ratio and compare against current top cluster
-        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gAbstractClusterData->CalculateLoglikelihoodRatio(*gpLikelihoodCalculator));
+        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, _cluster_data_sim->CalculateLoglikelihoodRatio(*_likelihood_calculator));
      }
      //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
      //      use an IntermediateClustersContainer, as used in other top cluster method to
@@ -65,15 +81,15 @@ void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const 
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
 void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
-  if (_topClusters.getClusterSet(0).get(0).getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
+  if (_top_clusters.getClusterSet(0).getSet().front().getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster objects if evaluating data about new centroid
-    _topClusters.reset(CentroidDef.GetCentroidIndex());
-  gClusterComparator->Initialize(CentroidDef.GetCentroidIndex());
-  gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
-  _topClusters.resetNeighborCounts(CentroidDef);
-  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(0), *gpLikelihoodCalculator);
+    _top_clusters.resetAboutCentroid(CentroidDef.GetCentroidIndex());
+  _cluster_compare->Initialize(CentroidDef.GetCentroidIndex());
+  _cluster_compare->SetEllipseOffset(CentroidDef.GetEllipseIndex(), _data_hub);
+  _top_clusters.resetNeighborCounts(CentroidDef);
+  _cluster_compare->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _top_clusters.getClusterSet(0), *_likelihood_calculator);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
-  _topClusters.setClusterNonPersistantNeighborInfo(CentroidDef);
+  _top_clusters.setClusterNonPersistantNeighborInfo(CentroidDef);
 }
 
 /** Returns cluster object with greatest llr value as specified by gTopCluster.
@@ -82,7 +98,7 @@ void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(co
     is necessary if you want to keep object around in current state. */
 const SharedClusterVector_t PurelySpatialCentricAnalysis::GetTopCalculatedClusters() {
   SharedClusterVector_t topClusters; 
-  return _topClusters.getTopClusters(topClusters);
+  return _top_clusters.getTopClusters(topClusters);
 }
 
 /** Updates CMeasureList objects for each defined data set of gateway object.
@@ -98,7 +114,7 @@ void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(const Centr
   itrGateway = vDataGateways.begin();
   itrMeasureList=gvMeasureLists.begin();
   for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList)
-     gClusterData->AddMeasureList(CentroidDef, (*itrGateway)->GetDataSetInterface(), (*itrMeasureList));
+     _cluster_data->AddMeasureList(CentroidDef, (*itrGateway)->GetDataSetInterface(), (*itrMeasureList));
      //NOTE: This process assumes no-compactness correction for ellipses - otherwise
      //      we would call: gpMeasureList->SetForNextIteration(itrCentroidEnd->GetCentroidIndex());
      //      to calculate the loglikelihood with accumulated measure list for current circle/ellipse.
@@ -107,42 +123,3 @@ void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(const Centr
      //      measurelist object for each ellipse/centroid pair to prevent to many loglikelihood calculations, but
      //      that would increase the amount of memory needed.
 }
-
-/** Internal function which allocates appropriate objects for evaulate real and simulated data. */
-void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
-  try {
-    //allocate objects used to evaluate real data
-    gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway));
-    _topClusters.setTopClusters(*gClusterComparator.get());
-    
-    //allocate objects used to evaluate simulation data
-    if (gParameters.GetNumReplicationsRequested()) {
-      ptr_vector<AbstractDataSetGateway>::const_iterator  itr=vSimDataGateways.begin(), itr_end=vSimDataGateways.end();
-
-      gvMeasureLists.killAll();
-      //create simulation objects based upon which process used to perform simulations
-      if (geReplicationsProcessType == MeasureListEvaluation) {
-         //create a measure list object for each requested replication - we do this inorder
-         //to prevent excess calls to loglikelihood calculation method; unfortunately this
-         //also consumes more memory...
-         gClusterData.reset(new SpatialData(*(*itr)));
-         for (; itr != itr_end; ++itr)
-           gvMeasureLists.push_back(GetNewMeasureListObject());
-      }
-      else {
-        //Simulations performed using same process as real data set. Since we will be taking
-        //the greatest loglikelihood ratios among all centroids, but analyzing each centroids
-        //replications separately, we need to maintain a vector of llr values.
-        gCalculatedRatios.reset(new std::vector<double>(gParameters.GetNumReplicationsRequested(), 0));
-        gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*itr)));
-      }
-    }  
-  }
-  catch (prg_exception& x) {
-    gClusterComparator.reset(0); gClusterData.reset(0); gAbstractClusterData.reset(0);
-    gvMeasureLists.killAll(); gCalculatedRatios.reset();
-    x.addTrace("Setup()","PurelySpatialCentricAnalysis");
-    throw;
-  }
-}
-

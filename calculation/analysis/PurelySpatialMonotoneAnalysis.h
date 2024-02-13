@@ -8,9 +8,9 @@
 /** Derives from base class to re-define methods for monotone purely spatial analysis. */
 class CPSMonotoneAnalysis : public CAnalysis {
   private:
-    std::auto_ptr<CPSMonotoneCluster> gComparatorCluster;    /** cluster object utilized to find top cluster in real data */
-    std::auto_ptr<CPSMonotoneCluster> gAuxComparatorCluster; /** cluster object utilized to find top cluster in real data */
-    CClusterSetCollections            _topClusters;
+    boost::shared_ptr<CPSMonotoneCluster> _compare_cluster;    /** cluster object utilized to find top cluster in real data */
+    boost::shared_ptr<CPSMonotoneCluster> _aux_compare_cluster; /** cluster object utilized to find top cluster in real data */
+    CClusterSetCollections _top_clusters;
 
   protected:
     virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
@@ -19,7 +19,7 @@ class CPSMonotoneAnalysis : public CAnalysis {
 
   public:
     CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
-    virtual ~CPSMonotoneAnalysis();
+    virtual ~CPSMonotoneAnalysis() {}
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);

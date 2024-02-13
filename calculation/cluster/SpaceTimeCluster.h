@@ -9,10 +9,6 @@
 
 /** cluster class for space-time analysis (retrospective and prospective) */
 class CSpaceTimeCluster : public CCluster {
-  private:
-    void                                  Init() {gpClusterData=0;}
-    void                                  Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);
-
   protected:
     AbstractTemporalClusterData         * gpClusterData;
 

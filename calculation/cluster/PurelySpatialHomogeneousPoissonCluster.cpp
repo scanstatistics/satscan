@@ -88,7 +88,6 @@ void PurelySpatialHomogeneousPoissonCluster::CalculateTopClusterAboutCentroidDef
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     clusterSet.update(*this);
   }
-  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CPurelySpatialCluster */

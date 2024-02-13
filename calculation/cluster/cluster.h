@@ -49,6 +49,14 @@ class CCluster {
     virtual CCluster            * Clone() const {throw prg_error("Clone().", "Clone()"); return 0; }//= 0;
     virtual void                  CopyEssentialClassMembers(const CCluster& rhs) {throw prg_error("CopyEssentialClassMembers()", "CopyEssentialClassMembers()");}//= 0;
     CCluster                    & operator=(const CCluster& rhs);
+    
+    std::string getIdentifyingKey() const {
+        // Returns a key that identifies this cluster in terms of ellipse offset, centroid, and window definition.
+        std::stringstream key;
+        key << m_iEllipseOffset << "-" << m_Center << "-" << m_nFirstInterval << "-" << m_nLastInterval;
+        return key.str();
+    }
+
     //pure virtual functions
     virtual AbstractClusterData       * GetClusterData() {throw prg_error("GetClusterData()", "GetClusterData()"); return 0; }//= 0;
     virtual const AbstractClusterData * GetClusterData() const {throw prg_error("GetClusterData().", "GetClusterData()"); return 0; }//= 0;
