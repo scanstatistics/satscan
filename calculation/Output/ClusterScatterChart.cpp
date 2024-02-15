@@ -17,9 +17,9 @@ const char * CartesianGraph::TEMPLATE = " \
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"> \n \
 <html lang=\"en\"> \n \
     <head> \n \
-        <title>Cartesian Coordinates Map</title> \n \
+        <title>Clusters Graph</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
-        <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
+        <link href=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <style type=\"text/css\"> \n \
         body {background-color: #f0f8ff;}\n \
         #chartContainer{ overflow: hidden; }\n \
@@ -52,7 +52,9 @@ const char * CartesianGraph::TEMPLATE = " \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/canvas-toBlob-2016-05-26.js'></script> \n \
-        <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.js'></script> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
+        <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
         <script type='text/javascript'> \n"
 "          var clusters = [ \n \
             --cluster-definitions-- \n \
@@ -80,7 +82,7 @@ const char * CartesianGraph::TEMPLATE = " \
                  dimension = Math.max(jQuery(row).width() - jQuery(options_div).width() - 100, jQuery(options_div).width() - 50);\n \
                jQuery('.chart-column').html(\"<div id = 'chartContainer' name = 'chartContainer' style = 'margin-left: 20px;'></div>\"); \n \
                chart = new Chart.Bubble('chartContainer', {zmin:region.zmin,zmax:region.zmax,xsteps:region.xsteps,ysteps:region.ysteps,bubbleSize:region.bubbleSize,xmin:region.xmin,xmax:region.xmax,ymin:region.ymin,ymax:region.ymax,width:dimension,height:dimension,\n \
-                                        title: jQuery('.title-setter').val() || 'Cartesian Coordinates Map',\n \
+                                        title: jQuery('.title-setter').val() || 'Clusters Graph',\n \
                                         points_mouseoveronly: false, \n \
                                         x_sinusoidal_factor: --x_sinusoidal_factor--, \n \
                                         showGrid:document.getElementById('id_show_grid_lines').checked, \n \
@@ -96,7 +98,7 @@ const char * CartesianGraph::TEMPLATE = " \
                     else if (jQuery('#id_hierarchical').is(':checked')) add &= (c.hierarchical == true);\n \
                     else if (jQuery('#id_gini').is(':checked')) add &= (c.gini == true);\n \
                     else add &= true;\n \
-                    if (jQuery('#id_view_significant').is(':checked')) add &= (c.significant == true);\n \
+                    add &= jQuery('#id_select_clusters option[value=\"' + c.id + '\"]').is(':checked');\n \
                     if (add && jQuery('#id_cluster_circles').is(':checked')) {\n \
                         if (c.ellipse)\n \
                             chart.addEllipticBubble(c.id, c.x, c.y, c.z, c.semimajor, c.angle, c.shape, c.color, c.tip);\n \
@@ -152,6 +154,11 @@ const char * CartesianGraph::TEMPLATE = " \
                     });\n \
                     jQuery('#id_show_all_edges').on('click', function(){ showGraph(); }); \n \
                     if (entire_region_edges.length == 0) { jQuery('#id_show_all_edges').parent().hide(); jQuery('#id_show_all_edges').parent().next('p.help-block').hide(); } \n \
+                    jQuery('#id_select_clusters').multiselect({ \n \
+                        numberDisplayed: 1, enableFiltering : false, includeSelectAllOption : false, enableClickableOptGroups : true, maxHeight : 300, buttonWidth : '100%', dropRight : false, indentGroupOptions : true, \n \
+                        onDropdownHide : function(event) { \n \
+                           nIntervId = setInterval(function() { clearInterval(nIntervId); jQuery('div#id_clusters div.btn-group').show(); nIntervId = null; showGraph(); }, 25); \n \
+                    } }); \n \
                } catch (error) { \n \
 				   jQuery('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
              	   throw( error ); \n \
@@ -169,10 +176,13 @@ const char * CartesianGraph::TEMPLATE = " \
                     <div style='font-style:italic;'>Generated with SaTScan v--satscan-version--</div>\n \
                 </div> \n \
                 <div class=\"options-row\"> \n \
-                    <div id=\"id_significance_option\">\n \
-                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_significant\" value=\"entire\" checked=checked />Significant clusters</label>\n \
-                        <label><input type=\"radio\" name=\"view_significance\" id=\"id_view_all\" value=\"cluster\" />All clusters</label>\n \
-                        <p class=\"help-block\">Toggle display between significant and all clusters.</p>\n \
+                    <div id='id_clusters'>\n \
+                        <label for='id_select_clusters'>Display Clusters:</label> \n \
+                        <select name='select_clusters' id='id_select_clusters' multiple='multiple' class='clusters-select'> \n \
+                            --significant-cluster-options--\n \
+                            --non-significant-cluster-options--\n \
+                            </select> \n \
+                            <p class='help-block'>Toggle display of clusters.</p> \n \
                     </div>\n \
                     <div id=\"id_rates_option\"> \n \
                         <label><input type=\"radio\" name=\"view_rate\" id=\"id_view_highlow\" value=\"entire\" checked=checked />High and low clusters</label>\n \
@@ -216,7 +226,7 @@ const char * CartesianGraph::TEMPLATE = " \
                 <div class=\"options-row\"> \n \
                     <label class='option-section' for='title_obs' style='display:none;'>Title</label> \n \
                     <div>\n \
-                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Cartesian Coordinates Map\"> \n \
+                        <input type=\"text\" style=\"width:95%;padding:1px;\" class=\"title-setter\" id=\"title_obs\" value=\"Clusters Graph\"> \n \
                         <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
                     </div> \n \
                 </div> \n \
@@ -296,7 +306,7 @@ std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates
     return vCoordinates;
 }
 
-void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
+void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration) {
     double gdMinRatioToReport = 0.001, radius = 0.0;
     std::vector<double> vCoordinates;
     std::string buffer, buffer2, legend, points, edges;
@@ -375,17 +385,21 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
                 _clusterRegion._largestY = std::max(_clusterRegion._largestY, vCoordinates.at(1) + semi_major + 0.25/* left-margin buffer*/);
                 _clusterRegion._smallestY = std::min(_clusterRegion._smallestY, vCoordinates.at(1) - semi_major - 0.25/* bottom-margin buffer*/);
             }
-			_cluster_definitions << "{ id: " << (i + 1) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
+			_cluster_definitions << "{ id: " << (i + iteration) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
 				<< ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false")
 				<< ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")
 				<< ", ellipse : " << (cluster.GetEllipseOffset() != 0 ? "true" : "false") << ", " << buffer
 				<< ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD")
                 << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
                 << "', tip : '" << legend.c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
+            if (cluster.isSignificant(_dataHub, i, simVars)) {
+                _cluster_options_significant << "<option value=" << (i + iteration) << " class='significant_clusters' selected>Cluster " << (i + iteration) << "</option>";
+            } else {
+                _cluster_options_non_significant << "<option value=" << (i + iteration) << " class='non_significant_clusters'>Cluster " << (i + iteration) << "</option>";
+            }
         }
         ++_clusters_written;
     }
-
 }
 
 /** Render scatter chart to html page. */
@@ -438,7 +452,16 @@ void CartesianGraph::finalize() {
         templateReplace(html, "--entire-region-points--", trimString(trimString(entire_points, ","), ",").c_str());
         templateReplace(html, "--cluster-region-points--", trimString(trimString(cluster_points, ","), ",").c_str());
 
-        // TODO: try to get clusterRegion and entireRegion to better numbers/ticks in graph
+        // write significant clusters option group
+        worker.str("");
+        if (_cluster_options_significant.tellp())
+            worker << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
+        templateReplace(html, "--significant-cluster-options--", worker.str());
+        // write non-significant clusters option group
+        worker.str("");
+        if (_cluster_options_non_significant.tellp())
+            worker << "<optgroup label='Non-Significant' class='non_significant_clusters'>" << _cluster_options_non_significant.str() << "</optgroup>";
+        templateReplace(html, "--non-significant-cluster-options--", worker.str());
 
         // replace parameters hash
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s", _dataHub.GetParameters().GetAreaScanRateType(),(_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true": "false"));

@@ -1488,7 +1488,7 @@ void AnalysisExecution::reportClusters() {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Cartesian map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_graph.reset(new CartesianGraph(_data_hub));
-            _cluster_graph->add(_reportClusters, _sim_vars);
+            _cluster_graph->add(_reportClusters, _sim_vars, _analysis_count);
         }
 
         // Create Google Maps file if requested.

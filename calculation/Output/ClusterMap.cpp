@@ -78,7 +78,7 @@ const char * ClusterMap::TEMPLATE = " \
     <head> \n \
         <title>Cluster Map</title> \n \
         <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" charset=\"utf-8\"> \n \
-        <link href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" rel=\"stylesheet\"> \n \
+        <link href=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/nouislider.css\"> \n \
         <style type=\"text/css\"> \n \
          body {background-color: #f0f8ff;} \n \

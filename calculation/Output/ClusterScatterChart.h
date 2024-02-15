@@ -57,26 +57,28 @@ class CartesianGraph {
         double _smallestY;
     };
 
-protected:
-    const CSaTScanData                & _dataHub;
-    RegionSettings                      _clusterRegion;
-    RegionSettings                      _entireRegion;
-    std::stringstream                   _cluster_definitions;
-    boost::dynamic_bitset<>             _cluster_locations;
-    unsigned int                        _clusters_written;
-    double                              _median_parallel;
+    protected:
+        const CSaTScanData                & _dataHub;
+        RegionSettings                      _clusterRegion;
+        RegionSettings                      _entireRegion;
+        std::stringstream                   _cluster_definitions;
+        boost::dynamic_bitset<>             _cluster_locations;
+        unsigned int                        _clusters_written;
+        double                              _median_parallel;
+        std::stringstream                   _cluster_options_significant;
+        std::stringstream                   _cluster_options_non_significant;
 
-    std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
-    std::vector<double>               & transform(std::vector<double>& vCoordinates);
+        std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
+        std::vector<double>               & transform(std::vector<double>& vCoordinates);
 
-public:
-    CartesianGraph(const CSaTScanData& dataHub);
-    ~CartesianGraph() {}
+    public:
+        CartesianGraph(const CSaTScanData& dataHub);
+        ~CartesianGraph() {}
 
-    void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars);
-    void finalize();
+        void add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration);
+        void finalize();
 
-    static FileName& getFilename(FileName& filename);
+        static FileName& getFilename(FileName& filename);
 };
 //******************************************************************************
 #endif
