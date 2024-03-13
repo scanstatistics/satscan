@@ -48,6 +48,7 @@
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
+using boost::algorithm::ireplace_all;
 
 const int BernoulliAnalysisDrilldown::DEFAULT_NUM_ITERATIVE_SCANS = 10;
 const double BernoulliAnalysisDrilldown::DEFAULT_ITERATIVE_CUTOFF_PVALUE = 0.05;
@@ -99,7 +100,7 @@ bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const C
 
 AnalysisExecution::AnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print)
     :_data_hub(data_hub), _parameters(parameters), _start_time(start), _print_direction(print),	_clustersReported(false), 
-    _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _min_ratio_to_report(0.001), _reportClusters(0) {
+    _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _reportClusters(0) {
     try {
         for (std::vector<double>::const_iterator itr = _parameters.getExecuteSpatialWindowStops().begin(); itr != _parameters.getExecuteSpatialWindowStops().end(); ++itr)
             _top_clusters_containers.push_back(MostLikelyClustersContainer(*itr));
@@ -272,7 +273,7 @@ void AnalysisExecution::execute() {
   }
 }
 
-void  AnalysisExecution::finalize() {
+void AnalysisExecution::finalize() {
     FILE * fp = 0;
     try {
         // Finalize the data demograhics process now -- updating cache file for this analysis.
@@ -317,81 +318,141 @@ void  AnalysisExecution::finalize() {
         nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
         nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
         fprintf(fp, "\nProgram completed  : %s", ctime(&CompletionTime));
-        if (0 < nHours && nHours < 1.5)
-            szHours = "hour";
-        if (0 < nMinutes && nMinutes < 1.5)
-            szMinutes = "minute";
-        if (0.5 <= nSeconds && nSeconds < 1.5)
-            szSeconds = "second";
-        if (nHours > 0)
-            fprintf(fp, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
-        else if (nMinutes > 0)
-            fprintf(fp, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
-        else
-           fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
-        if (_parameters.GetNumParallelProcessesToExecute() > 1)
-            fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
+        if (0 < nHours && nHours < 1.5) szHours = "hour";
+        if (0 < nMinutes && nMinutes < 1.5) szMinutes = "minute";
+        if (0.5 <= nSeconds && nSeconds < 1.5) szSeconds = "second";
+        if (nHours > 0) fprintf(fp, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
+        else if (nMinutes > 0) fprintf(fp, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
+        else fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
+        if (_parameters.GetNumParallelProcessesToExecute() > 1) fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
         fclose(fp); fp = 0;
 
-        // Send email, if requested.
-        if (_parameters.getEmailAnalysisResults() && !_data_hub.isDrilldown() && _sim_vars.get_sim_count() != 0) {
-            std::string messageSubject;
-            std::stringstream messagePlain, messageHTML;
-            std::vector<std::string> recipients(_parameters.getEmailAlwaysRecipientsList());
-            // Determine if there are any significant clusters - significant per user settings.
-            MostLikelyClustersContainer::ClusterList_t significantClusters; ClusterSupplementInfo supplement;
-            _reportClusters.getSignificantClusters(_data_hub, _sim_vars, significantClusters, supplement);
-            /* If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
-               significant cluster should be considered when emailing -- otherwise repeated noise i.e. same cluster as yesterdays run. */
-            if (!significantClusters.empty()) {
-                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
-                    std::stringstream signaltext;
+        // Send email per user settings.
+        bool clusterMeetsCutoff = false;
+        std::string mlcSubjectLineNotice;
+        if ((_parameters.getAlwaysEmailSummary() || _parameters.getCutoffEmailSummary()) && !_data_hub.isDrilldown() && _sim_vars.get_sim_count() != 0) {
+            std::stringstream messageSubjectLine, messageBody, messagePlain, messageHTML, summaryParagraph;
+            // Create a summary paragraph of the analysis results. 
+            if (_reportClusters.GetNumClustersRetained() == 0) {
+                summaryParagraph << "No clusters were found by this analysis.";
+                mlcSubjectLineNotice = "- No Clusters";
+            } else {
+                CCluster::RecurrenceInterval_t ri_cutoff(1, _parameters.getCutoffEmailValue());
+                const auto& cluster = _reportClusters.GetCluster(0); // Get the most likely cluster
+                clusterMeetsCutoff = (bool)cluster.meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue());
+                summaryParagraph << "SaTScan found a cluster ";
+                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+                    summaryParagraph << " centered on " << cluster.GetClusterLocation(buffer, _data_hub);
+                if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.UseLocationNeighborsFile() ||
+                    (_parameters.getUseLocationsNetworkFile() && !_data_hub.networkCanReportLocationCoordinates()))) {
+                    double span = cluster.getLocationsSpan(_data_hub);
+                    if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == ELLIPTIC) {
+                        double radius = cluster.GetCartesianRadius();
+                        summaryParagraph << " with a radius of " << getValueAsString(radius, buffer) << " (minor), ";
+                        summaryParagraph << getValueAsString(radius * _data_hub.GetEllipseShape(cluster.GetEllipseOffset()), buffer) << " (major)";
+                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer);
+                    } else if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == CIRCULAR) {
+                        summaryParagraph << " with a radius of " << getValueAsString(cluster.GetCartesianRadius(), buffer);
+                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer);
+                    } else if (_parameters.GetCoordinatesType() == LATLON && !_parameters.getUseLocationsNetworkFile()) {
+                        summaryParagraph << " with a radius of " << getValueAsString(cluster.GetLatLongRadius(), buffer) << " km";
+                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer) << " km";
+                    } else if (span >= 0.0) 
+                        summaryParagraph << " with a span of " << getValueAsString(span, buffer) << " km";
+                }
+                // Create map to cluster cached values - easier and format will match that of other output files.
+                std::map<std::string, std::string> clusterAttributes;
+                for (const auto& entry : cluster.getReportLinesCache()) {
+                    if (clusterAttributes.find(entry.first) == clusterAttributes.end())
+                        clusterAttributes.insert(std::make_pair(entry.first, entry.second.first));
+                    else
+                        clusterAttributes[entry.first] += printString(buffer, ", %s", entry.second.first.c_str());
+                }
+                if (clusterAttributes.find("Time frame") != clusterAttributes.end())
+                    summaryParagraph << " from " << clusterAttributes["Time frame"];
+                summaryParagraph << ".";
+                if (clusterAttributes.find("Relative risk") != clusterAttributes.end())
+                    summaryParagraph << " The relative risk = " << clusterAttributes["Relative risk"] << ".";
+                else if (clusterAttributes.find("Observed / expected") != clusterAttributes.end())
+                    summaryParagraph << " The observed / expected = " << clusterAttributes["Observed / expected"] << ".";
+                if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end()) {
+                    summaryParagraph << " The recurrence interval = " << clusterAttributes["Recurrence interval"] << ".";
+                    printString(mlcSubjectLineNotice, " MLC Recurrence Interval = %s", clusterAttributes["Recurrence interval"].c_str());
+                } else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end()) {
+                    summaryParagraph << " The p-value = " << clusterAttributes["Gumbel P-value"] << ".";
+                    printString(mlcSubjectLineNotice, " MLC P-value = %s", clusterAttributes["Gumbel P-value"].c_str());
+                } else if (clusterAttributes.find("P-value") != clusterAttributes.end()) {
+                    summaryParagraph << " The p-value = " << clusterAttributes["P-value"] << ".";
+                    printString(mlcSubjectLineNotice, " MLC P-value = %s", clusterAttributes["P-value"].c_str());
+                }
+                if (clusterMeetsCutoff) { // If cluster meets cut-off, count the number of other clusters that also met it.
+                    unsigned int othersCutoff = 0;
+                    for (tract_t i=1; i < _reportClusters.GetNumClustersRetained(); ++i) {
+                        if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue()))
+                            break;
+                        ++othersCutoff;
+                    }
+                    if (othersCutoff) {
+                        summaryParagraph << "<linebreak>There " << (othersCutoff == 1 ? "was" : "were") << " " << othersCutoff << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
+                        if (_parameters.GetIsProspectiveAnalysis())
+                            summaryParagraph << "recurrence interval >= " << ri_cutoff.second << " day" << (ri_cutoff.second == 1 ? "" : "s") << ".";
+                        else
+                            summaryParagraph << "p-value <= " << _parameters.getCutoffEmailValue() << ".";
+                    }
+                }
+            }
+            // If the user defined a custom message, build that message now.
+            if (_parameters.getEmailCustom()) {
+                messageSubjectLine << _parameters.getEmailCustomSubject();
+                messageBody << _parameters.getEmailCustomMessageBody();
+                std::stringstream signaltext;
+                std::string customMessageBody(messageBody.str());
+                /* If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
+                    cluster should be considered when emailing -- otherwise repeated noise i.e.same cluster as yesterdays run. */
+                if (clusterMeetsCutoff && _parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
                     const auto& cluster_counts = _data_demographic_processor->getClusterEventTotals();
-                    for (auto const&cluster: significantClusters) {
-                        unsigned int clusterReportNumber = supplement.getClusterReportIndex(*cluster);
-                        unsigned int clusterNewCount = cluster_counts.at(static_cast<int>(clusterReportNumber - 1)).first;
+                    for (tract_t i = 0; i < _reportClusters.GetNumClustersRetained(); ++i) {
+                        unsigned int clusterNewCount = cluster_counts.at(static_cast<int>(i)).first;
                         if (clusterNewCount) {
-                            count_t clusterTotalCases = cluster_counts.at(static_cast<int>(clusterReportNumber - 1)).second;
+                            if (signaltext.str().size()) signaltext << "<linebreak>";
+                            count_t clusterTotalCases = cluster_counts.at(static_cast<int>(i)).second;
                             if (clusterNewCount == clusterTotalCases)
-                                signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << clusterReportNumber << ".<linebreak>";
+                                signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << (i + 1) << ".";
                             else
-                                signaltext << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " added to ongoing signal in cluster #" << clusterReportNumber << ".<linebreak>";
+                                signaltext << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " added to ongoing signal in cluster #" << (i + 1) << ".";
                         }
                     }
-                    // There might be signicant clusters but nothing new to report.
-                    if (signaltext.str().size()) {
-                        messageSubject = _parameters.getEmailSubjectSignificant();
-                        std::string messageBody(_parameters.getEmailMessageBodySignificant());
-                        using boost::algorithm::ireplace_all;
-                        ireplace_all(messageBody, "<signal-text>", (signaltext.str().size() ? signaltext.str() : std::string("")));
-                        messagePlain << _parameters.getEmailFormattedText(messageBody, "\n");
-                        messageHTML << _parameters.getEmailFormattedText(messageBody, "<br>");
-                        const std::vector<std::string>& r = _parameters.getEmailSignificantRecipientsList();
-                        recipients.insert(std::end(recipients), std::begin(r), std::end(r));
-                    } else {
-                        messageSubject = _parameters.getEmailSubjectNoSignificant();
-                        messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "\n");
-                        messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "<br>");
-                    }
-                } else {
-                    // No way to know if this email is noise -- might have reported these clusters in prior email but no way to resolve this for now.
-                    messageSubject = _parameters.getEmailSubjectSignificant();
-                    messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodySignificant(), "\n");
-                    messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodySignificant(), "<br>");
-                    const std::vector<std::string>& r = _parameters.getEmailSignificantRecipientsList();
-                    recipients.insert(std::end(recipients), std::begin(r), std::end(r));
                 }
-            } else {
-                messageSubject = _parameters.getEmailSubjectNoSignificant();
-                messagePlain << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "\n");
-                messageHTML << _parameters.getEmailFormattedText(_parameters.getEmailMessageBodyNoSignificant(), "<br>");
+                ireplace_all(customMessageBody, "<signal-paragraph>", (signaltext.str().size() ? signaltext.str() : std::string("No clusters signalled in this analysis.")));
+                ireplace_all(customMessageBody, "<summary-paragraph>", summaryParagraph.str());
+                messageBody.str("");
+                messageBody << customMessageBody;
+            } else { // Otherwise create the standard email.
+                messageSubjectLine << _parameters.GetTitleName(); // Create the email subject line from either title parameter or default string.
+                if (messageSubjectLine.str().empty()) messageSubjectLine << "SaTScan Results";
+                messageSubjectLine << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
+                messageBody << summaryParagraph.rdbuf();
+                // Add output summaries, if user requested it.
+                if (_parameters.getEmailIncludeResultsDirectory()) messageBody << "<linebreak><linebreak><results-paragraph>";
+                messageBody << "<linebreak><linebreak><footer-paragraph>";
             }
-            // Remove any duplicates.
+            // Create the message in plain text and html fomrats.
+            if (!mlcSubjectLineNotice.empty()) messageSubjectLine << mlcSubjectLineNotice;
+            messagePlain << _parameters.getEmailFormattedText(messageBody.str(), false);
+            messageHTML << _parameters.getEmailFormattedText(messageBody.str(), true);
+
+            // Build the recipients list.
+            std::vector<std::string> recipients;
+            if (_parameters.getAlwaysEmailSummary())
+                for (const auto& r : _parameters.getEmailAlwaysRecipientsList()) recipients.push_back(r);
+            if (_parameters.getCutoffEmailSummary() && clusterMeetsCutoff)
+                for (const auto& r : _parameters.getEmailCutoffRecipientsList()) recipients.push_back(r);
+            // Remove any duplicate recipients.
             std::sort(recipients.begin(), recipients.end());
             recipients.erase(std::unique(recipients.begin(), recipients.end()), recipients.end());
-            sendMail(
+            sendMail( // Send the message.
                 AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
-                _parameters.getEmailFormattedText(messageSubject, ""), messagePlain, messageHTML,
+                _parameters.getEmailFormattedText(messageSubjectLine.str(), false), messagePlain, messageHTML,
                 (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
                 AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
             );
@@ -1248,9 +1309,9 @@ void AnalysisExecution::printRetainedClustersStatus(FILE* fp, bool bClusterRepor
         fprintf(fp, "\nNo clusters reported.\n");
         anyClusters = false;
         for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end() && !anyClusters; ++itrMLC)
-            anyClusters = itrMLC->GetNumClustersRetained() && itrMLC->GetTopRankedCluster().GetRatio() < _min_ratio_to_report;
+            anyClusters = itrMLC->GetNumClustersRetained() && itrMLC->GetTopRankedCluster().GetRatio() < MIN_CLUSTER_LLR_REPORT;
         if (!anyClusters)
-            printString(buffer, "All clusters had a %s less than %g.", (_parameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"), _min_ratio_to_report);
+            printString(buffer, "All clusters had a %s less than %g.", (_parameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"), MIN_CLUSTER_LLR_REPORT);
         else
             printString(buffer, "All clusters had a rank greater than %i.", _parameters.GetNumReplicationsRequested());
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -1539,7 +1600,7 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
         tract_t maxDisplay = _sim_vars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained();
         for (int i = 0; i < maxDisplay; ++i) {
             const CCluster& cluster = mlc.GetCluster(i);
-            if (i == 0 || (cluster.m_nRatio >= _min_ratio_to_report && (_sim_vars.get_sim_count() == 0 || cluster.GetRank() <= _sim_vars.get_sim_count())))
+            if (i == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (_sim_vars.get_sim_count() == 0 || cluster.GetRank() <= _sim_vars.get_sim_count())))
                 _clusterSupplement->addCluster(cluster, i + 1);
         }
         // calculate geographical overlap of clusters
@@ -1551,7 +1612,7 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
             //get reference to i'th top cluster
             const CCluster& TopCluster = mlc.GetCluster(i);
             //write cluster details to 'cluster information' file
-            if (ClusterWriter.get() && TopCluster.m_nRatio >= _min_ratio_to_report)
+            if (ClusterWriter.get() && TopCluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT)
                 ClusterWriter->Write(TopCluster, i + 1, _sim_vars);
             //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
             //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios

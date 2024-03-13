@@ -104,6 +104,8 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 #define macro_round(x) (x<0?ceil((x)-0.5):floor((x)+0.5))
 /** minimum number of simulations to report pvalues */
 #define MIN_SIMULATION_RPT_PVALUE 99
+/** minimum LLR to report cluster */
+#define MIN_CLUSTER_LLR_REPORT 0.001
 /** interval range type */
 typedef boost::tuple<int,int,int,int>  IntervalRange_t;
 /* DateSource types */

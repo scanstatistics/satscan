@@ -48,8 +48,7 @@ protected:
     boost::dynamic_bitset<>             _cluster_locations;
     unsigned int                        _clusters_written;
     std::stringstream                   _event_definitions;
-    std::stringstream                   _cluster_options_significant;
-    std::stringstream                   _cluster_options_non_significant;
+    std::stringstream                   _cluster_options;
     std::vector<EventType>              _event_types;
     Julian                              _recent_startdate;
 

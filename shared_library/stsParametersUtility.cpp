@@ -802,52 +802,52 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getLinelistIndividualsCacheFileName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceByRecurrence", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getClusterSignificanceByRecurrence());
+  mid = _getMethodId_Checked(Env, clazz, "setRestrictLineListCSV", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getRestrictLineListCSV());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceRecurrenceCutoff", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterSignificanceRecurrenceCutoff());
+  mid = _getMethodId_Checked(Env, clazz, "setCutoffLineListCSV", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getCutoffLineListCSV());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceRecurrenceType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterSignificanceRecurrenceType());
+  mid = _getMethodId_Checked(Env, clazz, "setAlwaysEmailSummary", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getAlwaysEmailSummary());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificanceByPvalue", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getClusterSignificanceByPvalue());
+  mid = _getMethodId_Checked(Env, clazz, "setCutoffEmailSummary", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getCutoffEmailSummary());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterSignificancePvalueCutoff", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getClusterSignificancePvalueCutoff());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setEmailAnalysisResults", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailAnalysisResults());
+  mid = _getMethodId_Checked(Env, clazz, "setCutoffEmailValue", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getCutoffEmailValue());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setEmailAlwaysRecipients", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailAlwaysRecipients().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSignificantRecipients", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailSignificantRecipients().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "setEmailCutoffRecipients", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailCutoffRecipients().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSubjectNoSignificant", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailSubjectNoSignificant().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "setEmailCustomSubject", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailCustomSubject().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setEmailMessageBodyNoSignificant", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailMessageBodyNoSignificant().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "setEmailAttachResults", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailAttachResults());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setEmailSubjectSignificant", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailSubjectSignificant().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "setEmailIncludeResultsDirectory", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailIncludeResultsDirectory());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setEmailMessageBodySignificant", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailMessageBodySignificant().c_str()));
+  mid = _getMethodId_Checked(Env, clazz, "setEmailCustom", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getEmailCustom());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setEmailCustomMessageBody", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getEmailCustomMessageBody().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setEmailAttachResults", "(Z)V");
@@ -1585,27 +1585,24 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setLinelistIndividualsCacheFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceByRecurrence", "()Z");
-  Parameters.setClusterSignificanceByRecurrence(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getRestrictLineListCSV", "()Z");
+  Parameters.setRestrictLineListCSV(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceRecurrenceCutoff", "()I");
-  Parameters.setClusterSignificanceRecurrenceCutoff(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  mid = _getMethodId_Checked(Env, clazz, "getCutoffLineListCSV", "()D");
+  Parameters.setCutoffLineListCSV(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  Parameters.setClusterSignificanceRecurrenceType((DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "getClusterSignificanceRecurrenceType", "Lorg/satscan/app/Parameters$DatePrecisionType;"));
+  mid = _getMethodId_Checked(Env, clazz, "getAlwaysEmailSummary", "()Z");
+  Parameters.setAlwaysEmailSummary(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificanceByPvalue", "()Z");
-  Parameters.setClusterSignificanceByPvalue(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getCutoffEmailSummary", "()Z");
+  Parameters.setCutoffEmailSummary(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getClusterSignificancePvalueCutoff", "()D");
-  Parameters.setClusterSignificancePvalueCutoff(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailAnalysisResults", "()Z");
-  Parameters.setEmailAnalysisResults(Env.CallBooleanMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getCutoffEmailValue", "()D");
+  Parameters.setCutoffEmailValue(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getEmailAlwaysRecipients", "()Ljava/lang/String;");
@@ -1615,44 +1612,38 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setEmailAlwaysRecipients(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getEmailSignificantRecipients", "()Ljava/lang/String;");
+  mid = _getMethodId_Checked(Env, clazz, "getEmailCutoffRecipients", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setEmailSignificantRecipients(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailSubjectNoSignificant", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setEmailSubjectNoSignificant(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailMessageBodyNoSignificant", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setEmailMessageBodyNoSignificant(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailSubjectSignificant", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setEmailSubjectSignificant(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getEmailMessageBodySignificant", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setEmailMessageBodySignificant(sFilename);
+  Parameters.setEmailCutoffRecipients(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getEmailAttachResults", "()Z");
   Parameters.setEmailAttachResults(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getEmailIncludeResultsDirectory", "()Z");
+  Parameters.setEmailIncludeResultsDirectory(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+ 
+  mid = _getMethodId_Checked(Env, clazz, "getEmailCustom", "()Z");
+  Parameters.setEmailCustom(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getEmailCustomSubject", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setEmailCustomSubject(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getEmailCustomMessageBody", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setEmailCustomMessageBody(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getMultipleLocationsFile", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);

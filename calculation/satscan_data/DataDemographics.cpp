@@ -7,6 +7,7 @@
 #include "MostLikelyClustersContainer.h"
 #include "DataSetHandler.h"
 #include "FileName.h"
+#include "SaTScanData.h"
 #include <numeric>
 #include <algorithm>
 
@@ -106,7 +107,7 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
     for (int i = 0; i < _clusters->GetNumClustersRetained(); ++i) {
         _cluster_event_totals[i] = std::make_pair(0, 0);
         const CCluster& cluster = _clusters->GetCluster(i);
-        if (cluster.isSignificant(handler.gDataHub, i + 1, sim_vars)) {
+        if (isReported(handler.gDataHub, cluster, i, sim_vars)) {
             // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
             boost::dynamic_bitset<> locations(handler.gDataHub.GetNumIdentifiers());
             std::vector<tract_t> tractIndexes;
@@ -153,6 +154,19 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
     // typcically times == 1 but if not individual data, could be aggregated count
     for (int i=0; i < times; ++i) 
         temp_file << line.str();
+}
+
+/** Returns whether a cluster is reported in the cluster line-list output file. */
+bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
+    const auto& parameters = Data.GetParameters();
+    if (parameters.getRestrictLineListCSV()) { // Use the user specified cutoff restriction.
+        if (cluster.reportableRecurrenceInterval(parameters, simVars))
+            return cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second >= parameters.getCutoffLineListCSV();
+        if (cluster.reportablePValue(parameters, simVars))
+            return cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1) <= parameters.getCutoffLineListCSV();
+    }
+    // Otherwise match reporting criteria of main results file.
+    return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
 }
 
 /* Re-reads cases file to accumulate line-list data inconjuction with detected clusters. */

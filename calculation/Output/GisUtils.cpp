@@ -255,4 +255,17 @@ std::string VisualizationUtils::toHtmlColor(const std::string& colorKML) const {
     return s.str();
 }
 
-
+/** Returns the value used by the noUiSlider control of visualizations such as Google Maps and Cartesian graph. */
+double VisualizationUtils::getSliderValue(const CSaTScanData& datahub, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
+    const auto& parameters = datahub.GetParameters();
+    if (parameters.GetIsProspectiveAnalysis()) {
+        const double MIN_RECURRANCE_VALUE = 0.0, MAX_RECURRANCE_VALUE = 730000000;
+        if (cluster.reportableRecurrenceInterval(parameters, simVars))
+            return std::min(cluster.GetRecurrenceInterval(datahub, iReportedCluster, simVars).second, MAX_RECURRANCE_VALUE);
+        return MIN_RECURRANCE_VALUE;
+    } 
+    const double MIN_PVALUE_VALUE = 0.000001, MAX_PVALUE_VALUE = 1.0;
+    if (cluster.reportablePValue(parameters, simVars))
+        return std::max(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1), MIN_PVALUE_VALUE);
+    return MAX_PVALUE_VALUE;
+}

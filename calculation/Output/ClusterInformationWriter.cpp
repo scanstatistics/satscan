@@ -271,22 +271,6 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
   }
 }
 
-/* Returns the name of the most central location in the cluster. 
-   In the most general and common application, identifier and location reference the same label/name.*/
-std::string& ClusterInformationWriter::GetClusterLocation(std::string& locationID, const CCluster& thisCluster) const {
-    if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-        locationID = "All";
-    else if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION)
-        // The location name and the identifier name are indentical when using the typical one coordinate per observation.
-        locationID = gDataHub.getIdentifierInfo().getIdentifierNameAtIndex(thisCluster.mostCentralIdentifierIdx(), locationID);
-    else {
-        std::vector<tract_t> clusterLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(gDataHub, thisCluster, 0, &clusterLocations);
-        locationID = gDataHub.getLocationsManager().locations()[clusterLocations.front()]->name();
-    }
-    return locationID;
-}
-
 /** Records the required data to be stored in the cluster output file, stores
     the values in the global vector of cluster records.
     pre: pCluster has been initialized with calculated data
@@ -325,7 +309,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
 
   try {
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-    Record.GetFieldValue(LOC_ID_FIELD).AsString() = GetClusterLocation(sBuffer, theCluster);
+    Record.GetFieldValue(LOC_ID_FIELD).AsString() = theCluster.GetClusterLocation(sBuffer, gDataHub);
     if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
       Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
     if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() ||

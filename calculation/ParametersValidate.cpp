@@ -70,7 +70,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
         bValid &= ValidateClosedLoopAnalysisParameters(PrintDirection);
         bValid &= ValidateOtherOutputOptionParameters(PrintDirection);
-        bValid &= ValidateEmailAlertParameters(PrintDirection);
+        bValid &= ValidateNotificationParameters(PrintDirection);
     } catch (prg_exception& x) {
         x.addTrace("ValidateParameters()","ParametersValidate");
         throw;
@@ -79,12 +79,22 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
 }
 
 bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const {
+    bool bValid = true;
     try {
-        if (gParameters.getClusterSignificanceByPvalue()) {
-            double cutoff = gParameters.getClusterSignificancePvalueCutoff();
-            if (cutoff <= 0.0 || cutoff > 1.0) {
-                PrintDirection.Printf("%s:\nThe p-value cutoff which restricts identified significant clusters\nmust be greater than zero and less than or equal to one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                return false;
+        if (gParameters.getReadingLineDataFromCasefile() && gParameters.getRestrictLineListCSV()) {
+            if (gParameters.GetIsProspectiveAnalysis() && gParameters.getCutoffLineListCSV() < 1) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe cluster line list cutoff value must be greater than zero for a prospective analysis.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            if (!gParameters.GetIsProspectiveAnalysis() && (gParameters.getCutoffLineListCSV() < 0 || gParameters.getCutoffLineListCSV() > 1)) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "%s:\nThe cluster line list cutoff must be between 0 and 1, inclusive, for a retrospective analysis.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
             }
         }
     } catch (prg_exception& x) {
@@ -385,12 +395,12 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
   return bValid;
 }
 
-/* Validates email alert parameters */
-bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection) const {
+/* Validates notification parameters */
+bool ParametersValidate::ValidateNotificationParameters(BasePrint & PrintDirection) const {
     bool bValid = true;
 
     try {
-        if (gParameters.getEmailAnalysisResults()) {
+        if (gParameters.getAlwaysEmailSummary() || gParameters.getCutoffEmailSummary()) {
             /* Check that the mail server and sender address are defined. It's possible that the user specified bad information or
                needs to define more settings, such as reply address, but we'll find that out when attempting to the send email. */
             if (AppToolkit::getToolkit().mail_servername.empty()) {
@@ -413,62 +423,76 @@ bool ParametersValidate::ValidateEmailAlertParameters(BasePrint & PrintDirection
                     "or specifiy them as an option to the command-line application.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                 );
             }
-            // Check the always receive emails addresses.
-            std::vector<std::string> receiveAlways = gParameters.getEmailAlwaysRecipientsList();
-            if (receiveAlways.empty()) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature requires defining at least one email address to receive emails, regardless of significant results (ex. someone@company.com).\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-            } else {
-                for (auto const&email : receiveAlways) {
-                    if (!validEmailAdrress(email)) {
-                        PrintDirection.Printf(
-                            "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
-                        );
+            if (gParameters.getAlwaysEmailSummary()) {
+                // Check the always receive emails addresses.
+                std::vector<std::string> receiveAlways = gParameters.getEmailAlwaysRecipientsList();
+                if (receiveAlways.empty()) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe always email summary feature requires defining at least one email address to receive emails (ex. someone@company.com).\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                } else {
+                    for (auto const& email : receiveAlways) {
+                        if (!validEmailAdrress(email)) {
+                            PrintDirection.Printf(
+                                "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
+                            );
+                        }
                     }
                 }
             }
-            std::vector<std::string> recevieSignificant = gParameters.getEmailSignificantRecipientsList();
-            for (auto const& email : recevieSignificant) {
-                if (!validEmailAdrress(email)) {
+            if (gParameters.getCutoffEmailSummary()) {
+                std::vector<std::string> recevieCutoff = gParameters.getEmailCutoffRecipientsList();
+                if (recevieCutoff.empty()) {
+                    bValid = false;
                     PrintDirection.Printf(
-                        "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
+                        "%s:\nThe cutoff email summary feature requires defining at least one email address to receive emails (ex. someone@company.com).\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                } else {
+                    for (auto const& email : recevieCutoff) {
+                        if (!validEmailAdrress(email)) {
+                            PrintDirection.Printf(
+                                "%s:\nThe email address '%s' does not appear to be valid.\n", BasePrint::P_WARNING, MSG_INVALID_PARAM, email.c_str()
+                            );
+                        }
+                    }
+                }
+                if (gParameters.GetIsProspectiveAnalysis() && gParameters.getCutoffEmailValue() < 1) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether an email summary is sent must be greater than or equal to one for a prospective scan.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                if (!gParameters.GetIsProspectiveAnalysis() && (gParameters.getCutoffEmailValue() < 0 || gParameters.getCutoffEmailValue() > 1)) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether an email summary is sent must be between 0 and 1, inclusive.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                     );
                 }
             }
-            if (gParameters.getEmailSubjectNoSignificant().empty()) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature requires subject text for insignificant email messages.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-            }
-            if (gParameters.getEmailMessageBodyNoSignificant().empty()) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature requires message text for insignificant email messages.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-            }
-            if (gParameters.getEmailSubjectSignificant().empty()) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature requires subject text for significant email messages.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
-            }
-            if (gParameters.getEmailMessageBodySignificant().empty()) {
-                bValid = false;
-                PrintDirection.Printf(
-                    "%s:\nThe email notifications feature requires message text for significant email messages.\n",
-                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
-                );
+            if (gParameters.getEmailCustom()) {
+                if (gParameters.getEmailCustomSubject().empty()) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe custom email subject line requires text.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                if (gParameters.getEmailCustomMessageBody().empty()) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe custom email message body requires text.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
             }
         }
     } catch (prg_exception& x) {
-        x.addTrace("ValidateEmailAlertParameters()", "ParametersValidate");
+        x.addTrace("ValidateNotificationParameters()", "ParametersValidate");
         throw;
     }
     return bValid;

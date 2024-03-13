@@ -454,7 +454,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /** Resets parameters that are not present in interface to default value.
-     * Hidden features are to be used soley in command line version at this time. */
+     * Hidden features are to be used solely in command line version at this time. */
     private void defaultHiddenParameters() {
         //non-parametric removed from interface, replaced with time stratified
         if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.TEMPORAL_NONPARAMETRIC) {

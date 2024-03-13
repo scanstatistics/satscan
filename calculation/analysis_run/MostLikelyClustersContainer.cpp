@@ -198,8 +198,6 @@ MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSig
 
 /* Returns significant clusters in most likely cluster list. */
 MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, ClusterSupplementInfo& supplement) const {
-    const CParameters & params(DataHub.GetParameters());
-    double min_ratio_to_report(0.001);
     clusters.clear();
     for (ClusterList_t::const_iterator itr=gvTopClusterList.begin(); itr != gvTopClusterList.end(); ++itr) {
         if ((*itr)->isSignificant(DataHub, std::distance(gvTopClusterList.begin(), itr) + 1, simVars)) {

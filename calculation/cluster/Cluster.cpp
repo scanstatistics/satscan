@@ -950,6 +950,22 @@ DataSetIndexes_t CCluster::getDataSetIndexesComprisedInRatio(const CSaTScanData&
     return setIndexes;
 }
 
+/* Returns the name of the most central location in the cluster.
+   In the most general and common application, identifier and location reference the same label/name.*/
+std::string& CCluster::GetClusterLocation(std::string& locationID, const CSaTScanData& DataHub) const {
+    if (GetClusterType() == PURELYTEMPORALCLUSTER)
+        locationID = "All";
+    else if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION)
+        // The location name and the identifier name are indentical when using the typical one coordinate per observation.
+        locationID = DataHub.getIdentifierInfo().getIdentifierNameAtIndex(mostCentralIdentifierIdx(), locationID);
+    else {
+        std::vector<tract_t> clusterLocations;
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, *this, 0, &clusterLocations);
+        locationID = DataHub.getLocationsManager().locations()[clusterLocations.front()]->name();
+    }
+    return locationID;
+}
+
 /** returns end date of defined cluster as formated string */
 std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
   DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
@@ -1212,6 +1228,36 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint, sep);
 }
 
+/** Returns whether cluster meets cutoff. */
+boost::logic::tribool CCluster::meetsCutoff(
+    const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars, RecurrenceInterval_t ri_cutoff, double pvalue_cutoff
+) const {
+    boost::logic::tribool meets_cutoff(boost::logic::indeterminate);
+    const CParameters& params = Data.GetParameters();
+
+    // If no simulations executed, then we can't say this cluster meets cutoff.
+    if (simVars.get_sim_count() == 0)
+        return meets_cutoff;
+    // Test edge situations with LLR and cluster rank.
+    if (m_nRatio < MIN_CLUSTER_LLR_REPORT || m_nRank > simVars.get_sim_count()) {
+        meets_cutoff = false;
+        return meets_cutoff;
+    }
+    // Test whether cluster meet specified cutoffs.
+    if (params.GetIsProspectiveAnalysis() && reportableRecurrenceInterval(params, simVars)) {
+        RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
+        return ri.second >= ri_cutoff.second;
+    }
+    if (!params.GetIsProspectiveAnalysis() && reportablePValue(params, simVars)) {
+        return macro_less_than_or_equal(
+            getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1),
+            pvalue_cutoff, DBL_CMP_TOLERANCE
+        );
+    }
+    return meets_cutoff;
+}
+
+
 /** Returns whether cluster is significant. */
 boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
     const double SIGNIFICANCE_MULTIPLIER = 100.0; // I'm not sure how Martin picked this number.
@@ -1226,28 +1272,6 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
         significant = false;
         return significant;
     }
-    // Test cluster significance by user specified cutoffs - if requested.
-    if (params.getClusterSignificanceByRecurrence() || params.getClusterSignificanceByPvalue()) {
-        if (params.getClusterSignificanceByRecurrence() && reportableRecurrenceInterval(params, simVars)) {
-            RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
-            switch (params.getClusterSignificanceRecurrenceType()) {
-            case DAY: significant = std::round(ri.second) >= params.getClusterSignificanceRecurrenceCutoff(); break;
-                case GENERIC:
-                case YEAR: significant = std::round(ri.first) >= params.getClusterSignificanceRecurrenceCutoff(); break;
-                default: throw prg_error("Unexpected DatePrecisionType type '%d' purpose.", "isIncluded()", params.getClusterSignificanceRecurrenceType());
-            }
-            if (!significant) return significant;
-        }
-        if (params.getClusterSignificanceByPvalue() && reportablePValue(params, simVars)) {
-            significant = macro_less_than_or_equal(
-                getReportingPValue(params, simVars, params.GetIsIterativeScanning() || iReportedCluster == 1),
-                params.getClusterSignificancePvalueCutoff(),
-                DBL_CMP_TOLERANCE
-            );
-        }
-        return significant;
-    }
-
     // Test using default significance checks.
     if (reportableRecurrenceInterval(params, simVars)) {
         RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);

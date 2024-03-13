@@ -246,23 +246,21 @@ public class Parameters implements Cloneable {
     private boolean                         _use_locations_network_file=false;
     private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
     
-    private boolean                         _cluster_significance_by_ri=false;
-    private int                             _cluster_significance_ri_value=100;
-    private DatePrecisionType               _cluster_significance_ri_type=DatePrecisionType.DAY;
-    private boolean                         _cluster_significance_by_pval=false;
-    private double                          _cluster_significance_pval_value=0.05;
-    
-    private boolean                         _email_analysis_results;
-    private String                          _email_always_recipients="";
-    private String                          _email_significant_recipients="";
-    private String                          _email_subject_line_no_significant="";
-    private String                          _email_message_body_no_significant="";
-    private String                          _email_subject_line_significant="";
-    private String                          _email_message_body_significant="";
+    private boolean                         _always_email_summary=false;
+    private boolean                         _cutoff_email_summary=false;
+    private double                          _cutoff_email_value=0.05;
     private boolean                         _email_attach_results=false;  
+    private boolean                         _email_include_results_directory=false;
+    private String                          _email_always_recipients="";
+    private String                          _email_cutoff_recipients="";
+    private boolean                         _email_custom=false; 
+    private String                          _email_custom_subject="";
+    private String                          _email_custom_message_body="<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
     
     private String                          _multiple_locations_file="";
     private String                          _linelist_individuals_cache_name="";
+    private boolean                         _linelist_csv_restrict=false;
+    private double                          _linelist_csv_cutoff=0.05;
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -445,58 +443,53 @@ public class Parameters implements Cloneable {
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
-        if (_cluster_significance_by_ri != rhs._cluster_significance_by_ri) return false;
-        if (_cluster_significance_ri_value != rhs._cluster_significance_ri_value) return false;
-        if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
-        if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
-        if (_cluster_significance_pval_value != rhs._cluster_significance_pval_value) return false;
-        if (_email_analysis_results != rhs._email_analysis_results) return false;
-        if (!_email_always_recipients.equals(rhs._email_always_recipients)) return false;
-        if (!_email_significant_recipients.equals(rhs._email_significant_recipients)) return false;
-        if (!_email_subject_line_no_significant.equals(rhs._email_subject_line_no_significant)) return false;
-        if (!_email_message_body_no_significant.equals(rhs._email_message_body_no_significant)) return false;
-        if (!_email_subject_line_significant.equals(rhs._email_subject_line_significant)) return false;
-        if (!_email_message_body_significant.equals(rhs._email_message_body_significant)) return false;
+        if (_always_email_summary != rhs._always_email_summary) return false;
+        if (_cutoff_email_summary != rhs._cutoff_email_summary) return false;
+        if (_cutoff_email_value != rhs._cutoff_email_value) return false;
         if (_email_attach_results != rhs._email_attach_results) return false;
-        if (_linelist_individuals_cache_name != rhs._linelist_individuals_cache_name) return false;
+        if (_email_include_results_directory != rhs._email_include_results_directory) return false;
+        if (!_email_always_recipients.equals(rhs._email_always_recipients)) return false;
+        if (!_email_cutoff_recipients.equals(rhs._email_cutoff_recipients)) return false;
+        if (_email_custom != rhs._email_custom) return false;
+        if (!_email_custom_subject.equals(rhs._email_custom_subject)) return false;
+        if (!_email_custom_message_body.equals(rhs._email_custom_message_body)) return false;
+        if (!_linelist_individuals_cache_name.equals(rhs._linelist_individuals_cache_name)) return false;
+        if (_linelist_csv_restrict != rhs._linelist_csv_restrict) return false;
+        if (_linelist_csv_cutoff != rhs._linelist_csv_cutoff) return false;
         return _multiple_locations_file.equals(rhs._multiple_locations_file);
     }
+    
+    public boolean getRestrictLineListCSV() { return _linelist_csv_restrict; }
+    public void setRestrictLineListCSV(boolean b) { _linelist_csv_restrict = b; }
+    public double getCutoffLineListCSV() { return _linelist_csv_cutoff; }
+    public void setCutoffLineListCSV(double d) { _linelist_csv_cutoff = d; }  
+    
+    public boolean getEmailAttachResults() { return _email_attach_results; }
+    public void setEmailAttachResults(boolean b) { _email_attach_results = b; }
+    public boolean getEmailIncludeResultsDirectory()  { return _email_include_results_directory; }
+    public void setEmailIncludeResultsDirectory(boolean b) { _email_include_results_directory = b; }
+    public boolean getAlwaysEmailSummary() { return _always_email_summary; }
+    public void setAlwaysEmailSummary(boolean b) { _always_email_summary = b; }
+    public boolean getCutoffEmailSummary() { return _cutoff_email_summary; }
+    public void setCutoffEmailSummary(boolean b) { _cutoff_email_summary = b; }
+    public double getCutoffEmailValue() { return _cutoff_email_value; }
+    public void setCutoffEmailValue(double d) { _cutoff_email_value = d; }
+    public String getEmailAlwaysRecipients() { return _email_always_recipients; }
+    public void setEmailAlwaysRecipients(final String s) { _email_always_recipients = s; }
+    public String getEmailCutoffRecipients() { return _email_cutoff_recipients; }
+    public void setEmailCutoffRecipients(final String s) { _email_cutoff_recipients = s; }
+    public boolean getEmailCustom() { return _email_custom; }
+    public void setEmailCustom(boolean b) { _email_custom = b; }    
+    public String getEmailCustomSubject() { return _email_custom_subject; }
+    public void setEmailCustomSubject(final String s) { _email_custom_subject = s; }
+    public String getEmailCustomMessageBody() { return _email_custom_message_body; }
+    public void setEmailCustomMessageBody(final String s) { _email_custom_message_body = s; }    
     
     public String getLinelistIndividualsCacheFileName() { return _linelist_individuals_cache_name; }
     public void setLinelistIndividualsCacheFileName(final String s) { _linelist_individuals_cache_name = s; }
     public String getMultipleLocationsFile() { return _multiple_locations_file; }
     public void setMultipleLocationsFile(final String s) { _multiple_locations_file = s; }
     
-    public boolean getEmailAttachResults() { return _email_attach_results; }
-    public void setEmailAttachResults(boolean b) { _email_attach_results = b; }    
-    public boolean getEmailAnalysisResults() { return _email_analysis_results; }
-    public void setEmailAnalysisResults(boolean b) { _email_analysis_results = b; }
-    public String getEmailAlwaysRecipients() { return _email_always_recipients; }
-    public void setEmailAlwaysRecipients(final String s) { _email_always_recipients = s; }
-    public String getEmailSignificantRecipients() { return _email_significant_recipients; }
-    public void setEmailSignificantRecipients(final String s) { _email_significant_recipients = s; }
-    public String getEmailSubjectNoSignificant() { return _email_subject_line_no_significant; }
-    public void setEmailSubjectNoSignificant(final String s) { _email_subject_line_no_significant = s; }
-    public String getEmailMessageBodyNoSignificant() { return _email_message_body_no_significant; }
-    public void setEmailMessageBodyNoSignificant(final String s) { _email_message_body_no_significant = s; }
-    public String getEmailSubjectSignificant() { return _email_subject_line_significant; }
-    public void setEmailSubjectSignificant(final String s) { _email_subject_line_significant = s; }
-    public String getEmailMessageBodySignificant() { return _email_message_body_significant; }
-    public void setEmailMessageBodySignificant(final String s) { _email_message_body_significant = s; }    
-    
-    public boolean getClusterSignificanceByRecurrence() { return _cluster_significance_by_ri; }
-    public void setClusterSignificanceByRecurrence(boolean b) { _cluster_significance_by_ri = b; }    
-    public int getClusterSignificanceRecurrenceCutoff() {return _cluster_significance_ri_value;}
-    public void setClusterSignificanceRecurrenceCutoff(int i) { _cluster_significance_ri_value = i;}
-    public DatePrecisionType getClusterSignificanceRecurrenceType() {return _cluster_significance_ri_type;}
-    public void setClusterSignificanceRecurrenceType(int iOrdinal) {
-        try { _cluster_significance_ri_type = DatePrecisionType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
-    }    
-    public boolean getClusterSignificanceByPvalue() { return _cluster_significance_by_pval; }
-    public void setClusterSignificanceByPvalue(boolean b) { _cluster_significance_by_pval = b; }    
-    public double getClusterSignificancePvalueCutoff() { return _cluster_significance_pval_value; }
-    public void setClusterSignificancePvalueCutoff(double d) { _cluster_significance_pval_value = d; }
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
     public void setProspectiveFrequencyType(int iOrdinal) {
         try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];

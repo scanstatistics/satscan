@@ -9,11 +9,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -21,13 +19,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
-import org.apache.commons.lang3.tuple.Pair;
 import org.satscan.app.AdvFeaturesExpection;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
@@ -36,9 +35,7 @@ import org.satscan.gui.utils.Utils;
 import org.satscan.app.UnknownEnumException;
 import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.FileSelectionDialog;
-import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.help.HelpLinkedLabel;
-import org.satscan.importer.CSVImportDataSource;
 import org.satscan.importer.InputSourceSettings;
 
 /*
@@ -65,6 +62,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final DateComponentsGroup _flexStartRangeEndDateComponentsGroup;
     private final DateComponentsGroup _flexEndRangeStartDateComponentsGroup;
     private final DateComponentsGroup _flexEndRangeEndDateComponentsGroup;
+    private String DEFAULT_PVALUE_SETTING = "0.05";
+    private String DEFAULT_RECURRENCE_SETTING = "365";
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -203,7 +202,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Spatial Output", null, _spatialOutputTab, null);
                 jTabbedPane1.addTab("Temporal Output", null, _temporalOutputTab, null);
                 jTabbedPane1.addTab("Other Output", null, _otherOutputTab, null);
-                jTabbedPane1.addTab("Alerts", null, _alerts_tab, null);
+                jTabbedPane1.addTab("Notifications", null, _notificatons_tab, null);
                 break;
             case INPUT:
             default:
@@ -360,36 +359,64 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     private void enableEmailAlerts() {
-        _label_always_email.setEnabled(Utils.selected(_checkbox_sendmail));
-        _always_email.setEnabled(Utils.selected(_checkbox_sendmail));
-        _label_significant_email.setEnabled(Utils.selected(_checkbox_sendmail));
-        _significant_email.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_significant_attach_results.setEnabled(Utils.selected(_checkbox_sendmail));
-        _label_email_subject_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_subject_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _label_email_message_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _alert_tags_display_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_message_insignificant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _email_subject_significant.setEnabled(Utils.selected(_checkbox_sendmail));  
-        _email_message_significant.setEnabled(Utils.selected(_checkbox_sendmail));
-        _alert_tags_display_significant.setEnabled(Utils.selected(_checkbox_sendmail));
+        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+        double val = Double.parseDouble(_cutoff_value_email.getText());
+        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
+            _cutoff_email.setText("If recurrence interval greater than or equal to");
+            if (val <= 1) _cutoff_value_email.setText(DEFAULT_RECURRENCE_SETTING);
+            _cutoff_email_label.setText("days, send email with summary results to (csv list):");
+        } else {
+            _cutoff_email.setText("If p-value less than or equal to");
+            if (val > 1) _cutoff_value_email.setText("0.05");
+            _cutoff_email_label.setText("send email with summary results to (csv list):");
+        }
+        
+        boolean emailingSomeone = Utils.selected(_always_sendmail) || Utils.selected(_cutoff_email);
+        _always_email_recipients.setEnabled(Utils.selected(_always_sendmail));
+        _cutoff_value_email.setEnabled(Utils.selected(_cutoff_email));
+        _cutoff_email_label.setEnabled(Utils.selected(_cutoff_email));
+        _cutoff_email_recipients.setEnabled(Utils.selected(_cutoff_email));
+        _attach_main_results_email.setEnabled(emailingSomeone);
+        _create_custom_email_message.setEnabled(emailingSomeone);
+        _report_main_results_email.setEnabled(emailingSomeone && !Utils.selected(_create_custom_email_message));
+        _custom_email_subject_label.setEnabled(Utils.selected(_create_custom_email_message));
+        _custom_email_subject.setEnabled(Utils.selected(_create_custom_email_message));
+        _custom_email_tags.setEnabled(Utils.selected(_create_custom_email_message));
+        _custom_email_message_label.setEnabled(Utils.selected(_create_custom_email_message));
+        _custom_email_message.setEnabled(Utils.selected(_create_custom_email_message));
     }   
 
     /* Enables controls of the other output group. */
     public void enableOtherOutputGroup() {
-        boolean bEnable = true;
-        _cluster_significance_panel.setEnabled(bEnable);
-        boolean prospectiveAnalysis = (
-            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-        );
-        _cluster_significant_ri_chx.setEnabled(prospectiveAnalysis);
-        _cluster_significant_ri_value.setEnabled(Utils.selected(_cluster_significant_ri_chx));
-        _cluster_significant_ri_type.setEnabled(
-            Utils.selected(_cluster_significant_ri_chx) && _settings_window.getPrecisionOfTimesControlType() != Parameters.DatePrecisionType.GENERIC
-        );
-        _cluster_significant_pval_chx.setEnabled(true);
-        _cluster_significant_pval_value.setEnabled(Utils.selected(_cluster_significant_pval_chx));
+        boolean hasLineListData = false;
+        for (int idx=1; idx <= _dataSetsListModel.size() + 1 && !hasLineListData; ++idx) {
+            String key = InputSourceSettings.InputFileType.Case.toString() + "1";
+            if (_settings_window._input_source_map.containsKey(key)) {
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                hasLineListData = !inputSourceSettings.getLinelistFieldMaps().isEmpty();
+            }
+            
+        }
+        _cluster_lineline_panel.setEnabled(hasLineListData);
+        _cluster_lineline_chx.setEnabled(hasLineListData);
+        _cluster_lineline_value.setEnabled(Utils.selected(_cluster_lineline_chx));
+        _cluster_lineline_label.setEnabled(hasLineListData);
+        if (hasLineListData) {
+            double val = Double.parseDouble(_cluster_lineline_value.getText());
+            boolean prospectiveAnalysis = (
+                _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+                _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
+            );
+            if (prospectiveAnalysis) {
+                _cluster_lineline_chx.setText("Include clusters with recurrence interval greater than or equal to");
+                if (val <= 1) _cluster_lineline_value.setText(DEFAULT_RECURRENCE_SETTING);
+                _cluster_lineline_label.setText("days in line list CSV file.");
+            } else {
+                _cluster_lineline_chx.setText("Include clusters with p-value less than or equal to");
+                if (val > 1) _cluster_lineline_value.setText("0.05");
+                _cluster_lineline_label.setText("in line list CSV file.");
+            }        
+        }
     }    
     
     /**
@@ -957,19 +984,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_includeClusterLocationsInKML, true);
         bReturn &= Utils.selected(_createCompressedKMZ, false);
         bReturn &= Utils.selected(_launch_map_viewer, true);
-        bReturn &= Utils.selected(_cluster_significant_ri_chx, false);
-        bReturn &= Utils.integerIs(_cluster_significant_ri_value, 100);
-        bReturn &= Utils.selectionIs(_cluster_significant_ri_type, 0);
-        bReturn &= Utils.selected(_cluster_significant_pval_chx, false);
-        bReturn &= Utils.doubleIs(_cluster_significant_pval_value, 0.05); 
-        bReturn &= Utils.selected(_checkbox_sendmail, false);
-        bReturn &= Utils.textIs(_always_email, "");
-        bReturn &= Utils.textIs(_significant_email, "");
-        bReturn &= Utils.textIs(_email_subject_insignificant, "");
-        bReturn &= Utils.textIs(_email_message_insignificant, "");
-        bReturn &= Utils.textIs(_email_subject_significant, "");
-        bReturn &= Utils.textIs(_email_message_significant, "");
-        bReturn &= Utils.selected(_email_significant_attach_results, false);
+        bReturn &= Utils.selected(_cluster_lineline_chx, false);
+        bReturn &= Utils.doubleIs(_cluster_lineline_value, 0.05); 
+        bReturn &= Utils.selected(_always_sendmail, false);
+        bReturn &= Utils.textIs(_always_email_recipients, "");
+        bReturn &= Utils.selected(_cutoff_email, false);
+        bReturn &= Utils.textIs(_cutoff_email_recipients, "");
+        bReturn &= Utils.doubleIs(_cutoff_value_email, 0.05); 
+        bReturn &= Utils.selected(_attach_main_results_email, false);
+        bReturn &= Utils.selected(_report_main_results_email, false);
+        bReturn &= Utils.selected(_create_custom_email_message, false);
+        bReturn &= Utils.textIs(_custom_email_subject, "");
+        bReturn &= Utils.textIs(_custom_email_message, "");
 
         return bReturn;
     }
@@ -1049,6 +1075,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return eReturn;
     }    
 
+    /*
     private Parameters.DatePrecisionType getClusterSignificantRecurrenceControlType() {
         if (!_cluster_significant_ri_type.isEnabled())
             return Parameters.DatePrecisionType.GENERIC;
@@ -1069,7 +1096,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case DAY:
             default: _cluster_significant_ri_type.select(0);
         }
-    }    
+    }*/   
 
     private Parameters.PowerEvaluationMethodType getPowerEvaluationMethodType() {
         Parameters.PowerEvaluationMethodType eReturn = null;
@@ -1190,7 +1217,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
         parameters.SetEarlyTermThreshold(Integer.parseInt(_earlyTerminationThreshold.getText()));
-        parameters.SetReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             parameters.SetIncludeClustersType(Parameters.IncludeClustersType.CLUSTERSINRANGE.ordinal());
         } else {
@@ -1239,9 +1265,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetIncludePurelySpatialClusters(_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected());
         parameters.SetMultipleCoordinatesType(getMultipleCoordinatesType().ordinal());
         parameters.setMultipleLocationsFile(_multiple_locations_file.getText());
-        parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
-        parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
-        parameters.SetTitleName(_printTitle.getText());
         parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
         parameters.setGiniIndexReportType(getIndexBasedClusterReportType().ordinal());
         parameters.setReportGiniIndexCoefficents(_checkboxReportIndexCoefficients.isSelected());
@@ -1296,22 +1319,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setUseLocationsNetworkFile(_locations_network.isEnabled() && _locations_network.isSelected());
         parameters.setLocationsNetworkFilename(_network_filename.getText());
         
-        // Email Alerts
-        parameters.setEmailAnalysisResults(Utils.selected(_checkbox_sendmail));
-        parameters.setEmailAlwaysRecipients(_always_email.getText());
-        parameters.setEmailSignificantRecipients(_significant_email.getText());
-        parameters.setEmailSubjectNoSignificant(_email_subject_insignificant.getText());
-        parameters.setEmailMessageBodyNoSignificant(replaceNewlines(_email_message_insignificant.getText()));
-        parameters.setEmailSubjectSignificant(_email_subject_significant.getText());
-        parameters.setEmailMessageBodySignificant(replaceNewlines(_email_message_significant.getText()));
-        parameters.setEmailAttachResults(Utils.selected(_email_significant_attach_results));
+        // Notifications tab
+        parameters.setAlwaysEmailSummary(Utils.selected(_always_sendmail));
+        parameters.setEmailAlwaysRecipients(_always_email_recipients.getText());
+        parameters.setCutoffEmailSummary(Utils.selected(_cutoff_email));
+        parameters.setEmailCutoffRecipients(_cutoff_email_recipients.getText());
+        parameters.setCutoffEmailValue(Double.parseDouble(_cutoff_value_email.getText()));
+        parameters.setEmailAttachResults(Utils.selected(_attach_main_results_email));
+        parameters.setEmailIncludeResultsDirectory(Utils.selected(_attach_main_results_email));
+        parameters.setEmailCustom(Utils.selected(_create_custom_email_message));
+        parameters.setEmailCustomSubject(_custom_email_subject.getText());
+        parameters.setEmailCustomMessageBody(replaceNewlines(_custom_email_message.getText()));
 
         // Other Outputs
-        parameters.setClusterSignificanceByRecurrence(Utils.selected(_cluster_significant_ri_chx));
-        parameters.setClusterSignificanceRecurrenceCutoff(Integer.parseInt(_cluster_significant_ri_value.getText()));
-        parameters.setClusterSignificanceRecurrenceType(getClusterSignificantRecurrenceControlType().ordinal());   
-        parameters.setClusterSignificanceByPvalue(Utils.selected(_cluster_significant_pval_chx));
-        parameters.setClusterSignificancePvalueCutoff(Double.parseDouble(_cluster_significant_pval_value.getText()));
+        parameters.SetReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
+        parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
+        parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
+        parameters.SetTitleName(_printTitle.getText());        
+        parameters.setRestrictLineListCSV(Utils.selected(_cluster_lineline_chx));
+        parameters.setCutoffLineListCSV(Double.parseDouble(_cluster_lineline_value.getText()));
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1525,7 +1551,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         }
         // prevent using the isotonic scan statistic with multiple data sets.
-        if (_caseFilenames.size() > 0
+        if (!_caseFilenames.isEmpty()
                 && _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
             throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not implemented with multiple data sets.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
         }
@@ -1880,63 +1906,41 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /* Validates the email settings. */
     private void validateEmailSettings() throws AdvFeaturesExpection {
-        if (Utils.selected(_checkbox_sendmail)) {
+        if (Utils.selected(_always_sendmail)) {
             try {
                 if (!ApplicationPreferences.minimumMailServerDefined()) {
                     throw new AdvFeaturesExpection(
-                        "In order to email a results summary, you must define mail server settings.\n" + "Please see 'Mail Server Settings' in the 'Preferences and Settings' dialog.",
-                        FocusedTabSet.OUTPUT, (Component) _checkbox_sendmail
+                        """
+                        In order to email a results summary, you must define mail server settings.
+                        Please see 'Mail Server Settings' in the 'Preferences and Settings' dialog.""",
+                        FocusedTabSet.OUTPUT, (Component) _always_sendmail
                     );
                 }
-                if (_always_email.getText().isEmpty()) {
+                if (Utils.selected(_always_sendmail) && _always_email_recipients.getText().isEmpty()) {
                     throw new AdvFeaturesExpection(
-                        "The email notifications feature requires defining at least one email address to receive emails,\nregardless of significant results (ex. someone@company.com).",
-                        FocusedTabSet.OUTPUT, (Component) _always_email
+                        "At least one email address is required to receive emails (ex. someone@company.com).",
+                        FocusedTabSet.OUTPUT, (Component) _always_email_recipients
                     );
                 }
-                boolean prospectiveAnalysis = (
-                    _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                    _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
-                );
-                
-                /*
-                if (prospectiveAnalysis && !Utils.selected(_email_significant_ri_chx) && !Utils.selected(_email_significant_pval_chx)) {
+                if (Utils.selected(_cutoff_email) && _cutoff_email_recipients.getText().isEmpty()) {
                     throw new AdvFeaturesExpection(
-                        "A recurrance interval or p-value cutoff for email notifications is required for prospective analyses.",
-                        FocusedTabSet.OUTPUT, (Component) _email_significant_ri_chx
-                    );                    
-                }
-                if (!prospectiveAnalysis && !Utils.selected(_email_significant_pval_chx)) {
-                    throw new AdvFeaturesExpection(
-                        "A p-value cutoff for email notifications is required for retrospective analyses.",
-                        FocusedTabSet.OUTPUT, (Component) _email_significant_pval_chx
-                    );                    
-                }  
-                */
-                
-                if (_email_subject_insignificant.getText().isEmpty()) {
-                    throw new AdvFeaturesExpection(
-                        "The email notifications feature requires subject text for insignificant email messages.",
-                        FocusedTabSet.OUTPUT, (Component) _email_subject_significant
+                        "At least one email address is required to receive emails (ex. someone@company.com).",
+                        FocusedTabSet.OUTPUT, (Component) _cutoff_email_recipients
                     );
                 }
-                if (_email_message_insignificant.getText().isEmpty()) {
-                    throw new AdvFeaturesExpection(
-                        "The email notifications feature requires message text for insignificant email messages.",
-                        FocusedTabSet.OUTPUT, (Component) _email_message_insignificant
-                    );
-                }
-                if (_email_subject_significant.getText().isEmpty()) {
-                    throw new AdvFeaturesExpection(
-                        "The email notifications feature requires subject text for significant email messages.",
-                        FocusedTabSet.OUTPUT, (Component) _email_subject_significant
-                    );
-                }
-                if (_email_message_significant.getText().isEmpty()) {
-                    throw new AdvFeaturesExpection(
-                        "The email notifications feature requires message text for significant email messages.",
-                        FocusedTabSet.OUTPUT, (Component) _email_message_significant
-                    );
+                if (Utils.selected(_create_custom_email_message)) {
+                    if (_custom_email_subject.getText().isEmpty()) {
+                        throw new AdvFeaturesExpection(
+                            "The email notifications feature requires text for email subject line.",
+                            FocusedTabSet.OUTPUT, (Component) _custom_email_subject
+                        );
+                    }
+                    if (_custom_email_message.getText().isEmpty()) {
+                        throw new AdvFeaturesExpection(
+                            "The email notifications feature requires text for email message.",
+                            FocusedTabSet.OUTPUT, (Component) _custom_email_message
+                        );
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(AdvancedParameterSettingsFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -2146,17 +2150,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _launch_map_viewer.setSelected(true);
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");        
-        _checkbox_sendmail.setSelected(false);
-        _cluster_significant_ri_chx.setSelected(false);
-        _cluster_significant_ri_value.setText("100");
-        _cluster_significant_ri_type.select(0);
-        _cluster_significant_pval_chx.setSelected(false);
-        _cluster_significant_pval_value.setText("0.05");
-        _email_subject_insignificant.setText("");
-        _email_message_insignificant.setText("");
-        _email_subject_significant.setText("");
-        _email_message_significant.setText("");
-        _email_significant_attach_results.setSelected(false);
+        _always_sendmail.setSelected(false);
+        _cluster_lineline_chx.setSelected(false);
+        _cluster_lineline_value.setText("0.05");
+        _always_sendmail.setSelected(false);
+        _always_email_recipients.setText("");
+        _cutoff_email.setSelected(false);
+        _cutoff_value_email.setText("0.05");
+        _cutoff_email_recipients.setText("");
+        _attach_main_results_email.setSelected(false);
+        _report_main_results_email.setSelected(false);
+        _create_custom_email_message.setSelected(false);
+        _custom_email_subject.setText("");
+        _custom_email_message.setText("");
     }
 
     /**
@@ -2586,7 +2592,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setPValueReportingControlType(parameters.GetPValueReportingType());
         _checkReportGumbel.setSelected(parameters.GetReportGumbelPValue());
         _earlyTerminationThreshold.setText(Integer.toString(parameters.GetEarlyTermThreshold()));
-        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());           
                 
         _performIterativeScanCheckBox.setSelected(parameters.GetIsIterativeScanning());
         _numIterativeScansTextField.setText(parameters.GetNumIterativeScansRequested() < 1 || parameters.GetNumIterativeScansRequested() > Parameters.MAXIMUM_ITERATIVE_ANALYSES ? "10" : Integer.toString(parameters.GetNumIterativeScansRequested()));
@@ -2611,9 +2616,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Spatial Output tab
         _reportedSpatialPopulationFileCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
         _reportedSpatialDistanceCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
-        _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
-        _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
-        _printTitle.setText(parameters.GetTitleName());
         _includeClusterLocationsInKML.setSelected(parameters.getIncludeLocationsKML());
         _createCompressedKMZ.setSelected(parameters.getCompressClusterKML());
         _launch_map_viewer.setSelected(parameters.getLaunchMapViewer());
@@ -2683,22 +2685,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _locations_network.setSelected(parameters.getUseLocationsNetworkFile());
         _network_filename.setText(parameters.getLocationsNetworkFilename());
         
-        // Email Alerts
-        _checkbox_sendmail.setSelected(parameters.getEmailAnalysisResults());
-        _always_email.setText(parameters.getEmailAlwaysRecipients());
-        _significant_email.setText(parameters.getEmailSignificantRecipients());        
-        _email_subject_insignificant.setText(parameters.getEmailSubjectNoSignificant());
-        _email_message_insignificant.setText(substituteNewlines(parameters.getEmailMessageBodyNoSignificant()));
-        _email_subject_significant.setText(parameters.getEmailSubjectSignificant());
-        _email_message_significant.setText(substituteNewlines(parameters.getEmailMessageBodySignificant()));
-        _email_significant_attach_results.setSelected(parameters.getEmailAttachResults());
+        // Notifications tab
+        _always_sendmail.setSelected(parameters.getAlwaysEmailSummary());
+        _always_email_recipients.setText(parameters.getEmailAlwaysRecipients());
+        _cutoff_email.setSelected(parameters.getCutoffEmailSummary());
+        _cutoff_email_recipients.setText(parameters.getEmailCutoffRecipients());   
+        _cutoff_value_email.setText(Double.toString(parameters.getCutoffEmailValue()));
+        _attach_main_results_email.setSelected(parameters.getEmailAttachResults());
+        _report_main_results_email.setSelected(parameters.getEmailIncludeResultsDirectory());
+        _create_custom_email_message.setSelected(parameters.getEmailCustom());
+        _custom_email_subject.setText(parameters.getEmailCustomSubject());
+        _custom_email_message.setText(substituteNewlines(parameters.getEmailCustomMessageBody()));
         
         // Other Output Tab
-        _cluster_significant_ri_chx.setSelected(parameters.getClusterSignificanceByRecurrence());
-        _cluster_significant_ri_value.setText(Integer.toString(parameters.getClusterSignificanceRecurrenceCutoff()));
-        setClusterSignificantRecurrenceControlType(parameters.getClusterSignificanceRecurrenceType());
-        _cluster_significant_pval_chx.setSelected(parameters.getClusterSignificanceByPvalue());
-        _cluster_significant_pval_value.setText(Double.toString(parameters.getClusterSignificancePvalueCutoff()));
+        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());    
+        _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
+        _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
+        _printTitle.setText(parameters.GetTitleName());        
+        _cluster_lineline_chx.setSelected(parameters.getRestrictLineListCSV());
+        _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
     }
 
     /**
@@ -2987,55 +2992,45 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _printAsciiColumnHeaders = new javax.swing.JCheckBox();
         _userDefinedRunTitle = new javax.swing.JPanel();
         _printTitle = new javax.swing.JTextField();
-        _cluster_significance_panel = new javax.swing.JPanel();
-        _cluster_significant_ri_chx = new javax.swing.JCheckBox();
-        _cluster_significant_ri_value = new javax.swing.JTextField();
-        _cluster_significant_ri_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_cluster_significant_ri_value.getText().length() == 0 ||
-                    Double.parseDouble(_cluster_significant_ri_value.getText()) < 1
-                )
-                if (undo.canUndo()) undo.undo(); else _cluster_significant_ri_value.setText("100");
-                enableSetDefaultsButton();
-            }
-        });
-        _cluster_significant_ri_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_cluster_significant_ri_value, e, 10);
-            }
-        });
-        _cluster_significant_ri_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _cluster_significant_ri_type = new java.awt.Choice();
-        _cluster_significant_pval_chx = new javax.swing.JCheckBox();
-        _cluster_significant_pval_chx.addItemListener(new java.awt.event.ItemListener() {
+        _cluster_lineline_panel = new javax.swing.JPanel();
+        _cluster_lineline_chx = new javax.swing.JCheckBox();
+        _cluster_lineline_chx.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableOtherOutputGroup();
             }
         });
-        _cluster_significant_pval_value = new javax.swing.JTextField();
-        _cluster_significant_pval_value.addKeyListener(new java.awt.event.KeyAdapter() {
+        _cluster_lineline_value = new javax.swing.JTextField();
+        _cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_cluster_significant_pval_value, e, 20);
+                Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+                if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)
+                Utils.validatePostiveNumericKeyTyped(_cluster_lineline_value, e, 10);
+                else
+                Utils.validatePostiveFloatKeyTyped(_cluster_lineline_value, e, 20);
             }
         });
-        _cluster_significant_pval_value.addFocusListener(new java.awt.event.FocusAdapter() {
+        _cluster_lineline_value.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                while (_cluster_significant_pval_value.getText().length() == 0 ||
-                    Double.parseDouble(_cluster_significant_pval_value.getText()) <= 0 ||
-                    Double.parseDouble(_cluster_significant_pval_value.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _cluster_significant_pval_value.setText("0.05");
+                Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+                if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
+                    while (_cluster_lineline_value.getText().length() == 0 ||
+                        Double.parseDouble(_cluster_lineline_value.getText()) < 1)
+                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText("365");
+                } else {
+                    while (_cluster_lineline_value.getText().length() == 0 ||
+                        Double.parseDouble(_cluster_lineline_value.getText()) <= 0 ||
+                        Double.parseDouble(_cluster_lineline_value.getText()) > 1)
+                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText("0.05");
+                }
                 enableSetDefaultsButton();
             }
         });
-        _cluster_significant_pval_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+        _cluster_lineline_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
             }
         });
+        _cluster_lineline_label = new javax.swing.JLabel();
         _powerEvaluationTab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
@@ -3101,3684 +3096,3655 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _network_file_label = new HelpLinkedLabel("Network File:", AppConstants.ADJUSTMENTSFILE_HELPID);
         _network_filename = new javax.swing.JTextField();
         _browse_network_filename = new javax.swing.JButton();
-        _alerts_tab = new javax.swing.JPanel();
+        _notificatons_tab = new javax.swing.JPanel();
         _panel_email_notifications = new javax.swing.JPanel();
-        _checkbox_sendmail = new javax.swing.JCheckBox();
-        _checkbox_sendmail.addItemListener(new java.awt.event.ItemListener() {
+        _always_sendmail = new javax.swing.JCheckBox();
+        _always_sendmail.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableEmailAlerts();
             }
         });
-        _label_always_email = new javax.swing.JLabel();
-        _always_email = new javax.swing.JTextField();
-        _label_significant_email = new javax.swing.JLabel();
-        _significant_email = new javax.swing.JTextField();
-        _email_significant_attach_results = new javax.swing.JCheckBox();
-        _tabbed_email_messages = new javax.swing.JTabbedPane();
-        _panel_insignificant = new javax.swing.JPanel();
-        _label_email_subject_insignificant = new javax.swing.JLabel();
-        _email_subject_insignificant = new javax.swing.JTextField();
-        _label_email_message_insignificant = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        _email_message_insignificant = new javax.swing.JTextArea();
-        _alert_tags_display_insignificant = new javax.swing.JButton();
-        _alert_tags_display_insignificant.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                JOptionPane.showMessageDialog(null,
-                    "Available Tags\n" +
-                    "<date> - todays date\n" +
-                    "<output-directory> - results directory\n" +
-                    "<output-filename> - primary results filename\n"
-                );
+        _always_email_recipients = new javax.swing.JTextField();
+        _cutoff_email_recipients = new javax.swing.JTextField();
+        _attach_main_results_email = new javax.swing.JCheckBox();
+        _cutoff_email = new javax.swing.JCheckBox();
+        _cutoff_email.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableEmailAlerts();
             }
         });
-        _panel_significant = new javax.swing.JPanel();
-        _label_email_subject_significant = new javax.swing.JLabel();
-        _email_subject_significant = new javax.swing.JTextField();
-        _alert_tags_display_significant = new javax.swing.JButton();
-        _alert_tags_display_significant.addActionListener(new java.awt.event.ActionListener() {
+        _report_main_results_email = new javax.swing.JCheckBox();
+        _custom_email_subject_label = new javax.swing.JLabel();
+        _custom_email_subject = new javax.swing.JTextField();
+        _custom_email_tags = new javax.swing.JButton();
+        _custom_email_tags.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JOptionPane.showMessageDialog(null,
-                    "Available Tags\n" +
-                    "<date> - todays date\n" +
-                    "<signal-text> - details new and ongoing clusters when using event ids\n" +
-                    "<output-directory> - results directory\n" +
-                    "<output-filename> - primary results filename\n"
-                );
-            }
-        });
-        _label_email_message_significant = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        _email_message_significant = new javax.swing.JTextArea();
-        _closeButton = new javax.swing.JButton();
-        _setDefaultButton = new javax.swing.JButton();
-
-        _multipleSetButtonGroup.add(_multivariateAdjustmentsRadioButton);
-        _multipleSetButtonGroup.add(_adjustmentByDataSetsRadioButton);
-
-        _studyPeriodCheckButtonGroup.add(_strictStudyPeriodCheckRadioButton);
-        _studyPeriodCheckButtonGroup.add(_relaxedStudyPeriodCheckRadioButton);
-
-        _geographicalCoordinatesCheckButtonGroup.add(_strictCoordinatesRadioButton);
-        _geographicalCoordinatesCheckButtonGroup.add(_relaxedCoordinatesRadioButton);
-
-        _multipleSetsSpatialCoordinatesButtonGroup.add(_onePerLocationIdRadioButton);
-        _multipleSetsSpatialCoordinatesButtonGroup.add(_atLeastOneRadioButton);
-        _multipleSetsSpatialCoordinatesButtonGroup.add(_allLocationsRadioButton);
-
-        _spatialWindowShapeButtonGroup.add(_circularRadioButton);
-        _spatialWindowShapeButtonGroup.add(_ellipticRadioButton);
-
-        _temporalOptionsButtonGroup.add(_percentageTemporalRadioButton);
-        _temporalOptionsButtonGroup.add(_timeTemporalRadioButton);
-
-        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNone);
-        _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNonparametric);
-
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNone);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNonparametric);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinear);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalc);
-        _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalc);
-
-        popupMenu1.setLabel("popupMenu1");
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-        setResizable(true);
-
-        _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets"));
-        _additionalDataSetsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalDataSetsGroup, AppConstants.MULTIPLEDATASETS_HELPID));
-
-        _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-                enableInputFileEdits();
-                if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
-                    _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.get(_inputDataSetsList.getSelectedIndex()));
-                    _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.get(_inputDataSetsList.getSelectedIndex()));
-                    _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                JTextPane textPane = new JTextPane();
+                textPane.setEditable(false);
+                //textPane.setBackground(new java.awt.Color(240, 240, 240));
+                textPane.setContentType("text/html"); // NOI18N
+                textPane.setText("""
+                    <html><head><style>body {font-size;15px;} div.header {margin-top:5px;font-size;15px;color:#2C3E50;font-weight:bold;} p.tag-row {margin: 0 0 0 0;} span.tag {color: ##333;font-weight: bold;} span.info {color:#34495e;font-style:normal;}</style></head><body>
+                    <p style="margin-top:0px;font-weight:bold;color:#1B2631;">Use these tags in your custom message and they will be substituted at the time the email is sent.</p>
+                    <div class="header">Output Variables:</div>
+                    <p class="tag-row"><span class="tag">&lt;date&gt;</span><span class="info"> - Today's date.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;results-directory&gt;</span><span class="info"> - The directory to which the analysis result files were written.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;results-filename&gt;</span><span class="info"> - The name and path of the main results file.</span></p>
+                    <div class="header">Output Paragraphs:</div>
+                    <p class="tag-row"><span class="tag">&lt;signal-paragraph&gt;</span><span class="info"> - Reports a summary of new and ongoing clusters when reading line list data with individual IDs.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;summary-paragraph&gt;</span><span class="info"> - Reports summary information about the most likely cluster and potentially secondary clusters.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;results-paragraph&gt;</span><span class="info"> - Reports the directory to which the analysis result files were written and the main results file.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;footer-paragraph&gt;</span><span class="info"> - Reports a message that indicates this email was part of an automated process.</span></p>
+                    </body></html>
+                    """);
+                    JOptionPane.showMessageDialog(null, new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), "Email Message Tags", JOptionPane.PLAIN_MESSAGE);
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        jScrollPane1.setViewportView(_inputDataSetsList);
+            });
+            jScrollPane3 = new javax.swing.JScrollPane();
+            _custom_email_message = new javax.swing.JTextArea();
+            _custom_email_message_label = new javax.swing.JLabel();
+            _create_custom_email_message = new javax.swing.JCheckBox();
+            _create_custom_email_message.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableEmailAlerts();
+                }
+            });
+            _cutoff_value_email = new javax.swing.JTextField();
+            _cutoff_email_label = new javax.swing.JLabel();
+            _closeButton = new javax.swing.JButton();
+            _setDefaultButton = new javax.swing.JButton();
 
-        _addDataSetButton.setText("Add"); // NOI18N
-        _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));
+            _multipleSetButtonGroup.add(_multivariateAdjustmentsRadioButton);
+            _multipleSetButtonGroup.add(_adjustmentByDataSetsRadioButton);
 
-                // enable and clear the edit boxes
-                _caseFilenames.add("");
-                _controlFilenames.add("");
-                _populationFilenames.add("");
-                _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);
-                _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);
-                _caseFileTextField.setText("");
-                _controlFileTextField.setText("");
-                _populationFileTextField.setText("");
-                _caseFileTextField.requestFocusInWindow();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
+            _studyPeriodCheckButtonGroup.add(_strictStudyPeriodCheckRadioButton);
+            _studyPeriodCheckButtonGroup.add(_relaxedStudyPeriodCheckRadioButton);
 
-        _removeDataSetButton.setText("Remove"); // NOI18N
-        _removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                int iDeleteIndex = _inputDataSetsList.getSelectedIndex();
+            _geographicalCoordinatesCheckButtonGroup.add(_strictCoordinatesRadioButton);
+            _geographicalCoordinatesCheckButtonGroup.add(_relaxedCoordinatesRadioButton);
 
-                ArrayList<InputSourceSettings.InputFileType> filetypes = new ArrayList<>();
-                filetypes.add(InputSourceSettings.InputFileType.Case);
-                filetypes.add(InputSourceSettings.InputFileType.Control);
-                filetypes.add(InputSourceSettings.InputFileType.Population);
-                for (InputSourceSettings.InputFileType type : filetypes) {
-                    String key = type.toString() + Integer.toString(iDeleteIndex + 2);
-                    // remove input source settings for file type
-                    if (_settings_window._input_source_map.containsKey(key)) {
-                        _settings_window._input_source_map.remove(key);
+            _multipleSetsSpatialCoordinatesButtonGroup.add(_onePerLocationIdRadioButton);
+            _multipleSetsSpatialCoordinatesButtonGroup.add(_atLeastOneRadioButton);
+            _multipleSetsSpatialCoordinatesButtonGroup.add(_allLocationsRadioButton);
+
+            _spatialWindowShapeButtonGroup.add(_circularRadioButton);
+            _spatialWindowShapeButtonGroup.add(_ellipticRadioButton);
+
+            _temporalOptionsButtonGroup.add(_percentageTemporalRadioButton);
+            _temporalOptionsButtonGroup.add(_timeTemporalRadioButton);
+
+            _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNone);
+            _spatialAdjustmentsButtonGroup.add(_spatialAdjustmentsNonparametric);
+
+            _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNone);
+            _temporalTrendAdjButtonGroup.add(_temporalTrendAdjNonparametric);
+            _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinear);
+            _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalc);
+            _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalc);
+
+            popupMenu1.setLabel("popupMenu1");
+
+            setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+            setResizable(true);
+
+            _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets"));
+            _additionalDataSetsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalDataSetsGroup, AppConstants.MULTIPLEDATASETS_HELPID));
+
+            _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+            _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+                public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+                    enableInputFileEdits();
+                    if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
+                        _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                        _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                        _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.get(_inputDataSetsList.getSelectedIndex()));
                     }
-                    // update input source settings keys for greater indexes
-                    for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
-                        key = type.toString() + Integer.toString(i + 2);
+                    enableSetDefaultsButton();
+                }
+            });
+            jScrollPane1.setViewportView(_inputDataSetsList);
+
+            _addDataSetButton.setText("Add"); // NOI18N
+            _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));
+
+                    // enable and clear the edit boxes
+                    _caseFilenames.add("");
+                    _controlFilenames.add("");
+                    _populationFilenames.add("");
+                    _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);
+                    _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);
+                    _caseFileTextField.setText("");
+                    _controlFileTextField.setText("");
+                    _populationFileTextField.setText("");
+                    _caseFileTextField.requestFocusInWindow();
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
+
+            _removeDataSetButton.setText("Remove"); // NOI18N
+            _removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    int iDeleteIndex = _inputDataSetsList.getSelectedIndex();
+
+                    ArrayList<InputSourceSettings.InputFileType> filetypes = new ArrayList<>();
+                    filetypes.add(InputSourceSettings.InputFileType.Case);
+                    filetypes.add(InputSourceSettings.InputFileType.Control);
+                    filetypes.add(InputSourceSettings.InputFileType.Population);
+                    for (InputSourceSettings.InputFileType type : filetypes) {
+                        String key = type.toString() + Integer.toString(iDeleteIndex + 2);
+                        // remove input source settings for file type
                         if (_settings_window._input_source_map.containsKey(key)) {
-                            String newKey = type.toString() + Integer.toString(i - 1 + 2);
-                            _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));
+                            _settings_window._input_source_map.remove(key);
+                        }
+                        // update input source settings keys for greater indexes
+                        for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
+                            key = type.toString() + Integer.toString(i + 2);
+                            if (_settings_window._input_source_map.containsKey(key)) {
+                                String newKey = type.toString() + Integer.toString(i - 1 + 2);
+                                _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));
+                            }
                         }
                     }
+
+                    // update remaining list box names
+                    for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
+                        String s = (String)_dataSetsListModel.getElementAt(i);
+                        s =	"Data Set " + Integer.toString(i + 1);
+                        _dataSetsListModel.setElementAt(s, i);
+                    }
+                    // remove list box name
+                    _dataSetsListModel.remove(iDeleteIndex);
+
+                    // remove files
+                    _caseFileTextField.setText("");
+                    _caseFilenames.remove(iDeleteIndex);
+                    _controlFileTextField.setText("");
+                    _controlFilenames.remove(iDeleteIndex);
+                    _populationFileTextField.setText("");
+                    _populationFilenames.remove(iDeleteIndex);
+                    if (_inputDataSetsList.getModel().getSize() > 0) {
+                        _inputDataSetsList.setSelectedIndex(0);
+                        _inputDataSetsList.ensureIndexIsVisible(0);
+                    }
+                    enableSettingsForAnalysisModelCombination();
                 }
+            });
 
-                // update remaining list box names
-                for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
-                    String s = (String)_dataSetsListModel.getElementAt(i);
-                    s =	"Data Set " + Integer.toString(i + 1);
-                    _dataSetsListModel.setElementAt(s, i);
+            javax.swing.GroupLayout _dataSetsGroupLayout = new javax.swing.GroupLayout(_dataSetsGroup);
+            _dataSetsGroup.setLayout(_dataSetsGroupLayout);
+            _dataSetsGroupLayout.setHorizontalGroup(
+                _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataSetsGroupLayout.createSequentialGroup()
+                    .addComponent(_addDataSetButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, Short.MAX_VALUE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_removeDataSetButton))
+            );
+            _dataSetsGroupLayout.setVerticalGroup(
+                _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_dataSetsGroupLayout.createSequentialGroup()
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_removeDataSetButton)
+                        .addComponent(_addDataSetButton))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            _caseFileLabel.setText("Case File:"); // NOI18N
+
+            _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
                 }
-                // remove list box name
-                _dataSetsListModel.remove(iDeleteIndex);
-
-                // remove files
-                _caseFileTextField.setText("");
-                _caseFilenames.remove(iDeleteIndex);
-                _controlFileTextField.setText("");
-                _controlFilenames.remove(iDeleteIndex);
-                _populationFileTextField.setText("");
-                _populationFilenames.remove(iDeleteIndex);
-                if (_inputDataSetsList.getModel().getSize() > 0) {
-                    _inputDataSetsList.setSelectedIndex(0);
-                    _inputDataSetsList.ensureIndexIsVisible(0);
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
                 }
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        javax.swing.GroupLayout _dataSetsGroupLayout = new javax.swing.GroupLayout(_dataSetsGroup);
-        _dataSetsGroup.setLayout(_dataSetsGroupLayout);
-        _dataSetsGroupLayout.setHorizontalGroup(
-            _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataSetsGroupLayout.createSequentialGroup()
-                .addComponent(_addDataSetButton, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_removeDataSetButton))
-        );
-        _dataSetsGroupLayout.setVerticalGroup(
-            _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_dataSetsGroupLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_removeDataSetButton)
-                    .addComponent(_addDataSetButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _caseFileLabel.setText("Case File:"); // NOI18N
-
-        _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-            }
-            public void removeUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
-            }
-            public void insertUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
-            }
-        });
-
-        _caseFileBrowseButton.setText("..."); // NOI18N
-        _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
-        _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
+            });
 
-        _controlFileLabel.setText("Control File:"); // NOI18N
-
-        _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-            }
-            public void removeUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
-            }
-            public void insertUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
-            }
-        });
-
-        _controlFileBrowseButton.setText("..."); // NOI18N
-        _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
-        _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
+            _caseFileBrowseButton.setText("..."); // NOI18N
+            _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
+            _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
+            });
 
-        _populationFileLabel.setText("Population File:"); // NOI18N
+            _controlFileLabel.setText("Control File:"); // NOI18N
 
-        _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-            }
-            public void removeUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
-            }
-            public void insertUpdate(DocumentEvent e) {
-                if (_inputDataSetsList.getSelectedIndex() != -1)
-                _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
-            }
-        });
-
-        _populationFileBrowseButton.setText("..."); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
-        _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
+            _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
-
-        javax.swing.GroupLayout _fileInputGroupLayout = new javax.swing.GroupLayout(_fileInputGroup);
-        _fileInputGroup.setLayout(_fileInputGroupLayout);
-        _fileInputGroupLayout.setHorizontalGroup(
-            _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                        .addComponent(_populationFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                        .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_caseFileLabel)
-                            .addComponent(_controlFileLabel)
-                            .addComponent(_populationFileLabel))
-                        .addGap(0, 389, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileInputGroupLayout.createSequentialGroup()
-                        .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_controlFileTextField)
-                            .addComponent(_caseFileTextField))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
-        );
-        _fileInputGroupLayout.setVerticalGroup(
-            _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                .addComponent(_caseFileLabel)
-                .addGap(0, 0, 0)
-                .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_caseFileBrowseButton)
-                    .addComponent(_caseFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_controlFileLabel)
-                .addGap(0, 0, 0)
-                .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_controlFileBrowseButton)
-                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_populationFileLabel)
-                .addGap(0, 0, 0)
-                .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_populationFileBrowseButton)
-                    .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
-
-        _multivariateAdjustmentsRadioButton.setSelected(true);
-        _multivariateAdjustmentsRadioButton.setText("Multivariate Analysis (clusters in one or more data sets)"); // NOI18N
-        _multivariateAdjustmentsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _multivariateAdjustmentsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _multivariateAdjustmentsRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableSetDefaultsButton();
-                    enableClustersReportedGroup();
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
                 }
-            }
-        });
-
-        _adjustmentByDataSetsRadioButton.setText("Adjustment (clusters in all data sets simultaneously)"); // NOI18N
-        _adjustmentByDataSetsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _adjustmentByDataSetsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _adjustmentByDataSetsRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableSetDefaultsButton();
-                    enableClustersReportedGroup();
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
                 }
-            }
-        });
+            });
 
-        javax.swing.GroupLayout _multipleSetPurposeGroupLayout = new javax.swing.GroupLayout(_multipleSetPurposeGroup);
-        _multipleSetPurposeGroup.setLayout(_multipleSetPurposeGroupLayout);
-        _multipleSetPurposeGroupLayout.setHorizontalGroup(
-            _multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_multivariateAdjustmentsRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
-                        .addComponent(_multipleDataSetPurposeLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(_adjustmentByDataSetsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _multipleSetPurposeGroupLayout.setVerticalGroup(
-            _multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(_multipleDataSetPurposeLabel)
-                .addGap(10, 10, 10)
-                .addComponent(_multivariateAdjustmentsRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_adjustmentByDataSetsRadioButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            _controlFileBrowseButton.setText("..."); // NOI18N
+            _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
+            _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
 
-        javax.swing.GroupLayout _additionalDataSetsGroupLayout = new javax.swing.GroupLayout(_additionalDataSetsGroup);
-        _additionalDataSetsGroup.setLayout(_additionalDataSetsGroupLayout);
-        _additionalDataSetsGroupLayout.setHorizontalGroup(
-            _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _additionalDataSetsGroupLayout.createSequentialGroup()
-                        .addComponent(_dataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            _populationFileLabel.setText("Population File:"); // NOI18N
+
+            _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
+                }
+            });
+
+            _populationFileBrowseButton.setText("..."); // NOI18N
+            _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
+            _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            javax.swing.GroupLayout _fileInputGroupLayout = new javax.swing.GroupLayout(_fileInputGroup);
+            _fileInputGroup.setLayout(_fileInputGroupLayout);
+            _fileInputGroupLayout.setHorizontalGroup(
+                _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_fileInputGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_fileInputGroupLayout.createSequentialGroup()
+                            .addComponent(_populationFileTextField)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(_fileInputGroupLayout.createSequentialGroup()
+                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_caseFileLabel)
+                                .addComponent(_controlFileLabel)
+                                .addComponent(_populationFileLabel))
+                            .addGap(0, 389, Short.MAX_VALUE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileInputGroupLayout.createSequentialGroup()
+                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(_controlFileTextField)
+                                .addComponent(_caseFileTextField))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addContainerGap())
+            );
+            _fileInputGroupLayout.setVerticalGroup(
+                _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_fileInputGroupLayout.createSequentialGroup()
+                    .addComponent(_caseFileLabel)
+                    .addGap(0, 0, 0)
+                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_caseFileBrowseButton)
+                        .addComponent(_caseFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_controlFileLabel)
+                    .addGap(0, 0, 0)
+                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_controlFileBrowseButton)
+                        .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_populationFileLabel)
+                    .addGap(0, 0, 0)
+                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_populationFileBrowseButton)
+                        .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
+
+            _multivariateAdjustmentsRadioButton.setSelected(true);
+            _multivariateAdjustmentsRadioButton.setText("Multivariate Analysis (clusters in one or more data sets)"); // NOI18N
+            _multivariateAdjustmentsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _multivariateAdjustmentsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _multivariateAdjustmentsRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableSetDefaultsButton();
+                        enableClustersReportedGroup();
+                    }
+                }
+            });
+
+            _adjustmentByDataSetsRadioButton.setText("Adjustment (clusters in all data sets simultaneously)"); // NOI18N
+            _adjustmentByDataSetsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _adjustmentByDataSetsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _adjustmentByDataSetsRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableSetDefaultsButton();
+                        enableClustersReportedGroup();
+                    }
+                }
+            });
+
+            javax.swing.GroupLayout _multipleSetPurposeGroupLayout = new javax.swing.GroupLayout(_multipleSetPurposeGroup);
+            _multipleSetPurposeGroup.setLayout(_multipleSetPurposeGroupLayout);
+            _multipleSetPurposeGroupLayout.setHorizontalGroup(
+                _multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_multivariateAdjustmentsRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
+                            .addComponent(_multipleDataSetPurposeLabel)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(_adjustmentByDataSetsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _multipleSetPurposeGroupLayout.setVerticalGroup(
+                _multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
+                    .addGap(0, 0, 0)
+                    .addComponent(_multipleDataSetPurposeLabel)
+                    .addGap(10, 10, 10)
+                    .addComponent(_multivariateAdjustmentsRadioButton)
+                    .addGap(10, 10, 10)
+                    .addComponent(_adjustmentByDataSetsRadioButton)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            javax.swing.GroupLayout _additionalDataSetsGroupLayout = new javax.swing.GroupLayout(_additionalDataSetsGroup);
+            _additionalDataSetsGroup.setLayout(_additionalDataSetsGroupLayout);
+            _additionalDataSetsGroupLayout.setHorizontalGroup(
+                _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _additionalDataSetsGroupLayout.createSequentialGroup()
+                            .addComponent(_dataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(2, 2, 2))
+            );
+            _additionalDataSetsGroupLayout.setVerticalGroup(
+                _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_dataSetsGroup, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(2, 2, 2))
-        );
-        _additionalDataSetsGroupLayout.setVerticalGroup(
-            _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
-                .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_dataSetsGroup, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+            );
 
-        javax.swing.GroupLayout _multipleDataSetsTabLayout = new javax.swing.GroupLayout(_multipleDataSetsTab);
-        _multipleDataSetsTab.setLayout(_multipleDataSetsTabLayout);
-        _multipleDataSetsTabLayout.setHorizontalGroup(
-            _multipleDataSetsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _multipleDataSetsTabLayout.setVerticalGroup(
-            _multipleDataSetsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(220, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _multipleDataSetsTabLayout = new javax.swing.GroupLayout(_multipleDataSetsTab);
+            _multipleDataSetsTab.setLayout(_multipleDataSetsTabLayout);
+            _multipleDataSetsTabLayout.setHorizontalGroup(
+                _multipleDataSetsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _multipleDataSetsTabLayout.setVerticalGroup(
+                _multipleDataSetsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(220, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
+            jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
 
-        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check"));
-        _studyPeriodCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodCheckGroup, AppConstants.TEMPORALDATACHECK_HELPID));
+            _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check"));
+            _studyPeriodCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodCheckGroup, AppConstants.TEMPORALDATACHECK_HELPID));
 
-        _strictStudyPeriodCheckRadioButton.setSelected(true);
-        _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
-        _strictStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _strictStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _strictStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
+            _strictStudyPeriodCheckRadioButton.setSelected(true);
+            _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
+            _strictStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _strictStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _strictStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                }
+            });
 
-        _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the specified temporal study period."); // NOI18N
-        _relaxedStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _relaxedStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _relaxedStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
+            _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the specified temporal study period."); // NOI18N
+            _relaxedStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _relaxedStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _relaxedStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                }
+            });
 
-        javax.swing.GroupLayout _studyPeriodCheckGroupLayout = new javax.swing.GroupLayout(_studyPeriodCheckGroup);
-        _studyPeriodCheckGroup.setLayout(_studyPeriodCheckGroupLayout);
-        _studyPeriodCheckGroupLayout.setHorizontalGroup(
-            _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_studyPeriodCheckGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_strictStudyPeriodCheckRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_relaxedStudyPeriodCheckRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _studyPeriodCheckGroupLayout.setVerticalGroup(
-            _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_studyPeriodCheckGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_strictStudyPeriodCheckRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_relaxedStudyPeriodCheckRadioButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _studyPeriodCheckGroupLayout = new javax.swing.GroupLayout(_studyPeriodCheckGroup);
+            _studyPeriodCheckGroup.setLayout(_studyPeriodCheckGroupLayout);
+            _studyPeriodCheckGroupLayout.setHorizontalGroup(
+                _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_studyPeriodCheckGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_strictStudyPeriodCheckRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_relaxedStudyPeriodCheckRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _studyPeriodCheckGroupLayout.setVerticalGroup(
+                _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_studyPeriodCheckGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_strictStudyPeriodCheckRadioButton)
+                    .addGap(10, 10, 10)
+                    .addComponent(_relaxedStudyPeriodCheckRadioButton)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check"));
-        _geographicalCoordinatesCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalCoordinatesCheckGroup, AppConstants.GEOGRAPHICALDATACHECK_HELPID));
+            _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check"));
+            _geographicalCoordinatesCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalCoordinatesCheckGroup, AppConstants.GEOGRAPHICALDATACHECK_HELPID));
 
-        _strictCoordinatesRadioButton.setSelected(true);
-        _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
-        _strictCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _strictCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _strictCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
+            _strictCoordinatesRadioButton.setSelected(true);
+            _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
+            _strictCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _strictCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _strictCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                }
+            });
 
-        _relaxedCoordinatesRadioButton.setText("Ignore observations that are outside the specified geographical area."); // NOI18N
-        _relaxedCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _relaxedCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _relaxedCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
+            _relaxedCoordinatesRadioButton.setText("Ignore observations that are outside the specified geographical area."); // NOI18N
+            _relaxedCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _relaxedCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _relaxedCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                }
+            });
 
-        _strictCoordinatesLabel.setText(" geographical area."); // NOI18N
+            _strictCoordinatesLabel.setText(" geographical area."); // NOI18N
 
-        javax.swing.GroupLayout _geographicalCoordinatesCheckGroupLayout = new javax.swing.GroupLayout(_geographicalCoordinatesCheckGroup);
-        _geographicalCoordinatesCheckGroup.setLayout(_geographicalCoordinatesCheckGroupLayout);
-        _geographicalCoordinatesCheckGroupLayout.setHorizontalGroup(
-            _geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
-            _geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_strictCoordinatesRadioButton)
-                .addGap(0, 0, 0)
-                .addComponent(_strictCoordinatesLabel)
-                .addGap(10, 10, 10)
-                .addComponent(_relaxedCoordinatesRadioButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _geographicalCoordinatesCheckGroupLayout = new javax.swing.GroupLayout(_geographicalCoordinatesCheckGroup);
+            _geographicalCoordinatesCheckGroup.setLayout(_geographicalCoordinatesCheckGroupLayout);
+            _geographicalCoordinatesCheckGroupLayout.setHorizontalGroup(
+                _geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
+                _geographicalCoordinatesCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_strictCoordinatesRadioButton)
+                    .addGap(0, 0, 0)
+                    .addComponent(_strictCoordinatesLabel)
+                    .addGap(10, 10, 10)
+                    .addComponent(_relaxedCoordinatesRadioButton)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _dataCheckingTabLayout = new javax.swing.GroupLayout(_dataCheckingTab);
-        _dataCheckingTab.setLayout(_dataCheckingTabLayout);
-        _dataCheckingTabLayout.setHorizontalGroup(
-            _dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataCheckingTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _dataCheckingTabLayout.setVerticalGroup(
-            _dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_dataCheckingTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(286, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _dataCheckingTabLayout = new javax.swing.GroupLayout(_dataCheckingTab);
+            _dataCheckingTab.setLayout(_dataCheckingTabLayout);
+            _dataCheckingTabLayout.setHorizontalGroup(
+                _dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataCheckingTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _dataCheckingTabLayout.setVerticalGroup(
+                _dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_dataCheckingTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(283, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
+            jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
 
-        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
-        _specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, AppConstants.NONEUCLIDIANFILE_HELPID));
+            _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
+            _specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, AppConstants.NONEUCLIDIANFILE_HELPID));
 
-        _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file"); // NOI18N
-        _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _neighborsFileBrowseButton.setText("..."); // NOI18N
-        _neighborsFileBrowseButton.setToolTipText("Open Neighbors File Import Wizard"); // NOI18N
-        _neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.Neighbors);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_neighborsFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
-
-        _specifiyMetaLocationsFileCheckBox.setText("Specify a meta location file"); // NOI18N
-        _specifiyMetaLocationsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _specifiyMetaLocationsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _specifiyMetaLocationsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _metaLocationsFileTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _metaLocationsFileBrowseButton.setText("..."); // NOI18N
-        _metaLocationsFileBrowseButton.setToolTipText("Open Meta Locations File Import Wizard"); // NOI18N
-        _metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.MetaLocations);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_metaLocationsFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
-
-        javax.swing.GroupLayout _specialNeighborFilesGroupLayout = new javax.swing.GroupLayout(_specialNeighborFilesGroup);
-        _specialNeighborFilesGroup.setLayout(_specialNeighborFilesGroupLayout);
-        _specialNeighborFilesGroupLayout.setHorizontalGroup(
-            _specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-        );
-        _specialNeighborFilesGroupLayout.setVerticalGroup(
-            _specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_specifiyNeighborsFileCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_neighborsFileBrowseButton)
-                    .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_specifiyMetaLocationsFileCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_metaLocationsFileBrowseButton)
-                    .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Observations with Multiple Locations"));
-        _multipleSetsSpatialCoordinatesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_multipleSetsSpatialCoordinatesGroup, AppConstants.MULTIPLECOORDLOC_HELPID));
-
-        _onePerLocationIdRadioButton.setSelected(true);
-        _onePerLocationIdRadioButton.setText("One location per observation."); // NOI18N
-        _onePerLocationIdRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _onePerLocationIdRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _onePerLocationIdRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+            _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file"); // NOI18N
+            _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSettingsForAnalysisModelCombination();
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
 
-        _atLeastOneRadioButton.setText("Include observation if at least one of its locations is in the window."); // NOI18N
-        _atLeastOneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _atLeastOneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _atLeastOneRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+            _neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
 
-        _allLocationsRadioButton.setText("Include observation only if all its locations are in the window."); // NOI18N
-        _allLocationsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _allLocationsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _allLocationsRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+            _neighborsFileBrowseButton.setText("..."); // NOI18N
+            _neighborsFileBrowseButton.setToolTipText("Open Neighbors File Import Wizard"); // NOI18N
+            _neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.Neighbors);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_neighborsFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _specifiyMetaLocationsFileCheckBox.setText("Specify a meta location file"); // NOI18N
+            _specifiyMetaLocationsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _specifiyMetaLocationsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _specifiyMetaLocationsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSettingsForAnalysisModelCombination();
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
 
-        _neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _multiple_locations_file_browse.setText("..."); // NOI18N
-        _multiple_locations_file_browse.setToolTipText("Open Multiple Locations Per Observation File Import Wizard"); // NOI18N
-        _multiple_locations_file_browse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Multiple_Locations.toString() + "1";
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Multiple_Locations));
+            _metaLocationsFileTextField.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    enableSetDefaultsButton();
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_multiple_locations_file, inputSourceSettings, _settings_window);
-            }
-        });
+            });
 
-        _multiple_locations_file_label.setText("Multiple Locations Per Observation File:");
-
-        javax.swing.GroupLayout _multipleSetsSpatialCoordinatesGroupLayout = new javax.swing.GroupLayout(_multipleSetsSpatialCoordinatesGroup);
-        _multipleSetsSpatialCoordinatesGroup.setLayout(_multipleSetsSpatialCoordinatesGroupLayout);
-        _multipleSetsSpatialCoordinatesGroupLayout.setHorizontalGroup(
-            _multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
-                        .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_multiple_locations_file, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
-                            .addComponent(_multiple_locations_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_multiple_locations_file_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        _multipleSetsSpatialCoordinatesGroupLayout.setVerticalGroup(
-            _multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_onePerLocationIdRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_atLeastOneRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_allLocationsRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_multiple_locations_file_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_multiple_locations_file_browse)
-                    .addComponent(_multiple_locations_file, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout _spatialNeighborsTabLayout = new javax.swing.GroupLayout(_spatialNeighborsTab);
-        _spatialNeighborsTab.setLayout(_spatialNeighborsTabLayout);
-        _spatialNeighborsTabLayout.setHorizontalGroup(
-            _spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialNeighborsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _spatialNeighborsTabLayout.setVerticalGroup(
-            _spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialNeighborsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(167, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
-
-        _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size"));
-        _spatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialOptionsGroup, AppConstants.MAXIMUMSPATIAL_HELPID));
-
-        _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
-        _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxSpatialClusterSizeTextField, e, 5);
-            }
-        });
-        _maxSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxSpatialClusterSizeTextField.getText().length() == 0 ||
-                    Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) == 0 ||
-                    Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) > 50.0) {
-                    if (undo.canUndo()) undo.undo(); else _maxSpatialClusterSizeTextField.setText("50");
+            _metaLocationsFileBrowseButton.setText("..."); // NOI18N
+            _metaLocationsFileBrowseButton.setToolTipText("Open Meta Locations File Import Wizard"); // NOI18N
+            _metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.MetaLocations);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_metaLocationsFileTextField, inputSourceSettings, _settings_window);
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+            javax.swing.GroupLayout _specialNeighborFilesGroupLayout = new javax.swing.GroupLayout(_specialNeighborFilesGroup);
+            _specialNeighborFilesGroup.setLayout(_specialNeighborFilesGroupLayout);
+            _specialNeighborFilesGroupLayout.setHorizontalGroup(
+                _specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                        .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
+                                    .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
+                                    .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addContainerGap())
+            );
+            _specialNeighborFilesGroupLayout.setVerticalGroup(
+                _specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_specifiyNeighborsFileCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_neighborsFileBrowseButton)
+                        .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_specifiyMetaLocationsFileCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_metaLocationsFileBrowseButton)
+                        .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
+            _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Observations with Multiple Locations"));
+            _multipleSetsSpatialCoordinatesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_multipleSetsSpatialCoordinatesGroup, AppConstants.MULTIPLECOORDLOC_HELPID));
 
-        _maxSpatialPercentFileTextField.setText("50"); // NOI18N
-        _maxSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxSpatialPercentFileTextField, e, 5);
-            }
-        });
-        _maxSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxSpatialPercentFileTextField.getText().length() == 0 ||
-                    Double.parseDouble(_maxSpatialPercentFileTextField.getText()) == 0 ||
-                    Double.parseDouble(_maxSpatialPercentFileTextField.getText()) > 50.0) {
-                    if (undo.canUndo()) undo.undo(); else _maxSpatialPercentFileTextField.setText("50");
+            _onePerLocationIdRadioButton.setSelected(true);
+            _onePerLocationIdRadioButton.setText("One location per observation."); // NOI18N
+            _onePerLocationIdRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _onePerLocationIdRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _onePerLocationIdRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
-
-        _maxCirclePopFileBrowseButton.setText("..."); // NOI18N
-        _maxCirclePopFileBrowseButton.setToolTipText("Open Maximum Circle File Import Wizard"); // NOI18N
-        _maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.MaxCirclePopulation.toString() + "1";
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.MaxCirclePopulation));
+            _atLeastOneRadioButton.setText("Include observation if at least one of its locations is in the window."); // NOI18N
+            _atLeastOneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _atLeastOneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _atLeastOneRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_maxCirclePopulationFilenameTextField, inputSourceSettings, _settings_window);
-            }
-        });
+            });
 
-        _spatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _distancePrefixLabel.setText("is an ellipse with a"); // NOI18N
-
-        _maxSpatialRadiusTextField.setText("1"); // NOI18N
-        _maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxSpatialRadiusTextField, e, 20);
-            }
-        });
-        _maxSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxSpatialRadiusTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxSpatialRadiusTextField.setText("1");
+            _allLocationsRadioButton.setText("Include observation only if all its locations are in the window."); // NOI18N
+            _allLocationsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _allLocationsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _allLocationsRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableMultipleLocationsGroup(_multipleSetsSpatialCoordinatesGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _maxRadiusLabel.setText("kilometer radius"); // NOI18N
+            _neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        javax.swing.GroupLayout _spatialOptionsGroupLayout = new javax.swing.GroupLayout(_spatialOptionsGroup);
-        _spatialOptionsGroup.setLayout(_spatialOptionsGroupLayout);
-        _spatialOptionsGroupLayout.setHorizontalGroup(
-            _spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(_spatialPopulationFileCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
-                            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_percentageOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                        .addGap(19, 19, 19)
-                        .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_spatialDistanceCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_distancePrefixLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_maxCirclePopulationFilenameTextField)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxCirclePopFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-        );
-        _spatialOptionsGroupLayout.setVerticalGroup(
-            _spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_percentageOfPopulationLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_percentageOfPopFileLabel)
-                    .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(_spatialPopulationFileCheckBox)
-                        .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_maxCirclePopulationFilenameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_maxCirclePopFileBrowseButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_spatialDistanceCheckBox)
+            _multiple_locations_file_browse.setText("..."); // NOI18N
+            _multiple_locations_file_browse.setToolTipText("Open Multiple Locations Per Observation File Import Wizard"); // NOI18N
+            _multiple_locations_file_browse.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Multiple_Locations.toString() + "1";
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Multiple_Locations));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_multiple_locations_file, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _multiple_locations_file_label.setText("Multiple Locations Per Observation File:");
+
+            javax.swing.GroupLayout _multipleSetsSpatialCoordinatesGroupLayout = new javax.swing.GroupLayout(_multipleSetsSpatialCoordinatesGroup);
+            _multipleSetsSpatialCoordinatesGroup.setLayout(_multipleSetsSpatialCoordinatesGroupLayout);
+            _multipleSetsSpatialCoordinatesGroupLayout.setHorizontalGroup(
+                _multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                        .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
+                            .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_multiple_locations_file, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
+                                .addComponent(_multiple_locations_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_multiple_locations_file_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap())
+            );
+            _multipleSetsSpatialCoordinatesGroupLayout.setVerticalGroup(
+                _multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_onePerLocationIdRadioButton)
+                    .addGap(10, 10, 10)
+                    .addComponent(_atLeastOneRadioButton)
+                    .addGap(10, 10, 10)
+                    .addComponent(_allLocationsRadioButton)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_multiple_locations_file_label)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_multiple_locations_file_browse)
+                        .addComponent(_multiple_locations_file, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap())
+            );
+
+            javax.swing.GroupLayout _spatialNeighborsTabLayout = new javax.swing.GroupLayout(_spatialNeighborsTab);
+            _spatialNeighborsTab.setLayout(_spatialNeighborsTabLayout);
+            _spatialNeighborsTabLayout.setHorizontalGroup(
+                _spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialNeighborsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _spatialNeighborsTabLayout.setVerticalGroup(
+                _spatialNeighborsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialNeighborsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(160, Short.MAX_VALUE))
+            );
+
+            jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
+
+            _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size"));
+            _spatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialOptionsGroup, AppConstants.MAXIMUMSPATIAL_HELPID));
+
+            _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
+            _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxSpatialClusterSizeTextField, e, 5);
+                }
+            });
+            _maxSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxSpatialClusterSizeTextField.getText().length() == 0 ||
+                        Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) == 0 ||
+                        Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) > 50.0) {
+                        if (undo.canUndo()) undo.undo(); else _maxSpatialClusterSizeTextField.setText("50");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+
+            _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _maxSpatialPercentFileTextField.setText("50"); // NOI18N
+            _maxSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxSpatialPercentFileTextField, e, 5);
+                }
+            });
+            _maxSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxSpatialPercentFileTextField.getText().length() == 0 ||
+                        Double.parseDouble(_maxSpatialPercentFileTextField.getText()) == 0 ||
+                        Double.parseDouble(_maxSpatialPercentFileTextField.getText()) > 50.0) {
+                        if (undo.canUndo()) undo.undo(); else _maxSpatialPercentFileTextField.setText("50");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
+
+            _maxCirclePopFileBrowseButton.setText("..."); // NOI18N
+            _maxCirclePopFileBrowseButton.setToolTipText("Open Maximum Circle File Import Wizard"); // NOI18N
+            _maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.MaxCirclePopulation.toString() + "1";
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.MaxCirclePopulation));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_maxCirclePopulationFilenameTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _spatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _spatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _distancePrefixLabel.setText("is an ellipse with a"); // NOI18N
+
+            _maxSpatialRadiusTextField.setText("1"); // NOI18N
+            _maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxSpatialRadiusTextField, e, 20);
+                }
+            });
+            _maxSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxSpatialRadiusTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _maxSpatialRadiusTextField.setText("1");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _maxRadiusLabel.setText("kilometer radius"); // NOI18N
+
+            javax.swing.GroupLayout _spatialOptionsGroupLayout = new javax.swing.GroupLayout(_spatialOptionsGroup);
+            _spatialOptionsGroup.setLayout(_spatialOptionsGroupLayout);
+            _spatialOptionsGroupLayout.setHorizontalGroup(
+                _spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                    .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                                    .addGap(10, 10, 10)
+                                    .addComponent(_spatialPopulationFileCheckBox)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
+                                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_percentageOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                            .addGap(19, 19, 19)
+                            .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_spatialDistanceCheckBox)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_distancePrefixLabel)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_maxCirclePopulationFilenameTextField)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxCirclePopFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addContainerGap())
+            );
+            _spatialOptionsGroupLayout.setVerticalGroup(
+                _spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
                     .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_distancePrefixLabel)
-                        .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_maxRadiusLabel)))
-                .addContainerGap(21, Short.MAX_VALUE))
-        );
+                        .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_percentageOfPopulationLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_percentageOfPopFileLabel)
+                        .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_spatialPopulationFileCheckBox)
+                            .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_maxCirclePopulationFilenameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_maxCirclePopFileBrowseButton))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_spatialDistanceCheckBox)
+                        .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_distancePrefixLabel)
+                            .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_maxRadiusLabel)))
+                    .addContainerGap(21, Short.MAX_VALUE))
+            );
 
-        _inclPureTempClustCheckBox.setText("Include Purely Temporal Clusters (Spatial Size = 100%)"); // NOI18N
-        _inclPureTempClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _inclPureTempClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _inclPureTempClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape"));
-        _spatialWindowShapeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialWindowShapeGroup, AppConstants.SCANNINGWINDOW_HELPID));
-
-        _circularRadioButton.setSelected(true);
-        _circularRadioButton.setText("Circular"); // NOI18N
-        _circularRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _circularRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _circularRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+            _inclPureTempClustCheckBox.setText("Include Purely Temporal Clusters (Spatial Size = 100%)"); // NOI18N
+            _inclPureTempClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _inclPureTempClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _inclPureTempClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
 
-        _ellipticRadioButton.setText("Elliptic"); // NOI18N
-        _ellipticRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _ellipticRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _ellipticRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+            _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape"));
+            _spatialWindowShapeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialWindowShapeGroup, AppConstants.SCANNINGWINDOW_HELPID));
+
+            _circularRadioButton.setSelected(true);
+            _circularRadioButton.setText("Circular"); // NOI18N
+            _circularRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _circularRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _circularRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
+                }
+            });
+
+            _ellipticRadioButton.setText("Elliptic"); // NOI18N
+            _ellipticRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _ellipticRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _ellipticRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
+                }
+            });
+
+            _nonCompactnessPenaltyLabel.setText("Non-Compactness Penalty:"); // NOI18N
+
+            _nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
+            _nonCompactnessPenaltyComboBox.add("None");
+            _nonCompactnessPenaltyComboBox.add("Medium");
+            _nonCompactnessPenaltyComboBox.add("Strong");
 
-        _nonCompactnessPenaltyLabel.setText("Non-Compactness Penalty:"); // NOI18N
-
-        _nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-        _nonCompactnessPenaltyComboBox.add("None");
-        _nonCompactnessPenaltyComboBox.add("Medium");
-        _nonCompactnessPenaltyComboBox.add("Strong");
-
-        javax.swing.GroupLayout _spatialWindowShapeGroupLayout = new javax.swing.GroupLayout(_spatialWindowShapeGroup);
-        _spatialWindowShapeGroup.setLayout(_spatialWindowShapeGroupLayout);
-        _spatialWindowShapeGroupLayout.setHorizontalGroup(
-            _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            javax.swing.GroupLayout _spatialWindowShapeGroupLayout = new javax.swing.GroupLayout(_spatialWindowShapeGroup);
+            _spatialWindowShapeGroup.setLayout(_spatialWindowShapeGroupLayout);
+            _spatialWindowShapeGroupLayout.setHorizontalGroup(
+                _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_circularRadioButton)
+                        .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
+                            .addComponent(_ellipticRadioButton)
+                            .addGap(86, 86, 86)
+                            .addComponent(_nonCompactnessPenaltyLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _spatialWindowShapeGroupLayout.setVerticalGroup(
+                _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
+                    .addContainerGap()
                     .addComponent(_circularRadioButton)
-                    .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addGroup(_spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_ellipticRadioButton)
-                        .addGap(86, 86, 86)
-                        .addComponent(_nonCompactnessPenaltyLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _spatialWindowShapeGroupLayout.setVerticalGroup(
-            _spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialWindowShapeGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_circularRadioButton)
-                .addGap(10, 10, 10)
-                .addGroup(_spatialWindowShapeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_ellipticRadioButton)
-                    .addComponent(_nonCompactnessPenaltyLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _spatialWindowShapeGroupLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+                        .addComponent(_nonCompactnessPenaltyLabel))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _spatialWindowShapeGroupLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_nonCompactnessPenaltyComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+            );
 
-        _performIsotonicScanCheckBox.setText("Use Isotonic Spatial Scan Statistic"); // NOI18N
-        _performIsotonicScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _performIsotonicScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _performIsotonicScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
+            _performIsotonicScanCheckBox.setText("Use Isotonic Spatial Scan Statistic"); // NOI18N
+            _performIsotonicScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _performIsotonicScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _performIsotonicScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
 
-        javax.swing.GroupLayout _spatialWindowTabLayout = new javax.swing.GroupLayout(_spatialWindowTab);
-        _spatialWindowTab.setLayout(_spatialWindowTabLayout);
-        _spatialWindowTabLayout.setHorizontalGroup(
-            _spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialWindowTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_spatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_inclPureTempClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_performIsotonicScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _spatialWindowTabLayout.setVerticalGroup(
-            _spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialWindowTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_spatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_inclPureTempClustCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(187, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _spatialWindowTabLayout = new javax.swing.GroupLayout(_spatialWindowTab);
+            _spatialWindowTab.setLayout(_spatialWindowTabLayout);
+            _spatialWindowTabLayout.setHorizontalGroup(
+                _spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialWindowTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_spatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_inclPureTempClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_performIsotonicScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _spatialWindowTabLayout.setVerticalGroup(
+                _spatialWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialWindowTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_spatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_inclPureTempClustCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_performIsotonicScanCheckBox)
+                    .addContainerGap(175, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
+            jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
 
-        _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
-        _maxTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_maxTemporalOptionsGroup, AppConstants.MAXIMUMTEMPORAL_HELPID));
+            _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
+            _maxTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_maxTemporalOptionsGroup, AppConstants.MAXIMUMTEMPORAL_HELPID));
 
-        _percentageTemporalRadioButton.setSelected(true);
-        _percentageTemporalRadioButton.setText("is"); // NOI18N
-        _percentageTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _percentageTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _percentageTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+            _percentageTemporalRadioButton.setSelected(true);
+            _percentageTemporalRadioButton.setText("is"); // NOI18N
+            _percentageTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _percentageTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _percentageTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        //cause enabling to be refreshed based upon clicked radio button
+                        enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                        enableSetDefaultsButton();
+                    }
+                }
+            });
+
+            _timeTemporalRadioButton.setText("is"); // NOI18N
+            _timeTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _timeTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _timeTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        //cause enabling to be refreshed based upon clicked radio button
+                        enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                        enableSetDefaultsButton();
+                    }
+                }
+            });
+
+            _maxTemporalClusterSizeTextField.setText("50"); // NOI18N
+            _maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxTemporalClusterSizeTextField, e, 5);
+                }
+            });
+            _maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    double dMaxValue = getAbsoluteMaximumTemporalSizeForSettings();
+                    while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||
+                        Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||
+                        Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > dMaxValue) {
+                        if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(Double.toString(dMaxValue));
+                    }
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
+            _maxTemporalClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _timeTemporalRadioButton.setText("is"); // NOI18N
-        _timeTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _timeTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _timeTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+            _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)"); // NOI18N
+
+            _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
+            _maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeUnitsTextField, e, 6);
+                }
+            });
+            _maxTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeUnitsTextField.setText("1");
+                    }
                     enableSetDefaultsButton();
                 }
-            }
-        });
-
-        _maxTemporalClusterSizeTextField.setText("50"); // NOI18N
-        _maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxTemporalClusterSizeTextField, e, 5);
-            }
-        });
-        _maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                double dMaxValue = getAbsoluteMaximumTemporalSizeForSettings();
-                while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||
-                    Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||
-                    Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > dMaxValue) {
-                    if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(Double.toString(dMaxValue));
+            });
+            _maxTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxTemporalClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)"); // NOI18N
+            _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)"); // NOI18N
 
-        _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
-        _maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeUnitsTextField, e, 6);
-            }
-        });
-        _maxTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeUnitsTextField.setText("1");
+            _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)"); // NOI18N
+            _includePureSpacClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _includePureSpacClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _includePureSpacClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)"); // NOI18N
-
-        _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)"); // NOI18N
-        _includePureSpacClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _includePureSpacClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _includePureSpacClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _maxTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_maxTemporalOptionsGroup);
-        _maxTemporalOptionsGroup.setLayout(_maxTemporalOptionsGroupLayout);
-        _maxTemporalOptionsGroupLayout.setHorizontalGroup(
-            _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+            javax.swing.GroupLayout _maxTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_maxTemporalOptionsGroup);
+            _maxTemporalOptionsGroup.setLayout(_maxTemporalOptionsGroupLayout);
+            _maxTemporalOptionsGroupLayout.setHorizontalGroup(
+                _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+                            .addComponent(_percentageTemporalRadioButton)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_percentageOfStudyPeriodLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+                            .addComponent(_timeTemporalRadioButton)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_maxTemporalTimeUnitsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _maxTemporalOptionsGroupLayout.setVerticalGroup(
+                _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_percentageTemporalRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_percentageOfStudyPeriodLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
+                        .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_percentageOfStudyPeriodLabel))
+                    .addGap(10, 10, 10)
+                    .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_timeTemporalRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_maxTemporalTimeUnitsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_includePureSpacClustCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _maxTemporalOptionsGroupLayout.setVerticalGroup(
-            _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_maxTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_percentageTemporalRadioButton)
-                    .addComponent(_maxTemporalClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_percentageOfStudyPeriodLabel))
-                .addGap(10, 10, 10)
-                .addGroup(_maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_timeTemporalRadioButton)
-                    .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_maxTemporalTimeUnitsLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_includePureSpacClustCheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_maxTemporalTimeUnitsLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_includePureSpacClustCheckBox)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
-        _flexibleTemporalWindowDefinitionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_flexibleTemporalWindowDefinitionGroup, AppConstants.FLEXIBLEWINDOW_HELPID));
+            _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
+            _flexibleTemporalWindowDefinitionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_flexibleTemporalWindowDefinitionGroup, AppConstants.FLEXIBLEWINDOW_HELPID));
 
-        _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
-        _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _restrictTemporalRangeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableDatesByTimePrecisionUnits();
-                enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
+            _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
+            _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _restrictTemporalRangeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableDatesByTimePrecisionUnits();
+                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _flexible_window_cards.setLayout(new java.awt.CardLayout());
+            _flexible_window_cards.setLayout(new java.awt.CardLayout());
 
-        _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
+            _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
 
-        _startRangeStartYearTextField.setText("2000"); // NOI18N
+            _startRangeStartYearTextField.setText("2000"); // NOI18N
 
-        _startRangeStartMonthTextField.setText("01"); // NOI18N
+            _startRangeStartMonthTextField.setText("01"); // NOI18N
 
-        _startRangeStartDayTextField.setText("01"); // NOI18N
+            _startRangeStartDayTextField.setText("01"); // NOI18N
 
-        _startRangeToLabel.setText("to"); // NOI18N
+            _startRangeToLabel.setText("to"); // NOI18N
 
-        _startRangeEndYearTextField.setText("2000"); // NOI18N
+            _startRangeEndYearTextField.setText("2000"); // NOI18N
 
-        _startRangeEndMonthTextField.setText("01"); // NOI18N
+            _startRangeEndMonthTextField.setText("01"); // NOI18N
 
-        _startRangeEndDayTextField.setText("01"); // NOI18N
+            _startRangeEndDayTextField.setText("01"); // NOI18N
 
-        _endRangeEndDayTextField.setText("31"); // NOI18N
+            _endRangeEndDayTextField.setText("31"); // NOI18N
 
-        _endRangeEndMonthTextField.setText("12"); // NOI18N
+            _endRangeEndMonthTextField.setText("12"); // NOI18N
 
-        _endRangeEndYearTextField.setText("2000"); // NOI18N
+            _endRangeEndYearTextField.setText("2000"); // NOI18N
 
-        _endRangeToLabel.setText("to"); // NOI18N
+            _endRangeToLabel.setText("to"); // NOI18N
 
-        _endRangeStartDayTextField.setText("31"); // NOI18N
+            _endRangeStartDayTextField.setText("31"); // NOI18N
 
-        _endRangeStartMonthTextField.setText("12"); // NOI18N
+            _endRangeStartMonthTextField.setText("12"); // NOI18N
 
-        _endRangeStartYearTextField.setText("2000"); // NOI18N
+            _endRangeStartYearTextField.setText("2000"); // NOI18N
 
-        _endWindowRangeLabel.setText("End time in range:"); // NOI18N
+            _endWindowRangeLabel.setText("End time in range:"); // NOI18N
 
-        javax.swing.GroupLayout _windowCompletePanelLayout = new javax.swing.GroupLayout(_windowCompletePanel);
-        _windowCompletePanel.setLayout(_windowCompletePanelLayout);
-        _windowCompletePanelLayout.setHorizontalGroup(
-            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_startWindowRangeLabel)
-                    .addComponent(_endWindowRangeLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
-                    .addComponent(_startRangeStartYearTextField))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
-                    .addComponent(_startRangeStartMonthTextField))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
-                    .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_startRangeToLabel)
-                    .addComponent(_endRangeToLabel, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
-                    .addComponent(_startRangeEndYearTextField))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
-                        .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
-                        .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(191, Short.MAX_VALUE))
-        );
-        _windowCompletePanelLayout.setVerticalGroup(
-            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_startWindowRangeLabel)
-                    .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startRangeToLabel)
-                    .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_endWindowRangeLabel)
-                    .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeToLabel)
-                    .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _windowCompletePanelLayout = new javax.swing.GroupLayout(_windowCompletePanel);
+            _windowCompletePanel.setLayout(_windowCompletePanelLayout);
+            _windowCompletePanelLayout.setHorizontalGroup(
+                _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_startWindowRangeLabel)
+                        .addComponent(_endWindowRangeLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_endRangeStartYearTextField)
+                        .addComponent(_startRangeStartYearTextField))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_endRangeStartMonthTextField)
+                        .addComponent(_startRangeStartMonthTextField))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, Short.MAX_VALUE)
+                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_startRangeToLabel)
+                        .addComponent(_endRangeToLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_endRangeEndYearTextField)
+                        .addComponent(_startRangeEndYearTextField))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                            .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                            .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(191, Short.MAX_VALUE))
+            );
+            _windowCompletePanelLayout.setVerticalGroup(
+                _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_startWindowRangeLabel)
+                        .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeToLabel)
+                        .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_endWindowRangeLabel)
+                        .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeToLabel)
+                        .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _flexible_window_cards.add(_windowCompletePanel, "flexible_complete");
+            _flexible_window_cards.add(_windowCompletePanel, "flexible_complete");
 
-        _startGenericWindowRangeLabel.setText("Start time in range:"); // NOI18N
+            _startGenericWindowRangeLabel.setText("Start time in range:"); // NOI18N
 
-        _startRangeStartGenericTextField.setText("0"); // NOI18N
-        _startRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_startRangeStartGenericTextField, e, 10);
-            }
-        });
+            _startRangeStartGenericTextField.setText("0"); // NOI18N
+            _startRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _startRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validateNumericKeyTyped(_startRangeStartGenericTextField, e, 10);
+                }
+            });
 
-        _startGenericRangeToLabel.setText("to"); // NOI18N
+            _startGenericRangeToLabel.setText("to"); // NOI18N
 
-        _startRangeEndGenericTextField.setText("31"); // NOI18N
-        _startRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _startRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_startRangeEndGenericTextField, e, 10);
-            }
-        });
+            _startRangeEndGenericTextField.setText("31"); // NOI18N
+            _startRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _startRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_startRangeEndGenericTextField, e, 10);
+                }
+            });
 
-        _endRangeEndGenericTextField.setText("31"); // NOI18N
-        _endRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndGenericTextField, e, 10);
-            }
-        });
+            _endRangeEndGenericTextField.setText("31"); // NOI18N
+            _endRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _endRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_endRangeEndGenericTextField, e, 10);
+                }
+            });
 
-        _endGenericRangeToLabel.setText("to"); // NOI18N
+            _endGenericRangeToLabel.setText("to"); // NOI18N
 
-        _endRangeStartGenericTextField.setText("0"); // NOI18N
-        _endRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartGenericTextField, e, 10);
-            }
-        });
+            _endRangeStartGenericTextField.setText("0"); // NOI18N
+            _endRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _endRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_endRangeStartGenericTextField, e, 10);
+                }
+            });
 
-        _endGenericWindowRangeLabel.setText("End time in range:"); // NOI18N
+            _endGenericWindowRangeLabel.setText("End time in range:"); // NOI18N
 
-        javax.swing.GroupLayout _windowGenericPanelLayout = new javax.swing.GroupLayout(_windowGenericPanel);
-        _windowGenericPanel.setLayout(_windowGenericPanelLayout);
-        _windowGenericPanelLayout.setHorizontalGroup(
-            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_startGenericWindowRangeLabel)
-                    .addComponent(_endGenericWindowRangeLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+            javax.swing.GroupLayout _windowGenericPanelLayout = new javax.swing.GroupLayout(_windowGenericPanel);
+            _windowGenericPanel.setLayout(_windowGenericPanelLayout);
+            _windowGenericPanelLayout.setHorizontalGroup(
+                _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_startGenericWindowRangeLabel)
+                        .addComponent(_endGenericWindowRangeLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                    .addGap(18, 18, 18)
+                    .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                            .addComponent(_startGenericRangeToLabel)
+                            .addGap(10, 10, 10)
+                            .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                            .addComponent(_endGenericRangeToLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(_endRangeEndGenericTextField)))
+                    .addContainerGap(247, Short.MAX_VALUE))
+            );
+            _windowGenericPanelLayout.setVerticalGroup(
+                _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_startGenericWindowRangeLabel)
+                        .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_startGenericRangeToLabel)
-                        .addGap(10, 10, 10)
-                        .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
-                        .addComponent(_endGenericRangeToLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_endRangeEndGenericTextField)))
-                .addContainerGap(247, Short.MAX_VALUE))
-        );
-        _windowGenericPanelLayout.setVerticalGroup(
-            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_startGenericWindowRangeLabel)
-                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_startGenericRangeToLabel)
-                    .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_endGenericWindowRangeLabel)
-                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_endGenericRangeToLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_endGenericWindowRangeLabel)
+                        .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_endGenericRangeToLabel))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _flexible_window_cards.add(_windowGenericPanel, "flexible_generic");
+            _flexible_window_cards.add(_windowGenericPanel, "flexible_generic");
 
-        javax.swing.GroupLayout _flexibleTemporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_flexibleTemporalWindowDefinitionGroup);
-        _flexibleTemporalWindowDefinitionGroup.setLayout(_flexibleTemporalWindowDefinitionGroupLayout);
-        _flexibleTemporalWindowDefinitionGroupLayout.setHorizontalGroup(
-            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _flexibleTemporalWindowDefinitionGroupLayout.setVerticalGroup(
-            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_restrictTemporalRangeCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_flexible_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _flexibleTemporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_flexibleTemporalWindowDefinitionGroup);
+            _flexibleTemporalWindowDefinitionGroup.setLayout(_flexibleTemporalWindowDefinitionGroupLayout);
+            _flexibleTemporalWindowDefinitionGroupLayout.setHorizontalGroup(
+                _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _flexibleTemporalWindowDefinitionGroupLayout.setVerticalGroup(
+                _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_restrictTemporalRangeCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Cluster Size"));
-        _minTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minTemporalOptionsGroup, AppConstants.MINIMUMTEMPORAL_HELPID));
+            _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Cluster Size"));
+            _minTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minTemporalOptionsGroup, AppConstants.MINIMUMTEMPORAL_HELPID));
 
-        _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
-        _minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_minTemporalClusterSizeUnitsTextField, e, 6);
-            }
-        });
-        _minTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_minTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _minTemporalClusterSizeUnitsTextField.setText("1");
+            _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
+            _minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_minTemporalClusterSizeUnitsTextField, e, 6);
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _minTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
+            _minTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_minTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _minTemporalClusterSizeUnitsTextField.setText("1");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _minTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _minTemporalTimeUnitsLabel.setText("years"); // NOI18N
+            _minTemporalTimeUnitsLabel.setText("years"); // NOI18N
 
-        javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
-        _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
-        _minTemporalOptionsGroupLayout.setHorizontalGroup(
-            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_minTemporalTimeUnitsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _minTemporalOptionsGroupLayout.setVerticalGroup(
-            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _minTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_minTemporalTimeUnitsLabel))
-                .addContainerGap())
-        );
+            javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
+            _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
+            _minTemporalOptionsGroupLayout.setHorizontalGroup(
+                _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_minTemporalTimeUnitsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _minTemporalOptionsGroupLayout.setVerticalGroup(
+                _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _minTemporalOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_minTemporalTimeUnitsLabel))
+                    .addContainerGap())
+            );
 
-        javax.swing.GroupLayout _temporalWindowTabLayout = new javax.swing.GroupLayout(_temporalWindowTab);
-        _temporalWindowTab.setLayout(_temporalWindowTabLayout);
-        _temporalWindowTabLayout.setHorizontalGroup(
-            _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _temporalWindowTabLayout.setVerticalGroup(
-            _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
-                .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(129, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _temporalWindowTabLayout = new javax.swing.GroupLayout(_temporalWindowTab);
+            _temporalWindowTab.setLayout(_temporalWindowTabLayout);
+            _temporalWindowTabLayout.setHorizontalGroup(
+                _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_temporalWindowTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _temporalWindowTabLayout.setVerticalGroup(
+                _temporalWindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_temporalWindowTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(11, 11, 11)
+                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(134, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
+            jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
 
-        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
-        _temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, AppConstants.TEMPORALTRENDADJ_HELPID));
+            _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
+            _temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, AppConstants.TEMPORALTRENDADJ_HELPID));
 
-        _temporalTrendAdjNone.setSelected(true);
-        _temporalTrendAdjNone.setText("None"); // NOI18N
-        _temporalTrendAdjNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjNone.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        _temporalTrendAdjNonparametric.setText("Nonparametric"); // NOI18N
-        _temporalTrendAdjNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjNonparametric.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    _spatialAdjustmentsNonparametric.setEnabled(true);
+            _temporalTrendAdjNone.setSelected(true);
+            _temporalTrendAdjNone.setText("None"); // NOI18N
+            _temporalTrendAdjNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _temporalTrendAdjNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _temporalTrendAdjNone.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
                     enableSettingsForAnalysisModelCombination();
                 }
-            }
-        });
+            });
 
-        _temporalTrendAdjLogLinear.setText("Log linear trend with"); // NOI18N
-        _temporalTrendAdjLogLinear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjLogLinear.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    _logLinearTextField.setEnabled(true);
+            _temporalTrendAdjNonparametric.setText("Nonparametric"); // NOI18N
+            _temporalTrendAdjNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _temporalTrendAdjNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _temporalTrendAdjNonparametric.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        _spatialAdjustmentsNonparametric.setEnabled(true);
+                        enableSetDefaultsButton();
+                        enableSettingsForAnalysisModelCombination();
+                    }
+                }
+            });
+
+            _temporalTrendAdjLogLinear.setText("Log linear trend with"); // NOI18N
+            _temporalTrendAdjLogLinear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _temporalTrendAdjLogLinear.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        _logLinearTextField.setEnabled(true);
+                        enableSetDefaultsButton();
+                        enableSettingsForAnalysisModelCombination();
+                    }
+                }
+            });
+
+            _temporalTrendAdjLogLinearCalc.setText("Log linear with automatically calculated trend"); // NOI18N
+            _temporalTrendAdjLogLinearCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _temporalTrendAdjLogLinearCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _temporalTrendAdjLogLinearCalc.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
                     enableSettingsForAnalysisModelCombination();
                 }
-            }
-        });
+            });
 
-        _temporalTrendAdjLogLinearCalc.setText("Log linear with automatically calculated trend"); // NOI18N
-        _temporalTrendAdjLogLinearCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjLogLinearCalc.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        _logLinearTextField.setText("0"); // NOI18N
-        _logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);
-            }
-        });
-        _logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) < -100) {
-                    if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText("0");
+            _logLinearTextField.setText("0"); // NOI18N
+            _logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
                 }
-                enableSetDefaultsButton();
-            }
-        });
-
-        _logLinearLabel.setText("%  per year"); // NOI18N
-
-        _temporalTrendAdjQuadCalc.setText("Log quadratic with automatically calculated trend"); // NOI18N
-        _temporalTrendAdjQuadCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _temporalTrendAdjQuadCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
-        _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
-        _temporalTrendAdjGroupLayout.setHorizontalGroup(
-            _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                        .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_temporalTrendAdjLogLinearCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_temporalTrendAdjNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalTrendAdjLogLinear)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
-                        .addGap(2, 2, 2))
-                    .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                        .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
-        );
-        _temporalTrendAdjGroupLayout.setVerticalGroup(
-            _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _temporalTrendAdjGroupLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_temporalTrendAdjNone)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_temporalTrendAdjNonparametric)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalTrendAdjLogLinear)
-                    .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_logLinearLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_temporalTrendAdjLogLinearCalc)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_temporalTrendAdjQuadCalc)
-                .addContainerGap())
-        );
-
-        _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
-        _spatialAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialAdjustmentsGroup, AppConstants.SPATIALADJ_HELPID));
-
-        _spatialAdjustmentsNone.setSelected(true);
-        _spatialAdjustmentsNone.setText("None"); // NOI18N
-        _spatialAdjustmentsNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialAdjustmentsNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialAdjustmentsNone.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _spatialAdjustmentsNonparametric.setText("Nonparametric"); // NOI18N
-        _spatialAdjustmentsNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _spatialAdjustmentsNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _spatialAdjustmentsNonparametric.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        javax.swing.GroupLayout _spatialAdjustmentsGroupLayout = new javax.swing.GroupLayout(_spatialAdjustmentsGroup);
-        _spatialAdjustmentsGroup.setLayout(_spatialAdjustmentsGroupLayout);
-        _spatialAdjustmentsGroupLayout.setHorizontalGroup(
-            _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_spatialAdjustmentsNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_spatialAdjustmentsNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
-                .addGap(2, 2, 2))
-        );
-        _spatialAdjustmentsGroupLayout.setVerticalGroup(
-            _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_spatialAdjustmentsNone)
-                .addGap(10, 10, 10)
-                .addComponent(_spatialAdjustmentsNonparametric)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
-        _knownAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_knownAdjustmentsGroup, AppConstants.ADJUSTMENT_RELRISKS_HELPID));
-
-        _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
-        _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _adjustForKnownRelativeRisksCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                boolean  bEnabled = _knownAdjustmentsGroup.isEnabled() && e.getStateChange() == java.awt.event.ItemEvent.SELECTED;
-
-                _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnabled);
-                _adjustmentsByRelativeRisksFileTextField.setEnabled(bEnabled);
-                _adjustmentsFileBrowseButton.setEnabled(bEnabled);
-                enableSetDefaultsButton();
-            }
-        });
-
-        _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _adjustmentsFileBrowseButton.setText("..."); // NOI18N
-        _adjustmentsFileBrowseButton.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
-        _adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.AdjustmentsByRR.toString() + "1";
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.AdjustmentsByRR));
+            });
+            _logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_adjustmentsByRelativeRisksFileTextField, inputSourceSettings, _settings_window);
-            }
-        });
+            });
+            _logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) < -100) {
+                        if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText("0");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _adjustmentsByRelativeRisksFileLabel.setText("Adjustments File:"); // NOI18N
+            _logLinearLabel.setText("%  per year"); // NOI18N
 
-        javax.swing.GroupLayout _knownAdjustmentsGroupLayout = new javax.swing.GroupLayout(_knownAdjustmentsGroup);
-        _knownAdjustmentsGroup.setLayout(_knownAdjustmentsGroupLayout);
-        _knownAdjustmentsGroupLayout.setHorizontalGroup(
-            _knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
+            _temporalTrendAdjQuadCalc.setText("Log quadratic with automatically calculated trend"); // NOI18N
+            _temporalTrendAdjQuadCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _temporalTrendAdjQuadCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
+
+            javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
+            _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
+            _temporalTrendAdjGroupLayout.setHorizontalGroup(
+                _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                            .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_temporalTrendAdjLogLinearCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(_temporalTrendAdjNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                                    .addComponent(_temporalTrendAdjLogLinear)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                            .addGap(2, 2, 2))
+                        .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                            .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addContainerGap())))
+            );
+            _temporalTrendAdjGroupLayout.setVerticalGroup(
+                _temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _temporalTrendAdjGroupLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_temporalTrendAdjNone)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_temporalTrendAdjNonparametric)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_temporalTrendAdjLogLinear)
+                        .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_logLinearLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_temporalTrendAdjLogLinearCalc)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_temporalTrendAdjQuadCalc)
+                    .addContainerGap())
+            );
+
+            _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
+            _spatialAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialAdjustmentsGroup, AppConstants.SPATIALADJ_HELPID));
+
+            _spatialAdjustmentsNone.setSelected(true);
+            _spatialAdjustmentsNone.setText("None"); // NOI18N
+            _spatialAdjustmentsNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _spatialAdjustmentsNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _spatialAdjustmentsNone.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSettingsForAnalysisModelCombination();
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _spatialAdjustmentsNonparametric.setText("Nonparametric"); // NOI18N
+            _spatialAdjustmentsNonparametric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _spatialAdjustmentsNonparametric.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _spatialAdjustmentsNonparametric.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
+
+            javax.swing.GroupLayout _spatialAdjustmentsGroupLayout = new javax.swing.GroupLayout(_spatialAdjustmentsGroup);
+            _spatialAdjustmentsGroup.setLayout(_spatialAdjustmentsGroupLayout);
+            _spatialAdjustmentsGroupLayout.setHorizontalGroup(
+                _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_spatialAdjustmentsNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_spatialAdjustmentsNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                    .addGap(2, 2, 2))
+            );
+            _spatialAdjustmentsGroupLayout.setVerticalGroup(
+                _spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialAdjustmentsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_spatialAdjustmentsNone)
+                    .addGap(10, 10, 10)
+                    .addComponent(_spatialAdjustmentsNonparametric)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
+            _knownAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_knownAdjustmentsGroup, AppConstants.ADJUSTMENT_RELRISKS_HELPID));
+
+            _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
+            _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _adjustForKnownRelativeRisksCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    boolean  bEnabled = _knownAdjustmentsGroup.isEnabled() && e.getStateChange() == java.awt.event.ItemEvent.SELECTED;
+
+                    _adjustmentsByRelativeRisksFileLabel.setEnabled(bEnabled);
+                    _adjustmentsByRelativeRisksFileTextField.setEnabled(bEnabled);
+                    _adjustmentsFileBrowseButton.setEnabled(bEnabled);
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _adjustmentsFileBrowseButton.setText("..."); // NOI18N
+            _adjustmentsFileBrowseButton.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
+            _adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.AdjustmentsByRR.toString() + "1";
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.AdjustmentsByRR));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_adjustmentsByRelativeRisksFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _adjustmentsByRelativeRisksFileLabel.setText("Adjustments File:"); // NOI18N
+
+            javax.swing.GroupLayout _knownAdjustmentsGroupLayout = new javax.swing.GroupLayout(_knownAdjustmentsGroup);
+            _knownAdjustmentsGroup.setLayout(_knownAdjustmentsGroupLayout);
+            _knownAdjustmentsGroupLayout.setHorizontalGroup(
+                _knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addComponent(_adjustmentsByRelativeRisksFileLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_adjustmentsByRelativeRisksFileTextField)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_adjustmentsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _knownAdjustmentsGroupLayout.setVerticalGroup(
+                _knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_adjustForKnownRelativeRisksCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_adjustmentsByRelativeRisksFileLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_adjustmentsByRelativeRisksFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_adjustmentsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _knownAdjustmentsGroupLayout.setVerticalGroup(
-            _knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_knownAdjustmentsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_adjustForKnownRelativeRisksCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_knownAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_adjustmentsByRelativeRisksFileLabel)
-                    .addComponent(_adjustmentsByRelativeRisksFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_adjustmentsFileBrowseButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_adjustmentsByRelativeRisksFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_adjustmentsFileBrowseButton))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _adjustDayOfWeek.setText("Adjust for day-of-week ");
-        _adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-                enableSettingsForAnalysisModelCombination();
-            }
-        });
-
-        javax.swing.GroupLayout _spaceTimeAjustmentsTabLayout = new javax.swing.GroupLayout(_spaceTimeAjustmentsTab);
-        _spaceTimeAjustmentsTab.setLayout(_spaceTimeAjustmentsTabLayout);
-        _spaceTimeAjustmentsTabLayout.setHorizontalGroup(
-            _spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_adjustDayOfWeek, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _spaceTimeAjustmentsTabLayout.setVerticalGroup(
-            _spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_adjustDayOfWeek)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(106, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
-
-        _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value"));
-        _pValueOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_pValueOptionsGroup, AppConstants.PVALUE_HELPID));
-
-        _pValueButtonGroup.add(_radioDefaultPValues);
-        _radioDefaultPValues.setSelected(true);
-        _radioDefaultPValues.setText("Default");
-        _radioDefaultPValues.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enablePValueOptionsGroup();
+            _adjustDayOfWeek.setText("Adjust for day-of-week ");
+            _adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
-                    updateMonteCarloTextCaptions();
+                    enableSettingsForAnalysisModelCombination();
                 }
-            }
-        });
+            });
 
-        _pValueButtonGroup.add(_radioEarlyTerminationPValues);
-        _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff:");
-        _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enablePValueOptionsGroup();
+            javax.swing.GroupLayout _spaceTimeAjustmentsTabLayout = new javax.swing.GroupLayout(_spaceTimeAjustmentsTab);
+            _spaceTimeAjustmentsTab.setLayout(_spaceTimeAjustmentsTabLayout);
+            _spaceTimeAjustmentsTabLayout.setHorizontalGroup(
+                _spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_adjustDayOfWeek, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _spaceTimeAjustmentsTabLayout.setVerticalGroup(
+                _spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_adjustDayOfWeek)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(94, Short.MAX_VALUE))
+            );
+
+            jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
+
+            _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value"));
+            _pValueOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_pValueOptionsGroup, AppConstants.PVALUE_HELPID));
+
+            _pValueButtonGroup.add(_radioDefaultPValues);
+            _radioDefaultPValues.setSelected(true);
+            _radioDefaultPValues.setText("Default");
+            _radioDefaultPValues.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enablePValueOptionsGroup();
+                        enableSetDefaultsButton();
+                        updateMonteCarloTextCaptions();
+                    }
+                }
+            });
+
+            _pValueButtonGroup.add(_radioEarlyTerminationPValues);
+            _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff:");
+            _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enablePValueOptionsGroup();
+                        enableSetDefaultsButton();
+                        updateMonteCarloTextCaptions();
+                    }
+                }
+            });
+
+            _pValueButtonGroup.add(_radioGumbelPValues);
+            _radioGumbelPValues.setText("Gumbel Approximation");
+            _radioGumbelPValues.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enablePValueOptionsGroup();
+                        enableSetDefaultsButton();
+                        updateMonteCarloTextCaptions();
+                    }
+                }
+            });
+
+            _pValueButtonGroup.add(_radioStandardPValues);
+            _radioStandardPValues.setText("Standard Monte Carlo");
+            _radioStandardPValues.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enablePValueOptionsGroup();
+                        enableSetDefaultsButton();
+                        updateMonteCarloTextCaptions();
+                    }
+                }
+            });
+
+            _checkReportGumbel.setText("Also report Gumbel based p-values");
+            _checkReportGumbel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+
+            _earlyTerminationThreshold.setText("50");
+            _earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_earlyTerminationThreshold.getText().length() == 0 || Integer.parseInt(_earlyTerminationThreshold.getText()) < 1)
+                    if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText("50");
                     enableSetDefaultsButton();
-                    updateMonteCarloTextCaptions();
                 }
-            }
-        });
-
-        _pValueButtonGroup.add(_radioGumbelPValues);
-        _radioGumbelPValues.setText("Gumbel Approximation");
-        _radioGumbelPValues.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enablePValueOptionsGroup();
-                    enableSetDefaultsButton();
-                    updateMonteCarloTextCaptions();
+            });
+            _earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 10);
                 }
-            }
-        });
-
-        _pValueButtonGroup.add(_radioStandardPValues);
-        _radioStandardPValues.setText("Standard Monte Carlo");
-        _radioStandardPValues.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enablePValueOptionsGroup();
-                    enableSetDefaultsButton();
-                    updateMonteCarloTextCaptions();
+            });
+            _earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
                 }
-            }
-        });
+            });
 
-        _checkReportGumbel.setText("Also report Gumbel based p-values");
-        _checkReportGumbel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-
-        _earlyTerminationThreshold.setText("50");
-        _earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_earlyTerminationThreshold.getText().length() == 0 || Integer.parseInt(_earlyTerminationThreshold.getText()) < 1)
-                if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText("50");
-                enableSetDefaultsButton();
-            }
-        });
-        _earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 10);
-            }
-        });
-        _earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout _pValueOptionsGroupLayout = new javax.swing.GroupLayout(_pValueOptionsGroup);
-        _pValueOptionsGroup.setLayout(_pValueOptionsGroupLayout);
-        _pValueOptionsGroupLayout.setHorizontalGroup(
-            _pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_radioDefaultPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_radioStandardPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
-                        .addComponent(_radioGumbelPValues, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
-                        .addComponent(_checkReportGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
+            javax.swing.GroupLayout _pValueOptionsGroupLayout = new javax.swing.GroupLayout(_pValueOptionsGroup);
+            _pValueOptionsGroup.setLayout(_pValueOptionsGroupLayout);
+            _pValueOptionsGroupLayout.setHorizontalGroup(
+                _pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_radioDefaultPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_radioStandardPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
+                            .addComponent(_radioGumbelPValues, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                            .addComponent(_checkReportGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
+                            .addComponent(_radioEarlyTerminationPValues)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap())
+            );
+            _pValueOptionsGroupLayout.setVerticalGroup(
+                _pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
+                    .addComponent(_radioDefaultPValues)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_radioStandardPValues)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_radioEarlyTerminationPValues)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _pValueOptionsGroupLayout.setVerticalGroup(
-            _pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
-                .addComponent(_radioDefaultPValues)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_radioStandardPValues)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_radioEarlyTerminationPValues)
-                    .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_radioGumbelPValues)
-                    .addComponent(_checkReportGumbel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_radioGumbelPValues)
+                        .addComponent(_checkReportGumbel))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
-        _iterativeScanGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_iterativeScanGroup, AppConstants.ITERATIVESCAN_HELPID));
+            _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
+            _iterativeScanGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_iterativeScanGroup, AppConstants.ITERATIVESCAN_HELPID));
 
-        _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
-        _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _performIterativeScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
-
-        _numIterativeScansTextField.setText("10"); // NOI18N
-        _numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_numIterativeScansTextField, e, 5);
-            }
-        });
-        _numIterativeScansTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_numIterativeScansTextField.getText().length() == 0 ||
-                    Integer.parseInt(_numIterativeScansTextField.getText()) < 1 ||
-                    Integer.parseInt(_numIterativeScansTextField.getText()) > Parameters.MAXIMUM_ITERATIVE_ANALYSES) {
-                    if (undo.canUndo()) undo.undo(); else _numIterativeScansTextField.setText("10");
+            _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
+            _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _performIterativeScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSettingsForAnalysisModelCombination();
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _numIterativeScansTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _iterativeCutoffLabel.setText("Stop when the p-value is greater than:"); // NOI18N
+            _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
 
-        _iterativeScanCutoffTextField.setText("0.05"); // NOI18N
-        _iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);
-            }
-        });
-        _iterativeScanCutoffTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_iterativeScanCutoffTextField.getText().length() == 0 ||
-                    Double.parseDouble(_iterativeScanCutoffTextField.getText()) <= 0 ||
-                    Double.parseDouble(_iterativeScanCutoffTextField.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _iterativeScanCutoffTextField.setText(".05");
-                enableSetDefaultsButton();
-            }
-        });
-        _iterativeScanCutoffTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _numIterativeScansTextField.setText("10"); // NOI18N
+            _numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_numIterativeScansTextField, e, 5);
+                }
+            });
+            _numIterativeScansTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_numIterativeScansTextField.getText().length() == 0 ||
+                        Integer.parseInt(_numIterativeScansTextField.getText()) < 1 ||
+                        Integer.parseInt(_numIterativeScansTextField.getText()) > Parameters.MAXIMUM_ITERATIVE_ANALYSES) {
+                        if (undo.canUndo()) undo.undo(); else _numIterativeScansTextField.setText("10");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _numIterativeScansTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        javax.swing.GroupLayout _iterativeScanGroupLayout = new javax.swing.GroupLayout(_iterativeScanGroup);
-        _iterativeScanGroup.setLayout(_iterativeScanGroupLayout);
-        _iterativeScanGroupLayout.setHorizontalGroup(
-            _iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
+            _iterativeCutoffLabel.setText("Stop when the p-value is greater than:"); // NOI18N
+
+            _iterativeScanCutoffTextField.setText("0.05"); // NOI18N
+            _iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);
+                }
+            });
+            _iterativeScanCutoffTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_iterativeScanCutoffTextField.getText().length() == 0 ||
+                        Double.parseDouble(_iterativeScanCutoffTextField.getText()) <= 0 ||
+                        Double.parseDouble(_iterativeScanCutoffTextField.getText()) > 1)
+                    if (undo.canUndo()) undo.undo(); else _iterativeScanCutoffTextField.setText(".05");
+                    enableSetDefaultsButton();
+                }
+            });
+            _iterativeScanCutoffTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            javax.swing.GroupLayout _iterativeScanGroupLayout = new javax.swing.GroupLayout(_iterativeScanGroup);
+            _iterativeScanGroup.setLayout(_iterativeScanGroupLayout);
+            _iterativeScanGroupLayout.setHorizontalGroup(
+                _iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addComponent(_maxIterativeScansLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_numIterativeScansTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(_iterativeCutoffLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_performIterativeScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _iterativeScanGroupLayout.setVerticalGroup(
+                _iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
+                    .addComponent(_performIterativeScanCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_maxIterativeScansLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_numIterativeScansTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addComponent(_numIterativeScansTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_iterativeCutoffLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_performIterativeScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _iterativeScanGroupLayout.setVerticalGroup(
-            _iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
-                .addComponent(_performIterativeScanCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_maxIterativeScansLabel)
-                    .addComponent(_numIterativeScansTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_iterativeCutoffLabel)
-                    .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
-        _monteCarloGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_monteCarloGroup, AppConstants.MONTECARLO_HELPID));
+            _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
+            _monteCarloGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_monteCarloGroup, AppConstants.MONTECARLO_HELPID));
 
-        _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
+            _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
-        _montCarloReplicationsTextField.setText("999"); // NOI18N
-        _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_montCarloReplicationsTextField.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
-                enableSetDefaultsButton();
-                updateCriticalValuesTextCaptions();
-            }
-        });
-        _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
-            }
-        });
-        _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _montCarloReplicationsTextField.setText("999"); // NOI18N
+            _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_montCarloReplicationsTextField.getText().length() == 0)
+                    if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
+                    enableSetDefaultsButton();
+                    updateCriticalValuesTextCaptions();
+                }
+            });
+            _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
+                }
+            });
+            _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        javax.swing.GroupLayout _monteCarloGroupLayout = new javax.swing.GroupLayout(_monteCarloGroup);
-        _monteCarloGroup.setLayout(_monteCarloGroupLayout);
-        _monteCarloGroupLayout.setHorizontalGroup(
-            _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_monteCarloGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_labelMonteCarloReplications)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _monteCarloGroupLayout.setVerticalGroup(
-            _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_monteCarloGroupLayout.createSequentialGroup()
-                .addGroup(_monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            javax.swing.GroupLayout _monteCarloGroupLayout = new javax.swing.GroupLayout(_monteCarloGroup);
+            _monteCarloGroup.setLayout(_monteCarloGroupLayout);
+            _monteCarloGroupLayout.setHorizontalGroup(
+                _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_monteCarloGroupLayout.createSequentialGroup()
+                    .addContainerGap()
                     .addComponent(_labelMonteCarloReplications)
-                    .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _monteCarloGroupLayout.setVerticalGroup(
+                _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_monteCarloGroupLayout.createSequentialGroup()
+                    .addGroup(_monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_labelMonteCarloReplications)
+                        .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _inferenceTabLayout = new javax.swing.GroupLayout(_inferenceTab);
-        _inferenceTab.setLayout(_inferenceTabLayout);
-        _inferenceTabLayout.setHorizontalGroup(
-            _inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inferenceTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_monteCarloGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _inferenceTabLayout.setVerticalGroup(
-            _inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inferenceTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(213, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _inferenceTabLayout = new javax.swing.GroupLayout(_inferenceTab);
+            _inferenceTab.setLayout(_inferenceTabLayout);
+            _inferenceTabLayout.setHorizontalGroup(
+                _inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_inferenceTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_monteCarloGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _inferenceTabLayout.setVerticalGroup(
+                _inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_inferenceTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(196, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Inference", _inferenceTab);
+            jTabbedPane1.addTab("Inference", _inferenceTab);
 
-        _mapsOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maps"));
-        _mapsOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_mapsOutputGroup, AppConstants.KMLGOOGLEEARTH_HELPID));
+            _mapsOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maps"));
+            _mapsOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_mapsOutputGroup, AppConstants.KMLGOOGLEEARTH_HELPID));
 
-        _includeClusterLocationsInKML.setText("Include All Location IDs in the Clusters");
-        _includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _createCompressedKMZ.setText("Create compressed KMZ file");
-        _createCompressedKMZ.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _launch_map_viewer.setText("Automatically launch requested maps");
-        _launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _label_kml_options.setText("KML Options:");
-
-        javax.swing.GroupLayout _mapsOutputGroupLayout = new javax.swing.GroupLayout(_mapsOutputGroup);
-        _mapsOutputGroup.setLayout(_mapsOutputGroupLayout);
-        _mapsOutputGroupLayout.setHorizontalGroup(
-            _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_launch_map_viewer, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9)
-                .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                        .addComponent(_label_kml_options, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _mapsOutputGroupLayout.setVerticalGroup(
-            _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(_label_kml_options)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_createCompressedKMZ)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_includeClusterLocationsInKML)
-                .addGap(5, 5, 5))
-            .addGroup(_mapsOutputGroupLayout.createSequentialGroup()
-                .addComponent(_launch_map_viewer)
-                .addContainerGap())
-        );
-
-        _clustersReportedGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
-        _clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, AppConstants.SECONDARDY_CLUSTERS_HELPID));
-
-        _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-        _hierarchicalSecondaryClusters.add("No Geographical Overlap");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in Other Clusters");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in More Likely Clusters");
-        _hierarchicalSecondaryClusters.add("No Cluster Centers in Less Likely Clusters");
-        _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
-        _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
-
-        _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
-
-        _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
-        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _mostLikelyClustersHierarchically.setText("Most Likely Clusters, Hierarchically");
-        _mostLikelyClustersHierarchically.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _giniOptimizedClusters.setText("Gini Optimized Cluster Collection");
-        _giniOptimizedClusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _clustersReportedGroupLayout = new javax.swing.GroupLayout(_clustersReportedGroup);
-        _clustersReportedGroup.setLayout(_clustersReportedGroupLayout);
-        _clustersReportedGroupLayout.setHorizontalGroup(
-            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_mostLikelyClustersHierarchically, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-                    .addComponent(_giniOptimizedClusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _clustersReportedGroupLayout.createSequentialGroup()
-                        .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _clustersReportedGroupLayout.setVerticalGroup(
-            _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_mostLikelyClustersHierarchically)
-                    .addComponent(_hierarchicalLabel))
-                .addGap(0, 0, 0)
-                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_giniOptimizedClusters)
-                    .addComponent(_checkboxReportIndexCoefficients))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
-
-        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
-        _reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, AppConstants.MAXIMIMCLUSTERSREPORTED_HELPID));
-
-        _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
-        _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _maxReportedSpatialClusterSizeTextField.setText("50"); // NOI18N
-        _maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);
-            }
-        });
-        _maxReportedSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialClusterSizeTextField.setText("50");
+            _includeClusterLocationsInKML.setText("Include All Location IDs in the Clusters");
+            _includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
-
-        _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _maxReportedSpatialPercentFileTextField.setText("50"); // NOI18N
-        _maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);
-            }
-        });
-        _maxReportedSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialPercentFileTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialPercentFileTextField.setText("50");
+            _createCompressedKMZ.setText("Create compressed KMZ file");
+            _createCompressedKMZ.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
-
-        _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _reportedMaxDistanceLabel.setText("is an ellipse with a"); // NOI18N
-
-        _maxReportedSpatialRadiusTextField.setText("1"); // NOI18N
-        _maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);
-            }
-        });
-        _maxReportedSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_maxReportedSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _maxReportedSpatialRadiusTextField.setText("1");
+            _launch_map_viewer.setText("Automatically launch requested maps");
+            _launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _maxReportedSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
+            _label_kml_options.setText("KML Options:");
 
-        javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
-        _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
-        _reportedSpatialOptionsGroupLayout.setHorizontalGroup(
-            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_restrictReportedClustersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_reportedSpatialPopulationFileCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_reportedSpatialDistanceCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_reportedMaxDistanceLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxReportedRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap())
-        );
-        _reportedSpatialOptionsGroupLayout.setVerticalGroup(
-            _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_restrictReportedClustersCheckBox)
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_reportedPercentOfPopulationLabel))
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_reportedSpatialPopulationFileCheckBox)
-                    .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_reportedPercentageOfPopFileLabel))
-                .addGap(10, 10, 10)
-                .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportedSpatialDistanceCheckBox)
+            javax.swing.GroupLayout _mapsOutputGroupLayout = new javax.swing.GroupLayout(_mapsOutputGroup);
+            _mapsOutputGroup.setLayout(_mapsOutputGroupLayout);
+            _mapsOutputGroupLayout.setHorizontalGroup(
+                _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_launch_map_viewer, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(9, 9, 9)
+                    .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_createCompressedKMZ, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                            .addComponent(_label_kml_options, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_includeClusterLocationsInKML, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _mapsOutputGroupLayout.setVerticalGroup(
+                _mapsOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _mapsOutputGroupLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(_label_kml_options)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_createCompressedKMZ)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_includeClusterLocationsInKML)
+                    .addGap(5, 5, 5))
+                .addGroup(_mapsOutputGroupLayout.createSequentialGroup()
+                    .addComponent(_launch_map_viewer)
+                    .addContainerGap())
+            );
+
+            _clustersReportedGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
+            _clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, AppConstants.SECONDARDY_CLUSTERS_HELPID));
+
+            _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
+            _hierarchicalSecondaryClusters.add("No Geographical Overlap");
+            _hierarchicalSecondaryClusters.add("No Cluster Centers in Other Clusters");
+            _hierarchicalSecondaryClusters.add("No Cluster Centers in More Likely Clusters");
+            _hierarchicalSecondaryClusters.add("No Cluster Centers in Less Likely Clusters");
+            _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
+            _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
+
+            _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
+
+            _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
+            _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _mostLikelyClustersHierarchically.setText("Most Likely Clusters, Hierarchically");
+            _mostLikelyClustersHierarchically.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _giniOptimizedClusters.setText("Gini Optimized Cluster Collection");
+            _giniOptimizedClusters.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableClustersReportedOptions(_clustersReportedGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            javax.swing.GroupLayout _clustersReportedGroupLayout = new javax.swing.GroupLayout(_clustersReportedGroup);
+            _clustersReportedGroup.setLayout(_clustersReportedGroupLayout);
+            _clustersReportedGroupLayout.setHorizontalGroup(
+                _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_mostLikelyClustersHierarchically, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                        .addComponent(_giniOptimizedClusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _clustersReportedGroupLayout.createSequentialGroup()
+                            .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap())
+            );
+            _clustersReportedGroupLayout.setVerticalGroup(
+                _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
+                    .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_mostLikelyClustersHierarchically)
+                        .addComponent(_hierarchicalLabel))
+                    .addGap(0, 0, 0)
+                    .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_giniOptimizedClusters)
+                        .addComponent(_checkboxReportIndexCoefficients))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
+
+            _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
+            _reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, AppConstants.MAXIMIMCLUSTERSREPORTED_HELPID));
+
+            _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
+            _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _maxReportedSpatialClusterSizeTextField.setText("50"); // NOI18N
+            _maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);
+                }
+            });
+            _maxReportedSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxReportedSpatialClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _maxReportedSpatialClusterSizeTextField.setText("50");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxReportedSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+
+            _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _maxReportedSpatialPercentFileTextField.setText("50"); // NOI18N
+            _maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);
+                }
+            });
+            _maxReportedSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxReportedSpatialPercentFileTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _maxReportedSpatialPercentFileTextField.setText("50");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxReportedSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
+
+            _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _reportedMaxDistanceLabel.setText("is an ellipse with a"); // NOI18N
+
+            _maxReportedSpatialRadiusTextField.setText("1"); // NOI18N
+            _maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);
+                }
+            });
+            _maxReportedSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_maxReportedSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _maxReportedSpatialRadiusTextField.setText("1");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _maxReportedSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
+
+            javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
+            _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
+            _reportedSpatialOptionsGroupLayout.setHorizontalGroup(
+                _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(_restrictReportedClustersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                            .addGap(27, 27, 27)
+                            .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_reportedSpatialPopulationFileCheckBox)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_reportedPercentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_reportedPercentOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                                    .addComponent(_reportedSpatialDistanceCheckBox)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_reportedMaxDistanceLabel)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_maxReportedRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                    .addContainerGap())
+            );
+            _reportedSpatialOptionsGroupLayout.setVerticalGroup(
+                _reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_reportedSpatialOptionsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_restrictReportedClustersCheckBox)
+                    .addGap(10, 10, 10)
                     .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_reportedMaxDistanceLabel)
-                        .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_maxReportedRadiusLabel)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_maxReportedSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_reportedPercentOfPopulationLabel))
+                    .addGap(10, 10, 10)
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_reportedSpatialPopulationFileCheckBox)
+                        .addComponent(_maxReportedSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_reportedPercentageOfPopFileLabel))
+                    .addGap(10, 10, 10)
+                    .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_reportedSpatialDistanceCheckBox)
+                        .addGroup(_reportedSpatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_reportedMaxDistanceLabel)
+                            .addComponent(_maxReportedSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_maxReportedRadiusLabel)))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _spatialOutputTabLayout = new javax.swing.GroupLayout(_spatialOutputTab);
-        _spatialOutputTab.setLayout(_spatialOutputTabLayout);
-        _spatialOutputTabLayout.setHorizontalGroup(
-            _spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _spatialOutputTabLayout.setVerticalGroup(
-            _spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_spatialOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(111, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _spatialOutputTabLayout = new javax.swing.GroupLayout(_spatialOutputTab);
+            _spatialOutputTab.setLayout(_spatialOutputTabLayout);
+            _spatialOutputTabLayout.setHorizontalGroup(
+                _spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _spatialOutputTabLayout.setVerticalGroup(
+                _spatialOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_spatialOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_mapsOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(98, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
+            jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
 
-        _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
-        _reportCriticalValuesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportCriticalValuesGroup, AppConstants.CRITICALVALUES_HELPID));
+            _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
+            _reportCriticalValuesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportCriticalValuesGroup, AppConstants.CRITICALVALUES_HELPID));
 
-        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
-        _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
+            _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        javax.swing.GroupLayout _reportCriticalValuesGroupLayout = new javax.swing.GroupLayout(_reportCriticalValuesGroup);
-        _reportCriticalValuesGroup.setLayout(_reportCriticalValuesGroupLayout);
-        _reportCriticalValuesGroupLayout.setHorizontalGroup(
-            _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _reportCriticalValuesGroupLayout.setVerticalGroup(
-            _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox)
-                .addContainerGap(14, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _reportCriticalValuesGroupLayout = new javax.swing.GroupLayout(_reportCriticalValuesGroup);
+            _reportCriticalValuesGroup.setLayout(_reportCriticalValuesGroupLayout);
+            _reportCriticalValuesGroupLayout.setHorizontalGroup(
+                _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _reportCriticalValuesGroupLayout.setVerticalGroup(
+                _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_reportCriticalValuesCheckBox)
+                    .addContainerGap(14, Short.MAX_VALUE))
+            );
 
-        _reportClusterRankGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Rank"));
-        _reportClusterRankGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportClusterRankGroup, AppConstants.MONTECARLORANK_HELPID));
+            _reportClusterRankGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Rank"));
+            _reportClusterRankGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportClusterRankGroup, AppConstants.MONTECARLORANK_HELPID));
 
-        _reportClusterRankCheckBox.setText("Report Monte Carlo Rank"); // NOI18N
-        _reportClusterRankCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportClusterRankCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _reportClusterRankCheckBox.setText("Report Monte Carlo Rank"); // NOI18N
+            _reportClusterRankCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _reportClusterRankCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        javax.swing.GroupLayout _reportClusterRankGroupLayout = new javax.swing.GroupLayout(_reportClusterRankGroup);
-        _reportClusterRankGroup.setLayout(_reportClusterRankGroupLayout);
-        _reportClusterRankGroupLayout.setHorizontalGroup(
-            _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _reportClusterRankGroupLayout.setVerticalGroup(
-            _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportClusterRankCheckBox)
-                .addContainerGap(14, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _reportClusterRankGroupLayout = new javax.swing.GroupLayout(_reportClusterRankGroup);
+            _reportClusterRankGroup.setLayout(_reportClusterRankGroupLayout);
+            _reportClusterRankGroupLayout.setHorizontalGroup(
+                _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _reportClusterRankGroupLayout.setVerticalGroup(
+                _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_reportClusterRankCheckBox)
+                    .addContainerGap(14, Short.MAX_VALUE))
+            );
 
-        _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers"));
-        _additionalOutputFiles.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFiles, AppConstants.COLUMNHEADERS_HELPID));
+            _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers"));
+            _additionalOutputFiles.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFiles, AppConstants.COLUMNHEADERS_HELPID));
 
-        _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
-        _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _printAsciiColumnHeaders.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
+            _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _printAsciiColumnHeaders.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        javax.swing.GroupLayout _additionalOutputFilesLayout = new javax.swing.GroupLayout(_additionalOutputFiles);
-        _additionalOutputFiles.setLayout(_additionalOutputFilesLayout);
-        _additionalOutputFilesLayout.setHorizontalGroup(
-            _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _additionalOutputFilesLayout.setVerticalGroup(
-            _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_printAsciiColumnHeaders)
-                .addContainerGap(14, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _additionalOutputFilesLayout = new javax.swing.GroupLayout(_additionalOutputFiles);
+            _additionalOutputFiles.setLayout(_additionalOutputFilesLayout);
+            _additionalOutputFilesLayout.setHorizontalGroup(
+                _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _additionalOutputFilesLayout.setVerticalGroup(
+                _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_printAsciiColumnHeaders)
+                    .addContainerGap(14, Short.MAX_VALUE))
+            );
 
-        _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
-        _userDefinedRunTitle.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_userDefinedRunTitle, AppConstants.RUNTITLE_HELPID));
+            _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
+            _userDefinedRunTitle.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_userDefinedRunTitle, AppConstants.RUNTITLE_HELPID));
 
-        _printTitle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _printTitleActionPerformed(evt);
-            }
-        });
+            _printTitle.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    _printTitleActionPerformed(evt);
+                }
+            });
 
-        javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
-        _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
-        _userDefinedRunTitleLayout.setHorizontalGroup(
-            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_userDefinedRunTitleLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_printTitle)
-                .addContainerGap())
-        );
-        _userDefinedRunTitleLayout.setVerticalGroup(
-            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _userDefinedRunTitleLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_printTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+            javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
+            _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
+            _userDefinedRunTitleLayout.setHorizontalGroup(
+                _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_userDefinedRunTitleLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_printTitle)
+                    .addContainerGap())
+            );
+            _userDefinedRunTitleLayout.setVerticalGroup(
+                _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _userDefinedRunTitleLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_printTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+            );
 
-        _cluster_significance_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Considered Significant When:"));
+            _cluster_lineline_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Line List:"));
 
-        _cluster_significant_ri_chx.setText("Cluster recurrance interval is at least:");
-        _cluster_significant_ri_chx.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableOtherOutputGroup();
-            }
-        });
+            _cluster_lineline_chx.setText("Include clusters with p-value less than or equal to");
 
-        _cluster_significant_ri_value.setText("100");
+            _cluster_lineline_value.setText("0.05");
 
-        _cluster_significant_ri_type.add("Days");
-        _cluster_significant_ri_type.add("Years");
+            _cluster_lineline_label.setText("in line list CSV file.");
 
-        _cluster_significant_pval_chx.setText("Cluster p-value is less than or equal to:");
+            javax.swing.GroupLayout _cluster_lineline_panelLayout = new javax.swing.GroupLayout(_cluster_lineline_panel);
+            _cluster_lineline_panel.setLayout(_cluster_lineline_panelLayout);
+            _cluster_lineline_panelLayout.setHorizontalGroup(
+                _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_cluster_lineline_panelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_cluster_lineline_chx)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_cluster_lineline_value, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_cluster_lineline_label, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _cluster_lineline_panelLayout.setVerticalGroup(
+                _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_cluster_lineline_panelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_cluster_lineline_chx, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_cluster_lineline_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_cluster_lineline_label)))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _cluster_significant_pval_value.setText("0.05");
+            javax.swing.GroupLayout _otherOutputTabLayout = new javax.swing.GroupLayout(_otherOutputTab);
+            _otherOutputTab.setLayout(_otherOutputTabLayout);
+            _otherOutputTabLayout.setHorizontalGroup(
+                _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_cluster_lineline_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _otherOutputTabLayout.setVerticalGroup(
+                _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_cluster_lineline_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(144, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _cluster_significance_panelLayout = new javax.swing.GroupLayout(_cluster_significance_panel);
-        _cluster_significance_panel.setLayout(_cluster_significance_panelLayout);
-        _cluster_significance_panelLayout.setHorizontalGroup(
-            _cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
-                        .addComponent(_cluster_significant_pval_chx)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_cluster_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
-                        .addComponent(_cluster_significant_ri_chx)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_cluster_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_cluster_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(250, Short.MAX_VALUE))
-        );
-        _cluster_significance_panelLayout.setVerticalGroup(
-            _cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_cluster_significance_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_cluster_significant_ri_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_cluster_significant_ri_chx))
-                    .addComponent(_cluster_significant_ri_type, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_cluster_significance_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_cluster_significant_pval_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_cluster_significant_pval_chx))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+            jTabbedPane1.addTab("Other Output", _otherOutputTab);
 
-        javax.swing.GroupLayout _otherOutputTabLayout = new javax.swing.GroupLayout(_otherOutputTab);
-        _otherOutputTab.setLayout(_otherOutputTabLayout);
-        _otherOutputTabLayout.setHorizontalGroup(
-            _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_cluster_significance_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _otherOutputTabLayout.setVerticalGroup(
-            _otherOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _otherOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_cluster_significance_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(103, Short.MAX_VALUE))
-        );
+            _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
+            _powerEvaluationsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_powerEvaluationsGroup, AppConstants.POWERESTIMATION_HELPID));
 
-        jTabbedPane1.addTab("Other Output", _otherOutputTab);
+            _powerEvaluationMethodButtonGroup.add(_partOfRegularAnalysis);
+            _partOfRegularAnalysis.setSelected(true);
+            _partOfRegularAnalysis.setText("As Part of Regular Analysis");
+            _partOfRegularAnalysis.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enablePowerEvaluationsGroup();
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
-        _powerEvaluationsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_powerEvaluationsGroup, AppConstants.POWERESTIMATION_HELPID));
+            _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithCaseFile);
+            _powerEvaluationWithCaseFile.setText("Power Evaluation Only, Use Total Cases From Case File");
+            _powerEvaluationWithCaseFile.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enablePowerEvaluationsGroup();
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEvaluationMethodButtonGroup.add(_partOfRegularAnalysis);
-        _partOfRegularAnalysis.setSelected(true);
-        _partOfRegularAnalysis.setText("As Part of Regular Analysis");
-        _partOfRegularAnalysis.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enablePowerEvaluationsGroup();
-                enableSetDefaultsButton();
-            }
-        });
+            _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithSpecifiedCases);
+            _powerEvaluationWithSpecifiedCases.setText("Power Evaluation Only, Use ");
+            _powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enablePowerEvaluationsGroup();
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithCaseFile);
-        _powerEvaluationWithCaseFile.setText("Power Evaluation Only, Use Total Cases From Case File");
-        _powerEvaluationWithCaseFile.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enablePowerEvaluationsGroup();
-                enableSetDefaultsButton();
-            }
-        });
+            _totalPowerCases.setText("600");
+            _totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_totalPowerCases.getText().length() == 0)
+                    if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText("600");
+                    enableSetDefaultsButton();
+                }
+            });
+            _totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
+                }
+            });
+            _totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _powerEvaluationMethodButtonGroup.add(_powerEvaluationWithSpecifiedCases);
-        _powerEvaluationWithSpecifiedCases.setText("Power Evaluation Only, Use ");
-        _powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enablePowerEvaluationsGroup();
-                enableSetDefaultsButton();
-            }
-        });
+            _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
 
-        _totalPowerCases.setText("600");
-        _totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_totalPowerCases.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText("600");
-                enableSetDefaultsButton();
-            }
-        });
-        _totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
-            }
-        });
-        _totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
 
-        _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
+            _alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
+            _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
+            _alternativeHypothesisFilenameButton.setToolTipText("Open Alternative Hypothesis File Import Wizard"); // NOI18N
+            _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.AlternativeHypothesis);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window);
+                }
+            });
 
-        _alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
 
-        _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
-        _alternativeHypothesisFilenameButton.setToolTipText("Open Alternative Hypothesis File Import Wizard"); // NOI18N
-        _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.AlternativeHypothesis);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window);
-            }
-        });
+            _numberPowerReplications.setText("1000"); // NOI18N
+            _numberPowerReplications.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_numberPowerReplications.getText().length() == 0)
+                    if (undo.canUndo()) undo.undo(); else _numberPowerReplications.setText("1000");
+                    enableSetDefaultsButton();
+                }
+            });
+            _numberPowerReplications.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_numberPowerReplications, e, 10);
+                }
+            });
+            _numberPowerReplications.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
+            _criticalValuesTypeLabel.setText("Critical Values");
 
-        _numberPowerReplications.setText("1000"); // NOI18N
-        _numberPowerReplications.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_numberPowerReplications.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _numberPowerReplications.setText("1000");
-                enableSetDefaultsButton();
-            }
-        });
-        _numberPowerReplications.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_numberPowerReplications, e, 10);
-            }
-        });
-        _numberPowerReplications.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _criticalValuesButtonGroup.add(_criticalValuesMonteCarlo);
+            _criticalValuesMonteCarlo.setText("Monte Carlo");
+            _criticalValuesMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _criticalValuesTypeLabel.setText("Critical Values");
+            _criticalValuesButtonGroup.add(_criticalValuesGumbel);
+            _criticalValuesGumbel.setText("Gumbel");
+            _criticalValuesGumbel.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _criticalValuesButtonGroup.add(_criticalValuesMonteCarlo);
-        _criticalValuesMonteCarlo.setText("Monte Carlo");
-        _criticalValuesMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _criticalValuesReplicationsLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+            _criticalValuesReplicationsLabel.setText("(999 replications - value defined on Inference tab)");
 
-        _criticalValuesButtonGroup.add(_criticalValuesGumbel);
-        _criticalValuesGumbel.setText("Gumbel");
-        _criticalValuesGumbel.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _powerEstimationTypeLabel.setText("Power Estimation");
 
-        _criticalValuesReplicationsLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        _criticalValuesReplicationsLabel.setText("(999 replications - value defined on Inference tab)");
+            _powerEstimationButtonGroup.add(_powerEstimationMonteCarlo);
+            _powerEstimationMonteCarlo.setText("Monte Carlo");
+            _powerEstimationMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEstimationTypeLabel.setText("Power Estimation");
+            _powerEstimationButtonGroup.add(_powerEstimationGumbel);
+            _powerEstimationGumbel.setText("Gumbel");
+            _powerEstimationGumbel.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEstimationButtonGroup.add(_powerEstimationMonteCarlo);
-        _powerEstimationMonteCarlo.setText("Monte Carlo");
-        _powerEstimationMonteCarlo.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            _performPowerEvalautions.setText("Perform Power Evaluations");
+            _performPowerEvalautions.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enablePowerEvaluationsGroup();
+                    enableSetDefaultsButton();
+                }
+            });
 
-        _powerEstimationButtonGroup.add(_powerEstimationGumbel);
-        _powerEstimationGumbel.setText("Gumbel");
-        _powerEstimationGumbel.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
+            javax.swing.GroupLayout _powerEvaluationsGroupLayout = new javax.swing.GroupLayout(_powerEvaluationsGroup);
+            _powerEvaluationsGroup.setLayout(_powerEvaluationsGroupLayout);
+            _powerEvaluationsGroupLayout.setHorizontalGroup(
+                _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                            .addComponent(_powerEstimationTypeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addContainerGap())
+                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                            .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addGap(10, 10, 10)
+                                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                            .addComponent(_powerEstimationMonteCarlo, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(_powerEstimationGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                            .addComponent(_numberPowerReplicationsLabel)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGap(0, 0, Short.MAX_VALUE))
+                                .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(_alternativeHypothesisFilename))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addContainerGap())
+                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                            .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(_performPowerEvalautions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addComponent(_partOfRegularAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGap(11, 11, 11))
+                                .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addComponent(_powerEvaluationWithCaseFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGap(11, 11, 11))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addGap(10, 10, 10)
+                                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_criticalValuesReplicationsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                            .addComponent(_criticalValuesMonteCarlo, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(_criticalValuesGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(_criticalValuesTypeLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
+                                            .addComponent(_powerEvaluationWithSpecifiedCases)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)))
+                                    .addGap(17, 17, 17)))
+                            .addGap(2, 2, 2))))
+            );
+            _powerEvaluationsGroupLayout.setVerticalGroup(
+                _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                    .addComponent(_performPowerEvalautions)
+                    .addGap(5, 5, 5)
+                    .addComponent(_partOfRegularAnalysis)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_powerEvaluationWithCaseFile)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_powerEvaluationWithSpecifiedCases)
+                        .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_criticalValuesTypeLabel)
+                    .addGap(2, 2, 2)
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_criticalValuesMonteCarlo)
+                        .addComponent(_criticalValuesGumbel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_criticalValuesReplicationsLabel)
+                    .addGap(11, 11, 11)
+                    .addComponent(_powerEstimationTypeLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_powerEstimationMonteCarlo)
+                        .addComponent(_powerEstimationGumbel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_numberPowerReplicationsLabel)
+                        .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_alternativeHypothesisFilenameLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_alternativeHypothesisFilenameButton))
+                    .addContainerGap())
+            );
 
-        _performPowerEvalautions.setText("Perform Power Evaluations");
-        _performPowerEvalautions.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enablePowerEvaluationsGroup();
-                enableSetDefaultsButton();
-            }
-        });
+            javax.swing.GroupLayout _powerEvaluationTabLayout = new javax.swing.GroupLayout(_powerEvaluationTab);
+            _powerEvaluationTab.setLayout(_powerEvaluationTabLayout);
+            _powerEvaluationTabLayout.setHorizontalGroup(
+                _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _powerEvaluationTabLayout.setVerticalGroup(
+                _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(122, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _powerEvaluationsGroupLayout = new javax.swing.GroupLayout(_powerEvaluationsGroup);
-        _powerEvaluationsGroup.setLayout(_powerEvaluationsGroupLayout);
-        _powerEvaluationsGroupLayout.setHorizontalGroup(
-            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                        .addComponent(_powerEstimationTypeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                        .addComponent(_powerEstimationMonteCarlo, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(_powerEstimationGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                        .addComponent(_numberPowerReplicationsLabel)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_alternativeHypothesisFilename))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
-                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_performPowerEvalautions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addComponent(_partOfRegularAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(11, 11, 11))
-                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addComponent(_powerEvaluationWithCaseFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(11, 11, 11))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(_criticalValuesReplicationsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                        .addComponent(_criticalValuesMonteCarlo, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(_criticalValuesGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(_criticalValuesTypeLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _powerEvaluationsGroupLayout.createSequentialGroup()
-                                        .addComponent(_powerEvaluationWithSpecifiedCases)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)))
-                                .addGap(17, 17, 17)))
-                        .addGap(2, 2, 2))))
-        );
-        _powerEvaluationsGroupLayout.setVerticalGroup(
-            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                .addComponent(_performPowerEvalautions)
-                .addGap(5, 5, 5)
-                .addComponent(_partOfRegularAnalysis)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_powerEvaluationWithCaseFile)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_powerEvaluationWithSpecifiedCases)
-                    .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_powerEvaluationWithSpecifiedCasesLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_criticalValuesTypeLabel)
-                .addGap(2, 2, 2)
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_criticalValuesMonteCarlo)
-                    .addComponent(_criticalValuesGumbel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_criticalValuesReplicationsLabel)
-                .addGap(11, 11, 11)
-                .addComponent(_powerEstimationTypeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_powerEstimationMonteCarlo)
-                    .addComponent(_powerEstimationGumbel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_numberPowerReplicationsLabel)
-                    .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_alternativeHypothesisFilenameLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap())
-        );
+            jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
 
-        javax.swing.GroupLayout _powerEvaluationTabLayout = new javax.swing.GroupLayout(_powerEvaluationTab);
-        _powerEvaluationTab.setLayout(_powerEvaluationTabLayout);
-        _powerEvaluationTabLayout.setHorizontalGroup(
-            _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _powerEvaluationTabLayout.setVerticalGroup(
-            _powerEvaluationTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_powerEvaluationTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(150, Short.MAX_VALUE))
-        );
+            _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
+            _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, AppConstants.TEMPORALGRAPHS_HELPID));
 
-        jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
-
-        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
-        _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, AppConstants.TEMPORALGRAPHS_HELPID));
-
-        _reportTemporalGraph.setText("Produce Temporal Graphs");
-        _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _temporalGraphButtonGroup.add(_temporalGraphMostLikely);
-        _temporalGraphMostLikely.setSelected(true);
-        _temporalGraphMostLikely.setText("Most likely cluster only");
-        _temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            _reportTemporalGraph.setText("Produce Temporal Graphs");
+            _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
                     enableSetDefaultsButton();
                 }
-            }
-        });
+            });
 
-        _temporalGraphButtonGroup.add(_temporalGraphMostLikelyX);
-
-        _numMostLikelyClustersGraph.setText("1"); // NOI18N
-        _numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);
-            }
-        });
-        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText("1");
+            _temporalGraphButtonGroup.add(_temporalGraphMostLikely);
+            _temporalGraphMostLikely.setSelected(true);
+            _temporalGraphMostLikely.setText("Most likely cluster only");
+            _temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                        enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                        enableSetDefaultsButton();
+                    }
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
 
-        _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
+            _temporalGraphButtonGroup.add(_temporalGraphMostLikelyX);
 
-        _temporalGraphButtonGroup.add(_temporalGraphSignificant);
-        _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
+            _numMostLikelyClustersGraph.setText("1"); // NOI18N
+            _numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);
+                }
+            });
+            _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {
+                        if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText("1");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
-        _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);
-            }
-        });
-        _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalGraphPvalueCutoff.getText().length() == 0 ||
-                    Double.parseDouble(_temporalGraphPvalueCutoff.getText()) <= 0 ||
-                    Double.parseDouble(_temporalGraphPvalueCutoff.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(".05");
-                enableSetDefaultsButton();
-            }
-        });
-        _temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
 
-        javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
-        _graphOutputGroup.setLayout(_graphOutputGroupLayout);
-        _graphOutputGroupLayout.setHorizontalGroup(
-            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
-                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalGraphSignificant)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalGraphMostLikelyX)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap())
-        );
-        _graphOutputGroupLayout.setVerticalGroup(
-            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                .addComponent(_reportTemporalGraph)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_temporalGraphMostLikely)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_temporalGraphMostLikelyX)
+            _temporalGraphButtonGroup.add(_temporalGraphSignificant);
+            _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
+
+            _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
+            _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);
+                }
+            });
+            _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_temporalGraphPvalueCutoff.getText().length() == 0 ||
+                        Double.parseDouble(_temporalGraphPvalueCutoff.getText()) <= 0 ||
+                        Double.parseDouble(_temporalGraphPvalueCutoff.getText()) > 1)
+                    if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(".05");
+                    enableSetDefaultsButton();
+                }
+            });
+            _temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
+            _graphOutputGroup.setLayout(_graphOutputGroupLayout);
+            _graphOutputGroupLayout.setHorizontalGroup(
+                _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                    .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
+                        .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                            .addGap(27, 27, 27)
+                            .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                                    .addComponent(_temporalGraphSignificant)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(0, 0, Short.MAX_VALUE))
+                                .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                                    .addComponent(_temporalGraphMostLikelyX)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                    .addContainerGap())
+            );
+            _graphOutputGroupLayout.setVerticalGroup(
+                _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                    .addComponent(_reportTemporalGraph)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_temporalGraphMostLikely)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_temporalGraphMostLikelyX)
+                        .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_numMostLikelyClustersGraphLabel)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_numMostLikelyClustersGraphLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalGraphSignificant)
-                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_temporalGraphSignificant)
+                        .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _temporalOutputTabLayout = new javax.swing.GroupLayout(_temporalOutputTab);
-        _temporalOutputTab.setLayout(_temporalOutputTabLayout);
-        _temporalOutputTabLayout.setHorizontalGroup(
-            _temporalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _temporalOutputTabLayout.setVerticalGroup(
-            _temporalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalOutputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(334, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _temporalOutputTabLayout = new javax.swing.GroupLayout(_temporalOutputTab);
+            _temporalOutputTab.setLayout(_temporalOutputTabLayout);
+            _temporalOutputTabLayout.setHorizontalGroup(
+                _temporalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_temporalOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_graphOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _temporalOutputTabLayout.setVerticalGroup(
+                _temporalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_temporalOutputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(318, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
+            jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
 
-        _oliveiras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliveira's F"));
-        _oliveiras_f_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_oliveiras_f_group, AppConstants.OLIVERIERAF_HELPID));
+            _oliveiras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliveira's F"));
+            _oliveiras_f_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_oliveiras_f_group, AppConstants.OLIVERIERAF_HELPID));
 
-        _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
+            _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
 
-        _number_oliveira_data_sets_label.setText("Number of bootstrap replications (minimum 100, multiple of 100):"); // NOI18N
+            _number_oliveira_data_sets_label.setText("Number of bootstrap replications (minimum 100, multiple of 100):"); // NOI18N
 
-        _number_oliveira_data_sets.setText("1000"); // NOI18N
-        _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_montCarloReplicationsTextField.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
-                enableSetDefaultsButton();
-                updateCriticalValuesTextCaptions();
-            }
-        });
-        _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
-            }
-        });
-        _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            _number_oliveira_data_sets.setText("1000"); // NOI18N
+            _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_montCarloReplicationsTextField.getText().length() == 0)
+                    if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
+                    enableSetDefaultsButton();
+                    updateCriticalValuesTextCaptions();
+                }
+            });
+            _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
+                }
+            });
+            _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        javax.swing.GroupLayout _oliveiras_f_groupLayout = new javax.swing.GroupLayout(_oliveiras_f_group);
-        _oliveiras_f_group.setLayout(_oliveiras_f_groupLayout);
-        _oliveiras_f_groupLayout.setHorizontalGroup(
-            _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_calculate_oliveiras_f, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+            javax.swing.GroupLayout _oliveiras_f_groupLayout = new javax.swing.GroupLayout(_oliveiras_f_group);
+            _oliveiras_f_group.setLayout(_oliveiras_f_groupLayout);
+            _oliveiras_f_groupLayout.setHorizontalGroup(
+                _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_calculate_oliveiras_f, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
+                            .addGap(21, 21, 21)
+                            .addComponent(_number_oliveira_data_sets_label)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 203, Short.MAX_VALUE)))
+                    .addContainerGap())
+            );
+            _oliveiras_f_groupLayout.setVerticalGroup(
+                _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
+                    .addComponent(_calculate_oliveiras_f)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_number_oliveira_data_sets_label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 203, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _oliveiras_f_groupLayout.setVerticalGroup(
-            _oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_oliveiras_f_groupLayout.createSequentialGroup()
-                .addComponent(_calculate_oliveiras_f)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_oliveiras_f_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_number_oliveira_data_sets_label)
-                    .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
+            _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
 
-        _label_prospective_frequency.setText("How frequently are analyses performed?");
+            _label_prospective_frequency.setText("How frequently are analyses performed?");
 
-        _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-        _prospective_frequency.add("Same as Time Aggregation");
-        _prospective_frequency.add("Daily");
-        _prospective_frequency.add("Weekly");
-        _prospective_frequency.add("Monthly");
-        _prospective_frequency.add("Quarterly");
-        _prospective_frequency.add("Yearly");
-
-        javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
-        _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
-        _prospective_frequency_groupLayout.setHorizontalGroup(
-            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _prospective_frequency_groupLayout.setVerticalGroup(
-            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
-                .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 14, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _miscellaneous_analysis_tabLayout = new javax.swing.GroupLayout(_miscellaneous_analysis_tab);
-        _miscellaneous_analysis_tab.setLayout(_miscellaneous_analysis_tabLayout);
-        _miscellaneous_analysis_tabLayout.setHorizontalGroup(
-            _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _miscellaneous_analysis_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _miscellaneous_analysis_tabLayout.setVerticalGroup(
-            _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_miscellaneous_analysis_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(334, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
-
-        _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
-        _limit_clusters_risk_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_limit_clusters_risk_group, AppConstants.RESTRICTRELRISK_HELPID));
-
-        _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
-        _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _limit_low_clusters_value.setText("0.25");
-        _limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);
-            }
-        });
-        _limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_limit_low_clusters_value.getText().length() == 0 ||
-                    Double.parseDouble(_limit_low_clusters_value.getText()) < 0 ||
-                    Double.parseDouble(_limit_low_clusters_value.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText("1.0");
-                enableSetDefaultsButton();
-            }
-        });
-        _limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _limit_high_clusters.setText("Restrict high rate clusters to relative risk greater than or equal to:");
-        _limit_high_clusters.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
-                enableSetDefaultsButton();
-            }
-        });
-
-        _limit_high_clusters_value.setText("1.875");
-        _limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);
-            }
-        });
-        _limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_limit_high_clusters_value.getText().length() == 0 ||
-                    Double.parseDouble(_limit_high_clusters_value.getText()) < 1.0)
-                if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText("1.0");
-                enableSetDefaultsButton();
-            }
-        });
-        _limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout _limit_clusters_risk_groupLayout = new javax.swing.GroupLayout(_limit_clusters_risk_group);
-        _limit_clusters_risk_group.setLayout(_limit_clusters_risk_groupLayout);
-        _limit_clusters_risk_groupLayout.setHorizontalGroup(
-            _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_limit_low_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_limit_high_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_limit_low_clusters_value)
-                    .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _limit_clusters_risk_groupLayout.setVerticalGroup(
-            _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_limit_high_clusters)
-                    .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_limit_low_clusters)
-                    .addComponent(_limit_low_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
-        _minimum_clusters_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minimum_clusters_group, AppConstants.RESTRICTMINCASES_HELPID));
-
-        _min_cases_label.setText("Restrict high rate clusters to have at least"); // NOI18N
-
-        _minimum_number_cases_cluster.setText("2"); // NOI18N
-        _minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);
-            }
-        });
-        _minimum_number_cases_cluster.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_minimum_number_cases_cluster.getText().length() == 0 ||
-                    Integer.parseInt(_minimum_number_cases_cluster.getText()) < 2) {
-                    if (undo.canUndo()) undo.undo(); else _minimum_number_cases_cluster.setText("2");
+            _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
                 }
-                enableSetDefaultsButton();
-            }
-        });
-        _minimum_number_cases_cluster.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+            });
+            _prospective_frequency.add("Same as Time Aggregation");
+            _prospective_frequency.add("Daily");
+            _prospective_frequency.add("Weekly");
+            _prospective_frequency.add("Monthly");
+            _prospective_frequency.add("Quarterly");
+            _prospective_frequency.add("Yearly");
 
-        _min_cases_label2.setText("cases.");
+            javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
+            _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
+            _prospective_frequency_groupLayout.setHorizontalGroup(
+                _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _prospective_frequency_groupLayout.setVerticalGroup(
+                _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                    .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(0, 14, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _minimum_clusters_groupLayout = new javax.swing.GroupLayout(_minimum_clusters_group);
-        _minimum_clusters_group.setLayout(_minimum_clusters_groupLayout);
-        _minimum_clusters_groupLayout.setHorizontalGroup(
-            _minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_minimum_clusters_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_min_cases_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_min_cases_label2, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        _minimum_clusters_groupLayout.setVerticalGroup(
-            _minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_minimum_clusters_groupLayout.createSequentialGroup()
-                .addGroup(_minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            javax.swing.GroupLayout _miscellaneous_analysis_tabLayout = new javax.swing.GroupLayout(_miscellaneous_analysis_tab);
+            _miscellaneous_analysis_tab.setLayout(_miscellaneous_analysis_tabLayout);
+            _miscellaneous_analysis_tabLayout.setHorizontalGroup(
+                _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _miscellaneous_analysis_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _miscellaneous_analysis_tabLayout.setVerticalGroup(
+                _miscellaneous_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_miscellaneous_analysis_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(328, Short.MAX_VALUE))
+            );
+
+            jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
+
+            _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
+            _limit_clusters_risk_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_limit_clusters_risk_group, AppConstants.RESTRICTRELRISK_HELPID));
+
+            _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
+            _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _limit_low_clusters_value.setText("0.25");
+            _limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);
+                }
+            });
+            _limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_limit_low_clusters_value.getText().length() == 0 ||
+                        Double.parseDouble(_limit_low_clusters_value.getText()) < 0 ||
+                        Double.parseDouble(_limit_low_clusters_value.getText()) > 1)
+                    if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText("1.0");
+                    enableSetDefaultsButton();
+                }
+            });
+            _limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _limit_high_clusters.setText("Restrict high rate clusters to relative risk greater than or equal to:");
+            _limit_high_clusters.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _limit_high_clusters_value.setText("1.875");
+            _limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);
+                }
+            });
+            _limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_limit_high_clusters_value.getText().length() == 0 ||
+                        Double.parseDouble(_limit_high_clusters_value.getText()) < 1.0)
+                    if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText("1.0");
+                    enableSetDefaultsButton();
+                }
+            });
+            _limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            javax.swing.GroupLayout _limit_clusters_risk_groupLayout = new javax.swing.GroupLayout(_limit_clusters_risk_group);
+            _limit_clusters_risk_group.setLayout(_limit_clusters_risk_groupLayout);
+            _limit_clusters_risk_groupLayout.setHorizontalGroup(
+                _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_limit_low_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_limit_high_clusters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_limit_low_clusters_value)
+                        .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            _limit_clusters_risk_groupLayout.setVerticalGroup(
+                _limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_limit_clusters_risk_groupLayout.createSequentialGroup()
+                    .addGap(5, 5, 5)
+                    .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_limit_high_clusters)
+                        .addComponent(_limit_high_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(_limit_clusters_risk_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_limit_low_clusters)
+                        .addComponent(_limit_low_clusters_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
+            _minimum_clusters_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minimum_clusters_group, AppConstants.RESTRICTMINCASES_HELPID));
+
+            _min_cases_label.setText("Restrict high rate clusters to have at least"); // NOI18N
+
+            _minimum_number_cases_cluster.setText("2"); // NOI18N
+            _minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);
+                }
+            });
+            _minimum_number_cases_cluster.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_minimum_number_cases_cluster.getText().length() == 0 ||
+                        Integer.parseInt(_minimum_number_cases_cluster.getText()) < 2) {
+                        if (undo.canUndo()) undo.undo(); else _minimum_number_cases_cluster.setText("2");
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _minimum_number_cases_cluster.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _min_cases_label2.setText("cases.");
+
+            javax.swing.GroupLayout _minimum_clusters_groupLayout = new javax.swing.GroupLayout(_minimum_clusters_group);
+            _minimum_clusters_group.setLayout(_minimum_clusters_groupLayout);
+            _minimum_clusters_groupLayout.setHorizontalGroup(
+                _minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_minimum_clusters_groupLayout.createSequentialGroup()
+                    .addContainerGap()
                     .addComponent(_min_cases_label)
-                    .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_min_cases_label2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_min_cases_label2, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+            );
+            _minimum_clusters_groupLayout.setVerticalGroup(
+                _minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_minimum_clusters_groupLayout.createSequentialGroup()
+                    .addGroup(_minimum_clusters_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_min_cases_label)
+                        .addComponent(_minimum_number_cases_cluster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_min_cases_label2))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _cluster_restrictions_tabLayout = new javax.swing.GroupLayout(_cluster_restrictions_tab);
-        _cluster_restrictions_tab.setLayout(_cluster_restrictions_tabLayout);
-        _cluster_restrictions_tabLayout.setHorizontalGroup(
-            _cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_cluster_restrictions_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _cluster_restrictions_tabLayout.setVerticalGroup(
-            _cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_cluster_restrictions_tabLayout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(326, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _cluster_restrictions_tabLayout = new javax.swing.GroupLayout(_cluster_restrictions_tab);
+            _cluster_restrictions_tab.setLayout(_cluster_restrictions_tabLayout);
+            _cluster_restrictions_tabLayout.setHorizontalGroup(
+                _cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_cluster_restrictions_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap())
+            );
+            _cluster_restrictions_tabLayout.setVerticalGroup(
+                _cluster_restrictions_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_cluster_restrictions_tabLayout.createSequentialGroup()
+                    .addGap(5, 5, 5)
+                    .addComponent(_minimum_clusters_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_limit_clusters_risk_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(315, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
+            jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
 
-        _drilldown_restrictions_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Drilldown"));
+            _drilldown_restrictions_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Drilldown"));
 
-        _mainAnalysisDrilldown.setText("Same Design as Main Analysis");
-        _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                enableDrilldownGroup();
-            }
-        });
-        _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _mainAnalysisDrilldownActionPerformed(evt);
-            }
-        });
-
-        _purelySpatialDrilldown.setText("Purely Spatial Bernoulli");
-        _purelySpatialDrilldown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                enableDrilldownGroup();
-            }
-        });
-
-        _drilldown_restriction_locations_label.setText("Minimum Locations:");
-
-        _drilldown_restriction_locations.setText("2");
-        _drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_drilldown_restriction_locations.getText().length() == 0 ||
-                    Double.parseDouble(_drilldown_restriction_locations.getText()) < 2
-                )
-                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_locations.setText("2");
-                enableSetDefaultsButton();
-            }
-        });
-        _drilldown_restriction_locations.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_drilldown_restriction_locations, e, 10);
-            }
-        });
-        _drilldown_restriction_locations.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _drilldown_restriction_cases_label.setText("Minimum Cases:");
-
-        _drilldown_restriction_cases.setText("10");
-        _drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_drilldown_restriction_cases.getText().length() == 0 ||
-                    Double.parseDouble(_drilldown_restriction_cases.getText()) < 10
-                )
-                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText("10");
-                enableSetDefaultsButton();
-            }
-        });
-        _drilldown_restriction_cases.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
-            }
-        });
-        _drilldown_restriction_cases.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:"); // NOI18N
-
-        _drilldown_restriction_cutoff.setText("0.05"); // NOI18N
-        _drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);
-            }
-        });
-        _drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_drilldown_restriction_cutoff.getText().length() == 0 ||
-                    Double.parseDouble(_drilldown_restriction_cutoff.getText()) <= 0 ||
-                    Double.parseDouble(_drilldown_restriction_cutoff.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText("0.05");
-                enableSetDefaultsButton();
-            }
-        });
-        _drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _drilldown_restrictions.setText("Drilldown for Clusters with:");
-
-        _drilldown_restriction_dow.setText("With Day of Week Adjustment");
-
-        javax.swing.GroupLayout _drilldown_restrictions_groupLayout = new javax.swing.GroupLayout(_drilldown_restrictions_group);
-        _drilldown_restrictions_group.setLayout(_drilldown_restrictions_groupLayout);
-        _drilldown_restrictions_groupLayout.setHorizontalGroup(
-            _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_mainAnalysisDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                        .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(_drilldown_restriction_cutoff_label, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
-                                    .addComponent(_drilldown_restriction_locations_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                                    .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                                    .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)))
-                            .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 161, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _drilldown_restrictions_groupLayout.setVerticalGroup(
-            _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_mainAnalysisDrilldown)
-                .addGap(6, 6, 6)
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(_drilldown_restrictions)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_drilldown_restriction_cutoff_label)
-                    .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_drilldown_restriction_locations_label)
-                    .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
-                .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(80, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _drilldown_tabLayout = new javax.swing.GroupLayout(_drilldown_tab);
-        _drilldown_tab.setLayout(_drilldown_tabLayout);
-        _drilldown_tabLayout.setHorizontalGroup(
-            _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_drilldown_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _drilldown_tabLayout.setVerticalGroup(
-            _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_drilldown_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(202, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Drilldown", _drilldown_tab);
-
-        _network_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Locations Network"));
-
-        _locations_network.setText("Specify locations through a network file");
-        _locations_network.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSettingsForAnalysisModelCombination();
-                enableSetDefaultsButton();
-            }
-        });
-
-        _network_file_label.setText("Network File:"); // NOI18N
-
-        _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        _browse_network_filename.setText("..."); // NOI18N
-        _browse_network_filename.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
-        _browse_network_filename.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.NETWORK.toString() + "1";
-                if (!_settings_window._input_source_map.containsKey(key)) {
-                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.NETWORK));
+            _mainAnalysisDrilldown.setText("Same Design as Main Analysis");
+            _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    enableDrilldownGroup();
                 }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_network_filename, inputSourceSettings, _settings_window);
-            }
-        });
+            });
+            _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    _mainAnalysisDrilldownActionPerformed(evt);
+                }
+            });
 
-        javax.swing.GroupLayout _network_groupLayout = new javax.swing.GroupLayout(_network_group);
-        _network_group.setLayout(_network_groupLayout);
-        _network_groupLayout.setHorizontalGroup(
-            _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_network_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_locations_network, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
-                    .addGroup(_network_groupLayout.createSequentialGroup()
-                        .addGap(14, 14, 14)
+            _purelySpatialDrilldown.setText("Purely Spatial Bernoulli");
+            _purelySpatialDrilldown.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    enableDrilldownGroup();
+                }
+            });
+
+            _drilldown_restriction_locations_label.setText("Minimum Locations:");
+
+            _drilldown_restriction_locations.setText("2");
+            _drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_drilldown_restriction_locations.getText().length() == 0 ||
+                        Double.parseDouble(_drilldown_restriction_locations.getText()) < 2
+                    )
+                    if (undo.canUndo()) undo.undo(); else _drilldown_restriction_locations.setText("2");
+                    enableSetDefaultsButton();
+                }
+            });
+            _drilldown_restriction_locations.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_drilldown_restriction_locations, e, 10);
+                }
+            });
+            _drilldown_restriction_locations.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _drilldown_restriction_cases_label.setText("Minimum Cases:");
+
+            _drilldown_restriction_cases.setText("10");
+            _drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_drilldown_restriction_cases.getText().length() == 0 ||
+                        Double.parseDouble(_drilldown_restriction_cases.getText()) < 10
+                    )
+                    if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText("10");
+                    enableSetDefaultsButton();
+                }
+            });
+            _drilldown_restriction_cases.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
+                }
+            });
+            _drilldown_restriction_cases.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:"); // NOI18N
+
+            _drilldown_restriction_cutoff.setText("0.05"); // NOI18N
+            _drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);
+                }
+            });
+            _drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_drilldown_restriction_cutoff.getText().length() == 0 ||
+                        Double.parseDouble(_drilldown_restriction_cutoff.getText()) <= 0 ||
+                        Double.parseDouble(_drilldown_restriction_cutoff.getText()) > 1)
+                    if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText("0.05");
+                    enableSetDefaultsButton();
+                }
+            });
+            _drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _drilldown_restrictions.setText("Drilldown for Clusters with:");
+
+            _drilldown_restriction_dow.setText("With Day of Week Adjustment");
+
+            javax.swing.GroupLayout _drilldown_restrictions_groupLayout = new javax.swing.GroupLayout(_drilldown_restrictions_group);
+            _drilldown_restrictions_group.setLayout(_drilldown_restrictions_groupLayout);
+            _drilldown_restrictions_groupLayout.setHorizontalGroup(
+                _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_mainAnalysisDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                            .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                    .addGap(10, 10, 10)
+                                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(_drilldown_restriction_cutoff_label, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                        .addComponent(_drilldown_restriction_locations_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
+                                        .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
+                                        .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)))
+                                .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                                    .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGap(0, 161, Short.MAX_VALUE)))
+                    .addContainerGap())
+            );
+            _drilldown_restrictions_groupLayout.setVerticalGroup(
+                _drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_mainAnalysisDrilldown)
+                    .addGap(6, 6, 6)
+                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(18, 18, 18)
+                    .addComponent(_drilldown_restrictions)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_drilldown_restriction_cutoff_label)
+                        .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_drilldown_restriction_locations_label)
+                        .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(7, 7, 7)
+                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_drilldown_restriction_cases_label, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(80, Short.MAX_VALUE))
+            );
+
+            javax.swing.GroupLayout _drilldown_tabLayout = new javax.swing.GroupLayout(_drilldown_tab);
+            _drilldown_tab.setLayout(_drilldown_tabLayout);
+            _drilldown_tabLayout.setHorizontalGroup(
+                _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_drilldown_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _drilldown_tabLayout.setVerticalGroup(
+                _drilldown_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_drilldown_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_drilldown_restrictions_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(195, Short.MAX_VALUE))
+            );
+
+            jTabbedPane1.addTab("Drilldown", _drilldown_tab);
+
+            _network_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Locations Network"));
+
+            _locations_network.setText("Specify locations through a network file");
+            _locations_network.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSettingsForAnalysisModelCombination();
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _network_file_label.setText("Network File:"); // NOI18N
+
+            _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
+
+            _browse_network_filename.setText("..."); // NOI18N
+            _browse_network_filename.setToolTipText("Open Adjustments File Import Wizard"); // NOI18N
+            _browse_network_filename.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.NETWORK.toString() + "1";
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.NETWORK));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_network_filename, inputSourceSettings, _settings_window);
+                }
+            });
+
+            javax.swing.GroupLayout _network_groupLayout = new javax.swing.GroupLayout(_network_group);
+            _network_group.setLayout(_network_groupLayout);
+            _network_groupLayout.setHorizontalGroup(
+                _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_network_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_locations_network, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
+                        .addGroup(_network_groupLayout.createSequentialGroup()
+                            .addGap(14, 14, 14)
+                            .addComponent(_network_file_label)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_network_filename)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_browse_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap())
+            );
+            _network_groupLayout.setVerticalGroup(
+                _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_network_groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_locations_network)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_network_file_label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_network_filename)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_browse_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        _network_groupLayout.setVerticalGroup(
-            _network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_network_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_locations_network)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_network_file_label)
-                    .addComponent(_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_browse_network_filename))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addComponent(_network_filename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_browse_network_filename))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-        javax.swing.GroupLayout _network_tabLayout = new javax.swing.GroupLayout(_network_tab);
-        _network_tab.setLayout(_network_tabLayout);
-        _network_tabLayout.setHorizontalGroup(
-            _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_network_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_network_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _network_tabLayout.setVerticalGroup(
-            _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_network_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_network_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(386, Short.MAX_VALUE))
-        );
+            javax.swing.GroupLayout _network_tabLayout = new javax.swing.GroupLayout(_network_tab);
+            _network_tab.setLayout(_network_tabLayout);
+            _network_tabLayout.setHorizontalGroup(
+                _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_network_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_network_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _network_tabLayout.setVerticalGroup(
+                _network_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_network_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_network_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(385, Short.MAX_VALUE))
+            );
 
-        jTabbedPane1.addTab("Network", _network_tab);
+            jTabbedPane1.addTab("Network", _network_tab);
 
-        _panel_email_notifications.setBorder(javax.swing.BorderFactory.createTitledBorder("Email Notifications"));
+            _panel_email_notifications.setBorder(javax.swing.BorderFactory.createTitledBorder("Email Alerts"));
 
-        _checkbox_sendmail.setText("Send summary of analysis results by email:");
+            _always_sendmail.setText("Always send email with summary results to (csv list):");
 
-        _label_always_email.setText("Always Notify Recipients (csv list):");
+            _attach_main_results_email.setText("Attach main results file to email alerts");
 
-        _label_significant_email.setText("Significant Results Recipients (csv list):");
+            _cutoff_email.setText("If p-value less than or equal to");
 
-        _email_significant_attach_results.setText("Attach primary results file to email with significant results");
+            _report_main_results_email.setText("Include main results file and output directory in email");
 
-        _label_email_subject_insignificant.setText("Subject");
+            _custom_email_subject_label.setText("Subject");
 
-        _label_email_message_insignificant.setText("Message");
+            _custom_email_tags.setText("Message Tags");
 
-        _email_message_insignificant.setColumns(20);
-        _email_message_insignificant.setRows(5);
-        jScrollPane2.setViewportView(_email_message_insignificant);
+            _custom_email_message.setColumns(20);
+            _custom_email_message.setLineWrap(true);
+            _custom_email_message.setRows(5);
+            jScrollPane3.setViewportView(_custom_email_message);
 
-        _alert_tags_display_insignificant.setText("Tags");
+            _custom_email_message_label.setText("Message");
 
-        javax.swing.GroupLayout _panel_insignificantLayout = new javax.swing.GroupLayout(_panel_insignificant);
-        _panel_insignificant.setLayout(_panel_insignificantLayout);
-        _panel_insignificantLayout.setHorizontalGroup(
-            _panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_insignificantLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_label_email_subject_insignificant)
-                    .addComponent(_label_email_message_insignificant))
-                .addGap(23, 23, 23)
-                .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
-                    .addGroup(_panel_insignificantLayout.createSequentialGroup()
-                        .addComponent(_email_subject_insignificant)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_alert_tags_display_insignificant)))
-                .addContainerGap())
-        );
-        _panel_insignificantLayout.setVerticalGroup(
-            _panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_insignificantLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_label_email_subject_insignificant)
-                    .addComponent(_email_subject_insignificant, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_alert_tags_display_insignificant, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_panel_insignificantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_panel_insignificantLayout.createSequentialGroup()
-                        .addComponent(_label_email_message_insignificant)
-                        .addGap(0, 174, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap())
-        );
+            _create_custom_email_message.setText("Create a custom email message (optional):");
 
-        _tabbed_email_messages.addTab("Email - No Significant Clusters", _panel_insignificant);
+            _cutoff_value_email.setText("0.05");
+            _cutoff_value_email.setMinimumSize(new java.awt.Dimension(75, 22));
+            _cutoff_value_email.setPreferredSize(new java.awt.Dimension(75, 22));
+            _cutoff_value_email.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+                    if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)
+                    Utils.validatePostiveNumericKeyTyped(_cutoff_value_email, e, 10);
+                    else
+                    Utils.validatePostiveFloatKeyTyped(_cutoff_value_email, e, 20);
+                }
+            });
+            _cutoff_value_email.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+                    if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
+                        while (_cutoff_value_email.getText().length() == 0 ||
+                            Double.parseDouble(_cutoff_value_email.getText()) < 1)
+                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(DEFAULT_RECURRENCE_SETTING);
+                    } else {
+                        while (_cutoff_value_email.getText().length() == 0 ||
+                            Double.parseDouble(_cutoff_value_email.getText()) <= 0 ||
+                            Double.parseDouble(_cutoff_value_email.getText()) > 1)
+                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(DEFAULT_PVALUE_SETTING);
+                    }
+                    enableSetDefaultsButton();
+                }
+            });
+            _cutoff_value_email.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
 
-        _label_email_subject_significant.setText("Subject");
+            _cutoff_email_label.setText(" send email with summary results to (csv list):");
 
-        _alert_tags_display_significant.setText("Tags");
+            javax.swing.GroupLayout _panel_email_notificationsLayout = new javax.swing.GroupLayout(_panel_email_notifications);
+            _panel_email_notifications.setLayout(_panel_email_notificationsLayout);
+            _panel_email_notificationsLayout.setHorizontalGroup(
+                _panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_attach_main_results_email, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_report_main_results_email, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
+                            .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_always_sendmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(_create_custom_email_message, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
+                                    .addGap(27, 27, 27)
+                                    .addComponent(_custom_email_subject_label)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_custom_email_subject, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(_custom_email_tags, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_email_notificationsLayout.createSequentialGroup()
+                                    .addGap(21, 21, 21)
+                                    .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_cutoff_email_recipients, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(_always_email_recipients)))
+                                .addGroup(_panel_email_notificationsLayout.createSequentialGroup()
+                                    .addComponent(_cutoff_email)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_cutoff_value_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_cutoff_email_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_email_notificationsLayout.createSequentialGroup()
+                                    .addGap(20, 20, 20)
+                                    .addComponent(_custom_email_message_label)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jScrollPane3)))
+                            .addContainerGap())))
+            );
+            _panel_email_notificationsLayout.setVerticalGroup(
+                _panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_email_notificationsLayout.createSequentialGroup()
+                    .addGap(7, 7, 7)
+                    .addComponent(_always_sendmail)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_always_email_recipients, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(11, 11, 11)
+                    .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_cutoff_email)
+                        .addComponent(_cutoff_value_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_cutoff_email_label))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_cutoff_email_recipients, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_attach_main_results_email)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_report_main_results_email)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(_create_custom_email_message)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_custom_email_tags, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_custom_email_subject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_custom_email_subject_label)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_custom_email_message_label)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(24, 24, 24))
+            );
 
-        _label_email_message_significant.setText("Message");
+            javax.swing.GroupLayout _notificatons_tabLayout = new javax.swing.GroupLayout(_notificatons_tab);
+            _notificatons_tab.setLayout(_notificatons_tabLayout);
+            _notificatons_tabLayout.setHorizontalGroup(
+                _notificatons_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_notificatons_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
+            _notificatons_tabLayout.setVerticalGroup(
+                _notificatons_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_notificatons_tabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.PREFERRED_SIZE, 463, Short.MAX_VALUE)
+                    .addContainerGap())
+            );
 
-        _email_message_significant.setColumns(20);
-        _email_message_significant.setRows(5);
-        jScrollPane3.setViewportView(_email_message_significant);
+            jTabbedPane1.addTab("Notifications", _notificatons_tab);
 
-        javax.swing.GroupLayout _panel_significantLayout = new javax.swing.GroupLayout(_panel_significant);
-        _panel_significant.setLayout(_panel_significantLayout);
-        _panel_significantLayout.setHorizontalGroup(
-            _panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_significantLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_label_email_subject_significant)
-                    .addComponent(_label_email_message_significant))
-                .addGap(23, 23, 23)
-                .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
-                    .addGroup(_panel_significantLayout.createSequentialGroup()
-                        .addComponent(_email_subject_significant)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_alert_tags_display_significant)))
-                .addContainerGap())
-        );
-        _panel_significantLayout.setVerticalGroup(
-            _panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_panel_significantLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_label_email_subject_significant)
-                    .addComponent(_email_subject_significant, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_alert_tags_display_significant, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_panel_significantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_panel_significantLayout.createSequentialGroup()
-                        .addComponent(_label_email_message_significant)
-                        .addGap(0, 174, Short.MAX_VALUE))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap())
-        );
+            _closeButton.setText("Close"); // NOI18N
+            _closeButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    setVisible(false, null);
+                }
+            });
 
-        _tabbed_email_messages.addTab("Email - Significant Clusters", _panel_significant);
+            _setDefaultButton.setText("Set Defaults"); // NOI18N
+            _setDefaultButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    setDefaultsClick();
+                }
+            });
 
-        javax.swing.GroupLayout _panel_email_notificationsLayout = new javax.swing.GroupLayout(_panel_email_notifications);
-        _panel_email_notifications.setLayout(_panel_email_notificationsLayout);
-        _panel_email_notificationsLayout.setHorizontalGroup(
-            _panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_email_notificationsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_tabbed_email_messages)
-                    .addComponent(_checkbox_sendmail, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _panel_email_notificationsLayout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addGroup(_panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_significant_email, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_label_significant_email, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_always_email, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_label_always_email, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_email_significant_attach_results, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
-        );
-        _panel_email_notificationsLayout.setVerticalGroup(
-            _panel_email_notificationsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _panel_email_notificationsLayout.createSequentialGroup()
-                .addGap(13, 13, 13)
-                .addComponent(_checkbox_sendmail)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_label_always_email)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_always_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_label_significant_email)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_significant_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_email_significant_attach_results)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_tabbed_email_messages)
-                .addContainerGap())
-        );
-
-        _tabbed_email_messages.getAccessibleContext().setAccessibleName("");
-
-        javax.swing.GroupLayout _alerts_tabLayout = new javax.swing.GroupLayout(_alerts_tab);
-        _alerts_tab.setLayout(_alerts_tabLayout);
-        _alerts_tabLayout.setHorizontalGroup(
-            _alerts_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_alerts_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_panel_email_notifications, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _alerts_tabLayout.setVerticalGroup(
-            _alerts_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_alerts_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_panel_email_notifications, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("Alerts", _alerts_tab);
-
-        _closeButton.setText("Close"); // NOI18N
-        _closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                setVisible(false, null);
-            }
-        });
-
-        _setDefaultButton.setText("Set Defaults"); // NOI18N
-        _setDefaultButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                setDefaultsClick();
-            }
-        });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_setDefaultButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addComponent(jTabbedPane1)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+            getContentPane().setLayout(layout);
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_setDefaultButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
                 .addComponent(jTabbedPane1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_setDefaultButton)
-                    .addComponent(_closeButton))
-                .addContainerGap())
-        );
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addComponent(jTabbedPane1)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_setDefaultButton)
+                        .addComponent(_closeButton))
+                    .addContainerGap())
+            );
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+            pack();
+        }// </editor-fold>//GEN-END:initComponents
 
     private void _printTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__printTitleActionPerformed
         // TODO add your handling code here:
@@ -6798,15 +6764,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _adjustmentsByRelativeRisksFileLabel;
     private javax.swing.JTextField _adjustmentsByRelativeRisksFileTextField;
     private javax.swing.JButton _adjustmentsFileBrowseButton;
-    private javax.swing.JButton _alert_tags_display_insignificant;
-    private javax.swing.JButton _alert_tags_display_significant;
-    private javax.swing.JPanel _alerts_tab;
     private javax.swing.JRadioButton _allLocationsRadioButton;
     private javax.swing.JTextField _alternativeHypothesisFilename;
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
-    private javax.swing.JTextField _always_email;
+    private javax.swing.JTextField _always_email_recipients;
+    private javax.swing.JCheckBox _always_sendmail;
     private javax.swing.JRadioButton _atLeastOneRadioButton;
+    private javax.swing.JCheckBox _attach_main_results_email;
     private javax.swing.JButton _browse_network_filename;
     protected javax.swing.JCheckBox _calculate_oliveiras_f;
     private javax.swing.JButton _caseFileBrowseButton;
@@ -6814,26 +6779,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _caseFileTextField;
     private javax.swing.JCheckBox _checkReportGumbel;
     private javax.swing.JCheckBox _checkboxReportIndexCoefficients;
-    private javax.swing.JCheckBox _checkbox_sendmail;
     private javax.swing.JRadioButton _circularRadioButton;
     private javax.swing.JButton _closeButton;
+    private javax.swing.JCheckBox _cluster_lineline_chx;
+    private javax.swing.JLabel _cluster_lineline_label;
+    private javax.swing.JPanel _cluster_lineline_panel;
+    private javax.swing.JTextField _cluster_lineline_value;
     private javax.swing.JPanel _cluster_restrictions_tab;
-    private javax.swing.JPanel _cluster_significance_panel;
-    private javax.swing.JCheckBox _cluster_significant_pval_chx;
-    private javax.swing.JTextField _cluster_significant_pval_value;
-    private javax.swing.JCheckBox _cluster_significant_ri_chx;
-    private java.awt.Choice _cluster_significant_ri_type;
-    private javax.swing.JTextField _cluster_significant_ri_value;
     private javax.swing.JPanel _clustersReportedGroup;
     private javax.swing.JButton _controlFileBrowseButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
     private javax.swing.JCheckBox _createCompressedKMZ;
+    private javax.swing.JCheckBox _create_custom_email_message;
     private javax.swing.ButtonGroup _criticalValuesButtonGroup;
     private javax.swing.JRadioButton _criticalValuesGumbel;
     private javax.swing.JRadioButton _criticalValuesMonteCarlo;
     private javax.swing.JLabel _criticalValuesReplicationsLabel;
     private javax.swing.JLabel _criticalValuesTypeLabel;
+    private javax.swing.JTextArea _custom_email_message;
+    private javax.swing.JLabel _custom_email_message_label;
+    private javax.swing.JTextField _custom_email_subject;
+    private javax.swing.JLabel _custom_email_subject_label;
+    private javax.swing.JButton _custom_email_tags;
+    private javax.swing.JCheckBox _cutoff_email;
+    private javax.swing.JLabel _cutoff_email_label;
+    private javax.swing.JTextField _cutoff_email_recipients;
+    private javax.swing.JTextField _cutoff_value_email;
     private javax.swing.JPanel _dataCheckingTab;
     private javax.swing.JPanel _dataSetsGroup;
     private javax.swing.JLabel _distancePrefixLabel;
@@ -6849,11 +6821,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _drilldown_tab;
     private javax.swing.JTextField _earlyTerminationThreshold;
     private javax.swing.JRadioButton _ellipticRadioButton;
-    private javax.swing.JTextArea _email_message_insignificant;
-    private javax.swing.JTextArea _email_message_significant;
-    private javax.swing.JCheckBox _email_significant_attach_results;
-    private javax.swing.JTextField _email_subject_insignificant;
-    private javax.swing.JTextField _email_subject_significant;
     private javax.swing.JLabel _endGenericRangeToLabel;
     private javax.swing.JLabel _endGenericWindowRangeLabel;
     private javax.swing.JTextField _endRangeEndDayTextField;
@@ -6885,14 +6852,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _iterativeScanGroup;
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
-    private javax.swing.JLabel _label_always_email;
-    private javax.swing.JLabel _label_email_message_insignificant;
-    private javax.swing.JLabel _label_email_message_significant;
-    private javax.swing.JLabel _label_email_subject_insignificant;
-    private javax.swing.JLabel _label_email_subject_significant;
     private javax.swing.JLabel _label_kml_options;
     private javax.swing.JLabel _label_prospective_frequency;
-    private javax.swing.JLabel _label_significant_email;
     private javax.swing.JCheckBox _launch_map_viewer;
     private javax.swing.JPanel _limit_clusters_risk_group;
     private javax.swing.JCheckBox _limit_high_clusters;
@@ -6950,6 +6911,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _network_tab;
     private java.awt.Choice _nonCompactnessPenaltyComboBox;
     private javax.swing.JLabel _nonCompactnessPenaltyLabel;
+    private javax.swing.JPanel _notificatons_tab;
     private javax.swing.JTextField _numIterativeScansTextField;
     private javax.swing.JTextField _numMostLikelyClustersGraph;
     private javax.swing.JLabel _numMostLikelyClustersGraphLabel;
@@ -6963,8 +6925,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.ButtonGroup _pValueButtonGroup;
     private javax.swing.JPanel _pValueOptionsGroup;
     private javax.swing.JPanel _panel_email_notifications;
-    private javax.swing.JPanel _panel_insignificant;
-    private javax.swing.JPanel _panel_significant;
     private javax.swing.JRadioButton _partOfRegularAnalysis;
     private javax.swing.JLabel _percentageOfPopFileLabel;
     private javax.swing.JLabel _percentageOfPopulationLabel;
@@ -7003,6 +6963,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JPanel _reportCriticalValuesGroup;
     private javax.swing.JCheckBox _reportTemporalGraph;
+    private javax.swing.JCheckBox _report_main_results_email;
     private javax.swing.JLabel _reportedMaxDistanceLabel;
     private javax.swing.JLabel _reportedPercentOfPopulationLabel;
     private javax.swing.JLabel _reportedPercentageOfPopFileLabel;
@@ -7012,7 +6973,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _restrictReportedClustersCheckBox;
     private javax.swing.JCheckBox _restrictTemporalRangeCheckBox;
     private javax.swing.JButton _setDefaultButton;
-    private javax.swing.JTextField _significant_email;
     private javax.swing.JPanel _spaceTimeAjustmentsTab;
     private javax.swing.ButtonGroup _spatialAdjustmentsButtonGroup;
     private javax.swing.JPanel _spatialAdjustmentsGroup;
@@ -7046,7 +7006,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _strictStudyPeriodCheckRadioButton;
     private javax.swing.ButtonGroup _studyPeriodCheckButtonGroup;
     private javax.swing.JPanel _studyPeriodCheckGroup;
-    private javax.swing.JTabbedPane _tabbed_email_messages;
     private javax.swing.ButtonGroup _temporalGraphButtonGroup;
     private javax.swing.JRadioButton _temporalGraphMostLikely;
     private javax.swing.JRadioButton _temporalGraphMostLikelyX;
@@ -7068,7 +7027,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private java.awt.PopupMenu popupMenu1;

@@ -84,6 +84,7 @@ class IniParameterSpecification {
     SectionInfo                 _advanced_section;
     SectionInfo                 _system_section;
     SectionInfo                 _email_alerts_section;
+    SectionInfo                 _notifications_section;
 
     SectionInfo                 _not_used_section;
 
@@ -112,6 +113,7 @@ class IniParameterSpecification {
     static const char         * SpatialOutput;
     static const char         * OtherOutput;
     static const char         * EmailAlerts;
+    static const char         * Notifications;
 
     static const char         * EllipticScan;
     static const char         * SequentialScan;

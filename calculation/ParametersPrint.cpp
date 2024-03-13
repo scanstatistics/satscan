@@ -161,7 +161,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
         PrintLinelistParameters(fp);
-        PrintEmailAlertsParameters(fp);
+        PrintNotificationsParameters(fp);
         PrintEllipticScanParameters(fp);
         PrintPowerSimulationsParameters(fp);
         PrintRunOptionsParameters(fp);
@@ -179,20 +179,6 @@ void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.GetIsProspectiveAnalysis()) {
-            settings.push_back(std::make_pair("Cluster Significant by Recurrance Interval Cutoff", (gParameters.getClusterSignificanceByRecurrence() ? "Yes" : "No")));
-            if (gParameters.getClusterSignificanceByRecurrence()) {
-                printString(buffer, "%u %s%s",
-                    gParameters.getClusterSignificanceRecurrenceCutoff(),
-                    (gParameters.getClusterSignificanceRecurrenceType() == DAY ? "day" : "year"),
-                    (gParameters.getClusterSignificanceRecurrenceCutoff() == 1 ? "" : "s")
-                );
-                settings.push_back(std::make_pair("Recurrance Interval Cutoff Value: ", buffer));
-            }
-        }
-        settings.push_back(std::make_pair("Cluster Significant by P-value Cutoff", (gParameters.getClusterSignificanceByPvalue() ? "Yes" : "No")));
-        if (gParameters.getClusterSignificanceByPvalue())
-            settings.push_back(std::make_pair("P-value Cutoff Value: ", printString(buffer, "%g", gParameters.getClusterSignificancePvalueCutoff())));
         if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
             settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
             settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
@@ -200,8 +186,14 @@ void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
         if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
             gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
             settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
-        if (gParameters.GetTitleName() != "")
-            settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
+        settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
+        if (gParameters.getReadingLineDataFromCasefile()) {
+            settings.push_back(std::make_pair("Restrict Cluster Linelist CSV", gParameters.getRestrictLineListCSV() ? "Yes" : "No"));
+            if (gParameters.GetIsProspectiveAnalysis())
+                settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, ">= %u days", static_cast<unsigned int>(gParameters.getCutoffLineListCSV()))));
+            else
+                settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, "p-value <= %g", gParameters.getCutoffLineListCSV())));
+        }
         WriteSettingsContainer(settings, "Other Output", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintOtherOutputParameters()","ParametersPrint");
@@ -669,23 +661,31 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
     }
 }
 
-/** Prints 'Alerts' tab parameters to file stream. */
-void ParametersPrint::PrintEmailAlertsParameters(FILE* fp) const {
+/** Prints 'Notifications' tab parameters to file stream. */
+void ParametersPrint::PrintNotificationsParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
 
     try {
-        settings.push_back(std::make_pair("Send Summary of Analysis Results by Email", (gParameters.getEmailAnalysisResults() ? "Yes" : "No")));
-        if (gParameters.getEmailAnalysisResults()) {
+        settings.push_back(std::make_pair("Always Send Email", (gParameters.getAlwaysEmailSummary() ? "Yes" : "No")));
+        if (gParameters.getAlwaysEmailSummary())
             settings.push_back(std::make_pair("Always Notify Recipients", gParameters.getEmailAlwaysRecipients()));
-            settings.push_back(std::make_pair("Significant Results Recipients", gParameters.getEmailSignificantRecipients()));
-            settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Subject - No Significant Clusters", gParameters.getEmailSubjectNoSignificant()));
-            settings.push_back(std::make_pair("Subject - Significant Clusters", gParameters.getEmailSubjectSignificant()));
+        settings.push_back(std::make_pair("Send Email With Results Meeting Cutoff", (gParameters.getCutoffEmailSummary() ? "Yes" : "No")));
+        if (gParameters.getCutoffEmailSummary()) {
+            settings.push_back(std::make_pair("Cutoff Notify Recipients", gParameters.getEmailCutoffRecipients()));
+            if (gParameters.GetIsProspectiveAnalysis())
+                settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, ">= %u days", static_cast<unsigned int>(gParameters.getCutoffEmailValue()))));
+            else
+                settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, "p-value <= %g", gParameters.getCutoffEmailValue())));
         }
-        WriteSettingsContainer(settings, "Alerts", fp);
+        if (gParameters.getAlwaysEmailSummary() || gParameters.getCutoffEmailSummary()) {
+            settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include Results File and Directory", (gParameters.getEmailIncludeResultsDirectory() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Custom Email", (gParameters.getEmailCustom() ? "Yes" : "No")));
+        }
+        WriteSettingsContainer(settings, "Notifications", fp);
     } catch (prg_exception& x) {
-        x.addTrace("PrintEmailAlertsParameters()", "ParametersPrint");
+        x.addTrace("PrintNotificationsParameters()", "ParametersPrint");
         throw;
     }
 }

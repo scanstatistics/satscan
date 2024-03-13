@@ -166,19 +166,25 @@ enum ParameterType
     KML_EVENT_GROUP,                /* no longer used */
     KML_EVENT_GROUP_BY,             /* no longer used */
     LL_INDIVIDUALS_CACHE_FILE,      /* line list individuals cache filename */
-    CLUSTER_SIGNIFICANCE_BY_RI,     /* cluster significant by recurrence interval */
-    CLUSTER_SIGNIFICANCE_RI_VALUE,  /* cluster significant recurrence interval cutoff */
-    CLUSTER_SIGNIFICANCE_RI_TYPE,   /* cluster significant recurrence interval type */
-    CLUSTER_SIGNIFICANCE_BY_PVAL,   /* cluster significant by p-value */
-    CLUSTER_SIGNIFICANCE_PVAL_VALUE,/* cluster significant p-value cutoff */
-    EMAIL_RESULTS_SUMMARY,          /* whether to email user an analysis results summary */
+    RESTRICT_LL_CSV,                /* whether to restrict cluster included in line list csv file */
+    LL_CSV_CUTOFF_VALUE,            /* cutoff value to inlcude a cluster in line list csv file */
+    CLUSTER_SIGNIFICANCE_BY_RI,     /* no longer used */
+    CLUSTER_SIGNIFICANCE_RI_TYPE,   /* no longer used */
+    CLUSTER_SIGNIFICANCE_RI_VALUE,  /* no longer used */
+    CLUSTER_SIGNIFICANCE_BY_PVAL,   /* no longer used */
+    CLUSTER_SIGNIFICANCE_PVAL_VALUE,/* no longer used */
+    EMAIL_ALWAYS_SUMMARY,           /* whether to always email results summary */
     EMAIL_ALWAYS_RCPTS,             /* list of users which are always emailed */
-    EMAIL_SIGNIFICANT_RCPTS,        /* list of users which are emailed for significant events */
-    EMAIL_SUBJECT_NO_SIGNIFICANT,   /* subject line of email - no significant clusters */
-    EMAIL_BODY_NO_SIGNIFICANT,      /* email message body - no significant clusters */
-    EMAIL_SUBJECT_SIGNIFICANT,      /* subject line of email - significant clusters */
-    EMAIL_BODY_SIGNIFICANT,         /* email message body - significant clusters */
+    EMAIL_CUTOFF_SUMMARY,           /* whether to email results summary per cluster  */
+    EMAIL_CUTOFF_RCPTS,             /* list of users which are emailed when cluster meet cutoff */
+    EMAIL_CUTOFF_VALUE,             /* cutoff value to email results summary per cluster */
     EMAIL_ATTACH_RESULTS,           /* email message - attach results */
+    EMAIL_INCLUDE_RESULTS,          /* email message - include results/directory path */
+    EMAIL_CUSTOM,                   /* custom email */
+    EMAIL_CUSTOM_SUBJECT,           /* subject line - custom email */
+    EMAIL_CUSTOM_BODY,              /* message - custom email */
+    EMAIL_SUBJECT_NO_SIGNIFICANT,   /* no longer used */
+    EMAIL_BODY_NO_SIGNIFICANT,      /* no longer used */
     MULTIPLE_LOCATIONS_FILE         /* file which defines the locations of each group */
 };
 /** frequency of prospective analyses */

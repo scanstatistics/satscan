@@ -55,6 +55,28 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
         ReadObservableRegionSettings(SourceFile);
         ReadMultipleDataSetsSettings(SourceFile);
         ReadInputSourceSettings(SourceFile);
+
+        // In issue https://squishlist.com/ims-ext/satscan/66623/, we refactored the email notification parameters.
+        // Attempt to apply old settings in 10.1.x or older to newer settings.
+        if (gParameters.GetCreationVersion().iMajor == 10 && gParameters.GetCreationVersion().iMinor <= 1) {
+            if (!gParameters.getEmailCutoffRecipients().empty()) {
+                // If the 'significant' recipients list is not empty, then the user was emailing results per cutoff.
+                gParameters.setCutoffEmailSummary(true);
+                // Set the cutoff value per retrospective vs prospective and either specified value or current default.
+                if (gParameters.GetIsProspectiveAnalysis())
+                    gParameters.setCutoffEmailValue(gParameters._cluster_sig_by_ri_ ? gParameters._cluster_sig_ri_val_ : 365.0);
+                else
+                    gParameters.setCutoffEmailValue(gParameters._cluster_sig_by_p_ ? gParameters._cluster_sig_p_val_ : 0.05);
+            }
+            // If previously set the 'significant' parameters and reading line list data, apply those settings.
+            if (gParameters.getReadingLineDataFromCasefile()) {
+                gParameters.setRestrictLineListCSV(gParameters._cluster_sig_by_ri_ || gParameters._cluster_sig_by_p_);
+                if (gParameters._cluster_sig_by_ri_ && gParameters.GetIsProspectiveAnalysis())
+                    gParameters.setCutoffLineListCSV(gParameters._cluster_sig_ri_val_);
+                else if (gParameters._cluster_sig_by_p_ && !gParameters.GetIsProspectiveAnalysis())
+                    gParameters.setCutoffLineListCSV(gParameters._cluster_sig_p_val_);
+            }
+        }
     } catch (prg_exception& x) {
         x.addTrace("Read(const char* sFilename)","IniParameterFileAccess");
         throw;
@@ -350,7 +372,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteTemporalGraphSettings(ini);
         WriteOtherOutputSettings(ini);
         WriteLineListSettings(ini);
-        WriteEmailAlertSettings(ini);
+        WriteNotificationSettings(ini);
 
         //write settings as provided only through user mofication of parameter file and batch executable
         WriteEllipticScanSettings(ini);
@@ -396,15 +418,12 @@ void IniParameterFileAccess::Write(std::stringstream& stream) {
 void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
-        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_BY_RI, GetParameterString(CLUSTER_SIGNIFICANCE_BY_RI, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_BY_RI));
-        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_RI_VALUE, GetParameterString(CLUSTER_SIGNIFICANCE_RI_VALUE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_RI_VALUE));
-        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_RI_TYPE, GetParameterString(CLUSTER_SIGNIFICANCE_RI_TYPE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_RI_TYPE));
-        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_BY_PVAL, GetParameterString(CLUSTER_SIGNIFICANCE_BY_PVAL, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_BY_PVAL));
-        WriteIniParameter(WriteFile, CLUSTER_SIGNIFICANCE_PVAL_VALUE, GetParameterString(CLUSTER_SIGNIFICANCE_PVAL_VALUE, s).c_str(), GetParameterComment(CLUSTER_SIGNIFICANCE_PVAL_VALUE));
         WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
         WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
         WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
         WriteIniParameter(WriteFile, USER_DEFINED_TITLE, GetParameterString(USER_DEFINED_TITLE, s).c_str(), GetParameterComment(USER_DEFINED_TITLE));
+        WriteIniParameter(WriteFile, RESTRICT_LL_CSV, GetParameterString(RESTRICT_LL_CSV, s).c_str(), GetParameterComment(RESTRICT_LL_CSV));
+        WriteIniParameter(WriteFile, LL_CSV_CUTOFF_VALUE, GetParameterString(LL_CSV_CUTOFF_VALUE, s).c_str(), GetParameterComment(LL_CSV_CUTOFF_VALUE));
     } catch (prg_exception& x) {
         x.addTrace("WriteOtherOutputSettings()","IniParameterFileAccess");
         throw;
@@ -437,20 +456,22 @@ void IniParameterFileAccess::WriteLineListSettings(IniFile& WriteFile) {
     }
 }
 
-/** Writes parameter settings grouped under 'Alerts'. */
-void IniParameterFileAccess::WriteEmailAlertSettings(IniFile& WriteFile) {
+/** Writes parameter settings grouped under 'Notifications'. */
+void IniParameterFileAccess::WriteNotificationSettings(IniFile& WriteFile) {
     std::string s;
     try {
-        WriteIniParameter(WriteFile, EMAIL_RESULTS_SUMMARY, GetParameterString(EMAIL_RESULTS_SUMMARY, s).c_str(), GetParameterComment(EMAIL_RESULTS_SUMMARY));
+        WriteIniParameter(WriteFile, EMAIL_ALWAYS_SUMMARY, GetParameterString(EMAIL_ALWAYS_SUMMARY, s).c_str(), GetParameterComment(EMAIL_ALWAYS_SUMMARY));
         WriteIniParameter(WriteFile, EMAIL_ALWAYS_RCPTS, GetParameterString(EMAIL_ALWAYS_RCPTS, s).c_str(), GetParameterComment(EMAIL_ALWAYS_RCPTS));
-        WriteIniParameter(WriteFile, EMAIL_SIGNIFICANT_RCPTS, GetParameterString(EMAIL_SIGNIFICANT_RCPTS, s).c_str(), GetParameterComment(EMAIL_SIGNIFICANT_RCPTS));
-        WriteIniParameter(WriteFile, EMAIL_SUBJECT_NO_SIGNIFICANT, GetParameterString(EMAIL_SUBJECT_NO_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_SUBJECT_NO_SIGNIFICANT));
-        WriteIniParameter(WriteFile, EMAIL_BODY_NO_SIGNIFICANT, GetParameterString(EMAIL_BODY_NO_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_NO_SIGNIFICANT));
-        WriteIniParameter(WriteFile, EMAIL_SUBJECT_SIGNIFICANT, GetParameterString(EMAIL_SUBJECT_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_SUBJECT_SIGNIFICANT));
-        WriteIniParameter(WriteFile, EMAIL_BODY_SIGNIFICANT, GetParameterString(EMAIL_BODY_SIGNIFICANT, s).c_str(), GetParameterComment(EMAIL_BODY_SIGNIFICANT));
+        WriteIniParameter(WriteFile, EMAIL_CUTOFF_SUMMARY, GetParameterString(EMAIL_CUTOFF_SUMMARY, s).c_str(), GetParameterComment(EMAIL_CUTOFF_SUMMARY));
+        WriteIniParameter(WriteFile, EMAIL_CUTOFF_RCPTS, GetParameterString(EMAIL_CUTOFF_RCPTS, s).c_str(), GetParameterComment(EMAIL_CUTOFF_RCPTS));
+        WriteIniParameter(WriteFile, EMAIL_CUTOFF_VALUE, GetParameterString(EMAIL_CUTOFF_VALUE, s).c_str(), GetParameterComment(EMAIL_CUTOFF_VALUE));
         WriteIniParameter(WriteFile, EMAIL_ATTACH_RESULTS, GetParameterString(EMAIL_ATTACH_RESULTS, s).c_str(), GetParameterComment(EMAIL_ATTACH_RESULTS));
+        WriteIniParameter(WriteFile, EMAIL_INCLUDE_RESULTS, GetParameterString(EMAIL_INCLUDE_RESULTS, s).c_str(), GetParameterComment(EMAIL_INCLUDE_RESULTS));
+        WriteIniParameter(WriteFile, EMAIL_CUSTOM, GetParameterString(EMAIL_CUSTOM, s).c_str(), GetParameterComment(EMAIL_CUSTOM));
+        WriteIniParameter(WriteFile, EMAIL_CUSTOM_SUBJECT, GetParameterString(EMAIL_CUSTOM_SUBJECT, s).c_str(), GetParameterComment(EMAIL_CUSTOM_SUBJECT));
+        WriteIniParameter(WriteFile, EMAIL_CUSTOM_BODY, GetParameterString(EMAIL_CUSTOM_BODY, s).c_str(), GetParameterComment(EMAIL_CUSTOM_BODY));
     } catch (prg_exception& x) {
-        x.addTrace("WriteEmailAlertSettings()", "IniParameterFileAccess");
+        x.addTrace("WriteNotificationSettings()", "IniParameterFileAccess");
         throw;
     }
 }

@@ -8,6 +8,7 @@
 
 class CCluster;
 class CSaTScanData;
+class SimulationVariables;
 
 class GisUtils {
     public:
@@ -44,6 +45,7 @@ class VisualizationUtils {
         const std::vector<std::string>& getShapes() const { return _shapes; }
         const char * getAggregationShape() const { return "circle";  }
         std::string toHtmlColor(const std::string& kmlColor) const;
+        static double getSliderValue(const CSaTScanData& datahub, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
 };
 
 //******************************************************************************

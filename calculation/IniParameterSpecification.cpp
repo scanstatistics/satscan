@@ -46,6 +46,7 @@ const char * IniParameterSpecification::OutputFiles               = "Output File
 const char * IniParameterSpecification::AdvancedFeatures          = "Advanced Features";
 const char * IniParameterSpecification::OtherOutput               = "Other Output";
 const char * IniParameterSpecification::EmailAlerts               = "Email Alerts";
+const char* IniParameterSpecification::Notifications              = "Notifications";
 
 const char * IniParameterSpecification::SourceType                = "SourceType";
 const char * IniParameterSpecification::SourceDelimiter           = "SourceDelimiter";
@@ -154,6 +155,7 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
     _space_time_adjustments_section = SectionInfo(SpaceAndTimeAdjustments, 542);
     _other_output_section = SectionInfo(OtherOutput, 545);
     _email_alerts_section = SectionInfo(EmailAlerts, 546);
+    _notifications_section = SectionInfo(Notifications, 547);
     _inference_section = SectionInfo(Inference, 550);
     _drilldown_section = SectionInfo(Drilldown, 560);
     _border_analysis_section = SectionInfo(BorderAnalysis, 561);
@@ -706,13 +708,13 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
     _parameter_info[CLUSTER_SIGNIFICANCE_BY_PVAL] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_PVAL, "ClusterSignificanceByPvalue", 8, _other_output_section);
     _parameter_info[CLUSTER_SIGNIFICANCE_PVAL_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_PVAL_VALUE, "ClusterSignificancePvalueCutoff", 9, _other_output_section);
 
-    _parameter_info[EMAIL_RESULTS_SUMMARY] = ParamInfo(EMAIL_RESULTS_SUMMARY, "EmailResultsSummary", 1, _email_alerts_section);
+    _parameter_info[EMAIL_ALWAYS_SUMMARY] = ParamInfo(EMAIL_ALWAYS_SUMMARY, "EmailResultsSummary", 1, _email_alerts_section);
     _parameter_info[EMAIL_ALWAYS_RCPTS] = ParamInfo(EMAIL_ALWAYS_RCPTS, "EmailAlwaysRecipients", 2, _email_alerts_section);
-    _parameter_info[EMAIL_SIGNIFICANT_RCPTS] = ParamInfo(EMAIL_SIGNIFICANT_RCPTS, "EmailSignificantRecipients", 3, _email_alerts_section);
-    _parameter_info[EMAIL_SUBJECT_NO_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_NO_SIGNIFICANT, "EmailSubjectLineNoSignificant", 4, _email_alerts_section);
-    _parameter_info[EMAIL_BODY_NO_SIGNIFICANT] = ParamInfo(EMAIL_BODY_NO_SIGNIFICANT, "EmailMessageBodyNoSignificant", 5, _email_alerts_section);
-    _parameter_info[EMAIL_SUBJECT_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_SIGNIFICANT, "EmailSubjectLineSignificant", 6, _email_alerts_section);
-    _parameter_info[EMAIL_BODY_SIGNIFICANT] = ParamInfo(EMAIL_BODY_SIGNIFICANT, "EmailMessageBodySignificant", 7, _email_alerts_section);
+    _parameter_info[EMAIL_CUTOFF_RCPTS] = ParamInfo(EMAIL_CUTOFF_RCPTS, "EmailSignificantRecipients", 3, _email_alerts_section);
+    _parameter_info[EMAIL_SUBJECT_NO_SIGNIFICANT] = ParamInfo(EMAIL_SUBJECT_NO_SIGNIFICANT, "EmailSubjectLineNoSignificant", 4, _not_used_section);
+    _parameter_info[EMAIL_BODY_NO_SIGNIFICANT] = ParamInfo(EMAIL_BODY_NO_SIGNIFICANT, "EmailMessageBodyNoSignificant", 5, _not_used_section);
+    _parameter_info[EMAIL_CUSTOM_SUBJECT] = ParamInfo(EMAIL_CUSTOM_SUBJECT, "EmailSubjectLineSignificant", 6, _email_alerts_section);
+    _parameter_info[EMAIL_CUSTOM_BODY] = ParamInfo(EMAIL_CUSTOM_BODY, "EmailMessageBodySignificant", 7, _email_alerts_section);
     _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 13, _email_alerts_section);
 
     assert(_parameter_info.size() == 173);
@@ -722,10 +724,30 @@ void IniParameterSpecification::Build_10_1_x_ParameterList() {
 void IniParameterSpecification::Build_10_2_x_ParameterList() {
     Build_10_1_x_ParameterList();
 
+    _parameter_info[CLUSTER_SIGNIFICANCE_BY_RI] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_RI, "ClusterSignificanceByRecurrence", 5, _not_used_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_RI_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_RI_VALUE, "ClusterSignificanceRecurrenceCutoff", 6, _not_used_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_RI_TYPE] = ParamInfo(CLUSTER_SIGNIFICANCE_RI_TYPE, "ClusterSignificanceRecurrenceCutoffType", 7, _not_used_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_BY_PVAL] = ParamInfo(CLUSTER_SIGNIFICANCE_BY_PVAL, "ClusterSignificanceByPvalue", 8, _not_used_section);
+    _parameter_info[CLUSTER_SIGNIFICANCE_PVAL_VALUE] = ParamInfo(CLUSTER_SIGNIFICANCE_PVAL_VALUE, "ClusterSignificancePvalueCutoff", 9, _not_used_section);
+
     _parameter_info[LL_INDIVIDUALS_CACHE_FILE] = ParamInfo(LL_INDIVIDUALS_CACHE_FILE, "LineListIndividualCache", 3, _linelist_section);
     _parameter_info[MULTIPLE_LOCATIONS_FILE] = ParamInfo(MULTIPLE_LOCATIONS_FILE, "MultipleLocationsFile", 6, _spatial_neighbors_section);
 
-    assert(_parameter_info.size() == 174);
+    _parameter_info[EMAIL_ALWAYS_SUMMARY] = ParamInfo(EMAIL_ALWAYS_SUMMARY, "EmailAlwaysSummary", 1, _notifications_section);
+    _parameter_info[EMAIL_ALWAYS_RCPTS] = ParamInfo(EMAIL_ALWAYS_RCPTS, "EmailAlwaysRecipients", 2, _notifications_section);
+    _parameter_info[EMAIL_CUTOFF_SUMMARY] = ParamInfo(EMAIL_CUTOFF_SUMMARY, "EmailCutoffSummary", 3, _notifications_section);
+    _parameter_info[EMAIL_CUTOFF_RCPTS] = ParamInfo(EMAIL_CUTOFF_RCPTS, "EmailCutoffRecipients", 4, _notifications_section);
+    _parameter_info[EMAIL_CUTOFF_VALUE] = ParamInfo(EMAIL_CUTOFF_VALUE, "EmailCutoffValue", 5, _notifications_section);
+    _parameter_info[EMAIL_ATTACH_RESULTS] = ParamInfo(EMAIL_ATTACH_RESULTS, "EmailAttachResults", 6, _notifications_section);
+    _parameter_info[EMAIL_INCLUDE_RESULTS] = ParamInfo(EMAIL_INCLUDE_RESULTS, "EmailIncludeResults", 7, _notifications_section);
+    _parameter_info[EMAIL_CUSTOM] = ParamInfo(EMAIL_CUSTOM, "CustomEmail", 8, _notifications_section);
+    _parameter_info[EMAIL_CUSTOM_SUBJECT] = ParamInfo(EMAIL_CUSTOM_SUBJECT, "CustomEmailSubjectLine", 9, _notifications_section);
+    _parameter_info[EMAIL_CUSTOM_BODY] = ParamInfo(EMAIL_CUSTOM_BODY, "CustomEmailMessageBody", 10, _notifications_section);
+
+    _parameter_info[RESTRICT_LL_CSV] = ParamInfo(RESTRICT_LL_CSV, "RestrictClusterLinelistCSV", 5, _other_output_section);
+    _parameter_info[LL_CSV_CUTOFF_VALUE] = ParamInfo(LL_CSV_CUTOFF_VALUE, "CutoffClusterLinelistCSV", 6, _other_output_section);
+
+    assert(_parameter_info.size() == 180);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

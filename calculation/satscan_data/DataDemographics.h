@@ -95,6 +95,7 @@ class DemographicAttributeSet {
         bool hasDescriptiveCoordinates() const;
 };
 
+class CSaTScanData;
 class MostLikelyClustersContainer;
 class SimulationVariables;
 class DataSetHandler;
@@ -124,6 +125,7 @@ class DataDemographicsProcessor{
         ClusterEventCounts_t _cluster_event_totals; // cluster event totals <mlc cluster index, <total new individuals, total events/individuals>>
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
+        bool isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
         void removeTempClusterFiles();
         void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet);

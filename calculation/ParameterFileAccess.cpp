@@ -117,7 +117,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_SIM_LLR_ASCII         : return "output simulated log likelihoods ratios in ASCII format? (y/n)";
       case ITERATIVE                    : return "perform iterative scans? (y/n)";
       case ITERATIVE_NUM                : return "maximum iterations for iterative scan (0-32000)";
-      case ITERATIVE_PVAL               : return "max p-value for iterative scan before cutoff (0.000-1.000)";
+      case ITERATIVE_PVAL               : return "max p-value for iterative scan before cutoff (0.0 to 1)";
       case VALIDATE                     : return "validate parameters prior to analysis execution? (y/n)";
       case OUTPUT_RR_ASCII              : return "output risk estimates in ASCII format? (y/n)";
       case WINDOW_SHAPE                 : return "window shape (0=Circular, 1=Elliptic)";
@@ -190,7 +190,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case REPORT_GINI_CLUSTERS         : return "report gini clusters (y/n)";
       case SPATIAL_MAXIMA               : return "spatial window maxima stops (comma separated decimal values[<=50%] )";
       case GINI_INDEX_REPORT_TYPE       : return "gini index cluster reporting type (0=optimal index only, 1=all values)";
-      case GINI_INDEX_PVALUE_CUTOFF     : return "max p-value for clusters used in calculation of index based coefficients (0.000-1.000)";
+      case GINI_INDEX_PVALUE_CUTOFF     : return "max p-value for clusters used in calculation of index based coefficients (0.0 to 1)";
       case REPORT_GINI_COEFFICENTS      : return "report gini index coefficents to results file (y/n)";
       case PE_COUNT                     : return "total cases in power evaluation";
       case PE_CRITICAL_TYPE             : return "critical value type (0=Monte Carlo, 1=Gumbel, 2=User Specified Values)";
@@ -207,7 +207,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_TEMPORAL_GRAPH        : return "output temporal graph HTML file (y/n)";
       case TEMPORAL_GRAPH_REPORT_TYPE   : return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
       case TEMPORAL_GRAPH_MLC_COUNT     : return "number of most likely clusters to report in temporal graph (positive integer)";
-      case TEMPORAL_GRAPH_CUTOFF        : return "significant clusters p-value cutoff to report in temporal graph (0.000-1.000)";
+      case TEMPORAL_GRAPH_CUTOFF        : return "significant clusters p-value cutoff to report in temporal graph (0.0 to 1)";
       case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";
@@ -216,9 +216,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case ADJUST_WEEKLY_TRENDS         : return "adjust for weekly trends, nonparametric";
       case MIN_TEMPORAL_CLUSTER         : return "minimum temporal cluster size (in time aggregation units)";
       case USER_DEFINED_TITLE           : return "user-defined title for results file";
-      case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F";
+      case CALCULATE_OLIVEIRA           : return "calculate Oliveira's F (y/n)";
       case NUM_OLIVEIRA_SETS            : return "number of bootstrap replications for Oliveira calculation (minimum=100, multiple of 100)";
-      case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.000-1.000)";
+      case OLIVEIRA_CUTOFF              : return "p-value cutoff for cluster's in Oliveira calculation (0.0 to 1)";
       case OUTPUT_CARTESIAN_GRAPH       : return "output cartesian graph file (y/n)";
       case RISK_LIMIT_HIGH_CLUSTERS     : return "risk limit high clusters (y/n)";
       case RISK_THESHOLD_HIGH_CLUSTERS  : return "risk threshold high clusters (1.0 or greater)";
@@ -232,7 +232,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PERFORM_BERNOULLI_DRILLDOWN  : return "perform detected cluster Bernoulli drilldown (y/n)";
       case DRILLDOWN_MIN_LOCATIONS      : return "minimum number of locations in detected cluster to perform drilldown (positive integer)";
       case DRILLDOWN_MIN_CASES          : return "minimum number of cases in detected cluster to perform drilldown (positive integer)";
-      case DRILLDOWN_PVLAUE_CUTOFF      : return "p-value cutoff of detected cluster to perform drilldown (0.000-1.000)";
+      case DRILLDOWN_PVLAUE_CUTOFF      : return "p-value cutoff of detected cluster to perform drilldown (0.0 to 1)";
       case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "adjust for weekly trends, purely spatial Bernoulli drilldown";
       case USE_NETWORK_FILE             : return "use locations network file";
       case NETWORK_FILE                 : return "locations network filename";
@@ -244,19 +244,25 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case KML_EVENT_GROUP              : return "n/a";
       case KML_EVENT_GROUP_BY           : return "n/a";
       case LL_INDIVIDUALS_CACHE_FILE    : return "line list individuals cache filename";
-      case CLUSTER_SIGNIFICANCE_BY_RI   : return "cluster significance by recurrence interval  (y/n)";
-      case CLUSTER_SIGNIFICANCE_RI_VALUE: return "cluster significance recurrence interval cutoff (positive integer)";
-      case CLUSTER_SIGNIFICANCE_RI_TYPE : return "cluster significance recurrence interval type (YEAR=1, DAY=3)";
-      case CLUSTER_SIGNIFICANCE_BY_PVAL : return "cluster significance by  p-value (y/n)";
-      case CLUSTER_SIGNIFICANCE_PVAL_VALUE : return "cluster significance p-value cutoff (0.000-1.000)";
-      case EMAIL_RESULTS_SUMMARY        : return "whether to email user an analysis results summary";
-      case EMAIL_ALWAYS_RCPTS           : return "list of users which are always emailed";
-      case EMAIL_SIGNIFICANT_RCPTS      : return "list of users which are emailed for significant events";
-      case EMAIL_SUBJECT_NO_SIGNIFICANT : return "subject line of email - no significant clusters";
-      case EMAIL_BODY_NO_SIGNIFICANT    : return "email message body - no significant clusters";
-      case EMAIL_SUBJECT_SIGNIFICANT    : return "subject line of email - significant clusters";
-      case EMAIL_BODY_SIGNIFICANT       : return "email message body - significant clusters";
+      case RESTRICT_LL_CSV              : return "whether to restrict clusters added to line list csv (y/n)";
+      case LL_CSV_CUTOFF_VALUE          : return "cutoff value when restricting clusters added to line list csv (0.0 to 1 for retrospective, > 0 for prospective)";
+      case CLUSTER_SIGNIFICANCE_BY_RI   : return "n/a";
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: return "n/a";
+      case CLUSTER_SIGNIFICANCE_RI_TYPE : return "n/a";
+      case CLUSTER_SIGNIFICANCE_BY_PVAL : return "n/a";
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE : return "n/a";
+      case EMAIL_ALWAYS_SUMMARY         : return "whether to always email results summary (y/n)";
+      case EMAIL_ALWAYS_RCPTS           : return "list of users which are always emailed (csv list of email addresses)";
+      case EMAIL_CUTOFF_SUMMARY         : return "whether to email results summary per cluster (y/n)";
+      case EMAIL_CUTOFF_RCPTS           : return "list of users which are emailed when clusters meet cutoff (csv list of email addresses)";
+      case EMAIL_CUTOFF_VALUE           : return "cutoff to email results summary per cluster (0.0 to 1 for retrospective, > 0 for prospective)";
       case EMAIL_ATTACH_RESULTS         : return "email message - attach results";
+      case EMAIL_INCLUDE_RESULTS        : return "email message - include results/directory path";
+      case EMAIL_CUSTOM                 : return "email custom (y/n)";
+      case EMAIL_CUSTOM_SUBJECT         : return "email custom subject";
+      case EMAIL_CUSTOM_BODY            : return "email custom message body";
+      case EMAIL_SUBJECT_NO_SIGNIFICANT : return "n/a";;
+      case EMAIL_BODY_NO_SIGNIFICANT    : return "n/a";;
       case MULTIPLE_LOCATIONS_FILE      : return "filename of multiple locations for groups";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -447,19 +453,25 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case KML_EVENT_GROUP              : s = ""; return s;
       case KML_EVENT_GROUP_BY           : s = ""; return s;
       case LL_INDIVIDUALS_CACHE_FILE    : s = gParameters.getLinelistIndividualsCacheFileName().c_str(); return s;
-      case CLUSTER_SIGNIFICANCE_BY_RI   : return AsString(s, gParameters.getClusterSignificanceByRecurrence());
-      case CLUSTER_SIGNIFICANCE_RI_VALUE: return AsString(s, gParameters.getClusterSignificanceRecurrenceCutoff());
-      case CLUSTER_SIGNIFICANCE_RI_TYPE : return AsString(s, gParameters.getClusterSignificanceRecurrenceType());
-      case CLUSTER_SIGNIFICANCE_BY_PVAL : return AsString(s, gParameters.getClusterSignificanceByPvalue());
-      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: return AsString(s, gParameters.getClusterSignificancePvalueCutoff());
-      case EMAIL_RESULTS_SUMMARY        : return AsString(s, gParameters.getEmailAnalysisResults());
+      case RESTRICT_LL_CSV              : return AsString(s, gParameters.getRestrictLineListCSV());
+      case LL_CSV_CUTOFF_VALUE          : return AsString(s, gParameters.getCutoffLineListCSV());
+      case CLUSTER_SIGNIFICANCE_BY_RI   : s = ""; return s;
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: s = ""; return s;
+      case CLUSTER_SIGNIFICANCE_RI_TYPE : s = ""; return s;
+      case CLUSTER_SIGNIFICANCE_BY_PVAL : s = ""; return s;
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: s = ""; return s;
+      case EMAIL_ALWAYS_SUMMARY         : return AsString(s, gParameters.getAlwaysEmailSummary());
       case EMAIL_ALWAYS_RCPTS           : s = gParameters.getEmailAlwaysRecipients().c_str(); return s;
-      case EMAIL_SIGNIFICANT_RCPTS      : s = gParameters.getEmailSignificantRecipients().c_str(); return s;
-      case EMAIL_SUBJECT_NO_SIGNIFICANT : s = gParameters.getEmailSubjectNoSignificant().c_str(); return s;
-      case EMAIL_BODY_NO_SIGNIFICANT    : s = gParameters.getEmailMessageBodyNoSignificant().c_str(); return s;
-      case EMAIL_SUBJECT_SIGNIFICANT    : s = gParameters.getEmailSubjectSignificant().c_str(); return s;
-      case EMAIL_BODY_SIGNIFICANT       : s = gParameters.getEmailMessageBodySignificant().c_str(); return s;
+      case EMAIL_CUTOFF_SUMMARY         : return AsString(s, gParameters.getCutoffEmailSummary());
+      case EMAIL_CUTOFF_RCPTS           : s = gParameters.getEmailCutoffRecipients().c_str(); return s;
+      case EMAIL_CUTOFF_VALUE           : return AsString(s, gParameters.getCutoffEmailValue());
       case EMAIL_ATTACH_RESULTS         : return AsString(s, gParameters.getEmailAttachResults());
+      case EMAIL_INCLUDE_RESULTS        : return AsString(s, gParameters.getEmailIncludeResultsDirectory());
+      case EMAIL_CUSTOM                 : return AsString(s, gParameters.getEmailCustom());
+      case EMAIL_CUSTOM_SUBJECT         : s = gParameters.getEmailCustomSubject().c_str(); return s;
+      case EMAIL_CUSTOM_BODY            : s = gParameters.getEmailCustomMessageBody().c_str(); return s;
+      case EMAIL_SUBJECT_NO_SIGNIFICANT : s = ""; return s;
+      case EMAIL_BODY_NO_SIGNIFICANT    : s = ""; return s;
       case MULTIPLE_LOCATIONS_FILE      : s = gParameters.getMultipleLocationsFile(); return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
@@ -884,20 +896,42 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case KML_EVENT_GROUP              : /* no longer used */ break;
       case KML_EVENT_GROUP_BY           : /* no longer used */ break;
       case LL_INDIVIDUALS_CACHE_FILE    : gParameters.setLinelistIndividualsCacheFileName(sParameter.c_str(), true); break;
-      case CLUSTER_SIGNIFICANCE_BY_RI   : gParameters.setClusterSignificanceByRecurrence(ReadBoolean(sParameter, eParameterType)); break;
-      case CLUSTER_SIGNIFICANCE_RI_VALUE: gParameters.setClusterSignificanceRecurrenceCutoff(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case CLUSTER_SIGNIFICANCE_RI_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
-                                          gParameters.setClusterSignificanceRecurrenceType((DatePrecisionType)iValue); break;
-      case CLUSTER_SIGNIFICANCE_BY_PVAL : gParameters.setClusterSignificanceByPvalue(ReadBoolean(sParameter, eParameterType)); break;
-      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: gParameters.setClusterSignificancePvalueCutoff(ReadDouble(sParameter, eParameterType)); break;
-      case EMAIL_RESULTS_SUMMARY        : gParameters.setEmailAnalysisResults(ReadBoolean(sParameter, eParameterType)); break;
+      case RESTRICT_LL_CSV              : return gParameters.setRestrictLineListCSV(ReadBoolean(sParameter, eParameterType)); break;
+      case LL_CSV_CUTOFF_VALUE          : gParameters.setCutoffLineListCSV(ReadDouble(sParameter, eParameterType)); break;
+      case CLUSTER_SIGNIFICANCE_BY_RI: {
+          if (gParameters.GetIsProspectiveAnalysis())
+            gParameters._cluster_sig_by_ri_ = ReadBoolean(sParameter, eParameterType);
+      } break; /* no longer used */
+      case CLUSTER_SIGNIFICANCE_RI_TYPE: {
+          if (gParameters._cluster_sig_by_ri_)
+              gParameters._cluster_sig_ri_type_ = (DatePrecisionType)ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
+      } break; /* no longer used */
+      case CLUSTER_SIGNIFICANCE_RI_VALUE: {
+          if (gParameters._cluster_sig_by_ri_) {
+              gParameters._cluster_sig_ri_val_ = ReadDouble(sParameter, eParameterType); break;
+              if (gParameters._cluster_sig_ri_type_ == YEAR) gParameters._cluster_sig_ri_val_ = gParameters._cluster_sig_ri_val_ * 365;
+          }
+      } break; /* no longer used */
+      case CLUSTER_SIGNIFICANCE_BY_PVAL: {
+          if (!gParameters.GetIsProspectiveAnalysis())
+            gParameters._cluster_sig_by_p_ = ReadBoolean(sParameter, eParameterType); 
+      } break; /* no longer used */
+      case CLUSTER_SIGNIFICANCE_PVAL_VALUE: {
+          if (gParameters._cluster_sig_by_p_)
+              gParameters._cluster_sig_p_val_ = ReadDouble(sParameter, eParameterType); break;
+      } break; /* no longer used */
+      case EMAIL_ALWAYS_SUMMARY         : gParameters.setAlwaysEmailSummary(ReadBoolean(sParameter, eParameterType)); break;
       case EMAIL_ALWAYS_RCPTS           : gParameters.setEmailAlwaysRecipients(sParameter.c_str()); break;
-      case EMAIL_SIGNIFICANT_RCPTS      : gParameters.setEmailSignificantRecipients(sParameter.c_str()); break;
-      case EMAIL_SUBJECT_NO_SIGNIFICANT : gParameters.setEmailSubjectNoSignificant(sParameter.c_str()); break;
-      case EMAIL_BODY_NO_SIGNIFICANT    : gParameters.setEmailMessageBodyNoSignificant(sParameter.c_str()); break;
-      case EMAIL_SUBJECT_SIGNIFICANT    : gParameters.setEmailSubjectSignificant(sParameter.c_str()); break;
-      case EMAIL_BODY_SIGNIFICANT       : gParameters.setEmailMessageBodySignificant(sParameter.c_str()); break;
+      case EMAIL_CUTOFF_SUMMARY         : gParameters.setCutoffEmailSummary(ReadBoolean(sParameter, eParameterType)); break;
+      case EMAIL_CUTOFF_RCPTS           : gParameters.setEmailCutoffRecipients(sParameter.c_str()); break;
+      case EMAIL_CUTOFF_VALUE           : gParameters.setCutoffEmailValue(ReadDouble(sParameter, eParameterType)); break;
       case EMAIL_ATTACH_RESULTS         : gParameters.setEmailAttachResults(ReadBoolean(sParameter, eParameterType)); break;
+      case EMAIL_INCLUDE_RESULTS        : gParameters.setEmailIncludeResultsDirectory(ReadBoolean(sParameter, eParameterType)); break;
+      case EMAIL_CUSTOM                 : gParameters.setEmailCustom(ReadBoolean(sParameter, eParameterType)); break;
+      case EMAIL_CUSTOM_SUBJECT         : gParameters.setEmailCustomSubject(sParameter.c_str()); break;
+      case EMAIL_CUSTOM_BODY            : gParameters.setEmailCustomMessageBody(sParameter.c_str()); break;
+      case EMAIL_SUBJECT_NO_SIGNIFICANT : /* no longer used */ break;
+      case EMAIL_BODY_NO_SIGNIFICANT    : /* no longer used */ break;
       case MULTIPLE_LOCATIONS_FILE      : gParameters.setMultipleLocationsFile(sParameter.c_str(), true); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };

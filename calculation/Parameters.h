@@ -188,18 +188,15 @@ class CParameters {
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
     std::string                         _linelist_individuals_cache_name;
-    bool                                _cluster_significance_by_ri;
-    unsigned int                        _cluster_significance_ri_value;
-    DatePrecisionType                   _cluster_significance_ri_type;
-    bool                                _cluster_significance_by_pval;
-    double                              _cluster_significance_pval_value;
+    bool                                _linelist_csv_restrict;                 /** whether to restrict clusters added to line list csv */
+    double                              _linelist_csv_cutoff;                   /** cutoff value when restricting clusters added to line list csv */
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
     std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
     bool                                gbUsePopulationFile;                    /** indicates whether population data will be read given other parameter settings */
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
-    std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
+    std::string                         gsMaxCirclePopulationFileName;          /** special population file for constructing circles only */
     std::string                         gsOutputFileNameSetting;                /** results output filename - user specified filename to write results - can include subtitution variables */
     mutable std::string                 _results_filename;                      /** results output filename but with any substitutions (getFilenameFormatTime) */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
@@ -285,14 +282,16 @@ class CParameters {
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
 
-    bool                                _email_analysis_results;
+    bool                                _always_email_summary;
     std::string                         _email_always_recipients;
-    std::string                         _email_significant_recipients;
-    std::string                         _email_subject_no_significant;
-    std::string                         _email_message_body_no_significant;
-    std::string                         _email_subject_significant;
-    std::string                         _email_message_body_significant;
+    bool                                _cutoff_email_summary;
+    std::string                         _email_cutoff_recipients;
+    double                              _cutoff_email_value;
     bool                                _email_attach_results;
+    bool                                _email_include_results_directory;
+    bool                                _email_custom;
+    std::string                         _email_custom_subject;
+    std::string                         _email_custom_message_body;
 
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
 
@@ -305,54 +304,59 @@ class CParameters {
     CParameters();
     CParameters(const CParameters &other);
 
-    static const int                    giNumParameters;                        /** number enumerated parameters */
-    static const int                    MAXIMUM_ITERATIVE_ANALYSES;             /** maximum number of permitted iterative scans */
-    static const int                    MAXIMUM_ELLIPSOIDS;                     /** maximum number of permitted ellipsoids */
+    static const int                    giNumParameters;                        // number enumerated parameters
+    static const int                    MAXIMUM_ITERATIVE_ANALYSES;             // maximum number of permitted iterative scans
+    static const int                    MAXIMUM_ELLIPSOIDS;                     // maximum number of permitted ellipsoids
+
+    bool                                _cluster_sig_by_ri_; // This class members are used to facilitate a refactor in v10.2.
+    DatePrecisionType                   _cluster_sig_ri_type_;
+    double                              _cluster_sig_ri_val_;
+    bool                                _cluster_sig_by_p_;
+    double                              _cluster_sig_p_val_;
+
 
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    bool                                getRestrictLineListCSV() const { return _linelist_csv_restrict; }
+    void                                setRestrictLineListCSV(bool b) { _linelist_csv_restrict = b; }
+    double                              getCutoffLineListCSV() const { return _linelist_csv_cutoff; }
+    void                                setCutoffLineListCSV(double d) { _linelist_csv_cutoff = d; }
+
     const std::string                 & getMultipleLocationsFile() const { return _multiple_locations_file; }
     void                                setMultipleLocationsFile(const char * filename, bool bCorrectForRelativePath = false);
-    bool                                getClusterSignificanceByRecurrence() const { return _cluster_significance_by_ri; }
-    void                                setClusterSignificanceByRecurrence(bool b) { _cluster_significance_by_ri = b; }
-    unsigned int                        getClusterSignificanceRecurrenceCutoff() const { return _cluster_significance_ri_value; }
-    void                                setClusterSignificanceRecurrenceCutoff(unsigned int i) { _cluster_significance_ri_value = i; }
-    DatePrecisionType                   getClusterSignificanceRecurrenceType() const { return _cluster_significance_ri_type; }
-    void                                setClusterSignificanceRecurrenceType(DatePrecisionType etype);
-    bool                                getClusterSignificanceByPvalue() const { return _cluster_significance_by_pval; }
-    void                                setClusterSignificanceByPvalue(bool b) { _cluster_significance_by_pval = b; }
-    double                              getClusterSignificancePvalueCutoff() const { return _cluster_significance_pval_value; }
-    void                                setClusterSignificancePvalueCutoff(double d) { _cluster_significance_pval_value = d; }
-
-    bool                                getEmailAttachResults() const { return _email_attach_results; }
-    void                                setEmailAttachResults(bool b) { _email_attach_results = b; }
-    bool                                getEmailAnalysisResults() const { return _email_analysis_results; }
-    void                                setEmailAnalysisResults(bool b) { _email_analysis_results = b; }
+    bool                                getAlwaysEmailSummary() const { return _always_email_summary; }
+    void                                setAlwaysEmailSummary(bool b) { _always_email_summary = b; }
+    const std::string                 & getEmailAlwaysRecipients() const { return _email_always_recipients; }
+    void                                setEmailAlwaysRecipients(const char* s) { _email_always_recipients = s; }
     std::vector<std::string>            getEmailAlwaysRecipientsList() const {
                                             std::vector<std::string> recipients;
                                             csv_string_to_typelist<std::string>(_email_always_recipients.c_str(), recipients);
                                             return recipients;
                                         }
-    const std::string                 & getEmailAlwaysRecipients() const { return _email_always_recipients; }
-    void                                setEmailAlwaysRecipients(const char * s) { _email_always_recipients = s; }
-    std::vector<std::string>            getEmailSignificantRecipientsList() const {
+    bool                                getCutoffEmailSummary() const { return _cutoff_email_summary; }
+    void                                setCutoffEmailSummary(bool b) { _cutoff_email_summary = b; }
+    const std::string                 & getEmailCutoffRecipients() const { return _email_cutoff_recipients; }
+    void                                setEmailCutoffRecipients(const char* s) { _email_cutoff_recipients = s; }
+    std::vector<std::string>            getEmailCutoffRecipientsList() const {
                                             std::vector<std::string> recipients;
-                                            csv_string_to_typelist<std::string>(_email_significant_recipients.c_str(), recipients);
+                                            csv_string_to_typelist<std::string>(_email_cutoff_recipients.c_str(), recipients);
                                             return recipients;
                                         }
-    std::string                         getEmailFormattedText(const std::string &messagebody, const std::string& newline) const;
-    const std::string                 & getEmailSignificantRecipients() const { return _email_significant_recipients; }
-    void                                setEmailSignificantRecipients(const char * s) { _email_significant_recipients = s; }
-    const std::string                 & getEmailSubjectNoSignificant() const { return _email_subject_no_significant; }
-    void                                setEmailSubjectNoSignificant(const char * s) { _email_subject_no_significant = s; }
-    const std::string                 & getEmailMessageBodyNoSignificant() const { return _email_message_body_no_significant; }
-    void                                setEmailMessageBodyNoSignificant(const char * s) { _email_message_body_no_significant = s; }
-    const std::string                 & getEmailSubjectSignificant() const { return _email_subject_significant; }
-    void                                setEmailSubjectSignificant(const char * s) { _email_subject_significant = s; }
-    const std::string                 & getEmailMessageBodySignificant() const { return _email_message_body_significant; }
-    void                                setEmailMessageBodySignificant(const char * s) { _email_message_body_significant = s; }
+    double                              getCutoffEmailValue() const { return _cutoff_email_value; }
+    void                                setCutoffEmailValue(double d) { _cutoff_email_value = d; }
+    bool                                getEmailAttachResults() const { return _email_attach_results; }
+    void                                setEmailAttachResults(bool b) { _email_attach_results = b; }
+    bool                                getEmailIncludeResultsDirectory() const { return _email_include_results_directory; }
+    void                                setEmailIncludeResultsDirectory(bool b) { _email_include_results_directory = b; }
+    std::string                         getEmailFormattedText(const std::string &messagebody, bool asHTML) const;
+    bool                                getEmailCustom() const { return _email_custom; }
+    void                                setEmailCustom(bool b) { _email_custom = b; }
+    const std::string                 & getEmailCustomSubject() const { return _email_custom_subject; }
+    void                                setEmailCustomSubject(const char * s) { _email_custom_subject = s; }
+    const std::string                 & getEmailCustomMessageBody() const { return _email_custom_message_body; }
+    void                                setEmailCustomMessageBody(const char * s) { _email_custom_message_body = s; }
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }

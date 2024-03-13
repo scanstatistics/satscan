@@ -78,67 +78,40 @@ const char * ClusterMap::TEMPLATE = " \
     <head> \n \
         <title>Cluster Map</title> \n \
         <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" charset=\"utf-8\"> \n \
-        <link href=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.css\" rel=\"stylesheet\"> \n \
+        <link href=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/nouislider.css\"> \n \
-        <style type=\"text/css\"> \n \
-         body {background-color: #f0f8ff;} \n \
-         #chartContainer{ overflow: hidden; } \n \
-         .chart-options{ display:none; } \n \
-         .chart-options{ padding:10px 0 10px 0; background-color:#e6eef2; border:1px solid silver; } \n \
-         .options-row{ margin:0 5px 5px 5px } \n \
-         .options-row>label:first-child, .options-row detail{ color:#13369f; font-weight:bold; } \n \
-         input.standard[type='radio']{ margin:5px } \n \
-         p.help-block{ font-size:11px; color:#666; font-style:oblique; margin-top:0; margin-bottom:1px;} \n \
-         .main-content{ margin: 5px; } \n \
-         .options-row label{ font-weight: normal; margin-bottom: 1px;} \n \
-         input[type=checkbox]{ margin-right:5px; } \n \
-         label.option-section{ border-bottom: solid 1px #e6e9eb; width: 100 % ; } \n \
-         .chart-column{ padding-top: 20px; padding-bottom: 30px; border-left: 1px solid #ddd; } \n \
-         .print-section a{ padding-right: 20px; text-decoration: none; } \n \
-         .cluster-selection{ border-bottom: dashed 1px #e6e9eb; } \n \
-         .cluster-selection label{ white-space: nowrap; color: #313030; } \n \
-         #id_display_count { margin:10px; } \n \
-         @media print{ title{ display: none; } #id_banner { display: none; } .chart-options-section{ display: none; } #chartContainer{ margin: 20px; } .chart-column{ border-left: 0; } } \n \
-         @media print{ img { max-width: none !important; } a[href]:after { content: \"\"; } } \n \
-         #map-outer { height: 75.0rem !important; padding: 20px; } \n \
-         #map { height:75.0rem !important; box-shadow: 1px 1px 8px #999;} \n \
-         @media all and (max-width: 991px) { #map-outer  { height: 650px } } \n \
-         table.info-window td { padding: 3px; }\n \
-         #legend { display:none; font-family: Arial, sans-serif; background: #fff; padding: 10px; margin: 10px; border: 1px solid #000; } \n \
-         #cursor_position { display:none; font-family: Arial, sans-serif; background: #fff; padding: 3px; margin: 2px; border: 1px solid #000; } \n \
-         .slider-round { height: 10px; margin: 3px 5px 5px 5px; } \n \
-         .slider-round .noUi-connect { background: #387bbe; } \n \
-         .slider-round .noUi-handle { height: 18px; width: 18px; top: -5px; right: -9px; /* half the width */ border-radius: 9px; background: #0052A3; border: 1px solid #0052A3; } \n \
-         .slider-round-small { height: 8px; margin: 6px 5px 2px 0px; } \n \
-         .slider-round-small .noUi-connect { background: #387bbe; } \n \
-         .slider-round-small .noUi-handle { height: 12px; width: 12px; top: -3px; right: -7px; /* half the width */ border-radius: 9px; background: #0052A3; border: 1px solid #0052A3; } \n \
-        </style> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/mapgoogle-1.0.css\"> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/clustercharts/jQuery.resizeEnd.js\"></script> \n \
-        <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.3.6/bootstrap.min.js\"></script> \n \
+        <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.js\"></script> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
         <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
         <script src=\"--resource-path--javascript/clustercharts/nouislider.js\"></script> \n \
         <script src=\"--resource-path--javascript/clustercharts/OverlappingMarkerSpiderfier_1.0.3_oms.min.js\"></script> \n \
     </head> \n \
     <body> \n \
-		<div id='load_error' style='color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;'></div> \n \
+		<div id='load_error'></div> \n \
     <div class='container-fluid main-content'> \n \
         <div class='row'> \n \
             <div id='map-outer' class='col-md-12'> \n \
-            <div class='col-md-2 chart-options-section' style='padding-left:0;'> \n \
+            <div class='col-md-2 chart-options-section'> \n \
                 <fieldset> \n \
                 <div class='options-row'> \n \
-                    <div style='font-style:italic;'>Generated with SaTScan v--satscan-version--</div>\n \
+                    <div class='version'>Generated with SaTScan v--satscan-version--</div>\n \
                 </div>\n \
                 <div class='options-row'> \n \
                     <div id='id_clusters'>\n \
-                        <label for='id_select_clusters'>Display Clusters:</label> \n \
+                        <div><label>Display Clusters By:</label></div> \n \
+                        <input type='radio' name='cluster_display_type' id='cl_value' value='value' checked=checked/><label for='cl_value'>P-Value</label> \n \
+                        <label for='slider_clusters'>P-Value</label> \n \
+                        <div class='slider-styled slider-round' id='slider_clusters'></div> \n \
+                        <div id='id_slider_value'></div> \n \
+                        <input type='radio' name='cluster_display_type' id='cl_list' value='list' /><label for='cl_list'>Index Number</label> \n \
+                        <label for='id_select_clusters'>Selections:</label> \n \
                         <select name='select_clusters' id='id_select_clusters' multiple='multiple' class='clusters-select'> \n \
-                            --significant-cluster-options--\n \
-                            --non-significant-cluster-options--\n \
-                            </select> \n \
-                            <p class='help-block'>Toggle display of clusters.</p> \n \
+                            --cluster-options--\n \
+                        </select> \n \
+                        <p class='help-block'>Toggle display of clusters.</p> \n \
                     </div>\n \
                     <div id='id_rates_option'> \n \
                         <label><input type='radio' class='standard' name='view_rate' id='id_view_highlow' value='entire' checked=checked />High and low clusters</label>\n \
@@ -148,22 +121,18 @@ const char * ClusterMap::TEMPLATE = " \
                     </div> \n \
                     <div id='id_secondary_clusters_option'> \n \
                         <div>Secondary Clusters:</div>\n \
-                        <label style='margin-left:15px;'><input type='checkbox' id='id_hierarchical' value='secondary' />Hierarchical</label>\n \
-                        <label style='margin-left:15px;'><input type='checkbox' id='id_gini' value='secondary' />Gini</label>\n \
+                        <label><input type='checkbox' id='id_hierarchical' value='secondary' />Hierarchical</label>\n \
+                        <label><input type='checkbox' id='id_gini' value='secondary' />Gini</label>\n \
                         <p class='help-block'>Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \
-                    <label style='margin-left:15px;'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />--cluster-display--</label>\n \
-                    <label style='margin-left:15px;'><input type='checkbox' id='id_cluster_locations' value='cluster' />Locations</label>\n \
+                    <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />--cluster-display--</label>\n \
+                    <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_locations' value='cluster' />Locations</label>\n \
                     <p class='help-block'>Display options for clusters.</p>\n \
-                    <!-- <label><input type='checkbox' id='id_show_grid_lines' checked=checked />Show grid lines</label> \n \
-                    <p class='help-block'>Toggle display of graph grid lines.</p> --> \n \
                     <label><input type='checkbox' id='id_show_location_points' />Show all location points</label>\n \
                     <p class='help-block'>Toggle display of location points.</p>\n \
                     <label><input type='checkbox' id='id_show_all_edges' />Show all network edges</label>\n \
                     <p class='help-block'>Toggle display of all network edges.</p>\n \
-                    <!--<label><input type='checkbox' id='id_fit_graph_viewport' checked=checked />Fit map to viewport</label>\n \
-                    <p class='help-block'>Attempts to keep entire map in view.</p> --> \n \
                 </div> \n \
                 <div class='options-row event-controls'> \n \
                     <div id='id_display_events'> \n \
@@ -187,28 +156,27 @@ const char * ClusterMap::TEMPLATE = " \
                     <p class='help-block'>Filter to exclude markers of displayed individuals.</p> \n \
                     <label for='slider_display'>Individuals In Period</label> \n \
                     <div class='slider-styled slider-round' id='slider_display'></div> \n \
-                    <div style='font-size: small;padding-bottom: 5px;'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
+                    <div class='slider_display_range'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
                     <div class='pull-left'> \n \
                     <button type='button' class='btn btn-success btn-sm' id='id_run_timeline'>Run</button> \n \
                     <button type='button' class='btn btn-primary btn-sm' id='id_pause_timeline'>Pause</button> \n \
                     <button type='button' class='btn btn-secondary btn-sm btn-warning' id='id_run_timeline_reset'>Reset</button> \n \
                     </div> \n \
                     <div class='clearfix'></div> \n \
-                    <label for='slider_speed' style='font-size:12px;margin-bottom:0;margin-left:2px;'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
+                    <label for='slider_speed'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
                     <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
-                    <label for='slider_display' style='margin-top:5px;'>Recent Individuals</label> \n \
+                    <label for='slider_display'>Recent Individuals</label> \n \
                     <div class='slider-styled slider-round' id='slider_recent'></div> \n \
-                    <div style='font-size: small;padding-bottom: 5px;'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
-                    <!-- <p class='help-block'>Show events by study period.</p> --> \n \
+                    <div id='id_recent_range'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
                     <label><input type='checkbox' id='id_show_legend' checked=checked />Display Individuals Legend</label> \n \
-                    <div style='margin-top: 1px;'><label>Individuals Icon Size</label></div> \n \
+                    <div id='id_icon_size'><label>Individuals Icon Size</label></div> \n \
                      <div class='slider-styled slider-round' id='slider_size' ></div> \n \
-                     <div style='font-size:small;text-align:center;'><span style='margin-right:15px;'>&#129048; smaller</span><span style='margin-left:15px;'>larger &#x1F81A;</span></div> \n \
+                     <div id='id_icon_range'><span>&#129048; smaller</span><span>larger &#x1F81A;</span></div> \n \
                     <div class='clearfix'></div> \n \
                 </div> \n \
                 <div id='id_display_count'>\n \
                     <fieldset>\n \
-                            <legend style='font-size:14px; margin-bottom:0;'>Display Data:</legend>\n \
+                            <legend>Display Data:</legend>\n \
                             <div><span id='id_cluster_count'></span> Clusters</div>\n \
                             <div><span id='id_cluster_point_count'></span> Cluster Locations</div>\n \
                             <div><span id='id_point_count'></span> Total Locations</div> \n \
@@ -216,10 +184,9 @@ const char * ClusterMap::TEMPLATE = " \
                     </fieldset>\n \
                 </div>\n \
                 <div class='options-row'> \n \
-                    <label class='option-section' style='display:none;' for='title_obs'>Print</label> \n \
+                    <label class='option-section print' for='title_obs'>Print</label> \n \
                     <div class='print-section'> \n \
-                        <a href='#' onclick='javascript:window.print();return false;'><span class='glyphicon glyphicon-print' aria-hidden='true'></span> Print</a> \n \
-                        <!-- <a href='#' id='print_png'><span class='glyphicon glyphicon-picture' aria-hidden = 'true'></span> Save Image</a> --> \n \
+                        <a href='#' onclick='javascript:window.print();return false;'><span aria-hidden='true'></span> Print</a> \n \
                     </div> \n \
                 </div> \n \
                 </fieldset> \n \
@@ -247,7 +214,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.1.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -345,17 +312,12 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(vCoordinates));
             printString(buffer, "lat : %f, lng : %f, radius : %f", prLatitudeLongitude.first, prLatitudeLongitude.second, radius);
-            _cluster_definitions << "{ id: " << (i + iteration) << ", significant : " << (cluster.isSignificant(_dataHub, i, simVars) ? "true" : "false")
+            _cluster_definitions << "{ id: " << (i + iteration) << ", slider_value : " << VisualizationUtils::getSliderValue(_dataHub, cluster, i + iteration, simVars)
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
                 << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
                 << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
-
-            if (cluster.isSignificant(_dataHub, i, simVars)) {
-                _cluster_options_significant << "<option value=" << (i + iteration) << " class='significant_clusters' selected>Cluster " << (i + iteration) << "</option>";
-            } else {
-                _cluster_options_non_significant << "<option value=" << (i + iteration) << " class='non_significant_clusters'>Cluster " << (i + iteration) << "</option>";
-            }
+            _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " << (i + iteration) << "</option>";
         }
         ++_clusters_written;
     }
@@ -536,16 +498,11 @@ void ClusterMap::finalize() {
         }
         str_buffer = stream_buffer.str();
         templateReplace(html, "--entire-region-points--", trimString(trimString(str_buffer, ","), ",").c_str());
-        // write significant clusters option group
+        // write clusters option
         stream_buffer.str("");
-        if (_cluster_options_significant.tellp())
-            stream_buffer << "<optgroup label='Significant' class='significant_clusters'>" << _cluster_options_significant.str() << "</optgroup>";
-        templateReplace(html, "--significant-cluster-options--", stream_buffer.str());
-        // write non-significant clusters option group
-        stream_buffer.str("");
-        if (_cluster_options_non_significant.tellp())
-            stream_buffer << "<optgroup label='Non-Significant' class='non_significant_clusters'>" << _cluster_options_non_significant.str() << "</optgroup>";
-        templateReplace(html, "--non-significant-cluster-options--", stream_buffer.str());
+        if (_cluster_options.tellp())
+            stream_buffer << _cluster_options.str();
+        templateReplace(html, "--cluster-options--", stream_buffer.str());
         // write individual (event) option groups
         stream_buffer.str("");
         for (auto& eventtype: _event_types) {
@@ -580,9 +537,9 @@ void ClusterMap::finalize() {
             templateReplace(html, "--true-dates--", "true");
         }
         templateReplace(html, "--parameters--", printString( // replace parameters hash
-            str_buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s",
-            _dataHub.GetParameters().GetAreaScanRateType(), (_dataHub.GetParameters().getReportGiniOptimizedClusters() ? "true" : "false")).c_str()
-        );
+            str_buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,prospective:%s",
+            params.GetAreaScanRateType(), params.getReportGiniOptimizedClusters() ? "true" : "false", params.GetIsProspectiveAnalysis() ? "true" : "false"
+        ));
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
 		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));
         html_out << html.str() << std::endl;

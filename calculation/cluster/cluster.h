@@ -101,6 +101,7 @@ class CCluster {
     virtual void                  DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
     virtual AreaRateType          getAreaRateForCluster(const CSaTScanData& DataHub) const;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
+    std::string                 & GetClusterLocation(std::string& locationID, const CSaTScanData& DataHub) const;
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
@@ -138,6 +139,10 @@ class CCluster {
     bool                          isGiniCluster() const {return _gini_cluster;}
     bool                          isHierarchicalCluster() const { return _hierarchical_cluster; }
     boost::logic::tribool         isSignificant(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
+    boost::logic::tribool         meetsCutoff(
+        const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars,
+        RecurrenceInterval_t ri_cutoff, double pvalue_cutoff
+    ) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     static bool                   reportablePValue(const CParameters& parameters, const SimulationVariables& simVars);

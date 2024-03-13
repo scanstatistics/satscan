@@ -5,20 +5,21 @@
 #include "Parameters.h"
 #include "Randomizer.h"
 #include "SSException.h"
+#include "Toolkit.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 174;
+const int CParameters::giNumParameters                = 180;
 
 /** Constructor */
-CParameters::CParameters() {
+CParameters::CParameters(): _cluster_sig_by_ri_(false), _cluster_sig_ri_type_(DAY), _cluster_sig_by_p_(false), _cluster_sig_p_val_(0.05){
   SetAsDefaulted();
 }
 
 /** Copy constructor */
-CParameters::CParameters(const CParameters &other) {
+CParameters::CParameters(const CParameters &other): _cluster_sig_by_ri_(false), _cluster_sig_ri_type_(DAY), _cluster_sig_by_p_(false), _cluster_sig_p_val_(0.05) {
    SetAsDefaulted();
    Copy(other);
 }
@@ -184,22 +185,21 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
   if (_prospective_frequency != rhs._prospective_frequency) return false;
-  if (_email_analysis_results != rhs._email_analysis_results) return false;
+  if (_always_email_summary != rhs._always_email_summary) return false;
+  if (_cutoff_email_summary != rhs._cutoff_email_summary) return false;
+  if (_cutoff_email_value != _cutoff_email_value) return false;
   if (_email_always_recipients != rhs._email_always_recipients) return false;
-  if (_email_significant_recipients != rhs._email_significant_recipients) return false;
-  if (_email_subject_no_significant != rhs._email_subject_no_significant) return false;
-  if (_email_message_body_no_significant != rhs._email_message_body_no_significant) return false;
-  if (_email_subject_significant != rhs._email_subject_significant) return false;
-  if (_email_message_body_significant != rhs._email_message_body_significant) return false;
+  if (_email_cutoff_recipients != rhs._email_cutoff_recipients) return false;
+  if (_email_custom != rhs._email_custom) return false;
+  if (_email_custom_subject != rhs._email_custom_subject) return false;
+  if (_email_custom_message_body != rhs._email_custom_message_body) return false;
   if (_email_attach_results != rhs._email_attach_results) return false;
-  if (_cluster_significance_by_ri != rhs._cluster_significance_by_ri) return false;
-  if (_cluster_significance_ri_value != _cluster_significance_ri_value) return false;
-  if (_cluster_significance_ri_type != rhs._cluster_significance_ri_type) return false;
-  if (_cluster_significance_by_pval != rhs._cluster_significance_by_pval) return false;
-  if (_cluster_significance_pval_value != _cluster_significance_pval_value) return false;
+  if (_email_include_results_directory != rhs._email_include_results_directory) return false;
   if (_multiple_locations_file != _multiple_locations_file) return false;
-  if (_linelist_individuals_cache_name != _linelist_individuals_cache_name) return false;  
-  
+  if (_linelist_individuals_cache_name != _linelist_individuals_cache_name) return false;
+  if (_linelist_csv_restrict != _linelist_csv_restrict) return false;
+  if (_linelist_csv_cutoff != _linelist_csv_cutoff) return false;
+
   return true;
 }
 
@@ -439,20 +439,19 @@ void CParameters::Copy(const CParameters &rhs) {
   _local_timestamp = rhs._local_timestamp;
   _prospective_frequency_type = rhs._prospective_frequency_type;
   _prospective_frequency = rhs._prospective_frequency;
-  _email_analysis_results = rhs._email_analysis_results;
+  _always_email_summary = rhs._always_email_summary;
+  _cutoff_email_summary = rhs._cutoff_email_summary;
+  _cutoff_email_value = rhs._cutoff_email_value;
   _email_always_recipients = rhs._email_always_recipients;
-  _email_significant_recipients = rhs._email_significant_recipients;
-  _email_subject_no_significant = rhs._email_subject_no_significant;
-  _email_message_body_no_significant = rhs._email_message_body_no_significant;
-  _email_subject_significant = rhs._email_subject_significant;
-  _email_message_body_significant = rhs._email_message_body_significant;
+  _email_cutoff_recipients = rhs._email_cutoff_recipients;
+  _email_custom = rhs._email_custom;
+  _email_custom_subject = rhs._email_custom_subject;
+  _email_custom_message_body = rhs._email_custom_message_body;
   _email_attach_results = rhs._email_attach_results;
-  _cluster_significance_by_ri = rhs._cluster_significance_by_ri;
-  _cluster_significance_ri_value = _cluster_significance_ri_value;
-  _cluster_significance_ri_type = rhs._cluster_significance_ri_type;
-  _cluster_significance_by_pval = rhs._cluster_significance_by_pval;
-  _cluster_significance_pval_value = rhs._cluster_significance_pval_value;
+  _email_include_results_directory = rhs._email_include_results_directory;
   _multiple_locations_file = rhs._multiple_locations_file;
+  _linelist_csv_restrict = rhs._linelist_csv_restrict;
+  _linelist_csv_cutoff = rhs._linelist_csv_cutoff;
 }
 
 /* Returns whether line list data is read from case file - the user used file wizard to define line list columns */
@@ -479,13 +478,13 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
 }
 
 /* Returns email text with tags substituted. */
-std::string CParameters::getEmailFormattedText(const std::string &messagebody, const std::string& newline) const {
+std::string CParameters::getEmailFormattedText(const std::string& messagebody, bool asHTML) const {
     using boost::algorithm::replace_all;
     using boost::algorithm::ireplace_all;
     boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
-    boost::posix_time::time_facet * facet = new boost::posix_time::time_facet();
-    std::stringstream bufferStream, workStream;
-    std::string buffer, message(messagebody);
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
+    std::stringstream bufferStream, workStream, mainResults, resultsDirectory;
+    std::string buffer, message(messagebody), newline(asHTML ? "<br>" : "\n");
     FileName fileName(_results_filename.c_str());
 
     // Replace <date> tag
@@ -494,12 +493,36 @@ std::string CParameters::getEmailFormattedText(const std::string &messagebody, c
     workStream.str(""); workStream << localTime;
     bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
     ireplace_all(message, "<date>", bufferStream.str());
-    // Replace <output-directory> tag
-    ireplace_all(message, "<output-directory>", fileName.getLocation(buffer).c_str());
-    // Replace <output-filename> tag
-    ireplace_all(message, "<output-filename>", fileName.getFullPath(buffer).c_str());
-    // Replace newlines tag -- since we're using .ini file for parameters, newlines are a problem.
-    workStream.str(""); workStream << std::endl;
+    auto getPathLink = [asHTML](std::string& path) { // formats file path for html
+        #ifdef _WINDOWS_
+        std::transform(path.begin(), path.end(), path.begin(), [](char& ch) {
+            if (ch == FileName::BACKSLASH) ch = FileName::FORWARDSLASH;
+            return ch;
+        });
+        #endif
+        if (asHTML) { std::stringstream s;
+            s << "<a href=\"file:///" << path.c_str() << "\">" << path.c_str() << "</a>";
+            path = s.str();
+        } return path;
+    };
+    // Replace <results-filename> tag
+    mainResults << getPathLink(fileName.getFullPath(buffer));
+    ireplace_all(message, "<results-filename>", mainResults.str().c_str());
+    // Replace <results-directory> tag
+    resultsDirectory << getPathLink(fileName.getLocation(buffer));
+    ireplace_all(message, "<results-directory>", resultsDirectory.str().c_str());
+    // Replace <results-paragraph> tag
+    workStream.str("");
+    workStream << "The main results file of this analysis is located at:" << newline << mainResults.str() << newline;
+    workStream << "All result files are located at:" << newline << resultsDirectory.str();
+    ireplace_all(message, "<results-paragraph>", workStream.str().c_str());
+    // Replace <footer-paragraph> tag
+    workStream.str("");
+    workStream << "This is an automatically generated message with the results from today's SaTScan analysis. Reply to ";
+    workStream << (asHTML ? "<a href=\"mailto:" : "") << AppToolkit::getToolkit().mail_from << "\">" << AppToolkit::getToolkit().mail_from << (asHTML ? "</a>" : "");
+    workStream << " if you no longer wish to receive this email, received this email in error, or have questions about this analysis.";
+    ireplace_all(message, "<footer-paragraph>", workStream.str().c_str());
+    // Replace newlines tag
     ireplace_all(message, "<linebreak>", newline.c_str());
     return message;
 }
@@ -1049,20 +1072,19 @@ void CParameters::SetAsDefaulted() {
   _local_timestamp = boost::posix_time::second_clock::local_time();
   _prospective_frequency_type = SAME_TIMEAGGREGATION;
   _prospective_frequency = 1;
-  _email_analysis_results = false;
+  _always_email_summary = false;
+  _cutoff_email_summary = false;
+  _cutoff_email_value = 0.05;
   _email_always_recipients = "";
-  _email_significant_recipients = "";
-  _email_subject_no_significant = "";
-  _email_message_body_no_significant = "";
-  _email_subject_significant = "";
-  _email_message_body_significant = "";
+  _email_cutoff_recipients = "";
+  _email_custom = false;
+  _email_custom_subject = "";
+  _email_custom_message_body = "<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
   _email_attach_results = false;
-  _cluster_significance_by_ri = false;
-  _cluster_significance_ri_value = 100;
-  _cluster_significance_ri_type = DAY;
-  _cluster_significance_by_pval = false;
-  _cluster_significance_pval_value = 0.05;
+  _email_include_results_directory = false;
   _multiple_locations_file = "";
+  _linelist_csv_restrict = false;
+  _linelist_csv_cutoff = 0.05;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1201,13 +1223,6 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
   if (eDatePrecisionType < NONE || eDatePrecisionType > GENERIC)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, GENERIC);
   gePrecisionOfTimesType = eDatePrecisionType;
-}
-
-/** Sets recurrence interval type for cluster line list. Throws exception if out of range. */
-void CParameters::setClusterSignificanceRecurrenceType(DatePrecisionType etype) {
-    if (!(etype == DAY || etype == YEAR || etype == GENERIC))
-        throw prg_error("Invalid enumeration %d for settings. Must be %d, %d or %d.", "setClusterSignificanceRecurrenceType()", etype, DAY, YEAR, GENERIC);
-    _cluster_significance_ri_type = etype;
 }
 
 /** Sets probability model type. Throws exception if out of range. */

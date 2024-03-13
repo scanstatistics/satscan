@@ -65,8 +65,7 @@ class CartesianGraph {
         boost::dynamic_bitset<>             _cluster_locations;
         unsigned int                        _clusters_written;
         double                              _median_parallel;
-        std::stringstream                   _cluster_options_significant;
-        std::stringstream                   _cluster_options_non_significant;
+        std::stringstream                   _cluster_options;
 
         std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
         std::vector<double>               & transform(std::vector<double>& vCoordinates);

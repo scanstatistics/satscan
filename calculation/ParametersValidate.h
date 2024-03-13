@@ -23,7 +23,7 @@ class ParametersValidate {
     bool                ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const;
     bool                ValidateDrilldownParameters(BasePrint & PrintDirection) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
-    bool                ValidateEmailAlertParameters(BasePrint & PrintDirection) const;
+    bool                ValidateNotificationParameters(BasePrint & PrintDirection) const;
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
     bool                ValidateInferenceParameters(BasePrint & PrintDirection) const;

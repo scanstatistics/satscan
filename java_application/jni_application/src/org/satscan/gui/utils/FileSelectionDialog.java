@@ -174,11 +174,14 @@ public class FileSelectionDialog {
             } else {
                 if (wizard.getNeedsImportSourceSave()) {
                     inputSourceSettings.copy(wizard.getInputSourceSettings());
-                    if (inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Case && inputSourceSettings.getDataSetIndex() == 1)
-                        settingsFrame.getParameters().setLinelistIndividualsCacheFileName(wizard.getLineListCacheFilename());
+                    if (inputSourceSettings.getInputFileType() == InputSourceSettings.InputFileType.Case) {
+                        if (inputSourceSettings.getDataSetIndex() == 1) // only primary case file provides option for lin-list cache
+                            settingsFrame.getParameters().setLinelistIndividualsCacheFileName(wizard.getLineListCacheFilename());
+                        // enable/refresh the controls on the 'other output' tab - specifically line-list settings 
+                        settingsFrame.getAdvancedParameterInternalFrame().enableOtherOutputGroup();
+                    }
                 }
                 inputSourceFilename.setText(wizard.getSourceFilename());
-                //inputSourceSettings.setSourceDataFileType(wizard.getSourceFileType(inputSourceFilename.getText()));
             }
             if (wizard.needsSettingsRefresh()) {
                 // update parameter settings back in the settings window to reflect users selection in wizard
