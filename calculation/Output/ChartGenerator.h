@@ -66,9 +66,17 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         static const char * BASE_TEMPLATE;
         static const char * TEMPLATE_CHARTHEADER;
         static const char * TEMPLATE_CHARTSECTION;
+        static const char * TEMPLATE_CLUSTERDETAILS;
         const CSaTScanData & _dataHub;
         const MostLikelyClustersContainer & _clusters;
         const SimulationVariables & _simVars;
+    
+        // 0: Inside Cluster Window, Inside Cluster Area
+        // 1: Outside Cluster Window, Inside Cluster Area
+        // 2: Inside Cluster Window, Outside Cluster Area
+        // 3: Outside Cluster Window, Outside Cluster Area
+        typedef boost::tuple<count_t, count_t, count_t, count_t>  ClusterCaseTotals_t;
+        ClusterCaseTotals_t getClusterCaseTotals(const CCluster& cluster, size_t dataSetIdx) const;
 
         class intervalGroups {
             public:

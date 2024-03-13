@@ -99,6 +99,10 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .search-and-account{position: fixed; z-index: 15; top: 1.5rem; /*right: var(--gap);*/ left: 5px;} \n \
         .search-and-account a{ margin-left: 0.5rem;} \n \
         .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
+        .cluster-details{margin-bottom:0px; max-width:65%;} \n \
+        .cluster-details-sub-header{text-align: left !important; color:#333 !important;} \n \
+        .cluster-details-percentages td{border-top: 2px solid #958787 !important;} \n \
+        .cluster-details-percentages th{border-top: none !important;) \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-3.1.1.min.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
@@ -244,40 +248,70 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                 <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
                 <div class=\"chart-options\"> \n \
                     <div class=\"options-table\"> \n \
-                      <h4>Chart Options</h4> \n \
-                      <div class=\"options-row\"> \n \
-                          <label for=\"title_obs\">Title</label> \n \
-                          <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
-                              <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
+                        <div class=\"row\"> \n \
+                        <div class=\"col-md-6\"> \n \
+                        <h4 style = \"text-align:left;margin-bottom:5px;\">Chart Options</h4> \n \
+                          <div class=\"options-row\"> \n \
+                              <label for=\"title_obs\">Title</label> \n \
+                              <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
+                                  <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
+                              </div> \n \
                           </div> \n \
-                      </div> \n \
-                      <div class=\"options-row\"> \n \
-                          <label>Observed Chart Type</label> \n \
-                          <div> \n \
-                            <label> \n \
-                              <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"column\" series-id=\"--chart-switch-ids--\" checked=checked/>Histogram \n \
-                            </label> \n \
-                            <label> \n \
-                              <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"line\" series-id=\"--chart-switch-ids--\"/>Line \n \
-                            </label> \n \
-                            <p class=\"help-block\">Switch the series type between line and histogram.</p> \n \
+                          <div class=\"options-row\"> \n \
+                              <label>Observed Chart Type</label> \n \
+                              <div> \n \
+                                <label> \n \
+                                  <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"column\" series-id=\"--chart-switch-ids--\" checked=checked/>Histogram \n \
+                                </label> \n \
+                                <label> \n \
+                                  <input type=\"radio\" name=\"--container-id--_obs_series_type\" series-type=\"line\" series-id=\"--chart-switch-ids--\"/>Line \n \
+                                </label> \n \
+                                <p class=\"help-block\">Switch the series type between line and histogram.</p> \n \
+                              </div> \n \
                           </div> \n \
-                      </div> \n \
-                      <div class=\"options-row\"> \n \
-                          <label>Cluster Band</label> \n \
-                          <div> \n \
-                            <label> \n \
-                              <input type=\"checkbox\" class=\"show-cluster-band\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\" />Show Cluster Band \n \
-                            </label> \n \
-                            <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
+                          <div class=\"options-row\"> \n \
+                              <label>Cluster Band</label> \n \
+                              <div> \n \
+                                <label> \n \
+                                  <input type=\"checkbox\" class=\"show-cluster-band\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\" />Show Cluster Band \n \
+                                </label> \n \
+                                <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
+                              </div> \n \
                           </div> \n \
-                      </div> \n \
-                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart. Hold down shift key to pan zoomed chart.</div> \n \
+                          <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart. Hold down shift key to pan zoomed chart.</div> \n \
+                        </div> \n \
+                        --cluster-details-- \n \
+                        </div> \n \
                     </div> \n \
                     <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
                 </div> \n \
             </div> \n \
          </div></div> \n";
+
+const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS = "\n \
+            <div class=\"col-md-6\"> \n \
+              <h4 style = \"text-align:left; margin-bottom:5px;\">2 x 2 Table</h4> \n \
+              <div class=\"row\" style=\"margin-left:10px;\"> \n \
+                <table class=\"table table-condensed cluster-details\" cellpadding=\"3\" cellspacing=\"0\"> \n \
+                  <thead> \n \
+                    <tr> \n \
+                      <th style=\"border-bottom: none;\"></th> \n \
+                      <th colspan=\"2\" style=\"padding-bottom:0px; text-align:left;\">Cluster Time Period</th> \n \
+                    </tr> \n \
+                   <tr> \n \
+                     <th style=\"text-align:left; border-top:none;\">Geographical Cluster Area</th> \n \
+                     <th class=\"cluster-details-sub-header\">Inside</th> \n \
+                     <th class=\"cluster-details-sub-header\">Outside</th> \n \
+                    </tr> \n \
+                  </thead> \n \
+                  <tbody> \n \
+                    <tr><th class=\"cluster-details-sub-header\">Inside</th><td>--inside-inside--</td><td>--outside-inside--</td></tr> \n \
+                    <tr><th class=\"cluster-details-sub-header\">Outside</th><td>--inside-outside--</td><td>--outside-outside--</td></tr> \n \
+                    <tr class=\"cluster-details-percentages\"><th></th><td>--inside-percent--%</td><td>--outside-percent--%</td></tr> \n \
+                  </tbody> \n \
+                </table> \n \
+              </div> \n \
+            </div> \n";
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars) 
@@ -385,7 +419,7 @@ void TemporalChartGenerator::generateChart() const {
             // calculate the graphs interval groups for this cluster
             intervalGroups groups = getIntervalGroups(cluster);
             for (size_t setIdx=0; setIdx < handler.GetNumDataSets(); ++setIdx) {
-                std::stringstream chart_js, chart_series, chart_section, categories;
+                std::stringstream chart_js, chart_series, chart_section, categories, cluster_details;
                 // set the chart header for this cluster
                 chart_js << TEMPLATE_CHARTHEADER;
 
@@ -481,6 +515,28 @@ void TemporalChartGenerator::generateChart() const {
                 printString(buffer, "%d", cluster_grp_idx.second);
                 templateReplace(chart_section, "--cluster-end-idx--", buffer);
                 templateReplace(chart_section, "--chart-switch-ids--", cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? "obs,cluster" : "obs,cluster,cluster_obs");
+
+                // create cluster details table for space time permutation analysis
+                cluster_details << TEMPLATE_CLUSTERDETAILS;
+                if (_dataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+                    ClusterCaseTotals_t caseTotals = getClusterCaseTotals(cluster, setIdx);
+                    printString(buffer, "%d", caseTotals.get<0>());
+                    templateReplace(cluster_details, "--inside-inside--", buffer);
+                    printString(buffer, "%d", caseTotals.get<1>());
+                    templateReplace(cluster_details, "--outside-inside--", buffer);
+                    printString(buffer, "%d", caseTotals.get<2>());
+                    templateReplace(cluster_details, "--inside-outside--", buffer);
+                    printString(buffer, "%d", caseTotals.get<3>());
+                    templateReplace(cluster_details, "--outside-outside--", buffer);
+                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<0>() * 100) / static_cast<double>(caseTotals.get<2>()));
+                    templateReplace(cluster_details, "--inside-percent--", buffer);
+                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<1>() * 100) / static_cast<double>(caseTotals.get<3>()));
+                    templateReplace(cluster_details, "--outside-percent--", buffer);
+                    templateReplace(chart_section, "--cluster-details--", cluster_details.str());
+                } else {
+                    templateReplace(chart_section, "--cluster-details--", "");
+                }
+                               
                 // add section to collection of sections
                 cluster_sections << chart_section.str() << std::endl << std::endl;
             }
@@ -646,6 +702,41 @@ FileName& TemporalChartGenerator::getFilename(FileName& filename) {
     filename.setFileName(buffer.c_str());
     filename.setExtension(HTML_FILE_EXT);
     return filename;
+}
+
+/** Reports number of cases in respect to cluster window and geographical area:
+      Inside Cluster Window, Inside Cluster Area
+      Outside Cluster Window, Inside Cluster Area
+      Inside Cluster Window, Outside Cluster Area
+      Outside Cluster Window, Outside Cluster Area */
+TemporalChartGenerator::ClusterCaseTotals_t TemporalChartGenerator::getClusterCaseTotals(const CCluster& cluster, size_t dataSetIdx) const {
+    count_t* pcases = _dataHub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData_PT();
+    count_t** ppcases = _dataHub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData().GetArray();
+    ClusterCaseTotals_t caseTotals(0, 0, 0, 0);
+
+    std::vector<tract_t> indexes;
+    cluster.getIdentifierIndexes(_dataHub, indexes, true);
+
+    // count_t totalCases = _dataHub.GetTotalDataSetCases(dataSetIdx);
+    int intervals = _dataHub.GetNumTimeIntervals();
+
+    for (int i = 0; i < intervals; ++i) {
+        count_t intervalTotalCases = (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i + 1]);
+        count_t intervalInClusterArea = 0;
+        for (auto t : indexes)
+            intervalInClusterArea += (i == intervals - 1 ? ppcases[i][t] : ppcases[i][t] - ppcases[i + 1][t]);
+        if (cluster.m_nFirstInterval <= i && i <= cluster.m_nLastInterval) {
+            caseTotals.get<0>() += intervalInClusterArea;
+            caseTotals.get<2>() += (intervalTotalCases - intervalInClusterArea);
+        }         
+        else {
+            caseTotals.get<1>() += intervalInClusterArea;
+            caseTotals.get<3>() += (intervalTotalCases - intervalInClusterArea);
+        }
+            
+    }
+
+    return caseTotals;
 }
 
 /** ------------------- GiniChartGenerator --------------------------------*/
