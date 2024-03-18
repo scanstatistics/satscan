@@ -67,43 +67,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-9.1.2/code/css/highcharts.css\" type=\"text/css\">\n \
         <link rel='stylesheet' href='--resource-path--javascript/bootstrap/3.3.7/bootstrap.min.css'> \n \
         <link rel='stylesheet' href='--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css'> \n \
-        <style type=\"text/css\"> \n \
-        body{font:100% Arial,Helvetica;background:#9ea090} \n \
-        .chart-options{display:none} \n \
-        .show-chart-options,.hide-chart-options{color:#13369f;border:1px solid #d7e9ed;margin-top:3px;-webkit-border-radius:3px;-moz-border-radius:3px} \n \
-        .show-chart-options a,.hide-chart-options a{color:#13369f;background-color:#f5f8fa;font-size:11px;text-decoration:none;padding:4px 6px;display:block} \n \
-        .show-chart-options a{padding-left:24px;background-image:url('--resource-path--images/down_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
-        .hide-chart-options a{padding-left:24px;background-image:url('--resource-path--images/up_grip.png');background-position:5px 4px;background-repeat:no-repeat;color:#13369f} \n \
-        .show-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/down_grip_selected.png')} \n \
-        .hide-chart-options a{border-top:1px solid #d7e9ed;background-image:url('--resource-path--images/up_grip.png')} \n \
-        .hide-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/up_grip_selected.png')} \n \
-        .chart-options{padding:10px 20px 10px 20px;background-color:#e6eef2;border:1px solid silver} \n \
-        .options-row{margin:0 10px 10px 10px} \n \
-        .options-row>label:first-child, .options-row detail{color:#13369f;font-weight:bold} \n \
-        .options-row input[type='radio']{margin:5px} \n \
-        .options-table {font-size:small !important;} \n \
-        .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
-        .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
-        .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
-        .container {/*display: block;*/ position: relative; padding-left: 25px; margin-bottom: 12px; margin-right: 12px; cursor: pointer;-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;} \n \
-        .container input{ position: absolute; opacity : 0; cursor: pointer; height : 0; width : 0; } \n \
-        .checkmark{position:absolute;top:0;left:0;height:13px;width:13px;background-color:#eee;border-radius:2px;border:1px solid black;} \n \
-        /*.container:hover input ~ .checkmark {background-color:#ccc;}*/ \n \
-        /*.container input:checked ~ .checkmark {background-color:red;}*/ \n \
-        .checkmark:after{ content: \"\";position:absolute;display:none;} \n \
-        .container input : checked ~.checkmark : after{display: block;} \n \
-        .container.checkmark : after{left:4px;top:0px;width:4px;height:8px;border:solid white;border-width:0 2px 2px 0;-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);} \n \
-        .modal-dialog { margin-top: 100px; margin-left: 100px; width: 450px; } \n \
-	    .btn-sm{font-size: 13px;} \n \
-        .progress{margin-top: 20px; margin-bottom: 0; height: 10px; display: none;} \n \
-        .search-and-account{position: fixed; z-index: 15; top: 1.5rem; /*right: var(--gap);*/ left: 5px;} \n \
-        .search-and-account a{ margin-left: 0.5rem;} \n \
-        .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
-        .cluster-details{margin-bottom:0px; max-width:65%;} \n \
-        .cluster-details-sub-header{text-align: left !important; color:#333 !important;} \n \
-        .cluster-details-percentages td{border-top: 2px solid #958787 !important;} \n \
-        .cluster-details-percentages th{border-top: none !important;) \n \
-        </style> \n \
+        <link rel='stylesheet' href='--resource-path--javascript/clustercharts/chartgenerator-1.0.css'> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-3.1.1.min.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/modules/exporting.js'></script> \n \
