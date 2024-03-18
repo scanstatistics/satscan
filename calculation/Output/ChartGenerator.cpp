@@ -547,7 +547,7 @@ void TemporalChartGenerator::generateChart() const {
         if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
-            printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
 		printString(buffer,

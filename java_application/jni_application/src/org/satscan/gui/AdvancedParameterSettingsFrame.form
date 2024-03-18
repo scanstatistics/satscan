@@ -3299,9 +3299,6 @@
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="_printTitle">
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_printTitleActionPerformed"/>
-                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3850,7 +3847,7 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="_temporalGraphButtonGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="All significant clusters, one graph for each, with p-value less than:"/>
+                    <Property name="text" type="java.lang.String" value="All clusters, one graph for each, with p-value less than:"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_temporalGraphPvalueCutoff">
@@ -4324,9 +4321,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Same Design as Main Analysis"/>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_mainAnalysisDrilldownActionPerformed"/>
-                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        enableDrilldownGroup();&#xa;    }&#xa;});"/>
                   </AuxValues>

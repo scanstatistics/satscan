@@ -1405,7 +1405,7 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
                     printString(buffer2, "%d most likely clusters, one graph for each", gParameters.getTemporalGraphMostLikelyCount());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
                 case SIGNIFICANT_ONLY: 
-                    printString(buffer2, "All significant clusters, one graph for each, with p-value less than %g", gParameters.getTemporalGraphSignificantCutoff());
+                    printString(buffer2, "All clusters, one graph for each, with p-value less than %g", gParameters.getTemporalGraphSignificantCutoff());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
                 default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", gParameters.getOutputTemporalGraphFile());
             }

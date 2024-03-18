@@ -143,7 +143,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case OUTPUT_TEMPORAL_GRAPH              : return "output temporal graph HTML file (line 121)";
     case TEMPORAL_GRAPH_REPORT_TYPE         : return "temporal graph report type (line 122)";
     case TEMPORAL_GRAPH_MLC_COUNT           : return "temporal graph MLC count (line 123)";
-    case TEMPORAL_GRAPH_CUTOFF              : return "temporal graph significant p-value (line 124)";
+    case TEMPORAL_GRAPH_CUTOFF              : return "temporal graph cluster p-value (line 124)";
     case OUTPUT_SHAPEFILES                  : return "output shapefiles (line 125)";
     case INCLUDE_LOCATIONS_KML              : return "whether to include cluster locations kml output (line 126)";
     case LOCATIONS_THRESHOLD_KML            : return "threshold for generating separate kml files for cluster locations (line 127)";

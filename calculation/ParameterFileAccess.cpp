@@ -207,7 +207,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_TEMPORAL_GRAPH        : return "output temporal graph HTML file (y/n)";
       case TEMPORAL_GRAPH_REPORT_TYPE   : return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
       case TEMPORAL_GRAPH_MLC_COUNT     : return "number of most likely clusters to report in temporal graph (positive integer)";
-      case TEMPORAL_GRAPH_CUTOFF        : return "significant clusters p-value cutoff to report in temporal graph (0.0 to 1)";
+      case TEMPORAL_GRAPH_CUTOFF        : return "cluster p-value cutoff to report in temporal graph (0.0 to 1)";
       case OUTPUT_SHAPEFILES            : return "output shapefiles (y/n)";
       case INCLUDE_LOCATIONS_KML        : return "whether to include cluster locations kml output (y/n)";
       case LOCATIONS_THRESHOLD_KML      : return "threshold for generating separate kml files for cluster locations (positive integer)";

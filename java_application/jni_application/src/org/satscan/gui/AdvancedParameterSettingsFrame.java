@@ -5550,12 +5550,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
             _userDefinedRunTitle.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_userDefinedRunTitle, AppConstants.RUNTITLE_HELPID));
 
-            _printTitle.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    _printTitleActionPerformed(evt);
-                }
-            });
-
             javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
             _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
             _userDefinedRunTitleLayout.setHorizontalGroup(
@@ -5944,7 +5938,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
 
             _temporalGraphButtonGroup.add(_temporalGraphSignificant);
-            _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
+            _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than:");
 
             _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
             _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -6313,11 +6307,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                     enableDrilldownGroup();
-                }
-            });
-            _mainAnalysisDrilldown.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    _mainAnalysisDrilldownActionPerformed(evt);
                 }
             });
 
@@ -6745,14 +6734,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             pack();
         }// </editor-fold>//GEN-END:initComponents
-
-    private void _printTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__printTitleActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__printTitleActionPerformed
-
-    private void _mainAnalysisDrilldownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__mainAnalysisDrilldownActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__mainAnalysisDrilldownActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
