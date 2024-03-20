@@ -53,6 +53,9 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
        gParameters.setReportGiniOptimizedClusters(false);
     }
   }
+  catch (resolvable_error& x) {
+    throw;
+  } 
   catch (prg_exception &x) {
     throw resolvable_error("Unable to read parameters from file '%s'.\n", sFilename);
   }
