@@ -292,6 +292,8 @@ class CParameters {
     bool                                _email_custom;
     std::string                         _email_custom_subject;
     std::string                         _email_custom_message_body;
+    bool                                _create_email_summary_file;
+    double                              _email_summary_cutoff;
 
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
 
@@ -350,13 +352,16 @@ class CParameters {
     void                                setEmailAttachResults(bool b) { _email_attach_results = b; }
     bool                                getEmailIncludeResultsDirectory() const { return _email_include_results_directory; }
     void                                setEmailIncludeResultsDirectory(bool b) { _email_include_results_directory = b; }
-    std::string                         getEmailFormattedText(const std::string &messagebody, bool asHTML) const;
     bool                                getEmailCustom() const { return _email_custom; }
     void                                setEmailCustom(bool b) { _email_custom = b; }
     const std::string                 & getEmailCustomSubject() const { return _email_custom_subject; }
     void                                setEmailCustomSubject(const char * s) { _email_custom_subject = s; }
     const std::string                 & getEmailCustomMessageBody() const { return _email_custom_message_body; }
     void                                setEmailCustomMessageBody(const char * s) { _email_custom_message_body = s; }
+    bool                                getCreateEmailSummaryFile() const { return _create_email_summary_file; }
+    void                                setCreateEmailSummaryFile(bool b) { _create_email_summary_file = b; }
+    double                              getEmailSummaryValue() const { return _email_summary_cutoff; }
+    void                                setEmailSummaryValue(double d) { _email_summary_cutoff = d; }
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }

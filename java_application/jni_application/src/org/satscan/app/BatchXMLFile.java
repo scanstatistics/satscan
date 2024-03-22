@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,6 +39,7 @@ import org.xml.sax.SAXException;
 /* XML file class to read and write BatchAnalysis objects, along with execution results information. */
 public class BatchXMLFile {
 
+    private static final String BATCH_SETTINGS = "batch-settings";
     private static final String ANALYSES = "analyses";
     private static final String ANALYSIS = "analysis";
     private static final String ANALYSIS_SELECTED = "selected";
@@ -57,6 +59,13 @@ public class BatchXMLFile {
     private static final String DRILLDOWN_RESULTS = "results-filename";
     private static final String DRILLDOWN_SIGNIFICANT = "significant";
     
+    private static final String SUMMARY_EMAIL_SETTINGS = "summary-email-settings";    
+    private static final String SEND_SUMMARY_EMAIL  = "send-summary-email";
+    private static final String SUMMARY_EMAIL_LINKS  = "summary-email-links";
+    private static final String SUMMARY_EMAIL_RECIPIENTS_TAG = "summary-email-recipients";
+    private static final String SUMMARY_EMAIL_PVALUE_CUTOFF = "summary-email-pvalue-cutoff";
+    private static final String SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG = "summary-email-recurrence-cutoff";  
+    
     private static final String YEAR = "year";
     private static final String MONTH = "month";
     private static final String GENERIC = "generic";
@@ -66,6 +75,22 @@ public class BatchXMLFile {
     private static final String SUCCESS = "Success";
     private static final String CANCELLED = "Cancelled";
     private static final String FAILED = "Failed";
+    
+    public static class SummaryMailSettings {
+      public boolean _send_summary_email;
+      public boolean _summary_email_links;
+      public String _summary_email_recipients;
+      public BigDecimal _summary_email_pvalue_cutoff;
+      public Integer _summary_email_recurrence_cutoff;
+      public SummaryMailSettings() {
+        super();
+        _send_summary_email = false;
+        _summary_email_links = true;
+        _summary_email_pvalue_cutoff = new BigDecimal(0.05);
+        _summary_email_recurrence_cutoff = 365;
+      }
+    }    
+    
     
     public static BatchAnalysis.UNITS parseUnit(String val) {
         if (val.equalsIgnoreCase(YEAR))
@@ -176,7 +201,7 @@ public class BatchXMLFile {
     }
     
     /** Reads batch analysis settings and results information from XML file. */
-    public static ArrayList<BatchAnalysis> read(String filename) {
+    public static ArrayList<BatchAnalysis> readAnalyses(String filename) {
         ArrayList<BatchAnalysis> _batch_analyses = new ArrayList();
         try {
             // Test to see if file exists.
@@ -255,24 +280,64 @@ public class BatchXMLFile {
         return batch_analyses;
     }
     
-    public static void write(String filename, Collection<BatchAnalysis> batchAnalyses) {
+    /** Reads summary mail settings only from XML file. This is a specialized method to read only the SummaryMailSettings object. */
+    public static SummaryMailSettings readSummaryMailSettings(String filename) {
+        SummaryMailSettings mailSettings = new SummaryMailSettings();
+        try {
+            File fXmlFile = new File(filename);
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(fXmlFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName(SUMMARY_EMAIL_SETTINGS);
+            if (nList.getLength() > 0) {
+                Element e = (Element)nList.item(0);
+                mailSettings._send_summary_email = Boolean.parseBoolean(e.getElementsByTagName(SEND_SUMMARY_EMAIL).item(0).getTextContent());
+                mailSettings._summary_email_links = Boolean.parseBoolean(e.getElementsByTagName(SUMMARY_EMAIL_LINKS).item(0).getTextContent());
+                mailSettings._summary_email_recipients = e.getElementsByTagName(SUMMARY_EMAIL_RECIPIENTS_TAG).item(0).getTextContent();
+                mailSettings._summary_email_pvalue_cutoff = new BigDecimal(e.getElementsByTagName(SUMMARY_EMAIL_PVALUE_CUTOFF).item(0).getTextContent());
+                mailSettings._summary_email_recurrence_cutoff = Integer.valueOf(e.getElementsByTagName(SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG).item(0).getTextContent());                
+            }
+        } catch (IOException | NumberFormatException | ParserConfigurationException | DOMException | SAXException e) {
+            e.printStackTrace();
+        }
+        return mailSettings;
+    }    
+    
+    public static void write(String filename, Collection<BatchAnalysis> batchAnalyses, SummaryMailSettings summarySettings) {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
             // root elements
             Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement(ANALYSES);
+            Element rootElement = doc.createElement(BATCH_SETTINGS);
             doc.appendChild(rootElement);
-
+            // Summary email setting elements
+            Element summaryEmailSettings = doc.createElement(SUMMARY_EMAIL_SETTINGS);
+            Element sendSummary = doc.createElement(SEND_SUMMARY_EMAIL);
+            sendSummary.appendChild(doc.createTextNode(Boolean.toString(summarySettings._send_summary_email)));
+            summaryEmailSettings.appendChild(sendSummary);
+            Element summaryLinks = doc.createElement(SUMMARY_EMAIL_LINKS);
+            summaryLinks.appendChild(doc.createTextNode(Boolean.toString(summarySettings._summary_email_links)));
+            summaryEmailSettings.appendChild(summaryLinks);
+            Element summaryEmailRecipients = doc.createElement(SUMMARY_EMAIL_RECIPIENTS_TAG);
+            summaryEmailRecipients.appendChild(doc.createTextNode(summarySettings._summary_email_recipients));
+            summaryEmailSettings.appendChild(summaryEmailRecipients);
+            Element pvalueCutoff = doc.createElement(SUMMARY_EMAIL_PVALUE_CUTOFF);
+            pvalueCutoff.appendChild(doc.createTextNode(summarySettings._summary_email_pvalue_cutoff.toString()));
+            summaryEmailSettings.appendChild(pvalueCutoff);
+            Element rrCutoff = doc.createElement(SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG);
+            rrCutoff.appendChild(doc.createTextNode(summarySettings._summary_email_recurrence_cutoff.toString()));
+            summaryEmailSettings.appendChild(rrCutoff);
+            rootElement.appendChild(summaryEmailSettings);
+            // Analysis elements
+            Element analysesElement = doc.createElement(ANALYSES);
             for (BatchAnalysis batchAnalysis: batchAnalyses) {
                 Element analysis = doc.createElement(ANALYSIS);
                 // Create an attribute to indicate selection.
                 Attr selectionAttribute = doc.createAttribute(ANALYSIS_SELECTED);
                 selectionAttribute.setValue(Boolean.toString(batchAnalysis.getSelected()));
                 analysis.setAttributeNode(selectionAttribute);                    
-                
-                rootElement.appendChild(analysis);               
                 
                 Element description = doc.createElement(DESCRIPTION);
                 description.appendChild(doc.createTextNode(batchAnalysis.getDescription()));
@@ -322,8 +387,11 @@ public class BatchXMLFile {
                 BatchAnalysis.TreeNode<Pair<String, Integer>> dd_root = batchAnalysis.getDrilldownRoot();
                 if (dd_root != null) // Create the drilldown tree element and add all descendents in tree to document.
                     analysis.appendChild(addDrilldownNodes(doc, dd_root, doc.createElement(DRILLDOWN_TREE)));
-            }
 
+                analysesElement.appendChild(analysis);               
+            }
+            rootElement.appendChild(analysesElement);
+            
             // write the content into xml file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();

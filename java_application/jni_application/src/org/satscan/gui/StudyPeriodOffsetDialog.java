@@ -138,11 +138,6 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
                 undo.addEdit(evt.getEdit());
             }
         });
-        _offset_value.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _offset_valueActionPerformed(evt);
-            }
-        });
 
         jLabel2.setText("Units");
 
@@ -183,7 +178,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(_offset_value, javax.swing.GroupLayout.Alignment.LEADING))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -227,10 +222,6 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void _offset_valueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__offset_valueActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__offset_valueActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _cancel;

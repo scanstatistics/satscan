@@ -57,6 +57,7 @@ class AnalysisDefinition {
 
     public:
 
+        bool getFailed() const { return lastexecutionstatus == _FAILED; }
         void signalSuccess() {
             lastexecutionstatus = _SUCCESS;
             setExecutionDateNow();
@@ -88,11 +89,13 @@ class AnalysisDefinition {
             return initial;
         }
 
+        const std::string& getLastResultsFilename() const { return lastresultsfilename; }
 };
 
 /* Class which reads / writes xml file defining analyses to execute in batch, sequentially. */
 class MultipleAnalyses {
     public:
+        static const std::string _BATCH_SETTINGS_ROOT_TAG;
         static const std::string _ANALYSES_TAG;
         static const std::string _ANALYSIS_TAG;
         static const std::string _ANALYSIS_SELECTED_TAG;
@@ -110,28 +113,45 @@ class MultipleAnalyses {
         static const std::string _DRILLDOWN_NODE_TAG;
         static const std::string _DRILLDOWN_RESULTS_TAG;
         static const std::string _DRILLDOWN_RESULTS_SIGNIFANT_TAG;
+        static const std::string _SUMMARY_EMAIL_SETTINGS_TAG;
+        static const std::string _SEND_SUMMARY_EMAIL_TAG;
+        static const std::string _SUMMARY_EMAIL_LINKS_TAG;
+        static const std::string _SUMMARY_EMAIL_RECIPIENTS_TAG;
+        static const std::string _SUMMARY_EMAIL_PVALUE_CUTOFF_TAG;
+        static const std::string _SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG;
+        static const std::string _DEFAULT_RECURRENCE_CUTOFF;
+        static const std::string _DEFAULT_PVALUE_CUTOFF;
+        static const std::string _EMAIL_TEMP_EXTENSION;
 
     private:
         typedef std::vector<AnalysisDefinition> AnalysesContainer_t;
         AnalysesContainer_t _analysis_defs;
+        bool _send_summary_email;
+        bool _summary_email_links;
+        std::string _summary_email_recipients;
+        std::string _summary_email_pvalue_cutoff;
+        std::string _summary_email_recurrence_cutoff;
 
         template <typename T, typename Indirect>
         void _read_tree(Indirect const& maybeTree, std::string sub, T& into, decltype(&*maybeTree) = nullptr) {
-            if (maybeTree) _read_tree(*maybeTree, sub, into); else into = {};
-        }
-
-        template <typename T, typename Indirect>
-        void _read_tree(Indirect const& maybeTree, T& into, decltype(&*maybeTree) = nullptr) {
-            if (maybeTree) _read_tree(*maybeTree, into); else into = {};
-        }
-
-        template <typename T>
-        void _read_tree(Tree const& tree, std::string sub, std::vector<T>& into) {
-            for (auto& child : tree) {
-                if (child.first == sub) {
-                    into.emplace_back();
-                    read_analysis(child.second, into.back());
+            if (maybeTree) {
+                for (auto& child : *maybeTree) {
+                    if (child.first == sub) {
+                        into.emplace_back();
+                        read_analysis(child.second, into.back());
+                    }
                 }
+            } else into = {};
+        }
+
+        template <typename Indirect>
+        void _read_settings_tree(Indirect const& maybeTree, decltype(&*maybeTree) = nullptr) {
+            if (maybeTree) {
+                _send_summary_email = maybeTree->get<bool>(_SEND_SUMMARY_EMAIL_TAG, false);
+                _summary_email_links = maybeTree->get<bool>(_SUMMARY_EMAIL_LINKS_TAG, true);
+                _summary_email_recipients = maybeTree->get(_SUMMARY_EMAIL_RECIPIENTS_TAG, _SUMMARY_EMAIL_RECIPIENTS_TAG);
+                _summary_email_pvalue_cutoff = maybeTree->get(_SUMMARY_EMAIL_PVALUE_CUTOFF_TAG, _DEFAULT_PVALUE_CUTOFF);
+                _summary_email_recurrence_cutoff = maybeTree->get(_SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG, _DEFAULT_RECURRENCE_CUTOFF);
             }
         }
 
@@ -161,15 +181,33 @@ class MultipleAnalyses {
             _analysis_defs.clear();
             Tree tree;
             pt::read_xml(filename, tree);
-            _read_tree(tree.get_child_optional(_ANALYSES_TAG), _ANALYSIS_TAG, _analysis_defs);
+
+            auto batch_root_tree = tree.get_child_optional(_BATCH_SETTINGS_ROOT_TAG);
+            auto analyses_tree = tree.get_child_optional(_ANALYSES_TAG);
+            if (batch_root_tree) { // newer xml structure
+                _read_settings_tree(batch_root_tree->get_child_optional(_SUMMARY_EMAIL_SETTINGS_TAG));
+                _read_tree(batch_root_tree->get_child_optional(_ANALYSES_TAG), _ANALYSIS_TAG, _analysis_defs);
+            } else { // older structured xml, when 'analyses' was the root node
+                _read_tree(analyses_tree, _ANALYSIS_TAG, _analysis_defs);
+            }
             return true;
         }
 
-        /* Writes analysis property tree to file. */
+        /* Writes property tree to file. */
         void write_file(const std::string& filename) {
-            std::stringstream analysis_group;
-            analysis_group << _ANALYSES_TAG << "." << _ANALYSIS_TAG;
             pt::ptree tree;
+            std::stringstream group_key;
+            group_key << _BATCH_SETTINGS_ROOT_TAG << "." << _SUMMARY_EMAIL_SETTINGS_TAG;
+            pt::ptree email_settings_subtree;
+            email_settings_subtree.put<bool>(_SEND_SUMMARY_EMAIL_TAG, _send_summary_email);
+            email_settings_subtree.put<bool>(_SUMMARY_EMAIL_LINKS_TAG, _summary_email_links);
+            email_settings_subtree.put(_SUMMARY_EMAIL_RECIPIENTS_TAG, _summary_email_recipients);
+            email_settings_subtree.put(_SUMMARY_EMAIL_PVALUE_CUTOFF_TAG, _summary_email_pvalue_cutoff);
+            email_settings_subtree.put(_SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG, _summary_email_recurrence_cutoff);
+            tree.add_child(group_key.str(), email_settings_subtree);
+
+            group_key.str("");
+            group_key << _BATCH_SETTINGS_ROOT_TAG << "." << _ANALYSES_TAG << "." << _ANALYSIS_TAG;
             for (AnalysesContainer_t::const_iterator itr = _analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
                 pt::ptree subtree;
                 subtree.put<bool>(_ANALYSIS_SELECTED_TAG, itr->selected);
@@ -184,15 +222,18 @@ class MultipleAnalyses {
                 subtree.put(_LAG_EXEC_MSSG_TAG, itr->lastexecutionwarningserrors.empty() ? std::string("No Warnings or Errors.") : itr->lastexecutionwarningserrors);
                 subtree.put(_LAG_EXEC_RESULTS_TAG, itr->lastresultsfilename);
                 subtree.add_child(_DRILLDOWN_TREE_TAG, itr->_drilldown_tree);
-                tree.add_child(analysis_group.str(), subtree);
+                tree.add_child(group_key.str(), subtree);
             }
             write_xml(filename, tree, std::locale(), boost::property_tree::xml_parser::xml_writer_settings<boost::property_tree::ptree::key_type>('\t', 1));
         }
 
     public:
-        MultipleAnalyses() {}
+        MultipleAnalyses(): 
+            _send_summary_email(false), _summary_email_links(true),
+            _summary_email_pvalue_cutoff(_DEFAULT_PVALUE_CUTOFF), _summary_email_recurrence_cutoff(_DEFAULT_RECURRENCE_CUTOFF) {}
 
-        void execute(BasePrint& print, bool includeUnSelected);
+        void emailSummary(BasePrint& print, bool includeUnSelected);
+        int execute(BasePrint& print, bool includeUnSelected);
         static bool addResults(const std::string& resultsname, const std::string& parentname, unsigned int significant, pt::ptree &pt_parent, pt::ptree &pt_child, bool target = false);
 };
 

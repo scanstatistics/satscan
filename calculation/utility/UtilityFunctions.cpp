@@ -804,3 +804,74 @@ std::stringstream & templateReplace(std::stringstream& templateText, const std::
     templateText << changed;
     return templateText;
 }
+
+/////////////////// EmailText /////////////////////////
+
+const char* EmailText::LINEBREAK = "<linebreak>";
+const char* EmailText::DATE_VAR = "<date>";
+const char* EmailText::RESULTS_F_VAR = "<results-filename>";
+const char* EmailText::RESULTS_D_VAR = "<results-directory>";
+const char* EmailText::SUMMARYLINK_VAR = "<summary-link>";
+const char* EmailText::SUMMARY_PAR = "<summary-paragraph>";
+const char* EmailText::SIGNAL_PAR = "<signal-paragraph>";
+const char* EmailText::RESULTS_PAR = "<results-paragraph>";
+const char* EmailText::FOOTER_PAR = "<footer-paragraph>";
+
+
+/* Returns email text with tags substituted. */
+std::string EmailText::getEmailFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML) {
+    using boost::algorithm::replace_all;
+    using boost::algorithm::ireplace_all;
+    boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
+    std::stringstream bufferStream, workStream, mainResults, resultsDirectory;
+    std::string buffer, message(messagebody), newline(asHTML ? "<br>" : "\n");
+    FileName fileName(resultsPath.c_str());
+
+    // Replace <date> tag
+    facet->format("%B"); // Full month name
+    workStream.imbue(std::locale(std::locale::classic(), facet));
+    workStream.str(""); workStream << localTime;
+    bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
+    ireplace_all(message, DATE_VAR, bufferStream.str());
+    auto getPathLink = [asHTML](std::string& path, const std::string& label) { // formats file path for html
+#ifdef _WINDOWS_
+        std::transform(path.begin(), path.end(), path.begin(), [](char& ch) {
+            if (ch == FileName::BACKSLASH) ch = FileName::FORWARDSLASH;
+            return ch;
+            });
+#endif
+            if (asHTML) {
+                std::stringstream s;
+                s << "<a href=\"file:///" << path.c_str() << "\">" << (label.empty() ? path.c_str() : label.c_str()) << "</a>";
+                path = s.str();
+            } return path;
+        };
+    // Replace RESULTS_F_VAR tag
+    mainResults << getPathLink(fileName.getFullPath(buffer), "");
+    ireplace_all(message, RESULTS_F_VAR, mainResults.str().c_str());
+    // Replace RESULTS_D_VAR tag
+    resultsDirectory << getPathLink(fileName.getLocation(buffer), "");
+    ireplace_all(message, RESULTS_D_VAR, resultsDirectory.str().c_str());
+    // Replace SUMMARYLINK_VAR tag
+    workStream.str("");
+    if (asHTML)
+        workStream << getPathLink(fileName.getFullPath(buffer), "Results file");
+    else
+        workStream << "Results file: " << getPathLink(fileName.getFullPath(buffer), "");
+    ireplace_all(message, SUMMARYLINK_VAR, workStream.str().c_str());
+    // Replace RESULTS_PAR tag
+    workStream.str("");
+    workStream << "The main results file of this analysis is located at:" << newline << mainResults.str() << newline;
+    workStream << "All result files are located at:" << newline << resultsDirectory.str();
+    ireplace_all(message, RESULTS_PAR, workStream.str().c_str());
+    // Replace FOOTER_PAR tag
+    workStream.str("");
+    workStream << "This is an automatically generated message with the results from today's SaTScan analysis. Reply to ";
+    workStream << (asHTML ? "<a href=\"mailto:" : "") << AppToolkit::getToolkit().mail_from << "\">" << AppToolkit::getToolkit().mail_from << (asHTML ? "</a>" : "");
+    workStream << " if you no longer wish to receive this email, received this email in error, or have questions about this analysis.";
+    ireplace_all(message, FOOTER_PAR, workStream.str().c_str());
+    // Replace LINEBREAK tag
+    ireplace_all(message, LINEBREAK, newline.c_str());
+    return message;
+}

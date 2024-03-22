@@ -95,6 +95,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private boolean _batch_executing = false;
     private FileTime _xml_last_modified;
     private DefaultFileMonitor _file_monitor;
+    private BatchXMLFile.SummaryMailSettings _email_settings=new BatchXMLFile.SummaryMailSettings();
       
     /* Creates new form AnalysisBatchFrame */
     public BatchAnalysisFrame(final JRootPane root_pane) {
@@ -150,6 +151,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             _execute_selected.setEnabled(!selected.isEmpty() && _open_settings_frames.isEmpty());
             _moveUp.setEnabled(selected.size() == 1 && selected.get(0).right > 0);
             _moveDown.setEnabled(selected.size() == 1 && selected.get(0).right < _analyses_table.getModel().getRowCount() - 1);
+            _summary_email.setEnabled(true);
         }
     }
     
@@ -200,15 +202,16 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private void readBatchAnalysesFromFile() {
         DefaultTableModel model = (DefaultTableModel) _analyses_table.getModel();
         model.setRowCount(0);
-        _batch_analyses = org.satscan.app.BatchXMLFile.read(_saved_filename);
+        _email_settings = org.satscan.app.BatchXMLFile.readSummaryMailSettings(_saved_filename);
+        _batch_analyses = org.satscan.app.BatchXMLFile.readAnalyses(_saved_filename);
         for (BatchAnalysis batchAnalysis: _batch_analyses)
             model.addRow(getRowForBatchAnalysis(batchAnalysis));
         _table_initiallized = true;
     }
     
     /* Writes all batch analysis settings to storage file. */
-    private void writeBatchAnalysesFromFile() {
-        org.satscan.app.BatchXMLFile.write(_saved_filename, _batch_analyses);
+    private void writeFile() {
+        org.satscan.app.BatchXMLFile.write(_saved_filename, _batch_analyses, _email_settings);
         // store the date last modified, we'll use this information with file listener
         _xml_last_modified = org.satscan.app.BatchXMLFile.last_modified(_saved_filename);
     }
@@ -288,7 +291,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 settings_frame.dispose();
             }
             /* Now write the all parameter settings back to file -- maybe this only needs to be done on batch frame close or run? */
-            writeBatchAnalysesFromFile();            
+            writeFile();            
         }
         return true;
     }
@@ -326,6 +329,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         jSeparator3 = new javax.swing.JSeparator();
         _moveUp = new javax.swing.JButton();
         _moveDown = new javax.swing.JButton();
+        _summary_email = new javax.swing.JButton();
         _analysesScrollpane = new javax.swing.JScrollPane();
         _analyses_table = new javax.swing.JTable();
 
@@ -337,7 +341,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
 
         _actions_panel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        _add_analysis.setText("New Settings");
+        _add_analysis.setText("New Analysis");
         _add_analysis.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 WaitCursor waitCursor = new WaitCursor(BatchAnalysisFrame.this);
@@ -392,7 +396,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                             _batch_analyses.remove(selectedAnalysis.left);
                         }
                     }
-                    writeBatchAnalysesFromFile();
+                    writeFile();
                     enableButtons();
                 }
             }
@@ -430,6 +434,27 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _execute_selected.setText("Execute Selected");
         _execute_selected.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (_email_settings._send_summary_email) {
+                    try {
+                        if (!ApplicationPreferences.minimumMailServerDefined()) {
+                            JOptionPane.showInternalMessageDialog(BatchAnalysisFrame.this,
+                                """
+                                In order to email a summary email alerts, you must define mail server settings.
+                                Please see 'Mail Server Settings' in the 'Preferences and Settings' dialog."""
+                            );
+                            return;
+                        }
+                        if (_email_settings._summary_email_recipients.trim().isEmpty()) {
+                            JOptionPane.showInternalMessageDialog(BatchAnalysisFrame.this,
+                                "At least one email address is required to receive summary email alerts."
+                            );
+                            return;
+                        }
+                    } catch (Throwable t) {
+                        new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+                        return;
+                    }
+                }
                 _execute_progress.setValue(0);
                 _execute_progress.setString("");
                 _execute_progress.setVisible(true);
@@ -506,6 +531,20 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
 
+        _summary_email.setText("Email Alerts");
+        _summary_email.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    SummaryEmailSettingsDialog settings = new SummaryEmailSettingsDialog(SaTScanApplication.getInstance(), _email_settings);
+                    settings.setLocationRelativeTo(SaTScanApplication.getInstance());
+                    settings.setVisible(true);
+                    if (settings._updated) writeFile();
+                } catch (Throwable t) {
+                    new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);
+                }
+            }
+        });
+
         javax.swing.GroupLayout _actions_panelLayout = new javax.swing.GroupLayout(_actions_panel);
         _actions_panel.setLayout(_actions_panelLayout);
         _actions_panelLayout.setHorizontalGroup(
@@ -524,7 +563,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addGroup(_actions_panelLayout.createSequentialGroup()
                         .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_summary_email, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _actions_panelLayout.setVerticalGroup(
@@ -543,10 +583,12 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     .addComponent(_moveUp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_moveDown, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_remove_analysis)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_remove_analysis)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                .addComponent(_summary_email)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 94, Short.MAX_VALUE)
                 .addComponent(_execute_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_execute_selected)
@@ -602,13 +644,13 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                         boolean curr_value = _batch_analyses.get(row).getSelected();
                         _batch_analyses.get(row).setSelected((boolean)model.getValueAt(row, column));
                         if (curr_value != _batch_analyses.get(row).getSelected())
-                        writeBatchAnalysesFromFile();
+                        writeFile();
                     } else if (column == DESCRIPTION_IDX) {
                         DefaultTableModel model = (DefaultTableModel)e.getSource();
                         String curr_value = _batch_analyses.get(row).getDescription();
                         _batch_analyses.get(row).setDescription((String)model.getValueAt(row, column));
                         if (!curr_value.equals(_batch_analyses.get(row).getDescription()))
-                        writeBatchAnalysesFromFile();
+                        writeFile();
                     }
                 }
             }
@@ -659,7 +701,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             // set selection to the new position
             _analyses_table.setRowSelectionInterval(selected.right - 1, selected.right - 1);            
             Collections.swap(_batch_analyses, selected.right, selected.right - 1);
-            writeBatchAnalysesFromFile();
+            writeFile();
             _moveUp.setEnabled(selected.right - 1 > 0);
             if (_moveUp.isEnabled()) _moveUp.requestFocusInWindow();
         }
@@ -674,7 +716,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             // set selection to the new position
             _analyses_table.setRowSelectionInterval(selected.right + 1, selected.right + 1);
             Collections.swap(_batch_analyses, selected.right, selected.right + 1);
-            writeBatchAnalysesFromFile();
+            writeFile();
             _moveDown.setEnabled(selected.right + 1 < _analyses_table.getModel().getRowCount() - 1);
             if (_moveDown.isEnabled()) _moveDown.requestFocusInWindow();
         }
@@ -704,7 +746,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     // Re-assign parameters class associated with this nalysis panel.
                     batchAnaylsis.setParameters(settings_frame.getParameterSettings());
                     /* Now write the all parameter settings back to file -- maybe this only needs to be done on batch frame close or run? */
-                    writeBatchAnalysesFromFile();
+                    writeFile();
                     // Fresh table cell to reflect any updates.
                     int idx = _batch_analyses.indexOf(batchAnaylsis);
                     _analyses_table.getModel().setValueAt(batchAnaylsis.getParameters().GetAnalysisTypeAsString(true), idx, ANALYSIS_IDX);
@@ -973,7 +1015,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     else if (column == LAG_IDX)
                         ba.setLag(_editor_dialog.getStudyPeriodOffset());
                     currentOffset = _editor_dialog.getStudyPeriodOffset();
-                    writeBatchAnalysesFromFile();
+                    writeFile();
                 }
                 fireEditingStopped();
             });
@@ -982,6 +1024,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         }
     }
 
+    private native int SendSummaryEmail();
     
     /* Background task runner which executes selected analyese. */
     class ExecuteAnalysisTask extends SwingWorker<Void, BatchAnalysis> {
@@ -1017,6 +1060,11 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                     // Create a new analysis runner frame.
                     // Clone the paramters so we can modifiy the study period dates.
                     Parameters run_parameters = (Parameters)analysis.getParameters().clone();
+                    run_parameters.setCreateEmailSummaryFile(_email_settings._send_summary_email);
+                    if (run_parameters.GetIsProspectiveAnalysis())
+                        run_parameters.setEmailSummaryValue(_email_settings._summary_email_recurrence_cutoff.doubleValue());
+                    else
+                        run_parameters.setEmailSummaryValue(_email_settings._summary_email_pvalue_cutoff.doubleValue());                        
                     // set study period based on study period length and lag settings.
                     LocalDate enddate = getLocalDate(_start_date, analysis.getLag(), false);
                     if (analysis.getLag() != null)
@@ -1099,7 +1147,14 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 }
                 setProgress(100);
                 // Write results to xml file -- recording analysis status and execution time.
-                writeBatchAnalysesFromFile();                
+                writeFile();
+                // send summary email, if requested
+                if (_email_settings._send_summary_email) {
+                    if (BatchAnalysisFrame.this.SendSummaryEmail() != 0)
+                        JOptionPane.showInternalMessageDialog(
+                            BatchAnalysisFrame.this, "The summary email could not be sent."
+                        );
+                }
             } catch (Exception e) {
                 Logger.getLogger(ExecuteAnalysisTask.class.getName()).log(Level.SEVERE, null, e);
                 throw new RuntimeException(e.getMessage(), e);
@@ -1130,6 +1185,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
     private javax.swing.JButton _moveDown;
     private javax.swing.JButton _moveUp;
     private javax.swing.JButton _remove_analysis;
+    private javax.swing.JButton _summary_email;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     // End of variables declaration//GEN-END:variables

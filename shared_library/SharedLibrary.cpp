@@ -34,6 +34,8 @@
 #include "ShapeFile.h"
 #include "DataSource.h"
 #include "org_satscan_gui_ApplicationPreferences.h"
+#include "org_satscan_gui_BatchAnalysisFrame.h"
+#include "MultipleAnalyses.h"
 
 //#pragma argsused
 
@@ -394,6 +396,16 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
 	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return 1;
   }
+}
+
+/* Java JNI call to email summary of most recent MultipleAnalyses execution. */
+JNIEXPORT jint JNICALL Java_org_satscan_gui_BatchAnalysisFrame_SendSummaryEmail(JNIEnv*, jobject) {
+    try {
+        MultipleAnalyses().emailSummary(PrintNull(), false);
+    } catch (std::exception& x) {
+        return 1;
+    }
+    return 0;
 }
 
 JNIEXPORT jint JNICALL Java_org_satscan_app_CalculationThread_RunAnalysis(JNIEnv *pEnv, jobject JCalculationThread, jobject JParameters) {

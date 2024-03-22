@@ -100,6 +100,23 @@ bool                            sendMail(
 );
 bool                            validEmailAdrress(const std::string& emailaddress);
 boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
-std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
+std::stringstream             & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
+
+/* A utility class with assists with generating HTML and plain text for emails. */
+class EmailText {
+    public:
+        static const char* LINEBREAK;
+        static const char* DATE_VAR;
+        static const char* RESULTS_F_VAR;
+        static const char* RESULTS_D_VAR;
+        static const char* SUMMARYLINK_VAR;
+
+        static const char* SUMMARY_PAR;
+        static const char* SIGNAL_PAR;
+        static const char* RESULTS_PAR;
+        static const char* FOOTER_PAR;
+
+        static std::string getEmailFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML);
+};
 //******************************************************************************
 #endif

@@ -163,8 +163,10 @@ void CClusterSetCollections::setClusterCollections(const CCluster& cluster, size
         else
             cluster_set.reset(new CClusterSet());
         // When analysis uses gini, there will be more than one spatial window stop (for the different max. spatial sizes of gini).
-        for (size_t t = 0; t < _parameters.getExecuteSpatialWindowStops().size(); ++t)
-            cluster_set->add(CClusterObject(cluster));
+        for (size_t t = 0; t < _parameters.getExecuteSpatialWindowStops().size(); ++t) {
+            CClusterObject addMe(cluster);
+            cluster_set->add(addMe);
+        }
         _cluster_sets.push_back(cluster_set);
     }
 }

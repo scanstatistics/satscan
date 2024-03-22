@@ -1652,5 +1652,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setMultipleLocationsFile(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
+  mid = _getMethodId_Checked(Env, clazz, "getCreateEmailSummaryFile", "()Z");
+  Parameters.setCreateEmailSummaryFile(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getEmailSummaryValue", "()D");
+  Parameters.setEmailSummaryValue(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
   return Parameters;
 }

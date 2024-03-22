@@ -62,8 +62,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final DateComponentsGroup _flexStartRangeEndDateComponentsGroup;
     private final DateComponentsGroup _flexEndRangeStartDateComponentsGroup;
     private final DateComponentsGroup _flexEndRangeEndDateComponentsGroup;
-    private String DEFAULT_PVALUE_SETTING = "0.05";
-    private String DEFAULT_RECURRENCE_SETTING = "365";
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -363,11 +361,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         double val = Double.parseDouble(_cutoff_value_email.getText());
         if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
             _cutoff_email.setText("If recurrence interval greater than or equal to");
-            if (val <= 1) _cutoff_value_email.setText(DEFAULT_RECURRENCE_SETTING);
+            if (val <= 1) _cutoff_value_email.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
             _cutoff_email_label.setText("days, send email with summary results to (csv list):");
         } else {
             _cutoff_email.setText("If p-value less than or equal to");
-            if (val > 1) _cutoff_value_email.setText("0.05");
+            if (val > 1) _cutoff_value_email.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
             _cutoff_email_label.setText("send email with summary results to (csv list):");
         }
         
@@ -409,11 +407,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
             if (prospectiveAnalysis) {
                 _cluster_lineline_chx.setText("Include clusters with recurrence interval greater than or equal to");
-                if (val <= 1) _cluster_lineline_value.setText(DEFAULT_RECURRENCE_SETTING);
+                if (val <= 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
                 _cluster_lineline_label.setText("days in line list CSV file.");
             } else {
                 _cluster_lineline_chx.setText("Include clusters with p-value less than or equal to");
-                if (val > 1) _cluster_lineline_value.setText("0.05");
+                if (val > 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
                 _cluster_lineline_label.setText("in line list CSV file.");
             }        
         }
@@ -6587,12 +6585,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
                         while (_cutoff_value_email.getText().length() == 0 ||
                             Double.parseDouble(_cutoff_value_email.getText()) < 1)
-                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(DEFAULT_RECURRENCE_SETTING);
+                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
                     } else {
                         while (_cutoff_value_email.getText().length() == 0 ||
                             Double.parseDouble(_cutoff_value_email.getText()) <= 0 ||
                             Double.parseDouble(_cutoff_value_email.getText()) > 1)
-                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(DEFAULT_PVALUE_SETTING);
+                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
                     }
                     enableSetDefaultsButton();
                 }

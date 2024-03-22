@@ -452,6 +452,8 @@ void CParameters::Copy(const CParameters &rhs) {
   _multiple_locations_file = rhs._multiple_locations_file;
   _linelist_csv_restrict = rhs._linelist_csv_restrict;
   _linelist_csv_cutoff = rhs._linelist_csv_cutoff;
+  _create_email_summary_file = rhs._create_email_summary_file;
+  _email_summary_cutoff = rhs._email_summary_cutoff;
 }
 
 /* Returns whether line list data is read from case file - the user used file wizard to define line list columns */
@@ -475,56 +477,6 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
     throw prg_error("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
                     (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
   return gvControlFilenames[iSetIndex - 1];
-}
-
-/* Returns email text with tags substituted. */
-std::string CParameters::getEmailFormattedText(const std::string& messagebody, bool asHTML) const {
-    using boost::algorithm::replace_all;
-    using boost::algorithm::ireplace_all;
-    boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
-    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
-    std::stringstream bufferStream, workStream, mainResults, resultsDirectory;
-    std::string buffer, message(messagebody), newline(asHTML ? "<br>" : "\n");
-    FileName fileName(_results_filename.c_str());
-
-    // Replace <date> tag
-    facet->format("%B"); // Full month name
-    workStream.imbue(std::locale(std::locale::classic(), facet));
-    workStream.str(""); workStream << localTime;
-    bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
-    ireplace_all(message, "<date>", bufferStream.str());
-    auto getPathLink = [asHTML](std::string& path) { // formats file path for html
-        #ifdef _WINDOWS_
-        std::transform(path.begin(), path.end(), path.begin(), [](char& ch) {
-            if (ch == FileName::BACKSLASH) ch = FileName::FORWARDSLASH;
-            return ch;
-        });
-        #endif
-        if (asHTML) { std::stringstream s;
-            s << "<a href=\"file:///" << path.c_str() << "\">" << path.c_str() << "</a>";
-            path = s.str();
-        } return path;
-    };
-    // Replace <results-filename> tag
-    mainResults << getPathLink(fileName.getFullPath(buffer));
-    ireplace_all(message, "<results-filename>", mainResults.str().c_str());
-    // Replace <results-directory> tag
-    resultsDirectory << getPathLink(fileName.getLocation(buffer));
-    ireplace_all(message, "<results-directory>", resultsDirectory.str().c_str());
-    // Replace <results-paragraph> tag
-    workStream.str("");
-    workStream << "The main results file of this analysis is located at:" << newline << mainResults.str() << newline;
-    workStream << "All result files are located at:" << newline << resultsDirectory.str();
-    ireplace_all(message, "<results-paragraph>", workStream.str().c_str());
-    // Replace <footer-paragraph> tag
-    workStream.str("");
-    workStream << "This is an automatically generated message with the results from today's SaTScan analysis. Reply to ";
-    workStream << (asHTML ? "<a href=\"mailto:" : "") << AppToolkit::getToolkit().mail_from << "\">" << AppToolkit::getToolkit().mail_from << (asHTML ? "</a>" : "");
-    workStream << " if you no longer wish to receive this email, received this email in error, or have questions about this analysis.";
-    ireplace_all(message, "<footer-paragraph>", workStream.str().c_str());
-    // Replace newlines tag
-    ireplace_all(message, "<linebreak>", newline.c_str());
-    return message;
 }
 
 /** Returns threshold for early termination. If reporting default p-value, then
@@ -1079,12 +1031,17 @@ void CParameters::SetAsDefaulted() {
   _email_cutoff_recipients = "";
   _email_custom = false;
   _email_custom_subject = "";
-  _email_custom_message_body = "<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
+  printString(_email_custom_message_body, "%s%s%s%s%s%s%s",
+      EmailText::SUMMARY_PAR, EmailText::LINEBREAK, EmailText::LINEBREAK, 
+      EmailText::RESULTS_PAR,  EmailText::LINEBREAK, EmailText::LINEBREAK, EmailText::FOOTER_PAR
+  );
   _email_attach_results = false;
   _email_include_results_directory = false;
   _multiple_locations_file = "";
   _linelist_csv_restrict = false;
   _linelist_csv_cutoff = 0.05;
+  _create_email_summary_file = false;
+  _email_summary_cutoff = 0.05;
 }
 
 /** Sets start range start date. Throws exception. */

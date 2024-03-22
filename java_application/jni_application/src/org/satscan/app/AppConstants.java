@@ -23,6 +23,9 @@ public final class AppConstants {
     public static final int VERSION_RELEASE = 0;
     public static final String VERSION_PHASE = "";
     
+    public static String DEFAULT_PVALUE_CUTOFF = "0.05";
+    public static String DEFAULT_RECURRENCE_CUTOFF = "365"; // in days
+    
     // Input Tab
     public static final String CASEFILE_HELPID = "Case File";
     public static final String CONTROLFILE_HELPID = "Control File";

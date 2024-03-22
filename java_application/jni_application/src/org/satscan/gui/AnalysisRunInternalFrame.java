@@ -167,9 +167,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         for (FilterTreeNode filternode : _tree_output_map.keySet()) {
             if (filternode.getParent() == null) {
                 // Found root node - add it to the BatchAnalysis tree a root.
-                BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = analysis.getNewTreeNode(
-                    filternode.getUserObject().toString(), Integer.valueOf(1)
-                );
+                BatchAnalysis.TreeNode<Pair<String, Integer>> rootNode = analysis.getNewTreeNode(filternode.getUserObject().toString(), 1);
                 analysis.setDrilldownRoot(rootNode);
                 // Recusively dive descendants of the root.
                 populateBatchAnalysisTreeNode(analysis, filternode, rootNode);

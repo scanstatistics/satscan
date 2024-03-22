@@ -32,7 +32,7 @@
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="jLabel1" alignment="0" pref="61" max="32767" attributes="0"/>
+                                  <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
                                   <Component id="_offset_value" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -101,9 +101,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="365"/>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_offset_valueActionPerformed"/>
-      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_offset_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_offset_value.getText().length() == 0) {&#xa;            if (undo.canUndo()) &#xa;                undo.undo(); &#xa;            else &#xa;                _offset_value.setText(Integer.toString(_minimum_value));&#xa;        }&#xa;        if (Integer.parseInt(_offset_value.getText()) &lt; _minimum_value)&#xa;            _offset_value.setText(Integer.toString(_minimum_value));&#xa;    }&#xa;});&#xa;_offset_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_offset_value, e, 6);&#xa;    }&#xa;});&#xa;_offset_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
       </AuxValues>

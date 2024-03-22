@@ -483,6 +483,7 @@
     <ClInclude Include="..\calculation\utility\ZipUtils.h" />
     <ClInclude Include="JNIException.h" />
     <ClInclude Include="org_satscan_app_AppConstants.h" />
+    <ClInclude Include="org_satscan_gui_BatchAnalysisFrame.h" />
     <ClInclude Include="org_satscan_utils_FileAccess.h" />
     <ClInclude Include="org_satscan_app_CalculationThread.h" />
     <ClInclude Include="org_satscan_app_Parameters.h" />

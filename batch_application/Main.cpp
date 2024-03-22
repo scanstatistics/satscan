@@ -191,8 +191,7 @@ int main(int argc, char *argv[]) {
     //potentially perform execution of multiple analyses, if user requested
     if (execMultipleAnalyses || execAllMultipleAnalyses) {
         Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
-        MultipleAnalyses().execute(Console, execAllMultipleAnalyses);
-        return 0;
+        return MultipleAnalyses().execute(Console, execAllMultipleAnalyses);
     }
 
     //if (!vm.count("parameter-file")) {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); usage_message(argv[0], opt_descriptions, application, Console); return 1;}

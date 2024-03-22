@@ -45,6 +45,7 @@
 #include "ParametersValidate.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
+#include "MultipleAnalyses.h"
 #include <boost/assign/std/vector.hpp>
 #include <algorithm>
 using namespace boost::assign;
@@ -326,6 +327,20 @@ void AnalysisExecution::finalize() {
         else fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
         if (_parameters.GetNumParallelProcessesToExecute() > 1) fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
         fclose(fp); fp = 0;
+        // Create a temporary file which will be used to generate the multiple analyses summary email.
+        if (!_data_hub.isDrilldown() && _parameters.getCreateEmailSummaryFile()) {
+            CCluster::RecurrenceInterval_t ri_cutoff(1, _parameters.getEmailSummaryValue());
+            unsigned int metCutoff = 0;
+            for (tract_t i=0; i < _reportClusters.GetNumClustersRetained(); ++i) {
+                if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getEmailSummaryValue()))
+                    break;
+                ++metCutoff;
+            }
+            // Write temp file that will be used when creating the multiple analysis summary email.
+            printString(buffer, "%s%s", _parameters.GetOutputFileName().c_str(), MultipleAnalyses::_EMAIL_TEMP_EXTENSION);
+            std::ofstream summary_tmp(buffer.c_str(), std::ios_base::trunc);
+            summary_tmp << metCutoff;
+        }
 
         // Send email per user settings.
         bool clusterMeetsCutoff = false;
@@ -377,13 +392,13 @@ void AnalysisExecution::finalize() {
                     summaryParagraph << " The observed / expected = " << clusterAttributes["Observed / expected"] << ".";
                 if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end()) {
                     summaryParagraph << " The recurrence interval = " << clusterAttributes["Recurrence interval"] << ".";
-                    printString(mlcSubjectLineNotice, " MLC Recurrence Interval = %s", clusterAttributes["Recurrence interval"].c_str());
+                    printString(mlcSubjectLineNotice, ", MLC recurrence interval = %s", clusterAttributes["Recurrence interval"].c_str());
                 } else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end()) {
                     summaryParagraph << " The p-value = " << clusterAttributes["Gumbel P-value"] << ".";
-                    printString(mlcSubjectLineNotice, " MLC P-value = %s", clusterAttributes["Gumbel P-value"].c_str());
+                    printString(mlcSubjectLineNotice, ", MLC p-value = %s", clusterAttributes["Gumbel P-value"].c_str());
                 } else if (clusterAttributes.find("P-value") != clusterAttributes.end()) {
                     summaryParagraph << " The p-value = " << clusterAttributes["P-value"] << ".";
-                    printString(mlcSubjectLineNotice, " MLC P-value = %s", clusterAttributes["P-value"].c_str());
+                    printString(mlcSubjectLineNotice, ", MLC p-value = %s", clusterAttributes["P-value"].c_str());
                 }
                 if (clusterMeetsCutoff) { // If cluster meets cut-off, count the number of other clusters that also met it.
                     unsigned int othersCutoff = 0;
@@ -393,7 +408,8 @@ void AnalysisExecution::finalize() {
                         ++othersCutoff;
                     }
                     if (othersCutoff) {
-                        summaryParagraph << "<linebreak>There " << (othersCutoff == 1 ? "was" : "were") << " " << othersCutoff << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
+                        summaryParagraph << EmailText::LINEBREAK << "There " << (othersCutoff == 1 ? "was" : "were") << " " << othersCutoff 
+                            << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
                         if (_parameters.GetIsProspectiveAnalysis())
                             summaryParagraph << "recurrence interval >= " << ri_cutoff.second << " day" << (ri_cutoff.second == 1 ? "" : "s") << ".";
                         else
@@ -414,7 +430,7 @@ void AnalysisExecution::finalize() {
                     for (tract_t i = 0; i < _reportClusters.GetNumClustersRetained(); ++i) {
                         unsigned int clusterNewCount = cluster_counts.at(static_cast<int>(i)).first;
                         if (clusterNewCount) {
-                            if (signaltext.str().size()) signaltext << "<linebreak>";
+                            if (signaltext.str().size()) signaltext << EmailText::LINEBREAK;
                             count_t clusterTotalCases = cluster_counts.at(static_cast<int>(i)).second;
                             if (clusterNewCount == clusterTotalCases)
                                 signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << (i + 1) << ".";
@@ -423,8 +439,8 @@ void AnalysisExecution::finalize() {
                         }
                     }
                 }
-                ireplace_all(customMessageBody, "<signal-paragraph>", (signaltext.str().size() ? signaltext.str() : std::string("No clusters signalled in this analysis.")));
-                ireplace_all(customMessageBody, "<summary-paragraph>", summaryParagraph.str());
+                ireplace_all(customMessageBody, EmailText::SIGNAL_PAR, (signaltext.str().size() ? signaltext.str() : std::string("No clusters signalled in this analysis.")));
+                ireplace_all(customMessageBody, EmailText::SUMMARY_PAR, summaryParagraph.str());
                 messageBody.str("");
                 messageBody << customMessageBody;
             } else { // Otherwise create the standard email.
@@ -433,13 +449,13 @@ void AnalysisExecution::finalize() {
                 messageSubjectLine << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
                 messageBody << summaryParagraph.rdbuf();
                 // Add output summaries, if user requested it.
-                if (_parameters.getEmailIncludeResultsDirectory()) messageBody << "<linebreak><linebreak><results-paragraph>";
-                messageBody << "<linebreak><linebreak><footer-paragraph>";
+                if (_parameters.getEmailIncludeResultsDirectory()) messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::RESULTS_PAR;
+                messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::FOOTER_PAR;
             }
             // Create the message in plain text and html fomrats.
             if (!mlcSubjectLineNotice.empty()) messageSubjectLine << mlcSubjectLineNotice;
-            messagePlain << _parameters.getEmailFormattedText(messageBody.str(), false);
-            messageHTML << _parameters.getEmailFormattedText(messageBody.str(), true);
+            messagePlain << EmailText::getEmailFormattedText(messageBody.str(), _parameters.GetOutputFileName(), false);
+            messageHTML << EmailText::getEmailFormattedText(messageBody.str(), _parameters.GetOutputFileName(), true);
 
             // Build the recipients list.
             std::vector<std::string> recipients;
@@ -452,7 +468,7 @@ void AnalysisExecution::finalize() {
             recipients.erase(std::unique(recipients.begin(), recipients.end()), recipients.end());
             sendMail( // Send the message.
                 AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
-                _parameters.getEmailFormattedText(messageSubjectLine.str(), false), messagePlain, messageHTML,
+                EmailText::getEmailFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML,
                 (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
                 AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
             );
@@ -2041,7 +2057,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub,
     const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path
 ) : AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel, cluster_path) {
-    // The calling analysis is restricted to space-time analyses only  - ParametersValidate shold be guarding most invalid parameter settings.
+    // The calling analysis is restricted to space-time analyses only  - ParametersValidate should be guarding most invalid parameter settings.
     if (!source_parameters.GetIsSpaceTimeAnalysis())
         throw prg_error("BernoulliAnalysisDrilldown is not implemented for Analysis Type '%d'.", "BernoulliAnalysisDrilldown()", source_parameters.GetAnalysisType());
     std::string buffer;

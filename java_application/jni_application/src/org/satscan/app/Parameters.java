@@ -256,6 +256,8 @@ public class Parameters implements Cloneable {
     private boolean                         _email_custom=false; 
     private String                          _email_custom_subject="";
     private String                          _email_custom_message_body="<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
+    private boolean                         _create_email_summary_file=false;
+    private double                          _email_summary_cutoff=0.05;
     
     private String                          _multiple_locations_file="";
     private String                          _linelist_individuals_cache_name="";
@@ -459,6 +461,10 @@ public class Parameters implements Cloneable {
         return _multiple_locations_file.equals(rhs._multiple_locations_file);
     }
     
+    public boolean getCreateEmailSummaryFile() { return _create_email_summary_file; }
+    public void setCreateEmailSummaryFile(boolean b) { _create_email_summary_file = b; }            
+    public double getEmailSummaryValue() { return _cutoff_email_value; }
+    public void setEmailSummaryValue(double d) { _cutoff_email_value = d; }
     public boolean getRestrictLineListCSV() { return _linelist_csv_restrict; }
     public void setRestrictLineListCSV(boolean b) { _linelist_csv_restrict = b; }
     public double getCutoffLineListCSV() { return _linelist_csv_cutoff; }
