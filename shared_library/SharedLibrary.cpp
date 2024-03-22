@@ -400,8 +400,9 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
 
 /* Java JNI call to email summary of most recent MultipleAnalyses execution. */
 JNIEXPORT jint JNICALL Java_org_satscan_gui_BatchAnalysisFrame_SendSummaryEmail(JNIEnv*, jobject) {
+    PrintNull null;
     try {
-        MultipleAnalyses().emailSummary(PrintNull(), false);
+        MultipleAnalyses().emailSummary(null, false);
     } catch (std::exception& x) {
         return 1;
     }
