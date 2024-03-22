@@ -168,10 +168,8 @@ double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataH
     double totalPopulation=0;
 
     //create a copy of top cluster pointers
-    ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
     std::vector<CCluster *> sortClusters;
     for (size_t t=0; t < gvTopClusterList.size(); ++t) {
-        double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
         if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE)) {
             const CCluster* cluster = gvTopClusterList[t].get();
             totalLLR += cluster->GetRatio()/cluster->GetNonCompactnessPenalty();
@@ -214,7 +212,6 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
     const CParameters & params(DataHub.GetParameters());
     unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();
     //create a copy of top cluster pointers
-    ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
     ClusterList_t sortClusters;
     size_t tMax = atmost ? std::min(*atmost, static_cast<unsigned int>(gvTopClusterList.size())) : gvTopClusterList.size();
     for (size_t t=0; t < tMax; ++t) {
@@ -623,7 +620,7 @@ void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, Crit
 //
 bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion) {
     bool                            bResult=true;
-    double                          dCandidateRadius, dCurrRadius, dDistanceCenters;
+    double                          dCandidateRadius, dCurrRadius;
     std::vector<double>             vCandidateCenterCoords, vCurrCenterCoords;
     ClusterList_t::const_iterator   itrCurr, itrEnd;
 

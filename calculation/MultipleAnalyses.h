@@ -77,7 +77,6 @@ class AnalysisDefinition {
         /* Returns a date as an offset from the passed initial date. */
         boost::gregorian::date getDate(boost::gregorian::date initial, Offset_t offset, bool isStudyPeriod) {
             if (offset.first == NONE) return initial;
-            boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time();
             switch (offset.first) {
                 case YEAR: return initial - boost::gregorian::years(offset.second);
                 case MONTH: return initial - boost::gregorian::months(offset.second);
@@ -147,8 +146,8 @@ class MultipleAnalyses {
         template <typename Indirect>
         void _read_settings_tree(Indirect const& maybeTree, decltype(&*maybeTree) = nullptr) {
             if (maybeTree) {
-                _send_summary_email = maybeTree->get<bool>(_SEND_SUMMARY_EMAIL_TAG, false);
-                _summary_email_links = maybeTree->get<bool>(_SUMMARY_EMAIL_LINKS_TAG, true);
+                _send_summary_email = maybeTree->get(_SEND_SUMMARY_EMAIL_TAG, false);
+                _summary_email_links = maybeTree->get(_SUMMARY_EMAIL_LINKS_TAG, true);
                 _summary_email_recipients = maybeTree->get(_SUMMARY_EMAIL_RECIPIENTS_TAG, _SUMMARY_EMAIL_RECIPIENTS_TAG);
                 _summary_email_pvalue_cutoff = maybeTree->get(_SUMMARY_EMAIL_PVALUE_CUTOFF_TAG, _DEFAULT_PVALUE_CUTOFF);
                 _summary_email_recurrence_cutoff = maybeTree->get(_SUMMARY_EMAIL_RECURRENCE_CUTOFF_TAG, _DEFAULT_RECURRENCE_CUTOFF);

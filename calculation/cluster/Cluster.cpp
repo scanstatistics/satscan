@@ -359,7 +359,7 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
     std::string buffer, work;
-    double dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance, n1, n2, r1, r2;
+    double n1, n2, r1, r2;
     DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
     const DataSetHandler& Handler = DataHub.GetDataSetHandler();
 
@@ -605,7 +605,6 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
   std::vector<tract_t> tractIndexes;
   getIdentifierIndexes(DataHub, tractIndexes, true);
   for (auto setIdx: setIndexes) {
-      const RealDataSet& dataSet = Handler.GetDataSet(setIdx);
       //get randomizer for data set to retrieve various information
       const AbstractWeightedNormalRandomizer * pRandomizer = 0;
       if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(setIdx))) == 0)

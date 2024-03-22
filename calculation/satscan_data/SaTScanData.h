@@ -239,7 +239,7 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
         if (!gvCentroidNeighborStore.size())
             gvCentroidNeighborStore.resize(m_nGridTracts, 0);
         // check the centroid neighbor store but only if ellipse/centroid match that of stored
-        if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse && gvCentroidNeighborStore[t]->GetNumNeighbors() >= nearness)
+        if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse && static_cast<unsigned int>(gvCentroidNeighborStore[t]->GetNumNeighbors()) >= nearness)
             return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
         else {//else calculate
             delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;

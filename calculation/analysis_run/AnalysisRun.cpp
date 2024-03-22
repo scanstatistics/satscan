@@ -57,7 +57,7 @@ const double BernoulliAnalysisDrilldown::DEFAULT_ITERATIVE_CUTOFF_PVALUE = 0.05;
 //////////////////////////// AbstractAnalysisDrilldown ///////////////////////////////////
 
 bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
-    bool should = cluster.getNumIdentifiers() >= parameters.getDrilldownMinimumLocationsCluster() &&
+    bool should = static_cast<unsigned int>(cluster.getNumIdentifiers()) >= parameters.getDrilldownMinimumLocationsCluster() &&
         cluster.reportablePValue(parameters, simvars) &&
         cluster.getReportingPValue(parameters, simvars, parameters.GetIsIterativeScanning()) <= parameters.getDrilldownPvalueCutoff() &&
         cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
@@ -93,14 +93,14 @@ bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const C
         for (size_t t=0; t < data.GetNumDataSets(); ++t)
             totalCasesAllSets += cluster.GetObservedCount(t);
     }
-    should &= totalCasesAllSets >= parameters.getDrilldownMinimumCasesCluster();
+    should &= static_cast<unsigned int>(totalCasesAllSets) >= parameters.getDrilldownMinimumCasesCluster();
     return should;
 }
 
 //////////////////////////// AnalysisExecution ///////////////////////////////////
 
 AnalysisExecution::AnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print)
-    :_data_hub(data_hub), _parameters(parameters), _start_time(start), _print_direction(print),	_clustersReported(false), 
+    :_print_direction(print), _parameters(parameters), _data_hub(data_hub), _start_time(start), _clustersReported(false),
     _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _reportClusters(0) {
     try {
         for (std::vector<double>::const_iterator itr = _parameters.getExecuteSpatialWindowStops().begin(); itr != _parameters.getExecuteSpatialWindowStops().end(); ++itr)
@@ -713,8 +713,6 @@ void AnalysisExecution::executePowerEvaluations() {
         }
         else
             AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
-        unsigned int numReplicaStep1 = _sim_vars.get_sim_count();
-
         double critical05, critical01, critical001;
         switch (_parameters.getPowerEvaluationCriticalValueType()) {
         case CV_MONTECARLO:
@@ -1561,7 +1559,7 @@ void AnalysisExecution::reportClusters() {
 
         // Create Cartesian graph, if requested.
         if (_parameters.getOutputCartesianGraph() && !_parameters.GetIsPurelyTemporalAnalysis() &&
-            (_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.getLocationsManager().expectedDimensions() == 2 || _parameters.GetCoordinatesType() == LATLON)) {
+            ((_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.getLocationsManager().expectedDimensions() == 2) || _parameters.GetCoordinatesType() == LATLON)) {
             // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Cartesian map file ...\n", BasePrint::P_STDOUT);
             if (_analysis_count == 1) _cluster_graph.reset(new CartesianGraph(_data_hub));
