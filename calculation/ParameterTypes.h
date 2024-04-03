@@ -166,7 +166,6 @@ enum ParameterType
     KML_EVENT_GROUP,                /* no longer used */
     KML_EVENT_GROUP_BY,             /* no longer used */
     LL_INDIVIDUALS_CACHE_FILE,      /* line list individuals cache filename */
-    RESTRICT_LL_CSV,                /* whether to restrict cluster included in line list csv file */
     LL_CSV_CUTOFF_VALUE,            /* cutoff value to inlcude a cluster in line list csv file */
     CLUSTER_SIGNIFICANCE_BY_RI,     /* no longer used */
     CLUSTER_SIGNIFICANCE_RI_TYPE,   /* no longer used */

@@ -3316,11 +3316,11 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_cluster_lineline_chx" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_cluster_lineline_prelabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_cluster_lineline_value" min="-2" pref="80" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_cluster_lineline_label" min="-2" pref="194" max="-2" attributes="0"/>
+                          <Component id="_cluster_lineline_label" min="-2" pref="211" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -3329,12 +3329,10 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_cluster_lineline_chx" alignment="1" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                  <Component id="_cluster_lineline_value" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_cluster_lineline_label" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_cluster_lineline_value" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_cluster_lineline_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_cluster_lineline_prelabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -3342,25 +3340,22 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="_cluster_lineline_chx">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Include clusters with p-value less than or equal to"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_cluster_lineline_chx.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableOtherOutputGroup();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
                 <Component class="javax.swing.JTextField" name="_cluster_lineline_value">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="0.05"/>
+                    <Property name="text" type="java.lang.String" value="1"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)&#xa;            Utils.validatePostiveNumericKeyTyped(_cluster_lineline_value, e, 10);&#xa;        else &#xa;            Utils.validatePostiveFloatKeyTyped(_cluster_lineline_value, e, 20);&#xa;    }&#xa;});&#xa;_cluster_lineline_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(&quot;365&quot;);&#xa;        } else {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt;= 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &gt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(&quot;0.05&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_cluster_lineline_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)&#xa;            Utils.validatePostiveNumericKeyTyped(_cluster_lineline_value, e, 10);&#xa;        else &#xa;            Utils.validatePostiveFloatKeyTyped(_cluster_lineline_value, e, 20);&#xa;    }&#xa;});&#xa;_cluster_lineline_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST);&#xa;        } else {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt;= 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &gt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_cluster_lineline_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_cluster_lineline_label">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="in line list CSV file."/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_cluster_lineline_prelabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Include clusters with p-value less than or equal to"/>
                   </Properties>
                 </Component>
               </SubComponents>

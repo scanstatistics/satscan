@@ -11,7 +11,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 180;
+const int CParameters::giNumParameters                = 179;
 
 /** Constructor */
 CParameters::CParameters(): _cluster_sig_by_ri_(false), _cluster_sig_ri_type_(DAY), _cluster_sig_by_p_(false), _cluster_sig_p_val_(0.05){
@@ -197,7 +197,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_email_include_results_directory != rhs._email_include_results_directory) return false;
   if (_multiple_locations_file != _multiple_locations_file) return false;
   if (_linelist_individuals_cache_name != _linelist_individuals_cache_name) return false;
-  if (_linelist_csv_restrict != _linelist_csv_restrict) return false;
   if (_linelist_csv_cutoff != _linelist_csv_cutoff) return false;
 
   return true;
@@ -450,7 +449,6 @@ void CParameters::Copy(const CParameters &rhs) {
   _email_attach_results = rhs._email_attach_results;
   _email_include_results_directory = rhs._email_include_results_directory;
   _multiple_locations_file = rhs._multiple_locations_file;
-  _linelist_csv_restrict = rhs._linelist_csv_restrict;
   _linelist_csv_cutoff = rhs._linelist_csv_cutoff;
   _create_email_summary_file = rhs._create_email_summary_file;
   _email_summary_cutoff = rhs._email_summary_cutoff;
@@ -1038,8 +1036,7 @@ void CParameters::SetAsDefaulted() {
   _email_attach_results = false;
   _email_include_results_directory = false;
   _multiple_locations_file = "";
-  _linelist_csv_restrict = false;
-  _linelist_csv_cutoff = 0.05;
+  _linelist_csv_cutoff = 1;
   _create_email_summary_file = false;
   _email_summary_cutoff = 0.05;
 }

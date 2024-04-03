@@ -188,7 +188,6 @@ class CParameters {
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
     std::string                         _linelist_individuals_cache_name;
-    bool                                _linelist_csv_restrict;                 /** whether to restrict clusters added to line list csv */
     double                              _linelist_csv_cutoff;                   /** cutoff value when restricting clusters added to line list csv */
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
     std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
@@ -321,8 +320,6 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
-    bool                                getRestrictLineListCSV() const { return _linelist_csv_restrict; }
-    void                                setRestrictLineListCSV(bool b) { _linelist_csv_restrict = b; }
     double                              getCutoffLineListCSV() const { return _linelist_csv_cutoff; }
     void                                setCutoffLineListCSV(double d) { _linelist_csv_cutoff = d; }
 

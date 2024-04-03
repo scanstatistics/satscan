@@ -299,8 +299,6 @@ ReportClusterRank=n
 PrintAsciiColumnHeaders=n
 ;user-defined title for results file
 ResultsTitle=
-;whether to restrict clusters added to line list csv (y/n)
-RestrictClusterLinelistCSV=n
 ;cutoff value when restricting clusters added to line list csv (0.0 to 1 for retrospective, > 0 for prospective)
 CutoffClusterLinelistCSV=0.05
 

@@ -81,7 +81,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
 bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const {
     bool bValid = true;
     try {
-        if (gParameters.getReadingLineDataFromCasefile() && gParameters.getRestrictLineListCSV()) {
+        if (gParameters.getReadingLineDataFromCasefile()) {
             if (gParameters.GetIsProspectiveAnalysis() && gParameters.getCutoffLineListCSV() < 1) {
                 bValid = false;
                 PrintDirection.Printf(

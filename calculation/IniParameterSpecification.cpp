@@ -744,10 +744,9 @@ void IniParameterSpecification::Build_10_2_x_ParameterList() {
     _parameter_info[EMAIL_CUSTOM_SUBJECT] = ParamInfo(EMAIL_CUSTOM_SUBJECT, "CustomEmailSubjectLine", 9, _notifications_section);
     _parameter_info[EMAIL_CUSTOM_BODY] = ParamInfo(EMAIL_CUSTOM_BODY, "CustomEmailMessageBody", 10, _notifications_section);
 
-    _parameter_info[RESTRICT_LL_CSV] = ParamInfo(RESTRICT_LL_CSV, "RestrictClusterLinelistCSV", 5, _other_output_section);
     _parameter_info[LL_CSV_CUTOFF_VALUE] = ParamInfo(LL_CSV_CUTOFF_VALUE, "CutoffClusterLinelistCSV", 6, _other_output_section);
 
-    assert(_parameter_info.size() == 180);
+    assert(_parameter_info.size() == 179);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -188,11 +188,19 @@ void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
         settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
         if (gParameters.getReadingLineDataFromCasefile()) {
-            settings.push_back(std::make_pair("Restrict Cluster Linelist CSV", gParameters.getRestrictLineListCSV() ? "Yes" : "No"));
             if (gParameters.GetIsProspectiveAnalysis())
                 settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, ">= %u days", static_cast<unsigned int>(gParameters.getCutoffLineListCSV()))));
             else
                 settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, "p-value <= %g", gParameters.getCutoffLineListCSV())));
+            FileName linelist(gParameters.GetOutputFileName().c_str());
+            for (unsigned int idx = 1; idx <= gParameters.getNumFileSets(); ++idx) {
+                if (gParameters.getNumFileSets() == 1) {
+                    linelist.setExtension(".linelist.csv");
+                }
+                else
+                    linelist.setExtension(printString(buffer, ".linelist.dataset%u.csv", idx).c_str());
+                settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
+            }
         }
         WriteSettingsContainer(settings, "Other Output", fp);
     } catch (prg_exception& x) {
@@ -869,18 +877,8 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
 /** Prints 'Line List' related parameters to file stream. */
 void ParametersPrint::PrintLinelistParameters(FILE* fp) const {
     SettingContainer_t settings;
-    std::string buffer;
-
     try {
         if (gParameters.getReadingLineDataFromCasefile()) {
-            FileName linelist(gParameters.GetOutputFileName().c_str());
-            for (unsigned int idx=1; idx <= gParameters.getNumFileSets(); ++idx) {
-                if (gParameters.getNumFileSets() == 1) {
-                    linelist.setExtension(".linelist.csv");
-                } else
-                    linelist.setExtension(printString(buffer, ".linelist.dataset%u.csv", idx).c_str());
-                settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
-            }
             if (gParameters.getLinelistIndividualsCacheFileName().size())
                 settings.push_back(std::make_pair("Line List Individuals Cache File", gParameters.getLinelistIndividualsCacheFileName()));
             WriteSettingsContainer(settings, "Line List", fp);

@@ -247,7 +247,6 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case KML_EVENT_GROUP              : return "n/a";
       case KML_EVENT_GROUP_BY           : return "n/a";
       case LL_INDIVIDUALS_CACHE_FILE    : return "line list individuals cache filename";
-      case RESTRICT_LL_CSV              : return "whether to restrict clusters added to line list csv (y/n)";
       case LL_CSV_CUTOFF_VALUE          : return "cutoff value when restricting clusters added to line list csv (0.0 to 1 for retrospective, > 0 for prospective)";
       case CLUSTER_SIGNIFICANCE_BY_RI   : return "n/a";
       case CLUSTER_SIGNIFICANCE_RI_VALUE: return "n/a";
@@ -456,7 +455,6 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case KML_EVENT_GROUP              : s = ""; return s;
       case KML_EVENT_GROUP_BY           : s = ""; return s;
       case LL_INDIVIDUALS_CACHE_FILE    : s = gParameters.getLinelistIndividualsCacheFileName().c_str(); return s;
-      case RESTRICT_LL_CSV              : return AsString(s, gParameters.getRestrictLineListCSV());
       case LL_CSV_CUTOFF_VALUE          : return AsString(s, gParameters.getCutoffLineListCSV());
       case CLUSTER_SIGNIFICANCE_BY_RI   : s = ""; return s;
       case CLUSTER_SIGNIFICANCE_RI_VALUE: s = ""; return s;
@@ -899,7 +897,6 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case KML_EVENT_GROUP              : /* no longer used */ break;
       case KML_EVENT_GROUP_BY           : /* no longer used */ break;
       case LL_INDIVIDUALS_CACHE_FILE    : gParameters.setLinelistIndividualsCacheFileName(sParameter.c_str(), true); break;
-      case RESTRICT_LL_CSV              : return gParameters.setRestrictLineListCSV(ReadBoolean(sParameter, eParameterType)); break;
       case LL_CSV_CUTOFF_VALUE          : gParameters.setCutoffLineListCSV(ReadDouble(sParameter, eParameterType)); break;
       case CLUSTER_SIGNIFICANCE_BY_RI: {
           if (gParameters.GetIsProspectiveAnalysis())

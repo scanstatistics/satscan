@@ -802,10 +802,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getLinelistIndividualsCacheFileName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setRestrictLineListCSV", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getRestrictLineListCSV());
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setCutoffLineListCSV", "(D)V");
   Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getCutoffLineListCSV());
   jni_error::_detectError(Env);
@@ -1584,10 +1580,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setLinelistIndividualsCacheFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getRestrictLineListCSV", "()Z");
-  Parameters.setRestrictLineListCSV(Env.CallBooleanMethod(jParameters, mid));
-  jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getCutoffLineListCSV", "()D");
   Parameters.setCutoffLineListCSV(Env.CallDoubleMethod(jParameters, mid));

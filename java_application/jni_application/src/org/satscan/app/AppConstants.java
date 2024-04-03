@@ -26,6 +26,9 @@ public final class AppConstants {
     public static String DEFAULT_PVALUE_CUTOFF = "0.05";
     public static String DEFAULT_RECURRENCE_CUTOFF = "365"; // in days
     
+    public static String DEFAULT_PVALUE_CUTOFF_CSV_LINELIST = "1";
+    public static String DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST = "1"; // in days    
+    
     // Input Tab
     public static final String CASEFILE_HELPID = "Case File";
     public static final String CONTROLFILE_HELPID = "Control File";

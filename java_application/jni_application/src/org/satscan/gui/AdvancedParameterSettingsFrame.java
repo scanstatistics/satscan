@@ -396,8 +396,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             
         }
         _cluster_lineline_panel.setEnabled(hasLineListData);
-        _cluster_lineline_chx.setEnabled(hasLineListData);
-        _cluster_lineline_value.setEnabled(Utils.selected(_cluster_lineline_chx));
+        _cluster_lineline_prelabel.setEnabled(hasLineListData);
+        _cluster_lineline_value.setEnabled(hasLineListData);
         _cluster_lineline_label.setEnabled(hasLineListData);
         if (hasLineListData) {
             double val = Double.parseDouble(_cluster_lineline_value.getText());
@@ -406,12 +406,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
             );
             if (prospectiveAnalysis) {
-                _cluster_lineline_chx.setText("Include clusters with recurrence interval greater than or equal to");
-                if (val <= 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
+                _cluster_lineline_prelabel.setText("Include clusters with recurrence interval greater than or equal to");
+                if (val < 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST);
                 _cluster_lineline_label.setText("days in line list CSV file.");
             } else {
-                _cluster_lineline_chx.setText("Include clusters with p-value less than or equal to");
-                if (val > 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
+                _cluster_lineline_prelabel.setText("Include clusters with p-value less than or equal to");
+                if (val > 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);
                 _cluster_lineline_label.setText("in line list CSV file.");
             }        
         }
@@ -982,7 +982,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_includeClusterLocationsInKML, true);
         bReturn &= Utils.selected(_createCompressedKMZ, false);
         bReturn &= Utils.selected(_launch_map_viewer, true);
-        bReturn &= Utils.selected(_cluster_lineline_chx, false);
         bReturn &= Utils.doubleIs(_cluster_lineline_value, 0.05); 
         bReturn &= Utils.selected(_always_sendmail, false);
         bReturn &= Utils.textIs(_always_email_recipients, "");
@@ -1334,7 +1333,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
         parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
         parameters.SetTitleName(_printTitle.getText());        
-        parameters.setRestrictLineListCSV(Utils.selected(_cluster_lineline_chx));
         parameters.setCutoffLineListCSV(Double.parseDouble(_cluster_lineline_value.getText()));
     }
 
@@ -2149,7 +2147,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");        
         _always_sendmail.setSelected(false);
-        _cluster_lineline_chx.setSelected(false);
         _cluster_lineline_value.setText("0.05");
         _always_sendmail.setSelected(false);
         _always_email_recipients.setText("");
@@ -2700,7 +2697,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
         _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
         _printTitle.setText(parameters.GetTitleName());        
-        _cluster_lineline_chx.setSelected(parameters.getRestrictLineListCSV());
         _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
     }
 
@@ -2991,12 +2987,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _userDefinedRunTitle = new javax.swing.JPanel();
         _printTitle = new javax.swing.JTextField();
         _cluster_lineline_panel = new javax.swing.JPanel();
-        _cluster_lineline_chx = new javax.swing.JCheckBox();
-        _cluster_lineline_chx.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableOtherOutputGroup();
-            }
-        });
         _cluster_lineline_value = new javax.swing.JTextField();
         _cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -3013,12 +3003,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
                     while (_cluster_lineline_value.getText().length() == 0 ||
                         Double.parseDouble(_cluster_lineline_value.getText()) < 1)
-                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText("365");
+                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST);
                 } else {
                     while (_cluster_lineline_value.getText().length() == 0 ||
                         Double.parseDouble(_cluster_lineline_value.getText()) <= 0 ||
                         Double.parseDouble(_cluster_lineline_value.getText()) > 1)
-                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText("0.05");
+                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);
                 }
                 enableSetDefaultsButton();
             }
@@ -3029,6 +3019,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
         _cluster_lineline_label = new javax.swing.JLabel();
+        _cluster_lineline_prelabel = new javax.swing.JLabel();
         _powerEvaluationTab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
@@ -5567,11 +5558,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _cluster_lineline_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Line List:"));
 
-            _cluster_lineline_chx.setText("Include clusters with p-value less than or equal to");
-
-            _cluster_lineline_value.setText("0.05");
+            _cluster_lineline_value.setText("1");
 
             _cluster_lineline_label.setText("in line list CSV file.");
+
+            _cluster_lineline_prelabel.setText("Include clusters with p-value less than or equal to");
 
             javax.swing.GroupLayout _cluster_lineline_panelLayout = new javax.swing.GroupLayout(_cluster_lineline_panel);
             _cluster_lineline_panel.setLayout(_cluster_lineline_panelLayout);
@@ -5579,22 +5570,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_cluster_lineline_panelLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_cluster_lineline_chx)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_cluster_lineline_prelabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(_cluster_lineline_value, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(_cluster_lineline_label, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_cluster_lineline_label, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
             _cluster_lineline_panelLayout.setVerticalGroup(
                 _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_cluster_lineline_panelLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(_cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_cluster_lineline_chx, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(_cluster_lineline_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(_cluster_lineline_label)))
+                    .addGroup(_cluster_lineline_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_cluster_lineline_value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_cluster_lineline_label)
+                        .addComponent(_cluster_lineline_prelabel))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
@@ -6760,9 +6750,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _checkboxReportIndexCoefficients;
     private javax.swing.JRadioButton _circularRadioButton;
     private javax.swing.JButton _closeButton;
-    private javax.swing.JCheckBox _cluster_lineline_chx;
     private javax.swing.JLabel _cluster_lineline_label;
     private javax.swing.JPanel _cluster_lineline_panel;
+    private javax.swing.JLabel _cluster_lineline_prelabel;
     private javax.swing.JTextField _cluster_lineline_value;
     private javax.swing.JPanel _cluster_restrictions_tab;
     private javax.swing.JPanel _clustersReportedGroup;

@@ -70,7 +70,6 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
             }
             // If previously set the 'significant' parameters and reading line list data, apply those settings.
             if (gParameters.getReadingLineDataFromCasefile()) {
-                gParameters.setRestrictLineListCSV(gParameters._cluster_sig_by_ri_ || gParameters._cluster_sig_by_p_);
                 if (gParameters._cluster_sig_by_ri_ && gParameters.GetIsProspectiveAnalysis())
                     gParameters.setCutoffLineListCSV(gParameters._cluster_sig_ri_val_);
                 else if (gParameters._cluster_sig_by_p_ && !gParameters.GetIsProspectiveAnalysis())
@@ -422,7 +421,6 @@ void IniParameterFileAccess::WriteOtherOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
         WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
         WriteIniParameter(WriteFile, USER_DEFINED_TITLE, GetParameterString(USER_DEFINED_TITLE, s).c_str(), GetParameterComment(USER_DEFINED_TITLE));
-        WriteIniParameter(WriteFile, RESTRICT_LL_CSV, GetParameterString(RESTRICT_LL_CSV, s).c_str(), GetParameterComment(RESTRICT_LL_CSV));
         WriteIniParameter(WriteFile, LL_CSV_CUTOFF_VALUE, GetParameterString(LL_CSV_CUTOFF_VALUE, s).c_str(), GetParameterComment(LL_CSV_CUTOFF_VALUE));
     } catch (prg_exception& x) {
         x.addTrace("WriteOtherOutputSettings()","IniParameterFileAccess");

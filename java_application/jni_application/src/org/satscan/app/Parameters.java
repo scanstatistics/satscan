@@ -257,12 +257,10 @@ public class Parameters implements Cloneable {
     private String                          _email_custom_subject="";
     private String                          _email_custom_message_body="<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
     private boolean                         _create_email_summary_file=false;
-    private double                          _email_summary_cutoff=0.05;
     
     private String                          _multiple_locations_file="";
     private String                          _linelist_individuals_cache_name="";
-    private boolean                         _linelist_csv_restrict=false;
-    private double                          _linelist_csv_cutoff=0.05;
+    private double                          _linelist_csv_cutoff=1;
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
@@ -456,7 +454,6 @@ public class Parameters implements Cloneable {
         if (!_email_custom_subject.equals(rhs._email_custom_subject)) return false;
         if (!_email_custom_message_body.equals(rhs._email_custom_message_body)) return false;
         if (!_linelist_individuals_cache_name.equals(rhs._linelist_individuals_cache_name)) return false;
-        if (_linelist_csv_restrict != rhs._linelist_csv_restrict) return false;
         if (_linelist_csv_cutoff != rhs._linelist_csv_cutoff) return false;
         return _multiple_locations_file.equals(rhs._multiple_locations_file);
     }
@@ -465,8 +462,6 @@ public class Parameters implements Cloneable {
     public void setCreateEmailSummaryFile(boolean b) { _create_email_summary_file = b; }            
     public double getEmailSummaryValue() { return _cutoff_email_value; }
     public void setEmailSummaryValue(double d) { _cutoff_email_value = d; }
-    public boolean getRestrictLineListCSV() { return _linelist_csv_restrict; }
-    public void setRestrictLineListCSV(boolean b) { _linelist_csv_restrict = b; }
     public double getCutoffLineListCSV() { return _linelist_csv_cutoff; }
     public void setCutoffLineListCSV(double d) { _linelist_csv_cutoff = d; }  
     
