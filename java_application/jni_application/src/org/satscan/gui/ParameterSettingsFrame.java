@@ -70,8 +70,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     public ParameterSettingsFrame(final JRootPane rootPane, final String sParameterFilename) {
         initComponents();
-        _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
-        _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
+        _startDateComponentsGroup = new DateComponentsGroup(new UndoManager(),_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
+        _endDateComponentsGroup = new DateComponentsGroup(new UndoManager(),_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         addInternalFrameListener(this);
@@ -84,8 +84,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     public ParameterSettingsFrame(final JRootPane rootPane, BatchAnalysisFrame batchFrame, final Parameters source_parameters) {
         initComponents();
-        _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
-        _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
+        _startDateComponentsGroup = new DateComponentsGroup(new UndoManager(),_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
+        _endDateComponentsGroup = new DateComponentsGroup(new UndoManager(),_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         _multipleAnaylsisFrame = batchFrame;
@@ -1176,6 +1176,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return eReturn;
     }
 
+    /* Returns whether controls indicate selected analysis is prospective. */
+    public boolean isProspectiveScan() {
+        Parameters.AnalysisType e = getAnalysisControlType();
+        return e == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || e == Parameters.AnalysisType.PROSPECTIVESPACETIME;
+    }
+    
     /**
      *
      */

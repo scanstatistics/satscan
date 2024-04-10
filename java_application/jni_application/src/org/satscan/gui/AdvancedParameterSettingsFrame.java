@@ -68,10 +68,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     public AdvancedParameterSettingsFrame(final JRootPane rootPane, final ParameterSettingsFrame analysisSettingsWindow, final Parameters parameters) {
         initComponents();
-        _flexStartRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, 2000, 1, 1, false);
-        _flexStartRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, 2000, 12, 31, true);
-        _flexEndRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, 2000, 1, 1, false);
-        _flexEndRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, 2000, 12, 31, true);
+        _flexStartRangeStartDateComponentsGroup = new DateComponentsGroup(new UndoManager(), _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, 2000, 1, 1, false);
+        _flexStartRangeEndDateComponentsGroup = new DateComponentsGroup(new UndoManager(), _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, 2000, 12, 31, true);
+        _flexEndRangeStartDateComponentsGroup = new DateComponentsGroup(new UndoManager(), _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, 2000, 1, 1, false);
+        _flexEndRangeEndDateComponentsGroup = new DateComponentsGroup(new UndoManager(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, 2000, 12, 31, true);
 
         setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
@@ -95,7 +95,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
         add(popupMenu1);
-        setupInterface(parameters);        
+        setupInterface(parameters);
         pack();
     }
 
@@ -1307,7 +1307,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Drilldown tab
         parameters.setPerformStandardDrilldown(_mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected());
         parameters.setPerformBernoulliDrilldown(_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected());
-        parameters.setDrilldownPvalueCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
+        parameters.setDrilldownCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
         parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
         parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
         parameters.setDrilldownAdjustWeeklyTrends(_drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected());
@@ -1847,16 +1847,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /**
-     * validates parameter settings for the cluster drilldown tab
-     */
+    /** validates parameter settings for the cluster drilldown tab */
     private void validateDrilldownSettings() {
         if ((_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected()) ||
              (_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected())) {
             double cutoff = Double.parseDouble(_drilldown_restriction_cutoff.getText());
-            if (0.0 >= cutoff || cutoff >= 1.0)
+            if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.", 
+                    "The recurrence interval cutoff for a detected cluster on drilldown must be greater than or equal to one.", 
+                    FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
+                );
+            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for a detected cluster on drilldown must be between zero and one, inclusive.", 
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
                 );
             if (Integer.parseInt(_drilldown_restriction_locations.getText()) < 2)
@@ -1883,10 +1886,42 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }        
         }
     }    
+
+    /** Validates parameter settings for the Temporal Output tab */
+    private void validateTemporalOutputSettings() {
+        if (Utils.selected(_temporalGraphSignificant)) {
+            double cutoff = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
+            if (_settings_window.isProspectiveScan() && cutoff < 1.0)
+                throw new AdvFeaturesExpection(
+                    "The recurrence interval cutoff for including clusters in temporal graph must be greater than or equal to one.", 
+                    FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
+                );
+            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for including clusters in temporal graph must be between zero and one, inclusive.", 
+                    FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
+                );
+        }
+    }    
     
-    /**
-     * validates all the settings in this dialog
-     */
+    /** Validates parameter settings for the Other Output tab */
+    private void validateOtherOutputSettings() {
+        if (_cluster_lineline_value.isEnabled()) {
+            double cutoff = Double.parseDouble(_cluster_lineline_value.getText());
+            if (_settings_window.isProspectiveScan() && cutoff < 1.0)
+                throw new AdvFeaturesExpection(
+                    "The recurrence interval cutoff for including clusters in line list CSV must be greater than or equal to one.", 
+                    FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
+                );
+            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for including clusters in line list CSV must be between zero and one, inclusive.", 
+                    FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
+                );
+        }
+    }    
+    
+    /** validates all the settings in this dialog */
     public void validateParameters() {
         validateInputFilesSettings();
         validateSpatialNeighborsSettings();
@@ -1897,6 +1932,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validateBorderAnalysisSettings();
         validatePowerEvaluationsSettings();
         validateDrilldownSettings();
+        validateTemporalOutputSettings();
+        validateOtherOutputSettings();
         validateEmailSettings();
     }
 
@@ -1942,6 +1979,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 Logger.getLogger(AdvancedParameterSettingsFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        if (_cutoff_value_email.isEnabled()) {
+            double cutoff = Double.parseDouble(_cutoff_value_email.getText());
+            if (_settings_window.isProspectiveScan() && cutoff < 1.0)
+                throw new AdvFeaturesExpection(
+                    "The recurrence interval cutoff for emailing the cluster summary must be greater than or equal to one.", 
+                    FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
+                );
+            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for emailing the cluster summary must be between zero and one, inclusive.", 
+                    FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
+                );
+        }        
     }    
     
     /**
@@ -2380,9 +2430,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _endGenericRangeToLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
     }
 
-    /**
-     * enables controls of 'Temporal Graphs' groups
-     */
+    /** enables controls of 'Temporal Graphs' groups */
     private void enableTemporalGraphsGroup(boolean enable) {
         _graphOutputGroup.setEnabled(enable);
         _reportTemporalGraph.setEnabled(_graphOutputGroup.isEnabled());
@@ -2392,6 +2440,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numMostLikelyClustersGraphLabel.setEnabled(enable && _reportTemporalGraph.isSelected());
         _temporalGraphSignificant.setEnabled(enable && _reportTemporalGraph.isSelected());
         _temporalGraphPvalueCutoff.setEnabled(enable && _reportTemporalGraph.isSelected());
+        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
+        double val = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
+        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
+            if (val <= 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
+            _temporalGraphSignificant.setText("All clusters, one graph for each, with a recurrence interval greater than or equal:");
+        } else {
+            _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than or equal:");
+            if (val > 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
+        }        
     }
 
     /**
@@ -2671,7 +2728,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Drilldown tab
         _mainAnalysisDrilldown.setSelected(parameters.getPerformStandardDrilldown());
         _purelySpatialDrilldown.setSelected(parameters.getPerformBernoulliDrilldown());
-        _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownPvalueCutoff()));
+        _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownCutoff()));
         _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
         _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
         _drilldown_restriction_dow.setSelected(parameters.getDrilldownAdjustWeeklyTrends());
@@ -2789,6 +2846,49 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);
         // Adjustment by day of week is permitted for only purely spatia Bernoulli and one data set.
         _drilldown_restriction_dow.setEnabled(bEnableGroup && bernoulliSelected && _inputDataSetsList.getModel().getSize() == 0);
+        
+        
+        double val = Double.parseDouble(_drilldown_restriction_cutoff.getText());
+        if (_settings_window.isProspectiveScan()) {
+            if (val <= 1) _drilldown_restriction_cutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
+            _drilldown_restriction_cutoff_label.setText("Recurrence Interval Greater Than Or Equal:");
+        } else {
+            _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:");
+            if (val > 1) _drilldown_restriction_cutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
+        }         
+    }
+    
+    /* Adds listeners to a JTextField intended for p-value/recurrence interval cutoff input. */
+    private void initCutoffJTextField(javax.swing.JTextField cutoff_field, String default_ri, String default_pvalue) {
+        UndoManager undome = new UndoManager();
+        cutoff_field.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                if (_settings_window.isProspectiveScan())
+                    Utils.validatePostiveNumericKeyTyped(cutoff_field, e, 10);
+                else 
+                    Utils.validatePostiveFloatKeyTyped(cutoff_field, e, 20);
+            }
+        });
+        cutoff_field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (_settings_window.isProspectiveScan()) {
+                    while (cutoff_field.getText().length() == 0 ||
+                        Double.parseDouble(cutoff_field.getText()) < 1)
+                        if (undome.canUndo()) undome.undo(); else cutoff_field.setText(default_ri);
+                } else {
+                    while (cutoff_field.getText().length() == 0 ||
+                            Double.parseDouble(cutoff_field.getText()) <= 0 ||
+                            Double.parseDouble(cutoff_field.getText()) > 1)
+                        if (undome.canUndo()) undome.undo(); else cutoff_field.setText(default_pvalue);
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        cutoff_field.getDocument().addUndoableEditListener((UndoableEditEvent evt) -> {
+            undome.addEdit(evt.getEdit());
+        });
     }
     
     /**
@@ -2988,36 +3088,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _printTitle = new javax.swing.JTextField();
         _cluster_lineline_panel = new javax.swing.JPanel();
         _cluster_lineline_value = new javax.swing.JTextField();
-        _cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
-                if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)
-                Utils.validatePostiveNumericKeyTyped(_cluster_lineline_value, e, 10);
-                else
-                Utils.validatePostiveFloatKeyTyped(_cluster_lineline_value, e, 20);
-            }
-        });
-        _cluster_lineline_value.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
-                if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
-                    while (_cluster_lineline_value.getText().length() == 0 ||
-                        Double.parseDouble(_cluster_lineline_value.getText()) < 1)
-                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST);
-                } else {
-                    while (_cluster_lineline_value.getText().length() == 0 ||
-                        Double.parseDouble(_cluster_lineline_value.getText()) <= 0 ||
-                        Double.parseDouble(_cluster_lineline_value.getText()) > 1)
-                    if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);
-                }
-                enableSetDefaultsButton();
-            }
-        });
-        _cluster_lineline_value.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
+        initCutoffJTextField(_cluster_lineline_value, AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST, AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);
         _cluster_lineline_label = new javax.swing.JLabel();
         _cluster_lineline_prelabel = new javax.swing.JLabel();
         _powerEvaluationTab = new javax.swing.JPanel();
@@ -5922,30 +5993,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     undo.addEdit(evt.getEdit());
                 }
             });
+            _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _numMostLikelyClustersGraphFocusGained(evt);
+                }
+            });
 
             _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
+            _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    _numMostLikelyClustersGraphLabelMouseClicked(evt);
+                }
+            });
 
             _temporalGraphButtonGroup.add(_temporalGraphSignificant);
             _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than:");
 
             _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
-            _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
-                public void keyTyped(java.awt.event.KeyEvent e) {
-                    Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);
-                }
-            });
+            _temporalGraphPvalueCutoff.setPreferredSize(new java.awt.Dimension(75, 22));
+            initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
             _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-                public void focusLost(java.awt.event.FocusEvent e) {
-                    while (_temporalGraphPvalueCutoff.getText().length() == 0 ||
-                        Double.parseDouble(_temporalGraphPvalueCutoff.getText()) <= 0 ||
-                        Double.parseDouble(_temporalGraphPvalueCutoff.getText()) > 1)
-                    if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(".05");
-                    enableSetDefaultsButton();
-                }
-            });
-            _temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
-                public void undoableEditHappened(UndoableEditEvent evt) {
-                    undo.addEdit(evt.getEdit());
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _temporalGraphPvalueCutoffFocusGained(evt);
                 }
             });
 
@@ -5964,7 +6033,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                                     .addComponent(_temporalGraphSignificant)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(0, 0, Short.MAX_VALUE))
                                 .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(_graphOutputGroupLayout.createSequentialGroup()
@@ -6354,25 +6423,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:"); // NOI18N
 
             _drilldown_restriction_cutoff.setText("0.05"); // NOI18N
-            _drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {
-                public void keyTyped(java.awt.event.KeyEvent e) {
-                    Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);
-                }
-            });
-            _drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-                public void focusLost(java.awt.event.FocusEvent e) {
-                    while (_drilldown_restriction_cutoff.getText().length() == 0 ||
-                        Double.parseDouble(_drilldown_restriction_cutoff.getText()) <= 0 ||
-                        Double.parseDouble(_drilldown_restriction_cutoff.getText()) > 1)
-                    if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText("0.05");
-                    enableSetDefaultsButton();
-                }
-            });
-            _drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
-                public void undoableEditHappened(UndoableEditEvent evt) {
-                    undo.addEdit(evt.getEdit());
-                }
-            });
+            initCutoffJTextField(_drilldown_restriction_cutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
 
             _drilldown_restrictions.setText("Drilldown for Clusters with:");
 
@@ -6560,36 +6611,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _cutoff_value_email.setText("0.05");
             _cutoff_value_email.setMinimumSize(new java.awt.Dimension(75, 22));
             _cutoff_value_email.setPreferredSize(new java.awt.Dimension(75, 22));
-            _cutoff_value_email.addKeyListener(new java.awt.event.KeyAdapter() {
-                public void keyTyped(java.awt.event.KeyEvent e) {
-                    Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
-                    if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)
-                    Utils.validatePostiveNumericKeyTyped(_cutoff_value_email, e, 10);
-                    else
-                    Utils.validatePostiveFloatKeyTyped(_cutoff_value_email, e, 20);
-                }
-            });
-            _cutoff_value_email.addFocusListener(new java.awt.event.FocusAdapter() {
-                public void focusLost(java.awt.event.FocusEvent e) {
-                    Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();
-                    if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
-                        while (_cutoff_value_email.getText().length() == 0 ||
-                            Double.parseDouble(_cutoff_value_email.getText()) < 1)
-                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
-                    } else {
-                        while (_cutoff_value_email.getText().length() == 0 ||
-                            Double.parseDouble(_cutoff_value_email.getText()) <= 0 ||
-                            Double.parseDouble(_cutoff_value_email.getText()) > 1)
-                        if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
-                    }
-                    enableSetDefaultsButton();
-                }
-            });
-            _cutoff_value_email.getDocument().addUndoableEditListener(new UndoableEditListener() {
-                public void undoableEditHappened(UndoableEditEvent evt) {
-                    undo.addEdit(evt.getEdit());
-                }
-            });
+            initCutoffJTextField(_cutoff_value_email, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
 
             _cutoff_email_label.setText(" send email with summary results to (csv list):");
 
@@ -6722,6 +6744,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             pack();
         }// </editor-fold>//GEN-END:initComponents
+
+    private void _numMostLikelyClustersGraphFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__numMostLikelyClustersGraphFocusGained
+        _temporalGraphMostLikelyX.setSelected(true);
+    }//GEN-LAST:event__numMostLikelyClustersGraphFocusGained
+
+    private void _temporalGraphPvalueCutoffFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__temporalGraphPvalueCutoffFocusGained
+        _temporalGraphSignificant.setSelected(true);
+    }//GEN-LAST:event__temporalGraphPvalueCutoffFocusGained
+
+    private void _numMostLikelyClustersGraphLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event__numMostLikelyClustersGraphLabelMouseClicked
+        if (_numMostLikelyClustersGraphLabel.isEnabled())
+            _temporalGraphMostLikelyX.setSelected(true);
+    }//GEN-LAST:event__numMostLikelyClustersGraphLabelMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;

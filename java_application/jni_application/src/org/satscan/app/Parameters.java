@@ -508,8 +508,8 @@ public class Parameters implements Cloneable {
     public void setDrilldownMinimumLocationsCluster(int u) { _drilldown_minimum_locations = u; }
     public int getDrilldownMinimumCasesCluster() { return _drilldown_minimum_cases; }
     public void setDrilldownMinimumCasesCluster(int u) { _drilldown_minimum_cases = u; }
-    public double getDrilldownPvalueCutoff() { return _drilldown_pvalue_cutoff; }
-    public void setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+    public double getDrilldownCutoff() { return _drilldown_pvalue_cutoff; }
+    public void setDrilldownCutoff(double d) { _drilldown_pvalue_cutoff = d; }
     public boolean getDrilldownAdjustWeeklyTrends() { return _drilldown_adjust_weekly_trends; }
     public void setDrilldownAdjustWeeklyTrends(boolean b) { _drilldown_adjust_weekly_trends = b; }    
     public boolean getOutputGoogleMapsFile() { return _output_google_map; }

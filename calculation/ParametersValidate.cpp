@@ -19,7 +19,7 @@ const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting"
 
 /** Validates that given current state of settings, parameters and their relationships
     with other parameters are correct. Errors are sent to print direction and*/
-bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileValidation) const {
+bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileValidation, bool isDrilldown) const {
     bool bValid=true;
 
     try {
@@ -62,14 +62,15 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateRangeParameters(PrintDirection);
         bValid &= ValidateIterativeScanParameters(PrintDirection);
         bValid &= ValidateInferenceParameters(PrintDirection);
-        bValid &= ValidateDrilldownParameters(PrintDirection);
+        bValid &= ValidateDrilldownParameters(PrintDirection, isDrilldown);
         bValid &= ValidateBorderAnalysisParameters(PrintDirection);
         bValid &= ValidateEllipseParameters(PrintDirection);
         bValid &= ValidateSimulationDataParameters(PrintDirection);
         bValid &= ValidateRandomizationSeed(PrintDirection);
         bValid &= ValidatePowerEvaluationsParameters(PrintDirection);
         bValid &= ValidateClosedLoopAnalysisParameters(PrintDirection);
-        bValid &= ValidateOtherOutputOptionParameters(PrintDirection);
+        bValid &= ValidateTemporalOutputParameters(PrintDirection, isDrilldown);
+        bValid &= ValidateOtherOutputOptionParameters(PrintDirection, isDrilldown);
         bValid &= ValidateNotificationParameters(PrintDirection);
     } catch (prg_exception& x) {
         x.addTrace("ValidateParameters()","ParametersValidate");
@@ -78,18 +79,18 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
     return bValid;
 }
 
-bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const {
+bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDirection, bool isDrilldown) const {
     bool bValid = true;
     try {
         if (gParameters.getReadingLineDataFromCasefile()) {
-            if (gParameters.GetIsProspectiveAnalysis() && gParameters.getCutoffLineListCSV() < 1) {
+            if (gParameters.GetIsProspectiveAnalysis() && !isDrilldown && gParameters.getCutoffLineListCSV() < 1) {
                 bValid = false;
                 PrintDirection.Printf(
                     "%s:\nThe cluster line list cutoff value must be greater than zero for a prospective analysis.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                 );
             }
-            if (!gParameters.GetIsProspectiveAnalysis() && (gParameters.getCutoffLineListCSV() < 0 || gParameters.getCutoffLineListCSV() > 1)) {
+            if ((!gParameters.GetIsProspectiveAnalysis() || isDrilldown) && (gParameters.getCutoffLineListCSV() < 0 || gParameters.getCutoffLineListCSV() > 1)) {
                 bValid = false;
                 PrintDirection.Printf(
                     "%s:\nThe cluster line list cutoff must be between 0 and 1, inclusive, for a retrospective analysis.\n",
@@ -278,7 +279,7 @@ bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, Parameter
     return bValid;
 }
 
-bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection) const {
+bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection, bool isDilldown) const {
     bool bValid = true;
 
     if (!(gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()))
@@ -312,10 +313,19 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection)
         bValid = false;
         PrintDirection.Printf("%s:\nThe minimum number of cases in detected cluster for drilldown cannot be less than 10.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
-    double cutoff = gParameters.getDrilldownPvalueCutoff();
-    if (cutoff <= 0.0 || 1.0 <= cutoff) {
+    if (gParameters.GetIsProspectiveAnalysis() && !isDilldown && gParameters.getDrilldownCutoff() < 1) {
         bValid = false;
-        PrintDirection.Printf("%s:\nThe p-value cutoff for a detected cluster on drilldown must be greater than zero and less than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf(
+            "%s:\nThe cutoff value for a detected cluster on drilldown must be greater than or equal to one for a prospective scan.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+        );
+    }
+    if ((!gParameters.GetIsProspectiveAnalysis() || isDilldown) && (gParameters.getDrilldownCutoff() < 0 || gParameters.getDrilldownCutoff() > 1)) {
+        bValid = false;
+        PrintDirection.Printf(
+            "%s:\nThe cutoff value for a detected cluster on drilldown must be between 0 and 1, inclusive.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+        );
     }
     if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
         if (gParameters.getNumFileSets() > 1) {
@@ -1923,6 +1933,36 @@ bool ParametersValidate::ValidateSVTTAnalysisSettings(BasePrint& PrintDirection)
     }
   }
   return bValid;
+}
+
+/** Validates  */
+bool ParametersValidate::ValidateTemporalOutputParameters(BasePrint& PrintDirection, bool isDrilldown) const {
+    bool bValid = true;
+
+    if (gParameters.getOutputTemporalGraphFile()) {
+        switch (gParameters.getTemporalGraphReportType()) {
+            case SIGNIFICANT_ONLY:
+                if (gParameters.GetIsProspectiveAnalysis() && !isDrilldown && gParameters.getTemporalGraphSignificantCutoff() < 1) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be greater than or equal to one for a prospective scan.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                if ((!gParameters.GetIsProspectiveAnalysis() || isDrilldown) && (gParameters.getTemporalGraphSignificantCutoff() < 0 || gParameters.getTemporalGraphSignificantCutoff() > 1)) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be between 0 and 1, inclusive.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                break;
+            case MLC_ONLY:
+            case X_MCL_ONLY:
+            default: break;
+        }
+    }
+    return bValid;
 }
 
 /** Validates optional parameters particular to temporal analyses

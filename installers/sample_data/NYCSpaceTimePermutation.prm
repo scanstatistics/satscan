@@ -191,8 +191,8 @@ PerformBernoulliDrilldown=n
 DrilldownMinimumClusterLocations=2
 ;minimum number of cases in detected cluster to perform drilldown (positive integer)
 DrilldownMinimumClusterCases=10
-;p-value cutoff of detected cluster to perform drilldown (0.0 to 1)
-DrilldownClusterPvalueCutoff=0.05
+;cutoff of detected cluster to perform drilldown (0.0 to 1 for retrospective, > 0 for prospective)
+DrilldownClusterCutoff=365
 ;adjust for weekly trends, purely spatial Bernoulli drilldown
 DrilldownAdjustForWeeklyTrends=n
 

@@ -778,8 +778,8 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDrilldownMinimumCasesCluster());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setDrilldownPvalueCutoff", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getDrilldownPvalueCutoff());
+  mid = _getMethodId_Checked(Env, clazz, "setDrilldownCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getDrilldownCutoff());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setDrilldownAdjustWeeklyTrends", "(Z)V");
@@ -1552,8 +1552,8 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setDrilldownMinimumCasesCluster(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getDrilldownPvalueCutoff", "()D");
-  Parameters.setDrilldownPvalueCutoff(Env.CallDoubleMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getDrilldownCutoff", "()D");
+  Parameters.setDrilldownCutoff(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getDrilldownAdjustWeeklyTrends", "()Z");

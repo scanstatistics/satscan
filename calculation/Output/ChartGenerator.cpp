@@ -309,9 +309,10 @@ TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, cons
 void TemporalChartGenerator::generateChart() const {
     std::string clusterName, buffer, buffer2;
     FileName fileName;
+    const CParameters& parameters = _dataHub.GetParameters();
 
     try {
-        fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+        fileName.setFullPath(parameters.GetOutputFileName().c_str());
         getFilename(fileName);
 
         std::ofstream HTMLout;
@@ -349,7 +350,7 @@ void TemporalChartGenerator::generateChart() const {
         // We might need to calculated purely temporal data structures.
         // TODO: Is there a better way to do this?
         const DataSetHandler& handler = _dataHub.GetDataSetHandler();
-        if (_dataHub.GetParameters().GetAnalysisType() != PURELYTEMPORAL) {
+        if (parameters.GetAnalysisType() != PURELYTEMPORAL) {
             DataSetHandler& temp_handler = const_cast<DataSetHandler&>(handler);
             for (size_t idx=0; idx < temp_handler.GetNumDataSets(); ++idx) {
                 temp_handler.GetDataSet(idx).setCaseData_PT();
@@ -359,20 +360,27 @@ void TemporalChartGenerator::generateChart() const {
 
         // Determine clusters will have a graph generated based on settings.
         std::vector<const CCluster*> graphClusters;
-        switch (_dataHub.GetParameters().getTemporalGraphReportType()) {
-        case MLC_ONLY :
-            graphClusters.push_back(&_clusters.GetCluster(0)); break;
-        case X_MCL_ONLY :
-            for (int i=0; i < _dataHub.GetParameters().getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i)
-                graphClusters.push_back(&_clusters.GetCluster(i)); 
-            break;
-        case SIGNIFICANT_ONLY :
-            for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
-                const CCluster & cluster = _clusters.GetCluster(i);
-                if (cluster.getReportingPValue(_dataHub.GetParameters(), _simVars, i == 0) <= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
-                    graphClusters.push_back(&cluster); 
-            }
-            break;
+        switch (parameters.getTemporalGraphReportType()) {
+            case MLC_ONLY :
+                graphClusters.push_back(&_clusters.GetCluster(0)); break;
+            case X_MCL_ONLY :
+                for (int i = 0; i < parameters.getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i) {
+                    if (i == 0 || _clusters.GetCluster(i).m_nRatio >= MIN_CLUSTER_LLR_REPORT)
+                        graphClusters.push_back(&_clusters.GetCluster(i));
+                }
+                break;
+            case SIGNIFICANT_ONLY :
+                for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
+                    const CCluster & cluster = _clusters.GetCluster(i);
+                    if (cluster.m_nRatio < MIN_CLUSTER_LLR_REPORT || cluster.GetRank() > _simVars.get_sim_count()) continue;
+                    if (parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {
+                        if (cluster.reportableRecurrenceInterval(parameters, _simVars) && cluster.GetRecurrenceInterval(_dataHub, i, _simVars).second >= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
+                            graphClusters.push_back(&cluster);
+                    } else if (cluster.getReportingPValue(_dataHub.GetParameters(), _simVars, i == 0) <= _dataHub.GetParameters().getTemporalGraphSignificantCutoff()) {
+                        graphClusters.push_back(&cluster);
+                    }
+                }
+                break;
         }
 
         for (size_t clusterIdx=0; clusterIdx < graphClusters.size(); ++clusterIdx) {
@@ -511,7 +519,10 @@ void TemporalChartGenerator::generateChart() const {
         if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
-            printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            if (_dataHub.GetParameters().GetIsProspectiveAnalysis() && !_dataHub.isDrilldown())
+                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a recurrence interval less than %.0lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            else
+                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %g.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
 		printString(buffer,

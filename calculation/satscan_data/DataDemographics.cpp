@@ -159,7 +159,7 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 /** Returns whether a cluster is reported in the cluster line-list output file. */
 bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
     const auto& parameters = Data.GetParameters();
-    if (cluster.reportableRecurrenceInterval(parameters, simVars))
+    if (cluster.reportableRecurrenceInterval(parameters, simVars) && !Data.isDrilldown())
         return cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second >= parameters.getCutoffLineListCSV();
     if (cluster.reportablePValue(parameters, simVars))
         return cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1) <= parameters.getCutoffLineListCSV();

@@ -51,16 +51,21 @@
 using namespace boost::assign;
 using boost::algorithm::ireplace_all;
 
+const double AnalysisDrilldown::DEFAULT_CUTOFF_PVALUE = 0.05;
 const int BernoulliAnalysisDrilldown::DEFAULT_NUM_ITERATIVE_SCANS = 10;
 const double BernoulliAnalysisDrilldown::DEFAULT_ITERATIVE_CUTOFF_PVALUE = 0.05;
 
 //////////////////////////// AbstractAnalysisDrilldown ///////////////////////////////////
 
-bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
-    bool should = static_cast<unsigned int>(cluster.getNumIdentifiers()) >= parameters.getDrilldownMinimumLocationsCluster() &&
-        cluster.reportablePValue(parameters, simvars) &&
-        cluster.getReportingPValue(parameters, simvars, parameters.GetIsIterativeScanning()) <= parameters.getDrilldownPvalueCutoff() &&
-        cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
+bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, unsigned int clusterRptIdx, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars) {
+    bool should = static_cast<unsigned int>(cluster.getNumIdentifiers()) >= parameters.getDrilldownMinimumLocationsCluster() && cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
+    if (parameters.GetIsProspectiveAnalysis() && !data.isDrilldown()) {
+        should &= cluster.reportableRecurrenceInterval(parameters, simvars) &&
+            cluster.GetRecurrenceInterval(data, clusterRptIdx, simvars).second >= parameters.getDrilldownCutoff();
+    } else {
+        should &= cluster.reportablePValue(parameters, simvars) &&
+            cluster.getReportingPValue(parameters, simvars, clusterRptIdx == 0 || parameters.GetIsIterativeScanning()) <= parameters.getDrilldownCutoff();
+    }
     // One additional check for Bernoulli analysis -- there must be controls as well.
     if (parameters.GetProbabilityModelType() == BERNOULLI) {
         bool anyControls = false;
@@ -1942,7 +1947,7 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
 
 void AbstractAnalysisDrilldown::execute() {
     // Sanity check - ensure that parameter settings are correct.
-    if (!ParametersValidate(_parameters).Validate(_print_direction, true))
+    if (!ParametersValidate(_parameters).Validate(_print_direction, true, _data_hub->isDrilldown()))
         throw prg_error("Drilldown parameter settings are invalid.", "execute()");
     if (_print_direction.GetIsCanceled()) return;
     //calculate number of neighboring locations about each centroid
@@ -1964,7 +1969,7 @@ void AbstractAnalysisDrilldown::execute() {
         const MostLikelyClustersContainer & mlc = execution.getLargestMaximaClusterCollection();
         for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
             const CCluster& cluster = mlc.GetCluster(c);
-            if (shouldDrilldown(cluster, *_data_hub, _parameters, execution.getSimVariables())) {
+            if (execution.getClusterSupplement().test(cluster)/*reported?*/ && shouldDrilldown(cluster, c + 1, *_data_hub, _parameters, execution.getSimVariables())) {
                 if (_parameters.getPerformStandardDrilldown()) {
                     try {
                         _print_direction.Printf(
@@ -2038,6 +2043,14 @@ AnalysisDrilldown::AnalysisDrilldown(
     // Create new data hub that is will be only data from detected cluster.
     _data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
     _data_hub->setIsDrilldownLevel(downlevel);
+
+    // If parent analysis is prospective and it's top level analysis, then we want to switch cutoffs from recurrence interval to p-value in the drillown.
+    if (_parameters.GetIsProspectiveAnalysis() && downlevel == 1) {
+        _parameters.setDrilldownCutoff(DEFAULT_CUTOFF_PVALUE);
+        _parameters.setCutoffLineListCSV(DEFAULT_CUTOFF_PVALUE);
+        _parameters.setTemporalGraphSignificantCutoff(DEFAULT_CUTOFF_PVALUE);
+    }
+
     // Assign output file for this drilldown analysis.
     setOutputFilename(detectedCluster, supplementInfo);
     // Create new grid and coordinates file from locations defined in detected cluster.
@@ -2234,7 +2247,7 @@ void AnalysisRunner::run() {
             const MostLikelyClustersContainer & mlc = execution->getLargestMaximaClusterCollection();
             for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
                 const CCluster& cluster = mlc.GetCluster(c);
-                if (AbstractAnalysisDrilldown::shouldDrilldown(cluster, *_data_hub, _parameters, execution->getSimVariables())) {
+                if (execution->getClusterSupplement().test(cluster)/*reported?*/ && AbstractAnalysisDrilldown::shouldDrilldown(cluster, c + 1, *_data_hub, _parameters, execution->getSimVariables())) {
                     if (_parameters.getPerformStandardDrilldown()) {
                         try {
                             _print_direction.Printf(

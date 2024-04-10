@@ -179,7 +179,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_perform_bernoulli_drilldown != rhs._perform_bernoulli_drilldown) return false;
   if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
   if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
-  if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
+  if (_drilldown_cutoff != rhs._drilldown_cutoff) return false;
   if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
   if (_locations_network_filename != rhs._locations_network_filename) return false;
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
@@ -430,7 +430,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _perform_bernoulli_drilldown = rhs._perform_bernoulli_drilldown;
   _drilldown_minimum_locations = rhs._drilldown_minimum_locations;
   _drilldown_minimum_cases = rhs._drilldown_minimum_cases;
-  _drilldown_pvalue_cutoff = rhs._drilldown_pvalue_cutoff;
+  _drilldown_cutoff = rhs._drilldown_cutoff;
   _drilldown_adjust_weekly_trends = rhs._drilldown_adjust_weekly_trends;
   _locations_network_filename = rhs._locations_network_filename;
   _use_locations_network_file = rhs._use_locations_network_file;
@@ -1014,7 +1014,7 @@ void CParameters::SetAsDefaulted() {
   _perform_bernoulli_drilldown = false;
   _drilldown_minimum_locations = 2;
   _drilldown_minimum_cases = 10;
-  _drilldown_pvalue_cutoff = 0.05;
+  _drilldown_cutoff = 0.05;
   _drilldown_adjust_weekly_trends = false;
   _locations_network_filename = "";
   _use_locations_network_file = false;

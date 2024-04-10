@@ -679,7 +679,7 @@ void IniParameterSpecification::Build_10_0_x_ParameterList() {
     _parameter_info[PERFORM_BERNOULLI_DRILLDOWN] = ParamInfo(PERFORM_BERNOULLI_DRILLDOWN, "PerformBernoulliDrilldown", 1, _drilldown_section);
     _parameter_info[DRILLDOWN_MIN_LOCATIONS] = ParamInfo(DRILLDOWN_MIN_LOCATIONS, "DrilldownMinimumClusterLocations", 2, _drilldown_section);
     _parameter_info[DRILLDOWN_MIN_CASES] = ParamInfo(DRILLDOWN_MIN_CASES, "DrilldownMinimumClusterCases", 3, _drilldown_section);
-    _parameter_info[DRILLDOWN_PVLAUE_CUTOFF] = ParamInfo(DRILLDOWN_PVLAUE_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
+    _parameter_info[DRILLDOWN_CUTOFF] = ParamInfo(DRILLDOWN_CUTOFF, "DrilldownClusterPvalueCutoff", 4, _drilldown_section);
     _parameter_info[DRILLDOWN_ADJ_WEEKLY_TRENDS] = ParamInfo(DRILLDOWN_ADJ_WEEKLY_TRENDS, "DrilldownAdjustForWeeklyTrends", 5, _drilldown_section);
 
     _parameter_info[USE_NETWORK_FILE] = ParamInfo(USE_NETWORK_FILE, "UseLocationsNetworkFile", 1, _locations_network_section);
@@ -745,6 +745,7 @@ void IniParameterSpecification::Build_10_2_x_ParameterList() {
     _parameter_info[EMAIL_CUSTOM_BODY] = ParamInfo(EMAIL_CUSTOM_BODY, "CustomEmailMessageBody", 10, _notifications_section);
 
     _parameter_info[LL_CSV_CUTOFF_VALUE] = ParamInfo(LL_CSV_CUTOFF_VALUE, "CutoffClusterLinelistCSV", 6, _other_output_section);
+    _parameter_info[DRILLDOWN_CUTOFF] = ParamInfo(DRILLDOWN_CUTOFF, "DrilldownClusterCutoff", 4, _drilldown_section);
 
     assert(_parameter_info.size() == 179);
 }

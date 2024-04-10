@@ -271,7 +271,7 @@ class CParameters {
     bool                                _perform_bernoulli_drilldown;
     unsigned int                        _drilldown_minimum_locations;
     unsigned int                        _drilldown_minimum_cases;
-    double                              _drilldown_pvalue_cutoff;
+    double                              _drilldown_cutoff;
     bool                                _drilldown_adjust_weekly_trends;
     std::vector<std::string>            _drilldown_result_filenames;
 
@@ -382,8 +382,8 @@ class CParameters {
     void                                setDrilldownMinimumLocationsCluster(unsigned int u) { _drilldown_minimum_locations = u; }
     unsigned int                        getDrilldownMinimumCasesCluster() const { return _drilldown_minimum_cases; }
     void                                setDrilldownMinimumCasesCluster(unsigned int u) { _drilldown_minimum_cases = u; }
-    double                              getDrilldownPvalueCutoff() const { return _drilldown_pvalue_cutoff; }
-    void                                setDrilldownPvalueCutoff(double d) { _drilldown_pvalue_cutoff = d; }
+    double                              getDrilldownCutoff() const { return _drilldown_cutoff; }
+    void                                setDrilldownCutoff(double d) { _drilldown_cutoff = d; }
     bool                                getDrilldownAdjustWeeklyTrends() const { return _drilldown_adjust_weekly_trends; }
     void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
     void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }

@@ -3345,7 +3345,7 @@
                     <Property name="text" type="java.lang.String" value="1"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_cluster_lineline_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)&#xa;            Utils.validatePostiveNumericKeyTyped(_cluster_lineline_value, e, 10);&#xa;        else &#xa;            Utils.validatePostiveFloatKeyTyped(_cluster_lineline_value, e, 20);&#xa;    }&#xa;});&#xa;_cluster_lineline_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST);&#xa;        } else {&#xa;            while (_cluster_lineline_value.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &lt;= 0 ||&#xa;                    Double.parseDouble(_cluster_lineline_value.getText()) &gt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_cluster_lineline_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="initCutoffJTextField(_cluster_lineline_value, AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST, AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_cluster_lineline_label">
@@ -3754,7 +3754,7 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_temporalGraphSignificant" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="_temporalGraphPvalueCutoff" min="-2" pref="70" max="-2" attributes="1"/>
+                                          <Component id="_temporalGraphPvalueCutoff" min="-2" max="-2" attributes="1"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_temporalGraphMostLikely" max="32767" attributes="0"/>
@@ -3828,6 +3828,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_numMostLikelyClustersGraphFocusGained"/>
+                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -3836,6 +3839,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="most likely clusters, one graph for each"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="_numMostLikelyClustersGraphLabelMouseClicked"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalGraphSignificant">
                   <Properties>
@@ -3848,9 +3854,15 @@
                 <Component class="javax.swing.JTextField" name="_temporalGraphPvalueCutoff">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[75, 22]"/>
+                    </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_temporalGraphPvalueCutoffFocusGained"/>
+                  </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_temporalGraphPvalueCutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -4364,7 +4376,7 @@
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_cutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_drilldown_restriction_cutoff, e, 20);&#xa;    }&#xa;});&#xa;_drilldown_restriction_cutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_cutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_drilldown_restriction_cutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_drilldown_restriction_cutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cutoff.setText(&quot;0.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_cutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_drilldown_restriction_cutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_drilldown_restrictions">
@@ -4702,7 +4714,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutoff_value_email.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME)&#xa;            Utils.validatePostiveNumericKeyTyped(_cutoff_value_email, e, 10);&#xa;        else &#xa;            Utils.validatePostiveFloatKeyTyped(_cutoff_value_email, e, 20);&#xa;    }&#xa;});&#xa;_cutoff_value_email.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Parameters.AnalysisType analysis_type = _settings_window.getAnalysisControlType();&#xa;        if (analysis_type == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis_type == Parameters.AnalysisType.PROSPECTIVESPACETIME) {&#xa;            while (_cutoff_value_email.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cutoff_value_email.getText()) &lt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);&#xa;        } else {&#xa;            while (_cutoff_value_email.getText().length() == 0 ||&#xa;                    Double.parseDouble(_cutoff_value_email.getText()) &lt;= 0 ||&#xa;                    Double.parseDouble(_cutoff_value_email.getText()) &gt; 1)&#xa;                if (undo.canUndo()) undo.undo(); else _cutoff_value_email.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_cutoff_value_email.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_cutoff_value_email, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_cutoff_email_label">

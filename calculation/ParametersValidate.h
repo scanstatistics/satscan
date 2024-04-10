@@ -21,7 +21,7 @@ class ParametersValidate {
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const;
-    bool                ValidateDrilldownParameters(BasePrint & PrintDirection) const;
+    bool                ValidateDrilldownParameters(BasePrint & PrintDirection, bool isDilldown) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
     bool                ValidateNotificationParameters(BasePrint & PrintDirection) const;
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
@@ -32,7 +32,7 @@ class ParametersValidate {
     bool                ValidateLinelistParameters(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateLocationNetworkParameters(BasePrint & PrintDirection) const;
-    bool                ValidateOtherOutputOptionParameters(BasePrint & PrintDirection) const;
+    bool                ValidateOtherOutputOptionParameters(BasePrint & PrintDirection, bool isDrilldown) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
@@ -45,11 +45,12 @@ class ParametersValidate {
     bool                ValidateTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateTemporalParameters(BasePrint & PrintDirection) const;
     bool                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
+    bool                ValidateTemporalOutputParameters(BasePrint& PrintDirection, bool isDrilldown) const;
 
   public:
     ParametersValidate(const CParameters& Parameters): gParameters(Parameters) {}
 
-    bool                Validate(BasePrint& PrintDirection, bool excludeFileValidation=false) const;
+    bool                Validate(BasePrint& PrintDirection, bool excludeFileValidation=false, bool isDrilldown=false) const;
 };
 //******************************************************************************
 #endif

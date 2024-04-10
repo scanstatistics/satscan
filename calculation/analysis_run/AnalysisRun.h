@@ -171,6 +171,10 @@ class AbstractAnalysisDrilldown {
                 parentFile.setFileName(printString(_parent_filename, "%s-drilldown-%s-std", parentFile.getFileName().c_str(), _cluster_path.c_str()).c_str());
                 parentFile.getFullPath(_parent_filename);
             }
+            // Never eakil from drill down analyses.
+            _parameters.setAlwaysEmailSummary(false);
+            _parameters.setCutoffEmailSummary(false);
+            _parameters.setCreateEmailSummaryFile(false);
         }
         virtual ~AbstractAnalysisDrilldown();
 
@@ -183,7 +187,7 @@ class AbstractAnalysisDrilldown {
         virtual const char                * getTypeIdentifier() = 0;
         const CParameters                 & getParameters() const { return _parameters; }
         virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
-        static bool                         shouldDrilldown(const CCluster& cluster, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
+        static bool                         shouldDrilldown(const CCluster& cluster, unsigned int clusterRptIdx, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
 };
 
 class AnalysisDrilldown : public AbstractAnalysisDrilldown {
@@ -201,6 +205,8 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
         };
 
         virtual const char                * getTypeIdentifier() { return "std"; };
+
+        static const double               DEFAULT_CUTOFF_PVALUE;
 };
 
 class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {

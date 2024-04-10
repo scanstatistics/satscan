@@ -154,7 +154,7 @@ enum ParameterType
     PERFORM_BERNOULLI_DRILLDOWN,    /* whether to perform Bernoulli anaylsis drilldown */
     DRILLDOWN_MIN_LOCATIONS,        /* minimum number of locations in detected cluster to perform drilldown */
     DRILLDOWN_MIN_CASES,            /* minimum number of cases in detected cluster to perform drilldown */
-    DRILLDOWN_PVLAUE_CUTOFF,        /* maximum p-value in detected cluster to perform drilldown */
+    DRILLDOWN_CUTOFF,               /* cutoff detected cluster to perform drilldown */
     DRILLDOWN_ADJ_WEEKLY_TRENDS,    /* whether to adjust for weekly trends in Bernoulli drilldown, nonparametric */
     USE_NETWORK_FILE,               /* whether to use locations network file */
     NETWORK_FILE,                   /* locations network filename */

@@ -188,10 +188,7 @@ void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
         settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
         if (gParameters.getReadingLineDataFromCasefile()) {
-            if (gParameters.GetIsProspectiveAnalysis())
-                settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, ">= %u days", static_cast<unsigned int>(gParameters.getCutoffLineListCSV()))));
-            else
-                settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, "p-value <= %g", gParameters.getCutoffLineListCSV())));
+            settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, "%g", gParameters.getCutoffLineListCSV())));
             FileName linelist(gParameters.GetOutputFileName().c_str());
             for (unsigned int idx = 1; idx <= gParameters.getNumFileSets(); ++idx) {
                 if (gParameters.getNumFileSets() == 1) {
@@ -621,7 +618,7 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
             if (gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()) {
                 settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumLocationsCluster())));
                 settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumCasesCluster())));
-                settings.push_back(std::make_pair("P-Value Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownPvalueCutoff())));
+                settings.push_back(std::make_pair("Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownCutoff())));
                 if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
                     settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
                 }
@@ -681,10 +678,7 @@ void ParametersPrint::PrintNotificationsParameters(FILE* fp) const {
         settings.push_back(std::make_pair("Send Email With Results Meeting Cutoff", (gParameters.getCutoffEmailSummary() ? "Yes" : "No")));
         if (gParameters.getCutoffEmailSummary()) {
             settings.push_back(std::make_pair("Cutoff Notify Recipients", gParameters.getEmailCutoffRecipients()));
-            if (gParameters.GetIsProspectiveAnalysis())
-                settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, ">= %u days", static_cast<unsigned int>(gParameters.getCutoffEmailValue()))));
-            else
-                settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, "p-value <= %g", gParameters.getCutoffEmailValue())));
+            settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, "%g", gParameters.getCutoffEmailValue())));
         }
         if (gParameters.getAlwaysEmailSummary() || gParameters.getCutoffEmailSummary()) {
             settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
@@ -1402,8 +1396,8 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
                 case X_MCL_ONLY: 
                     printString(buffer2, "%d most likely clusters, one graph for each", gParameters.getTemporalGraphMostLikelyCount());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
-                case SIGNIFICANT_ONLY: 
-                    printString(buffer2, "All clusters, one graph for each, with p-value less than %g", gParameters.getTemporalGraphSignificantCutoff());
+                case SIGNIFICANT_ONLY:
+                    printString(buffer2, "All clusters, one graph for each, meeting cutoff %g", gParameters.getTemporalGraphSignificantCutoff());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
                 default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", gParameters.getOutputTemporalGraphFile());
             }
