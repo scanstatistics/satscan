@@ -202,9 +202,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Case File:&quot;, AppConstants.CASEFILE_HELPID)"/>
-                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_caseFileTextField">
                   <AuxValues>
@@ -228,9 +225,6 @@
                       </Border>
                     </Property>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, AppConstants.TIMEPRECISION_HELPID));"/>
-                  </AuxValues>
 
                   <Layout>
                     <DimensionLayout dim="0">
@@ -372,9 +366,6 @@
                           </Border>
                         </Property>
                       </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, AppConstants.STUDYPERIOD_HELPID));"/>
-                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
                           <CardConstraints cardName="study_complete"/>
@@ -555,9 +546,6 @@
                           </Border>
                         </Property>
                       </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodGeneric.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodGeneric, AppConstants.STUDYPERIOD_HELPID));"/>
-                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
                           <CardConstraints cardName="study_generic"/>
@@ -658,9 +646,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Control File:&quot;,AppConstants.CONTROLFILE_HELPID)"/>
-                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_controlFileTextField">
                 </Component>
@@ -725,9 +710,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Population File:&quot;,AppConstants.POPULTIONFILE_HELPID)"/>
-                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_populationFileTextField">
                 </Component>
@@ -826,9 +808,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Coordinates File:" noResource="true"/>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Coordinates File:&quot;,AppConstants.COORDINATESFILE_HELPID)"/>
-                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_coordiantesFileTextField">
                 </Component>
@@ -849,9 +828,6 @@
                       </Border>
                     </Property>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, AppConstants.COORDINATES_HELPID));"/>
-                  </AuxValues>
 
                   <Layout>
                     <DimensionLayout dim="0">
@@ -917,9 +893,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Grid File:" noResource="true"/>
                   </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Grid File:&quot;,AppConstants.GRIDFILE_HELPID)"/>
-                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_gridFileTextField">
                 </Component>
@@ -1014,9 +987,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, AppConstants.TYPEANALYSIS_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1232,9 +1202,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, AppConstants.PROBABILITYMODEL_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1506,9 +1473,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, AppConstants.SCANAREA_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1597,9 +1561,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, AppConstants.TIMEAGGREGATION_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1794,9 +1755,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, AppConstants.COLUMNOUTPUT_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2118,9 +2076,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, AppConstants.TEXTOUTPUT_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2187,9 +2142,6 @@
                   </Border>
                 </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, AppConstants.GEOGRAPHICALOUTPUT_HELPID));"/>
-              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">

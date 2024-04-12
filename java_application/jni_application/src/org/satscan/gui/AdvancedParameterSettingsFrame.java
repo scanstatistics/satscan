@@ -35,7 +35,6 @@ import org.satscan.gui.utils.Utils;
 import org.satscan.app.UnknownEnumException;
 import org.satscan.gui.utils.DateComponentsGroup;
 import org.satscan.gui.utils.FileSelectionDialog;
-import org.satscan.gui.utils.help.HelpLinkedLabel;
 import org.satscan.importer.InputSourceSettings;
 
 /*
@@ -2922,13 +2921,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _addDataSetButton = new javax.swing.JButton();
         _removeDataSetButton = new javax.swing.JButton();
         _fileInputGroup = new javax.swing.JPanel();
-        _caseFileLabel = new HelpLinkedLabel("Case Files:", AppConstants.CASEFILE_HELPID);
+        _caseFileLabel = new javax.swing.JLabel();
         _caseFileTextField = new javax.swing.JTextField();
         _caseFileBrowseButton = new javax.swing.JButton();
-        _controlFileLabel = new HelpLinkedLabel("Control File:",AppConstants.CONTROLFILE_HELPID);
+        _controlFileLabel = new javax.swing.JLabel();
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileBrowseButton = new javax.swing.JButton();
-        _populationFileLabel = new HelpLinkedLabel("Population File:",AppConstants.POPULTIONFILE_HELPID);
+        _populationFileLabel = new javax.swing.JLabel();
         _populationFileTextField = new javax.swing.JTextField();
         _populationFileBrowseButton = new javax.swing.JButton();
         _multipleSetPurposeGroup = new javax.swing.JPanel();
@@ -3035,7 +3034,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _adjustForKnownRelativeRisksCheckBox = new javax.swing.JCheckBox();
         _adjustmentsByRelativeRisksFileTextField = new javax.swing.JTextField();
         _adjustmentsFileBrowseButton = new javax.swing.JButton();
-        _adjustmentsByRelativeRisksFileLabel = new HelpLinkedLabel("Adjustments File:", AppConstants.ADJUSTMENTSFILE_HELPID);
+        _adjustmentsByRelativeRisksFileLabel = new javax.swing.JLabel();
         _adjustDayOfWeek = new javax.swing.JCheckBox();
         _inferenceTab = new javax.swing.JPanel();
         _pValueOptionsGroup = new javax.swing.JPanel();
@@ -3098,7 +3097,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEvaluationWithSpecifiedCases = new javax.swing.JRadioButton();
         _totalPowerCases = new javax.swing.JTextField();
         _powerEvaluationWithSpecifiedCasesLabel = new javax.swing.JLabel();
-        _alternativeHypothesisFilenameLabel = new HelpLinkedLabel("Alternative Hypothesis File:", AppConstants.ALTERNATIVEHYPOTHESIS_HELPID);
+        _alternativeHypothesisFilenameLabel = new javax.swing.JLabel();
         _alternativeHypothesisFilename = new javax.swing.JTextField();
         _alternativeHypothesisFilenameButton = new javax.swing.JButton();
         _numberPowerReplicationsLabel = new javax.swing.JLabel();
@@ -3153,7 +3152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _network_tab = new javax.swing.JPanel();
         _network_group = new javax.swing.JPanel();
         _locations_network = new javax.swing.JCheckBox();
-        _network_file_label = new HelpLinkedLabel("Network File:", AppConstants.ADJUSTMENTSFILE_HELPID);
+        _network_file_label = new javax.swing.JLabel();
         _network_filename = new javax.swing.JTextField();
         _browse_network_filename = new javax.swing.JButton();
         _notificatons_tab = new javax.swing.JPanel();
@@ -3248,7 +3247,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             setResizable(true);
 
             _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets"));
-            _additionalDataSetsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalDataSetsGroup, AppConstants.MULTIPLEDATASETS_HELPID));
 
             _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
             _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -3594,7 +3592,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
 
             _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check"));
-            _studyPeriodCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodCheckGroup, AppConstants.TEMPORALDATACHECK_HELPID));
 
             _strictStudyPeriodCheckRadioButton.setSelected(true);
             _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
@@ -3637,7 +3634,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check"));
-            _geographicalCoordinatesCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalCoordinatesCheckGroup, AppConstants.GEOGRAPHICALDATACHECK_HELPID));
 
             _strictCoordinatesRadioButton.setSelected(true);
             _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
@@ -3710,7 +3706,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
 
             _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
-            _specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, AppConstants.NONEUCLIDIANFILE_HELPID));
 
             _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file"); // NOI18N
             _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -3807,7 +3802,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Observations with Multiple Locations"));
-            _multipleSetsSpatialCoordinatesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_multipleSetsSpatialCoordinatesGroup, AppConstants.MULTIPLECOORDLOC_HELPID));
 
             _onePerLocationIdRadioButton.setSelected(true);
             _onePerLocationIdRadioButton.setText("One location per observation."); // NOI18N
@@ -3929,7 +3923,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
 
             _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size"));
-            _spatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialOptionsGroup, AppConstants.MAXIMUMSPATIAL_HELPID));
 
             _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
             _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -4110,7 +4103,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             });
 
             _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape"));
-            _spatialWindowShapeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialWindowShapeGroup, AppConstants.SCANNINGWINDOW_HELPID));
 
             _circularRadioButton.setSelected(true);
             _circularRadioButton.setText("Circular"); // NOI18N
@@ -4220,7 +4212,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
 
             _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
-            _maxTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_maxTemporalOptionsGroup, AppConstants.MAXIMUMTEMPORAL_HELPID));
 
             _percentageTemporalRadioButton.setSelected(true);
             _percentageTemporalRadioButton.setText("is"); // NOI18N
@@ -4346,7 +4337,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
-            _flexibleTemporalWindowDefinitionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_flexibleTemporalWindowDefinitionGroup, AppConstants.FLEXIBLEWINDOW_HELPID));
 
             _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
             _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4586,7 +4576,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Cluster Size"));
-            _minTemporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minTemporalOptionsGroup, AppConstants.MINIMUMTEMPORAL_HELPID));
 
             _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
             _minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -4658,7 +4647,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
 
             _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
-            _temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, AppConstants.TEMPORALTRENDADJ_HELPID));
 
             _temporalTrendAdjNone.setSelected(true);
             _temporalTrendAdjNone.setText("None"); // NOI18N
@@ -4782,7 +4770,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
-            _spatialAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialAdjustmentsGroup, AppConstants.SPATIALADJ_HELPID));
 
             _spatialAdjustmentsNone.setSelected(true);
             _spatialAdjustmentsNone.setText("None"); // NOI18N
@@ -4827,7 +4814,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
-            _knownAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_knownAdjustmentsGroup, AppConstants.ADJUSTMENT_RELRISKS_HELPID));
 
             _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
             _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4934,7 +4920,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
 
             _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value"));
-            _pValueOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_pValueOptionsGroup, AppConstants.PVALUE_HELPID));
 
             _pValueButtonGroup.add(_radioDefaultPValues);
             _radioDefaultPValues.setSelected(true);
@@ -5045,7 +5030,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
-            _iterativeScanGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_iterativeScanGroup, AppConstants.ITERATIVESCAN_HELPID));
 
             _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
             _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5137,7 +5121,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
-            _monteCarloGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_monteCarloGroup, AppConstants.MONTECARLO_HELPID));
 
             _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
@@ -5208,7 +5191,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Inference", _inferenceTab);
 
             _mapsOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maps"));
-            _mapsOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_mapsOutputGroup, AppConstants.KMLGOOGLEEARTH_HELPID));
 
             _includeClusterLocationsInKML.setText("Include All Location IDs in the Clusters");
             _includeClusterLocationsInKML.addItemListener(new java.awt.event.ItemListener() {
@@ -5264,7 +5246,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _clustersReportedGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
-            _clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, AppConstants.SECONDARDY_CLUSTERS_HELPID));
 
             _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -5340,7 +5321,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
 
             _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
-            _reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, AppConstants.MAXIMIMCLUSTERSREPORTED_HELPID));
 
             _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
             _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5521,7 +5501,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
 
             _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
-            _reportCriticalValuesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportCriticalValuesGroup, AppConstants.CRITICALVALUES_HELPID));
 
             _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
             _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5550,7 +5529,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _reportClusterRankGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Rank"));
-            _reportClusterRankGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportClusterRankGroup, AppConstants.MONTECARLORANK_HELPID));
 
             _reportClusterRankCheckBox.setText("Report Monte Carlo Rank"); // NOI18N
             _reportClusterRankCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5579,7 +5557,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers"));
-            _additionalOutputFiles.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFiles, AppConstants.COLUMNHEADERS_HELPID));
 
             _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
             _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5608,7 +5585,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
-            _userDefinedRunTitle.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_userDefinedRunTitle, AppConstants.RUNTITLE_HELPID));
 
             javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
             _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
@@ -5692,7 +5668,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Other Output", _otherOutputTab);
 
             _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
-            _powerEvaluationsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_powerEvaluationsGroup, AppConstants.POWERESTIMATION_HELPID));
 
             _powerEvaluationMethodButtonGroup.add(_partOfRegularAnalysis);
             _partOfRegularAnalysis.setSelected(true);
@@ -5950,7 +5925,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
 
             _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
-            _graphOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_graphOutputGroup, AppConstants.TEMPORALGRAPHS_HELPID));
 
             _reportTemporalGraph.setText("Produce Temporal Graphs");
             _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
@@ -6083,7 +6057,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
 
             _oliveiras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliveira's F"));
-            _oliveiras_f_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_oliveiras_f_group, AppConstants.OLIVERIERAF_HELPID));
 
             _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
 
@@ -6196,7 +6169,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
 
             _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
-            _limit_clusters_risk_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_limit_clusters_risk_group, AppConstants.RESTRICTRELRISK_HELPID));
 
             _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
             _limit_low_clusters.addItemListener(new java.awt.event.ItemListener() {
@@ -6285,7 +6257,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
-            _minimum_clusters_group.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_minimum_clusters_group, AppConstants.RESTRICTMINCASES_HELPID));
 
             _min_cases_label.setText("Restrict high rate clusters to have at least"); // NOI18N
 

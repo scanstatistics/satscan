@@ -93,9 +93,6 @@
           </Border>
         </Property>
       </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="parallelProcessorsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(parallelProcessorsGroup, &quot;http://www.satscan.org/&quot;));"/>
-      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">

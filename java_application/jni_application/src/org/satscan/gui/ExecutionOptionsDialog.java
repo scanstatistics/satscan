@@ -84,7 +84,6 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
         setModal(true);
 
         parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Parallel Proccessors"));
-        parallelProcessorsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(parallelProcessorsGroup, "http://www.satscan.org/"));
 
         _allProcessorsRadioButton.setSelected(true);
         _allProcessorsRadioButton.setText("All available processors");

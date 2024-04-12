@@ -47,15 +47,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import javax.help.HelpSetException;
-import javax.help.Popup;
-import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
 import org.apache.commons.lang3.SystemUtils;
 import org.satscan.gui.utils.FileSelectionDialog;
-import org.satscan.gui.utils.help.HelpShow;
 import org.satscan.utils.Elevator;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -94,9 +88,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static final String CHECK_UPDATE_START = "true";    
     public static final String FILE_BROWSE_KEY = "filebrowse";
     private final UpdateCheckDialog _updateCheck;
-    private HelpSet _mainHS = null;
-    private HelpBroker _mainHB = null;
-    private Popup _popupHB = null;
     private BatchAnalysisFrame _multiple_analysis_frame = null;
 
     /**
@@ -149,33 +140,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
     public void AddFrame(Component frame) {
         this.desktopPane.add(frame);
-    }    
-    
-    public HelpBroker getHelpBroker() throws HelpSetException {
-        if (_mainHB == null) {        
-            final String helpsetName = "help";
-            SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
-            ClassLoader cl = SaTScanApplication.class.getClassLoader();
-            URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
-            if (url == null) {
-                url = HelpSet.findHelpSet(cl, helpsetName, ".hs", Locale.getDefault());
-                if (url == null) {
-                    JOptionPane.showMessageDialog(null, "The help system could not be located.", " Help", JOptionPane.WARNING_MESSAGE);
-                    return null;
-                }
-            }
-            _mainHS = new HelpSet(cl, url);
-            _mainHB = _mainHS.createHelpBroker();
-        }
-        return _mainHB;
-    }
-
-    public Popup getHelpPopup() throws HelpSetException {
-        if (_popupHB == null) {        
-            _popupHB = (Popup)Popup.getPresentation(getHelpBroker().getHelpSet(),null);
-            _popupHB.setInvoker (getInstance());
-        }
-        return _popupHB;
     }
     
     /**
@@ -653,25 +617,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             }
         }
     }
-    
-    /**
-     * Help system action, launches the help system.
-     * TODO: The current help system is Windows only, will this stay?
-     */
-    public class HelpSystemAction extends AbstractAction {
-        static final String helpsetName = "SaTScan_Help";
-        private static final long serialVersionUID = 1L;
-        public HelpSystemAction() {
-            super("Help System");
-        }
-        public void actionPerformed(ActionEvent e) {
-            try {
-                HelpShow.showHelp("Introduction");
-            } catch (Throwable t) {
-                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
-            }
-        }
-    }
 
     /**
      * User guide actions; launches Adobe (associated PDF viewer) to view user guide in PDF format.
@@ -967,7 +912,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _exportMultipleAnalysisjMenuItem = new javax.swing.JMenuItem();
         _helpMenu = new javax.swing.JMenu();
         _userGuideMenuItem = new javax.swing.JMenuItem();
-        _helpContentMenuItem = new javax.swing.JMenuItem();
         _helpMenuSeparator1 = new javax.swing.JSeparator();
         _chechVersionMenuItem = new javax.swing.JMenuItem();
         _helpMenuSeparator2 = new javax.swing.JSeparator();
@@ -979,8 +923,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         setLocationByPlatform(true);
 
         desktopPane.setBackground(new java.awt.Color(204, 204, 204));
-
-        _ToolBar.setFloatable(false);
 
         _newSessionToolButton.setAction(new NewSessionFileAction());
         _newSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/New.png"))); // NOI18N
@@ -1142,11 +1084,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _userGuideMenuItem.setText("User Guide"); // NOI18N
         _userGuideMenuItem.setIcon(null);
         _helpMenu.add(_userGuideMenuItem);
-
-        _helpContentMenuItem.setAction(new HelpSystemAction());
-        _helpContentMenuItem.setText("Help Contents"); // NOI18N
-        _helpContentMenuItem.setIcon(null);
-        _helpMenu.add(_helpContentMenuItem);
         _helpMenu.add(_helpMenuSeparator1);
 
         _chechVersionMenuItem.setAction(new CheckNewVersionAction());
@@ -1419,7 +1356,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JSeparator _fileMenuSeparator1;
     private javax.swing.JSeparator _fileMenuSeparator2;
     private javax.swing.JSeparator _fileMenuSeparator3;
-    private javax.swing.JMenuItem _helpContentMenuItem;
     private javax.swing.JMenu _helpMenu;
     private javax.swing.JSeparator _helpMenuSeparator1;
     private javax.swing.JSeparator _helpMenuSeparator2;

@@ -37,7 +37,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.undo.UndoManager;
 import org.apache.commons.lang3.tuple.Triple;
-import org.satscan.app.AppConstants;
 import org.satscan.importer.CSVImportDataSource;
 import org.satscan.importer.DBaseImportDataSource;
 import org.satscan.importer.FileImporter;
@@ -53,7 +52,6 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.importer.XLSImportDataSource;
 import org.satscan.gui.utils.Utils;
 import org.satscan.gui.utils.WaitCursor;
-import org.satscan.gui.utils.help.HelpShow;
 import org.satscan.importer.DataSourceException;
 import org.satscan.importer.InputSourceSettings;
 import static org.satscan.importer.InputSourceSettings.InputFileType.Case;
@@ -458,11 +456,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Builds html which details the expected format of the input file type. */
     private String getFileExpectedFormatParagraphs() {
-        String heplID="";
         StringBuilder file_format = new StringBuilder();
         switch (_input_source_settings.getInputFileType()) {
             case Case :
-                heplID = AppConstants.CASEFILE_HELPID;
                 switch (getModelControlType()) {
                     case POISSON :
                     case SPACETIMEPERMUTATION :
@@ -490,54 +486,42 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 }
                 break;
             case Control:
-                heplID = AppConstants.CONTROLFILE_HELPID;
                 file_format.append("&lt;Identifier&gt;  &lt;Controls&gt;  &lt;Date/Time&gt;");
                 break;
             case Population:
-                heplID = AppConstants.POPULTIONFILE_HELPID;
-                heplID = "Population File";
                 file_format.append("&lt;Identifier&gt;  &lt;Date/Time&gt;  &lt;Population&gt;  &lt;Covariate 1&gt; ... &lt;Covariate N&gt;");
                 break;
             case Coordinates:
-                heplID = AppConstants.COORDINATESFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
                     file_format.append("&lt;Location&gt;  &lt;X-Coordinate&gt;  &lt;Y-Ccoordinate&gt;  &lt;Z1-Coordinate&gt; ...  &lt;ZN-Coordinate&gt;");
                 else
                     file_format.append("&lt;Location&gt;  &lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
             case SpecialGrid: file_format.append("");
-                heplID = AppConstants.GRIDFILE_HELPID;
                 if (getCoorinatesControlType() == Parameters.CoordinatesType.CARTESIAN)
                     file_format.append("&lt;X-Coordinate&gt;  &lt;Y-Coordinate&gt;  &lt;Z1-Coordinate&gt; ... &lt;Z2-Coordinate&gt;");
                 else
                     file_format.append("&lt;Latitude&gt;  &lt;Longitude&gt;");
                 break;
             case MaxCirclePopulation:
-                heplID = AppConstants.MAXCIRCLEFILE_HELPID;
                 file_format.append("&lt;Identifier&gt;  &lt;Population&gt;");
                 break;
             case AdjustmentsByRR:
-                heplID = AppConstants.ADJUSTMENTSFILE_HELPID;
                 file_format.append("&lt;Identifier&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
             case Neighbors:
-                heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
                 file_format.append("&lt;Identifier 1&gt;  &lt;Identifier 2&gt; &lt;Identifier 3&gt; ... &lt;Identifier 4&gt;");
                 break;
             case MetaLocations:
-                heplID = AppConstants.METALOCATIONSFILE_HELPID;
                 file_format.append("&lt;Meta Identifier&gt;  (&lt;Identifier&gt; or &lt;Meta Identifier&gt;) ... (&lt;Identifier&gt; or &lt;Meta Identifier&gt;)");
                 break;
             case AlternativeHypothesis:
-                heplID = AppConstants.ALTERNATIVEHYPOTHESIS_HELPID;
                 file_format.append("&lt;Location ID&gt;  &lt;Relative Risk&gt;  &lt;Start Time&gt;  &lt;End Time&gt;");
                 break;
             case NETWORK:
-                heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
                 file_format.append("&lt;First Location ID&gt;  &lt;Second Location ID&gt;  &lt;Distance&gt;");
                 break;
             case Multiple_Locations:
-                heplID = AppConstants.NONEUCLIDIANFILE_HELPID;
                 file_format.append("&lt;Identifier&gt;  &lt;Location&gt;");
                 break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
@@ -551,7 +535,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         builder.append("SaTScan ").append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file format is:</p>");
         builder.append("<span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
         builder.append(file_format.toString()).append("&nbsp;&nbsp;</span>");
-        //builder.append("<span style=\"padding-left:20px;\">(<a style=\"font-weight:bold;color:black;font-size:smaller;\" href=\"").append(heplID).append("\">More Information</a>)</span>");
         return builder.toString();
     }
     
@@ -923,16 +906,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _expectedFormatTextPane.setCaretPosition(0);
                 nextButtonSource.setText("Update >");
             }
-            for (HyperlinkListener listener :  _expectedFormatTextPane.getHyperlinkListeners()) {
-                _expectedFormatTextPane.removeHyperlinkListener(listener);
-            }
-            _expectedFormatTextPane.addHyperlinkListener(new HyperlinkListener() {
-                public void hyperlinkUpdate(HyperlinkEvent e) {
-                    if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                        HelpShow.showHelp(e.getDescription());
-                    }
-                }
-            });
             clearInputSettigs.setEnabled(_input_source_settings.isSet());
         } finally {
             waitCursor.restore();
