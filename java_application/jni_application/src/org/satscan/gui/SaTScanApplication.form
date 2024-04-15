@@ -286,6 +286,11 @@
       </Layout>
     </Container>
     <Container class="javax.swing.JToolBar" name="_ToolBar">
+      <Properties>
+        <Property name="floatable" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="false" type="code"/>
+        </Property>
+      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
       <SubComponents>

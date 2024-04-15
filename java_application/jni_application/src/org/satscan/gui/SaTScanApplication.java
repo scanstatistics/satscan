@@ -924,6 +924,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         desktopPane.setBackground(new java.awt.Color(204, 204, 204));
 
+        _ToolBar.setFloatable(false);
+
         _newSessionToolButton.setAction(new NewSessionFileAction());
         _newSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/New.png"))); // NOI18N
         _newSessionToolButton.setToolTipText("New Session"); // NOI18N
