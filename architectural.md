@@ -113,7 +113,7 @@ Additionally, there are 3 more classes that derive from CSpaceTimeAnalysis:
 - [C_ST_PT_Analysis](calculation/analysis/SpaceTimeIncludePurelyTemporalAnalysis.h) - space-time analysis w/ purely temporal cluster
 - [C_ST_PS_PT_Analysis](calculation/analysis/SpaceTimeIncludePureAnalysis.h)  - space-time analysis w/ both purely spatial and purely temporal clusters
 
-Many of these classes’ algorithms are similar in various respects, as such, they use the same supporting classes in their implementation (e.g. CTimeIntervals discussed later). Central to the design of these classes is the CCluster and AbstractClusterData class hierarchies, which will be discussed in following section.
+Many of these classes' algorithms are similar in various respects, as such, they use the same supporting classes in their implementation (e.g. CTimeIntervals discussed later). Central to the design of these classes is the CCluster and AbstractClusterData class hierarchies, which will be discussed in following section.
 
 #### [CCluster and AbstractClusterData](calculation/cluster/)
 The CCluster and AbstractClusterData classes are the central pieces of each CAnalysis algorithm. The [AbstractClusterData](calculation/cluster/AbstractClusterData.h) class provide a means of accumulating  and maintaining data as each potential cluster is evaluated. The [CCluster](calculation/cluster/cluster.h) classes each contain an AbstractClusterData object, as well as the informational data that defines a clustering (e.g. start and end date, rank, etc.).
@@ -217,7 +217,7 @@ There are currently 9 classes that derive from AbstractLikelihoodCalculator:
 #### [AbstractDataSetGateway](calculation/satscan_data/DataSetGateway.h), [DataSetInterface](calculation/satscan_data/DataSetInterface.h)
 The AbtractDataSetGateway class hierarchy and DataSetnterface class provide access to data structures of real and simulated data sets. The analysis algorithms are, in large part, designed to access two key types of data: observed and expected cases. These classes:
 - Provide an interface for accessing data during the analysis of real and simulation data. Permitting the same
-algorithms to act upon data regardless of whether it is from a real data set or simulated. This is exampled by the Normal model and multiple data streams requirement to use the same algorithm for real and simulated data, since CMeasureList ‘trick’ can not be used for these analyses.
+algorithms to act upon data regardless of whether it is from a real data set or simulated. This is exampled by the Normal model and multiple data streams requirement to use the same algorithm for real and simulated data, since CMeasureList 'trick' can not be used for these analyses.
 - Provide an ability to substitute data structures of the same type with another which has different meaning or creation method. This is exampled by the Exponential model, where the simulation data is the expected number of cases and the observed number of cases in that of the real data.
 
 The DataSetInterface class provides access to data structures of a data set. This class provides the ability to an algorithm to access data regardless of whether it refers to real or simulated data. When an algorithm asks for the case array, it does not know if the data is simulated or not; only that the structure is for example an X by Y two dimensional array.
@@ -231,7 +231,7 @@ The following are key methods of DataSetInterface:
 The AbtractDataSetGateway classes maintain a collection of DataSetInterface objects and access to them as a means of representing multiple data streams to an algorithm.
 
 ####  Source Code Directory Organization
-The calculation engine’s source code is organized into relative directories that are labeled according to their containing files.  The topmost directory is named ‘calculation’, with subdirectories defined within. Briefly, these subdirectories are:
+The calculation engine's source code is organized into relative directories that are labeled according to their containing files.  The topmost directory is named 'calculation', with subdirectories defined within. Briefly, these subdirectories are:
 - **analysis**; source files defining class hierarchies CAnalysis and CMeasureList
 - **analysis_run**; source files defining classes AnalysisRunner and MostLikelyClustersContainer
 - **cluster**; source files defining CCluster, AbstractClusterData, and CTimeIntervals class hierarchies
