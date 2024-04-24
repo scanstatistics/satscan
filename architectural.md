@@ -178,7 +178,7 @@ The following are key virtual methods of CMeasureList:
 - AddMeasure  - updates internal structures when observed and expected values are interesting
 - CalculateMaximumLogLikelihood - calculates log likelihood given data accumulated through AddMeasure calls
 - CalculateBernoulliMaximumLogLikelihood - calculates log likelihood given data accumulated through
- AddMeasure calls – particular to the Bernoulli model
+ AddMeasure calls ï¿½ particular to the Bernoulli model
 
 There are currently 3 classes that derive directly from CMeasureList:
 - CMinMeasureList  - redefines methods to scan data for high rates
@@ -261,3 +261,26 @@ The case and measure arrays are two dimensional arrays that store observed, simu
 
 ####  Top Ranked Clusters
 During the evaluation of real data, a cluster with the greatest excess risk is determined and stored for each centroid. This array of most likely clusters (CCluster objects) is then sorted by greatest log likelihood ratio and the top most 500 clusters are retained and ranked against simulated log likelihood ratios. The class that manages these clusters is called MostLikelyClustersContainer.
+
+####  Execution Flow and Relationships
+```mermaid
+flowchart LR
+    id1(Read and validate parameters) --> id2(AnalysisRunner instantiated) --> id3("fa:fa-arrow-right CSaTScanData instantiated<br> fa:fa-arrow-right CModel instantiated")
+    id5("AnalysisRunner -  run()") --> id6(CSaTScanData object) --> id7(fa:fa-arrow-right Time intervals calculated<br> fa:fa-arrow-right DataSets for real data allocated<br> fa:fa-arrow-right Input data read/validated<br> fa:fa-arrow-right Calculate expected number of cases<br> fa:fa-arrow-right Calculate neighbors)
+    id9("AnalysisExecution - execute()") -->id10("Evaluate real data") --> id11("fa:fa-arrow-right CAnalysis instantiated<br> fa:fa-arrow-right AbstractDataGateway instantiated<br> fa:fa-arrow-right CAnalysis - FindTopClusters()<br> fa:fa-arrow-right MostLikelyClustersContainer â€“ RankTopClusters()")
+    id12("Evaluate simulated data") --> id13("fa:fa-arrow-right CAnalysis instantiated<br> fa:fa-arrow-right AbstractDataGateway instantiated")
+    id14("fa:fa-repeat For each simulation:<br> fa:fa-arrow-right Randomize data<br> fa:fa-arrow-right Calculate largest log likelihood ratio")
+    id15("fa:fa-arrow-right Report primary results<br> fa:fa-arrow-right Report additional output files")
+    id16("Drilldown on detected clusters")
+    id5 --> id9
+    id9 --> id12
+    id12 --> id14
+    id9 --> id15
+    id5 --> id16
+    style id3 text-align:left
+    style id7 text-align:left
+    style id11 text-align:left
+    style id13 text-align:left
+    style id14 text-align:left
+    style id15 text-align:left
+```
