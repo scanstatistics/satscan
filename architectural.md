@@ -16,12 +16,6 @@ The shared library extends the calculation engine to expose the analysis routine
 ### Graphical User Interface
 The graphical user interface is written in Java. The GUI provides the user with a friendly interface for creating, editing, executing, and reviewing analyses. All analysis execution is performed in the calculation engine, with the shared library facilitating the interactions between Java and C/C++ code.
 
-### Calculation Engine Execution Flow
-```mermaid
-flowchart TD
-   A[Read and validate parameters settings] --> B["Read and validate input files<br/>(case, control, population, coordinates, etc.)"] --> C["Prepare data for scan<br/>(calculate expected counts, apply adjustments)"] --> D["Scan data for significant clusters"] --> E["Perform simulations<br/>(randomize data, calculate simulated log-likelihoods)"]  --> F["Report results<br/>(main and additional output files)"] 
-```
-
 ### Key Classes and Inheritance
 #### [Analysis Setup/Execution: AnalysisRunner, AnalysisExecution](calculation/analysis_run/AnalysisRun.h)
 The AnalysisRunner and AnalysisExecution classes orchestrate the overall execution flow. The AnalysisRunner prepares the analysis by creatingdata structures, reads the input files, and calculating neighbors about each centroid, while the AnalysisExecution scans real, executes the simulations, then generates the result files.
