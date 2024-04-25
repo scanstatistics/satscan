@@ -259,21 +259,4 @@ The case and measure arrays are two dimensional arrays that store observed, and 
 During the evaluation of real data, a cluster with the greatest excess risk is determined and stored for each centroid. This array of most likely clusters (CCluster objects) is then sorted by greatest log likelihood ratio and the top most clusters are retained then ranked against simulated log likelihood ratios. The class that manages these clusters is named [MostLikelyClustersContainer](calculation/analysis_run/MostLikelyClustersContainer.h).
 
 ####  Execution Flow and Relationships
-```mermaid
-flowchart LR
-    id1(Read and validate parameters) --> id2(AnalysisRunner instantiated) --> id3("fa:fa-arrow-right CSaTScanData instantiated<br> fa:fa-arrow-right CModel instantiated")
-    id5("AnalysisRunner -  run()") --> id6(CSaTScanData object) --> id7(fa:fa-arrow-right Time intervals calculated<br> fa:fa-arrow-right DataSets for real data allocated<br> fa:fa-arrow-right Input data read/validated<br> fa:fa-arrow-right Calculate expected number of cases<br> fa:fa-arrow-right Calculate neighbors)
-    id9("AnalysisExecution - execute()") -->id10("Evaluate real data") --> id11("fa:fa-arrow-right CAnalysis instantiated<br> fa:fa-arrow-right AbstractDataGateway instantiated<br> fa:fa-arrow-right CAnalysis - FindTopClusters()<br> fa:fa-arrow-right MostLikelyClustersContainer – RankTopClusters()")
-    id12("Evaluate simulated data") --> id13("fa:fa-arrow-right CAnalysis instantiated<br> fa:fa-arrow-right AbstractDataGateway instantiated<br><br>fa:fa-repeat For each simulation:<br> fa:fa-arrow-right Randomize data<br> fa:fa-arrow-right Calculate largest log likelihood ratio")
-    id15("fa:fa-arrow-right Report primary results<br> fa:fa-arrow-right Report additional output files")
-    id16("Drilldown on detected clusters")
-    id5 --> id9
-    id9 --> id12
-    id9 --> id15
-    id5 --> id16
-    style id3 text-align:left
-    style id7 text-align:left
-    style id11 text-align:left
-    style id13 text-align:left
-    style id15 text-align:left
-```
+![image description](Doc/execution-flow.svg)
