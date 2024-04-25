@@ -1,0 +1,128 @@
+<mxfile host="Electron" modified="2024-04-25T18:38:15.685Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.2.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="RiZwBu3MUW-zse3CQI0G" version="24.2.5" type="device">
+  <diagram name="Page-1" id="2bJe60N_CkrbIoK9tRQ-">
+    <mxGraphModel dx="1287" dy="787" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="zaeB0vdx8QRku10UL11Y-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-1" target="6JL3DivA0HlLmpFT7NBX-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-1" value="&lt;div&gt;Read and validate parameters&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="70" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6JL3DivA0HlLmpFT7NBX-2" target="6JL3DivA0HlLmpFT7NBX-27" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-2" value="AnalysisRunner created" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="120" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6JL3DivA0HlLmpFT7NBX-18" target="6JL3DivA0HlLmpFT7NBX-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-18" value="Start" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="105" y="10" width="70" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-26" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="155" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-27" target="6JL3DivA0HlLmpFT7NBX-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-27" value="AnalysisRunner run()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="170" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-29" target="6JL3DivA0HlLmpFT7NBX-41" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-29" value="Scan preparation" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="220" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-44" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-41" target="6JL3DivA0HlLmpFT7NBX-51" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-41" value="AnalysisExecution execute()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="270" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-54" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6JL3DivA0HlLmpFT7NBX-51" target="6JL3DivA0HlLmpFT7NBX-53" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-51" value="CAnalysis - FindTopClusters()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="320" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-53" target="zaeB0vdx8QRku10UL11Y-39" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-53" value="MostLikelyClustersContainer – RankTopClusters()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="370" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-63" target="6JL3DivA0HlLmpFT7NBX-65" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-63" value="Randomize data" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="480" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-65" target="6JL3DivA0HlLmpFT7NBX-63" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-65" target="6JL3DivA0HlLmpFT7NBX-82" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-65" value="Calculate largest log likelihood ratio" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="530" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="bXrOKHcitJFSfq2Y8kUK-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="6JL3DivA0HlLmpFT7NBX-82" target="bXrOKHcitJFSfq2Y8kUK-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6JL3DivA0HlLmpFT7NBX-82" value="Report results" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="580" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-14" value="CParameters created,&amp;nbsp;ParameterAccessCoordinator reads from parameter file" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;fontStyle=0;fontSize=12;textShadow=0;" parent="1" vertex="1">
+          <mxGeometry x="240" y="70" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-18" value="CSaTScanData and CModel objects created" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="120" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-20" value="Start the analysis run - CSaTScanData handles most of the preparation" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="172.5" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-23" value="Time intervals calculated, real data sets allocated, read and validate data,&lt;div&gt;calculated expected, calculated neighbors&lt;/div&gt;" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="222.5" width="50" height="37.5" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-27" value="Start scanning the process, CAnalysis created, AbstractDataGateway created" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="272.5" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-32" value="Rank the most likely clusters by log likelihood ratio and overlap restrictions" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="377.5" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-34" value="Scan for the most likely cluster about each centroid" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="320" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="zaeB0vdx8QRku10UL11Y-39" target="6JL3DivA0HlLmpFT7NBX-63" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-39" value="Simulations preparation" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="430" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-40" value="CAnlaysis created, AbstractDataGateway created, simulation sub-processes created" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="430" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-44" value="CSaTScanData is the entry point for randomization" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="480" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-46" value="Print primary results text file, csv files, and visualizations" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="580" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="zaeB0vdx8QRku10UL11Y-50" value="Retain the largest log likekihood ratio from each simulation, update cluster rank" style="strokeWidth=1;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="530" width="50" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="bXrOKHcitJFSfq2Y8kUK-1" value="End" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="90" y="630" width="100" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
