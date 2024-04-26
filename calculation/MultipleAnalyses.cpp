@@ -122,12 +122,12 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     std::stringstream messageSubjectLine, messageBody;
     std::stringstream messagePlain, messageHTML;
     messageSubjectLine << "SaTScan analyses on <date>: ";
-    if (failedRuns.size()) messageSubjectLine << failedRuns.size() << "/" << (failedRuns.size() + executed) << " failed";
     if (executed) {
-        messageSubjectLine << (failedRuns.size() ? ", " : "") << executed << "/" << (failedRuns.size() + executed) << " ran, ";
-        if (cutoffRuns.size()) messageSubjectLine << cutoffRuns.size() << " with clusters exceeding the alert threshold";
-        else messageSubjectLine << "no clusters exceeded the alert threshold";
+        if (cutoffRuns.size()) messageSubjectLine << cutoffRuns.size() << " with clusters satisfying the alert threshold";
+        else messageSubjectLine << "No clusters satisfied the alert threshold";
     }
+    if (failedRuns.size()) messageSubjectLine << (executed ? ", " : "") << failedRuns.size() << "/" << (failedRuns.size() + executed) << " failed";
+    if (executed) messageSubjectLine << ", " << executed << "/" << (failedRuns.size() + executed) << " ran";
 
     messageBody << "Summary results for SaTScan analyses on " << EmailText::DATE_VAR << EmailText::LINEBREAK << EmailText::LINEBREAK;
     messageBody << "Successful executions: " << executed << "/" << (failedRuns.size() + executed) << EmailText::LINEBREAK << (executed == 0 || cutoffRuns.size() ? EmailText::LINEBREAK : "");
@@ -137,7 +137,7 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
         if (cutoffRuns.size()) {
             messageBody.str(""); 
             messageBody << (cutoffRuns.size() == 1 ? "This " : "These ") << cutoffRuns.size() 
-                << " analys" << (cutoffRuns.size() == 1 ? "is" : "es") << " had clusters exceeding the alert threshold: " << EmailText::LINEBREAK;
+                << " analys" << (cutoffRuns.size() == 1 ? "is" : "es") << " had clusters satisfying the alert threshold: " << EmailText::LINEBREAK;
             messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
             messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
             for (auto& met : cutoffRuns) {
@@ -146,7 +146,7 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
                 messageHTML << EmailText::getEmailFormattedText(messageBody.str(), met->getLastResultsFilename(), true);
             }
         } else {
-            messageBody.str(""); messageBody << "No clusters exceeded the alert threshold." << EmailText::LINEBREAK;
+            messageBody.str(""); messageBody << "No clusters satisfied the alert threshold." << EmailText::LINEBREAK;
             messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
             messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
         }
