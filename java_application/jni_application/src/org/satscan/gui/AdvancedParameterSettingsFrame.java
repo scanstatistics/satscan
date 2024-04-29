@@ -54,7 +54,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private ArrayList<String> _controlFilenames = new ArrayList<>();
     private ArrayList<String> _populationFilenames = new ArrayList<>();
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
-    private final int MAXIMUM_ADDITIONAL_SETS = 11;
+    private final int MAXIMUM_ADDITIONAL_SETS = 19;
     final static String FLEXIBLE_COMPLETE = "flexible_complete";
     final static String FLEXIBLE_GENERIC = "flexible_generic";
     private final DateComponentsGroup _flexStartRangeStartDateComponentsGroup;
