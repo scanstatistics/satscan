@@ -8,7 +8,7 @@ installer_version="/prj/satscan/installers/v.${version}.x"
 binaries="/prj/satscan/build.area/binaries/linux"
 
 javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2-linux_x64"
-launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.12"
+launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.50"
 
 #### Windows ##############################################################################
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)

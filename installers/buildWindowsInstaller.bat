@@ -6,9 +6,9 @@ set argCount=0
 for %%x in (%*) do (
    set /A argCount+=1
 )
-if %argCount% NEQ 1 (
-  REM Secret Server #26118 - Note maybe need to escape characters on command-line (https://www.robvanderwoude.com/escapechars.php).
-	echo Missing code signing certificate password in double-quotes.
+if %argCount% NEQ 5 (
+  REM See ...\imsadmin\ims.codesign\_Usage.txt
+	echo need values of the following parameters, in this order: -kvu -kvi -kvt -kvs -kvc
 	exit /b 1
 )
 
@@ -34,48 +34,38 @@ set runtimeoutputx86=%fileshare%\satscan\build.area\satscan\installers\java\jre_
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\satscan\build.area\satscan\installers\inno-setup\satscan.iss
                          
-set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth\signtool.exe
-set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
+set signtool=%fileshare%\imsadmin\ims.codesign\AzureSignTool.exe
 set timestamp=http://timestamp.digicert.com/
+set du=https://www.treescan.org/
 
 REM Codesigning 32-bit command-line exe.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscan32exe%
-REM Verify signiture
-%signtool% verify /pa /v %satscan32exe%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscan32exe%
 
 REM Codesigning 32-bit dll.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscan32dll%
-REM Verify signiture
-%signtool% verify /pa /v %satscan32dll%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscan32dll%
 
 REM Codesigning 64-bit command-line exe.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscan64exe%
-REM Verify signiture
-%signtool% verify /pa /v %satscan64exe%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscan64exe%
 
 REM Codesigning 64-bit dll.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscan64dll%
-REM Verify signiture
-%signtool% verify /pa /v %satscan64dll%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscan64dll%
 
 REM Codesigning the GUI exe.
-%fileshare%\satscan\build.area\satscan\installers\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscanguiexe%
-REM Verify signiture
-%signtool% verify /pa /v %satscanguiexe%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr http://timestamp.digicert.com -v %satscanguiexe%
 
-REM Create Java 64-bit runtime
-if exist %runtimeoutputx64% rmdir %runtimeoutputx64% /s /q
-%javajdkx64%\bin\jlink.exe --module-path %javajdkx64%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx64% --strip-debug --compress 2 --no-header-files --no-man-pages
-
-REM Create Java 32-bit runtime
-if exist %runtimeoutputx86% rmdir %runtimeoutputx86% /s /q
-%javajdkx86%\bin\jlink.exe --module-path %javajdkx86%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx86% --strip-debug --compress 2 --no-header-files --no-man-pages
+REM Create Java 64-bit jre
+set createjre "n"
+if exist %runtimeoutputx64% set /p createjre=Recreate the x64 jre bundle? (Y/n): 
+if exist %runtimeoutputx64% if createjre equ "Y" rmdir %runtimeoutputx64% /s /q
+if not exist %runtimeoutputx64% %javajdkx64%\bin\jlink.exe --module-path %javajdkx64%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx64% --strip-debug --compress 2 --no-header-files --no-man-pages
+ 
+REM Create Java 32-bit jre
+if exist %runtimeoutputx86% set /p createjre=Recreate the x86 jre bundle? (Y/n): 
+if exist %runtimeoutputx86% if createjre equ "Y" rmdir %runtimeoutputx86% /s /q
+if not exist %runtimeoutputx86% %javajdkx86%\bin\jlink.exe --module-path %javajdkx86%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx86% --strip-debug --compress 2 --no-header-files --no-man-pages
 
 REM Build InnoSetup installer.
 %innosetup% %innoiss%
 
 REM Codesign installer exe file.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %satscaninstaller%
-
-REM Verify the installer exe file is codesigned correctly.
-%signtool% verify /pa /v %satscaninstaller%
+%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscaninstaller%
