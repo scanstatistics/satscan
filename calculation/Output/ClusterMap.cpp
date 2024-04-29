@@ -538,7 +538,7 @@ void ClusterMap::finalize() {
         }
         templateReplace(html, "--parameters--", printString( // replace parameters hash
             str_buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,prospective:%s",
-            params.GetAreaScanRateType(), params.getReportGiniOptimizedClusters() ? "true" : "false", params.GetIsProspectiveAnalysis() ? "true" : "false"
+            params.GetAreaScanRateType(), params.getReportGiniOptimizedClusters() ? "true" : "false", params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false"
         ));
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
 		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));

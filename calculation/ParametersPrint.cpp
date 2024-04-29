@@ -946,6 +946,7 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             ClusterMap::getFilename(AdditionalOutputFile);
             settings.push_back(std::make_pair("Google Maps File", AdditionalOutputFile.getFullPath(buffer)));
         }
+        AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str()); // reset
         if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
             AdditionalOutputFile.setExtension(".col.shp");
             settings.push_back(std::make_pair("Shapefile (Cluster)",AdditionalOutputFile.getFullPath(buffer)));
@@ -955,10 +956,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Shapefile (Network)", AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.getOutputCartesianGraph()) {
-            AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
             CartesianGraph::getFilename(AdditionalOutputFile);
             settings.push_back(std::make_pair("Cartesian Graph File", AdditionalOutputFile.getFullPath(buffer)));
         }
+        AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str()); // reset
         if (canReportClusterFiles && gParameters.GetOutputClusterLevelDBase()) {
             AdditionalOutputFile.setExtension(".col.dbf");
             settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
@@ -1004,7 +1005,6 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
         }
         if (gParameters.getOutputTemporalGraphFile() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
-            AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str());
             TemporalChartGenerator::getFilename(AdditionalOutputFile);
             settings.push_back(std::make_pair("Temporal Graph File",AdditionalOutputFile.getFullPath(buffer)));
         }

@@ -144,12 +144,12 @@ DataDemographicsProcessor::~DataDemographicsProcessor() {
 }
 
 /* Appends data record to temporary cluster file. */
-void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times) {
+void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times, unsigned int analysis_count) {
     std::ofstream temp_file(_cluster_location_files[clusterIdx].c_str(), std::ios_base::app | std::ios_base::binary);
     std::string buffer;
     std::stringstream line;
-    line << (clusterIdx + 1) << ",";
-    if (first) line << (first.get() == clusterIdx ? "Primary" : "Secondary") << ",";
+    line << (clusterIdx + analysis_count) << ",";
+    if (first) line << (first.get() == clusterIdx || analysis_count > 1 ? "Primary" : "Secondary") << ",";
     line << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
     // typcically times == 1 but if not individual data, could be aggregated count
     for (int i=0; i < times; ++i) 
@@ -168,7 +168,7 @@ bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CClus
 }
 
 /* Re-reads cases file to accumulate line-list data inconjuction with detected clusters. */
-bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataSet) {
+bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataSet, unsigned int analysis_count) {
     try {
         removeTempClusterFiles(); // remove temporary cluster files from prior data set
         std::string buffer;
@@ -256,7 +256,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
             boost::optional<int> first(_demographics_by_dataset.back().hasIndividual() ? boost::make_optional(applicable_clusters.find_first()) : boost::none);
             for (boost::dynamic_bitset<>::size_type b= applicable_clusters.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable_clusters.find_next(b)) {
-                appendLinelistData(static_cast<int>(b), values, first, nCount);
+                appendLinelistData(static_cast<int>(b), values, first, nCount, analysis_count);
                 if (is_new_event) {
                     _new_individuals.emplace(individual);
                     _cluster_event_totals[static_cast<int>(b)].first += nCount;
@@ -271,7 +271,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         }
         if (individuals_stream.is_open()) individuals_stream.close();
         // Create the cluster line list file and concatenate each cluster line list file.
-        writeClusterLineListFile(linelistFieldsMap, DataSet.getSetIndex());
+        writeClusterLineListFile(linelistFieldsMap, DataSet.getSetIndex(), analysis_count);
     } catch (prg_exception& x) {
         x.addTrace("processCaseFileLinelist()", "DataDemographicsProcessor");
         throw;
@@ -311,11 +311,11 @@ void DataDemographicsProcessor::finalize() {
 }
 
 /* Process line list data from each data set. */
-void DataDemographicsProcessor::process() {
+void DataDemographicsProcessor::process(unsigned int analysis_count) {
     bool storeSetting = _handler.gPrint.isSuppressingWarnings(); // prevent re-printing case file warnings
     _handler.gPrint.SetSuppressWarnings(true);
     for (const auto& dataset : _handler.getDataSets()) {
-        processCaseFileLinelist(*dataset);
+        processCaseFileLinelist(*dataset, analysis_count);
     }
     _handler.gPrint.SetSuppressWarnings(storeSetting);
 }
@@ -339,7 +339,7 @@ void DataDemographicsProcessor::removeTempClusterFiles() {
 }
 
 /* Creates the final clusters line list file - adds header row then concatenates temporary cluster files into one. */
-void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet) {
+void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet, unsigned int analysis_count) {
     std::vector<std::string> v = { "Cluster" };
     for (auto const& itr : llmap) {
         if (itr.get<1>() == INDIVIDUAL_ID) {
@@ -354,12 +354,13 @@ void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::Order
         buffer, ".linelist%s.csv", (_handler.GetNumDataSets() > 1 ? printString(buffer2, ".dataset%u", idxDataSet).c_str() : "")
     ).c_str());
     std::ofstream lineliststream;
-    lineliststream.open(linelist.getFullPath(buffer).c_str());
+    lineliststream.open(linelist.getFullPath(buffer).c_str(), analysis_count == 1 ? (std::ios_base::trunc | std::ios_base::binary) : (std::ios_base::app | std::ios_base::binary));
     if (!lineliststream)
         throw resolvable_error(
             "Error: The line list csv file could not be opened for writing:\n'%s'\n", buffer.c_str()
         );
-    lineliststream << typelist_to_csv_string<std::string>(v, buffer) << std::endl; // write header row
+    // Write header row -- skip if secondary scans (iterative scan)
+    if (analysis_count == 1) lineliststream << typelist_to_csv_string<std::string>(v, buffer) << std::endl; // write header row
     for (const auto& cfiles : _cluster_location_files) {
         std::ifstream filestream(cfiles.second.c_str(), std::ios_base::binary);
         lineliststream << filestream.rdbuf();

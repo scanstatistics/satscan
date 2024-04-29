@@ -365,7 +365,7 @@ void TemporalChartGenerator::generateChart() const {
                 graphClusters.push_back(&_clusters.GetCluster(0)); break;
             case X_MCL_ONLY :
                 for (int i = 0; i < parameters.getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i) {
-                    if (i == 0 || _clusters.GetCluster(i).m_nRatio >= MIN_CLUSTER_LLR_REPORT)
+                    if (i == 0 || (_clusters.GetCluster(i).m_nRatio >= MIN_CLUSTER_LLR_REPORT && _clusters.GetCluster(i).GetRank() <= _simVars.get_sim_count()))
                         graphClusters.push_back(&_clusters.GetCluster(i));
                 }
                 break;

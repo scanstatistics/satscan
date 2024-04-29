@@ -188,6 +188,8 @@ class AbstractAnalysisDrilldown {
         const CParameters                 & getParameters() const { return _parameters; }
         virtual void                        setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo);
         static bool                         shouldDrilldown(const CCluster& cluster, unsigned int clusterRptIdx, const CSaTScanData& data, const CParameters& parameters, const SimulationVariables& simvars);
+
+        static const double                 DEFAULT_CUTOFF_PVALUE;
 };
 
 class AnalysisDrilldown : public AbstractAnalysisDrilldown {
@@ -205,8 +207,6 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
         };
 
         virtual const char                * getTypeIdentifier() { return "std"; };
-
-        static const double               DEFAULT_CUTOFF_PVALUE;
 };
 
 class BernoulliAnalysisDrilldown : public AbstractAnalysisDrilldown {

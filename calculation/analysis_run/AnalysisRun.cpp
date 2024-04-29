@@ -51,7 +51,7 @@
 using namespace boost::assign;
 using boost::algorithm::ireplace_all;
 
-const double AnalysisDrilldown::DEFAULT_CUTOFF_PVALUE = 0.05;
+const double AbstractAnalysisDrilldown::DEFAULT_CUTOFF_PVALUE = 0.05;
 const int BernoulliAnalysisDrilldown::DEFAULT_NUM_ITERATIVE_SCANS = 10;
 const double BernoulliAnalysisDrilldown::DEFAULT_ITERATIVE_CUTOFF_PVALUE = 0.05;
 
@@ -1545,7 +1545,7 @@ void AnalysisExecution::reportClusters() {
         if (_parameters.getReadingLineDataFromCasefile()) {
             _print_direction.Printf("Processing line list data and adding results to cluster line list file ...\n", BasePrint::P_STDOUT);
             _data_demographic_processor.reset(new DataDemographicsProcessor(_data_hub.GetDataSetHandler(), _reportClusters, _sim_vars));
-            _data_demographic_processor->process();
+            _data_demographic_processor->process(_analysis_count);
         }
 
         // report clusters accordingly
@@ -2093,6 +2093,12 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     _parameters.SetSpatialAdjustmentType(SPATIAL_NOTADJUSTED);
     _parameters.SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
     _parameters.setOutputTemporalGraphFile(false);
+    // If parent analysis is prospective and it's top level analysis, then we want to switch cutoffs from recurrence interval to p-value in the drillown.
+    if (source_parameters.GetIsProspectiveAnalysis() && downlevel == 1) {
+        _parameters.setDrilldownCutoff(DEFAULT_CUTOFF_PVALUE);
+        _parameters.setCutoffLineListCSV(DEFAULT_CUTOFF_PVALUE);
+        _parameters.setTemporalGraphSignificantCutoff(DEFAULT_CUTOFF_PVALUE);
+    }
     // If performing day of week adjustment on drilldown, potentially define multiple data sets.
     if (source_parameters.getDrilldownAdjustWeeklyTrends()) {
         /* The primary analysis is restricted to having a time aggregation length of 1 day and a study period of at least 14 days. But there is the possiblity

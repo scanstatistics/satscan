@@ -345,7 +345,7 @@ void CartesianGraph::finalize() {
 
         // replace parameters hash
         printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,prospective:%s", 
-            parameters.GetAreaScanRateType(), parameters.getReportGiniOptimizedClusters() ? "true": "false", parameters.GetIsProspectiveAnalysis() ? "true" : "false"
+            parameters.GetAreaScanRateType(), parameters.getReportGiniOptimizedClusters() ? "true": "false", parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false"
         );
         templateReplace(html, "--parameters--", buffer.c_str());
 
