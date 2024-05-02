@@ -93,12 +93,12 @@ class CCluster {
                                                             unsigned int iReportedCluster, 
                                                             const SimulationVariables& simVars,
                                                             const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
+    std::string&                  formatPopulationForDisplay(double population, std::string& buffer) const;
     virtual AreaRateType          getAreaRateForCluster(const CSaTScanData& DataHub) const;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     std::string                 & GetClusterLocation(std::string& locationID, const CSaTScanData& DataHub) const;

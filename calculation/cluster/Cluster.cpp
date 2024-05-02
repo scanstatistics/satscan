@@ -567,15 +567,22 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
 void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
   DataSetIndexes_t setIndexes(getDataSetIndexesComprisedInRatio(DataHub));
+  const CParameters& params = DataHub.GetParameters();
 
-  DisplayPopulation(fp, DataHub, PrintFormat);
   for (DataSetIndexes_t::const_iterator itr=setIndexes.begin(); itr != setIndexes.end(); ++itr) {
      unsigned int set_number = *itr + 1;
      //print data set number if analyzing more than data set
-     if (DataHub.GetParameters().getNumFileSets() > 1) {
+     if (params.getNumFileSets() > 1) {
        set_number = DataHub.GetDataSetHandler().getDataSetRelativeIndex(*itr) + 1;
        printString(buffer, "Data Set #%ld", set_number);
        PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
+     }
+     //print cluster population
+     if ((params.GetProbabilityModelType() == POISSON && params.UsePopulationFile() && GetClusterType() != PURELYTEMPORALCLUSTER) ||
+         params.GetProbabilityModelType() == BERNOULLI) {
+         printClusterData(fp, PrintFormat, "Population",
+            formatPopulationForDisplay(DataHub.GetProbabilityModel().GetPopulation(*itr, *this, DataHub), buffer), true, set_number
+         );
      }
      //print observed cases
      printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(*itr)), true, set_number);
@@ -583,10 +590,9 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      printClusterData(fp, PrintFormat, "Expected cases", getValueAsString(GetExpectedCount(DataHub, *itr), buffer), true, set_number);
      DisplayAnnualCaseInformation(fp, *itr, DataHub, PrintFormat);
      DisplayObservedDivExpected(fp, *itr,DataHub, PrintFormat);
-     if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || 
-         DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
+     if (params.GetProbabilityModelType() == POISSON  || params.GetProbabilityModelType() == BERNOULLI)
        DisplayRelativeRisk(fp, *itr, DataHub, PrintFormat);
-     if (DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+     if (params.GetProbabilityModelType() == BERNOULLI) {
         //percent cases in an area
         double clusterSetPopulation = DataHub.GetProbabilityModel().GetPopulation(*itr, *this, DataHub);
         double percentCases = (clusterSetPopulation ? 100.0 * GetObservedCount(*itr) / clusterSetPopulation: 0.0);
@@ -851,32 +857,15 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
   }
 }
 
-/** Writes clusters population in format required by result output file. */
-void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int           i;
-  std::string            work, buffer;
-  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
-  double                 dPopulation;
-
-  switch (DataHub.GetParameters().GetProbabilityModelType()) {
-    case POISSON :
-      if (!DataHub.GetParameters().UsePopulationFile() || GetClusterType() == PURELYTEMPORALCLUSTER)
-        break;
-    case BERNOULLI :
-      for (i=0; i < DataSets.GetNumDataSets(); ++i) {
-        dPopulation = DataHub.GetProbabilityModel().GetPopulation(i, *this, DataHub);
-        if (dPopulation < .5)
-          printString(work, "%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
-        else if (dPopulation < 1)
-          printString(work, "%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
-        else
-          printString(work, "%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
-        buffer += work;
-      }
-      printClusterData(fp, PrintFormat, "Population", buffer, true);
-      break;
-    default : break;
-  };
+/** Formats population value for display in text output files. */
+std::string& CCluster::formatPopulationForDisplay(double population, std::string& buffer) const {
+    if (population < .5)
+        printString(buffer, "%g", population); // display all decimals for populations less than .5
+    else if (population < 1)
+        printString(buffer, "%.1f", population); // display one decimal for populations less than 1
+    else
+        printString(buffer, "%.0f", population); // else display no decimals
+    return buffer;
 }
 
 /** Writes clusters log likelihood ratio/test statistic in format required by result output file. */

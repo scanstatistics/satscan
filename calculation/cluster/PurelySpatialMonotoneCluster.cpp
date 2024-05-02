@@ -270,7 +270,9 @@ void CPSMonotoneCluster::Display(FILE* fp, const CSaTScanData& DataHub, const Cl
 void CPSMonotoneCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
     std::string buffer, work, work2;
 
-    DisplayPopulation(fp, DataHub, PrintFormat);
+    printClusterData(fp, PrintFormat, "Population",
+        formatPopulationForDisplay(DataHub.GetProbabilityModel().GetPopulation(0, *this, DataHub), buffer), true
+    );
     //print observed cases in entire cluster
     printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount()), true);
     //print expected cases in entire cluster
