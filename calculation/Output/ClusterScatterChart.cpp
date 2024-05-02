@@ -170,7 +170,7 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
     CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
 
-    lines << "<div style=\"text-decoration:underline; \">Cluster " << iCluster + 1 << "</div>";
+    lines << "<div class=\"cluster-tip\">Cluster " << iCluster + 1 << "<span><a href=\"#\">X</a></span></div><div class=\"tip-info\">";
     for (; itr != itr_end; ++itr) {
         if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
             lines << "Data Set " << itr->second.second << "<br>";
@@ -178,6 +178,7 @@ std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iClu
         }
         lines << itr->first << " : " << itr->second.first << "<br>";
     }
+    lines << "</div>";
     legend = lines.str();
     std::replace(legend.begin(), legend.end(), '\n', ' ');
     return legend;
