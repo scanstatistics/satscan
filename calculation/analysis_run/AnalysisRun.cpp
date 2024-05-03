@@ -1202,13 +1202,29 @@ void AnalysisExecution::printEarlyTerminationStatus(FILE* fp) {
 
 /* Reports dataset that were ignored by analysis. */
 void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
-    if (getDataHub().GetDataSetHandler().getRemovedDataSetIndexes().size()) {
+    if (getDataHub().GetDataSetHandler().getRemovedDataSetDetails().size()) {
+        std::vector<int> noCases, noControls;
+        for (auto const& removed : getDataHub().GetDataSetHandler().getRemovedDataSetDetails()) {
+            if (removed.get<1>()) noCases.push_back(removed.get<0>());
+            if (removed.get<2>()) noControls.push_back(removed.get<0>());
+        }
         std::stringstream s;
         AsciiPrintFormat printFormat;
-        s << std::endl << "NOTE: The following data sets either did not have count data or did not have the required minimum";
-        s << " and were excluded from the analysis:" << std::endl;
-        for (size_t i = 0; i < getDataHub().GetDataSetHandler().getRemovedDataSetIndexes().size(); ++i) {
-            s << (i == 0 ? "" : ", ") << "Data Set " << (getDataHub().GetDataSetHandler().getRemovedDataSetIndexes()[i] + 1);
+        if (noCases.size()) {
+            s << std::endl << "NOTE: The following data sets have zero cases";
+            if (getDataHub().isDrilldown()) s << " in the drilldown area";
+            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
+            for (size_t i = 0; i < noCases.size(); ++i) {
+                s << (i == 0 ? "" : ", ") << "Data Set " << (noCases[i] + 1);
+            }
+        }
+        if (noControls.size()) {
+            s << std::endl << "NOTE: The following data sets have zero controls";
+            if (getDataHub().isDrilldown()) s << " in the drilldown area";
+            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
+            for (size_t i = 0; i < noControls.size(); ++i) {
+                s << (i == 0 ? "" : ", ") << "Data Set " << (noControls[i] + 1);
+            }
         }
         s << std::endl;
         printFormat.PrintAlignedMarginsDataString(fp, s.str());

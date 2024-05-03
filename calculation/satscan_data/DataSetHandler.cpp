@@ -220,31 +220,28 @@ void DataSetHandler::removeDataSetsWithNoData() {
     size_t numSets = gvDataSets.size();
     bool casesExist = false, controlsExist = false;
     for (int d = numSets - 1; d >= 0; --d) {
-        casesExist |= gvDataSets[d]->getTotalCases() > 0;
-        controlsExist |= gvDataSets[d]->getTotalControls() > 0;
-        if (gvDataSets[d]->getTotalCases() == 0) {
+        bool setHasCases = gvDataSets[d]->getTotalCases() > 0;
+        bool setHasControls = gvDataSets[d]->getTotalControls() > 0;
+        casesExist |= setHasCases;
+        controlsExist |= setHasControls;
+
+        if (!setHasCases || (gParameters.GetProbabilityModelType() == BERNOULLI && !setHasControls)) {
             gvDataSets.kill(gvDataSets.begin() + d);
             gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + d);
-            _removed_data_sets.push_back(d);
-            //gPrint.Printf("No cases found in data set %u.\n", BasePrint::P_WARNING, d + 1);
-        } else if (gParameters.GetProbabilityModelType() == BERNOULLI && gvDataSets[d]->getTotalControls() == 0) {
-            gvDataSets.kill(gvDataSets.begin() + d);
-            gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + d);
-            _removed_data_sets.push_back(d);
-            //gPrint.Printf("No controls found in data set %u.\n", BasePrint::P_WARNING, d + 1);
+            _removed_data_set_details.push_back(RemovedDataSetDetails_t(d, !setHasCases, (gParameters.GetProbabilityModelType() == BERNOULLI && !setHasControls)));
         }
     }
     if (!casesExist)
-        throw resolvable_error("Error: Anaylsis stopped. No cases where found in input data.\n");
+        throw resolvable_error("Error: Analysis stopped. No cases were found in input data.\n");
     if (gParameters.GetProbabilityModelType() == BERNOULLI && !controlsExist)
-        throw resolvable_error("Error: Anaylsis stopped. No controls where found in input data.\n");
+        throw resolvable_error("Error: Analysis stopped. No controls were found in input data.\n");
 }
 
 size_t DataSetHandler::getDataSetRelativeIndex(size_t iSet) const {
     boost::dynamic_bitset<> sets(gParameters.getNumFileSets());
     sets.set();
-    for (std::vector<unsigned int>::const_iterator itr = _removed_data_sets.begin(); itr != _removed_data_sets.end(); ++itr)
-        sets.set(*itr, false);
+    for (auto const& removed: _removed_data_set_details)
+        sets.set(removed.get<0>(), false);
     int idx = -1;
     for (size_t s=0; s < sets.size(); ++s) {
         if (sets.test(s))

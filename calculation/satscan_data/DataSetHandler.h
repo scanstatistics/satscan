@@ -40,8 +40,9 @@ class DataSetHandler {
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
     mutable std::deque<void*>           gmSourceDateWarned;        /** indicates whether user has already been warned that records are being ignored */
     mutable std::deque<void*>           gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
-    std::vector<unsigned int>           _removed_data_sets;        /* Index of data set that was removed -- in original data collection. */
-    unsigned int                        _approximate_case_records; /* approximate number of case records read */
+    typedef boost::tuple<unsigned int, bool, bool> RemovedDataSetDetails_t; /** Index of data set that was removed in original data collection, no cases, Bernoulli with no controls */
+    std::vector <RemovedDataSetDetails_t> _removed_data_set_details;        
+    unsigned int                        _approximate_case_records; /** approximate number of case records read */
 
     virtual void                        printFileReadMessage(BasePrint::eInputFileType impliedFile, size_t iSetIndex, bool oneDataSet);
     virtual void                        printReadStatusMessage(CountFileReadStatus status, bool isControls, size_t iSetIndex, bool oneDataSet) const;
@@ -67,7 +68,7 @@ class DataSetHandler {
     virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const = 0;
     virtual bool                        ReadData() = 0;
 
-    const std::vector<unsigned int>   & getRemovedDataSetIndexes() const { return _removed_data_sets; }
+    const std::vector <RemovedDataSetDetails_t> & getRemovedDataSetDetails() const { return _removed_data_set_details; }
     AbstractDataSetGateway            * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
     const RealDataContainer_t         & getDataSets() const { return gvDataSets; }

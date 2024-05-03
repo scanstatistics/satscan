@@ -180,6 +180,7 @@ bool BernoulliDataSetHandler::ReadData() {
                 return false;
             printFileReadMessage(BasePrint::CONTROLFILE, t, numDataSet == 1);
             readStaus = ReadControlFile(GetDataSet(t));
+            printReadStatusMessage(readStaus, true, t, numDataSet == 1);
             if (readStaus == DataSetHandler::ReadError || (readStaus != DataSetHandler::ReadSuccess && numDataSet == 1))
                 return false;
         }
