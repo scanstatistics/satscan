@@ -9,7 +9,7 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/satscan/installers/install.applications/java/jdk-17.0.9+9_linux_x64"
+javajdk="/prj/satscan/installers/install.applications/java/jdk-17.0.11+9_linux_x64"
 version=$1
 srcdir="/prj/satscan/build.area/satscan"
 bundleinputdir="/prj/satscan/build.area/jpackage/satscanbundlesrc"
