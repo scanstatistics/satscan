@@ -1214,16 +1214,16 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
             s << std::endl << "NOTE: The following data sets have zero cases";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
-            for (size_t i = 0; i < noCases.size(); ++i) {
-                s << (i == 0 ? "" : ", ") << "Data Set " << (noCases[i] + 1);
+            for (int i = noCases.size() - 1; i >= 0; --i) {
+                s << "Data Set " << (noCases[i] + 1) << (i == 0 ? "" : ", ");
             }
         }
         if (noControls.size()) {
             s << std::endl << "NOTE: The following data sets have zero controls";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
-            for (size_t i = 0; i < noControls.size(); ++i) {
-                s << (i == 0 ? "" : ", ") << "Data Set " << (noControls[i] + 1);
+            for (int i = noControls.size() - 1; i >= 0; --i) {
+                s << "Data Set " << (noControls[i] + 1) << (i == 0 ? "" : ", ");
             }
         }
         s << std::endl;
