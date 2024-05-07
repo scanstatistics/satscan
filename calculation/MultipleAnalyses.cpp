@@ -109,7 +109,7 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
             failedRuns.push_back(&(*itr));
         } else {
             ++executed;
-            if (boost::filesystem::exists(printString(filename, "%s%s", itr->getLastResultsFilename().c_str(), _EMAIL_TEMP_EXTENSION).c_str())) {
+            if (boost::filesystem::exists(printString(filename, "%s%s", itr->getLastResultsFilename().c_str(), _EMAIL_TEMP_EXTENSION.c_str()).c_str())) {
                 std::ifstream summary_tmp(filename.c_str());
                 summary_tmp >> clustersMeetingCutoff;
                 summary_tmp.close();

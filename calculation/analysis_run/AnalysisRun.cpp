@@ -342,7 +342,7 @@ void AnalysisExecution::finalize() {
                 ++metCutoff;
             }
             // Write temp file that will be used when creating the multiple analysis summary email.
-            printString(buffer, "%s%s", _parameters.GetOutputFileName().c_str(), MultipleAnalyses::_EMAIL_TEMP_EXTENSION);
+            printString(buffer, "%s%s", _parameters.GetOutputFileName().c_str(), MultipleAnalyses::_EMAIL_TEMP_EXTENSION.c_str());
             std::ofstream summary_tmp(buffer.c_str(), std::ios_base::trunc);
             summary_tmp << metCutoff;
         }
@@ -1211,23 +1211,24 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
         std::stringstream s;
         AsciiPrintFormat printFormat;
         if (noCases.size()) {
-            s << std::endl << "NOTE: The following data sets have zero cases";
+            s << "NOTE: The following data sets have zero cases";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noCases.size() - 1; i >= 0; --i) {
                 s << "Data Set " << (noCases[i] + 1) << (i == 0 ? "" : ", ");
             }
+            printFormat.PrintAlignedMarginsDataString(fp, s.str());
         }
         if (noControls.size()) {
-            s << std::endl << "NOTE: The following data sets have zero controls";
+            s.str("");
+            s << "NOTE: The following data sets have zero controls";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noControls.size() - 1; i >= 0; --i) {
                 s << "Data Set " << (noControls[i] + 1) << (i == 0 ? "" : ", ");
             }
+            printFormat.PrintAlignedMarginsDataString(fp, s.str());
         }
-        s << std::endl;
-        printFormat.PrintAlignedMarginsDataString(fp, s.str());
     }
 }
 
