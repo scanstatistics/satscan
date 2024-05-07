@@ -214,8 +214,7 @@ void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
 }
 
 /* Removes data sets from collection which do not contain case, or potentially control, data. 
-   Throws resolvable_error if no data sets have data.
-*/
+   Throws resolvable_error if no data sets have data. */
 void DataSetHandler::removeDataSetsWithNoData() {
     size_t numSets = gvDataSets.size();
     bool casesExist = false, controlsExist = false;
@@ -224,7 +223,6 @@ void DataSetHandler::removeDataSetsWithNoData() {
         bool setHasControls = gvDataSets[d]->getTotalControls() > 0;
         casesExist |= setHasCases;
         controlsExist |= setHasControls;
-
         if (!setHasCases || (gParameters.GetProbabilityModelType() == BERNOULLI && !setHasControls)) {
             gvDataSets.kill(gvDataSets.begin() + d);
             gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + d);
@@ -235,6 +233,8 @@ void DataSetHandler::removeDataSetsWithNoData() {
         throw resolvable_error("Error: Analysis stopped. No cases were found in input data.\n");
     if (gParameters.GetProbabilityModelType() == BERNOULLI && !controlsExist)
         throw resolvable_error("Error: Analysis stopped. No controls were found in input data.\n");
+    if (!gvDataSets.size()) // It's possible there are cases in some data sets, controls in others, and no data sets left.
+        throw resolvable_error("Error: Analysis stopped. No data sets to analyze.\n");
 }
 
 size_t DataSetHandler::getDataSetRelativeIndex(size_t iSet) const {
