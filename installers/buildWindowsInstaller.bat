@@ -53,13 +53,13 @@ REM Codesigning 64-bit dll.
 REM Codesigning the GUI exe.
 %signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr http://timestamp.digicert.com -v %satscanguiexe%
 
-REM Create Java 64-bit jre
-set createjre "n"
+REM Create Java 64-bit jre - prompt to recreate if already exists, only need to recreate if javajdkx64 was recently updated.
+set createjre="n"
 if exist %runtimeoutputx64% set /p createjre=Recreate the x64 jre bundle? (Y/n): 
 if exist %runtimeoutputx64% if createjre equ "Y" rmdir %runtimeoutputx64% /s /q
 if not exist %runtimeoutputx64% %javajdkx64%\bin\jlink.exe --module-path %javajdkx64%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx64% --strip-debug --compress 2 --no-header-files --no-man-pages
  
-REM Create Java 32-bit jre
+REM Create Java 32-bit jre - prompt to recreate if already exists, only need to recreate if javajdkx86 was recently updated.
 if exist %runtimeoutputx86% set /p createjre=Recreate the x86 jre bundle? (Y/n): 
 if exist %runtimeoutputx86% if createjre equ "Y" rmdir %runtimeoutputx86% /s /q
 if not exist %runtimeoutputx86% %javajdkx86%\bin\jlink.exe --module-path %javajdkx86%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,jdk.crypto.ec,java.net.http,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx86% --strip-debug --compress 2 --no-header-files --no-man-pages
