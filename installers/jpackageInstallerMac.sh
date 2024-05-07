@@ -51,7 +51,7 @@ mkdir $BUNDLEDIR
 mkdir $BUNDLEDIR/imagesrc
 # Copy SaTScan.jar from fileshare -- maybe we can build this locally at some point.
 echo Copying SaTScan.jar from fileshare
-scp -r satscsvc@gen-btp-01.imsweb.com:/prj/satscan/build.area/satscan/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
+scp -r satscsvc@gen-btp-02.imsweb.com:/prj/satscan/build.area/satscan/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
 #cp -rf $SRCDIR/java_application/jni_application/dist/SaTScan.jar $BUNDLEDIR/imagesrc
 cp -rf $SRCDIR/java_application/jni_application/libs $BUNDLEDIR/imagesrc
 cp -rf $SRCDIR/installers/sample_data $BUNDLEDIR/imagesrc
@@ -145,5 +145,5 @@ bzip2 -f $BUNDLEDIR/satscan.${APPVERSION}_mac.tar
 echo Copying dmg to fileshare
 mv $BUNDLEDIR/bin/SaTScan-${APPVERSION}.dmg $BUNDLEDIR/bin/SaTScan_${APPVERSION}_mac.dmg
 mv $BUNDLEDIR/SaTScan.zip $BUNDLEDIR/SaTScan_${APPVERSION}_mac.zip
-scp -r $BUNDLEDIR/bin/SaTScan_${APPVERSION}_mac.dmg $BUNDLEDIR/SaTScan_${APPVERSION}_mac.zip $BUNDLEDIR/satscan.${APPVERSION}_mac.tar.bz2 satscsvc@gen-btp-01.imsweb.com:${INSTALLER_DIR}
+scp -r $BUNDLEDIR/bin/SaTScan_${APPVERSION}_mac.dmg $BUNDLEDIR/SaTScan_${APPVERSION}_mac.zip $BUNDLEDIR/satscan.${APPVERSION}_mac.tar.bz2 satscsvc@gen-btp-02.imsweb.com:${INSTALLER_DIR}
 
