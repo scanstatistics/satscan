@@ -69,9 +69,6 @@ zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers/java
 zip $installer_version/update_data_windows.zip -r jre_x64
 zip $installer_version/update_data_windows.zip -r jre_x86
-# We can delete the generated Windows Java runtime now.
-rm -rf $build/satscan/installers/java/jre_x64
-rm -rf $build/satscan/installers/java/jre_x86
 cd $build/satscan/installers
 zip $installer_version/update_data_windows.zip -r sample_data
 
