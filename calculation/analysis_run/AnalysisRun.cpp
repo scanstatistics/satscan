@@ -471,12 +471,13 @@ void AnalysisExecution::finalize() {
             // Remove any duplicate recipients.
             std::sort(recipients.begin(), recipients.end());
             recipients.erase(std::unique(recipients.begin(), recipients.end()), recipients.end());
-            sendMail( // Send the message.
-                AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
-                EmailText::getEmailFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML,
-                (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
-                AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
-            );
+            if (recipients.size())
+                sendMail( // Send the message.
+                    AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
+                    EmailText::getEmailFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML,
+                    (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
+                    AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
+                );
         }
     } catch (prg_exception& x) {
         if (fp) fclose(fp);
