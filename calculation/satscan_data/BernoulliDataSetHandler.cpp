@@ -194,6 +194,13 @@ bool BernoulliDataSetHandler::ReadData() {
 
 // Removes data set at index -- this is a specialized function and with specialized purpose in BernoulliAnalysisDrilldown.
 void BernoulliDataSetHandler::removeDataSet(size_t iSetIndex) {
+    if (iSetIndex + 1 > gvDataSets.size())
+        throw prg_error("Index out of range %u", "removeDataSet()", iSetIndex);
+    _removed_data_set_details.push_back(RemovedDataSetDetails_t(
+        iSetIndex,
+        gvDataSets.at(iSetIndex)->getTotalCases() == 0, 
+        (gParameters.GetProbabilityModelType() == BERNOULLI && gvDataSets.at(iSetIndex)->getTotalControls() == 0)
+    ));
 	gvDataSets.kill(gvDataSets.begin() + iSetIndex);
 	gvDataSetRandomizers.kill(gvDataSetRandomizers.begin() + iSetIndex);
 }

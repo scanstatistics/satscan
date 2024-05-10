@@ -1196,7 +1196,7 @@ void AnalysisExecution::printEarlyTerminationStatus(FILE* fp) {
     if (anyClusters && _sim_vars.get_sim_count() < _parameters.GetNumReplicationsRequested()) {
         std::string buffer;
         AsciiPrintFormat printFormat;
-        printString(buffer, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.\n", _sim_vars.get_sim_count());
+        printString(buffer, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.", _sim_vars.get_sim_count());
         printFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
 }
@@ -1212,7 +1212,7 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
         std::stringstream s;
         AsciiPrintFormat printFormat;
         if (noCases.size()) {
-            s << "NOTE: The following data sets have zero cases";
+            s << std::endl << "NOTE: The following data sets have zero cases";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noCases.size() - 1; i >= 0; --i) {
@@ -1222,7 +1222,7 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
         }
         if (noControls.size()) {
             s.str("");
-            s << "NOTE: The following data sets have zero controls";
+            s << (noCases.size() ? "" : "\n") << "NOTE: The following data sets have zero controls";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noControls.size() - 1; i >= 0; --i) {
