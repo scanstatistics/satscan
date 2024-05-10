@@ -131,6 +131,14 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
 
   public:
     AbstractPermutedDataRandomizer(const CSaTScanData& dataHub, bool dayOfWeekAdjustment, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    AbstractPermutedDataRandomizer(const AbstractPermutedDataRandomizer<S, P>& other): _dataHub(other._dataHub), _dayOfWeekAdjustment(other._dayOfWeekAdjustment){
+        gvStationaryAttributeCollections = other.gvStationaryAttributeCollections;
+        gvOriginalPermutedAttributeCollections = other.gvOriginalPermutedAttributeCollections;
+        // Copying the permuted attributes can cause a race condition with some randomizers. 
+        // We always initialize the permuted to the originals, so this is non-impactful here.
+        gvPermutedAttributeCollections = other.gvOriginalPermutedAttributeCollections;
+        gRandomNumberGenerator = other.gRandomNumberGenerator;
+    }
     virtual ~AbstractPermutedDataRandomizer();
 
     virtual void                RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
@@ -170,10 +178,8 @@ void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& this
 /** re-initializes and  sorts permutated attribute */
 template <class S, class P>
 void AbstractPermutedDataRandomizer<S, P>::SortPermutedAttribute() {
-    // Reset permuted attributes to original order - this is needed to maintain
-    // consistancy of output when running in parallel.
+    // Reset permuted attributes to original order - this is needed to maintain consistancy of output when running in parallel.
     gvPermutedAttributeCollections = gvOriginalPermutedAttributeCollections;
-
     for (typename PermutedContainerCollection_t::iterator itr=gvPermutedAttributeCollections.begin(); itr != gvPermutedAttributeCollections.end(); ++itr) {
         std::for_each(itr->begin(), itr->end(), AssignPermutedAttribute<P>(gRandomNumberGenerator));
         std::sort(itr->begin(), itr->end(), ComparePermutedAttribute<P>());

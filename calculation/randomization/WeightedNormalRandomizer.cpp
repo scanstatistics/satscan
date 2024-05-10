@@ -10,6 +10,9 @@
 AbstractWeightedNormalRandomizer::AbstractWeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed) 
  :AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(dataHub, dataHub.GetParameters().getAdjustForWeeklyTrends(), lInitialSeed), gtFirstRatioConstant(0), gtSecondRatioConstant(0) {}
 
+AbstractWeightedNormalRandomizer::AbstractWeightedNormalRandomizer(const AbstractWeightedNormalRandomizer& other)
+    :AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(other) {}
+
 /** Adds new randomization entry with passed attrbiute values. */
 void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight) {
     // determine which collection of attributes to add these patients.

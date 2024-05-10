@@ -142,6 +142,7 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
 
    public:
      AbstractWeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed);
+     AbstractWeightedNormalRandomizer(const AbstractWeightedNormalRandomizer& other);
      virtual ~AbstractWeightedNormalRandomizer() {}
 
     virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
@@ -170,6 +171,7 @@ class WeightedNormalRandomizer : public AbstractWeightedNormalRandomizer {
 
   public:
     WeightedNormalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(dataHub, lInitialSeed) {}
+    WeightedNormalRandomizer(const WeightedNormalRandomizer& other): AbstractWeightedNormalRandomizer(other) {}
     virtual ~WeightedNormalRandomizer() {}
 
     virtual WeightedNormalRandomizer * Clone() const {return new WeightedNormalRandomizer(*this);}
@@ -184,6 +186,7 @@ class WeightedNormalPurelyTemporalRandomizer : public AbstractWeightedNormalRand
 
   public:
     WeightedNormalPurelyTemporalRandomizer(const CSaTScanData& dataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(dataHub, lInitialSeed) {}
+    WeightedNormalPurelyTemporalRandomizer(const WeightedNormalPurelyTemporalRandomizer& other) : AbstractWeightedNormalRandomizer(other) {}
     virtual ~WeightedNormalPurelyTemporalRandomizer() {}
 
     virtual WeightedNormalPurelyTemporalRandomizer * Clone() const {return new WeightedNormalPurelyTemporalRandomizer(*this);}
