@@ -700,11 +700,10 @@ TemporalChartGenerator::ClusterCaseTotals_t TemporalChartGenerator::getClusterCa
         count_t intervalInClusterArea = 0;
         for (auto t : indexes)
             intervalInClusterArea += (i == intervals - 1 ? ppcases[i][t] : ppcases[i][t] - ppcases[i + 1][t]);
-        if (cluster.m_nFirstInterval <= i && i <= cluster.m_nLastInterval) {
+        if (cluster.m_nFirstInterval <= i && i < cluster.m_nLastInterval) {
             caseTotals.get<0>() += intervalInClusterArea;
             caseTotals.get<2>() += (intervalTotalCases - intervalInClusterArea);
-        }         
-        else {
+        } else {
             caseTotals.get<1>() += intervalInClusterArea;
             caseTotals.get<3>() += (intervalTotalCases - intervalInClusterArea);
         }
