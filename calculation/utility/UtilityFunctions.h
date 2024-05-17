@@ -116,7 +116,9 @@ class EmailText {
         static const char* RESULTS_PAR;
         static const char* FOOTER_PAR;
 
-        static std::string getEmailFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML);
+        static std::string getFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML);
+        static std::string getSummaryLinkText(const std::string& messagebody, const std::string& resultsPath, const std::string& label, bool asHTML);
+        static std::string getPathLink(std::string& path, const std::string& label, bool asHTML);
 };
 //******************************************************************************
 #endif

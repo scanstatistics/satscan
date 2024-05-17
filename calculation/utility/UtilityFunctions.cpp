@@ -817,10 +817,22 @@ const char* EmailText::SIGNAL_PAR = "<signal-paragraph>";
 const char* EmailText::RESULTS_PAR = "<results-paragraph>";
 const char* EmailText::FOOTER_PAR = "<footer-paragraph>";
 
+std::string EmailText::getPathLink(std::string& path, const std::string& label, bool asHTML) {
+#ifdef _WINDOWS_
+    std::transform(path.begin(), path.end(), path.begin(), [](char& ch) {
+        if (ch == FileName::BACKSLASH) ch = FileName::FORWARDSLASH;
+        return ch;
+    });
+#endif
+    if (asHTML) {
+        std::stringstream s;
+        s << "<a href=\"file:///" << path.c_str() << "\">" << (label.empty() ? path.c_str() : label.c_str()) << "</a>";
+        path = s.str();
+    } return path;
+}
 
 /* Returns email text with tags substituted. */
-std::string EmailText::getEmailFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML) {
-    using boost::algorithm::replace_all;
+std::string EmailText::getFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML) {
     using boost::algorithm::ireplace_all;
     boost::posix_time::ptime localTime = boost::posix_time::second_clock::local_time();
     boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
@@ -834,32 +846,12 @@ std::string EmailText::getEmailFormattedText(const std::string& messagebody, con
     workStream.str(""); workStream << localTime;
     bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
     ireplace_all(message, DATE_VAR, bufferStream.str());
-    auto getPathLink = [asHTML](std::string& path, const std::string& label) { // formats file path for html
-#ifdef _WINDOWS_
-        std::transform(path.begin(), path.end(), path.begin(), [](char& ch) {
-            if (ch == FileName::BACKSLASH) ch = FileName::FORWARDSLASH;
-            return ch;
-            });
-#endif
-            if (asHTML) {
-                std::stringstream s;
-                s << "<a href=\"file:///" << path.c_str() << "\">" << (label.empty() ? path.c_str() : label.c_str()) << "</a>";
-                path = s.str();
-            } return path;
-        };
     // Replace RESULTS_F_VAR tag
-    mainResults << getPathLink(fileName.getFullPath(buffer), "");
+    mainResults << getPathLink(fileName.getFullPath(buffer), "", asHTML);
     ireplace_all(message, RESULTS_F_VAR, mainResults.str().c_str());
     // Replace RESULTS_D_VAR tag
-    resultsDirectory << getPathLink(fileName.getLocation(buffer), "");
+    resultsDirectory << getPathLink(fileName.getLocation(buffer), "", asHTML);
     ireplace_all(message, RESULTS_D_VAR, resultsDirectory.str().c_str());
-    // Replace SUMMARYLINK_VAR tag
-    workStream.str("");
-    if (asHTML)
-        workStream << getPathLink(fileName.getFullPath(buffer), "Results file");
-    else
-        workStream << "Results file: " << getPathLink(fileName.getFullPath(buffer), "");
-    ireplace_all(message, SUMMARYLINK_VAR, workStream.str().c_str());
     // Replace RESULTS_PAR tag
     workStream.str("");
     workStream << "The main results file of this analysis is located at:" << newline << mainResults.str() << newline;
@@ -871,6 +863,25 @@ std::string EmailText::getEmailFormattedText(const std::string& messagebody, con
     workStream << (asHTML ? "<a href=\"mailto:" : "") << AppToolkit::getToolkit().mail_from << "\">" << AppToolkit::getToolkit().mail_from << (asHTML ? "</a>" : "");
     workStream << " if you no longer wish to receive this email, received this email in error, or have questions about this analysis.";
     ireplace_all(message, FOOTER_PAR, workStream.str().c_str());
+    // Replace LINEBREAK tag
+    ireplace_all(message, LINEBREAK, newline.c_str());
+    return message;
+}
+
+/* Returns text with tags substituted. */
+std::string EmailText::getSummaryLinkText(const std::string& messagebody, const std::string& resultsPath, const std::string& label, bool asHTML) {
+    using boost::algorithm::ireplace_all;
+    std::stringstream workStream;
+    std::string buffer, message(messagebody), newline(asHTML ? "<br>" : "\n");
+    FileName fileName(resultsPath.c_str());
+
+    // Replace SUMMARYLINK_VAR tag
+    workStream.str("");
+    if (asHTML)
+        workStream << getPathLink(fileName.getFullPath(buffer), label.empty() ? "Results file" : label.c_str(), asHTML);
+    else
+        workStream << (label.empty() ? "Results file" : label.c_str()) << ": " << getPathLink(fileName.getFullPath(buffer), "", asHTML);
+    ireplace_all(message, SUMMARYLINK_VAR, workStream.str().c_str());
     // Replace LINEBREAK tag
     ireplace_all(message, LINEBREAK, newline.c_str());
     return message;

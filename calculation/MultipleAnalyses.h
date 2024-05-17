@@ -18,6 +18,7 @@ using Tree = boost::property_tree::ptree;
 
 class MultipleAnalyses;
 class PrintProxy;
+class CParameters;
 
 /* Class to contain analysis definition with execution of multiple analyses. */
 class AnalysisDefinition {
@@ -234,6 +235,7 @@ class MultipleAnalyses {
         void emailSummary(BasePrint& print, bool includeUnSelected);
         int execute(BasePrint& print, bool includeUnSelected);
         static bool addResults(const std::string& resultsname, const std::string& parentname, unsigned int significant, pt::ptree &pt_parent, pt::ptree &pt_child, bool target = false);
+        CParameters& getParameters(const AnalysisDefinition& ad, CParameters& parameters, BasePrint& print);
 };
 
 /** Print direction class that is a proxy to actual object. */

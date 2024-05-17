@@ -63,6 +63,15 @@ bool MultipleAnalyses::addResults(const std::string& resultsname, const std::str
     return false;
 }
 
+CParameters& MultipleAnalyses::getParameters(const AnalysisDefinition& ad, CParameters& parameters, BasePrint& print) {
+    std::stringstream readstream;
+    readstream >> std::noskipws; // Make sure stream doesn't skip whitespace.
+    readstream << ad.parameters;
+    if (!IniParameterFileAccess(parameters, print).Read(readstream))
+        throw prg_error("Unable to read parameter file from analysis definition for multiple analysis.", "getParameters()");
+    return parameters;
+}
+
 /** Attempts to email summary of analyses last executed through MultipleAnalyses. */
 void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     // read analyses from xml file.
@@ -99,8 +108,8 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     }
     std::string filename;
     std::stringstream analysesHTML, analysesPlain, failedAnalyses;
-    unsigned int executed = 0, clustersMeetingCutoff = 0;
-    std::vector<AnalysisDefinition*> cutoffRuns, failedRuns;
+    unsigned int executed = 0, clustersMeetingCutoff = 0, retrospectiveCount = 0, prospectiveCount = 0;
+    std::vector<AnalysisDefinition*> failedRuns, prospectiveCutoffRuns, retrospectiveCutoffRuns;
     // Iterate over each defined analysis and execute the analysis.
     for (AnalysesContainer_t::iterator itr = _analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
         if (!itr->selected && !includeUnSelected) {
@@ -109,11 +118,19 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
             failedRuns.push_back(&(*itr));
         } else {
             ++executed;
+            CParameters parameters;
+            getParameters(*itr, parameters, print);
+            if (parameters.GetIsProspectiveAnalysis()) ++prospectiveCount; else ++retrospectiveCount;
             if (boost::filesystem::exists(printString(filename, "%s%s", itr->getLastResultsFilename().c_str(), _EMAIL_TEMP_EXTENSION.c_str()).c_str())) {
                 std::ifstream summary_tmp(filename.c_str());
                 summary_tmp >> clustersMeetingCutoff;
                 summary_tmp.close();
-                if (clustersMeetingCutoff) cutoffRuns.push_back(&(*itr));
+                if (clustersMeetingCutoff) {
+                    if (parameters.GetIsProspectiveAnalysis()) 
+                        prospectiveCutoffRuns.push_back(&(*itr));
+                    else 
+                        retrospectiveCutoffRuns.push_back(&(*itr));
+                }
                 remove(filename.c_str()); // remove the temporary file now
             }
         }
@@ -122,47 +139,52 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     std::stringstream messageSubjectLine, messageBody;
     std::stringstream messagePlain, messageHTML;
     messageSubjectLine << "SaTScan analyses on <date>: ";
-    if (executed) {
-        if (cutoffRuns.size()) messageSubjectLine << cutoffRuns.size() << " with clusters satisfying the alert threshold";
-        else messageSubjectLine << "No clusters satisfied the alert threshold";
-    }
-    if (failedRuns.size()) messageSubjectLine << (executed ? ", " : "") << failedRuns.size() << "/" << (failedRuns.size() + executed) << " failed";
-    if (executed) messageSubjectLine << ", " << executed << "/" << (failedRuns.size() + executed) << " ran";
-
     messageBody << "Summary results for SaTScan analyses on " << EmailText::DATE_VAR << EmailText::LINEBREAK << EmailText::LINEBREAK;
-    messageBody << "Successful executions: " << executed << "/" << (failedRuns.size() + executed) << EmailText::LINEBREAK << (executed == 0 || cutoffRuns.size() ? EmailText::LINEBREAK : "");
-    messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
-    messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
-    if (executed) {
-        if (cutoffRuns.size()) {
-            messageBody.str(""); 
-            messageBody << (cutoffRuns.size() == 1 ? "This " : "These ") << cutoffRuns.size() 
-                << " analys" << (cutoffRuns.size() == 1 ? "is" : "es") << " had clusters satisfying the alert threshold: " << EmailText::LINEBREAK;
-            messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
-            messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
-            for (auto& met : cutoffRuns) {
-                messageBody.str(""); messageBody << met->description << ", " << EmailText::SUMMARYLINK_VAR << EmailText::LINEBREAK;
-                messagePlain << EmailText::getEmailFormattedText(messageBody.str(), met->getLastResultsFilename(), false);
-                messageHTML << EmailText::getEmailFormattedText(messageBody.str(), met->getLastResultsFilename(), true);
+    if (failedRuns.size()) {
+        messageSubjectLine << failedRuns.size() << "/" << (failedRuns.size() + executed) << " failed";
+        messageBody << "These analyses failed to execute " << failedRuns.size() << "/" << (failedRuns.size() + executed) << ":" << EmailText::LINEBREAK;
+        for (auto& fail : failedRuns) messageBody << fail->description << EmailText::LINEBREAK;
+    } else {
+        messageSubjectLine << executed << "/" << executed << " ran";
+        messageBody << "All analyses executed successfully." << EmailText::LINEBREAK;
+    }
+    messagePlain << EmailText::getFormattedText(messageBody.str(), "", false);
+    messageHTML << EmailText::getFormattedText(messageBody.str(), "", true);
+    if (prospectiveCount) {
+        messageBody.str("");
+        if (prospectiveCutoffRuns.size()) {// TODO -- how to get RI cutoff?
+            messageBody << EmailText::LINEBREAK << "These prospective analyses had clusters with recurrence interval >= " << _summary_email_recurrence_cutoff << " days:" << EmailText::LINEBREAK;
+            for (auto& met : prospectiveCutoffRuns) {
+                messageBody << EmailText::SUMMARYLINK_VAR << EmailText::LINEBREAK;
+                messagePlain << EmailText::getSummaryLinkText(messageBody.str(), met->getLastResultsFilename(), met->description, false);
+                messageHTML << EmailText::getSummaryLinkText(messageBody.str(), met->getLastResultsFilename(), met->description, true);
+                messageBody.str("");
             }
         } else {
-            messageBody.str(""); messageBody << "No clusters satisfied the alert threshold." << EmailText::LINEBREAK;
-            messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
-            messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
+            messageBody << EmailText::LINEBREAK << "No prospective analyses had clusters with recurrence interval >= " << _summary_email_recurrence_cutoff << " days." << EmailText::LINEBREAK;
+            messagePlain << EmailText::getFormattedText(messageBody.str(), "", false);
+            messageHTML << EmailText::getFormattedText(messageBody.str(), "", true);
         }
-        messagePlain << EmailText::getEmailFormattedText(EmailText::LINEBREAK, "", false);
-        messageHTML << EmailText::getEmailFormattedText(EmailText::LINEBREAK, "", true);
     }
-    if (failedRuns.size()) {
-        messageBody.str(""); messageBody << "Failed  executions: " << failedRuns.size() << "/" << (failedRuns.size() + executed) << EmailText::LINEBREAK;
-        for (auto& fail: failedRuns) 
-            messageBody << fail->description << EmailText::LINEBREAK;
-        messageBody << EmailText::LINEBREAK;
-        messagePlain << EmailText::getEmailFormattedText(messageBody.str(), "", false);
-        messageHTML << EmailText::getEmailFormattedText(messageBody.str(), "", true);
+    if (retrospectiveCount) {
+        messageBody.str("");
+        if (retrospectiveCutoffRuns.size()) {
+            messageBody << EmailText::LINEBREAK << "These retrospective analyses had clusters with p <= " << _summary_email_pvalue_cutoff << ":" << EmailText::LINEBREAK;
+            for (auto& met : retrospectiveCutoffRuns) {
+                messageBody << EmailText::SUMMARYLINK_VAR << EmailText::LINEBREAK;
+                messagePlain << EmailText::getSummaryLinkText(messageBody.str(), met->getLastResultsFilename(), met->description, false);
+                messageHTML << EmailText::getSummaryLinkText(messageBody.str(), met->getLastResultsFilename(), met->description, true);
+                messageBody.str("");
+            }
+        } else {
+            messageBody << EmailText::LINEBREAK << "No retrospective analyses had clusters with p <= " << _summary_email_pvalue_cutoff << "." << EmailText::LINEBREAK;
+            messagePlain << EmailText::getFormattedText(messageBody.str(), "", false);
+            messageHTML << EmailText::getFormattedText(messageBody.str(), "", true);
+        }
     }
-    messagePlain << EmailText::getEmailFormattedText(EmailText::FOOTER_PAR, "", false);
-    messageHTML << EmailText::getEmailFormattedText(EmailText::FOOTER_PAR, "", true);
+    messageBody.str(""); messageBody << EmailText::LINEBREAK << EmailText::FOOTER_PAR;
+    messagePlain << EmailText::getFormattedText(messageBody.str(), "", false);
+    messageHTML << EmailText::getFormattedText(messageBody.str(), "", true);
 
     std::string recipientsText(_summary_email_recipients);
     std::vector<std::string> recipients;
@@ -172,7 +194,7 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     recipients.erase(std::unique(recipients.begin(), recipients.end()), recipients.end());
     sendMail( // Send the message.
         AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
-        EmailText::getEmailFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML, std::string(""),
+        EmailText::getFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML, std::string(""),
         AppToolkit::getToolkit().mail_servername, print, false, AppToolkit::getToolkit().mail_additional
     );
 }
@@ -200,34 +222,30 @@ int MultipleAnalyses::execute(BasePrint& print, bool includeUnSelected) {
         PrintProxy proxyPrint(*itr, print); // Create print direction proxy so was can record certain actions.
         try {
             CParameters parameters; // Read parameters settings in CParameters object.
-            std::stringstream readstream;
-            readstream >> std::noskipws; // Make sure stream doesn't skip whitespace.
-            readstream << itr->parameters;
-            if (IniParameterFileAccess(parameters, print).Read(readstream)) {
-                parameters.setTimestamp(localTime);
-                // set study period based on study period length and lag settings.
-                boost::gregorian::date enddate = itr->getDate(localTime.date(), itr->getLagOffset(), false);
-                if (itr->getLagOffset().first != NONE)
-                    parameters.SetStudyPeriodEndDate(gregorianToString(enddate).c_str());
-                else // otherwise define enddate per paramemter settings - for possible study period offset
-                    enddate = gregorianFromString(parameters.GetStudyPeriodEndDate());
-                // base the study period start as an offset from the lag period.
-                boost::gregorian::date startdate = itr->getDate(enddate, itr->getGetStudyPeriodOffset(), true);
-                if (itr->getGetStudyPeriodOffset().first != NONE)
-                    parameters.SetStudyPeriodStartDate(gregorianToString(startdate).c_str());
-                if (!ParametersValidate(parameters).Validate(proxyPrint))
-                    throw resolvable_error("The parameter settings prevent SaTScan from continuing this analysis. Please review above message(s) and modify parameter settings accordingly.");
-                // Set the last results filename -- which might have date format substitutions.
-                itr->lastresultsfilename = parameters.GetOutputFileName();
-                //create analysis runner object and execute analysis
-                time_t RunTime; time(&RunTime);
-                parameters.setCreateEmailSummaryFile(_send_summary_email);
-                parameters.setEmailSummaryValue(std::stod(parameters.GetIsProspectiveAnalysis() ? _summary_email_recurrence_cutoff : _summary_email_pvalue_cutoff));
-                AnalysisRunner(parameters, RunTime, proxyPrint).run();
-                //report completion
-                print.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n", BasePrint::P_STDOUT, parameters.GetOutputFileName().c_str());
-                itr->signalSuccess();
-            }
+            getParameters(*itr, parameters, print);
+            parameters.setTimestamp(localTime);
+            // set study period based on study period length and lag settings.
+            boost::gregorian::date enddate = itr->getDate(localTime.date(), itr->getLagOffset(), false);
+            if (itr->getLagOffset().first != NONE)
+                parameters.SetStudyPeriodEndDate(gregorianToString(enddate).c_str());
+            else // otherwise define enddate per paramemter settings - for possible study period offset
+                enddate = gregorianFromString(parameters.GetStudyPeriodEndDate());
+            // base the study period start as an offset from the lag period.
+            boost::gregorian::date startdate = itr->getDate(enddate, itr->getGetStudyPeriodOffset(), true);
+            if (itr->getGetStudyPeriodOffset().first != NONE)
+                parameters.SetStudyPeriodStartDate(gregorianToString(startdate).c_str());
+            if (!ParametersValidate(parameters).Validate(proxyPrint))
+                throw resolvable_error("The parameter settings prevent SaTScan from continuing this analysis. Please review above message(s) and modify parameter settings accordingly.");
+            // Set the last results filename -- which might have date format substitutions.
+            itr->lastresultsfilename = parameters.GetOutputFileName();
+            //create analysis runner object and execute analysis
+            time_t RunTime; time(&RunTime);
+            parameters.setCreateEmailSummaryFile(_send_summary_email);
+            parameters.setEmailSummaryValue(std::stod(parameters.GetIsProspectiveAnalysis() ? _summary_email_recurrence_cutoff : _summary_email_pvalue_cutoff));
+            AnalysisRunner(parameters, RunTime, proxyPrint).run();
+            //report completion
+            print.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n", BasePrint::P_STDOUT, parameters.GetOutputFileName().c_str());
+            itr->signalSuccess();
         } catch (resolvable_error & x) {
             proxyPrint.getWarnErrors() << printString(itr->lastexecutionwarningserrors, "%s\nUse '--help' to get help with program options.\n", x.what());
             itr->signalFailure();

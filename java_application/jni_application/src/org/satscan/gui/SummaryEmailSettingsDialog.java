@@ -30,7 +30,6 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
     }
 
     private void enableControls() {
-        _recipients_label.setEnabled(Utils.selected(_send_summary));
         _recipients.setEnabled(Utils.selected(_send_summary));
         _cutoff_value_label.setEnabled(Utils.selected(_send_summary));
         _cutoff_value_ri.setEnabled(Utils.selected(_send_summary));
@@ -47,7 +46,6 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
     private void initComponents() {
 
         _send_summary = new javax.swing.JCheckBox();
-        _recipients_label = new javax.swing.JLabel();
         _recipients = new javax.swing.JTextField();
         _ok = new javax.swing.JButton();
         _cancel = new javax.swing.JButton();
@@ -59,14 +57,12 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
         setTitle("Summary Email Alerts");
         setResizable(false);
 
-        _send_summary.setText("Send email alerts with summary results.");
+        _send_summary.setText("Send email alerts with summary results to recipients (csv list)");
         _send_summary.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableControls();
             }
         });
-
-        _recipients_label.setText("Recipients (csv list):");
 
         _ok.setText("Ok");
 
@@ -100,38 +96,35 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(_send_summary, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
+                        .addComponent(_send_summary, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_cutoff_value_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_recipients, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_recipients_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(_ok, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(6, 6, 6)
                                         .addComponent(_cutoff_value_ri, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_cutoff_value_label_pval)))
+                                        .addComponent(_cutoff_value_label_pval))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(_ok, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(_send_summary)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_recipients_label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_recipients, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -144,7 +137,7 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_ok)
                     .addComponent(_cancel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
         );
 
         pack();
@@ -157,7 +150,6 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
     private javax.swing.JTextField _cutoff_value_ri;
     private javax.swing.JButton _ok;
     private javax.swing.JTextField _recipients;
-    private javax.swing.JLabel _recipients_label;
     private javax.swing.JCheckBox _send_summary;
     // End of variables declaration//GEN-END:variables
 
