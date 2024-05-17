@@ -12,7 +12,7 @@ import org.satscan.gui.FileSourceWizard;
 public class PreviewTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 1L;
-    public static final int DEFAULT_PREVIEW_LENGTH = 50;
+    public static final int DEFAULT_PREVIEW_LENGTH = 200;
     private int _previewLength = DEFAULT_PREVIEW_LENGTH;
     protected ArrayList<Object[]> _previewData;
     protected int _maxFieldCount = 0;

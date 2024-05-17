@@ -17,7 +17,6 @@ public class CSVImportDataSource implements ImportDataSource {
     protected char _column_delimiter=',';
     protected char _group_delimiter='"';
     private int _skip=0;
-    private final int SAMPLE_ROWS = 200;
     private int _current_row=0;
     private int _total_rows=0;
     private boolean _has_header=false;

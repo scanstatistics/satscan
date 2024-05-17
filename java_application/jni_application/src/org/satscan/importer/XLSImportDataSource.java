@@ -3,7 +3,6 @@ package org.satscan.importer;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -64,7 +63,7 @@ public class XLSImportDataSource implements ImportDataSource {
             int sample_count = 0;
             int maxCols = 0;
             Object[] row = readRow();
-            while (row != null && sample_count < 200) {
+            while (row != null && sample_count < SAMPLE_ROWS) {
                 sample_count++;
                 maxCols = Math.max(maxCols, row.length);
                 row = readRow();

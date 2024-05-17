@@ -1983,7 +1983,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        _source_data_table.setToolTipText("Displaying at most 50 rows from data file.");
+        _source_data_table.setToolTipText("Displaying at most 200 rows from data file.");
         _source_data_table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         _source_data_table.setRowSelectionAllowed(false);
         _importTableScrollPane.setViewportView(_source_data_table);

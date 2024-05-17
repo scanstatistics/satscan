@@ -4,6 +4,8 @@ package org.satscan.importer;
  * Defines file wizard data source interface.
  */
 public interface ImportDataSource {
+    public final int SAMPLE_ROWS = 200;
+    
     public class UnsupportedException extends RuntimeException {
         public UnsupportedException(String message, Throwable cause) {
             super(message, cause);
