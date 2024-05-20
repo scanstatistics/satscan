@@ -1028,10 +1028,10 @@ void CParameters::SetAsDefaulted() {
   _email_always_recipients = "";
   _email_cutoff_recipients = "";
   _email_custom = false;
-  _email_custom_subject = "";
+  printString(_email_custom_subject, "SaTScan Results - %s", EmailText::RESULTS_N_VAR);
   printString(_email_custom_message_body, "%s%s%s%s%s%s%s",
       EmailText::SUMMARY_PAR, EmailText::LINEBREAK, EmailText::LINEBREAK, 
-      EmailText::RESULTS_PAR,  EmailText::LINEBREAK, EmailText::LINEBREAK, EmailText::FOOTER_PAR
+      EmailText::LOCATION_PAR,  EmailText::LINEBREAK, EmailText::LINEBREAK, EmailText::FOOTER_PAR
   );
   _email_attach_results = false;
   _email_include_results_directory = false;

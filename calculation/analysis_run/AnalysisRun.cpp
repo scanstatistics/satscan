@@ -349,18 +349,16 @@ void AnalysisExecution::finalize() {
 
         // Send email per user settings.
         bool clusterMeetsCutoff = false;
-        std::string mlcSubjectLineNotice;
         if ((_parameters.getAlwaysEmailSummary() || _parameters.getCutoffEmailSummary()) && !_data_hub.isDrilldown() && _sim_vars.get_sim_count() != 0) {
             std::stringstream messageSubjectLine, messageBody, messagePlain, messageHTML, summaryParagraph;
             // Create a summary paragraph of the analysis results. 
             if (_reportClusters.GetNumClustersRetained() == 0) {
                 summaryParagraph << "No clusters were found by this analysis.";
-                mlcSubjectLineNotice = "- No Clusters";
             } else {
                 CCluster::RecurrenceInterval_t ri_cutoff(1, _parameters.getCutoffEmailValue());
                 const auto& cluster = _reportClusters.GetCluster(0); // Get the most likely cluster
                 clusterMeetsCutoff = (bool)cluster.meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue());
-                summaryParagraph << "SaTScan found a cluster ";
+                summaryParagraph << "SaTScan found a most likely cluster ";
                 if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
                     summaryParagraph << " centered on " << cluster.GetClusterLocation(buffer, _data_hub);
                 if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.UseLocationNeighborsFile() ||
@@ -368,17 +366,17 @@ void AnalysisExecution::finalize() {
                     double span = cluster.getLocationsSpan(_data_hub);
                     if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == ELLIPTIC) {
                         double radius = cluster.GetCartesianRadius();
-                        summaryParagraph << " with a radius of " << getValueAsString(radius, buffer) << " (minor), ";
-                        summaryParagraph << getValueAsString(radius * _data_hub.GetEllipseShape(cluster.GetEllipseOffset()), buffer) << " (major)";
-                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer);
+                        summaryParagraph << EmailText::LINEBREAK << "Semiminor Axis: " << getValueAsString(radius, buffer);
+                        summaryParagraph << EmailText::LINEBREAK << "Semimajor Axis: " << getValueAsString(radius * _data_hub.GetEllipseShape(cluster.GetEllipseOffset()), buffer);
+                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
                     } else if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == CIRCULAR) {
-                        summaryParagraph << " with a radius of " << getValueAsString(cluster.GetCartesianRadius(), buffer);
-                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer);
+                        summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetCartesianRadius(), buffer);
+                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
                     } else if (_parameters.GetCoordinatesType() == LATLON && !_parameters.getUseLocationsNetworkFile()) {
-                        summaryParagraph << " with a radius of " << getValueAsString(cluster.GetLatLongRadius(), buffer) << " km";
-                        if (span >= 0.0) summaryParagraph << " and a span of " << getValueAsString(span, buffer) << " km";
+                        summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetLatLongRadius(), buffer) << " km";
+                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
                     } else if (span >= 0.0) 
-                        summaryParagraph << " with a span of " << getValueAsString(span, buffer) << " km";
+                        summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
                 }
                 // Create map to cluster cached values - easier and format will match that of other output files.
                 std::map<std::string, std::string> clusterAttributes;
@@ -389,32 +387,28 @@ void AnalysisExecution::finalize() {
                         clusterAttributes[entry.first] += printString(buffer, ", %s", entry.second.first.c_str());
                 }
                 if (clusterAttributes.find("Time frame") != clusterAttributes.end())
-                    summaryParagraph << " from " << clusterAttributes["Time frame"];
-                summaryParagraph << ".";
+                    summaryParagraph << EmailText::LINEBREAK << "Time frame: " << clusterAttributes["Time frame"];
                 if (clusterAttributes.find("Relative risk") != clusterAttributes.end())
-                    summaryParagraph << " The relative risk = " << clusterAttributes["Relative risk"] << ".";
+                    summaryParagraph << EmailText::LINEBREAK << "Relative risk: " << clusterAttributes["Relative risk"];
                 else if (clusterAttributes.find("Observed / expected") != clusterAttributes.end())
-                    summaryParagraph << " The observed / expected = " << clusterAttributes["Observed / expected"] << ".";
-                if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end()) {
-                    summaryParagraph << " The recurrence interval = " << clusterAttributes["Recurrence interval"] << ".";
-                    printString(mlcSubjectLineNotice, ", MLC recurrence interval = %s", clusterAttributes["Recurrence interval"].c_str());
-                } else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end()) {
-                    summaryParagraph << " The p-value = " << clusterAttributes["Gumbel P-value"] << ".";
-                    printString(mlcSubjectLineNotice, ", MLC p-value = %s", clusterAttributes["Gumbel P-value"].c_str());
-                } else if (clusterAttributes.find("P-value") != clusterAttributes.end()) {
-                    summaryParagraph << " The p-value = " << clusterAttributes["P-value"] << ".";
-                    printString(mlcSubjectLineNotice, ", MLC p-value = %s", clusterAttributes["P-value"].c_str());
-                }
-                if (clusterMeetsCutoff) { // If cluster meets cut-off, count the number of other clusters that also met it.
+                    summaryParagraph << EmailText::LINEBREAK << "Observed / expected: " << clusterAttributes["Observed / expected"];
+                if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end())
+                    summaryParagraph << EmailText::LINEBREAK << "Recurrence Interval: " << clusterAttributes["Recurrence interval"];
+                else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end())
+                    summaryParagraph << EmailText::LINEBREAK << "Gumbel P-value: " << clusterAttributes["Gumbel P-value"];
+                else if (clusterAttributes.find("P-value") != clusterAttributes.end())
+                    summaryParagraph << EmailText::LINEBREAK << "P-value: " << clusterAttributes["P-value"];
+                if (_parameters.getCutoffEmailSummary() && clusterMeetsCutoff) {
+                    // If cluster meets cut-off, count the number of other clusters that also met it.
                     unsigned int othersCutoff = 0;
                     for (tract_t i=1; i < _reportClusters.GetNumClustersRetained(); ++i) {
                         if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue()))
-                            break;
+                            continue;
                         ++othersCutoff;
                     }
                     if (othersCutoff) {
-                        summaryParagraph << EmailText::LINEBREAK << "There " << (othersCutoff == 1 ? "was" : "were") << " " << othersCutoff 
-                            << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
+                        summaryParagraph << EmailText::LINEBREAK << EmailText::LINEBREAK << "There " << (othersCutoff == 1 ? "was" : "were")
+                            << " " << othersCutoff << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
                         if (_parameters.GetIsProspectiveAnalysis())
                             summaryParagraph << "recurrence interval >= " << ri_cutoff.second << " day" << (ri_cutoff.second == 1 ? "" : "s") << ".";
                         else
@@ -426,41 +420,40 @@ void AnalysisExecution::finalize() {
             if (_parameters.getEmailCustom()) {
                 messageSubjectLine << _parameters.getEmailCustomSubject();
                 messageBody << _parameters.getEmailCustomMessageBody();
+                bool usingCache = !_parameters.getLinelistIndividualsCacheFileName().empty();
                 std::stringstream signaltext;
                 std::string customMessageBody(messageBody.str());
                 /* If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
                     cluster should be considered when emailing -- otherwise repeated noise i.e.same cluster as yesterdays run. */
-                if (clusterMeetsCutoff && _parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
+                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
                     const auto& cluster_counts = _data_demographic_processor->getClusterEventTotals();
                     for (tract_t i = 0; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                        unsigned int clusterNewCount = cluster_counts.at(static_cast<int>(i)).first;
-                        if (clusterNewCount) {
-                            if (signaltext.str().size()) signaltext << EmailText::LINEBREAK;
-                            count_t clusterTotalCases = cluster_counts.at(static_cast<int>(i)).second;
-                            if (clusterNewCount == clusterTotalCases)
-                                signaltext << "New signal of " << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " in cluster #" << (i + 1) << ".";
-                            else
-                                signaltext << clusterNewCount << " case" << (clusterNewCount > 1 ? "s" : "") << " added to ongoing signal in cluster #" << (i + 1) << ".";
-                        }
+                        if (!DataDemographicsProcessor::isReported(_data_hub, _reportClusters.GetCluster(i), i + 1, _sim_vars))
+                            continue; // Use same cutoff as line list cluster csv
+                        unsigned int newcases = cluster_counts.at(static_cast<int>(i)).first;
+                        signaltext << (signaltext.str().size() ? EmailText::LINEBREAK : "") << "Cluster #" << (i + 1);
+                        count_t totalcases = cluster_counts.at(static_cast<int>(i)).second;
+                        if (newcases == totalcases)
+                            signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s") << ".";
+                        else
+                            signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s") << ".";
                     }
                 }
-                ireplace_all(customMessageBody, EmailText::SIGNAL_PAR, (signaltext.str().size() ? signaltext.str() : std::string("No clusters signalled in this analysis.")));
+                ireplace_all(customMessageBody, EmailText::LINELIST_PAR, (signaltext.str().size() ? signaltext.str() : std::string("No clusters signaled in this analysis.")));
                 ireplace_all(customMessageBody, EmailText::SUMMARY_PAR, summaryParagraph.str());
                 messageBody.str("");
                 messageBody << customMessageBody;
             } else { // Otherwise create the standard email.
                 messageSubjectLine << _parameters.GetTitleName(); // Create the email subject line from either title parameter or default string.
-                if (messageSubjectLine.str().empty()) messageSubjectLine << "SaTScan Results";
-                messageSubjectLine << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
+                messageSubjectLine << "SaTScan Results" << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
                 messageBody << summaryParagraph.rdbuf();
                 // Add output summaries, if user requested it.
-                if (_parameters.getEmailIncludeResultsDirectory()) messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::RESULTS_PAR;
+                if (_parameters.getEmailIncludeResultsDirectory()) messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::LOCATION_PAR;
                 messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::FOOTER_PAR;
             }
             // Create the message in plain text and html fomrats.
-            if (!mlcSubjectLineNotice.empty()) messageSubjectLine << mlcSubjectLineNotice;
-            messagePlain << EmailText::getEmailFormattedText(messageBody.str(), _parameters.GetOutputFileName(), false);
-            messageHTML << EmailText::getEmailFormattedText(messageBody.str(), _parameters.GetOutputFileName(), true);
+            messagePlain << EmailText::getFormattedText(messageBody.str(), _parameters.GetOutputFileName(), false);
+            messageHTML << EmailText::getFormattedText(messageBody.str(), _parameters.GetOutputFileName(), true);
 
             // Build the recipients list.
             std::vector<std::string> recipients;
@@ -474,7 +467,7 @@ void AnalysisExecution::finalize() {
             if (recipients.size())
                 sendMail( // Send the message.
                     AppToolkit::getToolkit().mail_from, recipients, {}, AppToolkit::getToolkit().mail_reply,
-                    EmailText::getEmailFormattedText(messageSubjectLine.str(), "", false), messagePlain, messageHTML,
+                    EmailText::getFormattedText(messageSubjectLine.str(), _parameters.GetOutputFileName(), false), messagePlain, messageHTML,
                     (_parameters.getEmailAttachResults() ? _parameters.GetOutputFileName() : std::string("")),
                     AppToolkit::getToolkit().mail_servername, _print_direction, false, AppToolkit::getToolkit().mail_additional
                 );

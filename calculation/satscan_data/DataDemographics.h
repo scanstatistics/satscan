@@ -125,7 +125,6 @@ class DataDemographicsProcessor{
         ClusterEventCounts_t _cluster_event_totals; // cluster event totals <mlc cluster index, <total new individuals, total events/individuals>>
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times, unsigned int analysis_count);
-        bool isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
         bool processCaseFileLinelist(const RealDataSet& DataSet, unsigned int analysis_count);
         void removeTempClusterFiles();
         void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet, unsigned int analysis_count);
@@ -142,6 +141,7 @@ class DataDemographicsProcessor{
         bool                             hasIndividualGeographically() const;
         bool                             isExistingIndividual(const std::string& s) const { return _existing_individuals.find(s) != _existing_individuals.end(); }
         bool                             isNewIndividual(const std::string& s) const { return _new_individuals.find(s) != _new_individuals.end(); }
+        static                           bool isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
         void                             print();
         void                             process(unsigned int analysis_count);
 };

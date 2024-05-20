@@ -809,12 +809,13 @@ std::stringstream & templateReplace(std::stringstream& templateText, const std::
 
 const char* EmailText::LINEBREAK = "<linebreak>";
 const char* EmailText::DATE_VAR = "<date>";
+const char* EmailText::RESULTS_N_VAR = "<results-name>";
 const char* EmailText::RESULTS_F_VAR = "<results-filename>";
 const char* EmailText::RESULTS_D_VAR = "<results-directory>";
 const char* EmailText::SUMMARYLINK_VAR = "<summary-link>";
 const char* EmailText::SUMMARY_PAR = "<summary-paragraph>";
-const char* EmailText::SIGNAL_PAR = "<signal-paragraph>";
-const char* EmailText::RESULTS_PAR = "<results-paragraph>";
+const char* EmailText::LINELIST_PAR = "<linelist-paragraph>";
+const char* EmailText::LOCATION_PAR = "<location-paragraph>";
 const char* EmailText::FOOTER_PAR = "<footer-paragraph>";
 
 std::string EmailText::getPathLink(std::string& path, const std::string& label, bool asHTML) {
@@ -846,17 +847,19 @@ std::string EmailText::getFormattedText(const std::string& messagebody, const st
     workStream.str(""); workStream << localTime;
     bufferStream << workStream.str() << " " << localTime.date().day().as_number() << ", " << localTime.date().year();
     ireplace_all(message, DATE_VAR, bufferStream.str());
+    // Replace RESULTS_N_VAR tag
+    ireplace_all(message, RESULTS_N_VAR, fileName.getFileName().c_str());
     // Replace RESULTS_F_VAR tag
     mainResults << getPathLink(fileName.getFullPath(buffer), "", asHTML);
     ireplace_all(message, RESULTS_F_VAR, mainResults.str().c_str());
     // Replace RESULTS_D_VAR tag
     resultsDirectory << getPathLink(fileName.getLocation(buffer), "", asHTML);
     ireplace_all(message, RESULTS_D_VAR, resultsDirectory.str().c_str());
-    // Replace RESULTS_PAR tag
+    // Replace LOCATION_PAR tag
     workStream.str("");
     workStream << "The main results file of this analysis is located at:" << newline << mainResults.str() << newline;
     workStream << "All result files are located at:" << newline << resultsDirectory.str();
-    ireplace_all(message, RESULTS_PAR, workStream.str().c_str());
+    ireplace_all(message, LOCATION_PAR, workStream.str().c_str());
     // Replace FOOTER_PAR tag
     workStream.str("");
     workStream << "This is an automatically generated message with the results from today's SaTScan analysis. Reply to ";

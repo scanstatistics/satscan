@@ -159,12 +159,15 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 /** Returns whether a cluster is reported in the cluster line-list output file. */
 bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
     const auto& parameters = Data.GetParameters();
+    auto mainResultsCutoff = [&]() {
+        return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
+    };
     if (cluster.reportableRecurrenceInterval(parameters, simVars) && !Data.isDrilldown())
-        return cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second >= parameters.getCutoffLineListCSV();
+        return cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second >= parameters.getCutoffLineListCSV() && mainResultsCutoff();
     if (cluster.reportablePValue(parameters, simVars))
-        return cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1) <= parameters.getCutoffLineListCSV();
+        return cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1) <= parameters.getCutoffLineListCSV() && mainResultsCutoff();
     // Otherwise match reporting criteria of main results file.
-    return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
+    return mainResultsCutoff();
 }
 
 /* Re-reads cases file to accumulate line-list data inconjuction with detected clusters. */

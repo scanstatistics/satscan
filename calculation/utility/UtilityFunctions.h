@@ -107,13 +107,14 @@ class EmailText {
     public:
         static const char* LINEBREAK;
         static const char* DATE_VAR;
+        static const char* RESULTS_N_VAR;
         static const char* RESULTS_F_VAR;
         static const char* RESULTS_D_VAR;
         static const char* SUMMARYLINK_VAR;
 
         static const char* SUMMARY_PAR;
-        static const char* SIGNAL_PAR;
-        static const char* RESULTS_PAR;
+        static const char* LINELIST_PAR;
+        static const char* LOCATION_PAR;
         static const char* FOOTER_PAR;
 
         static std::string getFormattedText(const std::string& messagebody, const std::string& resultsPath, bool asHTML);

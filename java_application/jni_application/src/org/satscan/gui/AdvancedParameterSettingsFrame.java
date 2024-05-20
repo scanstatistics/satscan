@@ -381,6 +381,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _custom_email_tags.setEnabled(Utils.selected(_create_custom_email_message));
         _custom_email_message_label.setEnabled(Utils.selected(_create_custom_email_message));
         _custom_email_message.setEnabled(Utils.selected(_create_custom_email_message));
+        
+        if (!Utils.selected(_create_custom_email_message)) {
+            _custom_email_subject.setText(Parameters.DEFAULT_EMAIL_SUBJECT);
+            _custom_email_message.setText(substituteNewlines(Parameters.DEFAULT_EMAIL_MESSAGE));
+        }
     }   
 
     /* Enables controls of the other output group. */
@@ -3189,11 +3194,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     <p class="tag-row"><span class="tag">&lt;date&gt;</span><span class="info"> - Today's date.</span></p>
                     <p class="tag-row"><span class="tag">&lt;results-directory&gt;</span><span class="info"> - The directory to which the analysis result files were written.</span></p>
                     <p class="tag-row"><span class="tag">&lt;results-filename&gt;</span><span class="info"> - The name and path of the main results file.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;results-name&gt;</span><span class="info"> - The name of the main results file, without an extension.</span></p>
                     <div class="header">Output Paragraphs:</div>
-                    <p class="tag-row"><span class="tag">&lt;signal-paragraph&gt;</span><span class="info"> - Reports a summary of new and ongoing clusters when reading line list data with individual IDs.</span></p>
-                    <p class="tag-row"><span class="tag">&lt;summary-paragraph&gt;</span><span class="info"> - Reports summary information about the most likely cluster and potentially secondary clusters.</span></p>
-                    <p class="tag-row"><span class="tag">&lt;results-paragraph&gt;</span><span class="info"> - Reports the directory to which the analysis result files were written and the main results file.</span></p>
-                    <p class="tag-row"><span class="tag">&lt;footer-paragraph&gt;</span><span class="info"> - Reports a message that indicates this email was part of an automated process.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;summary-paragraph&gt;</span><span class="info"> - Summary information about the most likely cluster and potentially secondary clusters.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;linelist-paragraph&gt;</span><span class="info"> - For prospective analyses, summary information about new and ongoing signals when reading line list data with individual IDs.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;location-paragraph&gt;</span><span class="info"> - Location of the main results file and the directory to which other result files were written.</span></p>
+                    <p class="tag-row"><span class="tag">&lt;footer-paragraph&gt;</span><span class="info"> - Message indicating that this email is part of an automated process.</span></p>
                     </body></html>
                     """);
                     JOptionPane.showMessageDialog(null, new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), "Email Message Tags", JOptionPane.PLAIN_MESSAGE);

@@ -254,8 +254,8 @@ public class Parameters implements Cloneable {
     private String                          _email_always_recipients="";
     private String                          _email_cutoff_recipients="";
     private boolean                         _email_custom=false; 
-    private String                          _email_custom_subject="";
-    private String                          _email_custom_message_body="<summary-paragraph><linebreak><linebreak><results-paragraph><linebreak><linebreak><footer-paragraph>";
+    private String                          _email_custom_subject=DEFAULT_EMAIL_SUBJECT;
+    private String                          _email_custom_message_body=DEFAULT_EMAIL_MESSAGE;
     private boolean                         _create_email_summary_file=false;
     
     private String                          _multiple_locations_file="";
@@ -264,6 +264,8 @@ public class Parameters implements Cloneable {
     
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
+    public static final String              DEFAULT_EMAIL_SUBJECT="SaTScan Results - <results-name>";
+    public static final String              DEFAULT_EMAIL_MESSAGE="<summary-paragraph><linebreak><linebreak><location-paragraph><linebreak><linebreak><footer-paragraph>";
 
     public Parameters() {
       super();
