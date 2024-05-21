@@ -402,7 +402,7 @@ void AnalysisExecution::finalize() {
                     // If cluster meets cut-off, count the number of other clusters that also met it.
                     unsigned int othersCutoff = 0;
                     for (tract_t i=1; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                        if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue()))
+                        if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, i + 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue()))
                             continue;
                         ++othersCutoff;
                     }
