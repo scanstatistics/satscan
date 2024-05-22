@@ -1327,7 +1327,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setEmailCutoffRecipients(_cutoff_email_recipients.getText());
         parameters.setCutoffEmailValue(Double.parseDouble(_cutoff_value_email.getText()));
         parameters.setEmailAttachResults(Utils.selected(_attach_main_results_email));
-        parameters.setEmailIncludeResultsDirectory(Utils.selected(_attach_main_results_email));
+        parameters.setEmailIncludeResultsDirectory(Utils.selected(_report_main_results_email));
         parameters.setEmailCustom(Utils.selected(_create_custom_email_message));
         parameters.setEmailCustomSubject(_custom_email_subject.getText());
         parameters.setEmailCustomMessageBody(replaceNewlines(_custom_email_message.getText()));
