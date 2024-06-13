@@ -483,7 +483,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "<styleUrl>#events-" << toHex(category) << idx; // define the style for this category and current set index
             if (demographics.isNewIndividual(individual)) // individual status is also part of the style
                 placemark << "-new";
-            else if (demographics.isExistingIndividual(individual))
+            else if (demographics.inCluster(tid, case_date) && demographics.isExistingIndividual(individual))
                 placemark << "-ongoing";
             else
                 placemark << "-outside";

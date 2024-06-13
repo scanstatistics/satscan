@@ -163,11 +163,26 @@ bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CClus
         return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
     };
     if (cluster.reportableRecurrenceInterval(parameters, simVars) && !Data.isDrilldown())
-        return cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second >= parameters.getCutoffLineListCSV() && mainResultsCutoff();
+        return macro_less_than_or_equal(parameters.getCutoffLineListCSV(), cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second, DBL_CMP_TOLERANCE) && mainResultsCutoff();
     if (cluster.reportablePValue(parameters, simVars))
-        return cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1) <= parameters.getCutoffLineListCSV() && mainResultsCutoff();
+        return macro_less_than_or_equal(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1), parameters.getCutoffLineListCSV(), DBL_CMP_TOLERANCE) && mainResultsCutoff();
     // Otherwise match reporting criteria of main results file.
     return mainResultsCutoff();
+}
+
+/* Returns bitset which indicates the clusters indexes which contain location/date in their cluster window. */
+boost::dynamic_bitset<>& DataDemographicsProcessor::getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters) const {
+    // Determine which clusters this record applys to.
+    applicable_clusters.reset();
+    int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate), endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
+    for (const auto& cluster_locs : _cluster_locations) {
+        const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
+        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.test(tid))
+            continue;
+        if (startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
+            applicable_clusters.set(cluster_locs.first);
+    }
+    return applicable_clusters;
 }
 
 /* Re-reads cases file to accumulate line-list data inconjuction with detected clusters. */
@@ -210,14 +225,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate);
             int endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
             // Determine which clusters this record applys to.
-            applicable_clusters.reset();
-            for (const auto& cluster_locs : _cluster_locations) {
-                const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
-                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.test(tid))
-                    continue;
-                if (startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
-                    applicable_clusters.set(cluster_locs.first);
-            }
+            getApplicableClusters(tid, nDate, applicable_clusters);
             boost::logic::tribool is_new_event(boost::logic::indeterminate); // unknown, false, true
             const char * value = 0; std::vector<std::string> values; std::string individual;
             for (auto const& fieldMap: linelistFieldsMap) {
@@ -294,6 +302,12 @@ bool DataDemographicsProcessor::hasIndividualGeographically() const {
     for (const auto& dbd : _demographics_by_dataset) {
         if (dbd.hasIndividualGeographically()) return true;
     } return false;
+}
+
+/** Returns whether a record (tid and nDate) is within a cluster. */
+bool DataDemographicsProcessor::inCluster(tract_t tid, Julian nDate) const {
+    boost::dynamic_bitset<> applicable_clusters(_cluster_locations.size());
+    return getApplicableClusters(tid, nDate, applicable_clusters).any();
 }
 
 /* Finalize usage of this object - overwriting events signal file. */

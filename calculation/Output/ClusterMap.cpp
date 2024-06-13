@@ -425,7 +425,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             // Determine status of this individual.
             if (demographics.isNewIndividual(individual))
                 status = "new";
-            else if (demographics.isExistingIndividual(individual))
+            else if (demographics.inCluster(tid, case_date) && demographics.isExistingIndividual(individual))
                 status = "ongoing";
             else
                 status = "outside";
