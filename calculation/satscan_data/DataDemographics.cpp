@@ -163,9 +163,11 @@ bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CClus
         return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
     };
     if (cluster.reportableRecurrenceInterval(parameters, simVars) && !Data.isDrilldown())
-        return macro_less_than_or_equal(parameters.getCutoffLineListCSV(), cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second, DBL_CMP_TOLERANCE) && mainResultsCutoff();
+        return parameters.getCutoffLineListCSV() <= std::round(cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second) // round RI to whole days
+        && mainResultsCutoff();
     if (cluster.reportablePValue(parameters, simVars))
-        return macro_less_than_or_equal(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1), parameters.getCutoffLineListCSV(), DBL_CMP_TOLERANCE) && mainResultsCutoff();
+        return macro_less_than_or_equal(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1), parameters.getCutoffLineListCSV(), DBL_CMP_TOLERANCE) 
+        && mainResultsCutoff();
     // Otherwise match reporting criteria of main results file.
     return mainResultsCutoff();
 }

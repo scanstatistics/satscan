@@ -61,7 +61,7 @@ bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, unsigne
     bool should = static_cast<unsigned int>(cluster.getNumIdentifiers()) >= parameters.getDrilldownMinimumLocationsCluster() && cluster.GetClusterType() != PURELYTEMPORALCLUSTER;
     if (parameters.GetIsProspectiveAnalysis() && !data.isDrilldown()) {
         should &= cluster.reportableRecurrenceInterval(parameters, simvars) &&
-            cluster.GetRecurrenceInterval(data, clusterRptIdx, simvars).second >= parameters.getDrilldownCutoff();
+            std::round(cluster.GetRecurrenceInterval(data, clusterRptIdx, simvars).second) >= parameters.getDrilldownCutoff(); // round RI to whole days
     } else {
         should &= cluster.reportablePValue(parameters, simvars) &&
             cluster.getReportingPValue(parameters, simvars, clusterRptIdx == 0 || parameters.GetIsIterativeScanning()) <= parameters.getDrilldownCutoff();
@@ -388,6 +388,8 @@ void AnalysisExecution::finalize() {
                 }
                 if (clusterAttributes.find("Time frame") != clusterAttributes.end())
                     summaryParagraph << EmailText::LINEBREAK << "Time frame: " << clusterAttributes["Time frame"];
+                if (clusterAttributes.find("Number of cases") != clusterAttributes.end())
+                    summaryParagraph << EmailText::LINEBREAK << "Number of cases: " << clusterAttributes["Number of cases"];
                 if (clusterAttributes.find("Relative risk") != clusterAttributes.end())
                     summaryParagraph << EmailText::LINEBREAK << "Relative risk: " << clusterAttributes["Relative risk"];
                 else if (clusterAttributes.find("Observed / expected") != clusterAttributes.end())
@@ -431,12 +433,24 @@ void AnalysisExecution::finalize() {
                         if (!DataDemographicsProcessor::isReported(_data_hub, _reportClusters.GetCluster(i), i + 1, _sim_vars))
                             continue; // Use same cutoff as line list cluster csv
                         unsigned int newcases = cluster_counts.at(static_cast<int>(i)).first;
-                        signaltext << (signaltext.str().size() ? EmailText::LINEBREAK : "") << "Cluster #" << (i + 1);
+                        signaltext << (signaltext.str().size() ? "" : "All clusters in the line list file:") << EmailText::LINEBREAK << "Cluster #" << (i + 1);
                         count_t totalcases = cluster_counts.at(static_cast<int>(i)).second;
                         if (newcases == totalcases)
-                            signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s") << ".";
+                            signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s");
                         else
-                            signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s") << ".";
+                            signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s");
+                        // Report RI or p-value of cluster.
+                        std::stringstream clustersigtext;
+                        const auto& cluster = _reportClusters.GetCluster(i);
+                        for (const auto& entry : cluster.getReportLinesCache()) {
+                            if (_parameters.GetIsProspectiveAnalysis() && entry.first == "Recurrence interval") {
+                                clustersigtext << "RI=" << entry.second.first; break;
+                            } else if (!_parameters.GetIsProspectiveAnalysis() && (entry.first == "Gumbel P-value" || entry.first == "P-value")) {
+                                clustersigtext << "P-value=" << entry.second.first; break;
+                            }
+                        }
+                        if (clustersigtext.rdbuf()->in_avail()) signaltext << " (" << clustersigtext.str() << ")";
+                        signaltext << ".";
                     }
                 }
                 ireplace_all(customMessageBody, EmailText::LINELIST_PAR, (signaltext.str().size() ? signaltext.str() : std::string("No clusters signaled in this analysis.")));

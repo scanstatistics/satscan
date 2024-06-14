@@ -1008,7 +1008,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             InputSourceSettings iss = parameters.getInputSourceSettings().get(i);
             _input_source_map.put(iss.getInputFileType().toString() + iss.getDataSetIndex(), iss);
         }
-        
+        _advancedParametersSetting.setupInterfaceFinalize(parameters); // Finish setting up advanced window
         onCountTimePrecisionChange();
         enableSettingsForAnalysisModelCombination();
     }

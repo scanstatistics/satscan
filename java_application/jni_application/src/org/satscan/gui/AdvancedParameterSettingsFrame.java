@@ -1299,7 +1299,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.MLC_ONLY.ordinal());            
         }
         parameters.setTemporalGraphMostLikelyCount(Integer.parseInt(_numMostLikelyClustersGraph.getText()));
-        parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
+        if (parameters.GetIsProspectiveAnalysis())
+            parameters.setTemporalGraphSignificantCutoff(Double.valueOf(_temporalGraphPvalueCutoff.getText()).intValue());
+        else
+            parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
         
         // Cluster Restrictions tab
         parameters.setMinimumCasesHighRateClusters(Integer.parseInt(_minimum_number_cases_cluster.getText()));
@@ -1311,7 +1314,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Drilldown tab
         parameters.setPerformStandardDrilldown(_mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected());
         parameters.setPerformBernoulliDrilldown(_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected());
-        parameters.setDrilldownCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
+        if (parameters.GetIsProspectiveAnalysis())
+            parameters.setDrilldownCutoff(Double.valueOf(_drilldown_restriction_cutoff.getText()).intValue());
+        else
+            parameters.setDrilldownCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
         parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
         parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
         parameters.setDrilldownAdjustWeeklyTrends(_drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected());
@@ -1325,7 +1331,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setEmailAlwaysRecipients(_always_email_recipients.getText());
         parameters.setCutoffEmailSummary(Utils.selected(_cutoff_email));
         parameters.setEmailCutoffRecipients(_cutoff_email_recipients.getText());
-        parameters.setCutoffEmailValue(Double.parseDouble(_cutoff_value_email.getText()));
+        if (parameters.GetIsProspectiveAnalysis())
+            parameters.setCutoffEmailValue(Double.valueOf(_cutoff_value_email.getText()).intValue());
+        else
+            parameters.setCutoffEmailValue(Double.parseDouble(_cutoff_value_email.getText()));
         parameters.setEmailAttachResults(Utils.selected(_attach_main_results_email));
         parameters.setEmailIncludeResultsDirectory(Utils.selected(_report_main_results_email));
         parameters.setEmailCustom(Utils.selected(_create_custom_email_message));
@@ -1336,8 +1345,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
         parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
-        parameters.SetTitleName(_printTitle.getText());        
-        parameters.setCutoffLineListCSV(Double.parseDouble(_cluster_lineline_value.getText()));
+        parameters.SetTitleName(_printTitle.getText());
+        if (parameters.GetIsProspectiveAnalysis())
+            parameters.setCutoffLineListCSV(Double.valueOf(_cluster_lineline_value.getText()).intValue());
+        else
+            parameters.setCutoffLineListCSV(Double.parseDouble(_cluster_lineline_value.getText()));
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1858,12 +1870,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_drilldown_restriction_cutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for a detected cluster on drilldown must be greater than or equal to one.", 
+                    "The recurrence interval cutoff for a detected cluster on drilldown must\nbe greater than or equal to one for a prospective scan.", 
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
                 );
-            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+            if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for a detected cluster on drilldown must be between zero and one, inclusive.", 
+                    "The p-value cutoff for a detected cluster on drilldown must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
                 );
             if (Integer.parseInt(_drilldown_restriction_locations.getText()) < 2)
@@ -1897,12 +1909,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for including clusters in temporal graph must be greater than or equal to one.", 
+                    "The recurrence interval cutoff for including clusters in temporal graph must\nbe greater than or equal to one for a prospective scan.", 
                     FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
                 );
-            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+            if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for including clusters in temporal graph must be between zero and one, inclusive.", 
+                    "The p-value cutoff for including clusters in temporal graph must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
                     FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
                 );
         }
@@ -1914,12 +1926,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_cluster_lineline_value.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for including clusters in line list CSV must be greater than or equal to one.", 
+                    "The recurrence interval cutoff for including clusters in line list CSV must be greater than or equal to one for a prospective analysis.", 
                     FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
                 );
-            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+            if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for including clusters in line list CSV must be between zero and one, inclusive.", 
+                    "The p-value cutoff for including clusters in line list CSV must be between 0 and 1 (inclusive) for a retrospective analysis.", 
                     FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
                 );
         }
@@ -1987,12 +1999,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_cutoff_value_email.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for emailing the cluster summary must be greater than or equal to one.", 
+                    "The recurrence interval cutoff for emailing the cluster summary must\nbe greater than or equal to one for a prospective scan.", 
                     FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
                 );
-            if (!_settings_window.isProspectiveScan() && (0.0 >= cutoff || cutoff >= 1.0))
+            if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for emailing the cluster summary must be between zero and one, inclusive.", 
+                    "The p-value cutoff for emailing the cluster summary must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
                     FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
                 );
         }        
@@ -2719,7 +2731,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalGraphMostLikelyX.setSelected(parameters.getTemporalGraphReportType() == Parameters.TemporalGraphReportType.X_MCL_ONLY);
         _numMostLikelyClustersGraph.setText(Integer.toString(parameters.getTemporalGraphMostLikelyCount()));
         _temporalGraphSignificant.setSelected(parameters.getTemporalGraphReportType() == Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY);
-        _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));
         updateCriticalValuesTextCaptions();
         
         // Cluster Restrictions tab
@@ -2732,7 +2743,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Drilldown tab
         _mainAnalysisDrilldown.setSelected(parameters.getPerformStandardDrilldown());
         _purelySpatialDrilldown.setSelected(parameters.getPerformBernoulliDrilldown());
-        _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownCutoff()));
         _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
         _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
         _drilldown_restriction_dow.setSelected(parameters.getDrilldownAdjustWeeklyTrends());
@@ -2745,8 +2755,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _always_sendmail.setSelected(parameters.getAlwaysEmailSummary());
         _always_email_recipients.setText(parameters.getEmailAlwaysRecipients());
         _cutoff_email.setSelected(parameters.getCutoffEmailSummary());
-        _cutoff_email_recipients.setText(parameters.getEmailCutoffRecipients());   
-        _cutoff_value_email.setText(Double.toString(parameters.getCutoffEmailValue()));
+        _cutoff_email_recipients.setText(parameters.getEmailCutoffRecipients());  
         _attach_main_results_email.setSelected(parameters.getEmailAttachResults());
         _report_main_results_email.setSelected(parameters.getEmailIncludeResultsDirectory());
         _create_custom_email_message.setSelected(parameters.getEmailCustom());
@@ -2757,10 +2766,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());    
         _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
         _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
-        _printTitle.setText(parameters.GetTitleName());        
-        _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
+        _printTitle.setText(parameters.GetTitleName());
     }
 
+    /** Some controls can't be set from the Parameters object until after the ParameterSettingsFrame object
+     *  has been loaded. There can be issues with some of the listeners being called before analysis type
+     *  controls have been set.
+     */
+    public void setupInterfaceFinalize(final Parameters parameters) {
+        Parameters.AnalysisType analysisType = this._settings_window.getAnalysisControlType();
+        if (analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            analysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
+            _temporalGraphPvalueCutoff.setText(Integer.toString(Double.valueOf(parameters.getTemporalGraphSignificantCutoff()).intValue()));
+            _drilldown_restriction_cutoff.setText(Integer.toString(Double.valueOf(parameters.getDrilldownCutoff()).intValue()));
+            _cutoff_value_email.setText(Integer.toString(Double.valueOf(parameters.getCutoffEmailValue()).intValue()));
+            _cluster_lineline_value.setText(Integer.toString(Double.valueOf(parameters.getCutoffLineListCSV()).intValue()));
+        } else {
+            _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));        
+            _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownCutoff()));
+            _cutoff_value_email.setText(Double.toString(parameters.getCutoffEmailValue()));
+            _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
+        }
+    }    
+    
     /**
      * Enabled the power evaluations group based upon current settings.
      */

@@ -1233,8 +1233,7 @@ boost::logic::tribool CCluster::meetsCutoff(
     }
     // Test whether cluster meet specified cutoffs.
     if (params.GetIsProspectiveAnalysis() && reportableRecurrenceInterval(params, simVars)) {
-        RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
-        return ri.second >= ri_cutoff.second;
+        return std::round(GetRecurrenceInterval(Data, iReportedCluster, simVars).second) >= ri_cutoff.second; // round RI to whole days
     }
     if (!params.GetIsProspectiveAnalysis() && reportablePValue(params, simVars)) {
         return macro_less_than_or_equal(

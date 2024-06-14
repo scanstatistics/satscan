@@ -93,7 +93,7 @@ bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDi
             if ((!gParameters.GetIsProspectiveAnalysis() || isDrilldown) && (gParameters.getCutoffLineListCSV() < 0 || gParameters.getCutoffLineListCSV() > 1)) {
                 bValid = false;
                 PrintDirection.Printf(
-                    "%s:\nThe cluster line list cutoff must be between 0 and 1, inclusive, for a retrospective analysis.\n",
+                    "%s:\nThe cluster line list cutoff must be between 0 and 1 (inclusive) for a retrospective analysis.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                 );
             }
@@ -323,7 +323,7 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection,
     if ((!gParameters.GetIsProspectiveAnalysis() || isDilldown) && (gParameters.getDrilldownCutoff() < 0 || gParameters.getDrilldownCutoff() > 1)) {
         bValid = false;
         PrintDirection.Printf(
-            "%s:\nThe cutoff value for a detected cluster on drilldown must be between 0 and 1, inclusive.\n",
+            "%s:\nThe cutoff value for a detected cluster on drilldown must be between 0 and 1 (inclusive) for a retrospective scan.\n",
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
         );
     }
@@ -479,7 +479,7 @@ bool ParametersValidate::ValidateNotificationParameters(BasePrint & PrintDirecti
                 if (!gParameters.GetIsProspectiveAnalysis() && (gParameters.getCutoffEmailValue() < 0 || gParameters.getCutoffEmailValue() > 1)) {
                     bValid = false;
                     PrintDirection.Printf(
-                        "%s:\nThe cutoff value used to determine whether an email summary is sent must be between 0 and 1, inclusive.\n",
+                        "%s:\nThe cutoff value used to determine whether an email summary is sent must be between 0 and 1 (inclusive) for a retrospective scan.\n",
                         BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                     );
                 }
@@ -1952,7 +1952,7 @@ bool ParametersValidate::ValidateTemporalOutputParameters(BasePrint& PrintDirect
                 if ((!gParameters.GetIsProspectiveAnalysis() || isDrilldown) && (gParameters.getTemporalGraphSignificantCutoff() < 0 || gParameters.getTemporalGraphSignificantCutoff() > 1)) {
                     bValid = false;
                     PrintDirection.Printf(
-                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be between 0 and 1, inclusive.\n",
+                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be between 0 and 1 (inclusive) for a retrospective analysis.\n",
                         BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
                     );
                 }
