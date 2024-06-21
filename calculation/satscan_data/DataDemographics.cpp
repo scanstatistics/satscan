@@ -318,7 +318,7 @@ void DataDemographicsProcessor::finalize() {
     if (_temp_individuals_cache_filename.size()) {
         if (_parameters.getLinelistIndividualsCacheFileName().size() && !_handler.gDataHub.isDrilldown()) {
             _handler.gDataHub.GetPrintDirection().Printf(
-                "A cache file is being maintained for this analysis to track line list individuals seen in significant clusters.\n"
+                "A cache file is being maintained for this analysis to track line list individuals seen in clusters which meet line list cutoff.\n"
                 "This cache will be used in subsequent runs of this analysis to determine whether an individual is considered 'new' or 'ongoing'.\n",
                 BasePrint::P_WARNING, _parameters.getLinelistIndividualsCacheFileName().c_str()
             );
