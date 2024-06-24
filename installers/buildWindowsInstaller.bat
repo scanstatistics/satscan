@@ -15,8 +15,8 @@ if %argCount% NEQ 5 (
 REM script definitions
 set fileshare=\\oriole-03-int
 
-set satscanversion=10.1
-set satscanversionf=10_1
+set satscanversion=10.2
+set satscanversionf=10_2
 
 set satscan32exe=%fileshare%\satscan\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe
 set satscan32dll=%fileshare%\satscan\build.area\satscan\shared_library\Release\satscan32.dll
