@@ -323,7 +323,7 @@ void AnalysisExecution::finalize() {
         nHours = floor(nTotalTime / (60 * 60));
         nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
         nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
-        fprintf(fp, "\nProgram completed  : %s", ctime(&CompletionTime));
+        fprintf(fp, "\nRUN INFORMATION\n\nProgram completed  : %s", ctime(&CompletionTime));
         if (0 < nHours && nHours < 1.5) szHours = "hour";
         if (0 < nMinutes && nMinutes < 1.5) szMinutes = "minute";
         if (0.5 <= nSeconds && nSeconds < 1.5) szSeconds = "second";
@@ -510,8 +510,7 @@ void AnalysisExecution::createReport() {
         }
         sStartTime = ctime(&_start_time);
         fprintf(fp, "\nProgram run on: %s\n", sStartTime.c_str());
-        ParametersPrint(_parameters).PrintAnalysisSummary(fp);
-        ParametersPrint(_parameters).PrintAdjustments(fp, _data_hub.GetDataSetHandler());
+        ParametersPrint(_parameters).PrintAnalysisSummary(fp, _data_hub.GetDataSetHandler());
         _data_hub.DisplaySummary(fp, "SUMMARY OF DATA", true);
         fclose(fp); fp = 0;
     } catch (prg_exception& x) {
@@ -1707,7 +1706,8 @@ iteration of the iterative scan.
 If user requested 'location information' output file(s), they are created
 simultaneously with reported clusters. */
 void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc) {
-    FILE        * fp = 0;
+    FILE * fp = 0;
+    std::string buffer;
     _clusterSupplement.reset(new ClusterSupplementInfo());
 
     try {
@@ -1715,15 +1715,16 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
         openReportFile(fp, true);
         if (mlc.GetNumClustersRetained()) {
             if (_analysis_count > 1) {
-                std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", _analysis_count - 1, (_analysis_count - 1 == 1 ? "" : "S"));
-                _data_hub.DisplaySummary(fp, s, false);
-                fprintf(fp, "\n");
+                if (_analysis_count == 2)
+                    _data_hub.DisplaySummary(fp, printString(buffer, "REMAINING DATA AFTER TOP CLUSTER REMOVED"), false);
+                else
+                    _data_hub.DisplaySummary(fp, printString(buffer, "REMAINING DATA AFTER TOP %d CLUSTERS REMOVED", _analysis_count - 1), false);
             }
 
             //get most likely cluster
             const CCluster& TopCluster = mlc.GetTopRankedCluster();
             _clusterSupplement->addCluster(TopCluster, _analysis_count);
-            fprintf(fp, "\nMOST LIKELY CLUSTER\n\n");
+            fprintf(fp, "\nCLUSTER DETECTED\n\n");
             //print cluster definition to file stream
             TopCluster.Display(fp, _data_hub, *_clusterSupplement, _sim_vars);
             //print cluster definition to 'cluster information' record buffer

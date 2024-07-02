@@ -52,9 +52,8 @@ class ParametersPrint {
     const char        * GetProbabilityModelTypeAsString() const;
     const char        * getPowerEvaluationMethodAsString() const;
     void                Print(FILE* fp) const;
-    void                PrintAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
-    void                PrintAnalysisSummary(FILE* fp) const;
-    void                PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const;
+    void                PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHandler) const;
+    std::string         getCalculatedTimeTrendAsString(const DataSetHandler& SetHandler) const;
 };
 //******************************************************************************
 #endif

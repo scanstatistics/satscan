@@ -246,67 +246,6 @@ void ParametersPrint::PrintMiscellaneousAnalysisParameters(FILE* fp) const {
     if (settings.size()) WriteSettingsContainer(settings, "Miscellaneous Analysis", fp);
 }
 
-
-/** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandler) const {
-  std::string           buffer;
-  AsciiPrintFormat      PrintFormat;
-
-  try {
-    //display temporal adjustments
-    switch (gParameters.GetTimeTrendAdjustmentType()) {
-      case TEMPORAL_NOTADJUSTED:
-        break;
-      case TEMPORAL_NONPARAMETRIC:
-        buffer = "Adjusted for time nonparametrically."; break;
-      case LOGLINEAR_PERC :
-        PrintCalculatedTimeTrend(fp, SetHandler); break;
-        /*printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
-        if (gParameters.GetTimeTrendAdjustmentPercentage() < 0)
-          buffer.insert(0, "Adjusted for time with a decrease ");
-        else
-          buffer.insert(0, "Adjusted for time with an increase ");*/
-        break;
-      case CALCULATED_LOGLINEAR_PERC :
-          PrintCalculatedTimeTrend(fp, SetHandler); break;
-      case TEMPORAL_STRATIFIED_RANDOMIZATION:
-        buffer = "Adjusted for time with stratified randomization."; break;
-      case CALCULATED_QUADRATIC:
-          PrintCalculatedTimeTrend(fp, SetHandler); break;
-      default :
-        throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
-    }
-    if (buffer.size())
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    //display spatial adjustments
-    switch (gParameters.GetSpatialAdjustmentType()) {
-      case SPATIAL_NOTADJUSTED:
-        break;
-      case SPATIAL_STRATIFIED_RANDOMIZATION:
-        buffer = "Adjusted for purely spatial clusters with stratified randomization.";
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
-      case SPATIAL_NONPARAMETRIC:
-          buffer = "Adjusted for purely spatial clusters nonparametrically.";
-          PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
-      default :
-        throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
-    }
-    if (gParameters.getAdjustForWeeklyTrends()) {
-        buffer = "Adjust for weekly trends nonparametrically.";
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    }
-    //display space-time adjustments
-    if (gParameters.UseAdjustmentForRelativeRisksFile()) {
-        buffer = "Adjusted for known relative risks.";
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintAdjustments()","ParametersPrint");
-    throw;
-  }
-}
-
 /** Prints 'Analysis' tab parameters to file stream. */
 void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
     AnalysisType eAnalysisType = gParameters.GetAnalysisType();
@@ -337,86 +276,108 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
 }
 
 /** Prints analysis type related information, in a particular format, to passed ascii file. */
-void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
-  try {
-    switch (gParameters.GetAnalysisType()) {
-      case PURELYSPATIAL             : fprintf(fp, "Purely Spatial"); break;
-      case PURELYTEMPORAL            : fprintf(fp, "Retrospective Purely Temporal"); break;
-      case SPACETIME                 : fprintf(fp, "Retrospective Space-Time"); break;
-      case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time"); break;
-      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends"); break;
-      case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal"); break;
-      case SEASONALTEMPORAL          : fprintf(fp, "Seasonal Temporal"); break;
-      default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", gParameters.GetAnalysisType());
-    }
-    if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS) {
-        fprintf(fp, " analysis and power evaluation\n");
-    } else {
-        fprintf(fp, gParameters.getPerformPowerEvaluation() ? " power evaluation\n" : " analysis\n");
-    }
-    fprintf(fp, "scanning for ");
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
-      fprintf(fp, "monotone ");
-    std::string s(GetAreaScanRateTypeAsString());
-    std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
-    fprintf(fp, "clusters with %s\n", s.c_str());
-    switch (gParameters.GetProbabilityModelType()) {
-      case POISSON              : fprintf(fp, "using the Discrete Poisson model.\n"); break;
-      case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
-      case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
-      case CATEGORICAL          : fprintf(fp, "using the Multinomial model.\n"); break;
-      case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
-      case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
-      case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
-      case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
-      case UNIFORMTIME          : fprintf(fp, "using the Uniform Time model.\n"); break;
-      case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Continuous Poisson model.\n"); break;
-      default : throw prg_error("Unknown probability model type '%d'.\n",
-                                "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
-    }
+void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHandler) const {
+    try {
+        std::string buffer;
+        std::vector<std::string> statements;
+        switch (gParameters.GetAnalysisType()) {
+            case PURELYSPATIAL             : statements.push_back("Purely Spatial"); break;
+            case PURELYTEMPORAL            : statements.push_back("Retrospective Purely Temporal"); break;
+            case SPACETIME                 : statements.push_back("Retrospective Space-Time"); break;
+            case PROSPECTIVESPACETIME      : statements.push_back("Prospective Space-Time"); break;
+            case SPATIALVARTEMPTREND       : statements.push_back("Spatial Variation in Temporal Trends"); break;
+            case PROSPECTIVEPURELYTEMPORAL : statements.push_back("Prospective Purely Temporal"); break;
+            case SEASONALTEMPORAL          : statements.push_back("Seasonal Temporal"); break;
+            default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", gParameters.GetAnalysisType());
+        }
+        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)
+            statements.back() += " analysis and power evaluation";
+        else
+            statements.back() += gParameters.getPerformPowerEvaluation() ? " power evaluation" : " analysis";
+        statements.push_back("scanning for ");
+        if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
+            statements.back() += "monotone ";
+        std::string s(GetAreaScanRateTypeAsString());
+        std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
+        statements.back() += printString(buffer, "clusters with %s", s.c_str());
+        switch (gParameters.GetProbabilityModelType()) {
+            case POISSON              : statements.push_back("using the Discrete Poisson model"); break;
+            case BERNOULLI            : statements.push_back("using the Bernoulli model"); break;
+            case SPACETIMEPERMUTATION : statements.push_back("using the Space-Time Permutation model"); break;
+            case CATEGORICAL          : statements.push_back("using the Multinomial model"); break;
+            case ORDINAL              : statements.push_back("using the Ordinal model"); break;
+            case EXPONENTIAL          : statements.push_back("using the Exponential model"); break;
+            case NORMAL               : statements.push_back("using the Normal model"); break;
+            case RANK                 : statements.push_back("using the Rank model"); break;
+            case UNIFORMTIME          : statements.push_back("using the Uniform Time model"); break;
+            case HOMOGENEOUSPOISSON   : statements.push_back("using the Continuous Poisson model"); break;
+            default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
+        }
+        if (gParameters.getNumFileSets() > 1) {
+            switch (gParameters.GetMultipleDataSetPurposeType()) {
+                case MULTIVARIATE : statements.push_back(printString(buffer, "with multivariate scan using %u data sets", gParameters.getNumFileSets())); break;
+                case ADJUSTMENT   : statements.push_back(printString(buffer, "with adjustment using %u data sets", gParameters.getNumFileSets())); break;
+                default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
+            }
+        }
+        if (gParameters.GetIsSpaceTimeAnalysis()) {
+            if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
+                statements.push_back("including purely spatial and purely temporal clusters");
+            else if (gParameters.GetIncludePurelySpatialClusters())
+                statements.push_back("including purely spatial clusters");
+            else if (gParameters.GetIncludePurelyTemporalClusters())
+                statements.push_back("including purely temporal clusters");
+        }
+        if (gParameters.GetIsIterativeScanning() && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
+            statements.push_back("with iterative analyses for secondary clusters");
+        switch (gParameters.GetTimeTrendAdjustmentType()) {
+            case TEMPORAL_NOTADJUSTED: break;
+            case TEMPORAL_NONPARAMETRIC: statements.push_back("adjusting for time nonparametrically"); break;
+            case LOGLINEAR_PERC: statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
+            case CALCULATED_LOGLINEAR_PERC: statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
+            case TEMPORAL_STRATIFIED_RANDOMIZATION: statements.push_back("adjusting for time with stratified randomization"); break;
+            case CALCULATED_QUADRATIC:statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
+            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+        }
+        switch (gParameters.GetSpatialAdjustmentType()) {
+            case SPATIAL_NOTADJUSTED: break;
+            case SPATIAL_STRATIFIED_RANDOMIZATION:
+                statements.push_back("adjusting for purely spatial clusters with stratified randomization"); break;
+            case SPATIAL_NONPARAMETRIC:
+                statements.push_back("adjusting for purely spatial clusters nonparametrically"); break;
+            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+        }
+        if (gParameters.getAdjustForWeeklyTrends())
+            statements.push_back("adjusting for weekly trends nonparametrically");
+        if (gParameters.UseAdjustmentForRelativeRisksFile()) 
+            statements.push_back("adjusting for known relative risks");
+        statements.back() += ".";
 
-    if (gParameters.GetIsSpaceTimeAnalysis()) {
-      if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
-        fprintf(fp, "Analysis includes purely spatial and purely temporal clusters.\n");
-      else if (gParameters.GetIncludePurelySpatialClusters())
-        fprintf(fp, "Analysis includes purely spatial clusters.\n");
-      else if (gParameters.GetIncludePurelyTemporalClusters())
-        fprintf(fp, "Analysis includes purely temporal clusters.\n");
+        AsciiPrintFormat PrintFormat;
+        PrintFormat.SetMarginsAsOverviewSection();
+        for (auto& line: statements)
+            PrintFormat.PrintAlignedMarginsDataString(fp, line);
+    } catch (prg_exception& x) {
+        x.addTrace("PrintAnalysisSummary()","ParametersPrint");
+        throw;
     }
-
-    if (gParameters.getNumFileSets() > 1) {
-      switch (gParameters.GetMultipleDataSetPurposeType()) {
-        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", gParameters.getNumFileSets()); break;
-        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", gParameters.getNumFileSets()); break;
-        default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n",
-                                  "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
-      }
-    }
-    if (gParameters.GetIsIterativeScanning() && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
-      fprintf(fp, "Iterative analysis performed.\n");
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PrintAnalysisSummary()","ParametersPrint");
-    throw;
-  }
 }
 
-/** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
-    unsigned int                  t;
-    std::string                   work, trend_label;
-    std::stringstream             strBuffer;
-    std::deque<unsigned int>      TrendIncrease, TrendDecrease;
+/** Creates formatted string of calculated time trend adjustment parameters. */
+std::string ParametersPrint::getCalculatedTimeTrendAsString(const DataSetHandler& SetHandler) const {
+    unsigned int             t;
+    std::string              work, trend_label;
+    std::stringstream        strBuffer;
+    std::deque<unsigned int> TrendIncrease, TrendDecrease;
 
     if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC))
-        return;
+        return work;
 
     //NOTE: Each dataset has own calculated time trend.
-
     if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC) {
-        strBuffer << "Adjusted for log quadratic time trend with:";
+        strBuffer << "adjusting for log quadratic time trend with:";
         for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
             strBuffer << std::endl << SetHandler.GetDataSet(t).getCalculatedQuadraticTimeTrend().c_str();
             if (SetHandler.GetNumDataSets() > 1) strBuffer << " for data set " << (t + 1);
@@ -428,10 +389,10 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
             case MONTH: trend_label = "a monthly"; break;
             case DAY: trend_label = "a daily"; break;
             case NONE:
-            default: throw prg_error("Unknown time aggregation type '%d'.\n", "PrintCalculatedTimeTrend()", gParameters.GetTimeAggregationUnitsType());
+            default: throw prg_error("Unknown time aggregation type '%d'.\n", "getCalculatedTimeTrendAsString()", gParameters.GetTimeAggregationUnitsType());
          }
          if (SetHandler.GetNumDataSets() == 1) {
-             strBuffer << "Adjusted for time trend with " << trend_label.c_str();
+             strBuffer << "adjusting for time trend with " << trend_label.c_str();
              strBuffer << (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0 ? " decrease " : " increase ");
              strBuffer << printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
          } else {//multiple datasets print
@@ -443,7 +404,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
                     TrendIncrease.push_back(t);
             }
             //now print
-            strBuffer << "Adjusted for time trend with " << trend_label.c_str() << " ";
+            strBuffer << "adjusting for time trend with " << trend_label.c_str() << " ";
             //print increasing trends first
             if (TrendIncrease.size()) {
                 strBuffer << printString(work, "increase of %0.2f%%", fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage())).c_str();
@@ -457,8 +418,6 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
                 strBuffer << printString(work, (TrendIncrease.size() > 1 ? " respectively" : "")).c_str();
                 if (TrendDecrease.size() > 0) {
                     strBuffer << printString(work, " and %s ", trend_label.c_str()).c_str();
-                } else {
-                    strBuffer << ".";
                 }
             }
             //print decreasing trends
@@ -471,15 +430,12 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
                 for (t=1; t < TrendDecrease.size(); ++t) {
                     strBuffer << printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1).c_str();
                 }
-                strBuffer << printString(work, (TrendDecrease.size() > 1 ? " respectively." : ".")).c_str();
+                strBuffer << printString(work, (TrendDecrease.size() > 1 ? " respectively" : "")).c_str();
             }
         }
     }
-
-    AsciiPrintFormat PrintFormat;
-    PrintFormat.SetMarginsAsOverviewSection();
     work = strBuffer.str();
-    PrintFormat.PrintAlignedMarginsDataString(fp, work);
+    return work;
 }
 
 /** Prints 'Spatial Output' tab parameters to file stream. */
